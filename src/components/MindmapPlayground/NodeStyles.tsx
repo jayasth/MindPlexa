@@ -12,7 +12,16 @@ const nodeStyle: CSSProperties = {
   textAlign: "center",
 };
 
-const CustomNode: FC<NodeProps> = ({ data }) => {
+interface NodeData {
+  label: string;
+  link?: string;
+}
+
+interface CustomNodeProps extends NodeProps<NodeData> {
+  onLabelChange: (nodeId: string, newLabel: string) => void;
+}
+
+const CustomNode: FC<CustomNodeProps> = ({ id, data, onLabelChange }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [label, setLabel] = useState(data.label);
 
@@ -23,7 +32,7 @@ const CustomNode: FC<NodeProps> = ({ data }) => {
   const handleLabelKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
       setIsEditing(false);
-      data.label = label;
+      onLabelChange(id, label); // Use the callback to handle label changes
     }
   };
 
@@ -40,6 +49,11 @@ const CustomNode: FC<NodeProps> = ({ data }) => {
         />
       ) : (
         <div onDoubleClick={handleLabelDoubleClick}>{label}</div>
+      )}
+      {data.link && (
+        <a href={data.link} target="_blank" rel="noopener noreferrer">
+          Link
+        </a>
       )}
       <Handle type="source" position={Position.Bottom} />
     </div>

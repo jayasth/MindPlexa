@@ -1,10 +1,13 @@
-// pages/_app.tsx
-import React from "react";
+import React, { useEffect } from "react";
 import type { AppProps } from "next/app";
+import { initSocket } from "../lib/socket";
 import "../styles/globals.css";
-import "../styles/components.css"; // If components.css is for global components styles
 
 const MyApp = ({ Component, pageProps }: AppProps) => {
+  useEffect(() => {
+    initSocket();
+  }, []);
+
   return <Component {...pageProps} />;
 };
 
