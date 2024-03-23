@@ -1,0 +1,44 @@
+/* src\styles\globals.css */
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+body {
+  @apply bg-gray-100 text-gray-800 font-sans;
+}
+
+h1 {
+  @apply text-4xl font-bold mb-6;
+}
+
+h2 {
+  @apply text-3xl font-bold mb-4;
+}
+
+h3 {
+  @apply text-2xl font-bold mb-2;
+}
+
+a {
+  @apply text-primary;
+}
+
+button {
+  @apply px-4 py-2 font-bold text-white bg-primary rounded-lg hover:bg-indigo-600;
+}
+
+textarea {
+  @apply w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:border-primary;
+}
+
+pre {
+  @apply p-4 bg-gray-100 rounded-lg;
+}
+
+textarea {
+  @apply w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:border-primary;
+}
+
+pre {
+  @apply p-4 bg-white rounded-lg shadow-md;
+}
