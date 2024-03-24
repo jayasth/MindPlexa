@@ -1,3 +1,4 @@
+//\src\components\MindmapPlayground\MindmapCanvas.tsx
 import React, {
   useCallback,
   useRef,
@@ -11,6 +12,7 @@ import ReactFlow, {
   Background,
   Node,
   Edge,
+  NodeProps,
   ConnectionMode,
   useNodesState,
   useEdgesState,
@@ -19,8 +21,6 @@ import ReactFlow, {
   ReactFlowInstance,
   applyNodeChanges,
   applyEdgeChanges,
-  getLayoutedElements,
-  LayoutOptions,
 } from "reactflow";
 import "reactflow/dist/style.css";
 
@@ -28,6 +28,15 @@ import Toolbar from "./Toolbar";
 import CustomNode from "./NodeStyles";
 import CustomEdge from "./EdgeStyles";
 import { getSocket } from "../../lib/socket";
+
+interface LayoutOptions {
+  [key: string]: string | boolean;
+}
+
+interface NodeData {
+  label: string;
+  link?: string;
+}
 
 const initialNodes: Node[] = [
   {
@@ -37,6 +46,24 @@ const initialNodes: Node[] = [
     position: { x: 250, y: 0 },
   },
 ];
+
+const getLayoutedElements = (
+  nodes: Node[],
+  edges: Edge[],
+  options: LayoutOptions
+) => {
+  // Implement your own layout logic here or use a layout library
+  // This is just a placeholder example
+  const layoutedNodes = nodes.map((node, index) => ({
+    ...node,
+    position: {
+      x: index * 100,
+      y: index * 100,
+    },
+  }));
+
+  return { nodes: layoutedNodes, edges };
+};
 
 const MindmapCanvas: React.FC = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
@@ -58,8 +85,8 @@ const MindmapCanvas: React.FC = () => {
   };
 
   const nodeTypes = {
-    custom: (props) => (
-      <CustomNode {...props} handleLabelChange={handleLabelChange} />
+    custom: (props: NodeProps) => (
+      <CustomNode {...props} onLabelChange={handleLabelChange} />
     ),
   };
 
