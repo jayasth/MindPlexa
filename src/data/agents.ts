@@ -10,23 +10,32 @@ export interface Agent {
 const agents: Agent[] = [
   {
     id: 1,
-    title: "Text to Mindmap",
-    description: "Generate mind maps from text input",
-    link: "/agents/TextToMindmap",
+    title: "IdeaMapper",
+    description:
+      "An AI-driven mind mapping tool that generates related words and phrases based on user input.",
+    link: "/agents/IdeaMapper",
   },
   {
     id: 2,
-    title: "Vision Board",
-    description: "Create and customize vision boards",
-    link: "/agents/VisionBoard",
+    title: "SummaryScribe",
+    description:
+      "Allows users to input text and generates concise, well-structured summaries.",
+    link: "/agents/SummaryScribe",
   },
   {
     id: 3,
-    title: "Text to Flowchart",
-    description: "Generate flowcharts from text input",
-    link: "/agents/TextToFlowChart",
+    title: "BrainstormBuddy",
+    description:
+      "An AI-powered brainstorming tool that engages users in a Q&A-style conversation.",
+    link: "/agents/BrainstormBuddy",
   },
-  // ...other agents
+  {
+    id: 4,
+    title: "KnowledgeKindle",
+    description:
+      "A curated selection of AI-generated content that users can explore and save.",
+    link: "/agents/KnowledgeKindle",
+  },
 ];
 
 export default agents;

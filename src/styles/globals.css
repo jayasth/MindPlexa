@@ -78,9 +78,3 @@ h6 {
     display: none;
   }
 }
-
-.error-message {
-  body {
-    @apply text-red-500 mt-2 text-sm;
-  }
-}

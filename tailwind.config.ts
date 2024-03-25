@@ -1,3 +1,5 @@
+// tailwind.config.ts
+
 import { Config } from "tailwindcss";
 
 export default {
@@ -8,10 +10,10 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: "#2D9CDB", // Bold color for accents
-        background: "#F4F4F4", // Soft background color
-        text: "#575757", // Primary text color
-        "subtle-text": "#4F4F4F", // Secondary text color
+        primary: "#2D9CDB",
+        background: "#F4F4F4",
+        text: "#575757",
+        "subtle-text": "#4F4F4F",
         alabaster: "#F4F4F4",
         "sonic-silver": "#575757",
         "cadet-blue": "#5E8D93",
@@ -31,9 +33,7 @@ export default {
         heading: ["Poppins", "sans-serif"],
         body: ["Open Sans", "sans-serif"],
       },
-      // Other extends can be added as needed
     },
   },
-  // You can add variants if you need to customize how certain styles behave on hover, focus, etc.
-  plugins: [require("@tailwindcss/forms")], // Keep this if you need the forms plugin
+  plugins: [require("@tailwindcss/forms")],
 } as Config;
