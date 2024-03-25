@@ -10,6 +10,7 @@ import React, {
 import ReactFlow, {
   Controls,
   Background,
+  MiniMap,
   Node,
   Edge,
   NodeProps,
@@ -22,6 +23,7 @@ import ReactFlow, {
   applyNodeChanges,
   applyEdgeChanges,
 } from "reactflow";
+import ELK from "elkjs/lib/elk.bundled.js";
 import "reactflow/dist/style.css";
 
 import Toolbar from "./Toolbar";
@@ -47,20 +49,55 @@ const initialNodes: Node[] = [
   },
 ];
 
-const getLayoutedElements = (
+// Updated getLayoutedElements function
+const getLayoutedElements = async (
   nodes: Node[],
   edges: Edge[],
   options: LayoutOptions
 ) => {
-  // Implement your own layout logic here or use a layout library
-  // This is just a placeholder example
-  const layoutedNodes = nodes.map((node, index) => ({
-    ...node,
-    position: {
-      x: index * 100,
-      y: index * 100,
+  const elk = new ELK();
+  const elkNodes = nodes.map((node) => ({
+    id: node.id,
+    width: 100, // Provide default dimensions if not present
+    height: 100,
+    layoutOptions: {
+      "elk.nodeLabels.placement": "INSIDE V_CENTER H_CENTER",
+      // Any other node-specific layout options
     },
   }));
+  const elkEdges = edges.map((edge) => ({
+    id: edge.id,
+    sources: [edge.source],
+    targets: [edge.target],
+  }));
+
+  const graph = {
+    id: "root",
+    children: elkNodes,
+    edges: elkEdges,
+    layoutOptions: {
+      "elk.algorithm": "layered",
+      "elk.spacing.nodeNode": "50",
+      // Any other graph-wide layout options
+      ...options,
+    },
+  };
+
+  const layout = await elk.layout(graph);
+  // Translate the ELK layout back into React Flow elements
+  const layoutedNodes = layout.children
+    ?.map((elkNode) => {
+      const node = nodes.find((node) => node.id === elkNode.id);
+      if (!node) return undefined; // This line is added to satisfy TypeScript's strict null checks.
+      return {
+        ...node,
+        position: {
+          x: elkNode.x || 0, // Fallback to 0 if x is undefined
+          y: elkNode.y || 0, // Fallback to 0 if y is undefined
+        },
+      };
+    })
+    .filter((node): node is Node => node !== undefined); // This filter removes any undefined elements, resulting from the find method above.
 
   return { nodes: layoutedNodes, edges };
 };
@@ -219,7 +256,7 @@ const MindmapCanvas: React.FC = () => {
     }
   };
 
-  const handleAutoArrange = () => {
+  const handleAutoArrange = async () => {
     if (reactFlowInstance) {
       const layoutOptions: LayoutOptions = {
         "elk.algorithm": "layered",
@@ -234,22 +271,22 @@ const MindmapCanvas: React.FC = () => {
       };
 
       const { nodes: layoutedNodes, edges: layoutedEdges } =
-        getLayoutedElements(nodes, edges, layoutOptions);
+        await getLayoutedElements(nodes, edges, layoutOptions);
 
-      reactFlowInstance.setNodes(layoutedNodes);
-      reactFlowInstance.setEdges(layoutedEdges);
+      setNodes(layoutedNodes || []);
+      setEdges(layoutedEdges);
     }
   };
 
   return (
     <div
-      className="flex flex-col h-full md:flex-row"
+      className="flex flex-col h-full md:flex-row-reverse"
       onKeyDown={handleKeyDown}
       tabIndex={0}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
     >
-      <div className="w-full md:w-60 bg-gray-200 p-4">
+      <div className="">
         <Toolbar
           onAddNode={handleAddNode}
           onUndo={handleUndo}
@@ -259,7 +296,11 @@ const MindmapCanvas: React.FC = () => {
           onAutoArrange={handleAutoArrange}
         />
       </div>
-      <div ref={reactFlowWrapper} className="flex-1 overflow-hidden">
+
+      <div
+        ref={reactFlowWrapper}
+        className="flex-grow relative overflow-hidden"
+      >
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -270,11 +311,21 @@ const MindmapCanvas: React.FC = () => {
           edgeTypes={edgeTypes}
           connectionMode={ConnectionMode.Loose}
           defaultViewport={{ x: 0, y: 0, zoom: 1 }}
-          className="h-full"
+          className="h-full overflow-auto"
           onInit={setReactFlowInstance}
         >
-          <Background color="#aaa" gap={16} />
-          <Controls className="controls" />
+          <Background color="sonic silver" gap={16} />
+          <Controls />
+          <MiniMap
+            nodeColor={(n) => {
+              if (n.type === "input") return "blue";
+              return "#FFCC00";
+            }}
+            nodeStrokeWidth={3}
+            nodeBorderRadius={10}
+            style={{ position: "absolute", bottom: 10, right: 10 }}
+            className="minimap"
+          />
         </ReactFlow>
       </div>
     </div>

@@ -26,7 +26,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
   };
 
   return (
-    <div className="bg-white p-4">
+    <div className="canvas p-4">
       <div className="grid grid-cols-2 gap-2 md:grid-cols-1">
         <Button onClick={onAddNode}>Add Node</Button>
         <Button onClick={onUndo}>Undo</Button>

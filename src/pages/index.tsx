@@ -19,6 +19,7 @@ const Home: React.FC = () => {
               title={agent.title}
               description={agent.description}
               link={agent.link}
+              className="card"
             />
           ))}
         </div>

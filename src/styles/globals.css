@@ -1,44 +1,86 @@
-/* src\styles\globals.css */
-@import "tailwindcss/base";
-@import "tailwindcss/components";
-@import "tailwindcss/utilities";
+/* src/styles/globals.css */
+/* globals.css */
+@import url("https://fonts.googleapis.com/css2?family=Open+Sans&family=Poppins:wght@600&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 body {
-  @apply bg-gray-100 text-gray-800 font-sans;
+  @apply bg-alabaster text-sonic-silver font-body;
 }
 
-h1 {
-  @apply text-4xl font-bold mb-6;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  @apply font-heading;
 }
 
-h2 {
-  @apply text-3xl font-bold mb-4;
+.btn-primary {
+  @apply bg-gradient-to-br from-primary-start to-primary-end text-white py-2 px-4 rounded;
 }
 
-h3 {
-  @apply text-2xl font-bold mb-2;
+.btn-primary:hover {
+  @apply from-dark-cadet-blue to-cadet-blue;
 }
 
-a {
-  @apply text-primary;
+.btn-secondary {
+  @apply bg-gradient-to-br from-secondary-start to-secondary-end text-white py-2 px-4 rounded;
 }
 
-button {
-  @apply px-4 py-2 font-bold text-white bg-primary rounded-lg hover:bg-indigo-600;
+.btn-secondary:hover {
+  @apply from-tuscany to-light-tuscany;
 }
 
-textarea {
-  @apply w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:border-primary;
+.canvas {
+  @apply bg-white p-4 rounded shadow;
 }
 
-pre {
-  @apply p-4 bg-gray-100 rounded-lg;
+.feature-card {
+  @apply bg-gradient-to-br from-alabaster to-light-alabaster p-4 rounded shadow cursor-pointer transition-colors duration-200;
 }
 
-textarea {
-  @apply w-full px-3 py-2 text-gray-700 border rounded-lg focus:outline-none focus:border-primary;
+.feature-card:hover {
+  @apply from-cadet-blue to-dark-cadet-blue text-white;
 }
 
-pre {
-  @apply p-4 bg-white rounded-lg shadow-md;
+.pricing-card {
+  @apply bg-white p-6 rounded shadow;
+}
+
+.pricing-card-header {
+  @apply text-jet font-heading text-2xl mb-4;
+}
+
+.pricing-card-price {
+  @apply text-cadet-blue font-heading text-4xl mb-4;
+}
+
+.pricing-card-features {
+  @apply text-sonic-silver mb-4;
+}
+
+.pricing-card-button {
+  @apply btn-primary;
+}
+
+/* Hide the attribution from React Flow library */
+.react-flow__attribution {
+  display: none;
+}
+
+/* Responsive design adjustments */
+@media (max-width: 768px) {
+  .minimap {
+    display: none;
+  }
+}
+
+.error-message {
+  body {
+    @apply text-red-500 mt-2 text-sm;
+  }
 }

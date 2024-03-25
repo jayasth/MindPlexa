@@ -38,22 +38,22 @@ const TextToMindmap: React.FC = () => {
               value={inputText}
               onChange={handleInputChange}
               placeholder="Enter a keyword..."
-              className="flex-grow px-3 py-2 border rounded-l focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full p-1 rounded-lg focus:ring focus:ring-opacity-30"
             />
             <button
               type="submit"
-              className="px-4 py-2 bg-primary text-white rounded-r hover:bg-indigo-600 disabled:opacity-50"
+              className="px-4 py-2 btn-primary"
               disabled={isLoading}
             >
               {isLoading ? "Generating..." : "Generate"}
             </button>
           </div>
-          {error && <p className="text-red-500 mt-2">{error}</p>}
+          {error && <p className="error-message mt-2">{error}</p>}
         </form>
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-auto rounded-lg shadow p-4">
           <MindmapCanvas />
         </div>
-        <footer className="bg-gray-200 p-4">{/* Add footer content */}</footer>
+        <footer className="pt-16">{/* Add footer content */}</footer>
       </div>
     </Layout>
   );
