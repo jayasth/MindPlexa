@@ -1,12 +1,15 @@
-import React, { ReactNode } from "react";
+import React, { ReactNode, useState } from "react";
 import Head from "next/head";
 import Link from "next/link";
+import { FiMenu } from "react-icons/fi";
 
 interface LayoutProps {
   children: ReactNode;
 }
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
     <div className="min-h-screen flex flex-col bg-alabaster text-sonic-silver font-body">
       <Head>
@@ -15,12 +18,29 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       </Head>
       <header className="bg-alabaster shadow">
         <div className="container mx-auto px-4 py-4">
-          <nav>
-            <ul className="flex space-x-4">
+          <nav className="flex justify-between items-center">
+            <Link href="/" passHref>
+              <span className="text-cadet-blue hover:text-dark-cadet-blue">
+                Home
+              </span>
+            </Link>
+            <div className="sm:hidden">
+              <button type="button" onClick={() => setIsOpen(!isOpen)}>
+                <FiMenu />
+              </button>
+            </div>
+            <ul className={`space-x-4 ${isOpen ? "block" : "hidden"} sm:flex`}>
               <li>
-                <Link href="/" passHref>
+                <Link href="/signup" passHref>
                   <span className="text-cadet-blue hover:text-dark-cadet-blue">
-                    Home
+                    Signup
+                  </span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/login" passHref>
+                  <span className="text-cadet-blue hover:text-dark-cadet-blue">
+                    Login
                   </span>
                 </Link>
               </li>
