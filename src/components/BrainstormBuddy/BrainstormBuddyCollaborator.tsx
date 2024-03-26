@@ -1,6 +1,11 @@
-import React, { useState, useEffect } from "react";
-import io from "socket.io-client";
+import React, { useState } from "react";
 import { FiSend } from "react-icons/fi";
+
+interface Message {
+  userId: string;
+  text: string;
+  timestamp: string;
+}
 
 interface BrainstormBuddyCollaboratorProps {
   sessionId: string;
@@ -10,34 +15,18 @@ interface BrainstormBuddyCollaboratorProps {
 const BrainstormBuddyCollaborator: React.FC<
   BrainstormBuddyCollaboratorProps
 > = ({ sessionId, userId }) => {
-  const [messages, setMessages] = useState<any[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState("");
-  const [socket, setSocket] = useState<SocketIOClient.Socket | null>(null);
-
-  useEffect(() => {
-    const newSocket = io("http://localhost:3000");
-    setSocket(newSocket);
-
-    newSocket.emit("join", { sessionId, userId });
-
-    newSocket.on("message", (message: any) => {
-      setMessages((prevMessages) => [...prevMessages, message]);
-    });
-
-    return () => {
-      newSocket.disconnect();
-    };
-  }, [sessionId, userId]);
 
   const handleSendMessage = () => {
     if (inputText.trim() !== "") {
-      const newMessage = {
+      const newMessage: Message = {
         userId,
         text: inputText,
         timestamp: new Date().toISOString(),
       };
 
-      socket?.emit("message", newMessage);
+      setMessages((prevMessages) => [...prevMessages, newMessage]);
       setInputText("");
     }
   };

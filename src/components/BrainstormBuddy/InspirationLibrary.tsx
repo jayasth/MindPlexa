@@ -1,17 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import { FiBookmark, FiSearch } from "react-icons/fi";
+import Image from "next/image";
 
 const InspirationLibrary: React.FC = () => {
   const [inspirations, setInspirations] = useState<any[]>([]);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
 
-  useEffect(() => {
-    fetchInspirations();
-  }, [selectedCategory, searchQuery]);
-
-  const fetchInspirations = async () => {
+  const fetchInspirations = useCallback(async () => {
     try {
       const response = await axios.get("/api/inspirations", {
         params: {
@@ -23,7 +20,11 @@ const InspirationLibrary: React.FC = () => {
     } catch (error) {
       console.error("Error fetching inspirations:", error);
     }
-  };
+  }, [selectedCategory, searchQuery]); // Add dependencies here
+
+  useEffect(() => {
+    fetchInspirations();
+  }, [fetchInspirations]); //
 
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);
@@ -74,10 +75,12 @@ const InspirationLibrary: React.FC = () => {
             key={inspiration.id}
             className="inspiration-item bg-white rounded-md shadow-md p-4"
           >
-            <img
-              src={inspiration.thumbnail}
+            <Image
+              src={inspiration.thumbnail || "/path/to/default/image.jpg"}
               alt={inspiration.title}
-              className="w-full h-40 object-cover rounded-md mb-2"
+              width={500} // replace with your desired image width
+              height={300} // replace with your desired image height
+              className="object-cover rounded-md mb-2"
             />
             <h3 className="text-lg font-semibold mb-2">{inspiration.title}</h3>
             <p className="text-gray-600 mb-4">{inspiration.description}</p>
