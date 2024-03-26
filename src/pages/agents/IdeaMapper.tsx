@@ -8,7 +8,9 @@ const IdeaMapper: React.FC = () => {
   return (
     <Layout>
       <div className="flex flex-col h-screen">
-        <h1 className="text-3xl font-heading mb-4">IdeaMapper</h1>
+        <div className="p-4">
+          <h1 className="text-3xl font-heading mb-4">IdeaMapper</h1>
+        </div>
         <div className="flex-grow">
           <IdeaMapperCanvas />
         </div>

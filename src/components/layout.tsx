@@ -21,7 +21,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           <nav className="flex justify-between items-center">
             <Link href="/" passHref>
               <span className="text-cadet-blue hover:text-dark-cadet-blue">
-                Home
+                MindPlexa
               </span>
             </Link>
             <div className="sm:hidden">
