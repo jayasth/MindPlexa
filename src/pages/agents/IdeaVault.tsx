@@ -1,4 +1,5 @@
 // src/pages/agents/IdeaVault.tsx
+
 import React from "react";
 import Layout from "../../components/layout";
 import IdeaVaultList from "../../components/IdeaVault/IdeaVaultList";
