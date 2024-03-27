@@ -21,6 +21,7 @@ interface ToolbarProps {
   onZoomIn: () => void;
   onZoomOut: () => void;
   onAutoArrange: () => void;
+  onSaveToVault: () => Promise<void>;
 }
 
 const Toolbar: React.FC<ToolbarProps> = ({

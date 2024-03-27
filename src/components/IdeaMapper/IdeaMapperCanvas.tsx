@@ -205,6 +205,7 @@ const IdeaMapperCanvasInner: React.FC<{
           />
           <hr className="my-2" />
           <Toolbar
+            onSaveToVault={handleSaveToVault}
             onAddNode={handleAddNode}
             onUndo={handleUndo}
             onRedo={handleRedo}

@@ -79,6 +79,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               {session ? (
                 <>
                   <li>
+                    <Link href="/dashboard" passHref>
+                      <span className="text-cadet-blue hover:text-dark-cadet-blue cursor-pointer">
+                        Dashboard
+                      </span>
+                    </Link>
+                  </li>
+                  <li>
                     <Link href="/agents/IdeaMapper" passHref>
                       <span className="text-cadet-blue hover:text-dark-cadet-blue cursor-pointer">
                         Idea Mapper

@@ -1,5 +1,22 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 
+// Define the SessionData interface
+interface SessionData {
+  title: string;
+  description: string;
+  duration: number;
+  mode: string;
+  participants: string[];
+}
+
+// Define the createSession function
+async function createSession(sessionData: SessionData) {
+  // Implement your logic to create a session here.
+  // This might involve interacting with a database or an external API.
+  // For now, let's just return a mock session id.
+  return "mock-session-id";
+}
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -7,8 +24,14 @@ export default async function handler(
   if (req.method === "POST") {
     const { title, description, duration, mode, participants } = req.body;
 
-    // Implement the logic to create a new brainstorming session
-    // You can use a database (e.g., Supabase) to store the session data
+    // Use the createSession function to create a new brainstorming session
+    const sessionId = await createSession({
+      title,
+      description,
+      duration,
+      mode,
+      participants,
+    });
 
     // Generate an invite link for the session
     const inviteLink = `http://localhost:3000/brainstorming-sessions/${sessionId}`;

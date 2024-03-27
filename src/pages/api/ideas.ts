@@ -39,6 +39,18 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       console.error("Error saving idea:", error);
       res.status(500).json({ message: "Error saving idea" });
     }
+  } else if (req.method === "DELETE") {
+    try {
+      const { ideaId } = req.query;
+      // Delete the idea from the database based on the ideaId
+      // Example:
+      // await deleteIdeaFromDatabase(ideaId);
+
+      res.status(204).end();
+    } catch (error) {
+      console.error("Error deleting idea:", error);
+      res.status(500).json({ message: "Error deleting idea" });
+    }
   } else {
     res.status(405).json({ message: "Method not allowed" });
   }

@@ -11,14 +11,21 @@ export const getIdeasForUser = async () => {
   }
 };
 
-// ... (other API functions)
-
 export const saveIdeaToVault = async (idea: any) => {
   try {
     const response = await axios.post("/api/ideas", { idea });
     return response.data;
   } catch (error) {
     console.error("Error saving idea to vault:", error);
+    throw error;
+  }
+};
+
+export const deleteIdea = async (ideaId: string) => {
+  try {
+    await axios.delete(`/api/ideas/${ideaId}`);
+  } catch (error) {
+    console.error("Error deleting idea:", error);
     throw error;
   }
 };

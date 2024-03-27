@@ -56,3 +56,13 @@ export const voteOnIdea = async (
     throw error;
   }
 };
+
+export const deleteIdeaFromSession = async (
+  sessionId: string,
+  ideaId: string
+) => {
+  const response = await axios.delete(
+    `/api/brainstorming/sessions/${sessionId}/ideas/${ideaId}`
+  );
+  return response.data;
+};
