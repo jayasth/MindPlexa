@@ -1,5 +1,4 @@
 // src/pages/api/ideas.ts
-
 import type { NextApiRequest, NextApiResponse } from "next";
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
@@ -23,6 +22,22 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     } catch (error) {
       console.error("Error fetching ideas:", error);
       res.status(500).json({ message: "Error fetching ideas" });
+    }
+  } else if (req.method === "POST") {
+    try {
+      const { idea } = req.body;
+      // Save the idea to the database or perform any necessary processing
+      // Example:
+      const savedIdea = {
+        id: "123",
+        title: idea.name || "Untitled Idea",
+        description: JSON.stringify(idea),
+      };
+
+      res.status(201).json(savedIdea);
+    } catch (error) {
+      console.error("Error saving idea:", error);
+      res.status(500).json({ message: "Error saving idea" });
     }
   } else {
     res.status(405).json({ message: "Method not allowed" });

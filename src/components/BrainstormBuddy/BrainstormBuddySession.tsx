@@ -8,12 +8,40 @@ import {
   addIdeaToSession,
   voteOnIdea,
 } from "../../api/brainstormingApi";
+import { saveIdeaToVault } from "../../api/ideaVaultApi";
+import { initSocket, getSocket } from "../../utils/socket";
 
 const BrainstormBuddySession: React.FC = () => {
   const router = useRouter();
   const { sessionId } = router.query;
   const [session, setSession] = useState<any>(null);
   const [newIdea, setNewIdea] = useState("");
+
+  useEffect(() => {
+    initSocket();
+
+    const socket = getSocket();
+
+    socket?.on("newIdea", (idea: any) => {
+      setSession((prevSession: any) => ({
+        ...prevSession,
+        ideas: [...prevSession.ideas, idea],
+      }));
+    });
+
+    socket?.on("ideaVoted", (updatedIdea: any) => {
+      setSession((prevSession: any) => ({
+        ...prevSession,
+        ideas: prevSession.ideas.map((idea: any) =>
+          idea.id === updatedIdea.id ? updatedIdea : idea
+        ),
+      }));
+    });
+
+    return () => {
+      socket?.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
     const fetchSession = async () => {
@@ -29,19 +57,24 @@ const BrainstormBuddySession: React.FC = () => {
   const handleIdeaSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newIdea.trim()) {
-      await addIdeaToSession(sessionId as string, newIdea.trim());
+      const idea = await addIdeaToSession(sessionId as string, newIdea.trim());
+      getSocket()?.emit("newIdea", idea);
       setNewIdea("");
-      // Refresh session data
-      const updatedSession = await getSessionById(sessionId as string);
-      setSession(updatedSession);
     }
   };
 
   const handleVote = async (ideaId: string, vote: "up" | "down") => {
-    await voteOnIdea(sessionId as string, ideaId, vote);
-    // Refresh session data
-    const updatedSession = await getSessionById(sessionId as string);
-    setSession(updatedSession);
+    const updatedIdea = await voteOnIdea(sessionId as string, ideaId, vote);
+    getSocket()?.emit("ideaVoted", updatedIdea);
+  };
+
+  const handleSaveToVault = async () => {
+    try {
+      await saveIdeaToVault(session);
+      router.push("/agents/IdeaVault");
+    } catch (error) {
+      console.error("Error saving idea to vault:", error);
+    }
   };
 
   if (!session) {
@@ -90,6 +123,12 @@ const BrainstormBuddySession: React.FC = () => {
           Submit
         </button>
       </form>
+      <button
+        onClick={handleSaveToVault}
+        className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
+        Save to Idea Vault
+      </button>
     </div>
   );
 };

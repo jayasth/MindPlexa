@@ -100,6 +100,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                     </Link>
                   </li>
                   <li>
+                    <Link href="/settings" passHref>
+                      <span className="text-cadet-blue hover:text-dark-cadet-blue cursor-pointer">
+                        Settings
+                      </span>
+                    </Link>
+                  </li>
+                  <li>
                     <button
                       onClick={handleLogout}
                       className="text-cadet-blue hover:text-dark-cadet-blue focus:outline-none"

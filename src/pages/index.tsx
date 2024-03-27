@@ -1,11 +1,48 @@
 // src/pages/index.tsx
 
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { supabase } from "../utils/supabaseClient";
 import Layout from "../components/layout";
 import AgentCard from "../components/AgentCard";
 import agents from "../data/agents";
+import OnboardingTutorial from "../components/Onboarding/OnboardingTutorial";
 
 const Home: React.FC = () => {
+  const [session, setSession] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const getSession = async () => {
+      const { data, error } = await supabase.auth.getSession();
+      if (error) {
+        console.error("Error getting session:", error);
+      } else {
+        setSession(data.session);
+      }
+      setLoading(false);
+    };
+
+    getSession();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setSession(session);
+      }
+    );
+
+    return () => {
+      authListener?.subscription.unsubscribe();
+    };
+  }, []);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!session) {
+    return <OnboardingTutorial />;
+  }
+
   return (
     <Layout>
       <div className="text-center">

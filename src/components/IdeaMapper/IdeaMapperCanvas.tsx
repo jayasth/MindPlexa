@@ -1,3 +1,4 @@
+// src/components/IdeaMapper/IdeaMapperCanvas.tsx
 import React, {
   useCallback,
   useRef,
@@ -5,6 +6,7 @@ import React, {
   useMemo,
   useEffect,
 } from "react";
+import { useRouter } from "next/router";
 import ReactFlow, {
   useReactFlow,
   Controls,
@@ -26,6 +28,7 @@ import CustomEdge from "./CustomEdge";
 import Toolbar from "./Toolbar";
 import KeywordInput from "./KeywordInput";
 import StylePanel from "./StylePanel";
+import { saveIdeaToVault } from "../../api/ideaVaultApi";
 
 const IdeaMapperCanvas: React.FC = () => {
   const reactFlowRef = useRef<ReactFlowInstance | null>(null);
@@ -69,6 +72,20 @@ const IdeaMapperCanvasInner: React.FC<{
   >([]);
 
   const { project } = useReactFlow();
+
+  const router = useRouter();
+
+  const handleSaveToVault = useCallback(async () => {
+    const flow = reactFlowRef.current?.toObject();
+    if (flow) {
+      try {
+        await saveIdeaToVault(flow);
+        router.push("/agents/IdeaVault");
+      } catch (error) {
+        console.error("Error saving idea to vault:", error);
+      }
+    }
+  }, [reactFlowRef, router]);
 
   // Load saved mind map data from local storage or API
   useEffect(() => {
@@ -240,6 +257,12 @@ const IdeaMapperCanvasInner: React.FC<{
             </div>
           </div>
         </ReactFlowProvider>
+        <button
+          onClick={handleSaveToVault}
+          className="absolute bottom-4 right-4 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          Save to Idea Vault
+        </button>
       </div>
     </div>
   );
