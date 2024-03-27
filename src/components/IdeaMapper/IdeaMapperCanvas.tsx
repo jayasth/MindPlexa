@@ -1,6 +1,10 @@
-// src/components/IdeaMapper/IdeaMapperCanvas.tsx
-
-import React, { useCallback, useRef, useState, useMemo } from "react";
+import React, {
+  useCallback,
+  useRef,
+  useState,
+  useMemo,
+  useEffect,
+} from "react";
 import ReactFlow, {
   useReactFlow,
   Controls,
@@ -56,24 +60,62 @@ const IdeaMapperCanvasInner: React.FC<{
   const [nodeStyle, setNodeStyle] = useState<{ backgroundColor?: string }>({});
   const [edgeStyle, setEdgeStyle] = useState<{ stroke?: string }>({});
 
+  // Define history and redoHistory states
+  const [history, setHistory] = useState<{ nodes: Node[]; edges: Edge[] }[]>(
+    []
+  );
+  const [redoHistory, setRedoHistory] = useState<
+    { nodes: Node[]; edges: Edge[] }[]
+  >([]);
+
   const { project } = useReactFlow();
 
-  // Add history state for undo/redo functionality
-  const [history, setHistory] = useState<
-    { nodes: Node<any>[]; edges: Edge<any>[] }[]
-  >([]);
-  const [redoHistory, setRedoHistory] = useState<
-    { nodes: Node<any>[]; edges: Edge<any>[] }[]
-  >([]);
+  // Load saved mind map data from local storage or API
+  useEffect(() => {
+    const savedNodes = JSON.parse(localStorage.getItem("nodes") || "[]");
+    const savedEdges = JSON.parse(localStorage.getItem("edges") || "[]");
+    setNodes(savedNodes);
+    setEdges(savedEdges);
+  }, [setEdges, setNodes]);
+
+  // Save mind map data to local storage or API whenever it changes
+  useEffect(() => {
+    localStorage.setItem("nodes", JSON.stringify(nodes));
+    localStorage.setItem("edges", JSON.stringify(edges));
+  }, [nodes, edges]);
 
   const onConnect = useCallback(
     (connection: Connection) => {
       const newEdges = addEdge(connection, edges);
-      setHistory([...history, { nodes, edges }]); // Save current state to history before updating
       setEdges(newEdges);
     },
-    [edges, history, nodes]
+    [edges, setEdges]
   );
+
+  const handleKeywordSubmit = async (keyword: string) => {
+    try {
+      // Make an API request to generate related nodes using AI
+      const response = await fetch("/api/generate-nodes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ keyword }),
+      });
+      const generatedNodes = await response.json();
+
+      // Add the generated nodes to the mind map
+      setNodes((prevNodes) => [...prevNodes, ...generatedNodes]);
+    } catch (error) {
+      console.error("Error generating nodes:", error);
+    }
+  };
+
+  const handleNodeStyleChange = (style: any) => {
+    setNodeStyle(style);
+  };
+
+  const handleEdgeStyleChange = (style: any) => {
+    setEdgeStyle(style);
+  };
 
   const handleAddNode = (label: string) => {
     const newNode = {
@@ -122,36 +164,6 @@ const IdeaMapperCanvasInner: React.FC<{
     // Implement auto-arrange logic here
   };
 
-  const handleKeywordsChange = async (keyword: string) => {
-    try {
-      // Generate related keywords using GPT-3.5-turbo API
-      const relatedKeywords = await generateRelatedKeywords(keyword);
-
-      // Add new nodes for each related keyword
-      const newNodes = relatedKeywords.map(
-        (keyword: string, index: number) => ({
-          id: `${nodes.length + index + 1}`,
-          type: "custom",
-          position: project({ x: Math.random() * 500, y: Math.random() * 500 }),
-          data: { label: keyword, backgroundColor: nodeStyle.backgroundColor },
-        })
-      );
-
-      setNodes((nds) => [...nds, ...newNodes]);
-    } catch (error) {
-      console.error("Error generating related keywords:", error);
-      // Handle error and display message to the user
-    }
-  };
-
-  const handleNodeStyleChange = (style: any) => {
-    setNodeStyle(style);
-  };
-
-  const handleEdgeStyleChange = (style: any) => {
-    setEdgeStyle(style);
-  };
-
   const handleExport = () => {
     if (reactFlowRef.current) {
       const flow = reactFlowRef.current.toObject();
@@ -164,45 +176,6 @@ const IdeaMapperCanvasInner: React.FC<{
       link.click();
       URL.revokeObjectURL(url);
     }
-  };
-
-  // Helper function to generate related keywords using GPT-3.5-turbo API
-  const generateRelatedKeywords = async (
-    keyword: string
-  ): Promise<string[]> => {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_OPENAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-3.5-turbo",
-        messages: [
-          {
-            role: "system",
-            content:
-              "You are an assistant that generates related keywords for a given keyword or topic. Provide the related keywords as a comma-separated list.",
-          },
-          {
-            role: "user",
-            content: `Generate related keywords for the following: ${keyword}`,
-          },
-        ],
-        max_tokens: 50,
-        n: 1,
-        stop: null,
-        temperature: 0.7,
-      }),
-    });
-
-    const data = await response.json();
-    const generatedText = data.choices[0].message.content.trim();
-    const relatedKeywords = generatedText
-      .split(",")
-      .map((keyword: string) => keyword.trim());
-
-    return relatedKeywords;
   };
 
   return (
@@ -230,7 +203,7 @@ const IdeaMapperCanvasInner: React.FC<{
         <ReactFlowProvider>
           <div className="flex flex-col h-full">
             <div className="p-4">
-              <KeywordInput onKeywordChange={handleKeywordsChange} />
+              <KeywordInput onSubmit={handleKeywordSubmit} />
             </div>
             <div className="flex-grow">
               <ReactFlow

@@ -15,15 +15,17 @@ const Home: React.FC = () => {
           productivity.
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {agents.map((agent) => (
-            <AgentCard
-              key={agent.id}
-              title={agent.title}
-              description={agent.description}
-              link={agent.link}
-              className="feature-card"
-            />
-          ))}
+          {agents
+            .filter((agent) => agent.id <= 3)
+            .map((agent) => (
+              <AgentCard
+                key={agent.id}
+                title={agent.title}
+                description={agent.description}
+                link={agent.link}
+                className="feature-card"
+              />
+            ))}
         </div>
       </div>
     </Layout>

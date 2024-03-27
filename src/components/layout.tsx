@@ -31,6 +31,27 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </div>
             <ul className={`space-x-4 ${isOpen ? "block" : "hidden"} sm:flex`}>
               <li>
+                <Link href="/agents/IdeaMapper" passHref>
+                  <span className="text-cadet-blue hover:text-dark-cadet-blue">
+                    Idea Mapper
+                  </span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/agents/BrainstormBuddy" passHref>
+                  <span className="text-cadet-blue hover:text-dark-cadet-blue">
+                    Brainstorm Buddy
+                  </span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/agents/IdeaVault" passHref>
+                  <span className="text-cadet-blue hover:text-dark-cadet-blue">
+                    Idea Vault
+                  </span>
+                </Link>
+              </li>
+              <li>
                 <Link href="/signup" passHref>
                   <span className="text-cadet-blue hover:text-dark-cadet-blue">
                     Signup

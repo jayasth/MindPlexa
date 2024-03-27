@@ -3,49 +3,39 @@
 import React, { useState } from "react";
 
 interface KeywordInputProps {
-  onKeywordChange: (keyword: string) => Promise<void>;
+  onSubmit: (keyword: string) => void;
 }
 
-const KeywordInput: React.FC<KeywordInputProps> = ({ onKeywordChange }) => {
-  const [inputValue, setInputValue] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
+const KeywordInput: React.FC<KeywordInputProps> = ({ onSubmit }) => {
+  const [keyword, setKeyword] = useState("");
 
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setInputValue(event.target.value);
-    setErrorMessage("");
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setKeyword(e.target.value);
   };
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const keyword = inputValue.trim();
-
-    if (keyword === "") {
-      setErrorMessage("Please enter a keyword or topic.");
-      return;
-    }
-
-    try {
-      await onKeywordChange(keyword);
-      setInputValue("");
-    } catch (error) {
-      console.error("Error generating mind map:", error);
-      setErrorMessage("Failed to generate mind map. Please try again.");
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (keyword.trim()) {
+      onSubmit(keyword.trim());
+      setKeyword("");
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex items-center mb-4">
+    <form onSubmit={handleSubmit} className="flex">
       <input
         type="text"
-        value={inputValue}
-        onChange={handleInputChange}
-        placeholder="Enter a keyword or topic"
-        className="border border-gray-300 rounded px-4 py-2 mr-2"
+        value={keyword}
+        onChange={handleChange}
+        placeholder="Enter a keyword..."
+        className="flex-grow px-4 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
-      <button type="submit" className="btn-primary">
-        Generate Mind Map
+      <button
+        type="submit"
+        className="px-4 py-2 bg-blue-500 text-white font-semibold rounded-r-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
+        Generate
       </button>
-      {errorMessage && <p className="text-red-500 mt-2">{errorMessage}</p>}
     </form>
   );
 };
