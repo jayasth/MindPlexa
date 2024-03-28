@@ -1,12 +1,16 @@
 // src/utils/analytics.ts
-export const trackEvent = (event: string, properties?: any) => {
-  // Implement logic to track events using your preferred analytics service
-  // Example using Google Analytics:
-  // window.gtag("event", event, properties);
+
+import ReactGA from "react-ga";
+
+export const initGA = () => {
+  ReactGA.initialize("YOUR_TRACKING_ID");
 };
 
-export const trackPageView = (url: string) => {
-  // Implement logic to track page views using your preferred analytics service
-  // Example using Google Analytics:
-  // window.gtag("config", "GA_TRACKING_ID", { page_path: url });
+export const logPageView = () => {
+  ReactGA.set({ page: window.location.pathname });
+  ReactGA.pageview(window.location.pathname);
+};
+
+export const logEvent = (category: string, action: string) => {
+  ReactGA.event({ category, action });
 };

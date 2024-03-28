@@ -25,13 +25,13 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
     }
   } else if (req.method === "POST") {
     try {
-      const { idea } = req.body;
+      const { title, description } = req.body;
       // Save the idea to the database or perform any necessary processing
       // Example:
       const savedIdea = {
         id: "123",
-        title: idea.name || "Untitled Idea",
-        description: JSON.stringify(idea),
+        title: title || "Untitled Idea",
+        description: description || "",
       };
 
       res.status(201).json(savedIdea);

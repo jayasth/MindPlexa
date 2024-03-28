@@ -5,7 +5,7 @@ let socket: Socket | null = null;
 
 export const initSocket = () => {
   if (!socket) {
-    socket = io("http://localhost:3000", {
+    socket = io("http://localhost:3001", {
       transports: ["websocket"],
       autoConnect: false,
     });
@@ -19,16 +19,12 @@ export const initSocket = () => {
     });
 
     // Add event listeners for BrainstormBuddy
-    socket.on("brainstormingSessionCreated", (session: any) => {
-      // Handle new brainstorming session created event
+    socket.on("newIdea", (idea: any) => {
+      // Handle new idea event
     });
 
-    socket.on("ideaGenerated", (idea: any) => {
-      // Handle new idea generated event
-    });
-
-    socket.on("collaborationMessage", (message: any) => {
-      // Handle new collaboration message event
+    socket.on("ideaVoted", (updatedIdea: any) => {
+      // Handle idea voted event
     });
 
     // Add more event listeners as needed

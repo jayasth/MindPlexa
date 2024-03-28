@@ -33,12 +33,30 @@ export const deleteIdea = async (ideaId: string) => {
 export const createIdea = async (idea: {
   title: string;
   description: string;
+  tags: string[];
 }) => {
   try {
     const response = await axios.post("/api/ideas", idea);
     return response.data;
   } catch (error) {
     console.error("Error creating idea:", error);
+    throw error;
+  }
+};
+
+export const updateIdea = async (
+  ideaId: string,
+  updatedIdea: {
+    title: string;
+    description: string;
+    tags: string[];
+  }
+) => {
+  try {
+    const response = await axios.put(`/api/ideas/${ideaId}`, updatedIdea);
+    return response.data;
+  } catch (error) {
+    console.error("Error updating idea:", error);
     throw error;
   }
 };

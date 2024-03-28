@@ -1,13 +1,37 @@
 // src/components/Dashboard/InsightsWidget.tsx
-import React from "react";
+
+import React, { useState, useEffect } from "react";
+import { getUserInsights } from "../../api/insightsApi";
 
 const InsightsWidget: React.FC = () => {
-  // Fetch insights data from API or database
+  const [insights, setInsights] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchInsights = async () => {
+      const insightsData = await getUserInsights();
+      setInsights(insightsData);
+    };
+
+    fetchInsights();
+  }, []);
+
+  if (!insights) {
+    return <div>Loading insights...</div>;
+  }
 
   return (
-    <div>
+    <div className="p-4">
       <h2 className="text-xl font-semibold mb-4">Insights</h2>
-      {/* Render insights data */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="bg-white p-4 rounded-md shadow">
+          <p className="text-gray-600 font-semibold">Total Ideas</p>
+          <p className="text-3xl font-bold">{insights.totalIdeas}</p>
+        </div>
+        <div className="bg-white p-4 rounded-md shadow">
+          <p className="text-gray-600 font-semibold">Brainstorming Sessions</p>
+          <p className="text-3xl font-bold">{insights.brainstormingSessions}</p>
+        </div>
+      </div>
     </div>
   );
 };

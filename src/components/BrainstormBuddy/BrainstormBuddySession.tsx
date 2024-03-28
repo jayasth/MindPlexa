@@ -1,8 +1,8 @@
 // src/components/BrainstormBuddy/BrainstormBuddySession.tsx
+
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { io, Socket } from "socket.io-client";
-import { getSocket, initSocket } from "../../lib/socket";
 import { FiThumbsUp, FiSend } from "react-icons/fi";
 import {
   getSessionById,
@@ -20,7 +20,18 @@ const BrainstormBuddySession: React.FC = () => {
   const [socket, setSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
-    const newSocket = io("/brainstorming");
+    const fetchSession = async () => {
+      if (sessionId) {
+        const sessionData = await getSessionById(sessionId as string);
+        setSession(sessionData);
+      }
+    };
+
+    fetchSession();
+  }, [sessionId]);
+
+  useEffect(() => {
+    const newSocket = io("http://localhost:3001");
     setSocket(newSocket);
 
     newSocket.on("newIdea", (idea: any) => {
@@ -44,61 +55,26 @@ const BrainstormBuddySession: React.FC = () => {
     };
   }, []);
 
-  useEffect(() => {
-    if (socket) {
-      socket.on("idea", (idea: any) => {
-        setSession((prevSession: any) => ({
-          ...prevSession,
-          ideas: [...prevSession.ideas, idea],
-        }));
-      });
-
-      socket.on("vote", (ideaId: string) => {
-        setSession((prevSession: any) => ({
-          ...prevSession,
-          ideas: prevSession.ideas.map((idea: any) =>
-            idea.id === ideaId ? { ...idea, votes: idea.votes + 1 } : idea
-          ),
-        }));
-      });
-
-      socket.on("delete", (ideaId: string) => {
-        setSession((prevSession: any) => ({
-          ...prevSession,
-          ideas: prevSession.ideas.filter((idea: any) => idea.id !== ideaId),
-        }));
-      });
-    }
-  }, [socket]);
-
-  useEffect(() => {
-    const fetchSession = async () => {
-      if (sessionId) {
-        const sessionData = await getSessionById(sessionId as string);
-        setSession(sessionData);
-      }
-    };
-
-    fetchSession();
-  }, [sessionId]);
-
   const handleIdeaSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newIdea.trim()) {
       const idea = await addIdeaToSession(sessionId as string, newIdea.trim());
-      socket?.emit("idea", idea);
+      socket?.emit("newIdea", idea);
       setNewIdea("");
     }
   };
 
   const handleVote = async (ideaId: string) => {
     await voteOnIdea(sessionId as string, ideaId, "up");
-    socket?.emit("vote", ideaId);
+    socket?.emit("ideaVoted", ideaId);
   };
 
   const handleDeleteIdea = async (ideaId: string) => {
     await deleteIdeaFromSession(sessionId as string, ideaId);
-    socket?.emit("delete", ideaId);
+    setSession((prevSession: any) => ({
+      ...prevSession,
+      ideas: prevSession.ideas.filter((idea: any) => idea.id !== ideaId),
+    }));
   };
 
   const handleSaveToVault = async () => {
@@ -124,13 +100,21 @@ const BrainstormBuddySession: React.FC = () => {
         {session.ideas.map((idea: any) => (
           <div key={idea.id} className="mb-4 p-4 bg-white rounded shadow">
             <p>{idea.content}</p>
-            <button
-              onClick={() => handleVote(idea.id)}
-              className="mt-2 px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none"
-            >
-              <FiThumbsUp className="inline-block mr-1" />
-              Upvote ({idea.votes})
-            </button>
+            <div className="flex justify-between items-center mt-2">
+              <button
+                onClick={() => handleVote(idea.id)}
+                className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none"
+              >
+                <FiThumbsUp className="inline-block mr-1" />
+                Upvote ({idea.votes})
+              </button>
+              <button
+                onClick={() => handleDeleteIdea(idea.id)}
+                className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 focus:outline-none"
+              >
+                Delete
+              </button>
+            </div>
           </div>
         ))}
       </div>
