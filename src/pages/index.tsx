@@ -1,11 +1,12 @@
 // src/pages/index.tsx
-
 import React, { useEffect, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
 import Layout from "../components/layout";
 import AgentCard from "../components/AgentCard";
 import agents from "../data/agents";
 import OnboardingTutorial from "../components/Onboarding/OnboardingTutorial";
+import OnboardingModal from "../components/Onboarding/OnboardingModal";
+import Link from "next/link";
 
 const Home: React.FC = () => {
   const [session, setSession] = useState<any>(null);
@@ -40,7 +41,27 @@ const Home: React.FC = () => {
   }
 
   if (!session) {
-    return <OnboardingTutorial />;
+    return (
+      <Layout>
+        <div className="text-center">
+          <h1 className="text-4xl font-heading mb-8">Welcome to MindPlexa!</h1>
+          <p className="text-xl mb-12">
+            Explore our collection of AI-powered agents to boost your
+            productivity.
+          </p>
+          <div className="flex justify-center space-x-4">
+            <Link href="/signup">
+              <span className="btn-primary">Sign Up</span>
+            </Link>
+            <Link href="/login">
+              <span className="btn-secondary">Log In</span>
+            </Link>
+          </div>
+        </div>
+        <OnboardingTutorial />
+        <OnboardingModal />
+      </Layout>
+    );
   }
 
   return (

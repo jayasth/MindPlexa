@@ -1,6 +1,8 @@
 // src/components/BrainstormBuddy/BrainstormBuddySession.tsx
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
+import { io, Socket } from "socket.io-client";
+import { getSocket, initSocket } from "../../lib/socket";
 import { FiThumbsUp, FiSend } from "react-icons/fi";
 import {
   getSessionById,
@@ -9,7 +11,6 @@ import {
   deleteIdeaFromSession,
 } from "../../api/brainstormingApi";
 import { saveIdeaToVault } from "../../api/ideaVaultApi";
-import { io, Socket } from "socket.io-client";
 
 const BrainstormBuddySession: React.FC = () => {
   const router = useRouter();
@@ -21,6 +22,22 @@ const BrainstormBuddySession: React.FC = () => {
   useEffect(() => {
     const newSocket = io("/brainstorming");
     setSocket(newSocket);
+
+    newSocket.on("newIdea", (idea: any) => {
+      setSession((prevSession: any) => ({
+        ...prevSession,
+        ideas: [...prevSession.ideas, idea],
+      }));
+    });
+
+    newSocket.on("ideaVoted", (updatedIdea: any) => {
+      setSession((prevSession: any) => ({
+        ...prevSession,
+        ideas: prevSession.ideas.map((idea: any) =>
+          idea.id === updatedIdea.id ? updatedIdea : idea
+        ),
+      }));
+    });
 
     return () => {
       newSocket.disconnect();

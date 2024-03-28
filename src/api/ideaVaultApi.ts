@@ -29,3 +29,16 @@ export const deleteIdea = async (ideaId: string) => {
     throw error;
   }
 };
+
+export const createIdea = async (idea: {
+  title: string;
+  description: string;
+}) => {
+  try {
+    const response = await axios.post("/api/ideas", idea);
+    return response.data;
+  } catch (error) {
+    console.error("Error creating idea:", error);
+    throw error;
+  }
+};
