@@ -1,94 +1,36 @@
+// src/features/IdeaMapper/components/Toolbar.tsx
 import React from "react";
-import {
-  FiPlus,
-  FiRotateCcw,
-  FiDownload,
-  FiRotateCw,
-  FiGrid,
-  FiTrash2,
-  FiEdit,
-  FiLink,
-  FiScissors,
-} from "react-icons/fi";
-import { Edge } from "reactflow";
+import { FiSave, FiTrash2, FiDownload } from "react-icons/fi";
 
 interface ToolbarProps {
-  onAddNode: (label: string) => void;
-  onDeleteNode: (nodeId: string) => void;
-  onEditNode: (nodeId: string, label: string) => void;
-  onAddEdge: (newEdge: Edge) => void;
-  onDeleteEdge: (edgeId: string) => void;
-  onUndo: () => void;
-  onRedo: () => void;
+  onSave: () => void;
+  onDelete: () => void;
   onExport: () => void;
-  onAutoArrange: () => void;
-  onSaveToVault: () => Promise<void>;
 }
 
-const Toolbar: React.FC<ToolbarProps> = ({
-  onAddNode,
-  onDeleteNode,
-  onEditNode,
-  onAddEdge,
-  onDeleteEdge,
-  onUndo,
-  onRedo,
-  onExport,
-  onAutoArrange,
-}) => {
-  const handleAddNode = () => {
-    const label = prompt("Enter node label:");
-    if (label) {
-      onAddNode(label);
-    }
-  };
-
+const Toolbar: React.FC<ToolbarProps> = ({ onSave, onDelete, onExport }) => {
   return (
-    <div className="flex flex-col space-y-2">
-      <button onClick={handleAddNode} title="Add Node">
-        <FiPlus />
+    <div className="flex space-x-2">
+      <button
+        onClick={onSave}
+        className="text-blue-500 hover:text-blue-700"
+        title="Save"
+      >
+        <FiSave size={20} />
       </button>
       <button
-        onClick={() => onDeleteNode("selected-node-id")}
-        title="Delete Node"
+        onClick={onDelete}
+        className="text-red-500 hover:text-red-700"
+        title="Delete"
       >
-        <FiTrash2 />
+        <FiTrash2 size={20} />
       </button>
       <button
-        onClick={() => onEditNode("selected-node-id", "Updated Label")}
-        title="Edit Node"
+        onClick={onExport}
+        className="text-green-500 hover:text-green-700"
+        title="Export"
       >
-        <FiEdit />
-      </button>
-      <button
-        onClick={() =>
-          onAddEdge({
-            id: "new-edge-id",
-            source: "source-node-id",
-            target: "target-node-id",
-          })
-        }
-        title="Add Edge"
-      >
-        <FiLink />
-      </button>
-      <button
-        onClick={() => onDeleteEdge("selected-edge-id")}
-        title="Delete Edge"
-      >
-        <FiScissors />
-      </button>
-      <button onClick={onUndo} title="Undo">
-        <FiRotateCcw />
-      </button>
-      <button onClick={onRedo} title="Redo">
-        <FiRotateCw />
-      </button>
-      <button onClick={onAutoArrange} title="Auto Arrange">
-        <FiGrid />
-      </button>
-      <button onClick={onExport} title="Export">
-        <FiDownload />
+        <FiDownload size={20} />
       </button>
     </div>
   );

@@ -1,40 +1,50 @@
-// src/components/IdeaMapper/KeywordInput.tsx
-
+// src/features/IdeaMapper/components/KeywordInput.tsx
 import React, { useState } from "react";
+import { useNodesState } from "reactflow";
 
-interface KeywordInputProps {
-  onSubmit: (keyword: string) => void;
-}
-
-const KeywordInput: React.FC<KeywordInputProps> = ({ onSubmit }) => {
+const KeywordInput: React.FC = () => {
   const [keyword, setKeyword] = useState("");
+  const [nodes, setNodes] = useNodesState([]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setKeyword(e.target.value);
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (keyword.trim()) {
-      onSubmit(keyword.trim());
-      setKeyword("");
+      try {
+        const response = await fetch("/api/generate-nodes", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ keyword }),
+        });
+
+        if (response.ok) {
+          const generatedNodes = await response.json();
+          setNodes((prevNodes) => [...prevNodes, ...generatedNodes]);
+          setKeyword("");
+        } else {
+          console.error("Error generating nodes:", response.statusText);
+        }
+      } catch (error) {
+        console.error("Error generating nodes:", error);
+      }
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex">
+    <form onSubmit={handleSubmit}>
       <input
         type="text"
         value={keyword}
-        onChange={handleChange}
-        placeholder="Enter a keyword..."
-        className="flex-grow px-4 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        onChange={(e) => setKeyword(e.target.value)}
+        placeholder="Enter a keyword"
+        className="border border-gray-300 rounded px-4 py-2 w-full"
       />
       <button
         type="submit"
-        className="px-4 py-2 bg-blue-500 text-white font-semibold rounded-r-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="bg-blue-500 text-white rounded px-4 py-2 mt-2"
       >
-        Generate
+        Generate Mindmap
       </button>
     </form>
   );

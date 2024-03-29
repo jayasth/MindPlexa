@@ -1,22 +1,16 @@
-// tailwind.config.ts
-
 import { Config } from "tailwindcss";
 
 export default {
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx}",
-    "./src/components/**/*.{js,ts,jsx,tsx}",
+    "./src/features/**/*.{js,ts,jsx,tsx}",
   ],
+  darkMode: ["class"],
   theme: {
     extend: {
       colors: {
         primary: "#2D9CDB",
         secondary: "#F2C94C",
-        accent: "#9B51E0",
-        muted: "#9E9E9E",
-        success: "#27AE60",
-        warning: "#F2994A",
-        error: "#EB5757",
         background: "#F4F4F4",
         text: "#575757",
         "subtle-text": "#4F4F4F",
@@ -28,18 +22,25 @@ export default {
         "light-alabaster": "#FAFAFA",
         "dark-cadet-blue": "#4A707A",
         "light-tuscany": "#F0D6C2",
-      },
-      gradientColorStops: {
-        "primary-start": "#5E8D93",
-        "primary-end": "#4A707A",
-        "secondary-start": "#E0B894",
-        "secondary-end": "#C79D7D",
+        border: "#E2E8F0",
+        input: "#F7FAFC",
+        ring: "#CBD5E0",
+        card: "#FFFFFF",
+        popover: "#F7FAFC",
       },
       fontFamily: {
         heading: ["Poppins", "sans-serif"],
         body: ["Open Sans", "sans-serif"],
       },
+      borderRadius: {
+        lg: "0.5rem",
+        md: "0.375rem",
+        sm: "0.25rem",
+      },
+      boxShadow: {
+        card: "0px 4px 6px -1px rgba(0, 0, 0, 0.1), 0px 2px 4px -2px rgba(0, 0, 0, 0.05)",
+      },
     },
   },
-  plugins: [require("@tailwindcss/forms")],
+  plugins: [require("@tailwindcss/forms"), require("tailwindcss-animate")],
 } as Config;

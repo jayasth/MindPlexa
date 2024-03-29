@@ -1,70 +1,81 @@
-/* src/styles/globals.css */
-/* globals.css */
 @import url("https://fonts.googleapis.com/css2?family=Open+Sans&family=Poppins:wght@600&display=swap");
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-body {
-  @apply bg-alabaster text-sonic-silver font-body;
+@layer components {
+  .text-foreground {
+    color: #575757; /* Replace with the color you want */
+  }
 }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  @apply font-heading;
-}
+@layer base {
+  :root {
+    --background: #f4f4f4;
+    --foreground: #575757;
+    --primary: #2d9cdb;
+    --secondary: #f2c94c;
+  }
 
-.btn-primary {
-  @apply bg-gradient-to-br from-primary-start to-primary-end text-white py-2 px-4 rounded;
-}
+  body {
+    @apply bg-background text-foreground font-body;
+  }
 
-.btn-primary:hover {
-  @apply from-dark-cadet-blue to-cadet-blue;
-}
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-heading;
+  }
 
-.btn-secondary {
-  @apply bg-gradient-to-br from-secondary-start to-secondary-end text-white py-2 px-4 rounded;
-}
+  .btn-primary {
+    @apply bg-primary text-white py-2 px-4 rounded-md;
+  }
 
-.btn-secondary:hover {
-  @apply from-tuscany to-light-tuscany;
-}
+  .btn-primary:hover {
+    @apply bg-dark-cadet-blue;
+  }
 
-.canvas {
-  @apply bg-white p-4 rounded shadow;
-}
+  .btn-secondary {
+    @apply bg-secondary text-white py-2 px-4 rounded-md;
+  }
 
-.feature-card {
-  @apply bg-gradient-to-br from-alabaster to-light-alabaster p-4 rounded shadow cursor-pointer transition-colors duration-200;
-}
+  .btn-secondary:hover {
+    @apply bg-light-tuscany;
+  }
 
-.feature-card:hover {
-  @apply from-cadet-blue to-dark-cadet-blue text-white;
-}
+  .canvas {
+    @apply bg-white p-4 rounded-lg shadow-card;
+  }
 
-.pricing-card {
-  @apply bg-white p-6 rounded shadow;
-}
+  .feature-card,
+  .pricing-card {
+    @apply bg-card p-4 rounded-lg shadow-card cursor-pointer transition-all duration-200;
+  }
 
-.pricing-card-header {
-  @apply text-jet font-heading text-2xl mb-4;
-}
+  .feature-card:hover,
+  .pricing-card:hover {
+    @apply bg-dark-cadet-blue text-white;
+  }
 
-.pricing-card-price {
-  @apply text-cadet-blue font-heading text-4xl mb-4;
-}
+  .pricing-card-header {
+    @apply text-jet font-heading text-2xl mb-4;
+  }
 
-.pricing-card-features {
-  @apply text-sonic-silver mb-4;
-}
+  .pricing-card-price {
+    @apply text-primary font-heading text-4xl mb-4;
+  }
 
-.pricing-card-button {
-  @apply btn-primary;
+  .pricing-card-features {
+    @apply text-foreground mb-4;
+  }
+
+  .pricing-card-button {
+    @apply btn-primary;
+  }
 }
 
 /* Hide the attribution from React Flow library */

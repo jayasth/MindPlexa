@@ -1,27 +1,44 @@
 // src/pages/api/generate-nodes.ts
 import type { NextApiRequest, NextApiResponse } from "next";
+import { OpenAI } from "openai";
+
+const openai = new OpenAI({ apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY });
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method === "POST") {
-    const { keyword } = req.body;
+    const { keyword } = req.body as { keyword: string };
 
     try {
-      // Make an API request to OpenAI or any other AI service to generate related nodes based on the keyword
-      const generatedNodes = [
-        // Example generated nodes
-        {
-          id: "generated-1",
+      const response = await openai.chat.completions.create({
+        model: "gpt-3.5-turbo",
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are an AI assistant that generates related keywords for a given topic.",
+          },
+          {
+            role: "user",
+            content: `Generate a list of related keywords for the following topic: ${keyword}`,
+          },
+        ],
+        max_tokens: 100,
+        n: 1,
+        stop: null,
+        temperature: 0.8,
+      });
+
+      // Updated line
+      const generatedKeywords =
+        response.choices[0].message?.content?.trim().split("\n") || [];
+      const generatedNodes = generatedKeywords.map(
+        (keyword: string, index: number) => ({
+          id: `node-${index}`,
           type: "custom",
-          data: { label: "Generated Node 1", color: "#FF6B6B" },
-          position: { x: 100, y: 200 },
-        },
-        {
-          id: "generated-2",
-          type: "custom",
-          data: { label: "Generated Node 2", color: "#4ECDC4" },
-          position: { x: 300, y: 200 },
-        },
-      ];
+          data: { label: keyword },
+          position: { x: 0, y: 0 },
+        })
+      );
 
       res.status(200).json(generatedNodes);
     } catch (error) {
