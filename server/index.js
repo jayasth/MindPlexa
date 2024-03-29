@@ -19,9 +19,6 @@ app.use(cors());
 io.on("connection", (socket) => {
   console.log("A user connected");
 
-  // Debug message
-  console.log("Client connected from: ", socket.handshake.address);
-
   // Event listeners
   socket.on("newIdea", (idea) => {
     // Broadcast the new idea to all connected clients
@@ -33,7 +30,7 @@ io.on("connection", (socket) => {
     io.emit("ideaVoted", updatedIdea);
   });
 
-  // Add more event listeners as needed
+  // Add more event listeners as needed for other features like comments, etc.
 
   socket.on("disconnect", () => {
     console.log("A user disconnected");

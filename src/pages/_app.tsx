@@ -3,6 +3,7 @@ import type { AppProps } from "next/app";
 import { useEffect } from "react";
 import { initGA, logPageView } from "../utils/analytics";
 import "../styles/globals.css";
+import "../styles/IdeaMapperCanvasInner.css";
 
 function MyApp({ Component, pageProps }: AppProps) {
   useEffect(() => {

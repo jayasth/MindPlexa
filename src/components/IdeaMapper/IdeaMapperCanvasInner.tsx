@@ -47,7 +47,6 @@ const IdeaMapperCanvasInner: React.FC<IdeaMapperCanvasInnerProps> = ({
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [nodeStyle, setNodeStyle] = useState<{ backgroundColor?: string }>({});
   const [edgeStyle, setEdgeStyle] = useState<{ stroke?: string }>({});
-
   const [history, setHistory] = useState<{ nodes: Node[]; edges: Edge[] }[]>(
     []
   );
@@ -55,8 +54,7 @@ const IdeaMapperCanvasInner: React.FC<IdeaMapperCanvasInnerProps> = ({
     { nodes: Node[]; edges: Edge[] }[]
   >([]);
 
-  const { project } = useReactFlow();
-
+  const { project, zoomIn, zoomOut } = useReactFlow();
   const router = useRouter();
 
   const handleSaveToVault = useCallback(async () => {
@@ -125,6 +123,33 @@ const IdeaMapperCanvasInner: React.FC<IdeaMapperCanvasInnerProps> = ({
     setNodes((nds) => nds.concat(newNode));
   };
 
+  const handleDeleteNode = (nodeId: string) => {
+    setHistory([...history, { nodes, edges }]);
+    setNodes((nds) => nds.filter((node) => node.id !== nodeId));
+    setEdges((eds) =>
+      eds.filter((edge) => edge.source !== nodeId && edge.target !== nodeId)
+    );
+  };
+
+  const handleEditNode = (nodeId: string, label: string) => {
+    setHistory([...history, { nodes, edges }]);
+    setNodes((nds) =>
+      nds.map((node) =>
+        node.id === nodeId ? { ...node, data: { ...node.data, label } } : node
+      )
+    );
+  };
+
+  const handleAddEdge = (newEdge: Edge) => {
+    setHistory([...history, { nodes, edges }]);
+    setEdges((eds) => addEdge(newEdge, eds));
+  };
+
+  const handleDeleteEdge = (edgeId: string) => {
+    setHistory([...history, { nodes, edges }]);
+    setEdges((eds) => eds.filter((edge) => edge.id !== edgeId));
+  };
+
   const handleUndo = () => {
     if (history.length === 0) return;
     const previousState = history[history.length - 1];
@@ -149,14 +174,6 @@ const IdeaMapperCanvasInner: React.FC<IdeaMapperCanvasInnerProps> = ({
     setEdges([]);
   };
 
-  const handleZoomIn = () => {
-    reactFlowRef.current?.zoomIn();
-  };
-
-  const handleZoomOut = () => {
-    reactFlowRef.current?.zoomOut();
-  };
-
   const handleAutoArrange = () => {
     // Implement auto-arrange logic here
   };
@@ -176,9 +193,9 @@ const IdeaMapperCanvasInner: React.FC<IdeaMapperCanvasInnerProps> = ({
   };
 
   return (
-    <div className="flex h-screen">
-      <div className="w-16 bg-white p-2">
-        <div className="flex flex-col space-y-2">
+    <div className="flex-container">
+      <div className="sidebar">
+        <div className="toolbar">
           <StylePanel
             onNodeStyleChange={handleNodeStyleChange}
             onEdgeStyleChange={handleEdgeStyleChange}
@@ -187,19 +204,20 @@ const IdeaMapperCanvasInner: React.FC<IdeaMapperCanvasInnerProps> = ({
           <Toolbar
             onSaveToVault={handleSaveToVault}
             onAddNode={handleAddNode}
+            onDeleteNode={handleDeleteNode}
+            onEditNode={handleEditNode}
+            onAddEdge={handleAddEdge}
+            onDeleteEdge={handleDeleteEdge}
             onUndo={handleUndo}
             onRedo={handleRedo}
             onExport={handleExport}
-            onDelete={handleDelete}
-            onZoomIn={handleZoomIn}
-            onZoomOut={handleZoomOut}
             onAutoArrange={handleAutoArrange}
           />
         </div>
       </div>
-      <div className="flex-grow bg-gray-100">
+      <div className="flex-grow">
         <ReactFlowProvider>
-          <div className="flex flex-col h-full">
+          <div className="flex-container flex-direction-column">
             <div className="p-4">
               <KeywordInput onSubmit={handleKeywordSubmit} />
             </div>
@@ -219,6 +237,8 @@ const IdeaMapperCanvasInner: React.FC<IdeaMapperCanvasInnerProps> = ({
                 }}
                 fitView
                 attributionPosition="top-right"
+                minZoom={0.2}
+                maxZoom={2}
               >
                 <Background color="#aaa" gap={16} />
                 <Controls />

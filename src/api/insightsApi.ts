@@ -8,6 +8,6 @@ export const getUserInsights = async () => {
     return response.data;
   } catch (error) {
     console.error("Error fetching user insights:", error);
-    throw error;
+    throw error; // Throw the error to be caught in the component
   }
 };

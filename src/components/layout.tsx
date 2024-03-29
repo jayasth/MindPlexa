@@ -4,6 +4,7 @@ import React, { ReactNode } from "react";
 import Link from "next/link";
 import { useUser } from "../utils/useUser";
 import { supabase } from "../utils/supabaseClient";
+import SearchBar from "./SearchBar";
 
 interface LayoutProps {
   children: ReactNode;
@@ -56,6 +57,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 </span>
               </Link>
             </li>
+            <li>
+              <Link href="/account-settings">
+                <span className="text-blue-500 hover:text-blue-600 cursor-pointer">
+                  Account Settings
+                </span>
+              </Link>
+            </li>
+            <SearchBar />
             {user && (
               <li>
                 <button

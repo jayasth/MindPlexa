@@ -5,15 +5,25 @@ import { getUserInsights } from "../../api/insightsApi";
 
 const InsightsWidget: React.FC = () => {
   const [insights, setInsights] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchInsights = async () => {
-      const insightsData = await getUserInsights();
-      setInsights(insightsData);
+      try {
+        const insightsData = await getUserInsights();
+        setInsights(insightsData);
+      } catch (error) {
+        console.error("Error fetching user insights:", error);
+        setError("Failed to fetch insights.");
+      }
     };
 
     fetchInsights();
   }, []);
+
+  if (error) {
+    return <div className="p-4 bg-red-100 text-red-800 rounded">{error}</div>;
+  }
 
   if (!insights) {
     return <div>Loading insights...</div>;

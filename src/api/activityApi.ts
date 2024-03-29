@@ -1,23 +1,18 @@
-// src/pages/api/activity.ts
+// src/api/activityApi.ts
 
-import type { NextApiRequest, NextApiResponse } from "next";
+import { supabase } from "../utils/supabaseClient";
 
-const handler = async (req: NextApiRequest, res: NextApiResponse) => {
-  if (req.method === "GET") {
-    try {
-      // Fetch user activity data from the database or analytics service
-      const activityData: never[] = [
-        // ... (placeholder activity data)
-      ];
+export const getUserActivity = async () => {
+  try {
+    let { data: activities, error } = await supabase
+      .from("activities")
+      .select("*");
 
-      res.status(200).json(activityData);
-    } catch (error) {
-      console.error("Error fetching user activity:", error);
-      res.status(500).json({ message: "Error fetching user activity" });
-    }
-  } else {
-    res.status(405).json({ message: "Method not allowed" });
+    if (error) throw error;
+
+    return activities || [];
+  } catch (error) {
+    console.error("Error fetching user activity:", error);
+    return [];
   }
 };
-
-export default handler;
