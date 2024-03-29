@@ -2,7 +2,7 @@
 
 import React from "react";
 import Layout from "../../components/layout";
-import IdeaMapperCanvas from "../../components/IdeaMapper/IdeaMapperCanvas";
+import IdeaMapperCanvas from "../../features/IdeaMapper/components/IdeaMapperCanvas";
 
 const IdeaMapper: React.FC = () => {
   return (

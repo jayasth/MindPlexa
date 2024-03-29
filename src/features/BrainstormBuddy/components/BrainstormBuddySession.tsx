@@ -9,8 +9,8 @@ import {
   addIdeaToSession,
   voteOnIdea,
   deleteIdeaFromSession,
-} from "../../api/brainstormingApi";
-import { saveIdeaToVault } from "../../api/ideaVaultApi";
+} from "../../../api/brainstormingApi";
+import { saveIdeaToVault } from "../../../api/ideaVaultApi";
 
 const BrainstormBuddySession: React.FC = () => {
   const router = useRouter();

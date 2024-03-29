@@ -2,8 +2,8 @@
 
 import React from "react";
 import Layout from "../../components/layout";
-import BrainstormBuddySessionCreator from "../../components/BrainstormBuddy/BrainstormBuddySessionCreator";
-import BrainstormBuddySession from "../../components/BrainstormBuddy/BrainstormBuddySession";
+import BrainstormBuddySessionCreator from "../../features/BrainstormBuddy/components/BrainstormBuddySessionCreator";
+import BrainstormBuddySession from "../../features/BrainstormBuddy/components/BrainstormBuddySession";
 
 const BrainstormBuddy: React.FC = () => {
   return (

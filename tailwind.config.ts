@@ -12,6 +12,11 @@ export default {
       colors: {
         primary: "#2D9CDB",
         secondary: "#F2C94C",
+        accent: "#9B51E0",
+        muted: "#9E9E9E",
+        success: "#27AE60",
+        warning: "#F2994A",
+        error: "#EB5757",
         background: "#F4F4F4",
         text: "#575757",
         "subtle-text": "#4F4F4F",

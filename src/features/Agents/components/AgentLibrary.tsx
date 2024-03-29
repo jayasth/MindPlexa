@@ -2,7 +2,7 @@
 
 import React from "react";
 import AgentCard from "./AgentCard";
-import agents from "../data/agents"; // Import the agents data
+import agents from "../../../data/agents"; // Import the agents data
 
 const AgentLibrary: React.FC = () => {
   return (

@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "../utils/supabaseClient";
 import Layout from "../components/layout";
-import AgentCard from "../components/AgentCard";
+import AgentCard from "../features/Agents/components/AgentCard";
 import agents from "../data/agents";
 import OnboardingTutorial from "../components/Onboarding/OnboardingTutorial";
 import OnboardingModal from "../components/Onboarding/OnboardingModal";

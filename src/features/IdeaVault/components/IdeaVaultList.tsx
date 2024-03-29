@@ -1,7 +1,7 @@
 // src/components/IdeaVault/IdeaVaultList.tsx
 
 import React, { useState, useEffect } from "react";
-import { getIdeasForUser } from "../../api/ideaVaultApi";
+import { getIdeasForUser } from "../../../api/ideaVaultApi";
 import { FiSearch, FiTag } from "react-icons/fi";
 
 const IdeaVaultList: React.FC = () => {

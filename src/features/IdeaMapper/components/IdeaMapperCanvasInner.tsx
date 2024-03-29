@@ -28,7 +28,7 @@ import CustomEdge from "./CustomEdge";
 import Toolbar from "./Toolbar";
 import KeywordInput from "./KeywordInput";
 import StylePanel from "./StylePanel";
-import { saveIdeaToVault } from "../../api/ideaVaultApi";
+import { saveIdeaToVault } from "../../../api/ideaVaultApi";
 
 interface IdeaMapperCanvasInnerProps {
   onLoad: (instance: ReactFlowInstance) => void;

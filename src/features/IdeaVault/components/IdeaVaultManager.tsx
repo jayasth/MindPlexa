@@ -6,7 +6,7 @@ import {
   deleteIdea,
   createIdea,
   updateIdea,
-} from "../../api/ideaVaultApi";
+} from "../../../api/ideaVaultApi";
 import { FiSearch, FiPlus, FiTrash2, FiEdit2 } from "react-icons/fi";
 
 const IdeaVaultManager: React.FC = () => {
