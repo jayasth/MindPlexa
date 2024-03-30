@@ -7,6 +7,7 @@ import agents from "../data/agents";
 import OnboardingTutorial from "../components/Onboarding/OnboardingTutorial";
 import OnboardingModal from "../components/Onboarding/OnboardingModal";
 import Link from "next/link";
+import SupabaseTest from "../components/SupabaseTest";
 
 const Home: React.FC = () => {
   const [session, setSession] = useState<any>(null);
@@ -59,7 +60,6 @@ const Home: React.FC = () => {
           </div>
         </div>
         <OnboardingTutorial />
-        <OnboardingModal />
       </Layout>
     );
   }
@@ -84,6 +84,7 @@ const Home: React.FC = () => {
                 className="feature-card"
               />
             ))}
+          <SupabaseTest />
         </div>
       </div>
     </Layout>

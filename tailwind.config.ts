@@ -5,28 +5,24 @@ export default {
     "./src/pages/**/*.{js,ts,jsx,tsx}",
     "./src/features/**/*.{js,ts,jsx,tsx}",
   ],
-  darkMode: ["class"],
+  darkMode: "class", // Enable dark mode
   theme: {
     extend: {
       colors: {
-        primary: "#2D9CDB",
-        secondary: "#F2C94C",
-        background: "#F4F4F4",
-        text: "#575757",
-        "subtle-text": "#4F4F4F",
-        alabaster: "#F4F4F4",
-        "sonic-silver": "#575757",
-        "cadet-blue": "#5E8D93",
-        tuscany: "#E0B894",
-        jet: "#333333",
-        "light-alabaster": "#FAFAFA",
-        "dark-cadet-blue": "#4A707A",
-        "light-tuscany": "#F0D6C2",
-        border: "#E2E8F0",
-        input: "#F7FAFC",
-        ring: "#CBD5E0",
-        card: "#FFFFFF",
-        popover: "#F7FAFC",
+        // Light theme colors
+        light: {
+          background: "#F4F4F4",
+          text: "#575757",
+          primary: "#2d9cdb",
+          secondary: "#f2c94c",
+        },
+        // Dark theme colors
+        dark: {
+          background: "#1A202C",
+          text: "#CBD5E0",
+          primary: "#63b3ed",
+          secondary: "#f6ad55",
+        },
       },
       fontFamily: {
         heading: ["Poppins", "sans-serif"],

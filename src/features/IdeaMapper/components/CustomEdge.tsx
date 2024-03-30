@@ -1,5 +1,3 @@
-// src/components/IdeaMapper/CustomEdge.tsx
-
 import React, { memo } from "react";
 import { EdgeProps, getBezierPath } from "reactflow";
 
@@ -27,7 +25,11 @@ const CustomEdge: React.FC<EdgeProps> = ({
   return (
     <path
       id={id}
-      style={{ stroke: data.stroke, strokeWidth: 2, ...style }}
+      style={{
+        stroke: data.color || "#b1b1b7",
+        strokeWidth: data.width || 2,
+        ...style,
+      }}
       className="react-flow__edge-path"
       d={edgePath}
       markerEnd={markerEnd}

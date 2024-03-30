@@ -4,22 +4,9 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer components {
-  .text-foreground {
-    color: #575757; /* Replace with the color you want */
-  }
-}
-
 @layer base {
-  :root {
-    --background: #f4f4f4;
-    --foreground: #575757;
-    --primary: #2d9cdb;
-    --secondary: #f2c94c;
-  }
-
   body {
-    @apply bg-background text-foreground font-body;
+    @apply bg-light-background text-light-text font-body;
   }
 
   h1,
@@ -30,51 +17,12 @@
   h6 {
     @apply font-heading;
   }
+}
 
-  .btn-primary {
-    @apply bg-primary text-white py-2 px-4 rounded-md;
-  }
-
-  .btn-primary:hover {
-    @apply bg-dark-cadet-blue;
-  }
-
-  .btn-secondary {
-    @apply bg-secondary text-white py-2 px-4 rounded-md;
-  }
-
-  .btn-secondary:hover {
-    @apply bg-light-tuscany;
-  }
-
-  .canvas {
-    @apply bg-white p-4 rounded-lg shadow-card;
-  }
-
-  .feature-card,
-  .pricing-card {
-    @apply bg-card p-4 rounded-lg shadow-card cursor-pointer transition-all duration-200;
-  }
-
-  .feature-card:hover,
-  .pricing-card:hover {
-    @apply bg-dark-cadet-blue text-white;
-  }
-
-  .pricing-card-header {
-    @apply text-jet font-heading text-2xl mb-4;
-  }
-
-  .pricing-card-price {
-    @apply text-primary font-heading text-4xl mb-4;
-  }
-
-  .pricing-card-features {
-    @apply text-foreground mb-4;
-  }
-
-  .pricing-card-button {
-    @apply btn-primary;
+/* Dark mode styles */
+.dark {
+  body {
+    @apply bg-dark-background text-dark-text;
   }
 }
 

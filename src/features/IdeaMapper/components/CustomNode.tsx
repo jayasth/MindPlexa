@@ -1,21 +1,22 @@
-// src/features/IdeaMapper/components/CustomNode.tsx
 import React, { memo, useState, useCallback } from "react";
-import { Handle, Position, NodeProps } from "reactflow";
+import { Handle, Position, NodeProps as BaseNodeProps } from "reactflow";
 import { FiTrash2 } from "react-icons/fi";
 
-interface CustomNodeProps extends NodeProps {
-  onDelete: (nodeId: string) => void;
+interface NodeProps extends BaseNodeProps {
+  onDelete: (id: string) => void;
 }
 
-const CustomNode: React.FC<CustomNodeProps> = ({
+const CustomNode: React.FC<NodeProps> = ({
   data,
   isConnectable,
   id,
   selected,
   onDelete,
+  type,
 }) => {
   const [label, setLabel] = useState(data.label || "");
   const [color, setColor] = useState(data.color || "#FF6B6B");
+  const [fontSize, setFontSize] = useState(data.fontSize || 16);
 
   const handleLabelChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -31,24 +32,64 @@ const CustomNode: React.FC<CustomNodeProps> = ({
     []
   );
 
+  const handleFontSizeChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setFontSize(parseInt(e.target.value));
+    },
+    []
+  );
+
   const handleDelete = useCallback(() => {
     onDelete(id);
   }, [id, onDelete]);
 
+  if (type === "group") {
+    return (
+      <div
+        className={`bg-white rounded-lg shadow-md p-4 ${
+          selected ? "border-2 border-blue-500" : ""
+        }`}
+        style={{ backgroundColor: color }}
+      >
+        <input
+          type="text"
+          value={label}
+          onChange={handleLabelChange}
+          className="text-lg font-semibold border-none outline-none w-full mb-2"
+          style={{ fontSize: `${fontSize}px` }}
+        />
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-white rounded-lg shadow-md p-4">
+    <div
+      className={`bg-white rounded-lg shadow-md p-4 ${
+        selected ? "border-2 border-blue-500" : ""
+      }`}
+      style={{ backgroundColor: color }}
+    >
       <input
         type="text"
         value={label}
         onChange={handleLabelChange}
         className="text-lg font-semibold border-none outline-none w-full mb-2"
+        style={{ fontSize: `${fontSize}px` }}
       />
-      <input
-        type="color"
-        value={color}
-        onChange={handleColorChange}
-        className="w-full h-8 border-none outline-none"
-      />
+      <div className="flex items-center space-x-2">
+        <input
+          type="color"
+          value={color}
+          onChange={handleColorChange}
+          className="w-8 h-8 border-none outline-none"
+        />
+        <input
+          type="number"
+          value={fontSize}
+          onChange={handleFontSizeChange}
+          className="w-16 border border-gray-300 rounded px-2 py-1"
+        />
+      </div>
       <Handle
         type="target"
         position={Position.Top}

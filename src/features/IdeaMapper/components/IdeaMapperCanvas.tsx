@@ -1,4 +1,3 @@
-// src/features/IdeaMapper/components/IdeaMapperCanvas.tsx
 import React, { useCallback, useMemo } from "react";
 import ReactFlow, {
   ReactFlowProvider,
@@ -17,8 +16,13 @@ const IdeaMapperCanvas: React.FC = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
-  const nodeTypes = useMemo(() => ({ custom: CustomNode }), []);
-  const edgeTypes = useMemo(() => ({ custom: CustomEdge }), []);
+  // Wrap CustomNode and CustomEdge with React.memo
+  const MemoizedCustomNode = React.memo(CustomNode);
+  const MemoizedCustomEdge = React.memo(CustomEdge);
+
+  // Use the memoized components when defining nodeTypes and edgeTypes
+  const nodeTypes = useMemo(() => ({ custom: MemoizedCustomNode }), []);
+  const edgeTypes = useMemo(() => ({ custom: MemoizedCustomEdge }), []);
 
   const handleSave = useCallback(() => {
     localStorage.setItem("mindmap-nodes", JSON.stringify(nodes));
@@ -60,6 +64,18 @@ const IdeaMapperCanvas: React.FC = () => {
     }
   }, []);
 
+  const handleExportJSON = useCallback(() => {
+    const mindmap = { nodes, edges };
+    const json = JSON.stringify(mindmap, null, 2);
+    const blob = new Blob([json], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "mindmap.json";
+    link.click();
+    URL.revokeObjectURL(url);
+  }, [nodes, edges]);
+
   return (
     <div className="flex h-screen">
       <ReactFlowProvider>
@@ -68,6 +84,7 @@ const IdeaMapperCanvas: React.FC = () => {
             onSave={handleSave}
             onDelete={handleDelete}
             onExport={handleExport}
+            onExportJSON={handleExportJSON}
           />
         </div>
         <div className="w-4/5">
@@ -81,6 +98,8 @@ const IdeaMapperCanvas: React.FC = () => {
             onEdgesChange={onEdgesChange}
             nodeTypes={nodeTypes}
             edgeTypes={edgeTypes}
+            mindmapId="1" // Pass an empty string or provide a valid mindmapId
+            userId="test" // Pass an empty string or provide a valid userId
           />
         </div>
       </ReactFlowProvider>
