@@ -1,5 +1,5 @@
 // src/features/IdeaMapper/components/IdeaMapperCanvas.tsx
-import React, { useCallback, useState, useMemo } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import ReactFlow, {
   ReactFlowProvider,
   useNodesState,
@@ -7,62 +7,22 @@ import ReactFlow, {
   Node,
 } from "reactflow";
 import "reactflow/dist/style.css";
-import { FiMap, FiGitMerge, FiSquare } from "react-icons/fi";
 
 import CustomNode from "./CustomNode";
 import CustomEdge from "./CustomEdge";
-import TreeMindMap from "../mappers/TreeMindMap/TreeMindMap";
-import FlowChart from "../mappers/FlowChart/FlowChart";
-import VisualCanvas from "../mappers/VisualCanvas/VisualCanvas";
 import KeywordInput from "./KeywordInput";
 import Toolbar from "./Toolbar";
+import MapperOptions from "./MapperOptions";
+import MapperRenderer from "./MapperRenderer";
 
 const IdeaMapperCanvas: React.FC = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-  const [mapperType, setMapperType] = useState("tree");
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
-  const [isMapperSelectOpen, setIsMapperSelectOpen] = useState(false);
+  const [mapperType, setMapperType] = useState("tree");
 
-  // Wrap CustomNode and CustomEdge with React.memo
-  const MemoizedCustomNode = React.memo(CustomNode);
-  const MemoizedCustomEdge = React.memo(CustomEdge);
-
-  // Use the memoized components when defining nodeTypes and edgeTypes
-  const nodeTypes = useMemo(() => ({ custom: MemoizedCustomNode }), []);
-  const edgeTypes = useMemo(() => ({ custom: MemoizedCustomEdge }), []);
-
-  const handleSelectNode = useCallback((nodeId: string) => {
-    setSelectedNode(nodeId);
-  }, []);
-
-  const renderMapper = () => {
-    switch (mapperType) {
-      case "tree":
-        return <TreeMindMap />;
-      case "flow":
-        return <FlowChart />;
-      case "canvas":
-        return <VisualCanvas />;
-      default:
-        return null;
-    }
-  };
-
-  const toggleMapperSelect = () => {
-    setIsMapperSelectOpen((prevIsOpen) => !prevIsOpen);
-  };
-
-  const handleSelectMapperType = (type: string) => {
-    setMapperType(type);
-    setIsMapperSelectOpen(false);
-  };
-
-  const mapperIcons: Record<string, React.ReactNode> = {
-    tree: <FiMap />,
-    flow: <FiGitMerge />,
-    canvas: <FiSquare />,
-  };
+  const nodeTypes = useMemo(() => ({ custom: CustomNode }), []);
+  const edgeTypes = useMemo(() => ({ custom: CustomEdge }), []);
 
   const handleAddNode = useCallback(() => {
     const newNode: Node = {
@@ -74,7 +34,7 @@ const IdeaMapperCanvas: React.FC = () => {
     setNodes((prevNodes) => [...prevNodes, newNode]);
   }, [nodes, setNodes]);
 
-  const handleDelete = useCallback(() => {
+  const handleDeleteNode = useCallback(() => {
     if (selectedNode) {
       setNodes((prevNodes) =>
         prevNodes.filter((node) => node.id !== selectedNode)
@@ -88,68 +48,41 @@ const IdeaMapperCanvas: React.FC = () => {
     }
   }, [selectedNode, setNodes, setEdges]);
 
-  const handleSave = useCallback(() => {
-    localStorage.setItem("mindmap-nodes", JSON.stringify(nodes));
-    localStorage.setItem("mindmap-edges", JSON.stringify(edges));
-    alert("Mindmap saved successfully!");
-  }, [nodes, edges]);
-
-  React.useEffect(() => {
-    const savedNodes = JSON.parse(
-      localStorage.getItem("mindmap-nodes") || "[]"
-    );
-    const savedEdges = JSON.parse(
-      localStorage.getItem("mindmap-edges") || "[]"
-    );
-    setNodes(savedNodes);
-    setEdges(savedEdges);
-  }, [setNodes, setEdges]);
-
-  const handleExport = useCallback(() => {
-    const svg = document.querySelector(".react-flow__renderer") as SVGElement;
-    if (svg) {
-      const serializer = new XMLSerializer();
-      const source = serializer.serializeToString(svg);
-      const blob = new Blob([source], { type: "image/svg+xml" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = "mindmap.svg";
-      link.click();
-      URL.revokeObjectURL(url);
-    }
+  const handleSelectNode = useCallback((nodeId: string) => {
+    setSelectedNode(nodeId);
   }, []);
 
-  const handleExportJSON = useCallback(() => {
-    const mindmap = { nodes, edges };
-    const json = JSON.stringify(mindmap, null, 2);
-    const blob = new Blob([json], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "mindmap.json";
-    link.click();
-    URL.revokeObjectURL(url);
-  }, [nodes, edges]);
+  const handleMapperTypeChange = useCallback((type: string) => {
+    setMapperType(type);
+  }, []);
 
   return (
     <div className="flex h-screen">
       <ReactFlowProvider>
         <div className="w-1/5 bg-white p-4">
           <Toolbar
-            onSave={handleSave}
-            onDelete={handleDelete}
-            onExport={handleExport}
-            onExportJSON={handleExportJSON}
             onAddNode={handleAddNode}
-            onSelectMapperType={handleSelectMapperType}
+            onDeleteNode={handleDeleteNode}
+            onSelectNode={handleSelectNode}
+          />
+          <MapperOptions
+            selectedType={mapperType}
+            onTypeChange={handleMapperTypeChange}
           />
         </div>
         <div className="w-4/5">
           <div className="p-4">
             <KeywordInput />
           </div>
-          {renderMapper()}
+          <MapperRenderer
+            mapperType={mapperType}
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            nodeTypes={nodeTypes}
+            edgeTypes={edgeTypes}
+          />
         </div>
       </ReactFlowProvider>
     </div>

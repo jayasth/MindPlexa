@@ -1,40 +1,32 @@
 // src/features/IdeaMapper/mappers/FlowChart/FlowChart.tsx
-import React, { useCallback } from "react";
-import ReactFlow, {
-  Node,
-  Edge,
-  useNodesState,
-  useEdgesState,
-  addEdge,
-  Connection,
-} from "reactflow";
+import React from "react";
+import ReactFlow, { Node, Edge, OnNodesChange, OnEdgesChange } from "reactflow";
 import FlowNode from "./FlowNode";
 import FlowEdge from "./FlowEdge";
 
-const FlowChart: React.FC = () => {
-  const [nodes, setNodes, onNodesChange] = useNodesState([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+interface FlowChartProps {
+  nodes: Node<any>[];
+  edges: Edge[];
+  onNodesChange: OnNodesChange;
+  onEdgesChange: OnEdgesChange;
+  nodeTypes: any;
+  edgeTypes: any;
+}
 
-  const nodeTypes = {
-    flowNode: FlowNode,
-  };
-
-  const edgeTypes = {
-    flowEdge: FlowEdge,
-  };
-
-  const onConnect = useCallback(
-    (connection: Connection) => setEdges((eds) => addEdge(connection, eds)),
-    []
-  );
-
+const FlowChart: React.FC<FlowChartProps> = ({
+  nodes,
+  edges,
+  onNodesChange,
+  onEdgesChange,
+  nodeTypes,
+  edgeTypes,
+}) => {
   return (
     <ReactFlow
       nodes={nodes}
       edges={edges}
       onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
-      onConnect={onConnect}
       nodeTypes={nodeTypes}
       edgeTypes={edgeTypes}
       fitView
