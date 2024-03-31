@@ -1,10 +1,10 @@
-// src/features/IdeaMapper/mappers/FlowChart/FlowChart.tsx
+// src/features/IdeaMapper/mappers/DecisionWeb/DecisionWeb.tsx
 import React from "react";
 import ReactFlow, { Node, Edge, OnNodesChange, OnEdgesChange } from "reactflow";
-import FlowNode from "./FlowNode";
-import FlowEdge from "./FlowEdge";
+import DecisionNode from "./DecisionNode";
+import DecisionEdge from "./DecisionEdge";
 
-interface FlowChartProps {
+interface DecisionWebProps {
   nodes: Node<any>[];
   edges: Edge[];
   onNodesChange: OnNodesChange;
@@ -13,7 +13,7 @@ interface FlowChartProps {
   edgeTypes: any;
 }
 
-const FlowChart: React.FC<FlowChartProps> = ({
+const DecisionWeb: React.FC<DecisionWebProps> = ({
   nodes,
   edges,
   onNodesChange,
@@ -34,4 +34,4 @@ const FlowChart: React.FC<FlowChartProps> = ({
   );
 };
 
-export default FlowChart;
+export default DecisionWeb;

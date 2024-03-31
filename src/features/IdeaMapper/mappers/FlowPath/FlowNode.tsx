@@ -1,8 +1,8 @@
-// src/features/IdeaMapper/mappers/TreeMindMap/TreeNode.tsx
+// src/features/IdeaMapper/mappers/FlowPath/FlowNode.tsx
 import React from "react";
 import { Handle, Position, NodeProps } from "reactflow";
 
-const TreeNode: React.FC<NodeProps> = ({ data }) => {
+const FlowNode: React.FC<NodeProps> = ({ data }) => {
   return (
     <div className="bg-white rounded-lg shadow-md p-4">
       <div className="text-lg font-semibold">{data.label}</div>
@@ -12,4 +12,4 @@ const TreeNode: React.FC<NodeProps> = ({ data }) => {
   );
 };
 
-export default TreeNode;
+export default FlowNode;

@@ -1,8 +1,8 @@
-// src/features/IdeaMapper/mappers/VisualCanvas/VisualEdge.tsx
+// src/features/IdeaMapper/mappers/DecisionWeb/DecisionEdge.tsx
 import React from "react";
 import { getBezierPath, EdgeProps } from "reactflow";
 
-const VisualEdge: React.FC<EdgeProps> = ({
+const DecisionEdge: React.FC<EdgeProps> = ({
   id,
   sourceX,
   sourceY,
@@ -33,4 +33,4 @@ const VisualEdge: React.FC<EdgeProps> = ({
   );
 };
 
-export default VisualEdge;
+export default DecisionEdge;

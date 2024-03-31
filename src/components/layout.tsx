@@ -27,7 +27,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
-              <Link href="/">
+              <Link href="/" className="flex items-center">
                 <img
                   src="/assets/icons/logo.svg"
                   alt="Logo"
@@ -38,10 +38,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <div className="hidden md:flex items-center">
               {user ? (
                 <>
-                  <Link href="/dashboard">
-                    <span className="text-gray-500 hover:text-gray-600 px-3 py-2 rounded-md text-sm font-medium">
-                      Dashboard
-                    </span>
+                  <Link
+                    href="/dashboard"
+                    className="text-gray-500 hover:text-gray-600 px-3 py-2 rounded-md text-sm font-medium"
+                  >
+                    Dashboard
                   </Link>
                   {/* Add more authenticated links */}
                   <button
@@ -53,15 +54,17 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 </>
               ) : (
                 <>
-                  <Link href="/signup">
-                    <span className="text-gray-500 hover:text-gray-600 px-3 py-2 rounded-md text-sm font-medium">
-                      Sign Up
-                    </span>
+                  <Link
+                    href="/signup"
+                    className="text-gray-500 hover:text-gray-600 px-3 py-2 rounded-md text-sm font-medium"
+                  >
+                    Sign Up
                   </Link>
-                  <Link href="/login">
-                    <span className="text-gray-500 hover:text-gray-600 px-3 py-2 rounded-md text-sm font-medium">
-                      Log In
-                    </span>
+                  <Link
+                    href="/login"
+                    className="text-gray-500 hover:text-gray-600 px-3 py-2 rounded-md text-sm font-medium"
+                  >
+                    Log In
                   </Link>
                 </>
               )}
@@ -85,10 +88,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
             {user ? (
               <>
-                <Link href="/dashboard">
-                  <span className="text-gray-500 hover:text-gray-600 block px-3 py-2 rounded-md text-base font-medium">
-                    Dashboard
-                  </span>
+                <Link
+                  href="/dashboard"
+                  className="text-gray-500 hover:text-gray-600 block px-3 py-2 rounded-md text-base font-medium"
+                >
+                  Dashboard
                 </Link>
                 {/* Add more authenticated links */}
                 <button
@@ -100,15 +104,17 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               </>
             ) : (
               <>
-                <Link href="/signup">
-                  <span className="text-gray-500 hover:text-gray-600 block px-3 py-2 rounded-md text-base font-medium">
-                    Sign Up
-                  </span>
+                <Link
+                  href="/signup"
+                  className="text-gray-500 hover:text-gray-600 block px-3 py-2 rounded-md text-base font-medium"
+                >
+                  Sign Up
                 </Link>
-                <Link href="/login">
-                  <span className="text-gray-500 hover:text-gray-600 block px-3 py-2 rounded-md text-base font-medium">
-                    Log In
-                  </span>
+                <Link
+                  href="/login"
+                  className="text-gray-500 hover:text-gray-600 block px-3 py-2 rounded-md text-base font-medium"
+                >
+                  Log In
                 </Link>
               </>
             )}

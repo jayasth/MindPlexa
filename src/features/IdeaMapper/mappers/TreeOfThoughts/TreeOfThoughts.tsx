@@ -1,4 +1,4 @@
-// src/features/IdeaMapper/mappers/TreeMindMap/TreeMindMap.tsx
+// src/features/IdeaMapper/mappers/TreeOfThoughts/TreeOfThoughts.tsx
 import React, { useEffect } from "react";
 import ReactFlow, { Node, Edge, useReactFlow } from "reactflow";
 import { ElkNode } from "elkjs/lib/elk.bundled";
@@ -6,14 +6,14 @@ import { elk } from "../../../../lib/elk";
 import TreeNode from "./TreeNode";
 import TreeEdge from "./TreeEdge";
 
-interface TreeMindMapProps {
+interface TreeOfThoughtsProps {
   nodes: Node[];
   edges: Edge[];
   nodeTypes?: any;
   edgeTypes?: any;
 }
 
-const TreeMindMap: React.FC<TreeMindMapProps> = ({
+const TreeOfThoughts: React.FC<TreeOfThoughtsProps> = ({
   nodes,
   edges,
   nodeTypes,
@@ -97,4 +97,4 @@ const TreeMindMap: React.FC<TreeMindMapProps> = ({
   );
 };
 
-export default TreeMindMap;
+export default TreeOfThoughts;

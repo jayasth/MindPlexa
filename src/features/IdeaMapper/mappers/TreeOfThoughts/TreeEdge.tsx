@@ -1,8 +1,8 @@
-// src/features/IdeaMapper/mappers/FlowChart/FlowEdge.tsx
+// src/features/IdeaMapper/mappers/TreeOfThoughts/TreeEdge.tsx
 import React from "react";
-import { getSmoothStepPath, EdgeProps } from "reactflow";
+import { getBezierPath, EdgeProps } from "reactflow";
 
-const FlowEdge: React.FC<EdgeProps> = ({
+const TreeEdge: React.FC<EdgeProps> = ({
   id,
   sourceX,
   sourceY,
@@ -13,7 +13,7 @@ const FlowEdge: React.FC<EdgeProps> = ({
   style,
   markerEnd,
 }) => {
-  const [edgePath] = getSmoothStepPath({
+  const [edgePath] = getBezierPath({
     sourceX,
     sourceY,
     sourcePosition,
@@ -33,4 +33,4 @@ const FlowEdge: React.FC<EdgeProps> = ({
   );
 };
 
-export default FlowEdge;
+export default TreeEdge;

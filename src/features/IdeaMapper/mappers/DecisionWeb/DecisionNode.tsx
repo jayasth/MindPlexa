@@ -1,15 +1,17 @@
-// src/features/IdeaMapper/mappers/FlowChart/FlowNode.tsx
+// src/features/IdeaMapper/mappers/DecisionWeb/DecisionNode.tsx
 import React from "react";
 import { Handle, Position, NodeProps } from "reactflow";
 
-const FlowNode: React.FC<NodeProps> = ({ data }) => {
+const DecisionNode: React.FC<NodeProps> = ({ data }) => {
   return (
     <div className="bg-white rounded-lg shadow-md p-4">
       <div className="text-lg font-semibold">{data.label}</div>
       <Handle type="target" position={Position.Top} />
       <Handle type="source" position={Position.Bottom} />
+      <Handle type="source" position={Position.Left} />
+      <Handle type="source" position={Position.Right} />
     </div>
   );
 };
 
-export default FlowNode;
+export default DecisionNode;

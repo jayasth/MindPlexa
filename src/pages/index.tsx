@@ -5,7 +5,6 @@ import Layout from "../components/layout";
 import AgentCard from "../features/Agents/components/AgentCard";
 import agents from "../data/agents";
 import OnboardingTutorial from "../components/Onboarding/OnboardingTutorial";
-import OnboardingModal from "../components/Onboarding/OnboardingModal";
 import Link from "next/link";
 import SupabaseTest from "../components/SupabaseTest";
 

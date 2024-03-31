@@ -1,10 +1,10 @@
-// src/features/IdeaMapper/mappers/VisualCanvas/VisualCanvas.tsx
+// src/features/IdeaMapper/mappers/FlowPath/FlowPath.tsx
 import React from "react";
 import ReactFlow, { Node, Edge, OnNodesChange, OnEdgesChange } from "reactflow";
-import VisualNode from "./VisualNode";
-import VisualEdge from "./VisualEdge";
+import FlowNode from "./FlowNode";
+import FlowEdge from "./FlowEdge";
 
-interface VisualCanvasProps {
+interface FlowPathProps {
   nodes: Node<any>[];
   edges: Edge[];
   onNodesChange: OnNodesChange;
@@ -13,7 +13,7 @@ interface VisualCanvasProps {
   edgeTypes: any;
 }
 
-const VisualCanvas: React.FC<VisualCanvasProps> = ({
+const FlowPath: React.FC<FlowPathProps> = ({
   nodes,
   edges,
   onNodesChange,
@@ -34,4 +34,4 @@ const VisualCanvas: React.FC<VisualCanvasProps> = ({
   );
 };
 
-export default VisualCanvas;
+export default FlowPath;

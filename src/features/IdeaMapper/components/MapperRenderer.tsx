@@ -1,8 +1,8 @@
 // src/features/IdeaMapper/components/MapperRenderer.tsx
 import React from "react";
-import TreeMindMap from "../mappers/TreeMindMap/TreeMindMap";
-import FlowChart from "../mappers/FlowChart/FlowChart";
-import VisualCanvas from "../mappers/VisualCanvas/VisualCanvas";
+import TreeOfThoughts from "../mappers/FlowPath/TreeOfThoughts";
+import FlowPath from "../mappers/FlowPath/FlowPath";
+import DecisionWeb from "../mappers/DecisionWeb/DecisionWeb";
 import ReactFlow, { Node, Edge } from "reactflow";
 
 interface MapperRendererProps {
@@ -27,7 +27,7 @@ const MapperRenderer: React.FC<MapperRendererProps> = ({
   switch (mapperType) {
     case "tree":
       return (
-        <TreeMindMap
+        <TreeOfThoughts
           nodes={nodes}
           edges={edges}
           onNodesChange={onNodesChange}
@@ -38,7 +38,7 @@ const MapperRenderer: React.FC<MapperRendererProps> = ({
       );
     case "flow":
       return (
-        <FlowChart
+        <FlowPath
           nodes={nodes}
           edges={edges}
           onNodesChange={onNodesChange}
@@ -49,7 +49,7 @@ const MapperRenderer: React.FC<MapperRendererProps> = ({
       );
     case "canvas":
       return (
-        <VisualCanvas
+        <DecisionWeb
           nodes={nodes}
           edges={edges}
           onNodesChange={onNodesChange}
