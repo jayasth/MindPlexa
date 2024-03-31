@@ -7,6 +7,7 @@ import ReactFlow, {
   Node,
 } from "reactflow";
 import "reactflow/dist/style.css";
+import { FiMap, FiGitMerge, FiSquare } from "react-icons/fi";
 
 import CustomNode from "./CustomNode";
 import CustomEdge from "./CustomEdge";
@@ -20,6 +21,8 @@ const IdeaMapperCanvas: React.FC = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [mapperType, setMapperType] = useState("tree");
+  const [selectedNode, setSelectedNode] = useState<string | null>(null);
+  const [isMapperSelectOpen, setIsMapperSelectOpen] = useState(false);
 
   // Wrap CustomNode and CustomEdge with React.memo
   const MemoizedCustomNode = React.memo(CustomNode);
@@ -29,19 +32,67 @@ const IdeaMapperCanvas: React.FC = () => {
   const nodeTypes = useMemo(() => ({ custom: MemoizedCustomNode }), []);
   const edgeTypes = useMemo(() => ({ custom: MemoizedCustomEdge }), []);
 
+  const handleSelectNode = useCallback((nodeId: string) => {
+    setSelectedNode(nodeId);
+  }, []);
+
+  const renderMapper = () => {
+    switch (mapperType) {
+      case "tree":
+        return <TreeMindMap />;
+      case "flow":
+        return <FlowChart />;
+      case "canvas":
+        return <VisualCanvas />;
+      default:
+        return null;
+    }
+  };
+
+  const toggleMapperSelect = () => {
+    setIsMapperSelectOpen((prevIsOpen) => !prevIsOpen);
+  };
+
+  const handleSelectMapperType = (type: string) => {
+    setMapperType(type);
+    setIsMapperSelectOpen(false);
+  };
+
+  const mapperIcons: Record<string, React.ReactNode> = {
+    tree: <FiMap />,
+    flow: <FiGitMerge />,
+    canvas: <FiSquare />,
+  };
+
+  const handleAddNode = useCallback(() => {
+    const newNode: Node = {
+      id: `node-${nodes.length + 1}`,
+      type: "custom",
+      data: { label: "New Node" },
+      position: { x: 0, y: 0 },
+    };
+    setNodes((prevNodes) => [...prevNodes, newNode]);
+  }, [nodes, setNodes]);
+
+  const handleDelete = useCallback(() => {
+    if (selectedNode) {
+      setNodes((prevNodes) =>
+        prevNodes.filter((node) => node.id !== selectedNode)
+      );
+      setEdges((prevEdges) =>
+        prevEdges.filter(
+          (edge) => edge.source !== selectedNode && edge.target !== selectedNode
+        )
+      );
+      setSelectedNode(null);
+    }
+  }, [selectedNode, setNodes, setEdges]);
+
   const handleSave = useCallback(() => {
     localStorage.setItem("mindmap-nodes", JSON.stringify(nodes));
     localStorage.setItem("mindmap-edges", JSON.stringify(edges));
     alert("Mindmap saved successfully!");
   }, [nodes, edges]);
-
-  const handleDelete = useCallback(() => {
-    setNodes([]);
-    setEdges([]);
-    localStorage.removeItem("mindmap-nodes");
-    localStorage.removeItem("mindmap-edges");
-    alert("Mindmap deleted successfully!");
-  }, [setNodes, setEdges]);
 
   React.useEffect(() => {
     const savedNodes = JSON.parse(
@@ -80,33 +131,6 @@ const IdeaMapperCanvas: React.FC = () => {
     link.click();
     URL.revokeObjectURL(url);
   }, [nodes, edges]);
-
-  const handleAddNode = useCallback(() => {
-    const newNode: Node = {
-      id: `node-${nodes.length + 1}`,
-      type: "custom",
-      data: { label: "New Node" },
-      position: { x: 0, y: 0 },
-    };
-    setNodes((prevNodes) => [...prevNodes, newNode]);
-  }, [nodes]);
-
-  const handleSelectMapperType = useCallback((type: string) => {
-    setMapperType(type);
-  }, []);
-
-  const renderMapper = () => {
-    switch (mapperType) {
-      case "tree":
-        return <TreeMindMap />;
-      case "flow":
-        return <FlowChart />;
-      case "canvas":
-        return <VisualCanvas />;
-      default:
-        return null;
-    }
-  };
 
   return (
     <div className="flex h-screen">
