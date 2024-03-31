@@ -1,20 +1,25 @@
-import React, { useCallback, useMemo } from "react";
+// src/features/IdeaMapper/components/IdeaMapperCanvas.tsx
+import React, { useCallback, useState, useMemo } from "react";
 import ReactFlow, {
   ReactFlowProvider,
   useNodesState,
   useEdgesState,
+  Node,
 } from "reactflow";
 import "reactflow/dist/style.css";
 
 import CustomNode from "./CustomNode";
 import CustomEdge from "./CustomEdge";
-import IdeaMapperCanvasInner from "./IdeaMapperCanvasInner";
+import TreeMindMap from "../mappers/TreeMindMap/TreeMindMap";
+import FlowChart from "../mappers/FlowChart/FlowChart";
+import VisualCanvas from "../mappers/VisualCanvas/VisualCanvas";
 import KeywordInput from "./KeywordInput";
 import Toolbar from "./Toolbar";
 
 const IdeaMapperCanvas: React.FC = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [mapperType, setMapperType] = useState("tree");
 
   // Wrap CustomNode and CustomEdge with React.memo
   const MemoizedCustomNode = React.memo(CustomNode);
@@ -76,6 +81,33 @@ const IdeaMapperCanvas: React.FC = () => {
     URL.revokeObjectURL(url);
   }, [nodes, edges]);
 
+  const handleAddNode = useCallback(() => {
+    const newNode: Node = {
+      id: `node-${nodes.length + 1}`,
+      type: "custom",
+      data: { label: "New Node" },
+      position: { x: 0, y: 0 },
+    };
+    setNodes((prevNodes) => [...prevNodes, newNode]);
+  }, [nodes]);
+
+  const handleSelectMapperType = useCallback((type: string) => {
+    setMapperType(type);
+  }, []);
+
+  const renderMapper = () => {
+    switch (mapperType) {
+      case "tree":
+        return <TreeMindMap />;
+      case "flow":
+        return <FlowChart />;
+      case "canvas":
+        return <VisualCanvas />;
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="flex h-screen">
       <ReactFlowProvider>
@@ -85,22 +117,15 @@ const IdeaMapperCanvas: React.FC = () => {
             onDelete={handleDelete}
             onExport={handleExport}
             onExportJSON={handleExportJSON}
+            onAddNode={handleAddNode}
+            onSelectMapperType={handleSelectMapperType}
           />
         </div>
         <div className="w-4/5">
           <div className="p-4">
             <KeywordInput />
           </div>
-          <IdeaMapperCanvasInner
-            nodes={nodes}
-            edges={edges}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            nodeTypes={nodeTypes}
-            edgeTypes={edgeTypes}
-            mindmapId="1" // Pass an empty string or provide a valid mindmapId
-            userId="test" // Pass an empty string or provide a valid userId
-          />
+          {renderMapper()}
         </div>
       </ReactFlowProvider>
     </div>
