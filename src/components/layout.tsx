@@ -4,13 +4,14 @@ import Link from "next/link";
 import { useUser } from "../utils/useUser";
 import { supabase } from "../utils/supabaseClient";
 import { FiMenu, FiX } from "react-icons/fi";
+import LogoutButton from "./LogoutButton";
 
 interface LayoutProps {
   children: ReactNode;
 }
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
-  const { user } = useUser();
+  const { user, isLoading } = useUser();
   const [isOpen, setIsOpen] = useState(false);
 
   const handleLogout = async () => {
@@ -45,12 +46,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                     Dashboard
                   </Link>
                   {/* Add more authenticated links */}
-                  <button
-                    onClick={handleLogout}
-                    className="text-gray-500 hover:text-gray-600 px-3 py-2 rounded-md text-sm font-medium"
-                  >
-                    Logout
-                  </button>
+                  <LogoutButton />
                 </>
               ) : (
                 <>

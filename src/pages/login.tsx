@@ -1,5 +1,3 @@
-// src/pages/login.tsx
-
 import React, { useState } from "react";
 import { useRouter } from "next/router";
 import { supabase } from "../utils/supabaseClient";
@@ -12,14 +10,15 @@ const Login: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
     if (error) {
       setError(error.message);
     } else {
-      router.push("/");
+      const redirectTo = router.query.redirectedFrom as string | undefined;
+      router.push(redirectTo || "/dashboard");
     }
   };
 

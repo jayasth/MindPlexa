@@ -1,19 +1,40 @@
-import { useState, useCallback } from "react";
+// C:/coding/mindplexa/src/features/IdeaMapper/hooks/useNodesAndEdges.ts
+
+import { useState, useEffect, useCallback } from "react";
+import { supabase } from "../../../utils/supabaseClient";
 import { Node, Edge } from "reactflow";
 
-export const useNodesAndEdges = () => {
+export const useNodesAndEdges = (userId: string) => {
   const [nodes, setNodes] = useState<Node[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
 
-  const addNode = useCallback((node: Node) => {
-    setNodes((prevNodes) => [...prevNodes, node]);
-  }, []);
+  const saveNodesAndEdges = async () => {
+    const { data, error } = await supabase
+      .from("mindmaps")
+      .upsert({ user_id: userId, nodes, edges });
 
-  const addEdge = useCallback((edge: Edge) => {
-    setEdges((prevEdges) => [...prevEdges, edge]);
-  }, []);
+    if (error) console.error("Error saving nodes and edges:", error);
+  };
 
-  // Implement other operations like deleteNode, deleteEdge, etc.
+  const loadNodesAndEdges = useCallback(async () => {
+    let { data: mindmaps, error } = await supabase
+      .from("mindmaps")
+      .select("*")
+      .eq("user_id", userId)
+      .single();
 
-  return { nodes, edges, addNode, addEdge };
+    if (error) console.error("Error loading nodes and edges:", error);
+    else {
+      setNodes(mindmaps?.nodes || []);
+      setEdges(mindmaps?.edges || []);
+    }
+  }, [userId]);
+
+  useEffect(() => {
+    loadNodesAndEdges();
+  }, [loadNodesAndEdges]);
+
+  // Add more CRUD operations as needed...
+
+  return { nodes, edges, setNodes, setEdges, saveNodesAndEdges };
 };

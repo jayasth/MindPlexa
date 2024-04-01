@@ -33,7 +33,7 @@ const TreeOfThoughts: React.FC<TreeOfThoughtsProps> = ({
       const graph: ElkNode = {
         id: "root",
         layoutOptions: {
-          "elk.algorithm": "tree",
+          "elk.algorithm": "layered",
           "elk.direction": "DOWN",
           "elk.spacing.nodeNode": "50",
           "elk.layered.spacing.nodeNodeBetweenLayers": "50",

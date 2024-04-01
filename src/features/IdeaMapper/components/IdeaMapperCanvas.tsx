@@ -1,10 +1,12 @@
-// src/features/IdeaMapper/components/IdeaMapperCanvas.tsx
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import ReactFlow, {
   ReactFlowProvider,
+  addEdge,
+  Connection,
+  Edge,
+  Node,
   useNodesState,
   useEdgesState,
-  Node as ReactFlowNode,
 } from "reactflow";
 import "reactflow/dist/style.css";
 
@@ -14,6 +16,7 @@ import KeywordInput from "./KeywordInput";
 import Toolbar from "./Toolbar";
 import MapperRenderer from "./MapperRenderer";
 import AIAssistantModal from "./AIAssistantModal";
+import { supabase } from "../../../utils/supabaseClient";
 
 const IdeaMapperCanvas: React.FC = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
@@ -22,11 +25,48 @@ const IdeaMapperCanvas: React.FC = () => {
   const [mapperType, setMapperType] = useState("tree");
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
 
+  const userId = "user-id-placeholder";
+
+  useEffect(() => {
+    const fetchMindmaps = async () => {
+      const { data, error } = await supabase
+        .from("mindmaps")
+        .select("*")
+        .eq("user_id", userId)
+        .single();
+
+      if (error) {
+        console.error("Error fetching mindmaps:", error);
+      } else {
+        setNodes(data.nodes || []);
+        setEdges(data.edges || []);
+      }
+    };
+
+    fetchMindmaps();
+  }, [userId, setNodes, setEdges]);
+
+  const saveMindmapToSupabase = useCallback(
+    async (nodesToSave: Node[], edgesToSave: Edge[]) => {
+      const { data, error } = await supabase
+        .from("mindmaps")
+        .upsert({ user_id: userId, nodes: nodesToSave, edges: edgesToSave });
+
+      if (error) {
+        console.error("Error saving mindmap:", error);
+      }
+    },
+    [userId]
+  );
+  useEffect(() => {
+    saveMindmapToSupabase(nodes, edges);
+  }, [nodes, edges, saveMindmapToSupabase]);
+
   const nodeTypes = useMemo(() => ({ custom: CustomNode }), []);
   const edgeTypes = useMemo(() => ({ custom: CustomEdge }), []);
 
   const handleAddNode = useCallback(() => {
-    const newNode: ReactFlowNode = {
+    const newNode: Node = {
       id: `node-${nodes.length + 1}`,
       type: "custom",
       data: { label: "New Node" },
@@ -38,15 +78,16 @@ const IdeaMapperCanvas: React.FC = () => {
 
   const handleDeleteNode = useCallback(
     (nodeId: string) => {
-      setNodes((prevNodes) => prevNodes.filter((node) => node.id !== nodeId));
-      setEdges((prevEdges) =>
-        prevEdges.filter(
-          (edge) => edge.source !== nodeId && edge.target !== nodeId
-        )
+      const newNodes = nodes.filter((node) => node.id !== nodeId);
+      const newEdges = edges.filter(
+        (edge) => edge.source !== nodeId && edge.target !== nodeId
       );
+      setNodes(newNodes);
+      setEdges(newEdges);
       setSelectedNode(null);
+      saveMindmapToSupabase(newNodes, newEdges);
     },
-    [setNodes, setEdges]
+    [nodes, setNodes, edges, setEdges, saveMindmapToSupabase]
   );
 
   const handleSelectNode = useCallback((nodeId: string) => {

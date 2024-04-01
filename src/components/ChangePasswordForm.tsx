@@ -1,9 +1,7 @@
-// src/components/ChangePasswordForm.tsx
-
 import React from "react";
 import { useForm } from "react-hook-form";
-import { changeUserPassword } from "../api/userApi";
-import { useUser } from "../utils/useUser";
+import { supabase } from "../utils/supabaseClient";
+import { useUser } from "../hooks/useUser";
 
 const ChangePasswordForm: React.FC = () => {
   const { register, handleSubmit } = useForm();
@@ -13,7 +11,13 @@ const ChangePasswordForm: React.FC = () => {
     if (!user) return;
 
     try {
-      await changeUserPassword(user.id, data.newPassword);
+      const { data: user, error } = await supabase.auth.updateUser({
+        password: data.newPassword,
+      });
+
+      if (error) {
+        console.error("Error changing password:", error);
+      }
       // Show success message
     } catch (error) {
       console.error("Error changing password:", error);

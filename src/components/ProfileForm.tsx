@@ -1,28 +1,21 @@
-// src/components/ProfileForm.tsx
-
 import React, { useRef } from "react";
 import { useForm } from "react-hook-form";
-import { updateUserProfile, uploadProfilePicture } from "../api/userApi";
+import { supabase } from "../utils/supabaseClient";
 import { User } from "@supabase/supabase-js";
 
-interface ProfileFormProps {
-  user: User;
-}
-
-const ProfileForm: React.FC<ProfileFormProps> = ({ user }) => {
+const ProfileForm = ({ user }: { user: User }) => {
   const { register, handleSubmit } = useForm();
-  const fileInput = useRef<HTMLInputElement>(null);
 
   const onSubmit = async (data: any) => {
     try {
-      let avatar_url = user.user_metadata.avatar_url;
-      if (fileInput.current?.files?.length) {
-        avatar_url = await uploadProfilePicture(
-          user.id,
-          fileInput.current.files[0]
-        );
+      const { data: profile, error } = await supabase
+        .from("profiles")
+        .upsert({ ...data, id: user.id })
+        .single();
+
+      if (error) {
+        console.error("Error updating profile:", error);
       }
-      await updateUserProfile(user.id, { ...data, avatar_url });
       // Show success message or redirect to profile page
     } catch (error) {
       console.error("Error updating profile:", error);
@@ -31,20 +24,8 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ user }) => {
   };
 
   return (
-    <div className="max-w-md mx-auto">
-      <h2 className="text-2xl font-semibold mb-4">Edit Profile</h2>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div>
-          <label htmlFor="avatar" className="block font-medium mb-1">
-            Profile Picture
-          </label>
-          <input
-            type="file"
-            id="avatar"
-            ref={fileInput}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+    <div>
+      <form onSubmit={handleSubmit(onSubmit)}>
         <div>
           <label htmlFor="name" className="block font-medium mb-1">
             Name
