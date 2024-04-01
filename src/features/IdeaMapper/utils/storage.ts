@@ -1,31 +1,30 @@
-import { Edge } from "reactflow";
+import { Node as ReactFlowNode, Edge as ReactFlowEdge } from "reactflow";
 import { supabase } from "../../../utils/supabaseClient";
 
 export const saveMindmap = async (
-  mindmapId: number,
-  nodes: Node[],
-  edges: Edge[]
+  title: string,
+  nodes: ReactFlowNode[],
+  edges: ReactFlowEdge[]
 ) => {
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("mindmaps")
-    .update({ nodes, edges })
-    .eq("id", mindmapId);
+    .insert({ title, nodes, edges });
 
   if (error) {
     console.error("Error saving mindmap:", error);
   }
 };
 
-export const loadMindmap = async (userId: string) => {
+export const loadMindmap = async (mindmapId: number) => {
   const { data, error } = await supabase
     .from("mindmaps")
-    .select("id, nodes, edges")
-    .eq("user_id", userId)
+    .select("nodes, edges")
+    .eq("id", mindmapId)
     .single();
 
   if (error) {
     console.error("Error loading mindmap:", error);
-    return { id: null, nodes: [], edges: [] };
+    return { nodes: [], edges: [] };
   }
 
   return data;
@@ -36,13 +35,11 @@ export const shareMindmap = async (
   userId: string,
   accessLevel: string
 ) => {
-  const { error } = await supabase
-    .from("mindmap_shares")
-    .insert({
-      mindmap_id: mindmapId,
-      user_id: userId,
-      access_level: accessLevel,
-    });
+  const { error } = await supabase.from("mindmap_shares").insert({
+    mindmap_id: mindmapId,
+    user_id: userId,
+    access_level: accessLevel,
+  });
 
   if (error) {
     console.error("Error sharing mindmap:", error);

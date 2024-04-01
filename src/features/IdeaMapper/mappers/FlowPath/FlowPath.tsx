@@ -5,12 +5,13 @@ import FlowNode from "./FlowNode";
 import FlowEdge from "./FlowEdge";
 
 interface FlowPathProps {
-  nodes: Node<any>[];
+  nodes: Node[];
   edges: Edge[];
   onNodesChange: OnNodesChange;
   onEdgesChange: OnEdgesChange;
-  nodeTypes: any;
-  edgeTypes: any;
+  onDelete: (nodeId: string) => void;
+  nodeTypes?: any;
+  edgeTypes?: any;
 }
 
 const FlowPath: React.FC<FlowPathProps> = ({

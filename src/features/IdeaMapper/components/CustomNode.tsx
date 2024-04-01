@@ -18,6 +18,8 @@ const CustomNode: React.FC<NodeProps> = ({
   const [color, setColor] = useState(data.color || "#FF6B6B");
   const [fontSize, setFontSize] = useState(data.fontSize || 16);
 
+  const defaultNodeSize = { width: "150px", height: "150px" }; // Set your default size here
+
   const handleLabelChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setLabel(e.target.value);
@@ -34,7 +36,10 @@ const CustomNode: React.FC<NodeProps> = ({
 
   const handleFontSizeChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      setFontSize(parseInt(e.target.value));
+      const newSize = parseInt(e.target.value);
+      if (newSize >= 8 && newSize <= 48) {
+        setFontSize(newSize);
+      }
     },
     []
   );
@@ -49,7 +54,7 @@ const CustomNode: React.FC<NodeProps> = ({
         className={`bg-white rounded-lg shadow-md p-4 ${
           selected ? "border-2 border-blue-500" : ""
         }`}
-        style={{ backgroundColor: color }}
+        style={{ backgroundColor: color, ...defaultNodeSize }}
       >
         <input
           type="text"
@@ -67,7 +72,7 @@ const CustomNode: React.FC<NodeProps> = ({
       className={`bg-white rounded-lg shadow-md p-4 ${
         selected ? "border-2 border-blue-500" : ""
       }`}
-      style={{ backgroundColor: color }}
+      style={{ backgroundColor: color, ...defaultNodeSize }}
     >
       <input
         type="text"

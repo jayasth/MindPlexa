@@ -1,18 +1,25 @@
 // src/features/IdeaMapper/mappers/TreeOfThoughts/TreeOfThoughts.tsx
 import React, { useEffect } from "react";
-import ReactFlow, { Node, Edge, useReactFlow } from "reactflow";
+import ReactFlow, {
+  Node,
+  Edge,
+  OnNodesChange,
+  OnEdgesChange,
+  useReactFlow,
+} from "reactflow";
 import { ElkNode } from "elkjs/lib/elk.bundled";
 import { elk } from "../../../../lib/elk";
 import TreeNode from "./TreeNode";
 import TreeEdge from "./TreeEdge";
-
 interface TreeOfThoughtsProps {
   nodes: Node[];
   edges: Edge[];
+  onNodesChange: OnNodesChange;
+  onEdgesChange: OnEdgesChange;
+  onDelete: (nodeId: string) => void;
   nodeTypes?: any;
   edgeTypes?: any;
 }
-
 const TreeOfThoughts: React.FC<TreeOfThoughtsProps> = ({
   nodes,
   edges,
@@ -26,10 +33,12 @@ const TreeOfThoughts: React.FC<TreeOfThoughtsProps> = ({
       const graph: ElkNode = {
         id: "root",
         layoutOptions: {
-          "elk.algorithm": "layered",
-          "elk.direction": "RIGHT",
+          "elk.algorithm": "tree",
+          "elk.direction": "DOWN",
           "elk.spacing.nodeNode": "50",
           "elk.layered.spacing.nodeNodeBetweenLayers": "50",
+          "elk.hierarchyHandling": "INCLUDE_CHILDREN",
+          "elk.nodeLabels.placement": "INSIDE V_CENTER H_CENTER",
         },
         children: nodes.map((node) => ({
           id: node.id,
@@ -93,6 +102,12 @@ const TreeOfThoughts: React.FC<TreeOfThoughtsProps> = ({
       nodeTypes={nodeTypes}
       edgeTypes={edgeTypes}
       fitView
+      zoomOnDoubleClick
+      zoomOnScroll
+      panOnDrag
+      minZoom={0.1}
+      maxZoom={2}
+      style={{ width: "100%", height: "100%" }}
     />
   );
 };

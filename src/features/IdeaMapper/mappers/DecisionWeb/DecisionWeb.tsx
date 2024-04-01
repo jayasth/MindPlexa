@@ -5,12 +5,13 @@ import DecisionNode from "./DecisionNode";
 import DecisionEdge from "./DecisionEdge";
 
 interface DecisionWebProps {
-  nodes: Node<any>[];
+  nodes: Node[];
   edges: Edge[];
   onNodesChange: OnNodesChange;
   onEdgesChange: OnEdgesChange;
-  nodeTypes: any;
-  edgeTypes: any;
+  onDelete: (nodeId: string) => void;
+  nodeTypes?: any;
+  edgeTypes?: any;
 }
 
 const DecisionWeb: React.FC<DecisionWebProps> = ({

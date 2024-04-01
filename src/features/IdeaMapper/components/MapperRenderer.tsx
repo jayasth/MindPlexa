@@ -1,18 +1,19 @@
 // src/features/IdeaMapper/components/MapperRenderer.tsx
 import React from "react";
-import TreeOfThoughts from "../mappers/FlowPath/TreeOfThoughts";
+import TreeOfThoughts from "../mappers/TreeOfThoughts/TreeOfThoughts";
 import FlowPath from "../mappers/FlowPath/FlowPath";
 import DecisionWeb from "../mappers/DecisionWeb/DecisionWeb";
-import ReactFlow, { Node, Edge } from "reactflow";
+import ReactFlow, { Node, Edge, OnNodesChange, OnEdgesChange } from "reactflow";
 
 interface MapperRendererProps {
   mapperType: string;
-  nodes: Node<any>[]; // Updated type
+  nodes: Node<any>[];
   edges: Edge[];
-  onNodesChange: (changes: any) => void;
-  onEdgesChange: (changes: any) => void;
+  onNodesChange: OnNodesChange;
+  onEdgesChange: OnEdgesChange;
   nodeTypes: any;
   edgeTypes: any;
+  onDelete: (nodeId: string) => void;
 }
 
 const MapperRenderer: React.FC<MapperRendererProps> = ({
@@ -23,6 +24,7 @@ const MapperRenderer: React.FC<MapperRendererProps> = ({
   onEdgesChange,
   nodeTypes,
   edgeTypes,
+  onDelete,
 }) => {
   switch (mapperType) {
     case "tree":
@@ -34,6 +36,7 @@ const MapperRenderer: React.FC<MapperRendererProps> = ({
           onEdgesChange={onEdgesChange}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
+          onDelete={onDelete}
         />
       );
     case "flow":
@@ -45,6 +48,7 @@ const MapperRenderer: React.FC<MapperRendererProps> = ({
           onEdgesChange={onEdgesChange}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
+          onDelete={onDelete}
         />
       );
     case "canvas":
@@ -56,11 +60,11 @@ const MapperRenderer: React.FC<MapperRendererProps> = ({
           onEdgesChange={onEdgesChange}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
+          onDelete={onDelete}
         />
       );
     default:
       return null;
   }
 };
-
 export default MapperRenderer;
