@@ -1,4 +1,5 @@
 import React from "react";
+import withAuth from "../components/withAuth";
 import { useRouter } from "next/router";
 import Layout from "../components/layout";
 
@@ -19,4 +20,4 @@ const SearchResults: React.FC = () => {
   );
 };
 
-export default SearchResults;
+export default withAuth(SearchResults);

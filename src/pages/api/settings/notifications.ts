@@ -1,6 +1,7 @@
 // src/pages/api/settings/notifications.ts
 
 import type { NextApiRequest, NextApiResponse } from "next";
+import { withAuth } from "../authMiddleware";
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method === "PUT") {
@@ -18,4 +19,4 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 };
 
-export default handler;
+export default withAuth(handler);

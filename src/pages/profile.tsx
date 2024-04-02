@@ -1,6 +1,7 @@
 // src/pages/profile.tsx
 import React from "react";
 import { useRouter } from "next/router";
+import withAuth from "../components/withAuth";
 import { useUser } from "../utils/useUser";
 import Layout from "../components/layout";
 import ProfileForm from "../components/ProfileForm";
@@ -28,4 +29,4 @@ const ProfilePage: React.FC = () => {
   );
 };
 
-export default ProfilePage;
+export default withAuth(ProfilePage);

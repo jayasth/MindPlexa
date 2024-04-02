@@ -1,6 +1,7 @@
 // src/pages/agents/BrainstormBuddy.tsx
 
 import React from "react";
+import withAuth from "../../components/withAuth";
 import Layout from "../../components/layout";
 import BrainstormBuddySessionCreator from "../../features/BrainstormBuddy/components/BrainstormBuddySessionCreator";
 import BrainstormBuddySession from "../../features/BrainstormBuddy/components/BrainstormBuddySession";
@@ -17,4 +18,4 @@ const BrainstormBuddy: React.FC = () => {
   );
 };
 
-export default BrainstormBuddy;
+export default withAuth(BrainstormBuddy);

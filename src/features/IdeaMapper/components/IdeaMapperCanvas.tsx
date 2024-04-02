@@ -27,6 +27,23 @@ const IdeaMapperCanvas: React.FC = () => {
 
   const userId = "user-id-placeholder";
 
+  const saveMindmapToSupabase = useCallback(
+    async (nodesToSave: Node[], edgesToSave: Edge[]) => {
+      const { data, error } = await supabase
+        .from("mindmaps")
+        .insert({ user_id: userId, nodes: nodesToSave, edges: edgesToSave });
+
+      if (error) {
+        console.error("Error saving mindmap:", error);
+      }
+    },
+    [userId]
+  );
+
+  useEffect(() => {
+    saveMindmapToSupabase(nodes, edges);
+  }, [nodes, edges, saveMindmapToSupabase]);
+
   useEffect(() => {
     const fetchMindmaps = async () => {
       const { data, error } = await supabase
@@ -45,22 +62,6 @@ const IdeaMapperCanvas: React.FC = () => {
 
     fetchMindmaps();
   }, [userId, setNodes, setEdges]);
-
-  const saveMindmapToSupabase = useCallback(
-    async (nodesToSave: Node[], edgesToSave: Edge[]) => {
-      const { data, error } = await supabase
-        .from("mindmaps")
-        .upsert({ user_id: userId, nodes: nodesToSave, edges: edgesToSave });
-
-      if (error) {
-        console.error("Error saving mindmap:", error);
-      }
-    },
-    [userId]
-  );
-  useEffect(() => {
-    saveMindmapToSupabase(nodes, edges);
-  }, [nodes, edges, saveMindmapToSupabase]);
 
   const nodeTypes = useMemo(() => ({ custom: CustomNode }), []);
   const edgeTypes = useMemo(() => ({ custom: CustomEdge }), []);

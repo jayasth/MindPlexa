@@ -1,5 +1,6 @@
 // src/pages/settings.tsx
 import React from "react";
+import withAuth from "../components/withAuth";
 import Layout from "../components/layout";
 import SettingsPanel from "../components/Settings/SettingsPanel";
 
@@ -11,4 +12,4 @@ const Settings: React.FC = () => {
   );
 };
 
-export default Settings;
+export default withAuth(Settings);

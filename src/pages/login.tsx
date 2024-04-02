@@ -10,13 +10,14 @@ const Login: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
     if (error) {
       setError(error.message);
     } else {
+      console.log("Login successful", data);
       const redirectTo = router.query.redirectedFrom as string | undefined;
       router.push(redirectTo || "/dashboard");
     }

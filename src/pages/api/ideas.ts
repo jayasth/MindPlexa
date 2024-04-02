@@ -1,5 +1,6 @@
 // src/pages/api/ideas.ts
 import type { NextApiRequest, NextApiResponse } from "next";
+import { withAuth } from "./authMiddleware";
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method === "GET") {
@@ -56,4 +57,4 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 };
 
-export default handler;
+export default withAuth(handler);

@@ -1,5 +1,7 @@
+// src/pages/_app.tsx
 import type { AppProps } from "next/app";
 import { useEffect } from "react";
+import { SessionContextProvider } from "@supabase/auth-helpers-react";
 import { supabase } from "../utils/supabaseClient";
 import "../styles/globals.css";
 
@@ -20,7 +22,11 @@ function MyApp({ Component, pageProps }: AppProps) {
     };
   }, []);
 
-  return <Component {...pageProps} />;
+  return (
+    <SessionContextProvider supabaseClient={supabase}>
+      <Component {...pageProps} />
+    </SessionContextProvider>
+  );
 }
 
 export default MyApp;

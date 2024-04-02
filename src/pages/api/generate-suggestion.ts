@@ -1,6 +1,7 @@
 // src/pages/api/generate-suggestion.ts
 import type { NextApiRequest, NextApiResponse } from "next";
 import { OpenAI } from "openai";
+import { withAuth } from "./authMiddleware";
 
 const openai = new OpenAI({ apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY });
 
@@ -43,4 +44,4 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 };
 
-export default handler;
+export default withAuth(handler);

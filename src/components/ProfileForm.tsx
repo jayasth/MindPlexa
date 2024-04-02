@@ -1,25 +1,43 @@
-import React, { useRef } from "react";
+import React from "react";
 import { useForm } from "react-hook-form";
 import { supabase } from "../utils/supabaseClient";
 import { User } from "@supabase/supabase-js";
 
+interface ProfileFormData {
+  username: string;
+  avatar_url?: string;
+  email: string;
+}
+
 const ProfileForm = ({ user }: { user: User }) => {
-  const { register, handleSubmit } = useForm();
+  const { register, handleSubmit, setValue } = useForm<ProfileFormData>();
 
-  const onSubmit = async (data: any) => {
+  React.useEffect(() => {
+    setValue("username", user.user_metadata?.full_name || "");
+    if (user.email) {
+      setValue("email", user.email);
+    }
+  }, [user, setValue]);
+
+  const onSubmit = async (data: ProfileFormData) => {
     try {
-      const { data: profile, error } = await supabase
-        .from("profiles")
-        .upsert({ ...data, id: user.id })
-        .single();
-
-      if (error) {
-        console.error("Error updating profile:", error);
+      if (!user.id) {
+        throw new Error("User ID is undefined");
       }
-      // Show success message or redirect to profile page
-    } catch (error) {
-      console.error("Error updating profile:", error);
-      // Show error message
+
+      const updates = {
+        ...data,
+        id: user.id,
+        updated_at: new Date(),
+      };
+
+      let { error } = await supabase.from("profiles").upsert(updates);
+
+      if (error) throw error;
+      alert("Profile updated successfully!");
+    } catch (error: any) {
+      console.error("Error updating profile:", error.message);
+      alert(error.message);
     }
   };
 
@@ -27,14 +45,13 @@ const ProfileForm = ({ user }: { user: User }) => {
     <div>
       <form onSubmit={handleSubmit(onSubmit)}>
         <div>
-          <label htmlFor="name" className="block font-medium mb-1">
+          <label htmlFor="username" className="block font-medium mb-1">
             Name
           </label>
           <input
             type="text"
-            id="name"
-            {...register("name", { required: true })}
-            defaultValue={user.user_metadata.name}
+            id="username"
+            {...register("username", { required: true })}
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
@@ -46,8 +63,8 @@ const ProfileForm = ({ user }: { user: User }) => {
             type="email"
             id="email"
             {...register("email", { required: true })}
-            defaultValue={user.email}
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            readOnly
           />
         </div>
         <button
