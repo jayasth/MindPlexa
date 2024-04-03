@@ -17,8 +17,10 @@ import Toolbar from "./Toolbar";
 import MapperRenderer from "./MapperRenderer";
 import AIAssistantModal from "./AIAssistantModal";
 import { supabase } from "../../../utils/supabaseClient";
+import useTheme from "../../../hooks/useTheme";
 
 const IdeaMapperCanvas: React.FC = () => {
+  const { theme } = useTheme();
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
@@ -129,9 +131,13 @@ const IdeaMapperCanvas: React.FC = () => {
   );
 
   return (
-    <div className="flex h-screen">
+    <div className={`flex h-screen ${theme === "dark" ? "bg-gray-800" : ""}`}>
       <ReactFlowProvider>
-        <div className="w-1/5 bg-white p-4">
+        <div
+          className={`w-1/5 p-4 ${
+            theme === "dark" ? "bg-gray-900" : "bg-white"
+          }`}
+        >
           <Toolbar
             onAddNode={handleAddNode}
             onDeleteNode={handleDeleteNode}

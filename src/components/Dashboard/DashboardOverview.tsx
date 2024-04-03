@@ -1,14 +1,16 @@
-// src/components/Dashboard/DashboardOverview.tsx
 import React from "react";
 import Sidebar from "./Sidebar";
 import ActivityFeed from "./ActivityFeed";
 import InsightsWidget from "./InsightsWidget";
 import SearchBar from "../SearchBar";
+import useTheme from "../../hooks/useTheme";
 
 const DashboardOverview: React.FC = () => {
+  const { theme } = useTheme();
+
   return (
     <div className="flex">
-      <div className="w-64">
+      <div className={`w-64 ${theme === "dark" ? "bg-gray-800" : "bg-white"}`}>
         <Sidebar />
       </div>
       <div className="flex-1 p-8">
@@ -17,11 +19,19 @@ const DashboardOverview: React.FC = () => {
           <SearchBar />
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+          <div
+            className={`p-6 rounded-lg shadow ${
+              theme === "dark" ? "bg-gray-800" : "bg-white"
+            }`}
+          >
             <h2 className="text-xl font-semibold mb-4">Recent Activity</h2>
             <ActivityFeed />
           </div>
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+          <div
+            className={`p-6 rounded-lg shadow ${
+              theme === "dark" ? "bg-gray-800" : "bg-white"
+            }`}
+          >
             <h2 className="text-xl font-semibold mb-4">Insights</h2>
             <InsightsWidget />
           </div>

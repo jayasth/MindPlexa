@@ -10,35 +10,40 @@ const Signup: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { data: session, error } = await supabase.auth.signUp({
+    console.log("Signup form submitted");
+
+    const { data, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
     });
-    if (session?.user) {
-      // Create a profile entry for the user
-      const { data, error } = await supabase
-        .from("profiles")
-        .insert([
-          {
-            id: session.user.id,
-            username: name,
-            created_at: new Date(),
-            updated_at: new Date(),
-          },
-        ]);
 
-      if (error) {
-        console.error("Error creating user profile:", error);
+    if (signUpError) {
+      console.error("Signup error:", signUpError.message);
+      // Handle signup error, display error message to the user
+      return;
+    }
+
+    console.log("Signup successful, user data:", data);
+
+    if (data?.user) {
+      console.log("Creating profile for user:", data.user.id);
+
+      const { data: profileData, error: insertError } = await supabase
+        .from("profiles")
+        .insert({
+          user_id: data.user.id,
+          username: name,
+        });
+
+      if (insertError) {
+        console.error("Error creating user profile:", insertError);
+        // Handle profile creation error, display error message to the user
       } else {
-        // Redirect to the confirmation page
+        console.log("Profile created successfully:", profileData);
         router.push("/confirmation");
       }
-    } else if (error) {
-      // Handle the error, maybe show a message to the user
-      console.error("Signup error:", error.message);
     }
   };
-
   const handleGoogleSignup = async () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",

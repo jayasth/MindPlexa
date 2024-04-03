@@ -1,73 +1,93 @@
-// src/pages/confirmation.tsx
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import { supabase } from "../utils/supabaseClient";
+import { FiCheckCircle, FiAlertCircle, FiArrowRight } from "react-icons/fi";
 
 const Confirmation: React.FC = () => {
-  const [email, setEmail] = useState("");
-  const [message, setMessage] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
+  const [isConfirmed, setIsConfirmed] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const resendConfirmationEmail = async () => {
-    setIsSubmitting(true);
-    setMessage("");
-
-    if (email) {
-      // Replace this with a POST request to your server-side endpoint that handles resending confirmation emails
-      const response = await fetch("/api/resend-confirmation", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email }),
+  useEffect(() => {
+    const confirmEmail = async () => {
+      const { data, error } = await supabase.auth.verifyOtp({
+        email: router.query.email as string,
+        token: router.query.token as string,
+        type: "signup",
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        setMessage(`Error: ${data.error}`);
+      if (error) {
+        console.error("Error confirming email:", error);
       } else {
-        setMessage(
-          "A new confirmation email has been sent. Please check your inbox."
-        );
+        setIsConfirmed(true);
       }
-    } else {
-      setMessage("Please enter your email address.");
-    }
 
-    setIsSubmitting(false);
-  };
+      setIsLoading(false);
+    };
+
+    if (router.query.email && router.query.token) {
+      confirmEmail();
+    } else {
+      setIsLoading(false);
+    }
+  }, [router.query.email, router.query.token]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <div className="bg-white p-8 rounded-lg shadow-md text-center">
+          <h1 className="text-3xl font-bold mb-4">Confirming Email...</h1>
+          <p>Please wait while we confirm your email address.</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isConfirmed) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <div className="bg-white p-8 rounded-lg shadow-md text-center">
+          <FiAlertCircle className="text-6xl text-red-500 mx-auto mb-4" />
+          <h1 className="text-3xl font-bold mb-4">Email Confirmation Failed</h1>
+          <p className="mb-8">
+            We were unable to confirm your email address. Please check the
+            confirmation link and try again.
+          </p>
+          <Link
+            href="/"
+            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            Go to Homepage
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-md mx-auto">
-        <h1 className="text-2xl font-bold mb-4 text-center">
-          Confirm Your Email
-        </h1>
-        <p className="text-center mb-4">
-          A confirmation email has been sent to your address. Please click the
-          link in the email to complete your signup.
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="bg-white p-8 rounded-lg shadow-md text-center">
+        <FiCheckCircle className="text-6xl text-green-500 mx-auto mb-4" />
+        <h1 className="text-3xl font-bold mb-4">Email Confirmed!</h1>
+        <p className="mb-8">
+          Thank you for confirming your email address. Your account is now fully
+          activated.
         </p>
-        <p className="text-center mb-4">
-          If you haven&apos;t received the email, enter your email address below
-          to resend the confirmation email.
-        </p>
-
-        <div className="flex flex-col items-center">
-          <input
-            type="email"
-            placeholder="Your email"
-            className="mb-2 p-2 border rounded"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <button
-            className="mb-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-            onClick={resendConfirmationEmail}
-            disabled={isSubmitting}
+        <div className="flex justify-center space-x-4">
+          <Link
+            href="/profile"
+            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 flex items-center"
           >
-            Resend Email
-          </button>
-          {message && <p className="text-center">{message}</p>}
+            <FiArrowRight className="mr-2" />
+            Complete Your Profile
+          </Link>
+          <Link
+            href="/dashboard"
+            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500"
+          >
+            Go to Dashboard
+          </Link>
         </div>
       </div>
     </div>

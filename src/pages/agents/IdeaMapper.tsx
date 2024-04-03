@@ -5,8 +5,10 @@ import withAuth from "../../components/withAuth";
 import Layout from "../../components/layout";
 import IdeaMapperCanvas from "../../features/IdeaMapper/components/IdeaMapperCanvas";
 import { useUser } from "../../hooks/useUser";
+import useTheme from "../../hooks/useTheme";
 
 const IdeaMapper: React.FC = () => {
+  const { theme } = useTheme();
   const { user, isLoading } = useUser();
   const router = useRouter();
 
@@ -22,7 +24,11 @@ const IdeaMapper: React.FC = () => {
 
   return (
     <Layout>
-      <div className="flex flex-col h-screen">
+      <div
+        className={`flex flex-col h-screen ${
+          theme === "dark" ? "bg-gray-900 text-white" : ""
+        }`}
+      >
         <div className="p-4">
           <h1 className="text-3xl font-heading mb-4">IdeaMapper</h1>
         </div>

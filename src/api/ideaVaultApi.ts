@@ -30,13 +30,15 @@ export const deleteIdea = async (ideaId: string) => {
   }
 };
 
-export const createIdea = async (idea: {
-  title: string;
-  description: string;
-  tags: string[];
-}) => {
+export const createIdea = async (
+  userId: string,
+  idea: { title: string; description: string; tags: string[] }
+) => {
   try {
-    const response = await axios.post("/api/ideas", idea);
+    const response = await axios.post("/api/ideas", {
+      ...idea,
+      user_id: userId,
+    });
     return response.data;
   } catch (error) {
     console.error("Error creating idea:", error);
@@ -45,6 +47,7 @@ export const createIdea = async (idea: {
 };
 
 export const updateIdea = async (
+  userId: string,
   ideaId: string,
   updatedIdea: {
     title: string;
@@ -53,7 +56,10 @@ export const updateIdea = async (
   }
 ) => {
   try {
-    const response = await axios.put(`/api/ideas/${ideaId}`, updatedIdea);
+    const response = await axios.put(`/api/ideas/${ideaId}`, {
+      ...updatedIdea,
+      user_id: userId,
+    });
     return response.data;
   } catch (error) {
     console.error("Error updating idea:", error);

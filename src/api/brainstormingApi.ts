@@ -2,12 +2,15 @@
 
 import axios from "axios";
 
-export const createBrainstormingSession = async (sessionData: any) => {
+export const createBrainstormingSession = async (
+  userId: string,
+  sessionData: any
+) => {
   try {
-    const response = await axios.post(
-      "/api/brainstorming-sessions",
-      sessionData
-    );
+    const response = await axios.post("/api/brainstorming-sessions", {
+      ...sessionData,
+      host_id: userId,
+    });
     return response.data;
   } catch (error) {
     console.error("Error creating brainstorming session:", error);

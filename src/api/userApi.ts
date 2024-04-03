@@ -1,6 +1,31 @@
 // src/api/userApi.ts
 import { supabase } from "../utils/supabaseClient";
 
+// Call this function after user signs up
+export const createUserProfile = async (
+  userId: string,
+  { username }: { username: string }
+) => {
+  const { data, error } = await supabase.from("profiles").upsert(
+    [
+      {
+        user_id: userId,
+        username: username,
+      },
+    ],
+    {
+      onConflict: "user_id",
+    }
+  );
+
+  if (error) {
+    console.error("Error creating or updating user profile:", error);
+    throw error;
+  }
+
+  return data;
+};
+
 export const updateUserProfile = async (
   userId: string,
   {
