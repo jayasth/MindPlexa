@@ -1,7 +1,7 @@
 // src/pages/profile.tsx
 import React from "react";
 import { useRouter } from "next/router";
-import { useUser } from "../utils/useUser";
+import { useUser } from "../shared/utils/useUser";
 import Layout from "../components/layout";
 import ProfileForm from "../components/ProfileForm";
 import ChangePasswordForm from "../components/ChangePasswordForm";

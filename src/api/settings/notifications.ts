@@ -1,7 +1,7 @@
-// src/pages/api/settings/integrations.ts
+// src/pages/api/settings/notifications.ts
 
 import type { NextApiRequest, NextApiResponse } from "next";
-import { withAuth } from "../authMiddleware";
+import { withAuth } from "../../pages/api/authMiddleware.ts";
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method === "PUT") {

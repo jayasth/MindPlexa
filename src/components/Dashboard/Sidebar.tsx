@@ -6,7 +6,7 @@ import { FiSettings, FiUser, FiGrid, FiMoon, FiSun } from "react-icons/fi";
 import { SiVault } from "react-icons/si";
 import { GiHiveMind } from "react-icons/gi";
 import { RiMindMap } from "react-icons/ri";
-import useTheme from "../../hooks/useTheme";
+import useTheme from "../../shared/hooks/useTheme";
 
 const Sidebar: React.FC = () => {
   const router = useRouter();

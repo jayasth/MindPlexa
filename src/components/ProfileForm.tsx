@@ -1,6 +1,6 @@
 import React from "react";
 import { useForm } from "react-hook-form";
-import { supabase } from "../utils/supabaseClient";
+import { supabase } from "../shared/utils/supabaseClient";
 import { User } from "@supabase/supabase-js";
 
 interface ProfileFormData {

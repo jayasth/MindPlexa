@@ -1,7 +1,7 @@
 // src/components/withAuth.tsx
 import React, { useEffect } from "react";
 import { useRouter } from "next/router";
-import { useUser } from "../hooks/useUser";
+import { useUser } from "../shared/hooks/useUser";
 
 const withAuth = (WrappedComponent: React.ComponentType) => {
   const AuthenticatedComponent: React.FC = (props) => {

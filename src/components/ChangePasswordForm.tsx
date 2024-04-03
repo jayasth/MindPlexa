@@ -1,7 +1,7 @@
 import React from "react";
 import { useForm } from "react-hook-form";
-import { supabase } from "../utils/supabaseClient";
-import { useUser } from "../hooks/useUser";
+import { supabase } from "../shared/utils/supabaseClient";
+import { useUser } from "../shared/hooks/useUser";
 
 const ChangePasswordForm: React.FC = () => {
   const { register, handleSubmit } = useForm();

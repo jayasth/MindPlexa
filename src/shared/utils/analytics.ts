@@ -1,5 +1,3 @@
-// src/utils/analytics.ts
-
 import ReactGA from "react-ga";
 
 export const initGA = () => {

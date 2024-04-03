@@ -1,7 +1,7 @@
 // C:/coding/mindplexa/src/features/IdeaMapper/hooks/useNodesAndEdges.ts
 
 import { useState, useEffect, useCallback } from "react";
-import { supabase } from "../../../utils/supabaseClient";
+import { supabase } from "../../../shared/utils/supabaseClient";
 import { Node, Edge } from "reactflow";
 
 export const useNodesAndEdges = (userId: string) => {

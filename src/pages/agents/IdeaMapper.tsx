@@ -4,8 +4,8 @@ import { useRouter } from "next/router";
 import withAuth from "../../components/withAuth";
 import Layout from "../../components/layout";
 import IdeaMapperCanvas from "../../features/IdeaMapper/components/IdeaMapperCanvas";
-import { useUser } from "../../hooks/useUser";
-import useTheme from "../../hooks/useTheme";
+import { useUser } from "../../shared/hooks/useUser";
+import useTheme from "../../shared/hooks/useTheme";
 
 const IdeaMapper: React.FC = () => {
   const { theme } = useTheme();

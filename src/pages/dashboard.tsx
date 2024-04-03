@@ -2,7 +2,7 @@ import React from "react";
 import Layout from "../components/layout";
 import DashboardOverview from "../components/Dashboard/DashboardOverview";
 import withAuth from "../components/withAuth";
-import useTheme from "../hooks/useTheme";
+import useTheme from "../shared/hooks/useTheme";
 
 const Dashboard: React.FC = () => {
   const { theme } = useTheme();

@@ -26,7 +26,8 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "declarations.d.ts"
+    "declarations.d.ts",
+    "src/pages/api/authMiddleware.ts"
   ],
   "exclude": ["node_modules"]
 }

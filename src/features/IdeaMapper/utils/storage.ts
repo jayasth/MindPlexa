@@ -1,5 +1,5 @@
 import { Node as ReactFlowNode, Edge as ReactFlowEdge } from "reactflow";
-import { supabase } from "../../../utils/supabaseClient";
+import { supabase } from "../../../shared/utils/supabaseClient";
 
 export const saveMindmap = async (
   title: string,

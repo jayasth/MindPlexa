@@ -16,8 +16,8 @@ import KeywordInput from "./KeywordInput";
 import Toolbar from "./Toolbar";
 import MapperRenderer from "./MapperRenderer";
 import AIAssistantModal from "./AIAssistantModal";
-import { supabase } from "../../../utils/supabaseClient";
-import useTheme from "../../../hooks/useTheme";
+import { supabase } from "../../../shared/utils/supabaseClient";
+import useTheme from "../../../shared/hooks/useTheme";
 
 const IdeaMapperCanvas: React.FC = () => {
   const { theme } = useTheme();

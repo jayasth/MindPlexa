@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { supabase } from "../../../utils/supabaseClient";
+import { supabase } from "../../../shared/utils/supabaseClient";
 
 interface CommentInputProps {
   mindmapId: number;

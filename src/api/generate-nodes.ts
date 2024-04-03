@@ -1,7 +1,7 @@
 // src/pages/api/generate-nodes.ts
 import type { NextApiRequest, NextApiResponse } from "next";
 import { OpenAI } from "openai";
-import { withAuth } from "./authMiddleware";
+import { withAuth } from "../pages/api/authMiddleware.ts";
 
 const openai = new OpenAI({ apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY });
 

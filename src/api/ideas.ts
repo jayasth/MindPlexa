@@ -1,6 +1,6 @@
 // src/pages/api/ideas.ts
 import type { NextApiRequest, NextApiResponse } from "next";
-import { withAuth } from "./authMiddleware";
+import { withAuth } from "../pages/api/authMiddleware.ts";
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method === "GET") {

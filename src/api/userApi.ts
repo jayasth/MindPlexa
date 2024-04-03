@@ -1,5 +1,5 @@
 // src/api/userApi.ts
-import { supabase } from "../utils/supabaseClient";
+import { supabase } from "../shared/utils/supabaseClient";
 
 // Call this function after user signs up
 export const createUserProfile = async (

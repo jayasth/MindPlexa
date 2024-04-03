@@ -3,7 +3,7 @@ import Sidebar from "./Sidebar";
 import ActivityFeed from "./ActivityFeed";
 import InsightsWidget from "./InsightsWidget";
 import SearchBar from "../SearchBar";
-import useTheme from "../../hooks/useTheme";
+import useTheme from "../../shared/hooks/useTheme";
 
 const DashboardOverview: React.FC = () => {
   const { theme } = useTheme();

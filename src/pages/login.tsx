@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useRouter } from "next/router";
-import { supabase } from "../utils/supabaseClient";
+import { supabase } from "../shared/utils/supabaseClient";
 
 const Login: React.FC = () => {
   const router = useRouter();

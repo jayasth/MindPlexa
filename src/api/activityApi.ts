@@ -1,6 +1,6 @@
 // src/api/activityApi.ts
 
-import { supabase } from "../utils/supabaseClient";
+import { supabase } from "../shared/utils/supabaseClient";
 
 export const getUserActivity = async () => {
   try {

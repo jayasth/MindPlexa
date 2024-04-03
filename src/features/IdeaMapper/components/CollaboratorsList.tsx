@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { supabase } from "../../../utils/supabaseClient";
+import { supabase } from "../../../shared/utils/supabaseClient";
 
 interface CollaboratorsListProps {
   mindmapId: number;

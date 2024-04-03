@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { useUser } from "../utils/useUser";
-import { supabase } from "../utils/supabaseClient";
+import { useUser } from "../shared/utils/useUser";
+import { supabase } from "../shared/utils/supabaseClient";
 import Layout from "../components/layout";
 import {
   FiUser,
@@ -14,7 +14,7 @@ import {
   FiGithub,
   FiX,
 } from "react-icons/fi";
-import useTheme from "../hooks/useTheme";
+import useTheme from "../shared/hooks/useTheme";
 
 const ProfilePage: React.FC = () => {
   const { user, isLoading } = useUser();

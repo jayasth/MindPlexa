@@ -1,8 +1,8 @@
 // src/components/Navbar.tsx
 import React from "react";
 import Link from "next/link";
-import { useUser } from "../hooks/useUser";
-import { supabase } from "../utils/supabaseClient";
+import { useUser } from "../shared/hooks/useUser";
+import { supabase } from "../shared/utils/supabaseClient";
 import { useRouter } from "next/router";
 
 const Navbar: React.FC = () => {
