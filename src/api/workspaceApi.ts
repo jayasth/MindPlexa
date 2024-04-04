@@ -1,62 +1,54 @@
 // src/api/workspaceApi.ts
 import { supabase } from "../shared/supabase/supabaseClient";
 
-export const getWorkspaceById = async (workspaceId: string) => {
-  const { data: workspace, error } = await supabase
+export const getWorkspaces = async (userId: string) => {
+  const { data, error } = await supabase
     .from("workspaces")
     .select("*")
-    .eq("id", workspaceId)
+    .eq("owner_id", userId);
+
+  if (error) {
+    console.error("Error fetching workspaces:", error);
+    throw error;
+  }
+
+  return data;
+};
+
+export const createWorkspace = async (
+  userId: string,
+  name: string,
+  description?: string
+) => {
+  const { data, error } = await supabase
+    .from("workspaces")
+    .insert({ owner_id: userId, name, description })
     .single();
 
   if (error) {
-    console.error("Error getting workspace:", error.message);
+    console.error("Error creating workspace:", error);
     throw error;
   }
 
-  return workspace;
+  return data;
 };
 
-export const getUserWorkspaces = async (userId: string) => {
-  const { data: workspaces, error } = await supabase
-    .from("workspaces")
-    .select("*")
-    .eq("user_id", userId);
-
-  if (error) {
-    console.error("Error getting user workspaces:", error.message);
-    throw error;
-  }
-
-  return workspaces;
-};
-
-export const createWorkspace = async (userId: string, name: string) => {
-  const { data: workspace, error } = await supabase
-    .from("workspaces")
-    .insert({ user_id: userId, name })
-    .single();
-
-  if (error) {
-    console.error("Error creating workspace:", error.message);
-    throw error;
-  }
-
-  return workspace;
-};
-
-export const updateWorkspace = async (workspaceId: string, updates: any) => {
-  const { data: workspace, error } = await supabase
+export const updateWorkspace = async (
+  workspaceId: string,
+  updates: Partial<{ name: string; description: string }>
+) => {
+  const { data, error } = await supabase
     .from("workspaces")
     .update(updates)
     .eq("id", workspaceId)
     .single();
 
   if (error) {
-    console.error("Error updating workspace:", error.message);
+    console.error("Error updating workspace:", error);
     throw error;
   }
 
-  return workspace;
+  return data;
 };
 
 export const deleteWorkspace = async (workspaceId: string) => {
@@ -66,7 +58,7 @@ export const deleteWorkspace = async (workspaceId: string) => {
     .eq("id", workspaceId);
 
   if (error) {
-    console.error("Error deleting workspace:", error.message);
+    console.error("Error deleting workspace:", error);
     throw error;
   }
 };

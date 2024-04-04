@@ -19,7 +19,7 @@ const Login: React.FC = () => {
     } else {
       console.log("Login successful", data);
       const redirectTo = router.query.redirectedFrom as string | undefined;
-      router.push(redirectTo || "/Workspace");
+      router.push(redirectTo || "/workspace");
     }
   };
 

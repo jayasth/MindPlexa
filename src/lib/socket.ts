@@ -18,11 +18,11 @@ export const initSocket = () => {
     });
 
     // Add event listeners for BrainstormBuddy
-    socket.on("newIdea", (idea: any) => {
+    socket.on("newIdea", () => {
       // Handle new idea event
     });
 
-    socket.on("ideaVoted", (updatedIdea: any) => {
+    socket.on("ideaVoted", () => {
       // Handle idea voted event
     });
 

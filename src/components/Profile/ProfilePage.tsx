@@ -1,6 +1,6 @@
 import React from "react";
 import { useRouter } from "next/router";
-import { useUser } from "../../shared/utils/useUser";
+import { useUser } from "../../shared/hooks/useUser";
 import Layout from "../Layout/layout";
 import ProfileForm from "./ProfileForm";
 import ChangePasswordForm from "./ChangePasswordForm";

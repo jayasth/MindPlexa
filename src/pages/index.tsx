@@ -1,11 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "../shared/supabase/supabaseClient";
 import Layout from "../components/Layout/layout";
-import AgentCard from "../features/Agents/components/AgentCard";
-import agents from "../data/agents";
 import OnboardingTutorial from "../components/Onboarding/OnboardingTutorial";
 import Link from "next/link";
-import SupabaseTest from "../components/SupabaseTest";
 
 const Home: React.FC = () => {
   const [session, setSession] = useState<any>(null);
@@ -43,10 +40,9 @@ const Home: React.FC = () => {
     return (
       <Layout>
         <div className="text-center">
-          <h1 className="text-4xl font-heading mb-8">Welcome to MindPlexa!</h1>
+          <h1 className="text-4xl font-heading mb-8">MindPlexa</h1>
           <p className="text-xl mb-12">
-            Explore our collection of AI-powered agents to boost your
-            productivity.
+            Navigating Ideas from Conception to Completion!
           </p>
           <div className="flex justify-center space-x-4">
             <Link href="/signup">
@@ -65,25 +61,16 @@ const Home: React.FC = () => {
   return (
     <Layout>
       <div className="text-center">
-        <h1 className="text-4xl font-heading mb-8">Welcome to MindPlexa!</h1>
+        <h1 className="text-4xl font-heading mb-8">
+          MindPlexa: Navigating Ideas from Conception to Completion
+        </h1>
         <p className="text-xl mb-12">
-          Explore our collection of AI-powered agents to boost your
-          productivity.
+          Start organizing your ideas and projects in one place with MindPlexa
+          Workspace.
         </p>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {agents
-            .filter((agent) => agent.id <= 3)
-            .map((agent) => (
-              <AgentCard
-                key={agent.id}
-                title={agent.title}
-                description={agent.description}
-                link={agent.link}
-                className="feature-card"
-              />
-            ))}
-          <SupabaseTest />
-        </div>
+        <Link href="/workspace">
+          <span className="btn-secondary">Workspace</span>
+        </Link>
       </div>
     </Layout>
   );

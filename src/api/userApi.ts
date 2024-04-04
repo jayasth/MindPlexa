@@ -74,12 +74,12 @@ export const uploadProfilePicture = async (userId: string, file: File) => {
   const fileName = `${userId}-${Date.now()}.${fileExtension}`;
   const filePath = `avatars/${fileName}`;
 
-  let { error: uploadError } = await supabase.storage
+  const { error: uploadError } = await supabase.storage
     .from("avatars")
     .upload(filePath, file);
   if (uploadError) throw uploadError;
 
-  let { data } = supabase.storage.from("avatars").getPublicUrl(filePath);
+  const { data } = supabase.storage.from("avatars").getPublicUrl(filePath);
 
   return data.publicUrl;
 };

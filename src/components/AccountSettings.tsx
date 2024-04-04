@@ -3,7 +3,7 @@ import ProfileForm from "./Profile/ProfileForm";
 import ChangePasswordForm from "./Profile/ChangePasswordForm";
 
 const AccountSettings: React.FC = () => {
-  const [user, setUser] = useState(null);
+  const [user] = useState(null);
 
   useEffect(() => {
     // Fetch the user data here and call setUser with the data

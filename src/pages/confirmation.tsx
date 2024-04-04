@@ -11,7 +11,7 @@ const Confirmation: React.FC = () => {
 
   useEffect(() => {
     const confirmEmail = async () => {
-      const { data, error } = await supabase.auth.verifyOtp({
+      const { error } = await supabase.auth.verifyOtp({
         email: router.query.email as string,
         token: router.query.token as string,
         type: "signup",

@@ -1,6 +1,6 @@
 // src/features/Workspace/workspaceSlice.ts
 import { createSlice, PayloadAction, createAsyncThunk } from "@reduxjs/toolkit";
-import { getWorkspaceById } from "./workspaceApi";
+import { getWorkspaceById } from "../../api/workspaceApi";
 
 interface Project {
   id: string;

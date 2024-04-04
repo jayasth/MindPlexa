@@ -1,6 +1,7 @@
 import axios from "axios";
+import { Settings } from "http2";
 
-export const updateNotificationSettings = async (settings: any) => {
+export const updateNotificationSettings = async (settings: Settings) => {
   try {
     const response = await axios.put("/api/settings/notifications", settings);
     return response.data;
@@ -10,7 +11,7 @@ export const updateNotificationSettings = async (settings: any) => {
   }
 };
 
-export const updateIntegrationSettings = async (settings: any) => {
+export const updateIntegrationSettings = async (settings: Settings) => {
   try {
     const response = await axios.put("/api/settings/integrations", settings);
     return response.data;
@@ -20,7 +21,7 @@ export const updateIntegrationSettings = async (settings: any) => {
   }
 };
 
-export const updateThemeSettings = async (settings: any) => {
+export const updateThemeSettings = async (settings: Settings) => {
   try {
     const response = await axios.put("/api/settings/theme", settings);
     return response.data;

@@ -1,12 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { OpenAI } from "openai";
-import withAuth from "../../../components/withAuth";
 
 const openai = new OpenAI({ apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY });
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method === "POST") {
-    const { nodeId, nodeLabel } = req.body;
+    const { nodeLabel } = req.body;
 
     try {
       const response = await openai.chat.completions.create({
@@ -43,4 +42,4 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   }
 };
 
-export default withAuth(handler);
+export default handler;

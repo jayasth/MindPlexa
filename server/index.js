@@ -1,4 +1,3 @@
-// server/index.js
 const express = require("express");
 const http = require("http");
 const socketIO = require("socket.io");
@@ -8,7 +7,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIO(server, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: process.env.CORS_ORIGIN || "http://localhost:3000",
     methods: ["GET", "POST"],
   },
 });
@@ -35,6 +34,13 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {
     console.log("A user disconnected");
   });
+});
+
+// Error handling middleware
+app.use((err, req, res) => {
+  // Remove `next` from the parameters
+  console.error(err.stack);
+  res.status(500).send("Something broke!");
 });
 
 // Start the server

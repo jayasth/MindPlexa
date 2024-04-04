@@ -6,7 +6,7 @@ const ForgotPassword: React.FC = () => {
   const [message, setMessage] = useState("");
 
   const handleResetPassword = async () => {
-    const { data, error } = await supabase.auth.resetPasswordForEmail(email);
+    const { error } = await supabase.auth.resetPasswordForEmail(email);
     if (error) {
       setMessage("Error sending reset password email: " + error.message);
     } else {

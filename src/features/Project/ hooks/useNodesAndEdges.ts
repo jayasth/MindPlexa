@@ -9,7 +9,7 @@ export const useNodesAndEdges = (userId: string) => {
   const [edges, setEdges] = useState<Edge[]>([]);
 
   const saveNodesAndEdges = async () => {
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from("mindmaps")
       .upsert({ user_id: userId, nodes, edges });
 
@@ -17,7 +17,7 @@ export const useNodesAndEdges = (userId: string) => {
   };
 
   const loadNodesAndEdges = useCallback(async () => {
-    let { data: mindmaps, error } = await supabase
+    const { data: mindmaps, error } = await supabase
       .from("mindmaps")
       .select("*")
       .eq("user_id", userId)

@@ -2,8 +2,13 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { updateIntegrationSettings } from "../../api/settingsApi";
 
+interface FormData {
+  slackWebhook: string;
+  jiraUrl: string;
+}
+
 const IntegrationSettings: React.FC = () => {
-  const { register, handleSubmit } = useForm();
+  const { register, handleSubmit } = useForm<FormData>();
 
   const onSubmit = async (data: any) => {
     try {

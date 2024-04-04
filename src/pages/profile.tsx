@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { useUser } from "../shared/utils/useUser";
+import { useUser } from "../shared/hooks/useUser";
 import { supabase } from "../shared/supabase/supabaseClient";
 import Layout from "../components/Layout/layout";
 import {
