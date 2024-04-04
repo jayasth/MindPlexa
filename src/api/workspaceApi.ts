@@ -1,6 +1,21 @@
 // src/api/workspaceApi.ts
 import { supabase } from "../shared/supabase/supabaseClient";
 
+export const getWorkspaceById = async (workspaceId: string) => {
+  const { data: workspace, error } = await supabase
+    .from("workspaces")
+    .select("*")
+    .eq("id", workspaceId)
+    .single();
+
+  if (error) {
+    console.error("Error getting workspace:", error.message);
+    throw error;
+  }
+
+  return workspace;
+};
+
 export const getUserWorkspaces = async (userId: string) => {
   const { data: workspaces, error } = await supabase
     .from("workspaces")

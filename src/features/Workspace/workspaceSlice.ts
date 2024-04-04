@@ -1,5 +1,6 @@
 // src/features/Workspace/workspaceSlice.ts
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction, createAsyncThunk } from "@reduxjs/toolkit";
+import { getWorkspaceById } from "./workspaceApi";
 
 interface Project {
   id: string;
@@ -18,13 +19,27 @@ interface WorkspaceState {
   workspaces: Workspace[];
   loading: boolean;
   error: string | null;
+  selectedWorkspace: Workspace | null;
 }
 
 const initialState: WorkspaceState = {
   workspaces: [],
   loading: false,
   error: null,
+  selectedWorkspace: null,
 };
+
+export const fetchWorkspace = createAsyncThunk(
+  "workspace/fetchWorkspace",
+  async (workspaceId: string, { rejectWithValue }) => {
+    try {
+      const workspace = await getWorkspaceById(workspaceId);
+      return workspace;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
 
 const workspaceSlice = createSlice({
   name: "workspace",
@@ -43,6 +58,14 @@ const workspaceSlice = createSlice({
         workspace.projects.push(newProject);
       }
     },
+  },
+  extraReducers: (builder) => {
+    builder.addCase(fetchWorkspace.fulfilled, (state, action: PayloadAction<Workspace>) => {
+      state.selectedWorkspace = action.payload;
+    });
+    builder.addCase(fetchWorkspace.rejected, (state, action) => {
+      console.error("Error fetching workspace:", action.payload);
+    });
   },
 });
 

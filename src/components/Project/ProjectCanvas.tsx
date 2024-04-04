@@ -2,6 +2,7 @@
 import React, { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../store";
+import AIAssistant from "./AIAssistant/AIAssistant";
 import { getProjectsByWorkspaceId } from "../../api/projectApi";
 import {
   setProjects,
@@ -51,6 +52,15 @@ const ProjectCanvas: React.FC<ProjectCanvasProps> = ({ workspaceId }) => {
       <div>
         {/* Render the project canvas */}
         {/* Use CustomNode and CustomEdge components */}
+      </div>
+      <AIAssistant />
+      <div>
+        <h4 className="text-lg font-semibold mb-2">Generated Ideas:</h4>
+        <ul className="list-disc pl-6">
+          {generatedIdeas.map((idea, index) => (
+            <li key={index}>{idea}</li>
+          ))}
+        </ul>
       </div>
     </div>
   );
