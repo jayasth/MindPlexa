@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useRouter } from "next/router";
-import { supabase } from "../shared/utils/supabaseClient";
+import { supabase } from "../shared/supabase/supabaseClient";
 
 const Login: React.FC = () => {
   const router = useRouter();
@@ -19,7 +19,7 @@ const Login: React.FC = () => {
     } else {
       console.log("Login successful", data);
       const redirectTo = router.query.redirectedFrom as string | undefined;
-      router.push(redirectTo || "/dashboard");
+      router.push(redirectTo || "/Workspace");
     }
   };
 

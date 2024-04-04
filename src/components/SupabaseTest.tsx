@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { supabase } from "../shared/utils/supabaseClient";
+import { supabase } from "../shared/supabase/supabaseClient";
 
 const SupabaseTest = () => {
   useEffect(() => {

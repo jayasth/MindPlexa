@@ -1,6 +1,5 @@
-// src/pages/forgot-password.tsx
 import React, { useState } from "react";
-import { supabase } from "../shared/utils/supabaseClient";
+import { supabase } from "../shared/supabase/supabaseClient";
 
 const ForgotPassword: React.FC = () => {
   const [email, setEmail] = useState("");

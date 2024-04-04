@@ -1,4 +1,3 @@
-// src/pages/api/users/password.ts
 import type { NextApiRequest, NextApiResponse } from "next";
 
 export default async function handler(

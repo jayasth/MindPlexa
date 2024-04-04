@@ -1,8 +1,7 @@
-// src/pages/_app.tsx
 import type { AppProps } from "next/app";
 import { useEffect } from "react";
 import { SessionContextProvider } from "@supabase/auth-helpers-react";
-import { supabase } from "../shared/utils/supabaseClient";
+import { supabase } from "../shared/supabase/supabaseClient";
 import "../styles/globals.css";
 
 function MyApp({ Component, pageProps }: AppProps) {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { supabase } from "../shared/utils/supabaseClient";
+import { supabase } from "../shared/supabase/supabaseClient";
 import { FiCheckCircle, FiAlertCircle, FiArrowRight } from "react-icons/fi";
 
 const Confirmation: React.FC = () => {
@@ -83,10 +83,10 @@ const Confirmation: React.FC = () => {
             Complete Your Profile
           </Link>
           <Link
-            href="/dashboard"
+            href="/workspace"
             className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500"
           >
-            Go to Dashboard
+            Go to Workspace
           </Link>
         </div>
       </div>

@@ -1,4 +1,3 @@
-// src/tests/pages/Login.test.tsx
 require("dotenv").config();
 
 import React from "react";

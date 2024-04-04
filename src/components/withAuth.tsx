@@ -1,4 +1,3 @@
-// src/components/withAuth.tsx
 import React, { useEffect } from "react";
 import { useRouter } from "next/router";
 import { useUser } from "../shared/hooks/useUser";

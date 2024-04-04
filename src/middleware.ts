@@ -26,7 +26,7 @@ export async function middleware(req: {
       session &&
       (req.nextUrl.pathname === "/login" || req.nextUrl.pathname === "/signup")
     ) {
-      return NextResponse.redirect(new URL("/dashboard", req.url));
+      return NextResponse.redirect(new URL("/workspace", req.url));
     }
     return res;
   }

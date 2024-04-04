@@ -1,7 +1,5 @@
-// src/components/ForgotPasswordForm.tsx
-
 import React, { useState } from "react";
-import { supabase } from "../shared/utils/supabaseClient";
+import { supabase } from "../shared/supabase/supabaseClient";
 
 const ForgotPasswordForm: React.FC = () => {
   const [email, setEmail] = useState("");

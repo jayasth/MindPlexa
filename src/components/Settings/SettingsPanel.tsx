@@ -1,4 +1,3 @@
-// src/components/Settings/SettingsPanel.tsx
 import React from "react";
 import NotificationSettings from "./NotificationSettings";
 import IntegrationSettings from "./IntegrationSettings";

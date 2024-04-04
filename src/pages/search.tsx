@@ -1,7 +1,7 @@
 import React from "react";
 import withAuth from "../components/withAuth";
 import { useRouter } from "next/router";
-import Layout from "../components/layout";
+import Layout from "../components/Layout/layout";
 
 const SearchResults: React.FC = () => {
   const router = useRouter();

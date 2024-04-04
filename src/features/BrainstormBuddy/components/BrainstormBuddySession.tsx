@@ -1,5 +1,3 @@
-// src/components/BrainstormBuddy/BrainstormBuddySession.tsx
-
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { io, Socket } from "socket.io-client";
@@ -9,8 +7,8 @@ import {
   addIdeaToSession,
   voteOnIdea,
   deleteIdeaFromSession,
-} from "../../../api/brainstormingApi";
-import { saveIdeaToVault } from "../../../api/ideaVaultApi";
+} from "../api/brainstormingApi";
+import { saveIdeaToVault } from "../../IdeaVault/api/ideaVaultApi";
 
 const BrainstormBuddySession: React.FC = () => {
   const router = useRouter();

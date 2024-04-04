@@ -1,5 +1,3 @@
-// src/components/Settings/NotificationSettings.tsx
-
 import React from "react";
 import { useForm } from "react-hook-form";
 import { updateNotificationSettings } from "../../api/settingsApi";

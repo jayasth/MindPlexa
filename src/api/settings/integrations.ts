@@ -1,7 +1,5 @@
-// src/pages/api/settings/integrations.ts
-
 import type { NextApiRequest, NextApiResponse } from "next";
-import { withAuth } from "../../pages/api/authMiddleware.ts";
+import withAuth from "../../components/withAuth";
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method === "PUT") {

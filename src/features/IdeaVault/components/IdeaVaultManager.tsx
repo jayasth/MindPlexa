@@ -1,12 +1,10 @@
-// src/components/IdeaVault/IdeaVaultManager.tsx
-
 import React, { useState, useEffect } from "react";
 import {
   getIdeasForUser,
   deleteIdea,
   createIdea,
   updateIdea,
-} from "../../../api/ideaVaultApi";
+} from "../api/ideaVaultApi";
 import { FiSearch, FiPlus, FiTrash2, FiEdit2 } from "react-icons/fi";
 
 const IdeaVaultManager: React.FC = () => {

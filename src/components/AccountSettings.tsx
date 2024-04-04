@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import ProfileForm from "./ProfileForm";
-import ChangePasswordForm from "./ChangePasswordForm";
+import ProfileForm from "./Profile/ProfileForm";
+import ChangePasswordForm from "./Profile/ChangePasswordForm";
 
 const AccountSettings: React.FC = () => {
   const [user, setUser] = useState(null);

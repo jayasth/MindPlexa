@@ -1,7 +1,6 @@
-// src/pages/index.tsx
 import React, { useEffect, useState } from "react";
-import { supabase } from "../shared/utils/supabaseClient";
-import Layout from "../components/layout";
+import { supabase } from "../shared/supabase/supabaseClient";
+import Layout from "../components/Layout/layout";
 import AgentCard from "../features/Agents/components/AgentCard";
 import agents from "../data/agents";
 import OnboardingTutorial from "../components/Onboarding/OnboardingTutorial";

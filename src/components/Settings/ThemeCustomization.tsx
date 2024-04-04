@@ -1,5 +1,3 @@
-// src/components/Settings/ThemeCustomization.tsx
-
 import React from "react";
 import { useForm } from "react-hook-form";
 import { updateThemeSettings } from "../../api/settingsApi";

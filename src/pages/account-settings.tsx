@@ -1,7 +1,6 @@
-// src/pages/account-settings.tsx
 import React from "react";
 import withAuth from "../components/withAuth";
-import Layout from "../components/layout";
+import Layout from "../components/Layout/layout";
 import AccountSettings from "../components/AccountSettings";
 
 const AccountSettingsPage: React.FC = () => {

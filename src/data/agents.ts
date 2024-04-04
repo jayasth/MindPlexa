@@ -1,5 +1,3 @@
-// src/data/agents.ts
-
 export interface Agent {
   id: number;
   title: string;

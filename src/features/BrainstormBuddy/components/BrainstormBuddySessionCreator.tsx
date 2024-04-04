@@ -1,9 +1,7 @@
-// src/components/BrainstormBuddy/BrainstormBuddySessionCreator.tsx
-
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { FiPlus, FiSend } from "react-icons/fi";
-import { createBrainstormingSession } from "../../../api/brainstormingApi";
+import { createBrainstormingSession } from "../api/brainstormingApi";
 
 const BrainstormBuddySessionCreator: React.FC = () => {
   const [inviteLink, setInviteLink] = useState("");

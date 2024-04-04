@@ -1,5 +1,3 @@
-// src/api/settingsApi.ts
-
 import axios from "axios";
 
 export const updateNotificationSettings = async (settings: any) => {
