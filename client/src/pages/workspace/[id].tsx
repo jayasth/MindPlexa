@@ -1,23 +1,21 @@
-// /pages/workspace/[id].tsx
-import React, { useEffect } from "react";
+import React from "react";
 import { useRouter } from "next/router";
-import { useDispatch } from "react-redux";
-import { fetchWorkspace } from "../../features/workspace/workspaceSlice";
-import Workspace from "../../components/workspace/Workspace";
-import withAuth from "../../components/auth/withAuth";
+import ProjectLayout from "@/components/project/ProjectLayout";
+import ProjectView from "@/components/project/ProjectView";
 
 const WorkspacePage: React.FC = () => {
   const router = useRouter();
-  const { id } = router.query;
-  const dispatch = useDispatch();
+  const { id, projectId } = router.query;
 
-  useEffect(() => {
-    if (id) {
-      dispatch(fetchWorkspace(id as string));
-    }
-  }, [id, dispatch]);
-
-  return <Workspace />;
+  return (
+    <ProjectLayout>
+      {projectId ? (
+        <ProjectView projectId={projectId as string} />
+      ) : (
+        <p>Select a project</p>
+      )}
+    </ProjectLayout>
+  );
 };
 
-export default withAuth(WorkspacePage);
+export default WorkspacePage;
