@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { supabase } from "../services/api/supabase/supabaseClient";
-import Layout from "../components/layout/layout";
-import OnboardingTutorial from "../components/onboarding/Tutorial";
+import { supabase } from "../client/src/services/api/supabase/supabaseClient";
+import Layout from "../client/src/components/layout/layout";
+import OnboardingTutorial from "../client/src/components/onboarding/Tutorial";
 import Link from "next/link";
 
 const Home: React.FC = () => {

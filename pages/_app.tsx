@@ -1,8 +1,8 @@
 import type { AppProps } from "next/app";
 import React, { useEffect } from "react";
 import { SessionContextProvider } from "@supabase/auth-helpers-react";
-import { supabase } from "../services/api/supabase/supabaseClient";
-import "../styles/globals.css";
+import { supabase } from "../client/src/services/api/supabase/supabaseClient";
+import "../client/src/styles/globals.css";
 
 function MyApp({ Component, pageProps }: AppProps) {
   useEffect(() => {

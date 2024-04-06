@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import { useUser } from "../hooks/useUser";
-import { supabase } from "../services/api/supabase/supabaseClient";
-import Layout from "../components/layout/layout";
+import { useUser } from "../client/src/hooks/useUser";
+import { supabase } from "../client/src/services/api/supabase/supabaseClient";
+import Layout from "../client/src/components/layout/layout";
 import {
   FiUser,
   FiEdit2,
@@ -14,7 +14,7 @@ import {
   FiGithub,
   FiX,
 } from "react-icons/fi";
-import useTheme from "../hooks/useTheme";
+import useTheme from "../client/src/hooks/useTheme";
 
 const ProfilePage: React.FC = () => {
   const { user, isLoading } = useUser();

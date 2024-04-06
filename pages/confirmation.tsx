@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { supabase } from "../services/api/supabase/supabaseClient";
+import { supabase } from "../client/src/services/api/supabase/supabaseClient";
 import { FiCheckCircle, FiAlertCircle, FiArrowRight } from "react-icons/fi";
 
 const Confirmation: React.FC = () => {

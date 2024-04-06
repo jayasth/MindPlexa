@@ -6,20 +6,25 @@ import ReactFlow, {
   Controls,
   applyEdgeChanges,
   applyNodeChanges,
+  Connection,
+  EdgeChange,
+  NodeChange,
 } from "reactflow";
-import axios from "axios";
-import { io, Socket } from "socket.io-client";
 import "reactflow/dist/style.css";
-import { FaPlus } from "react-icons/fa";
-import NodeModal from "../node/NodeModal";
-import BasicNode from "../node/basicNode/BasicNode";
-import AnnotationNode from "../node/annnotationNode/AnnotationNode";
 import IdeaNode from "../node/ideaNode/IdeaNode";
 import TaskNode from "../node/taskNode/TaskNode";
 import ResourceNode from "../node/resourceNode/ResourceNode";
+import BasicNode from "../node/basicNode/BasicNode";
+import AnnotationNode from "../node/annnotationNode/AnnotationNode";
+import { io, Socket } from "socket.io-client";
+import axios from "axios";
 
 interface CanvasProps {
   projectId: string;
+  nodes: Node[]; // Add this line
+  edges: Edge[]; // Add this line if it's not already there
+  onNodeUpdate: (nodeId: string, node: Node) => void;
+  onEdgeUpdate: (edgeId: string, edge: Edge) => void;
 }
 
 const initialNodes: Node[] = [];
@@ -33,13 +38,35 @@ const nodeTypes = {
   annotation: AnnotationNode,
 };
 
+interface NodeUpdatePayload {
+  nodeId: string;
+  nodeData: NodeData; // Define NodeData based on what you expect here
+}
+
+interface EdgeUpdatePayload {
+  edgeId: string;
+  edgeData: EdgeData; // Define EdgeData based on what you expect here
+}
+
+// Assume NodeData and EdgeData are defined according to what the application uses
+interface NodeData {
+  label: string;
+  type: string;
+  // Add other node-specific properties here
+}
+
+interface EdgeData {
+  sourceHandle?: string | null; // Allow `null` to match the Edge type from ReactFlow
+  targetHandle?: string | null; // Allow `null`
+  type?: string; // Any other properties used by edges in your application
+}
 const Canvas: React.FC<CanvasProps> = ({ projectId }) => {
   const [nodes, setNodes] = useState<Node[]>(initialNodes);
   const [edges, setEdges] = useState<Edge[]>(initialEdges);
-  const [showModal, setShowModal] = useState(false);
   const [socket, setSocket] = useState<Socket | null>(null);
 
   useEffect(() => {
+    fetchProjectData();
     const newSocket = io("http://localhost:3001");
     setSocket(newSocket);
 
@@ -68,18 +95,6 @@ const Canvas: React.FC<CanvasProps> = ({ projectId }) => {
     };
   }, [projectId]);
 
-  const onNodeChange = (nodeId: string, nodeData: any) => {
-    socket?.emit("updateNode", { projectId, nodeId, nodeData });
-  };
-
-  const onEdgeChange = (edgeId: string, edgeData: any) => {
-    socket?.emit("updateEdge", { projectId, edgeId, edgeData });
-  };
-
-  useEffect(() => {
-    fetchProjectData();
-  }, [projectId]);
-
   const fetchProjectData = async () => {
     try {
       const response = await axios.get(`/api/projects?id=${projectId}`);
@@ -103,38 +118,49 @@ const Canvas: React.FC<CanvasProps> = ({ projectId }) => {
     }
   };
 
-  const onNodesChange = (changes) =>
+  const onNodesChange = (changes: NodeChange[]) =>
     setNodes((nds) => applyNodeChanges(changes, nds));
-  const onEdgesChange = (changes) =>
+
+  const onEdgesChange = (changes: EdgeChange[]) =>
     setEdges((eds) => applyEdgeChanges(changes, eds));
 
-  const onConnect = (connection) => setEdges((eds) => addEdge(connection, eds));
+  const onConnect = (connection: Connection) =>
+    setEdges((eds) => addEdge(connection, eds));
 
-  const addEdge = (connection, edges) => {
-    return [...edges, { ...connection }];
+  const addEdge = (connection: Connection, edges: Edge[]): Edge[] => {
+    if (!connection.source || !connection.target) {
+      console.error("Invalid connection:", connection);
+      return edges;
+    }
+    const newEdge: Edge = {
+      id: `e-${connection.source}-${connection.target}`,
+      source: connection.source,
+      target: connection.target,
+      sourceHandle: connection.sourceHandle ?? null,
+      targetHandle: connection.targetHandle ?? null,
+      type: "smoothstep",
+    };
+    return [...edges, newEdge];
   };
 
-  const handleCreateNode = (
-    type: string,
-    title: string,
-    description: string
-  ) => {
-    const newNode = {
-      id: `node-${nodes.length + 1}`,
-      type,
-      data: { label: title, description },
-      position: { x: 0, y: 0 },
-    };
+  const onNodeChange = (nodeId: string, nodeData: NodeData) => {
+    socket?.emit("updateNode", { projectId, nodeId, nodeData });
+  };
 
-    setNodes([...nodes, newNode]);
-    setShowModal(false);
+  const onEdgeChange = (edgeId: string, edgeData: Edge) => {
+    // As Edge includes more data than just EdgeData, we should extract only the parts we need
+    const { sourceHandle, targetHandle, type } = edgeData;
+    // Prepare a payload that matches EdgeData
+    const edgeUpdateData: EdgeData = {
+      sourceHandle,
+      targetHandle,
+      type,
+    };
+    socket?.emit("updateEdge", { projectId, edgeId, edgeUpdateData });
   };
 
   return (
     <div className="canvas">
-      <button className="save-project-button" onClick={saveProject}>
-        Save Project
-      </button>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -148,19 +174,10 @@ const Canvas: React.FC<CanvasProps> = ({ projectId }) => {
       >
         <Background />
         <Controls />
-        <button
-          className="create-node-button"
-          onClick={() => setShowModal(true)}
-        >
-          <FaPlus /> Create Node
-        </button>
       </ReactFlow>
-      {showModal && (
-        <NodeModal
-          onSubmit={handleCreateNode}
-          onClose={() => setShowModal(false)}
-        />
-      )}
+      <button className="save-project-button" onClick={saveProject}>
+        Save Project
+      </button>
     </div>
   );
 };

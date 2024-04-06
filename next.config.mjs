@@ -1,7 +1,14 @@
+import path from "path";
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Add any additional Next.js configuration options
   // ...
+
+  webpack: (config) => {
+    config.resolve.alias["~"] = path.resolve(__dirname, "./client");
+    return config;
+  },
 
   async rewrites() {
     return [

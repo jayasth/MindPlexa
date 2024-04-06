@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { FaRobot } from "react-icons/fa";
+import { Node } from "reactflow";
 
 interface ConnectorProps {
   nodes: Node[];

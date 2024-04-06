@@ -3,7 +3,7 @@ require("dotenv").config();
 import React from "react";
 import { render, fireEvent, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import Login from "../../pages/login";
+import Login from "../../../../pages/login";
 import { supabase } from "../../__mocks__/supabaseClient";
 
 // Mock Next.js Router
