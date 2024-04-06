@@ -1,3 +1,4 @@
+// client/src/components/workspace/WorkspaceModal.tsx
 import React, { useState } from "react";
 import { FaTimes } from "react-icons/fa";
 

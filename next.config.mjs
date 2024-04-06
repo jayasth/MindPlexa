@@ -1,4 +1,7 @@
-import path from "path";
+import { resolve, dirname } from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -6,7 +9,7 @@ const nextConfig = {
   // ...
 
   webpack: (config) => {
-    config.resolve.alias["~"] = path.resolve(__dirname, "./client");
+    config.resolve.alias["~"] = resolve(__dirname, "./client");
     return config;
   },
 
@@ -27,8 +30,8 @@ const nextConfig = {
           { key: "Access-Control-Allow-Credentials", value: "true" },
           {
             key: "Access-Control-Allow-Origin",
-            value: "http://localhost:3000",
-          }, // replace with your origin
+            value: "http://localhost:3000", // replace with your origin
+          },
           {
             key: "Access-Control-Allow-Methods",
             value: "GET,OPTIONS,PATCH,DELETE,POST,PUT",

@@ -1,3 +1,4 @@
+// pages/workspace.tsx
 import React from "react";
 import WorkspaceLayout from "@/components/workspace/WorkspaceLayout";
 

@@ -1,3 +1,4 @@
+// client\src\components\node\basicNode\BasicNode.tsx
 import React from "react";
 import { Handle, Position } from "reactflow";
 import { FaCircle } from "react-icons/fa";

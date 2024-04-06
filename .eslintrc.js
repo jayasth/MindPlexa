@@ -40,7 +40,7 @@ module.exports = {
   },
   plugins: ["@typescript-eslint", "react", "@next/next"],
   rules: {
-    // Add your custom rules here
+    "no-case-declarations": "off", // Added line
   },
   globals: {
     process: "readonly",

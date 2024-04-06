@@ -1,3 +1,4 @@
+// client/src/components/project/Canvas.tsx
 import React, { useState, useEffect } from "react";
 import ReactFlow, {
   Node,

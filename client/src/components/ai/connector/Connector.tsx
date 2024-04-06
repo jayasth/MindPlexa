@@ -1,3 +1,4 @@
+// client\src\components\ai\connector\Connector.tsx
 import React, { useState } from "react";
 import axios from "axios";
 import { FaRobot } from "react-icons/fa";

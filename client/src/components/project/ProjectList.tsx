@@ -1,3 +1,4 @@
+// client/src/components/project/ProjectList.tsx
 import React, { useState, useEffect } from "react";
 import { useSupabaseClient, useUser } from "@supabase/auth-helpers-react";
 import ProjectModal from "./ProjectModal";

@@ -1,3 +1,4 @@
+// client/src/components/project/ProjectView.tsx
 import React, { useState, useEffect } from "react";
 import { Node, Edge } from "reactflow";
 import { io, Socket } from "socket.io-client";

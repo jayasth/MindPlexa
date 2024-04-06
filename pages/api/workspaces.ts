@@ -1,12 +1,14 @@
+// client\src\pages\api\workspaces.ts
+
 import { NextApiRequest, NextApiResponse } from "next";
-import { createServerSupabaseClient } from "@supabase/auth-helpers-nextjs";
+import { createPagesServerClient } from "@supabase/auth-helpers-nextjs";
 import { definitions } from "@/types/supabase";
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const supabaseServerClient = createServerSupabaseClient<definitions>({
+  const supabaseServerClient = createPagesServerClient<definitions>({
     req,
     res,
   });
