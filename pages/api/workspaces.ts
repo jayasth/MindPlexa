@@ -1,8 +1,8 @@
 // client\src\pages\api\workspaces.ts
 
-import { NextApiRequest, NextApiResponse } from "next";
-import { createPagesServerClient } from "@supabase/auth-helpers-nextjs";
-import { definitions } from "@/types/supabase";
+import { NextApiRequest, NextApiResponse } from 'next';
+import { createPagesServerClient } from '@/utils/auth-helpers-nextjs';
+import { definitions } from '@/types/supabase';
 
 export default async function handler(
   req: NextApiRequest,
@@ -10,17 +10,17 @@ export default async function handler(
 ) {
   const supabaseServerClient = createPagesServerClient<definitions>({
     req,
-    res,
+    res
   });
   const { method } = req;
 
   switch (method) {
-    case "GET":
+    case 'GET':
       // Retrieve workspaces for the authenticated user
       const { data: workspaces, error: getError } = await supabaseServerClient
-        .from("workspaces")
-        .select("*")
-        .eq("owner_id", supabaseServerClient.auth.user()?.id);
+        .from('workspaces')
+        .select('*')
+        .eq('owner_id', supabaseServerClient.auth.user()?.id);
 
       if (getError) {
         return res.status(500).json({ error: getError.message });
@@ -28,16 +28,16 @@ export default async function handler(
 
       return res.status(200).json(workspaces);
 
-    case "POST":
+    case 'POST':
       // Create a new workspace for the authenticated user
       const { name, description } = req.body;
       const { data: newWorkspace, error: createError } =
         await supabaseServerClient
-          .from("workspaces")
+          .from('workspaces')
           .insert({
             name,
             description,
-            owner_id: supabaseServerClient.auth.user()?.id,
+            owner_id: supabaseServerClient.auth.user()?.id
           })
           .single();
 
@@ -47,19 +47,19 @@ export default async function handler(
 
       return res.status(201).json(newWorkspace);
 
-    case "PUT":
+    case 'PUT':
       // Update an existing workspace for the authenticated user
       const {
         id,
         name: updatedName,
-        description: updatedDescription,
+        description: updatedDescription
       } = req.body;
       const { data: updatedWorkspace, error: updateError } =
         await supabaseServerClient
-          .from("workspaces")
+          .from('workspaces')
           .update({ name: updatedName, description: updatedDescription })
-          .eq("id", id)
-          .eq("owner_id", supabaseServerClient.auth.user()?.id)
+          .eq('id', id)
+          .eq('owner_id', supabaseServerClient.auth.user()?.id)
           .single();
 
       if (updateError) {
@@ -69,6 +69,6 @@ export default async function handler(
       return res.status(200).json(updatedWorkspace);
 
     default:
-      return res.status(405).json({ error: "Method not allowed" });
+      return res.status(405).json({ error: 'Method not allowed' });
   }
 }

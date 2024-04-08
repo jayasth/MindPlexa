@@ -1,7 +1,7 @@
 // client/src/components/project/ProjectList.tsx
-import React, { useState, useEffect } from "react";
-import { useSupabaseClient, useUser } from "@supabase/auth-helpers-react";
-import ProjectModal from "./ProjectModal";
+import React, { useState, useEffect } from 'react';
+import { useSupabaseClient, useUser } from '@/utils/auth-helpers-react';
+import ProjectModal from './ProjectModal';
 
 interface Project {
   id: string;
@@ -22,35 +22,35 @@ const ProjectList: React.FC = () => {
   const fetchProjects = async () => {
     try {
       const { data, error } = await supabaseClient
-        .from("projects")
-        .select("*")
-        .eq("workspace_id", "YOUR_WORKSPACE_ID"); // Replace with the actual workspace ID
+        .from('projects')
+        .select('*')
+        .eq('workspace_id', 'YOUR_WORKSPACE_ID'); // Replace with the actual workspace ID
 
       if (error) {
-        console.error("Error fetching projects:", error);
+        console.error('Error fetching projects:', error);
       } else {
         setProjects(data as Project[]);
       }
     } catch (error) {
-      console.error("Error fetching projects:", error);
+      console.error('Error fetching projects:', error);
     }
   };
 
   const handleCreateProject = async (name: string, description: string) => {
     try {
       const { data, error } = await supabaseClient
-        .from("projects")
-        .insert({ name, description, workspace_id: "YOUR_WORKSPACE_ID" }) // Replace with the actual workspace ID
+        .from('projects')
+        .insert({ name, description, workspace_id: 'YOUR_WORKSPACE_ID' }) // Replace with the actual workspace ID
         .single();
 
       if (error) {
-        console.error("Error creating project:", error);
+        console.error('Error creating project:', error);
       } else {
         setProjects([...projects, data as Project]);
         setShowModal(false);
       }
     } catch (error) {
-      console.error("Error creating project:", error);
+      console.error('Error creating project:', error);
     }
   };
 

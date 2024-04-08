@@ -1,0 +1,23 @@
+.card {
+  @apply border rounded-md p-4 border-lavender-700 bg-zinc-900;
+}
+
+.cardHeader {
+  @apply px-5 py-4;
+}
+
+.cardTitle {
+  @apply mb-1 text-2xl font-medium text-lavender-400;
+}
+
+.cardDescription {
+  @apply text-zinc-300;
+}
+
+.cardBody {
+  @apply px-5 py-4;
+}
+
+.cardFooter {
+  @apply p-4 border-t rounded-b-md border-zinc-700 bg-zinc-800 text-zinc-400;
+}

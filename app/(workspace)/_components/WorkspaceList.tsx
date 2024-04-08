@@ -1,6 +1,6 @@
 // client/src/components/workspace/WorkspaceList.tsx
-import React, { useState, useEffect } from "react";
-import { useSupabaseClient, useUser } from "@supabase/auth-helpers-react";
+import React, { useState, useEffect } from 'react';
+import { useSupabaseClient, useUser } from '@/utils/auth-helpers-react';
 
 interface Workspace {
   id: string;
@@ -20,17 +20,17 @@ const WorkspaceList: React.FC = () => {
   const fetchWorkspaces = async () => {
     try {
       const { data, error } = await supabaseClient
-        .from("workspaces")
-        .select("*")
-        .eq("owner_id", user?.id);
+        .from('workspaces')
+        .select('*')
+        .eq('owner_id', user?.id);
 
       if (error) {
-        console.error("Error fetching workspaces:", error);
+        console.error('Error fetching workspaces:', error);
       } else {
         setWorkspaces(data as Workspace[]);
       }
     } catch (error) {
-      console.error("Error fetching workspaces:", error);
+      console.error('Error fetching workspaces:', error);
     }
   };
 

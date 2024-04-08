@@ -1,6 +1,7 @@
 'use client';
 
 import Button from '@/components/ui/Button';
+import router from 'next/router';
 
 export default function LandingPage() {
   return (

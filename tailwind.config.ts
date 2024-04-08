@@ -17,15 +17,13 @@ export default {
           background: '#F4F4F4',
           text: '#575757',
           primary: '#2d9cdb',
-          secondary: '#f2c94c',
-          lavender: '#989FF0'
+          secondary: '#f2c94c'
         },
         dark: {
           background: '#1A202C',
           text: '#CBD5E0',
           primary: '#63b3ed',
-          secondary: '#f6ad55',
-          lavender: '#989FF0'
+          secondary: '#f6ad55'
         },
         lavender: {
           50: '#F8F7FE',

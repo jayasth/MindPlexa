@@ -3,7 +3,7 @@
 import Button from '@/components/ui/Button';
 import { signInWithOAuth } from '@/utils/auth-helpers/client';
 import { type Provider } from '@supabase/supabase-js';
-import { SiGmail } from 'react-icons/si';
+import { FaGithub } from 'react-icons/fa';
 import { useState } from 'react';
 
 type OAuthProviders = {
@@ -15,9 +15,9 @@ type OAuthProviders = {
 export default function OauthSignIn() {
   const oAuthProviders: OAuthProviders[] = [
     {
-      name: 'google',
-      displayName: 'Gmail',
-      icon: <SiGmail className="h-5 w-5" />
+      name: 'github',
+      displayName: 'GitHub',
+      icon: <FaGithub className="h-5 w-5" />
     }
     /* Add desired OAuth providers here */
   ];

@@ -6,13 +6,16 @@ import { checkoutWithStripe } from '@/utils/stripe/server';
 import { getErrorRedirect } from '@/utils/helpers';
 import { User } from '@supabase/supabase-js';
 import cn from 'classnames';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { Tables } from '@/types_db';
 
 type Subscription = Tables<'subscriptions'>;
 type Product = Tables<'products'>;
 type Price = Tables<'prices'>;
 interface ProductWithPrices extends Product {
+  name: any;
+  id: Key | null | undefined;
   prices: Price[];
 }
 interface PriceWithProduct extends Price {
@@ -42,7 +45,6 @@ export default function Pricing({ user, products, subscription }: Props) {
   const [billingInterval, setBillingInterval] =
     useState<BillingInterval>('month');
   const [priceIdLoading, setPriceIdLoading] = useState<string>();
-  const currentPath = usePathname();
 
   const handleStripeCheckout = async (price: Price) => {
     setPriceIdLoading(price.id);
@@ -52,10 +54,7 @@ export default function Pricing({ user, products, subscription }: Props) {
       return router.push('/signin/signup');
     }
 
-    const { errorRedirect, sessionId } = await checkoutWithStripe(
-      price,
-      currentPath
-    );
+    const { errorRedirect, sessionId } = await checkoutWithStripe(price);
 
     if (errorRedirect) {
       setPriceIdLoading(undefined);
@@ -66,7 +65,6 @@ export default function Pricing({ user, products, subscription }: Props) {
       setPriceIdLoading(undefined);
       return router.push(
         getErrorRedirect(
-          currentPath,
           'An unknown error occurred.',
           'Please try again later or contact a system administrator.'
         )
@@ -104,14 +102,13 @@ export default function Pricing({ user, products, subscription }: Props) {
       <section className="bg-background">
         <div className="max-w-6xl px-4 py-8 mx-auto sm:py-24 sm:px-6 lg:px-8">
           <div className="sm:flex sm:flex-col sm:align-center">
-            <h1 className="text-4xl font-extrabold text-white sm:text-center sm:text-6xl">
+            <h1 className="text-4xl font-extrabold text-text sm:text-center sm:text-6xl">
               Pricing Plans
             </h1>
-            <p className="max-w-2xl m-auto mt-5 text-xl text-zinc-200 sm:text-center sm:text-2xl">
-              Start building for free, then add a site plan to go live. Account
-              plans unlock additional features.
+            <p className="max-w-2xl m-auto mt-5 text-xl text-zinc-500 sm:text-center sm:text-2xl">
+              Signup for pro plan to unlock additional features.
             </p>
-            <div className="relative self-center mt-6 bg-zinc-900 rounded-lg p-0.5 flex sm:mt-8 border border-zinc-800">
+            <div className="relative self-center mt-6 bg- rounded-lg p-0.5 flex sm:mt-8 border border-zinc-800">
               {intervals.includes('month') && (
                 <button
                   onClick={() => setBillingInterval('month')}
