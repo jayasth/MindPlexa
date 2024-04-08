@@ -1,11 +1,10 @@
 'use client';
 
 import Button from '@/components/ui/Button';
-import LogoCloud from '@/components/ui/LogoCloud';
 
 export default function LandingPage() {
   return (
-    <div className="bg-black text-white">
+    <div className="bg-background text-text">
       <section className="hero">
         <div className="max-w-6xl px-4 py-12 mx-auto sm:py-16 sm:px-6 lg:px-8">
           <div className="sm:text-center">
@@ -23,7 +22,7 @@ export default function LandingPage() {
                 variant="slim"
                 type="button"
                 onClick={() => router.push('/signup')}
-                className="block py-3 text-base font-medium text-center text-white rounded-md bg-pink-600 hover:bg-pink-700 sm:px-10"
+                className="block py-3 text-base font-medium text-center text-white rounded-md bg-lavender-600 hover:bg-lavender-700 sm:px-10"
               >
                 Get started
               </Button>
@@ -79,7 +78,7 @@ export default function LandingPage() {
                 variant="slim"
                 type="button"
                 onClick={() => router.push('/signup')}
-                className="block py-3 text-base font-medium text-center text-white rounded-md bg-pink-600 hover:bg-pink-700 sm:px-10"
+                className="block py-3 text-base font-medium text-center text-white rounded-md bg-lavender-600 hover:bg-lavender-700 sm:px-10"
               >
                 Get started
               </Button>
@@ -87,8 +86,6 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
-
-      <LogoCloud />
     </div>
   );
 }

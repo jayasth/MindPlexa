@@ -1,7 +1,44 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans&family=Poppins:wght@600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  body {
+    @apply bg-light-background text-light-text font-body;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-heading;
+  }
+}
+
+/* Dark mode styles */
+.dark {
+  body {
+    @apply bg-dark-background text-dark-text;
+  }
+}
+
+/* Hide the attribution from React Flow library */
+.react-flow__attribution {
+  display: none;
+}
+
+/* Responsive design adjustments */
+@media (max-width: 768px) {
+  .minimap {
+    display: none;
+  }
+}
+
+/* Styles from the example's main.css */
 *,
 *:before,
 *:after {
@@ -9,7 +46,7 @@
 }
 
 *:focus:not(ol) {
-  @apply outline-none ring-2 ring-pink-500 ring-opacity-50;
+  @apply outline-none ring-2 ring-lavender-500 ring-opacity-50;
 }
 
 html {
@@ -24,11 +61,8 @@ html {
 
 html,
 body {
-  font-family: -apple-system, system-ui, BlinkMacSystemFont, 'Helvetica Neue',
-    'Helvetica', sans-serif;
   text-rendering: optimizeLegibility;
   -moz-osx-font-smoothing: grayscale;
-  @apply text-white bg-zinc-800 antialiased;
 }
 
 body {

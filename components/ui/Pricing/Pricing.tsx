@@ -1,8 +1,6 @@
 'use client';
 
 import Button from '@/components/ui/Button';
-import LogoCloud from '@/components/ui/LogoCloud';
-import type { Tables } from '@/types_db';
 import { getStripe } from '@/utils/stripe/client';
 import { checkoutWithStripe } from '@/utils/stripe/server';
 import { getErrorRedirect } from '@/utils/helpers';
@@ -83,13 +81,13 @@ export default function Pricing({ user, products, subscription }: Props) {
 
   if (!products.length) {
     return (
-      <section className="bg-black">
+      <section className="bg-background">
         <div className="max-w-6xl px-4 py-8 mx-auto sm:py-24 sm:px-6 lg:px-8">
           <div className="sm:flex sm:flex-col sm:align-center"></div>
           <p className="text-4xl font-extrabold text-white sm:text-center sm:text-6xl">
             No subscription pricing plans found. Create them in your{' '}
             <a
-              className="text-pink-500 underline"
+              className="text-lavender-500 underline"
               href="https://dashboard.stripe.com/products"
               rel="noopener noreferrer"
               target="_blank"
@@ -99,12 +97,11 @@ export default function Pricing({ user, products, subscription }: Props) {
             .
           </p>
         </div>
-        <LogoCloud />
       </section>
     );
   } else {
     return (
-      <section className="bg-black">
+      <section className="bg-background">
         <div className="max-w-6xl px-4 py-8 mx-auto sm:py-24 sm:px-6 lg:px-8">
           <div className="sm:flex sm:flex-col sm:align-center">
             <h1 className="text-4xl font-extrabold text-white sm:text-center sm:text-6xl">
@@ -123,7 +120,7 @@ export default function Pricing({ user, products, subscription }: Props) {
                     billingInterval === 'month'
                       ? 'relative w-1/2 bg-zinc-700 border-zinc-800 shadow-sm text-white'
                       : 'ml-0.5 relative w-1/2 border border-transparent text-zinc-400'
-                  } rounded-md m-1 py-2 text-sm font-medium whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-opacity-50 focus:z-10 sm:w-auto sm:px-8`}
+                  } rounded-md m-1 py-2 text-sm font-medium whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-lavender-500 focus:ring-opacity-50 focus:z-10 sm:w-auto sm:px-8`}
                 >
                   Monthly billing
                 </button>
@@ -136,7 +133,7 @@ export default function Pricing({ user, products, subscription }: Props) {
                     billingInterval === 'year'
                       ? 'relative w-1/2 bg-zinc-700 border-zinc-800 shadow-sm text-white'
                       : 'ml-0.5 relative w-1/2 border border-transparent text-zinc-400'
-                  } rounded-md m-1 py-2 text-sm font-medium whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-opacity-50 focus:z-10 sm:w-auto sm:px-8`}
+                  } rounded-md m-1 py-2 text-sm font-medium whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-lavender-500 focus:ring-opacity-50 focus:z-10 sm:w-auto sm:px-8`}
                 >
                   Yearly billing
                 </button>
@@ -160,7 +157,7 @@ export default function Pricing({ user, products, subscription }: Props) {
                   className={cn(
                     'flex flex-col rounded-lg shadow-sm divide-y divide-zinc-600 bg-zinc-900',
                     {
-                      'border border-pink-500': subscription
+                      'border border-lavender-500': subscription
                         ? product.name === subscription?.prices?.products?.name
                         : product.name === 'Freelancer'
                     },
@@ -196,7 +193,6 @@ export default function Pricing({ user, products, subscription }: Props) {
               );
             })}
           </div>
-          <LogoCloud />
         </div>
       </section>
     );

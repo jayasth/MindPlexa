@@ -4,7 +4,7 @@ import Navbar from '@/components/ui/Navbar';
 import { Toaster } from '@/components/ui/Toasts/toaster';
 import { PropsWithChildren, Suspense } from 'react';
 import { getURL } from '@/utils/helpers';
-import 'styles/main.css';
+import 'styles/globals.css';
 
 const meta = {
   title: 'MindPlexa: Navigating Ideas from Conception to Completion',
@@ -56,7 +56,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function RootLayout({ children }: PropsWithChildren) {
   return (
     <html lang="en">
-      <body className="bg-black loading">
+      <body className="bg-primary loading">
         <Navbar />
         <main
           id="skip"
