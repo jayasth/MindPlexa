@@ -1,7 +1,7 @@
 import React from "react";
-import withAuth from "../client/src/components/auth/withAuth";
-import Layout from "../client/src/components/layout/layout";
-import SettingsPanel from "../client/src/components/settings/SettingsPanel";
+import withAuth from "../components/auth/withAuth";
+import Layout from "../components/layout/layout";
+import SettingsPanel from "../components/settings/SettingsPanel";
 
 const Settings: React.FC = () => {
   return (

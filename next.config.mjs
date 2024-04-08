@@ -9,7 +9,7 @@ const nextConfig = {
   // ...
 
   webpack: (config) => {
-    config.resolve.alias["~"] = resolve(__dirname, "./client");
+    config.resolve.alias["~"] = resolve(__dirname, "./app"); // Updated path from './client' to './app'
     return config;
   },
 

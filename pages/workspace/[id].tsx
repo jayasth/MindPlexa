@@ -1,8 +1,8 @@
 // pages/workspace/[id].tsx
 import React from "react";
 import { useRouter } from "next/router";
-import ProjectLayout from "@/components/project/ProjectLayout";
-import ProjectView from "@/components/project/ProjectView";
+import ProjectLayout from "../../app/project/[projectId]/_components/ProjectLayout";
+import ProjectView from "../../app/project/[projectId]/_components/ProjectView";
 
 const WorkspacePage: React.FC = () => {
   const router = useRouter();
