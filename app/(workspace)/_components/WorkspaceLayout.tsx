@@ -1,7 +1,7 @@
 // client/src/components/workspace/WorkspaceLayout.tsx
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { useUser, useSupabaseClient } from '@/utils/auth-helpers/client';
+import { useUser, useSupabaseClient } from '@/utils/auth-helpers/authClient';
 import WorkspaceList from './WorkspaceList';
 import WorkspaceModal from './WorkspaceModal';
 

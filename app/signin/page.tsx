@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getDefaultSignInView } from "@/utils/auth-helpers/settings";
+import { getDefaultSignInView } from "@/utils/auth-helpers/authSettings";
 import { cookies } from "next/headers";
 
 export default function SignIn() {

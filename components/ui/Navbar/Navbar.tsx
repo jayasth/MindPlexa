@@ -1,4 +1,4 @@
-import { createClient } from '@/utils/supabase/server';
+import { createClient } from '@/utils/supabase/supabaseServer';
 import s from './Navbar.module.css';
 import Navlinks from './Navlinks';
 

@@ -1,5 +1,5 @@
 import Logo from '@/components/icons/Logo';
-import { createClient } from '@/utils/supabase/server';
+import { createClient } from '@/utils/supabase/supabaseServer';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import {
@@ -7,15 +7,15 @@ import {
   getViewTypes,
   getDefaultSignInView,
   getRedirectMethod
-} from '@/utils/auth-helpers/settings';
+} from '@/utils/auth-helpers/authSettings';
 import Card from '@/components/ui/Card';
-import PasswordSignIn from '@/components/ui/AuthForms/PasswordSignIn';
-import EmailSignIn from '@/components/ui/AuthForms/EmailSignIn';
-import Separator from '@/components/ui/AuthForms/Separator';
-import OauthSignIn from '@/components/ui/AuthForms/OauthSignIn';
-import ForgotPassword from '@/components/ui/AuthForms/ForgotPassword';
-import UpdatePassword from '@/components/ui/AuthForms/UpdatePassword';
-import SignUp from '@/components/ui/AuthForms/Signup';
+import PasswordSignIn from '@/app/auth/_components/PasswordSignIn';
+import EmailSignIn from '@/app/auth/_components/EmailSignIn';
+import Separator from '@/app/auth/_components/Separator';
+import OauthSignIn from '@/app/auth/_components/OauthSignIn';
+import ForgotPassword from '@/app/auth/_components/ForgotPassword';
+import UpdatePassword from '@/app/auth/_components/UpdatePassword';
+import SignUp from '@/app/auth/_components/Signup';
 
 export default async function SignIn({
   params,
