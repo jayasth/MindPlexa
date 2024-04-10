@@ -1,15 +1,18 @@
 import { Request, Response } from 'express';
 import { createClient } from '@/utils/supabase/supabaseServer';
 
-export default async function projectsRoute(req: Request, res: Response) {
+export default async function workspaceMembersRoute(
+  req: Request,
+  res: Response
+) {
   const supabase = createClient();
 
   switch (req.method) {
     case 'GET':
-      // Get all projects for a workspace
+      // Get all workspace members
       const { workspaceId } = req.query;
-      const { data: projects, error: getError } = await supabase
-        .from('projects')
+      const { data: members, error: getError } = await supabase
+        .from('workspace_members')
         .select('*')
         .eq('workspace_id', workspaceId);
 
@@ -17,21 +20,21 @@ export default async function projectsRoute(req: Request, res: Response) {
         return res.status(500).json({ error: getError.message });
       }
 
-      return res.status(200).json(projects);
+      return res.status(200).json(members);
 
     case 'POST':
-      // Create a new project
-      const { name, description } = req.body;
-      const { data: newProject, error: createError } = await supabase
-        .from('projects')
-        .insert({ name, description, workspace_id: workspaceId })
+      // Add a new workspace member
+      const { userId, role } = req.body;
+      const { data: newMember, error: createError } = await supabase
+        .from('workspace_members')
+        .insert({ user_id: userId, workspace_id: workspaceId, role })
         .single();
 
       if (createError) {
         return res.status(500).json({ error: createError.message });
       }
 
-      return res.status(201).json(newProject);
+      return res.status(201).json(newMember);
 
     default:
       return res.status(405).json({ error: 'Method not allowed' });

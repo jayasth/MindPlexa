@@ -2,7 +2,7 @@
 
 import Button from '@/components/ui/Button';
 import { getStripe } from '@/utils/stripe/stripeClient';
-import { checkoutWithStripe } from '@/utils/stripe stripeServer';
+import { checkoutWithStripe } from '@/utils/stripe/stripeServer';
 import { getErrorRedirect } from '@/utils/helpers';
 import { User } from '@supabase/supabase-js';
 import cn from 'classnames';
@@ -86,7 +86,7 @@ export default function Pricing({ user, products, subscription }: Props) {
             No subscription pricing plans found. Create them in your{' '}
             <a
               className="text-lavender-500 underline"
-              href="https://dashboard.stripe.com/products"
+              href="https://.stripe.com/products"
               rel="noopener noreferrer"
               target="_blank"
             >

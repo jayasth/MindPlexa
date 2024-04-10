@@ -15,7 +15,7 @@ export default function NodeLibrary({ nodes }: NodeLibraryProps) {
       {/* Add node library implementation */}
       <ul>
         {nodes.map((node) => (
-          <li key={node.id}>{node.name}</li>
+          <li key={node.id}>{node.title}</li>
         ))}
       </ul>
     </div>

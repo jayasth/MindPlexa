@@ -1,14 +1,7 @@
-import React from "react";
-import withAuth from "@/components/auth/withAuth";
-import Layout from "@/components/layout/layout";
-import SettingsPanel from "@/app/settings/_components/SettingsPanel";
+'use client';
 
-const Settings: React.FC = () => {
-  return (
-    <Layout>
-      <SettingsPanel />
-    </Layout>
-  );
-};
+import SettingsContent from './SettingsContent';
 
-export default withAuth(Settings);
+export default function Settings() {
+  return <SettingsContent />;
+}

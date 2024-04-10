@@ -25,13 +25,16 @@ export default async function Workspace({
     .from('workspaces')
     .select('*')
     .eq('id', params.workspaceId)
-    .eq('user_id', user.id)
+    .eq('owner_id', user.id)
     .single();
 
   if (error) {
     console.log(error);
     return <div>Error loading workspace</div>;
   }
+
+  // Log the workspace id
+  console.log('Workspace ID:', workspace.id);
 
   return (
     <div className="max-w-6xl px-4 py-8 mx-auto sm:px-6 lg:px-8">

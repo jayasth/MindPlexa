@@ -6,7 +6,7 @@ import { Tables } from '@/types_db';
 
 type Project = Tables<'projects'>;
 
-export default async function ProjectPage({
+export default async function Project({
   params
 }: {
   params: { projectId: string };
@@ -25,13 +25,15 @@ export default async function ProjectPage({
     .from('projects')
     .select('*')
     .eq('id', params.projectId)
-    .eq('user_id', user.id)
     .single();
 
   if (error) {
     console.log(error);
     return <div>Error loading project</div>;
   }
+
+  // Log the workspace id
+  console.log('Project ID:', project.id);
 
   return (
     <div className="max-w-6xl px-4 py-8 mx-auto sm:px-6 lg:px-8">

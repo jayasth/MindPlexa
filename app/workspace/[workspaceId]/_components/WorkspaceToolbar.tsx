@@ -32,7 +32,7 @@ export default function WorkspaceToolbar({ workspace }: WorkspaceToolbarProps) {
       const { data: userData } = await supabase
         .from('users')
         .select('*')
-        .eq('id', workspace.user_id)
+        .eq('id', workspace.owner_id) // Changed from workspace.user_id to workspace.owner_id
         .single();
 
       setUser(userData);
@@ -47,7 +47,7 @@ export default function WorkspaceToolbar({ workspace }: WorkspaceToolbarProps) {
       const { data: nodeData } = await supabase
         .from('nodes')
         .select('*')
-        .eq('workspace_id', workspace.id);
+        .eq('project_id', workspace.id); // Ensure this is supposed to reference projects
 
       setNodes(nodeData || []);
 
@@ -60,7 +60,7 @@ export default function WorkspaceToolbar({ workspace }: WorkspaceToolbarProps) {
     };
 
     fetchData();
-  }, [workspace.id, workspace.user_id]);
+  }, [workspace.id, workspace.owner_id]); // Changed workspace.user_id to workspace.owner_id
 
   return (
     <div className="mt-8">

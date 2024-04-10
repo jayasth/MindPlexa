@@ -15,7 +15,10 @@ export default function Insights({ insights }: InsightsProps) {
       {/* Add insights implementation */}
       <ul>
         {insights.map((insight) => (
-          <li key={insight.id}>{insight.name}</li>
+          <>
+            <li key={insight.id}>{insight.title}</li>
+            <li key={insight.id}>{insight.description}</li>
+          </>
         ))}
       </ul>
     </div>
