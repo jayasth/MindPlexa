@@ -23,7 +23,7 @@ export default function Dashboard() {
       } = await supabase.auth.getUser();
 
       if (!user) {
-        redirect('/');
+        redirect('/signin/password_signin');
       }
 
       const { data: workspacesData } = await supabase

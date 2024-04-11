@@ -1,10 +1,9 @@
 import { Metadata } from 'next';
-import Footer from '@/components/ui/Footer';
-import Navbar from '@/components/ui/Navbar';
 import { Toaster } from '@/components/ui/Toasts/toaster';
 import { PropsWithChildren, Suspense } from 'react';
 import { getURL } from '@/utils/helpers';
 import 'styles/globals.css';
+import { Providers } from '@/app/providers';
 
 const meta = {
   title: 'MindPlexa: Navigating Ideas from Conception to Completion',
@@ -55,19 +54,19 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function RootLayout({ children }: PropsWithChildren) {
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <body>
-        <Navbar />
-        <main
-          id="skip"
-          className="min-h-[calc(100dvh-4rem)] md:min-h[calc(100dvh-5rem)]"
-        >
-          {children}
-        </main>
-        <Footer />
-        <Suspense>
-          <Toaster />
-        </Suspense>
+        <Providers>
+          <main
+            id="skip"
+            className="min-h-[calc(100dvh-4rem)] md:min-h[calc(100dvh-5rem)]"
+          >
+            {children}
+          </main>
+          <Suspense>
+            <Toaster />
+          </Suspense>
+        </Providers>
       </body>
     </html>
   );

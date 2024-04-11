@@ -1,12 +1,8 @@
 import { createClient } from '@/utils/supabase/supabaseServer';
 import { redirect } from 'next/navigation';
-import ProjectDetails from './_components/ProjectDetails';
-import ProjectToolbar from './_components/ProjectToolbar';
-import { Tables } from '@/types_db';
+import ProjectDetails from './ProjectDetails';
 
-type Project = Tables<'projects'>;
-
-export default async function Project({
+export default async function ProjectPage({
   params
 }: {
   params: { projectId: string };
@@ -32,13 +28,8 @@ export default async function Project({
     return <div>Error loading project</div>;
   }
 
-  // Log the workspace id
-  console.log('Project ID:', project.id);
-
   return (
-    <div className="max-w-6xl px-4 py-8 mx-auto sm:px-6 lg:px-8">
-      <h1 className="text-4xl font-bold">{project.name}</h1>
-      <ProjectToolbar project={project} />
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <ProjectDetails project={project} />
     </div>
   );

@@ -26,8 +26,8 @@ export default function Navlinks({ user }: NavlinksProps) {
             MindPlexa
           </Link>
           {user && (
-            <Link href="/account" className={s.link}>
-              Account
+            <Link href="/dashboard" className={s.link}>
+              Dashboard
             </Link>
           )}
         </nav>

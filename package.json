@@ -31,6 +31,7 @@
   },
   "dependencies": {
     "@headlessui/react": "^1.7.18",
+    "@nextui-org/react": "^2.2.10",
     "@radix-ui/react-toast": "^1.1.5",
     "@stripe/stripe-js": "2.4.0",
     "@supabase/ssr": "^0.1.0",
@@ -43,7 +44,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
-    "framer-motion": "^11.0.22",
+    "framer-motion": "^11.0.27",
     "module-alias": "^2.2.3",
     "next": "14.1.4",
     "openai": "^4.32.2",

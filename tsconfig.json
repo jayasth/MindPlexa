@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "esnext", // updated from "es5" to "esnext"
     "module": "esnext",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
@@ -31,7 +31,8 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "server/**/*",
-    "utils/**/*"
+    "utils/**/*",
+    "app/projects/page.tsx"
   ],
   "exclude": ["node_modules"]
 }

@@ -1,77 +1,127 @@
 'use client';
 
-import Button from '@/components/ui/Button';
-import { useRouter, usePathname } from 'next/navigation';
 import { useState } from 'react';
-import { createStripePortal } from '@/utils/stripe/stripeServer';
-import Link from 'next/link';
-import Card from '@/components/ui/Card';
+import { User } from '@supabase/supabase-js';
+import { updateProfile } from '@/utils/supabase/profileClient';
+import { useRouter } from 'next/navigation';
 import { Tables } from '@/types_db';
 
-type Subscription = Tables<'subscriptions'>;
-type Price = Tables<'prices'>;
-type Product = Tables<'products'>;
+type Profile = Tables<'profiles'>;
 
-type SubscriptionWithPriceAndProduct = Subscription & {
-  prices:
-    | (Price & {
-        products: Product | null;
-      })
-    | null;
-};
-
-interface Props {
-  subscription: SubscriptionWithPriceAndProduct | null;
+interface ProfileFormProps {
+  user: User;
+  profile: Profile | null;
 }
 
-export default function CustomerPortalForm({ subscription }: Props) {
+export default function ProfileForm({ user, profile }: ProfileFormProps) {
   const router = useRouter();
-  const currentPath = usePathname();
+  const [fullName, setFullName] = useState(profile?.full_name ?? '');
+  const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url ?? '');
+  const [bio, setBio] = useState(profile?.bio ?? '');
+  const [website, setWebsite] = useState(profile?.website ?? '');
+  const [email, setEmail] = useState(profile?.email ?? user.email ?? '');
+  const [phone, setPhone] = useState(profile?.phone ?? '');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const subscriptionPrice =
-    subscription &&
-    new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: subscription?.prices?.currency!,
-      minimumFractionDigits: 0
-    }).format((subscription?.prices?.unit_amount || 0) / 100);
-
-  const handleStripePortalRequest = async () => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     setIsSubmitting(true);
-    const redirectUrl = await createStripePortal(currentPath);
+
+    const updatedProfile = {
+      full_name: fullName,
+      avatar_url: avatarUrl,
+      bio,
+      website,
+      email,
+      phone
+    };
+
+    await updateProfile(user.id, updatedProfile);
     setIsSubmitting(false);
-    return router.push(redirectUrl);
+    router.refresh();
   };
 
   return (
-    <Card
-      title="Your Plan"
-      description={
-        subscription
-          ? `You are currently on the ${subscription?.prices?.products?.name} plan.`
-          : 'You are not currently subscribed to any plan.'
-      }
-      footer={
-        <div className="flex flex-col items-start justify-between sm:flex-row sm:items-center">
-          <p className="pb-4 sm:pb-0">Manage your subscription on Stripe.</p>
-          <Button
-            variant="slim"
-            onClick={handleStripePortalRequest}
-            loading={isSubmitting}
-          >
-            Open customer portal
-          </Button>
-        </div>
-      }
-    >
-      <div className="mt-8 mb-4 text-xl font-semibold">
-        {subscription ? (
-          `${subscriptionPrice}/${subscription?.prices?.interval}`
-        ) : (
-          <Link href="/">Choose your plan</Link>
-        )}
+    <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+      <div>
+        <label htmlFor="fullName" className="block mb-2 font-medium">
+          Full Name
+        </label>
+        <input
+          id="fullName"
+          type="text"
+          value={fullName}
+          onChange={(e) => setFullName(e.target.value)}
+          className="w-full p-2 border border-gray-300 rounded"
+          required
+        />
       </div>
-    </Card>
+      <div>
+        <label htmlFor="avatarUrl" className="block mb-2 font-medium">
+          Avatar URL
+        </label>
+        <input
+          id="avatarUrl"
+          type="text"
+          value={avatarUrl}
+          onChange={(e) => setAvatarUrl(e.target.value)}
+          className="w-full p-2 border border-gray-300 rounded"
+        />
+      </div>
+      <div>
+        <label htmlFor="bio" className="block mb-2 font-medium">
+          Bio
+        </label>
+        <textarea
+          id="bio"
+          value={bio}
+          onChange={(e) => setBio(e.target.value)}
+          className="w-full p-2 border border-gray-300 rounded"
+          rows={4}
+        />
+      </div>
+      <label htmlFor="website" className="block mb-2 font-medium">
+        Website
+      </label>
+      <input
+        id="website"
+        type="text"
+        value={website}
+        onChange={(e) => setWebsite(e.target.value)}
+        className="w-full p-2 border border-gray-300 rounded"
+      />
+      <div>
+        <label htmlFor="email" className="block mb-2 font-medium">
+          Email
+        </label>
+        <input
+          id="email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="w-full p-2 border border-gray-300 rounded"
+          required
+        />
+      </div>
+      <div>
+        <label htmlFor="phone" className="block mb-2 font-medium">
+          Phone
+        </label>
+        <input
+          id="phone"
+          type="tel"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          className="w-full p-2 border border-gray-300 rounded"
+        />
+      </div>
+      <button
+        type="submit"
+        className="px-4 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700"
+        disabled={isSubmitting}
+      >
+        {isSubmitting ? 'Updating...' : 'Update Profile'}
+      </button>
+    </form>
   );
 }

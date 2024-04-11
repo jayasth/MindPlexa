@@ -1,7 +1,0 @@
-import BoardLayout from './_components/BoardLayout';
-
-const BoardLayoutWrapper = ({ children }: { children: React.ReactNode }) => {
-  return <BoardLayout>{children}</BoardLayout>;
-};
-
-export default BoardLayoutWrapper;

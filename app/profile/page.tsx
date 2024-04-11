@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/supabaseServer';
 import ProfileForm from './_components/ProfileForm';
 import { redirect } from 'next/navigation';
+import Link from 'next/link';
 
 export default async function Profile() {
   const supabase = createClient();
@@ -36,7 +37,21 @@ export default async function Profile() {
         </div>
       </div>
       <div className="p-4">
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold">Current Profile</h2>
+          <p>Email: {user.email}</p>
+          <p>Full Name: {profile?.full_name || 'N/A'}</p>
+          <p>Website: {profile?.website || 'N/A'}</p>
+          {/* Add more profile fields as needed */}
+        </div>
         <ProfileForm user={user} profile={profile ?? null} />
+        <div className="mt-8">
+          <Link href="/account">
+            <button className="px-4 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700">
+              Manage Account
+            </button>
+          </Link>
+        </div>
       </div>
     </section>
   );

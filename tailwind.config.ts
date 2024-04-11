@@ -1,5 +1,6 @@
 import { Config } from 'tailwindcss';
 import { fontFamily } from 'tailwindcss/defaultTheme';
+import { nextui } from '@nextui-org/react';
 
 export default {
   content: [
@@ -7,7 +8,8 @@ export default {
     './src/features/**/*.{js,ts,jsx,tsx}',
     'app/**/*.{ts,tsx}',
     'components/**/*.{ts,tsx}',
-    'pages/**/*.{ts,tsx}'
+    'pages/**/*.{ts,tsx}',
+    './node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}' // Add this line
   ],
   darkMode: ['class', '[data-theme="dark"]'],
   theme: {
@@ -67,5 +69,9 @@ export default {
       } as unknown
     }
   },
-  plugins: [require('@tailwindcss/forms'), require('tailwindcss-animate')]
+  plugins: [
+    require('@tailwindcss/forms'),
+    require('tailwindcss-animate'),
+    nextui() // Add the NextUI plugin
+  ]
 } as Config;

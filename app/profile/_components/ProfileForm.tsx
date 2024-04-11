@@ -2,10 +2,11 @@
 
 import { useState } from 'react';
 import { User } from '@supabase/supabase-js';
-import { updateProfile } from '@/utils/supabase/supabaseClient';
+import { updateProfile } from '@/utils/supabase/profileClient';
 import { useRouter } from 'next/navigation';
-import { Profile } from '@/types';
-import Button from '@/components/ui/Button';
+import { Tables } from '@/types_db';
+
+type Profile = Tables<'profiles'>;
 
 interface ProfileFormProps {
   user: User;
@@ -18,6 +19,8 @@ export default function ProfileForm({ user, profile }: ProfileFormProps) {
   const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url ?? '');
   const [bio, setBio] = useState(profile?.bio ?? '');
   const [website, setWebsite] = useState(profile?.website ?? '');
+  const [email, setEmail] = useState(profile?.email ?? user.email ?? '');
+  const [phone, setPhone] = useState(profile?.phone ?? '');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -28,7 +31,9 @@ export default function ProfileForm({ user, profile }: ProfileFormProps) {
       full_name: fullName,
       avatar_url: avatarUrl,
       bio,
-      website
+      website,
+      email,
+      phone
     };
 
     await updateProfile(user.id, updatedProfile);
@@ -75,21 +80,48 @@ export default function ProfileForm({ user, profile }: ProfileFormProps) {
           rows={4}
         />
       </div>
+      <label htmlFor="website" className="block mb-2 font-medium">
+        Website
+      </label>
+      <input
+        id="website"
+        type="text"
+        value={website}
+        onChange={(e) => setWebsite(e.target.value)}
+        className="w-full p-2 border border-gray-300 rounded"
+      />
       <div>
-        <label htmlFor="website" className="block mb-2 font-medium">
-          Website
+        <label htmlFor="email" className="block mb-2 font-medium">
+          Email
         </label>
         <input
-          id="website"
-          type="text"
-          value={website}
-          onChange={(e) => setWebsite(e.target.value)}
+          id="email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="w-full p-2 border border-gray-300 rounded"
+          required
+        />
+      </div>
+      <div>
+        <label htmlFor="phone" className="block mb-2 font-medium">
+          Phone
+        </label>
+        <input
+          id="phone"
+          type="tel"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
           className="w-full p-2 border border-gray-300 rounded"
         />
       </div>
-      <Button type="submit" loading={isSubmitting}>
-        Update Profile
-      </Button>
+      <button
+        type="submit"
+        className="px-4 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700"
+        disabled={isSubmitting}
+      >
+        {isSubmitting ? 'Updating...' : 'Update Profile'}
+      </button>
     </form>
   );
 }
