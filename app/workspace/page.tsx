@@ -1,6 +1,6 @@
 import { createClient } from '@/utils/supabase/supabaseServer';
 import { redirect } from 'next/navigation';
-import WorkspaceList from './[workspaceId]/_components/WorkspaceList';
+import WorkspaceList from '@/app/workspace/_components/WorkspaceList';
 
 export default async function WorkspacesPage() {
   const supabase = createClient();
@@ -25,7 +25,7 @@ export default async function WorkspacesPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <h1 className="text-3xl font-bold mb-8">Workspaces</h1>
+      <h1 className="text-3xl font-bold mb-8">Default Workspace</h1>
       <WorkspaceList workspaces={workspaces ?? []} />
     </div>
   );

@@ -1,18 +1,15 @@
-import React, { useCallback } from 'react';
+// components/reactflow/custom-node.tsx
+import React from 'react';
 import { Handle, NodeProps, Position } from 'reactflow';
 
-interface CustomNodeProps extends NodeProps {
-  data: any;
-}
-
-export const CustomNode = ({ data, type }: CustomNodeProps) => {
+export const CustomNode = ({ data, type }: NodeProps) => {
   if (type === 'startEvent') {
     return (
-      <div className='w-12 h-12 bg-white border-2 border-black rounded-full relative'>
+      <div className="w-12 h-12 bg-white border-2 border-black rounded-full relative">
         <Handle
-          type='source'
+          type="source"
           position={Position.Bottom}
-          id='b'
+          id="b"
           style={{ background: '#555' }}
         />
       </div>
@@ -21,29 +18,29 @@ export const CustomNode = ({ data, type }: CustomNodeProps) => {
 
   if (type === 'endEvent') {
     return (
-      <div className='w-12 h-12 bg-white border-2 border-black rounded-full relative'>
-        <div className='w-7 h-7 bg-black rounded-full relative m-2'></div>
+      <div className="w-12 h-12 bg-white border-2 border-black rounded-full relative">
+        <div className="w-7 h-7 bg-black rounded-full relative m-2"></div>
         <Handle
-          type='target'
+          type="target"
           position={Position.Top}
-          id='a'
+          id="a"
           style={{ background: '#555' }}
         />
-
         <Handle
-          type='source'
+          type="source"
           position={Position.Bottom}
-          id='b'
+          id="b"
           style={{ background: '#555' }}
         />
       </div>
     );
   }
+
   return (
-    <div className='react-flow__node-default'>
-      <div className='py-2'>
+    <div className="react-flow__node-default">
+      <div className="py-2">
         <span
-          className='absolute top-0 left-0 pl-1 text-gray-600 text-xs'
+          className="absolute top-0 left-0 pl-1 text-gray-600 text-xs"
           style={{ fontSize: '80%' }}
         >
           {type}
@@ -51,27 +48,27 @@ export const CustomNode = ({ data, type }: CustomNodeProps) => {
         {data.label}
       </div>
       <Handle
-        type='target'
+        type="target"
         position={Position.Top}
-        id='a'
+        id="a"
         style={{ background: '#555' }}
       />
       <Handle
-        type='source'
+        type="source"
         position={Position.Bottom}
-        id='b'
+        id="b"
         style={{ background: '#555' }}
       />
       <Handle
-        type='target'
+        type="target"
         position={Position.Left}
-        id='c'
+        id="c"
         style={{ background: '#555' }}
       />
       <Handle
-        type='target'
+        type="target"
         position={Position.Right}
-        id='d'
+        id="d"
         style={{ background: '#555' }}
       />
     </div>

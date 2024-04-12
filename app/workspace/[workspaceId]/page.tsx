@@ -1,8 +1,8 @@
 import { createClient } from '@/utils/supabase/supabaseServer';
 import { redirect } from 'next/navigation';
-import WorkspaceOverview from './_components/WorkspaceOverview';
-import WorkspaceSettings from './_components/WorkspaceSettings';
-import ProjectLibrary from './_components/ProjectLibrary';
+import WorkspaceOverview from '@/app/workspace/_components/WorkspaceOverview';
+import WorkspaceSettings from '@/app/workspace/_components/WorkspaceSettings';
+import ProjectLibrary from '../_components/ProjectLibrary.1';
 
 export default async function WorkspacePage({
   params

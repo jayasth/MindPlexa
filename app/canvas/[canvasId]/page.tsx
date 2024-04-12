@@ -1,44 +1,60 @@
-import { createClient } from '@/utils/supabase/supabaseServer';
-import { redirect } from 'next/navigation';
-import CanvasToolbar from './_components/CanvasToolbar';
-import DraggableNode from './_components/DraggableNode';
-import { Tables } from '@/types_db';
+// app/canvas/[canvasId]/page.tsx
 
-type Canvas = Tables<'canvases'>;
+import { useState, useEffect } from 'react';
+import ReactFlow, { ReactFlowProvider, Node, Edge } from 'reactflow';
+import { createClient } from '@/utils/supabase/supabaseClient';
+import { CustomNode } from '@/components/reactflow/custom-node';
+import { Canvases } from '@/types/database/canvas';
 
-export default async function CanvasPage({
-  params
-}: {
-  params: { canvasId: string };
-}) {
-  const supabase = createClient();
+type Canvas = Canvases['Row'];
 
-  const {
-    data: { user }
-  } = await supabase.auth.getUser();
+interface PageProps {
+  params: {
+    canvasId: string;
+  };
+}
 
-  if (!user) {
-    return redirect('/signin');
-  }
+export default function CanvasPage({ params }: PageProps) {
+  const [canvas, setCanvas] = useState<Canvas | null>(null);
+  const [nodes, setNodes] = useState<Node[]>([]);
+  const [edges, setEdges] = useState<Edge[]>([]);
 
-  const { data: canvas, error } = await supabase
-    .from('canvases')
-    .select('*')
-    .eq('id', params.canvasId)
-    .eq('user_id', user.id)
-    .single();
+  useEffect(() => {
+    const fetchCanvas = async () => {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from('canvases')
+        .select('*')
+        .eq('id', params.canvasId)
+        .single();
 
-  if (error) {
-    console.log(error);
-    return <div>Error loading canvas</div>;
+      if (error) {
+        console.error('Error fetching canvas:', error);
+      } else {
+        setCanvas(data as Canvas);
+        setNodes(JSON.parse(data.configuration).nodes);
+        setEdges(JSON.parse(data.configuration).edges);
+      }
+    };
+
+    fetchCanvas();
+  }, [params.canvasId]);
+
+  const nodeTypes = {
+    startEvent: CustomNode,
+    endEvent: CustomNode,
+    activity: CustomNode
+  };
+
+  if (!canvas) {
+    return <div>Loading...</div>;
   }
 
   return (
-    <div className="max-w-6xl px-4 py-8 mx-auto sm:px-6 lg:px-8">
-      <h1 className="text-4xl font-bold">{canvas.name}</h1>
-      <CanvasToolbar canvasId={params.canvasId} />
-      {/* Add your canvas content */}
-      <DraggableNode />
-    </div>
+    <ReactFlowProvider>
+      <div className="canvas-container h-screen">
+        <ReactFlow nodes={nodes} edges={edges} nodeTypes={nodeTypes} fitView />
+      </div>
+    </ReactFlowProvider>
   );
 }

@@ -2,8 +2,16 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { FaHome, FaFolder, FaUser, FaCog, FaSignOutAlt } from 'react-icons/fa';
+import {
+  FaHome,
+  FaFolder,
+  FaUser,
+  FaCog,
+  FaSignOutAlt,
+  FaRegClone
+} from 'react-icons/fa';
 import { MdDashboard } from 'react-icons/md';
+import { GoGraph } from 'react-icons/go';
 import { SignOut } from '@/utils/auth-helpers/authServer';
 import { handleRequest } from '@/utils/auth-helpers/authClient';
 import { useRouter } from 'next/navigation';
@@ -30,6 +38,8 @@ const Sidebar: React.FC = () => {
     { icon: <FaFolder />, label: 'Projects', link: '/projects' },
     { icon: <FaUser />, label: 'Profile', link: '/profile' },
     { icon: <FaCog />, label: 'Settings', link: '/settings' },
+    { icon: <GoGraph />, label: 'New Canvas', link: '/canvas/new' },
+    { icon: <FaRegClone />, label: 'Canvas Library', link: '/canvas' },
     {
       icon: <FaSignOutAlt />,
       label: 'Sign Out',

@@ -1,64 +1,43 @@
+// components/reactflow/diagram.tsx
 'use client';
 
-import React, { useEffect, useMemo } from 'react';
-import mermaid from 'mermaid';
-import { useState, useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import ReactFlow, {
   Background,
   Controls,
   EdgeChange,
   Node,
   NodeChange,
-  applyEdgeChanges,
-  applyNodeChanges,
   addEdge,
   Connection,
   Edge,
-  MarkerType,
+  MarkerType
 } from 'reactflow';
 import { CustomNode } from './custom-node';
-import { parseMermaidCode } from '@/lib/mermaid-utils';
 
 interface DiagramProps {
-  mermaidCode?: string;
-  isComplete?: boolean;
+  nodes: Node[];
+  edges: Edge[];
+  onNodesChange: (changes: NodeChange[]) => void;
+  onEdgesChange: (changes: EdgeChange[]) => void;
 }
 
-const Diagram = ({ mermaidCode = '', isComplete = false }: DiagramProps) => {
-  useEffect(() => {
-    async function parse() {
-      const { nodes, edges } = await parseMermaidCode(mermaidCode);
-      setEdges(edges);
-      setNodes(nodes);
-    }
-    if (isComplete && mermaidCode) {
-      parse();
-    }
-  }, [mermaidCode, isComplete]);
-
-  const [nodes, setNodes] = useState<Node[]>([]);
-  const [edges, setEdges] = useState<Edge[]>([]);
-
-  const onNodesChange = useCallback(
-    (changes: NodeChange[]) =>
-      setNodes((nds) => applyNodeChanges(changes, nds)),
-    []
-  );
-  const onEdgesChange = useCallback(
-    (changes: EdgeChange[]) =>
-      setEdges((eds) => applyEdgeChanges(changes, eds)),
-    []
-  );
+const Diagram = ({
+  nodes,
+  edges,
+  onNodesChange,
+  onEdgesChange
+}: DiagramProps) => {
   const onConnect = useCallback(
-    (params: Edge | Connection) => setEdges((eds) => addEdge(params, eds)),
-    []
+    (params: Edge | Connection) => onEdgesChange([addEdge(params, edges)]),
+    [edges, onEdgesChange]
   );
 
   const nodeTypes = useMemo(
     () => ({
       startEvent: CustomNode,
       endEvent: CustomNode,
-      activity: CustomNode,
+      activity: CustomNode
     }),
     []
   );
@@ -66,8 +45,8 @@ const Diagram = ({ mermaidCode = '', isComplete = false }: DiagramProps) => {
   return (
     <ReactFlow
       nodes={nodes}
-      onNodesChange={onNodesChange}
       edges={edges}
+      onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
       onConnect={onConnect}
       nodeTypes={nodeTypes}
