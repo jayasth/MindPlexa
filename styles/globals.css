@@ -38,7 +38,6 @@
   }
 }
 
-/* Styles from the example's main.css */
 *,
 *:before,
 *:after {
@@ -80,8 +79,6 @@ p a {
 }
 
 .animated {
-  -webkit-animation-duration: 1s;
-  animation-duration: 1s;
   -webkit-animation-duration: 1s;
   animation-duration: 1s;
   -webkit-animation-fill-mode: both;

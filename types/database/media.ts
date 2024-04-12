@@ -1,5 +1,5 @@
 // File: types/database/mediaNodes.ts
-export interface MediaNode {
+export interface Media {
   Row: {
     id: string;
     title: string;

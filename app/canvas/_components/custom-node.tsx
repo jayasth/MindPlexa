@@ -1,8 +1,13 @@
-// components/reactflow/custom-node.tsx
+'use client';
+
 import React from 'react';
 import { Handle, NodeProps, Position } from 'reactflow';
 
-export const CustomNode = ({ data, type }: NodeProps) => {
+interface CustomNodeProps extends NodeProps {
+  data: any;
+}
+
+export const CustomNode = ({ data, type }: CustomNodeProps) => {
   if (type === 'startEvent') {
     return (
       <div className="w-12 h-12 bg-white border-2 border-black rounded-full relative">
@@ -26,6 +31,7 @@ export const CustomNode = ({ data, type }: NodeProps) => {
           id="a"
           style={{ background: '#555' }}
         />
+
         <Handle
           type="source"
           position={Position.Bottom}
@@ -35,7 +41,6 @@ export const CustomNode = ({ data, type }: NodeProps) => {
       </div>
     );
   }
-
   return (
     <div className="react-flow__node-default">
       <div className="py-2">

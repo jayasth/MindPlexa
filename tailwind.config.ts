@@ -4,11 +4,8 @@ import { nextui } from '@nextui-org/react';
 
 export default {
   content: [
-    './src/pages/**/*.{js,ts,jsx,tsx}',
-    './src/features/**/*.{js,ts,jsx,tsx}',
     'app/**/*.{ts,tsx}',
     'components/**/*.{ts,tsx}',
-    'pages/**/*.{ts,tsx}',
     './node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}' // Add this line
   ],
   darkMode: ['class', '[data-theme="dark"]'],
@@ -38,7 +35,12 @@ export default {
           700: '#7C7BE0',
           800: '#6E69D8',
           900: '#5F56CF'
-        }
+        },
+        border: 'hsl(var(--border))',
+        input: 'hsl(var(--input))',
+        ring: 'hsl(var(--ring))',
+        background: 'hsl(var(--background))',
+        foreground: 'hsl(var(--foreground))'
       },
       fontFamily: {
         heading: ['Poppins', 'sans-serif'],
