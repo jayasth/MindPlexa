@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { FaHome, FaFolder, FaUser, FaCog, FaSignOutAlt } from 'react-icons/fa';
+import { MdDashboard } from 'react-icons/md';
 import { SignOut } from '@/utils/auth-helpers/authServer';
 import { handleRequest } from '@/utils/auth-helpers/authClient';
 import { useRouter } from 'next/navigation';
@@ -17,7 +18,7 @@ const Sidebar: React.FC = () => {
     const syntheticEvent = {
       preventDefault: () => {},
       target: {
-        elements: { pathName: { value: router.pathname } }
+        elements: { pathName: { value: router.refresh } }
       }
     };
     await handleRequest(syntheticEvent, SignOut, router);
@@ -25,6 +26,7 @@ const Sidebar: React.FC = () => {
 
   const menuItems = [
     { icon: <FaHome />, label: 'Dashboard', link: '/dashboard' },
+    { icon: <MdDashboard />, label: 'Workspace', link: '/workspace' },
     { icon: <FaFolder />, label: 'Projects', link: '/projects' },
     { icon: <FaUser />, label: 'Profile', link: '/profile' },
     { icon: <FaCog />, label: 'Settings', link: '/settings' },

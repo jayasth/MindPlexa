@@ -1,22 +1,19 @@
-'use client';
+import { Workspaces } from '@/types/database/workspaces';
 
-import { Tables } from '@/types_db';
-
-type Workspace = Tables<'workspaces'>;
+type Workspace = Workspaces['Row'];
 
 interface WorkspaceOverviewProps {
   workspace: Workspace;
 }
 
-export default function WorkspaceOverview({
-  workspace
-}: WorkspaceOverviewProps) {
-  // Placeholder implementation for the customizable overview
+const WorkspaceOverview: React.FC<WorkspaceOverviewProps> = ({ workspace }) => {
   return (
-    <div className="mt-8">
-      <h2 className="text-2xl font-bold">Overview</h2>
-      <p>Customizable overview for workspace: {workspace.name}</p>
-      {/* Add your customizable overview implementation here */}
+    <div className="p-4">
+      <h1 className="text-3xl font-bold mb-4">{workspace.name}</h1>
+      <p className="text-gray-600 mb-8">{workspace.description}</p>
+      {/* Add more workspace overview content */}
     </div>
   );
-}
+};
+
+export default WorkspaceOverview;

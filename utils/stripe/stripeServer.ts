@@ -9,9 +9,9 @@ import {
   getErrorRedirect,
   calculateTrialEndUnixTimestamp
 } from '@/utils/helpers';
-import { Tables } from '@/types_db';
+import { Prices } from '@/types/database/prices';
 
-type Price = Tables<'prices'>;
+type Price = Prices['Row'];
 
 type CheckoutResponse = {
   errorRedirect?: string;

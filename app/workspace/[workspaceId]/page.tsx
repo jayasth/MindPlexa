@@ -1,12 +1,10 @@
 import { createClient } from '@/utils/supabase/supabaseServer';
 import { redirect } from 'next/navigation';
 import WorkspaceOverview from './_components/WorkspaceOverview';
-import WorkspaceToolbar from './_components/WorkspaceToolbar';
-import { Tables } from '@/types_db';
+import WorkspaceSettings from './_components/WorkspaceSettings';
+import ProjectLibrary from './_components/ProjectLibrary';
 
-type Workspace = Tables<'workspaces'>;
-
-export default async function Workspace({
+export default async function WorkspacePage({
   params
 }: {
   params: { workspaceId: string };
@@ -25,7 +23,6 @@ export default async function Workspace({
     .from('workspaces')
     .select('*')
     .eq('id', params.workspaceId)
-    .eq('owner_id', user.id)
     .single();
 
   if (error) {
@@ -33,14 +30,11 @@ export default async function Workspace({
     return <div>Error loading workspace</div>;
   }
 
-  // Log the workspace id
-  console.log('Workspace ID:', workspace.id);
-
   return (
-    <div className="max-w-6xl px-4 py-8 mx-auto sm:px-6 lg:px-8">
-      <h1 className="text-4xl font-bold">{workspace.name}</h1>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <WorkspaceOverview workspace={workspace} />
-      <WorkspaceToolbar workspace={workspace} />
+      <WorkspaceSettings workspace={workspace} />
+      <ProjectLibrary workspaceId={params.workspaceId} />
     </div>
   );
 }

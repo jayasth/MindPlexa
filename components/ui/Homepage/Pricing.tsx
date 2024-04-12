@@ -8,11 +8,13 @@ import { User } from '@supabase/supabase-js';
 import cn from 'classnames';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { Tables } from '@/types_db';
+import { Subscriptions } from '@/types/database/subscriptions';
+import { Products } from '@/types/database/products';
+import { Prices } from '@/types/database/prices';
 
-type Subscription = Tables<'subscriptions'>;
-type Product = Tables<'products'>;
-type Price = Tables<'prices'>;
+type Subscription = Subscriptions['Row'];
+type Product = Products['Row'];
+type Price = Prices['Row'];
 interface ProductWithPrices extends Product {
   name: any;
   id: Key | null | undefined;

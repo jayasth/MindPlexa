@@ -3,13 +3,11 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/supabaseClient';
-import { Tables } from '@/types_db';
+import { Projects } from '@/types/database/projects';
 
-type Project = Tables<'projects'>;
-
-interface ProjectFormProps {
-  project?: Project;
-}
+type ProjectFormProps = {
+  project?: Projects['Row'];
+};
 
 const ProjectForm: React.FC<ProjectFormProps> = ({ project }) => {
   const router = useRouter();
@@ -18,11 +16,9 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     const supabase = createClient();
 
     if (project) {
-      // Update existing project
       const { error } = await supabase
         .from('projects')
         .update({ name, description })
@@ -34,22 +30,18 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project }) => {
         router.push(`/projects/${project.id}`);
       }
     } else {
-      // Create new project
       const { data, error } = await supabase
         .from('projects')
-        .insert({ name, description, workspace_id: 'default_workspace_id' })
-        .select()
-        .single();
+        .insert({ name, description })
+        .single<Projects['Row']>();
 
       if (error) {
         console.log('Error creating project:', error);
       } else {
-        const newProject = data as Project;
-        router.push(`/projects/${newProject.id}`);
+        router.push('/projects');
       }
     }
   };
-
   return (
     <form onSubmit={handleSubmit}>
       <div className="mb-4">

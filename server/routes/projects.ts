@@ -1,3 +1,5 @@
+// C:/coding/MindPlexa/server/routes/projects.ts
+
 import { Request, Response } from 'express';
 import { createClient } from '@/utils/supabase/supabaseServer';
 
@@ -6,12 +8,10 @@ export default async function projectsRoute(req: Request, res: Response) {
 
   switch (req.method) {
     case 'GET':
-      // Get all projects for a workspace
-      const { workspaceId } = req.query;
+      // Get all projects
       const { data: projects, error: getError } = await supabase
         .from('projects')
-        .select('*')
-        .eq('workspace_id', workspaceId);
+        .select('*');
 
       if (getError) {
         return res.status(500).json({ error: getError.message });
@@ -24,7 +24,7 @@ export default async function projectsRoute(req: Request, res: Response) {
       const { name, description } = req.body;
       const { data: newProject, error: createError } = await supabase
         .from('projects')
-        .insert({ name, description, workspace_id: workspaceId })
+        .insert({ name, description })
         .single();
 
       if (createError) {
