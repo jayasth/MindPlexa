@@ -1,7 +1,4 @@
-'use client';
-
-import React, { useEffect, useMemo } from 'react';
-import { useState, useCallback } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import ReactFlow, {
   Background,
   Controls,
@@ -12,9 +9,7 @@ import ReactFlow, {
   applyNodeChanges,
   addEdge,
   Connection,
-  Edge,
-  MiniMap,
-  ReactFlowProvider
+  Edge
 } from 'reactflow';
 import { CustomNode } from './custom-node';
 import { parseMermaidCode } from '@/utils/canvas/mermaid-utils';
@@ -25,6 +20,9 @@ interface DiagramProps {
 }
 
 const Diagram = ({ mermaidCode = '', isComplete = false }: DiagramProps) => {
+  const [nodes, setNodes] = useState<Node[]>([]);
+  const [edges, setEdges] = useState<Edge[]>([]);
+
   useEffect(() => {
     async function parse() {
       const { nodes, edges } = await parseMermaidCode(mermaidCode);
@@ -35,9 +33,6 @@ const Diagram = ({ mermaidCode = '', isComplete = false }: DiagramProps) => {
       parse();
     }
   }, [mermaidCode, isComplete]);
-
-  const [nodes, setNodes] = useState<Node[]>([]);
-  const [edges, setEdges] = useState<Edge[]>([]);
 
   const onNodesChange = useCallback(
     (changes: NodeChange[]) =>
@@ -64,23 +59,17 @@ const Diagram = ({ mermaidCode = '', isComplete = false }: DiagramProps) => {
   );
 
   return (
-    <div style={{ width: '100%', height: '100%' }}>
-      <ReactFlowProvider>
-        <ReactFlow
-          nodes={nodes}
-          onNodesChange={onNodesChange}
-          edges={edges}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          nodeTypes={nodeTypes}
-          fitView
-        >
-          <MiniMap />
-          <Controls />
-          <Background />
-        </ReactFlow>
-      </ReactFlowProvider>
-    </div>
+    <ReactFlow
+      nodes={nodes}
+      onNodesChange={onNodesChange}
+      edges={edges}
+      onEdgesChange={onEdgesChange}
+      onConnect={onConnect}
+      nodeTypes={nodeTypes}
+    >
+      <Background />
+      <Controls />
+    </ReactFlow>
   );
 };
 

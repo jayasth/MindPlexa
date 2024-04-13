@@ -38,7 +38,7 @@
     "@supabase/ssr": "^0.1.0",
     "@supabase/supabase-js": "^2.42.0",
     "@tailwindcss/forms": "^0.5.7",
-    "ai": "^3.0.21",
+    "ai": "^3.0.22",
     "axios": "^1.6.8",
     "class-variance-authority": "^0.7.0",
     "classnames": "^2.5.1",

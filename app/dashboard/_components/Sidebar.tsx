@@ -38,7 +38,7 @@ const Sidebar: React.FC = () => {
     { icon: <FaFolder />, label: 'Projects', link: '/projects' },
     { icon: <FaUser />, label: 'Profile', link: '/profile' },
     { icon: <FaCog />, label: 'Settings', link: '/settings' },
-    { icon: <GoGraph />, label: 'New Canvas', link: '/canvas/new' },
+    { icon: <GoGraph />, label: 'New Canvas', link: '/canvas' },
     { icon: <FaRegClone />, label: 'Canvas Library', link: '/canvas' },
     {
       icon: <FaSignOutAlt />,

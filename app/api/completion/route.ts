@@ -4,7 +4,7 @@ import { promptTemplate } from '@/app/prompts/prompt-2';
 
 // Create an OpenAI API client (that's edge friendly!)
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
+  apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY
 });
 
 // Set the runtime to edge for best performance
