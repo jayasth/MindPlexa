@@ -1,9 +1,9 @@
 'use client';
 
-import { Projects } from '@/types/database/projects';
+import type { Tables } from 'types_db';
 import Link from 'next/link';
 
-type Project = Projects['Row'];
+type Project = Tables<'projects'>;
 
 interface ProjectListProps {
   projects: Project[];

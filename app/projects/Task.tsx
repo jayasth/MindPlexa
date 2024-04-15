@@ -1,6 +1,6 @@
-import { Tasks } from '@/types/database/tasks';
+import type { Tables } from 'types_db';
 
-type Task = Tasks['Row'];
+type Task = Tables<'tasks'>;
 
 interface TaskProps {
   task: Task;

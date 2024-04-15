@@ -1,6 +1,6 @@
-import { Projects } from '@/types/database/projects';
+import type { Tables } from 'types_db';
 
-type Project = Projects['Row'];
+type Project = Tables<'projects'>;
 
 interface ProjectToolbarProps {
   project: Project;

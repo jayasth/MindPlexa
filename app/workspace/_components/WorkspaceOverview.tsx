@@ -1,6 +1,6 @@
-import { Workspaces } from '@/types/database/workspaces';
+import type { Tables } from 'types_db';
 
-type Workspace = Workspaces['Row'];
+type Workspace = Tables<'workspaces'>;
 
 interface WorkspaceOverviewProps {
   workspace: Workspace;

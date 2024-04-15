@@ -1,5 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Open+Sans&family=Poppins:wght@600&display=swap');
 @import 'reactflow/dist/style.css';
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans&family=Poppins:wght@600&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -60,14 +60,15 @@ html {
 
 html,
 body {
-  text-rendering: optimizeLegibility;
-  -moz-osx-font-smoothing: grayscale;
+  height: 100%;
+  margin: 0;
 }
 
 body {
   position: relative;
   min-height: 100%;
-  margin: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 a {
@@ -87,4 +88,10 @@ p a {
 
 .height-screen-helper {
   min-height: calc(100vh - 80px);
+}
+
+/* Footer styles */
+.footer {
+  width: 100%;
+  position: relative; /* Adjust if needed */
 }

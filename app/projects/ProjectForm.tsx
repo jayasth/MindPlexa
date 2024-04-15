@@ -3,10 +3,11 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/supabaseClient';
-import { Projects } from '@/types/database/projects';
+import type { Tables } from 'types_db';
 
+type Project = Tables<'projects'>;
 type ProjectFormProps = {
-  project?: Projects['Row'];
+  project: Project;
 };
 
 const ProjectForm: React.FC<ProjectFormProps> = ({ project }) => {
@@ -33,7 +34,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project }) => {
       const { data, error } = await supabase
         .from('projects')
         .insert({ name, description })
-        .single<Projects['Row']>();
+        .single<Project>();
 
       if (error) {
         console.log('Error creating project:', error);

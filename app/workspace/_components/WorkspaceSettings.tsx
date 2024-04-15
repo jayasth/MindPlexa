@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { createClient } from '@/utils/supabase/supabaseClient';
-import { Workspaces } from '@/types/database/workspaces';
+import type { Tables } from 'types_db';
 
-type Workspace = Workspaces['Row'];
+type Workspace = Tables<'workspaces'>;
 
 interface WorkspaceSettingsProps {
   workspace: Workspace;

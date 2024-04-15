@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { createClient } from '@/utils/supabase/supabaseClient';
-import { Projects } from '@/types/database/projects';
+import type { Tables } from 'types_db';
 import Link from 'next/link';
 
-type Project = Projects['Row'];
+type Project = Tables<'projects'>;
 
 interface ProjectLibraryProps {
   workspaceId?: string; // Make workspaceId optional

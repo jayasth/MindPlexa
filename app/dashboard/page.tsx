@@ -4,13 +4,11 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/supabaseClient';
 import DashboardContent from './DashboardContent';
-import { Workspaces } from '@/types/database/workspaces';
-import { Projects } from '@/types/database/projects';
-import { Profiles } from '@/types/database/profiles';
+import type { Tables } from 'types_db';
 
-type Workspace = Workspaces['Row'];
-type Project = Projects['Row'];
-type Profile = Profiles['Row'];
+type Workspace = Tables<'workspaces'>;
+type Project = Tables<'projects'>;
+type Profile = Tables<'profiles'>;
 
 export default function Dashboard() {
   const supabase = createClient();

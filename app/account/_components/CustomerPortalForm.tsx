@@ -4,9 +4,9 @@ import { useState } from 'react';
 import { User } from '@supabase/supabase-js';
 import { updateProfile } from '@/utils/supabase/profileClient';
 import { useRouter } from 'next/navigation';
-import { Profiles } from '@/types/database/profiles';
+import type { Tables } from 'types_db';
 
-type Profile = Profiles['Row'];
+type Profile = Tables<'profiles'>;
 
 interface ProfileFormProps {
   user: User;

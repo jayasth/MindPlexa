@@ -1,13 +1,8 @@
 import { Config } from 'tailwindcss';
 import { fontFamily } from 'tailwindcss/defaultTheme';
-import { nextui } from '@nextui-org/react';
 
 export default {
-  content: [
-    'app/**/*.{ts,tsx}',
-    'components/**/*.{ts,tsx}',
-    './node_modules/@nextui-org/theme/dist/**/*.{js,ts,jsx,tsx}' // Add this line
-  ],
+  content: ['app/**/*.{ts,tsx}', 'components/**/*.{ts,tsx}'],
   darkMode: ['class', '[data-theme="dark"]'],
   theme: {
     extend: {
@@ -71,9 +66,5 @@ export default {
       } as unknown
     }
   },
-  plugins: [
-    require('@tailwindcss/forms'),
-    require('tailwindcss-animate'),
-    nextui() // Add the NextUI plugin
-  ]
+  plugins: [require('@tailwindcss/forms'), require('tailwindcss-animate')]
 } as Config;

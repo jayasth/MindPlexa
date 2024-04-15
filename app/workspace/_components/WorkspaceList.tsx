@@ -1,7 +1,7 @@
-import { Workspaces } from '@/types/database/workspaces';
+import type { Tables } from 'types_db';
 import Link from 'next/link';
 
-type Workspace = Workspaces['Row'];
+type Workspace = Tables<'workspaces'>;
 
 interface WorkspaceListProps {
   workspaces: Workspace[];

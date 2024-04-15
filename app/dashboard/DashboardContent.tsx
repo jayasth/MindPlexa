@@ -1,12 +1,10 @@
 import React from 'react';
 import { FaFolder, FaUser, FaCog } from 'react-icons/fa';
-import { Workspaces } from '@/types/database/workspaces';
-import { Projects } from '@/types/database/projects';
-import { Profiles } from '@/types/database/profiles';
+import type { Tables } from 'types_db';
 
-type Workspace = Workspaces['Row'];
-type Project = Projects['Row'];
-type Profile = Profiles['Row'];
+type Workspace = Tables<'workspaces'>;
+type Project = Tables<'projects'>;
+type Profile = Tables<'profiles'>;
 
 interface DashboardContentProps {
   workspaces: Workspace[] | null;

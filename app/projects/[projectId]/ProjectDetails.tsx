@@ -1,12 +1,12 @@
 'use client';
 
-import { Projects } from '@/types/database/projects';
+import type { Tables } from 'types_db';
 import ProjectForm from '../ProjectForm';
 import ProjectToolbar from './ProjectToolbar';
 import { createClient } from '@/utils/supabase/supabaseClient';
 import { useRouter } from 'next/navigation';
 
-type Project = Projects['Row'];
+type Project = Tables<'projects'>;
 
 interface ProjectDetailsProps {
   project: Project;

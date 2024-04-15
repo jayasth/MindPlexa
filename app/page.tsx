@@ -1,16 +1,19 @@
+// app/page.tsx
 import { createClient } from '@/utils/supabase/supabaseServer';
 import { redirect } from 'next/navigation';
-import LandingPageContent from '@/components/ui/Homepage/LandingPageContent';
 
-export default async function LandingPage() {
+export default async function Page() {
   const supabase = createClient();
   const {
-    data: { user }
+    data: { user },
+    error
   } = await supabase.auth.getUser();
 
   if (user) {
-    redirect('/dashboard');
+    // Redirect authenticated users to dashboard
+    return redirect('/dashboard');
+  } else {
+    // Redirect non-authenticated users to the landing page
+    return redirect('/home');
   }
-
-  return <LandingPageContent />;
 }
