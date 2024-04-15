@@ -1,7 +1,7 @@
 import Pricing from '@/components/ui/Pricing/Pricing';
 import { createClient } from '@/utils/supabase/supabaseServer';
 import LandingLayout from '@/app/home/landingLayout';
-
+import LandingPageContent from '@/app/home/LandingPageContent';
 export default async function LandingPage() {
   const supabase = createClient();
 
@@ -30,6 +30,7 @@ export default async function LandingPage() {
 
   return (
     <LandingLayout>
+      <LandingPageContent />
       <Pricing
         user={user}
         products={products ?? []}

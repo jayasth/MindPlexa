@@ -39,7 +39,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ project }) => {
       <ProjectForm project={project} />
       <button
         onClick={handleDelete}
-        className="px-4 py-2 mt-4 font-bold text-white bg-red-500 rounded-md hover:bg-red-600"
+        className="px-4 py-2 mt-4 font-bold text-dark-text bg-red-500 rounded-md hover:bg-red-600"
       >
         Delete Project
       </button>

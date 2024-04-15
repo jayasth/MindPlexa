@@ -117,7 +117,7 @@ export default function ProfileForm({ user, profile }: ProfileFormProps) {
       </div>
       <button
         type="submit"
-        className="px-4 py-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700"
+        className="px-4 py-2 font-bold text-dark-text bg-blue-500 rounded hover:bg-blue-700"
         disabled={isSubmitting}
       >
         {isSubmitting ? 'Updating...' : 'Update Profile'}

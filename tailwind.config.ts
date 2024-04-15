@@ -10,14 +10,26 @@ export default {
         light: {
           background: '#F4F4F4',
           text: '#575757',
-          primary: '#2d9cdb',
-          secondary: '#f2c94c'
+          primary: '#A8A8A8',
+          secondary: '#C0C0C0'
         },
         dark: {
           background: '#1A202C',
           text: '#CBD5E0',
           primary: '#63b3ed',
           secondary: '#f6ad55'
+        },
+        myGray: {
+          50: '#F2F2F2',
+          100: '#E0E0E0',
+          200: '#C0C0C0',
+          300: '#A1A1A1',
+          400: '#828282',
+          500: '#636363',
+          600: '#575757',
+          700: '#494949',
+          800: '#3C3C3C',
+          900: '#2F2F2F'
         },
         lavender: {
           50: '#F8F7FE',

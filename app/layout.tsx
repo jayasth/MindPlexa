@@ -18,7 +18,7 @@ export default function RootLayout({ children }: PropsWithChildren) {
         <meta property="og:type" content={metadata.type} />
         <meta property="og:site_name" content={metadata.siteName} />
       </Head>
-      <body className="bg-black loading">
+      <body className="bg-background loading">
         <main
           id="skip"
           className="min-h-[calc(100dvh-4rem)] md:min-h[calc(100dvh-5rem)]"

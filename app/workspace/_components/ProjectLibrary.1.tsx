@@ -48,7 +48,7 @@ export const ProjectLibrary: React.FC<ProjectLibraryProps> = ({
       <h2 className="text-2xl font-bold mb-4">Projects</h2>
       <button
         onClick={handleCreateProject}
-        className="px-4 py-2 mb-4 font-bold text-white bg-blue-500 rounded hover:bg-blue-600"
+        className="px-4 py-2 mb-4 font-bold text-dark-text bg-blue-500 rounded hover:bg-blue-600"
       >
         Create Project
       </button>

@@ -1,0 +1,24 @@
+@keyframes typing {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+@keyframes blink {
+  50% {
+    border-color: transparent;
+  }
+}
+
+.typewriter {
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 0.15em solid var(--text-color);
+  animation:
+    typing 5s steps(40, end) forwards,
+    /* Increase or decrease the duration here */ blink 0.5s step-end infinite
+      alternate;
+}

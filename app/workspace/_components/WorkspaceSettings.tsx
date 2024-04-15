@@ -60,7 +60,7 @@ const WorkspaceSettings: React.FC<WorkspaceSettingsProps> = ({ workspace }) => {
         </div>
         <button
           type="submit"
-          className="px-4 py-2 font-bold text-white bg-blue-500 rounded-md hover:bg-blue-600"
+          className="px-4 py-2 font-bold text-dark-text bg-blue-500 rounded-md hover:bg-blue-600"
         >
           Save Settings
         </button>

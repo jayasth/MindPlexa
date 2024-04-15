@@ -36,7 +36,7 @@ export default async function ProjectsPage() {
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Projects</h1>
         <Link href="/projects/new" legacyBehavior>
-          <a className="px-4 py-2 font-bold text-white bg-blue-500 rounded-md hover:bg-blue-600">
+          <a className="px-4 py-2 font-bold text-dark-text bg-blue-500 rounded-md hover:bg-blue-600">
             Create Project
           </a>
         </Link>

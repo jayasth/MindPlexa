@@ -1,0 +1,108 @@
+/* General section styling */
+.pricingSection {
+  background-color: #f4f4f8; /* Light gray background for the section */
+  padding: 40px 0; /* Top and bottom padding */
+}
+
+.pricingContainer {
+  max-width: 1200px; /* Maximum width of the container */
+  margin: 0 auto; /* Center the container */
+  padding: 0 20px; /* Padding on the sides */
+}
+
+.heading {
+  font-size: 36px; /* Size of the main heading */
+  font-weight: bold; /* Make the heading bold */
+  text-align: center; /* Center the text */
+  color: #333; /* Dark text for better readability */
+}
+
+.subHeading {
+  font-size: 18px; /* Size of the subheading */
+  text-align: center; /* Center the text */
+  color: #666; /* Lighter text for the subheading */
+  margin-top: 20px; /* Space above the subheading */
+}
+
+.billingSwitch {
+  display: flex; /* Align buttons in a flex row */
+  justify-content: center; /* Center the buttons horizontally */
+  margin-top: 20px; /* Space above the switch */
+}
+
+.cardContainer {
+  display: flex; /* Use flexbox for layout */
+  flex-wrap: wrap; /* Allow wrapping of child elements */
+  justify-content: center; /* Center children horizontally */
+  gap: 20px; /* Space between cards */
+}
+
+.pricingCard {
+  flex: 1 1 300px; /* Flex basis of 300px, grow and shrink */
+  min-width: 250px; /* Minimum width */
+  max-width: 300px; /* Maximum width */
+  background-color: #fff; /* White background for cards */
+  border-radius: 8px; /* Rounded corners */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  overflow: hidden; /* Hide overflow */
+  display: flex; /* Display flex */
+  flex-direction: column; /* Stack children vertically */
+  color: #333; /* Text color */
+}
+
+.cardContent {
+  padding: 20px; /* Padding around content */
+}
+
+.title {
+  font-size: 24px; /* Title size */
+  font-weight: bold; /* Title weight */
+  color: #f4f4f4;
+}
+
+.description {
+  margin-top: 10px; /* Space above description */
+  color: #f4f4f4;
+}
+
+.price {
+  margin-top: 20px; /* Space above pricing info */
+  font-size: 28px; /* Larger font size for pricing */
+  font-weight: bold; /* Bold font weight for emphasis */
+  color: #f4f4f4;
+}
+
+.priceValue {
+  color: #f4f4f4;
+}
+
+.billingCycle {
+  font-size: 16px; /* Smaller font size for billing cycle */
+}
+
+/* Define any additional states or effects */
+.activeCard {
+  border: 2px solid #ffd700; /* Highlight active card with a gold border */
+}
+
+/* PricingCard.module.css */
+.gradientBackground {
+  background: radial-gradient(circle, #575757, #1a202c);
+}
+
+/* PricingCard.module.css */
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+}
+
+.pulseEffect {
+  animation: pulse 8s infinite;
+}

@@ -1,30 +1,58 @@
+/* Button Base Style */
 .root {
-  @apply bg-white text-zinc-800 cursor-pointer inline-flex px-10 rounded-sm leading-6  transition ease-in-out duration-150 shadow-sm font-semibold text-center justify-center uppercase py-4 border border-transparent items-center;
+  @apply bg-myGray-100 text-zinc-800 cursor-pointer inline-flex px-10 rounded-sm leading-6  transition ease-in-out duration-150 shadow-sm font-semibold text-center justify-center uppercase py-4 border border-transparent items-center;
 }
 
+/* Hover State */
 .root:hover {
-  @apply bg-zinc-800 text-white border border-white;
+  @apply bg-light-secondary border-light-background;
 }
 
+/* Focus State */
 .root:focus {
   @apply outline-none ring-2 ring-lavender-500 ring-opacity-50;
 }
 
+/* Active State */
 .root[data-active] {
-  @apply bg-zinc-600;
+  @apply bg-light-primary;
 }
 
+/* Loading State */
 .loading {
-  @apply bg-zinc-700 text-zinc-500 border-zinc-600 cursor-not-allowed;
+  @apply bg-light-background text-light-text border-light-text cursor-not-allowed;
 }
 
+/* Slim Modifier for a thinner appearance */
 .slim {
-  @apply py-2 transform-none normal-case;
+  @apply py-1 px-3 text-sm;
 }
 
+.rounded {
+  @apply rounded-full;
+}
+
+.outline {
+  @apply bg-transparent text-light-primary border border-light-primary;
+}
+
+.outline:hover {
+  @apply bg-light-primary text-light-background; /* Swaps the text and background colors on hover */
+}
+
+/* Sleek variant styles */
+.sleek {
+  @apply bg-light-primary text-light-background border border-light-primary rounded-md shadow-sm transition duration-300 ease-in-out;
+}
+
+.sleek:hover {
+  @apply shadow-lg shadow-light-primary/50;
+}
+
+/* Disabled State */
 .disabled,
 .disabled:hover {
-  @apply text-zinc-400 border-zinc-600 bg-zinc-700 cursor-not-allowed;
+  @apply text-light-text border-light-text bg-light-background cursor-not-allowed;
   filter: grayscale(1);
   -webkit-transform: translateZ(0);
   -webkit-perspective: 1000;

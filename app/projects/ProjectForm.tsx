@@ -72,7 +72,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project }) => {
       </div>
       <button
         type="submit"
-        className="px-4 py-2 font-bold text-white bg-blue-500 rounded-md hover:bg-blue-600"
+        className="px-4 py-2 font-bold text-dark-text bg-blue-500 rounded-md hover:bg-blue-600"
       >
         {project ? 'Update Project' : 'Create Project'}
       </button>
