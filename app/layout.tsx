@@ -1,12 +1,15 @@
 import { generateMetadata } from '@/utils/metadata';
 import Head from 'next/head';
 import { Toaster } from '@/components/ui/Toasts/toaster';
-import { PropsWithChildren, Suspense } from 'react';
 import 'styles/globals.css';
 
-export default function RootLayout({ children }: PropsWithChildren) {
-  const metadata = generateMetadata();
+export const metadata = generateMetadata();
 
+export default function RootLayout({
+  children
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en">
       <Head>
@@ -18,16 +21,9 @@ export default function RootLayout({ children }: PropsWithChildren) {
         <meta property="og:type" content={metadata.type} />
         <meta property="og:site_name" content={metadata.siteName} />
       </Head>
-      <body className="bg-background loading">
-        <main
-          id="skip"
-          className="min-h-[calc(100dvh-4rem)] md:min-h[calc(100dvh-5rem)]"
-        >
-          {children}
-        </main>
-        <Suspense fallback={<div>Loading...</div>}>
-          <Toaster />
-        </Suspense>
+      <body className="bg-background">
+        {children}
+        <Toaster />
       </body>
     </html>
   );

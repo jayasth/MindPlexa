@@ -1,3 +1,4 @@
+'use client';
 
 import Sidebar from '@/app/dashboard/_components/Sidebar';
 
@@ -7,9 +8,9 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-      <div className="flex">
-        <Sidebar />
-        <div className="ml-16 md:ml-60 p-4">{children}</div>
-      </div>
+    <div className="flex">
+      <Sidebar />
+      <div className="ml-16 md:ml-60 p-4">{children}</div>
+    </div>
   );
 }

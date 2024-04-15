@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { FaFolder, FaUser, FaCog } from 'react-icons/fa';
 import type { Tables } from 'types_db';

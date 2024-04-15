@@ -1,8 +1,7 @@
+// app/profile/page.tsx
 import { createClient } from '@/utils/supabase/supabaseServer';
-import ProfileForm from './_components/ProfileForm';
 import { redirect } from 'next/navigation';
-import Link from 'next/link';
-import Button from '@/components/ui/Button/Button';
+import ProfileFormWrapper from './ProfileFormWrapper';
 
 export default async function Profile() {
   const supabase = createClient();
@@ -45,12 +44,7 @@ export default async function Profile() {
           <p>Website: {profile?.website || 'N/A'}</p>
           {/* Add more profile fields as needed */}
         </div>
-        <ProfileForm user={user} profile={profile ?? null} />
-        <div className="mt-8">
-          <Link href="/account">
-            <Button>Manage Account</Button>
-          </Link>
-        </div>
+        <ProfileFormWrapper user={user} profile={profile ?? null} />
       </div>
     </section>
   );

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/supabaseClient';
 import DashboardContent from './DashboardContent';
 import type { Tables } from 'types_db';
+import { PostgrestError } from '@supabase/supabase-js';
 
 type Workspace = Tables<'workspaces'>;
 type Project = Tables<'projects'>;
@@ -52,11 +53,37 @@ export default function Dashboard() {
         console.error('Error fetching projects:', projectsError);
       }
 
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
+      let profileData: Profile | null = null;
+      let profileError: PostgrestError | null = null;
+
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+
+        if (error && error.code === '406') {
+          // Profile not found, create a new one
+          const { data: newProfile, error: createError } = await supabase
+            .from('profiles')
+            .insert({ user_id: user.id })
+            .single();
+
+          if (createError) {
+            console.error('Error creating profile:', createError);
+            profileError = createError;
+          } else {
+            profileData = newProfile;
+          }
+        } else {
+          profileData = data;
+          profileError = error;
+        }
+      } catch (error) {
+        console.error('Error fetching/creating profile:', error);
+        profileError = error as PostgrestError;
+      }
 
       if (profileError) {
         console.error('Error fetching profile:', profileError);
@@ -64,7 +91,7 @@ export default function Dashboard() {
 
       setWorkspaces(workspacesData ?? []);
       setProjects(projectsData ?? []);
-      setProfile(profileData || null);
+      setProfile(profileData);
     };
 
     fetchData();

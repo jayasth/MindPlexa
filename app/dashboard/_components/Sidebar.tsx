@@ -15,6 +15,7 @@ import { GoGraph } from 'react-icons/go';
 import { SignOut } from '@/utils/auth-helpers/authServer';
 import { handleRequest } from '@/utils/auth-helpers/authClient';
 import { useRouter } from 'next/navigation';
+import styles from './Sidebar.module.css';
 
 const Sidebar: React.FC = () => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -25,11 +26,9 @@ const Sidebar: React.FC = () => {
     // Creating a synthetic event as expected by the `handleRequest` function
     const syntheticEvent = {
       preventDefault: () => {},
-      target: {
-        elements: { pathName: { value: router.refresh } }
-      }
+      target: { elements: { pathName: { value: router.refresh } } }
     };
-    await handleRequest(syntheticEvent, SignOut, router);
+    await handleRequest(syntheticEvent as any, SignOut, router);
   };
 
   const menuItems = [
@@ -40,18 +39,12 @@ const Sidebar: React.FC = () => {
     { icon: <FaCog />, label: 'Settings', link: '/settings' },
     { icon: <GoGraph />, label: 'New Canvas', link: '/canvas' },
     { icon: <FaRegClone />, label: 'Canvas Library', link: '/canvas' },
-    {
-      icon: <FaSignOutAlt />,
-      label: 'Sign Out',
-      action: handleSignOut
-    }
+    { icon: <FaSignOutAlt />, label: 'Sign Out', action: handleSignOut }
   ];
 
   return (
     <div
-      className={`fixed top-0 left-0 h-screen bg-white shadow-md overflow-hidden transition-all duration-300 ${
-        isExpanded ? 'w-60' : 'w-16'
-      }`}
+      className={`${styles.sidebar} ${isExpanded ? styles.expanded : styles.collapsed}`}
       onMouseEnter={() => setIsExpanded(true)}
       onMouseLeave={() => setIsExpanded(false)}
     >
@@ -59,19 +52,19 @@ const Sidebar: React.FC = () => {
         {menuItems.map((item, index) =>
           item.link ? (
             <Link key={index} href={item.link} legacyBehavior>
-              <a className="flex items-center py-4 px-6 text-gray-600 hover:bg-gray-100 cursor-pointer">
-                <div className="mr-4 text-2xl">{item.icon}</div>
-                {isExpanded && <span>{item.label}</span>}
+              <a className={styles.menuItem}>
+                <div className={styles.menuIcon}>{item.icon}</div>
+                {isExpanded && (
+                  <span className={styles.menuLabel}>{item.label}</span>
+                )}
               </a>
             </Link>
           ) : (
-            <div
-              key={index}
-              className="flex items-center py-4 px-6 text-gray-600 hover:bg-gray-100 cursor-pointer"
-              onClick={item.action}
-            >
-              <div className="mr-4 text-2xl">{item.icon}</div>
-              {isExpanded && <span>{item.label}</span>}
+            <div key={index} className={styles.menuItem} onClick={item.action}>
+              <div className={styles.menuIcon}>{item.icon}</div>
+              {isExpanded && (
+                <span className={styles.menuLabel}>{item.label}</span>
+              )}
             </div>
           )
         )}

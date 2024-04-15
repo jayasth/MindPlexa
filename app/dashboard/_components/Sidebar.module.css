@@ -1,0 +1,23 @@
+.sidebar {
+  @apply fixed top-0 left-0 h-screen bg-white shadow-md overflow-hidden transition-all duration-300;
+}
+
+.expanded {
+  @apply w-60;
+}
+
+.collapsed {
+  @apply w-16;
+}
+
+.menuItem {
+  @apply flex items-center py-4 px-6 hover:bg-gray-100 cursor-pointer;
+}
+
+.menuIcon {
+  @apply mr-4 text-2xl;
+}
+
+.menuLabel {
+  @apply text-sm;
+}

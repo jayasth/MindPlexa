@@ -1,4 +1,3 @@
-// app/page.tsx
 import { createClient } from '@/utils/supabase/supabaseServer';
 import { redirect } from 'next/navigation';
 

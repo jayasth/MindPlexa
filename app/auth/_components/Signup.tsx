@@ -1,3 +1,4 @@
+// app/auth/_components/Signup.tsx
 'use client';
 
 import Button from '@/components/ui/Button/Button';
@@ -7,8 +8,8 @@ import { signUp } from '@/utils/auth-helpers/authServer';
 import { handleRequest } from '@/utils/auth-helpers/authClient';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { createClient } from '@/utils/supabase/supabaseClient';
 
-// Define prop type with allowEmail boolean
 interface SignUpProps {
   allowEmail: boolean;
   redirectMethod: string;
@@ -19,8 +20,42 @@ export default function SignUp({ allowEmail, redirectMethod }: SignUpProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    setIsSubmitting(true); // Disable the button while the request is being handled
-    await handleRequest(e, signUp, router);
+    e.preventDefault(); // Prevent the default form submission
+    setIsSubmitting(true);
+
+    // Create a FormData object from the form
+    const formData = new FormData(e.currentTarget);
+
+    const redirectPath = await signUp(formData);
+
+    console.log('Redirect Path:', redirectPath); // Add this line
+
+    if (redirectPath.includes('/dashboard')) {
+      const supabase = createClient();
+      const {
+        data: { user }
+      } = await supabase.auth.getUser();
+
+      if (user) {
+        console.log('Creating user profile');
+        // Create a new profile record for the user
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({ user_id: user.id });
+
+        if (profileError) {
+          console.error('Error creating profile:', profileError);
+        }
+      }
+    }
+
+    console.log('Redirecting to:', redirectPath);
+
+    if (router) {
+      router.push(redirectPath);
+    } else {
+      window.location.href = redirectPath;
+    }
     setIsSubmitting(false);
   };
 
