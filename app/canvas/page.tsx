@@ -49,11 +49,12 @@ export default function CanvasPage() {
               onChange={handleInputChange}
               className="w-full rounded-b-none focus:outline-none"
             />
+            <p> This is outside canvas id folder </p>
             <Button className="rounded-t-none" type="submit">
               Submit
             </Button>
           </div>
-          <div className="flex-1 bg-gray-900 p-4 overflow-auto">
+          <div className="flex-1 bg-myLightGray-500 p-4 overflow-auto">
             {isLoading ? (
               <Loading />
             ) : (

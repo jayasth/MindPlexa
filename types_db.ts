@@ -14,10 +14,14 @@ export type Database = {
           configuration: string | null
           created_at: string | null
           description: string | null
+          downloaded_at: string | null
           edges: string[] | null
           id: number
+          is_public: boolean | null
+          last_saved_at: string | null
           nodes: string[] | null
           owner_id: string
+          slug: string | null
           title: string
           updated_at: string | null
         }
@@ -25,10 +29,14 @@ export type Database = {
           configuration?: string | null
           created_at?: string | null
           description?: string | null
+          downloaded_at?: string | null
           edges?: string[] | null
           id?: number
+          is_public?: boolean | null
+          last_saved_at?: string | null
           nodes?: string[] | null
           owner_id: string
+          slug?: string | null
           title: string
           updated_at?: string | null
         }
@@ -36,10 +44,14 @@ export type Database = {
           configuration?: string | null
           created_at?: string | null
           description?: string | null
+          downloaded_at?: string | null
           edges?: string[] | null
           id?: number
+          is_public?: boolean | null
+          last_saved_at?: string | null
           nodes?: string[] | null
           owner_id?: string
+          slug?: string | null
           title?: string
           updated_at?: string | null
         }
@@ -272,25 +284,45 @@ export type Database = {
         Row: {
           created_at: string | null
           description: string | null
+          due_date: string | null
           id: string
           name: string
+          slug: string | null
+          status: string | null
           updated_at: string | null
+          user_id: string | null
         }
         Insert: {
           created_at?: string | null
           description?: string | null
+          due_date?: string | null
           id?: string
           name: string
+          slug?: string | null
+          status?: string | null
           updated_at?: string | null
+          user_id?: string | null
         }
         Update: {
           created_at?: string | null
           description?: string | null
+          due_date?: string | null
           id?: string
           name?: string
+          slug?: string | null
+          status?: string | null
           updated_at?: string | null
+          user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "projects_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       subscriptions: {
         Row: {

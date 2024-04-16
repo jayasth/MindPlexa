@@ -2,8 +2,9 @@
 
 import { createClient } from '@/utils/supabase/supabaseServer';
 import { redirect } from 'next/navigation';
-import ProjectList from './ProjectList';
+import ProjectList from '@/ui/project/ProjectList';
 import Link from 'next/link';
+import { MdOutlineCreateNewFolder } from 'react-icons/md';
 
 export default async function ProjectsPage() {
   const supabase = createClient();
@@ -35,11 +36,12 @@ export default async function ProjectsPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Projects</h1>
-        <Link
-          href="/projects/new"
-          className="px-4 py-2 font-bold text-dark-text bg-blue-500 rounded-md hover:bg-blue-600"
-        >
-          Create Project
+        <Link href="/workspace/projects/new" className="relative group">
+          <MdOutlineCreateNewFolder size={24} className="text-myGray-500" />
+          <span className="sr-only">Create Project</span>
+          <div className="absolute right-4 bg-myGray-300 text-white px-2 py-1 rounded text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+            Create Project
+          </div>
         </Link>
       </div>
       <ProjectList projects={projects ?? []} />

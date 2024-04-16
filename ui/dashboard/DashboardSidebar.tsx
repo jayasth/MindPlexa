@@ -9,7 +9,6 @@ import {
   FaTimes
 } from 'react-icons/fa';
 import { MdDashboard, MdAccountBox, MdWorkspaces } from 'react-icons/md';
-import { GoGraph } from 'react-icons/go';
 import { SignOut } from '@/utils/auth-helpers/authServer';
 import { handleRequest } from '@/utils/auth-helpers/authClient';
 import { useRouter } from 'next/navigation';
@@ -39,9 +38,6 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
   const menuItems = [
     { icon: <MdDashboard />, label: 'Dashboard', link: '/dashboard' },
     { icon: <MdWorkspaces />, label: 'Workspace', link: '/workspace' },
-    { icon: <FaFolder />, label: 'Projects', link: '/projects' },
-    { icon: <GoGraph />, label: 'New Canvas', link: '/canvas' },
-    { icon: <FaRegClone />, label: 'Canvas Library', link: '/canvas' },
     { icon: <FaUser />, label: 'Profile', link: '/dashboard/profile' },
     { icon: <MdAccountBox />, label: 'Settings', link: '/dashboard/settings' },
     { icon: <FaCog />, label: 'Account', link: '/dashboard/account' },

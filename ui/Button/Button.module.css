@@ -1,6 +1,6 @@
 /* Button Base Style */
 .root {
-  @apply bg-myGray-100 text-zinc-800 cursor-pointer inline-flex px-10 rounded-sm leading-6  transition ease-in-out duration-150 shadow-sm font-semibold text-center justify-center uppercase py-4 border border-transparent items-center;
+  @apply bg-myGray-100 text-myGray-800 cursor-pointer inline-flex px-10 rounded-sm leading-6  transition ease-in-out duration-150 shadow-sm font-semibold text-center justify-center uppercase py-4 border border-transparent items-center;
 }
 
 /* Hover State */
@@ -25,7 +25,11 @@
 
 /* Slim Modifier for a thinner appearance */
 .slim {
-  @apply py-1 px-3 text-sm;
+  @apply py-1 px-2 text-sm bg-myGray-400 text-light-background border border-light-primary rounded-md shadow-sm transition duration-300 ease-in-out;
+}
+
+.slim:hover {
+  @apply shadow-lg shadow-light-primary/50;
 }
 
 .rounded {

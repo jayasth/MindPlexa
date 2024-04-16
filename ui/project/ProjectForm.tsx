@@ -4,10 +4,11 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/supabaseClient';
 import type { Tables } from 'types_db';
+import Button from '@/ui/Button/Button';
 
 type Project = Tables<'projects'>;
 type ProjectFormProps = {
-  project: Project;
+  project: Project | null;
 };
 
 const ProjectForm: React.FC<ProjectFormProps> = ({ project }) => {
@@ -28,7 +29,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project }) => {
       if (error) {
         console.log('Error updating project:', error);
       } else {
-        router.push(`/projects/${project.id}`);
+        router.push(`/workspace/projects/${project.id}`);
       }
     } else {
       const { data, error } = await supabase
@@ -39,7 +40,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project }) => {
       if (error) {
         console.log('Error creating project:', error);
       } else {
-        router.push('/projects');
+        router.push('/workspace/projects');
       }
     }
   };
@@ -70,12 +71,9 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ project }) => {
           rows={4}
         />
       </div>
-      <button
-        type="submit"
-        className="px-4 py-2 font-bold text-dark-text bg-blue-500 rounded-md hover:bg-blue-600"
-      >
-        {project ? 'Update Project' : 'Create Project'}
-      </button>
+      <Button type="submit" className="variant=sleek">
+        {project?.id ? 'Update Project' : 'Create Project'}
+      </Button>
     </form>
   );
 };

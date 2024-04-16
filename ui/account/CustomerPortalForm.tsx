@@ -1,6 +1,6 @@
 'use client';
 
-import Button from '@/ui/Button';
+import Button from '@/ui/Button/Button';
 import { useRouter, usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { createStripePortal } from '@/utils/stripe/stripeServer';
