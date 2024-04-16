@@ -2,7 +2,7 @@ import { Config } from 'tailwindcss';
 import { fontFamily } from 'tailwindcss/defaultTheme';
 
 export default {
-  content: ['app/**/*.{ts,tsx}', 'components/**/*.{ts,tsx}'],
+  content: ['app/**/*.{ts,tsx}', 'ui/**/*.{ts,tsx}'],
   darkMode: ['class', '[data-theme="dark"]'],
   theme: {
     extend: {
@@ -30,6 +30,18 @@ export default {
           700: '#494949',
           800: '#3C3C3C',
           900: '#2F2F2F'
+        },
+        myLightGray: {
+          50: '#FFFFFF',
+          100: '#FFFFFF',
+          200: '#FFFFFF',
+          300: '#FEFEFE',
+          400: '#FDFDFD',
+          500: '#F4F4F4',
+          600: '#EBEBEB',
+          700: '#E2E2E2',
+          800: '#D9D9D9',
+          900: '#D0D0D0'
         },
         lavender: {
           50: '#F8F7FE',

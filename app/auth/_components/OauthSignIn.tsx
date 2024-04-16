@@ -1,6 +1,6 @@
 'use client';
 
-import Button from '@/components/ui/Button/Button';
+import Button from '@/ui/Button/Button';
 import { signInWithOAuth } from '@/utils/auth-helpers/authClient';
 import { type Provider } from '@supabase/supabase-js';
 import { FaGithub } from 'react-icons/fa';

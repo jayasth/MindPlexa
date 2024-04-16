@@ -1,5 +1,5 @@
-import Navbar from '@/components/ui/Navbar';
-import Footer from '@/components/ui/Footer';
+import Navbar from '@/ui/Navbar';
+import Footer from '@/ui/Footer';
 import styles from './LandingLayout.module.css'; // Import the module CSS
 
 export default function LandingLayout({ children }) {

@@ -1,4 +1,4 @@
-import Logo from '@/components/icons/Logo';
+import Logo from '@/ui/icons/Logo';
 import { createClient } from '@/utils/supabase/supabaseServer';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
@@ -8,7 +8,7 @@ import {
   getDefaultSignInView,
   getRedirectMethod
 } from '@/utils/auth-helpers/authSettings';
-import Card from '@/components/ui/Card';
+import Card from '@/ui/Card';
 import PasswordSignIn from '@/app/auth/_components/PasswordSignIn';
 import EmailSignIn from '@/app/auth/_components/EmailSignIn';
 import Separator from '@/app/auth/_components/Separator';

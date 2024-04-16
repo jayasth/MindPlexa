@@ -1,10 +1,8 @@
-// components/ui/LandingPageContent.tsx
-
 'use client';
 
-import Button from '@/components/ui/Button/Button';
+import Button from '@/ui/Button/Button';
 import Link from 'next/link';
-import TypewriterEffect from '@/components/ui/TypewriterEffect/TypewriterEffect';
+import TypewriterEffect from '@/ui/TypewriterEffect/TypewriterEffect';
 
 export default function LandingPageContent() {
   return (

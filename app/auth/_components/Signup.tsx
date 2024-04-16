@@ -1,7 +1,6 @@
-// app/auth/_components/Signup.tsx
 'use client';
 
-import Button from '@/components/ui/Button/Button';
+import Button from '@/ui/Button/Button';
 import React from 'react';
 import Link from 'next/link';
 import { signUp } from '@/utils/auth-helpers/authServer';

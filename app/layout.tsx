@@ -1,6 +1,6 @@
 import { generateMetadata } from '@/utils/metadata';
 import Head from 'next/head';
-import { Toaster } from '@/components/ui/Toasts/toaster';
+import { Toaster } from '@/ui/Toasts/toaster';
 import 'styles/globals.css';
 
 export const metadata = generateMetadata();

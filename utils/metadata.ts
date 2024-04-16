@@ -13,7 +13,7 @@ export interface Metadata {
 // General metadata generation function
 export function generateMetadata(): Metadata {
   return {
-    title: 'MindPlexa - Unleash Your Creativity',
+    title: 'MindPlexa - Productivity Playground',
     description:
       'MindPlexa brings collaborative project management to the next level with AI-driven insights.',
     favicon: '/favicon.ico',

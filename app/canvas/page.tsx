@@ -1,9 +1,9 @@
 // Replace the imports accordingly
 'use client';
-import Diagram from './_components/diagram';
-import Button from '@/components/ui/Button/Button';
-import { Textarea } from '@/components/ui/textarea';
-import Toolbar from './_components/toolbar';
+import Diagram from '@/ui/canvas/diagram';
+import Button from '@/ui/Button/Button';
+import { Textarea } from '@/ui/Textarea/textarea';
+import Toolbar from '@/ui/canvas/toolbar';
 import { useCompletion } from 'ai/react'; // Add this import for useCompletion
 
 export default function CanvasPage() {

@@ -1,6 +1,6 @@
 'use client';
-import { useState } from 'react';
-import DashboardSidebar from '@/ui/dashboard/DashboardSidebar';
+import React, { useState } from 'react';
+import WorkspaceSidebar from '@/ui/workspace/WorkspaceSidebar';
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -11,7 +11,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-screen">
-      <DashboardSidebar isOpen={isSidebarOpen} onClose={toggleSidebar} />
+      <WorkspaceSidebar isOpen={isSidebarOpen} onClose={toggleSidebar} />
       <div
         className={`flex-1 overflow-y-auto p-6 md:p-12 transition-all duration-300 ease-in-out ${isSidebarOpen ? 'ml-12' : 'ml-4'}`}
       >

@@ -1,6 +1,5 @@
-// src/features/Auth/authSlice.ts
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { User } from "@supabase/supabase-js";
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { User } from '@supabase/supabase-js';
 
 interface AuthState {
   user: User | null;
@@ -11,11 +10,11 @@ interface AuthState {
 const initialState: AuthState = {
   user: null,
   loading: false,
-  error: null,
+  error: null
 };
 
 const authSlice = createSlice({
-  name: "auth",
+  name: 'auth',
   initialState,
   reducers: {
     setUser: (state, action: PayloadAction<User | null>) => {
@@ -26,8 +25,8 @@ const authSlice = createSlice({
     },
     setError: (state, action: PayloadAction<string | null>) => {
       state.error = action.payload;
-    },
-  },
+    }
+  }
 });
 
 export const { setUser, setLoading, setError } = authSlice.actions;

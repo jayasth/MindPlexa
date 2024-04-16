@@ -1,4 +1,4 @@
-import Pricing from '@/components/ui/Pricing/Pricing';
+import Pricing from '@/ui/Pricing/Pricing';
 import { createClient } from '@/utils/supabase/supabaseServer';
 import LandingLayout from '@/app/home/landingLayout';
 import LandingPageContent from '@/app/home/LandingPageContent';
