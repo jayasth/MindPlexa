@@ -10,7 +10,7 @@ export default async function Page() {
 
   if (user) {
     // Redirect authenticated users to dashboard
-    return redirect('/dashboard');
+    return redirect('/workspace');
   } else {
     // Redirect non-authenticated users to the landing page
     return redirect('/home');

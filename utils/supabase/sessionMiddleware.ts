@@ -15,7 +15,7 @@ export async function middleware(request: NextRequest) {
   const isAuthenticated = request.cookies.has('sb:token'); // Check for authentication-related cookie
 
   if (isAuthenticated && (path === '/' || path === '/login')) {
-    url.pathname = '/dashboard';
+    url.pathname = '/workspace';
     return NextResponse.redirect(url);
   }
 

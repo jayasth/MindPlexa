@@ -9,53 +9,43 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      canvas: {
+      canvases: {
         Row: {
-          configuration: string | null
+          content: string | null
           created_at: string | null
           description: string | null
-          downloaded_at: string | null
-          edges: string[] | null
-          id: number
-          is_public: boolean | null
-          last_saved_at: string | null
-          nodes: string[] | null
-          owner_id: string
-          slug: string | null
-          title: string
+          id: string
+          name: string
           updated_at: string | null
+          user_id: string | null
         }
         Insert: {
-          configuration?: string | null
+          content?: string | null
           created_at?: string | null
           description?: string | null
-          downloaded_at?: string | null
-          edges?: string[] | null
-          id?: number
-          is_public?: boolean | null
-          last_saved_at?: string | null
-          nodes?: string[] | null
-          owner_id: string
-          slug?: string | null
-          title: string
+          id?: string
+          name: string
           updated_at?: string | null
+          user_id?: string | null
         }
         Update: {
-          configuration?: string | null
+          content?: string | null
           created_at?: string | null
           description?: string | null
-          downloaded_at?: string | null
-          edges?: string[] | null
-          id?: number
-          is_public?: boolean | null
-          last_saved_at?: string | null
-          nodes?: string[] | null
-          owner_id?: string
-          slug?: string | null
-          title?: string
+          id?: string
+          name?: string
           updated_at?: string | null
+          user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "canvases_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       customers: {
         Row: {

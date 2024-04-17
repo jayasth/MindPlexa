@@ -1,6 +1,12 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { FaFolder, FaRegClone, FaTimes, FaSignOutAlt } from 'react-icons/fa';
+import {
+  FaFolder,
+  FaThList,
+  FaTimes,
+  FaSignOutAlt,
+  FaPlus
+} from 'react-icons/fa';
 import { MdDashboard, MdWorkspaces } from 'react-icons/md';
 import { SignOut } from '@/utils/auth-helpers/authServer';
 import { handleRequest } from '@/utils/auth-helpers/authClient';
@@ -30,9 +36,10 @@ const WorkspaceSidebar: React.FC<WorkspaceSidebarProps> = ({
 
   const menuItems = [
     { icon: <MdWorkspaces />, label: 'Workspace', link: '/workspace' },
-    { icon: <MdDashboard />, label: 'Dashboard', link: '/dashboard' },
     { icon: <FaFolder />, label: 'Projects', link: '/workspace/projects' },
-    { icon: <FaRegClone />, label: 'Canvases', link: '/workspace/canvases' },
+    { icon: <FaThList />, label: 'Canvases', link: '/workspace/canvases' },
+    { icon: <FaPlus />, label: 'New Canvas', link: '/canvasEditor/new' },
+    { icon: <MdDashboard />, label: 'Dashboard', link: '/dashboard' },
     { icon: <FaSignOutAlt />, label: 'Sign Out', action: handleSignOut }
   ];
 

@@ -1,4 +1,6 @@
-import React, { useEffect, useMemo, useState, useCallback } from 'react';
+// ui/canvasEditor/diagram.tsx
+
+import React, { useEffect, useState, useCallback } from 'react';
 import ReactFlow, {
   Background,
   Controls,
@@ -13,6 +15,13 @@ import ReactFlow, {
 } from 'reactflow';
 import { CustomNode } from './custom-node';
 import { parseMermaidCode } from '@/utils/canvas/mermaid-utils';
+
+// Define nodeTypes outside the component
+const nodeTypes = {
+  startEvent: CustomNode,
+  endEvent: CustomNode,
+  activity: CustomNode
+};
 
 interface DiagramProps {
   mermaidCode?: string;
@@ -46,15 +55,6 @@ const Diagram = ({ mermaidCode = '', isComplete = false }: DiagramProps) => {
   );
   const onConnect = useCallback(
     (params: Edge | Connection) => setEdges((eds) => addEdge(params, eds)),
-    []
-  );
-
-  const nodeTypes = useMemo(
-    () => ({
-      startEvent: CustomNode,
-      endEvent: CustomNode,
-      activity: CustomNode
-    }),
     []
   );
 

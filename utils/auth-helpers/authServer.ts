@@ -152,7 +152,7 @@ export async function signInWithPassword(formData: FormData) {
   } else if (data.user) {
     cookieStore.set('preferredSignInView', 'password_signin', { path: '/' });
     redirectPath = getStatusRedirect(
-      '/dashboard',
+      '/workspace',
       'Success!',
       'You are now signed in.'
     );

@@ -29,7 +29,7 @@ export default function SignUp({ allowEmail, redirectMethod }: SignUpProps) {
 
     console.log('Redirect Path:', redirectPath); // Add this line
 
-    if (redirectPath.includes('/dashboard')) {
+    if (redirectPath.includes('/worksapce')) {
       const supabase = createClient();
       const {
         data: { user }
