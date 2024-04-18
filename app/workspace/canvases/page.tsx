@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { createClient } from '@/utils/supabase/supabaseClient';
 import type { Tables } from 'types_db';
 import { FaTrash } from 'react-icons/fa';
-import { IoIosCreate } from 'react-icons/io';
+import { MdAddCircleOutline } from 'react-icons/md';
 
 type Canvas = Tables<'canvases'>;
 
@@ -28,17 +28,9 @@ export default function CanvasesPage() {
     };
 
     fetchCanvases();
-    // Setting up the real-time subscription
-    const subscription = supabase
-      .from('canvases')
-      .on('*', (payload) => {
-        console.log('Change received:', payload);
-        fetchCanvases(); // Refresh the list when a change occurs
-      })
-      .subscribe();
 
     // Cleanup
-    return () => subscription.unsubscribe();
+    return () => {};
   }, []);
 
   const handleDeleteCanvas = async (canvasId: string) => {
@@ -62,7 +54,7 @@ export default function CanvasesPage() {
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Canvases</h1>
         <Link href="/canvasEditor/new" className="relative group">
-          <IoIosCreate size={24} className="text-myGray-500" />
+          <MdAddCircleOutline size={24} className="text-myGray-500" />
           <span className="sr-only">Create New Canvas</span>
           <div className="absolute right-4 bg-myGray-300 text-white px-2 py-1 text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
             Create New Canvas
@@ -79,7 +71,7 @@ export default function CanvasesPage() {
                 </Link>
                 <button
                   onClick={() => handleDeleteCanvas(canvas.id)}
-                  className="text-red-500 hover:text-red-700"
+                  className="text-lavender-500 hover:text-red-500"
                 >
                   <FaTrash />
                 </button>

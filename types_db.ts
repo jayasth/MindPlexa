@@ -47,6 +47,53 @@ export type Database = {
           },
         ]
       }
+      custom_nodes: {
+        Row: {
+          canvas_id: string | null
+          color: string | null
+          created_at: string | null
+          data: Json | null
+          height: number | null
+          id: string
+          position_x: number | null
+          position_y: number | null
+          updated_at: string | null
+          width: number | null
+        }
+        Insert: {
+          canvas_id?: string | null
+          color?: string | null
+          created_at?: string | null
+          data?: Json | null
+          height?: number | null
+          id?: string
+          position_x?: number | null
+          position_y?: number | null
+          updated_at?: string | null
+          width?: number | null
+        }
+        Update: {
+          canvas_id?: string | null
+          color?: string | null
+          created_at?: string | null
+          data?: Json | null
+          height?: number | null
+          id?: string
+          position_x?: number | null
+          position_y?: number | null
+          updated_at?: string | null
+          width?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_nodes_canvas_id_fkey"
+            columns: ["canvas_id"]
+            isOneToOne: false
+            referencedRelation: "canvases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customers: {
         Row: {
           id: string
@@ -127,32 +174,52 @@ export type Database = {
         }
         Relationships: []
       }
-      nodes: {
+      note_nodes: {
         Row: {
+          canvas_id: string | null
+          color: string | null
           content: string | null
           created_at: string | null
+          height: number | null
           id: string
-          project_id: string | null
-          title: string
+          position_x: number | null
+          position_y: number | null
           updated_at: string | null
+          width: number | null
         }
         Insert: {
+          canvas_id?: string | null
+          color?: string | null
           content?: string | null
           created_at?: string | null
+          height?: number | null
           id?: string
-          project_id?: string | null
-          title: string
+          position_x?: number | null
+          position_y?: number | null
           updated_at?: string | null
+          width?: number | null
         }
         Update: {
+          canvas_id?: string | null
+          color?: string | null
           content?: string | null
           created_at?: string | null
+          height?: number | null
           id?: string
-          project_id?: string | null
-          title?: string
+          position_x?: number | null
+          position_y?: number | null
           updated_at?: string | null
+          width?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "note_nodes_canvas_id_fkey"
+            columns: ["canvas_id"]
+            isOneToOne: false
+            referencedRelation: "canvases"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       prices: {
         Row: {
@@ -383,41 +450,55 @@ export type Database = {
           },
         ]
       }
-      tasks: {
+      task_nodes: {
         Row: {
+          canvas_id: string | null
+          color: string | null
+          completed: boolean | null
           created_at: string | null
-          description: string | null
-          due_date: string | null
-          id: number
-          priority: string
-          project_id: string
-          status: string
-          title: string
+          height: number | null
+          id: string
+          position_x: number | null
+          position_y: number | null
+          task: string | null
           updated_at: string | null
+          width: number | null
         }
         Insert: {
+          canvas_id?: string | null
+          color?: string | null
+          completed?: boolean | null
           created_at?: string | null
-          description?: string | null
-          due_date?: string | null
-          id?: number
-          priority: string
-          project_id: string
-          status: string
-          title: string
+          height?: number | null
+          id?: string
+          position_x?: number | null
+          position_y?: number | null
+          task?: string | null
           updated_at?: string | null
+          width?: number | null
         }
         Update: {
+          canvas_id?: string | null
+          color?: string | null
+          completed?: boolean | null
           created_at?: string | null
-          description?: string | null
-          due_date?: string | null
-          id?: number
-          priority?: string
-          project_id?: string
-          status?: string
-          title?: string
+          height?: number | null
+          id?: string
+          position_x?: number | null
+          position_y?: number | null
+          task?: string | null
           updated_at?: string | null
+          width?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "task_nodes_canvas_id_fkey"
+            columns: ["canvas_id"]
+            isOneToOne: false
+            referencedRelation: "canvases"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       users: {
         Row: {
