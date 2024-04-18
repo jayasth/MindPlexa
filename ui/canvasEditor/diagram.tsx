@@ -66,6 +66,7 @@ const Diagram = ({ mermaidCode = '', isComplete = false }: DiagramProps) => {
       onEdgesChange={onEdgesChange}
       onConnect={onConnect}
       nodeTypes={nodeTypes}
+      style={{ width: '100%', height: '100%' }}
     >
       <Background />
       <Controls />

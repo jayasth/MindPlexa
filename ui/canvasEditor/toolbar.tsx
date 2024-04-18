@@ -1,54 +1,84 @@
 // File: ui/canvasEditor/toolbar.tsx
 
 import React from 'react';
-import { FaPlus, FaTasks, FaThList } from 'react-icons/fa';
+import {
+  FaPlus,
+  FaTasks,
+  FaAngleDoubleRight,
+  FaUndo,
+  FaRedo,
+  FaShare,
+  FaDownload,
+  FaRegAddressBook
+} from 'react-icons/fa';
 import { PiNotepad } from 'react-icons/pi';
-import { MdFormatListBulletedAdd } from 'react-icons/md';
 import Link from 'next/link';
 
 interface ToolbarProps {
   onAddNode: (nodeType: 'note' | 'task' | 'custom') => void;
+  onUndo: () => void;
+  onRedo: () => void;
+  onShare: () => void;
+  onDownload: () => void;
 }
 
-const Toolbar: React.FC<ToolbarProps> = ({ onAddNode }) => {
-  const handleAddNode = (nodeType: 'note' | 'task' | 'custom') => {
-    onAddNode(nodeType);
-  };
-
+const Toolbar: React.FC<ToolbarProps> = ({
+  onAddNode,
+  onUndo,
+  onRedo,
+  onShare,
+  onDownload
+}) => {
   // Base button class
-  const buttonClass =
-    'p-1 text-myGray-50 bg-myGray-500 rounded hover:bg-myGray-700';
+  const buttonClass = 'buttonClass';
 
   return (
     <div className="flex flex-col space-y-2">
+      <div className="flex space-x-2">
+        <Link
+          href="/workspace/canvases"
+          className={buttonClass}
+          title="View List"
+        >
+          <FaAngleDoubleRight size="16" />
+        </Link>
+      </div>
+
       <button
-        onClick={() => handleAddNode('note')}
-        className={buttonClass}
-        title="Add Note"
+        onClick={() => onAddNode('note')}
+        className="buttonClass"
+        title="Add Note Node"
       >
         <PiNotepad size="16" />
       </button>
       <button
-        onClick={() => handleAddNode('task')}
-        className={buttonClass}
-        title="Add Task"
+        onClick={() => onAddNode('task')}
+        className="buttonClass"
+        title="Add Task Node"
       >
         <FaTasks size="16" />
       </button>
       <button
-        onClick={() => handleAddNode('custom')}
-        className={buttonClass}
+        onClick={() => onAddNode('custom')}
+        className="buttonClass"
         title="Add Custom Node"
       >
-        <MdFormatListBulletedAdd size="16" />
+        <FaRegAddressBook size="16" />
       </button>
-      <Link
-        href="/workspace/canvases"
-        className={buttonClass}
-        title="View List"
-      >
-        <FaThList size="16" />
-      </Link>
+
+      <button onClick={onUndo} className="buttonClass" title="Undo">
+        <FaUndo size="16" />
+      </button>
+      <button onClick={onRedo} className="buttonClass" title="Redo">
+        <FaRedo size="16" />
+      </button>
+
+      <button onClick={onShare} className="buttonClass" title="Share">
+        <FaShare size="16" />
+      </button>
+      <button onClick={onDownload} className="buttonClass" title="Download">
+        <FaDownload size="16" />
+      </button>
     </div>
   );
 };

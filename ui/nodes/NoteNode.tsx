@@ -8,9 +8,9 @@ interface NoteNodeProps {
   onDelete: () => void;
   onChangeColor: (color: string) => void;
   onResize: (width: number, height: number) => void;
-  color: string; // new prop
-  width: number; // new prop
-  height: number; // new prop
+  color: string;
+  width: number;
+  height: number;
 }
 
 const NoteNode: React.FC<NoteNodeProps> = ({
@@ -18,10 +18,25 @@ const NoteNode: React.FC<NoteNodeProps> = ({
   onDelete,
   onChangeColor,
   onResize,
-  color, // new prop
-  width, // new prop
-  height // new prop
+  color,
+  width,
+  height
 }) => {
+  const handleColorChange = () => {
+    const newColor = prompt('Enter a new color:');
+    if (newColor) {
+      onChangeColor(newColor);
+    }
+  };
+
+  const handleResize = () => {
+    const newWidth = prompt('Enter a new width:');
+    const newHeight = prompt('Enter a new height:');
+    if (newWidth && newHeight) {
+      onResize(parseInt(newWidth), parseInt(newHeight));
+    }
+  };
+
   return (
     <div className={styles.noteNode}>
       <div className={styles.noteHeader}>
@@ -33,21 +48,26 @@ const NoteNode: React.FC<NoteNodeProps> = ({
           <FaTrash size="10" />
         </button>
         <button
-          onClick={() => onChangeColor(color)} // use color prop
+          onClick={handleColorChange}
           className={styles.colorButton}
           title="Change Color"
         >
           <FaPalette size="10" />
         </button>
         <button
-          onClick={() => onResize(width, height)} // use width and height props
+          onClick={handleResize}
           className={styles.resizeButton}
           title="Resize Node"
         >
           <FaExpand size="10" />
         </button>
       </div>
-      <textarea className={styles.noteContent} value={content} readOnly />
+      <textarea
+        className={styles.noteContent}
+        value={content}
+        readOnly
+        style={{ backgroundColor: color, width, height }}
+      />
     </div>
   );
 };

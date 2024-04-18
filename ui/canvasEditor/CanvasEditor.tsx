@@ -21,6 +21,7 @@ import {
   Edge,
   Node
 } from './canvasEditorReducer';
+import SharingModal from './SharingModal';
 
 type Canvas = Tables<'canvases'> & {
   nodes?: Node[];
@@ -39,6 +40,7 @@ export default function CanvasEditor({
   const router = useRouter();
   const [canvas, setCanvas] = useState<Canvas | null>(initialCanvas || null);
   const supabase = createClient();
+  const [isSharingModalOpen, setIsSharingModalOpen] = useState(false);
 
   const [state, dispatch] = useReducer(canvasEditorReducer, {
     nodes: initialCanvas?.nodes || [],
@@ -64,7 +66,7 @@ export default function CanvasEditor({
       }
     }, 2000),
     []
-  ); // Adjust the debounce delay as needed
+  );
 
   useEffect(() => {
     if (canvas) {
@@ -74,6 +76,25 @@ export default function CanvasEditor({
 
   const handleCanvasChange = (newCanvasData: Canvas) => {
     setCanvas(newCanvasData);
+  };
+
+  const handleShare = (emails: string[]) => {
+    console.log('Sharing canvas with:', emails);
+  };
+
+  const handleDownload = () => {
+    const canvasData = {
+      nodes: state.nodes,
+      edges: state.edges
+    };
+    const json = JSON.stringify(canvasData, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'canvas.json';
+    link.click();
+    URL.revokeObjectURL(url);
   };
 
   const {
@@ -103,6 +124,8 @@ export default function CanvasEditor({
   );
 
   const handleAddNode = (nodeType: 'note' | 'task' | 'custom') => {
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
     let newNode: Node;
 
     switch (nodeType) {
@@ -110,12 +133,15 @@ export default function CanvasEditor({
         newNode = {
           id: `node-${Date.now()}`,
           type: 'note',
-          position: { x: 0, y: 0 },
+          position: {
+            x: viewportWidth / 2 - 100,
+            y: viewportHeight / 2 - 100
+          },
           data: {
-            content: '', // provide default value
-            color: '', // provide default value
-            width: 0, // provide default value
-            height: 0 // provide default value
+            content: '',
+            color: '',
+            width: 0,
+            height: 0
           }
         };
         break;
@@ -123,13 +149,16 @@ export default function CanvasEditor({
         newNode = {
           id: `node-${Date.now()}`,
           type: 'task',
-          position: { x: 0, y: 0 },
+          position: {
+            x: viewportWidth / 2 - 100,
+            y: viewportHeight / 2 - 100
+          },
           data: {
-            task: '', // provide default value
-            completed: false, // provide default value
-            color: '', // provide default value
-            width: 0, // provide default value
-            height: 0 // provide default value
+            task: '',
+            completed: false,
+            color: '',
+            width: 0,
+            height: 0
           }
         };
         break;
@@ -137,10 +166,11 @@ export default function CanvasEditor({
         newNode = {
           id: `node-${Date.now()}`,
           type: 'custom',
-          position: { x: 0, y: 0 },
-          data: {
-            /* custom-specific data */
-          }
+          position: {
+            x: viewportWidth / 2 - 100,
+            y: viewportHeight / 2 - 100
+          },
+          data: {}
         };
         break;
     }
@@ -169,6 +199,14 @@ export default function CanvasEditor({
     }
   };
 
+  const handleUndo = () => {
+    dispatch({ type: 'UNDO' });
+  };
+
+  const handleRedo = () => {
+    dispatch({ type: 'REDO' });
+  };
+
   const renderNode = (node: Node) => {
     switch (node.type) {
       case 'note':
@@ -180,9 +218,9 @@ export default function CanvasEditor({
             onResize={(width, height) =>
               handleResizeNode(node.id, width, height)
             }
-            color={''}
-            width={0}
-            height={0}
+            color={node.data.color}
+            width={node.data.width}
+            height={node.data.height}
           />
         );
       case 'task':
@@ -195,12 +233,14 @@ export default function CanvasEditor({
             onResize={(width, height) =>
               handleResizeNode(node.id, width, height)
             }
-            onToggleComplete={function (): void {
-              throw new Error('Function not implemented.');
+            onToggleComplete={() => {
+              const updatedNode = { ...node };
+              updatedNode.data.completed = !updatedNode.data.completed;
+              dispatch({ type: 'UPDATE_NODE', payload: updatedNode });
             }}
-            color={''}
-            width={0}
-            height={0}
+            color={node.data.color}
+            width={node.data.width}
+            height={node.data.height}
           />
         );
       case 'custom':
@@ -223,7 +263,13 @@ export default function CanvasEditor({
     <form onSubmit={handleSubmit} className="flex flex-col h-screen">
       <div className="flex flex-1">
         <div className="bg-myLightGray-800 p-4">
-          <Toolbar onAddNode={handleAddNode} />
+          <Toolbar
+            onAddNode={handleAddNode}
+            onUndo={handleUndo}
+            onRedo={handleRedo}
+            onShare={() => setIsSharingModalOpen(true)}
+            onDownload={handleDownload}
+          />
         </div>
         <div className="flex-1 flex flex-col">
           <div className="p-4">
@@ -241,18 +287,25 @@ export default function CanvasEditor({
             {isLoading ? (
               <Loading />
             ) : (
-              <div>
-                <Diagram mermaidCode={mermaidCode} isComplete={!isLoading} />
+              <>
+                <div style={{ height: '100%' }}>
+                  <Diagram mermaidCode={mermaidCode} isComplete={!isLoading} />
+                </div>
                 <div>
                   {state.nodes.map((node) => (
                     <div key={node.id}>{renderNode(node)}</div>
                   ))}
                 </div>
-              </div>
+              </>
             )}
           </div>
         </div>
       </div>
+      <SharingModal
+        isOpen={isSharingModalOpen}
+        onClose={() => setIsSharingModalOpen(false)}
+        onShare={handleShare}
+      />
     </form>
   );
 }

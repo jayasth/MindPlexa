@@ -9,6 +9,44 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      canvas_data: {
+        Row: {
+          canvas_id: string | null
+          created_at: string | null
+          edges: Json | null
+          id: string
+          node_positions: Json | null
+          nodes: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          canvas_id?: string | null
+          created_at?: string | null
+          edges?: Json | null
+          id?: string
+          node_positions?: Json | null
+          nodes?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          canvas_id?: string | null
+          created_at?: string | null
+          edges?: Json | null
+          id?: string
+          node_positions?: Json | null
+          nodes?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "canvas_data_canvas_id_fkey"
+            columns: ["canvas_id"]
+            isOneToOne: false
+            referencedRelation: "canvases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       canvases: {
         Row: {
           content: string | null
@@ -170,6 +208,30 @@ export type Database = {
           project_id?: string | null
           source_node_id?: string | null
           target_node_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      node_types: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
           updated_at?: string | null
         }
         Relationships: []
