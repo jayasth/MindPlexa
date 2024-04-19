@@ -9,69 +9,43 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      canvas_data: {
-        Row: {
-          canvas_id: string | null
-          created_at: string | null
-          edges: Json | null
-          id: string
-          node_positions: Json | null
-          nodes: Json | null
-          updated_at: string | null
-        }
-        Insert: {
-          canvas_id?: string | null
-          created_at?: string | null
-          edges?: Json | null
-          id?: string
-          node_positions?: Json | null
-          nodes?: Json | null
-          updated_at?: string | null
-        }
-        Update: {
-          canvas_id?: string | null
-          created_at?: string | null
-          edges?: Json | null
-          id?: string
-          node_positions?: Json | null
-          nodes?: Json | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "canvas_data_canvas_id_fkey"
-            columns: ["canvas_id"]
-            isOneToOne: false
-            referencedRelation: "canvases"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       canvases: {
         Row: {
           content: string | null
           created_at: string | null
+          custom_nodes: Json | null
           description: string | null
           id: string
           name: string
+          nodes: Json | null
+          note_nodes: Json | null
+          task_nodes: Json | null
           updated_at: string | null
           user_id: string | null
         }
         Insert: {
           content?: string | null
           created_at?: string | null
+          custom_nodes?: Json | null
           description?: string | null
           id?: string
           name: string
+          nodes?: Json | null
+          note_nodes?: Json | null
+          task_nodes?: Json | null
           updated_at?: string | null
           user_id?: string | null
         }
         Update: {
           content?: string | null
           created_at?: string | null
+          custom_nodes?: Json | null
           description?: string | null
           id?: string
           name?: string
+          nodes?: Json | null
+          note_nodes?: Json | null
+          task_nodes?: Json | null
           updated_at?: string | null
           user_id?: string | null
         }
@@ -85,6 +59,56 @@ export type Database = {
           },
         ]
       }
+      code_nodes: {
+        Row: {
+          canvas_id: string | null
+          code: string | null
+          color: string | null
+          created_at: string | null
+          height: number | null
+          id: string
+          language: string | null
+          position: Json | null
+          title: string | null
+          updated_at: string | null
+          width: number | null
+        }
+        Insert: {
+          canvas_id?: string | null
+          code?: string | null
+          color?: string | null
+          created_at?: string | null
+          height?: number | null
+          id?: string
+          language?: string | null
+          position?: Json | null
+          title?: string | null
+          updated_at?: string | null
+          width?: number | null
+        }
+        Update: {
+          canvas_id?: string | null
+          code?: string | null
+          color?: string | null
+          created_at?: string | null
+          height?: number | null
+          id?: string
+          language?: string | null
+          position?: Json | null
+          title?: string | null
+          updated_at?: string | null
+          width?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "code_nodes_canvas_id_fkey"
+            columns: ["canvas_id"]
+            isOneToOne: false
+            referencedRelation: "canvases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       custom_nodes: {
         Row: {
           canvas_id: string | null
@@ -93,8 +117,9 @@ export type Database = {
           data: Json | null
           height: number | null
           id: string
-          position_x: number | null
-          position_y: number | null
+          position: Json | null
+          title: string | null
+          type: string | null
           updated_at: string | null
           width: number | null
         }
@@ -105,8 +130,9 @@ export type Database = {
           data?: Json | null
           height?: number | null
           id?: string
-          position_x?: number | null
-          position_y?: number | null
+          position?: Json | null
+          title?: string | null
+          type?: string | null
           updated_at?: string | null
           width?: number | null
         }
@@ -117,8 +143,9 @@ export type Database = {
           data?: Json | null
           height?: number | null
           id?: string
-          position_x?: number | null
-          position_y?: number | null
+          position?: Json | null
+          title?: string | null
+          type?: string | null
           updated_at?: string | null
           width?: number | null
         }
@@ -155,6 +182,53 @@ export type Database = {
           },
         ]
       }
+      draw_nodes: {
+        Row: {
+          canvas_id: string | null
+          color: string | null
+          created_at: string | null
+          data: Json | null
+          height: number | null
+          id: string
+          position: Json | null
+          title: string | null
+          updated_at: string | null
+          width: number | null
+        }
+        Insert: {
+          canvas_id?: string | null
+          color?: string | null
+          created_at?: string | null
+          data?: Json | null
+          height?: number | null
+          id?: string
+          position?: Json | null
+          title?: string | null
+          updated_at?: string | null
+          width?: number | null
+        }
+        Update: {
+          canvas_id?: string | null
+          color?: string | null
+          created_at?: string | null
+          data?: Json | null
+          height?: number | null
+          id?: string
+          position?: Json | null
+          title?: string | null
+          updated_at?: string | null
+          width?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "draw_nodes_canvas_id_fkey"
+            columns: ["canvas_id"]
+            isOneToOne: false
+            referencedRelation: "canvases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       insights: {
         Row: {
           created_at: string | null
@@ -185,57 +259,6 @@ export type Database = {
         }
         Relationships: []
       }
-      node_connections: {
-        Row: {
-          created_at: string | null
-          id: string
-          project_id: string | null
-          source_node_id: string | null
-          target_node_id: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          project_id?: string | null
-          source_node_id?: string | null
-          target_node_id?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          project_id?: string | null
-          source_node_id?: string | null
-          target_node_id?: string | null
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
-      node_types: {
-        Row: {
-          created_at: string | null
-          description: string | null
-          id: string
-          name: string
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          name: string
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          name?: string
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
       note_nodes: {
         Row: {
           canvas_id: string | null
@@ -244,8 +267,8 @@ export type Database = {
           created_at: string | null
           height: number | null
           id: string
-          position_x: number | null
-          position_y: number | null
+          position: Json | null
+          title: string | null
           updated_at: string | null
           width: number | null
         }
@@ -256,8 +279,8 @@ export type Database = {
           created_at?: string | null
           height?: number | null
           id?: string
-          position_x?: number | null
-          position_y?: number | null
+          position?: Json | null
+          title?: string | null
           updated_at?: string | null
           width?: number | null
         }
@@ -268,8 +291,8 @@ export type Database = {
           created_at?: string | null
           height?: number | null
           id?: string
-          position_x?: number | null
-          position_y?: number | null
+          position?: Json | null
+          title?: string | null
           updated_at?: string | null
           width?: number | null
         }
@@ -520,9 +543,9 @@ export type Database = {
           created_at: string | null
           height: number | null
           id: string
-          position_x: number | null
-          position_y: number | null
+          position: Json | null
           task: string | null
+          title: string | null
           updated_at: string | null
           width: number | null
         }
@@ -533,9 +556,9 @@ export type Database = {
           created_at?: string | null
           height?: number | null
           id?: string
-          position_x?: number | null
-          position_y?: number | null
+          position?: Json | null
           task?: string | null
+          title?: string | null
           updated_at?: string | null
           width?: number | null
         }
@@ -546,9 +569,9 @@ export type Database = {
           created_at?: string | null
           height?: number | null
           id?: string
-          position_x?: number | null
-          position_y?: number | null
+          position?: Json | null
           task?: string | null
+          title?: string | null
           updated_at?: string | null
           width?: number | null
         }

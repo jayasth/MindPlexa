@@ -1,17 +1,16 @@
-// ui/nodes/NoteNode.tsx
 import React from 'react';
-import styles from './NoteNode.module.css';
+import styles from './DrawNode.module.css';
 import { FaTrash, FaPalette, FaExpand } from 'react-icons/fa';
 import { Tables } from 'types_db';
 
-interface NoteNodeProps {
-  node: Tables<'note_nodes'>;
+interface DrawNodeProps {
+  node: Tables<'draw_nodes'>;
   onDelete: () => void;
   onChangeColor: (color: string) => void;
   onResize: (width: number, height: number) => void;
 }
 
-const NoteNode: React.FC<NoteNodeProps> = ({
+const DrawNode: React.FC<DrawNodeProps> = ({
   node,
   onDelete,
   onChangeColor,
@@ -19,14 +18,14 @@ const NoteNode: React.FC<NoteNodeProps> = ({
 }) => {
   return (
     <div
-      className={styles.noteNode}
+      className={styles.drawNode}
       style={{
         backgroundColor: node.color || undefined,
         width: node.width || undefined,
         height: node.height || undefined
       }}
     >
-      <div className={styles.noteHeader}>
+      <div className={styles.drawHeader}>
         <button
           onClick={onDelete}
           className={styles.deleteButton}
@@ -49,12 +48,12 @@ const NoteNode: React.FC<NoteNodeProps> = ({
           <FaExpand size="10" />
         </button>
       </div>
-      <textarea
-        className={styles.noteContent}
-        value={node.content || ''}
-        readOnly
-      />
+      {/* Placeholder for drawing content */}
+      <div className={styles.drawContent}>
+        {/* Drawing content would be rendered here */}
+      </div>
     </div>
   );
 };
-export default NoteNode;
+
+export default DrawNode;

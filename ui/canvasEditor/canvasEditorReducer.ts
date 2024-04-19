@@ -42,7 +42,30 @@ export interface CustomNode {
   };
 }
 
-export type Node = NoteNode | TaskNode | CustomNode;
+export interface CodeNode {
+  id: string;
+  type: 'code';
+  data: {
+    code: string | null;
+    language: string | null;
+  };
+  position: {
+    x: number;
+    y: number;
+  };
+}
+
+export interface DrawNode {
+  id: string;
+  type: 'draw';
+  data: any;
+  position: {
+    x: number;
+    y: number;
+  };
+}
+
+export type Node = NoteNode | TaskNode | CustomNode | CodeNode | DrawNode;
 
 export interface Edge {
   id: string;

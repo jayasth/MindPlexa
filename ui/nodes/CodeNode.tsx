@@ -1,17 +1,16 @@
-// ui/nodes/NoteNode.tsx
 import React from 'react';
-import styles from './NoteNode.module.css';
+import styles from './CodeNode.module.css';
 import { FaTrash, FaPalette, FaExpand } from 'react-icons/fa';
 import { Tables } from 'types_db';
 
-interface NoteNodeProps {
-  node: Tables<'note_nodes'>;
+interface CodeNodeProps {
+  node: Tables<'code_nodes'>;
   onDelete: () => void;
   onChangeColor: (color: string) => void;
   onResize: (width: number, height: number) => void;
 }
 
-const NoteNode: React.FC<NoteNodeProps> = ({
+const CodeNode: React.FC<CodeNodeProps> = ({
   node,
   onDelete,
   onChangeColor,
@@ -19,14 +18,14 @@ const NoteNode: React.FC<NoteNodeProps> = ({
 }) => {
   return (
     <div
-      className={styles.noteNode}
+      className={styles.codeNode}
       style={{
         backgroundColor: node.color || undefined,
         width: node.width || undefined,
         height: node.height || undefined
       }}
     >
-      <div className={styles.noteHeader}>
+      <div className={styles.codeHeader}>
         <button
           onClick={onDelete}
           className={styles.deleteButton}
@@ -50,11 +49,12 @@ const NoteNode: React.FC<NoteNodeProps> = ({
         </button>
       </div>
       <textarea
-        className={styles.noteContent}
-        value={node.content || ''}
+        className={styles.codeContent}
+        value={node.code || ''}
         readOnly
       />
     </div>
   );
 };
-export default NoteNode;
+
+export default CodeNode;

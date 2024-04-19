@@ -2,20 +2,21 @@
 
 import React from 'react';
 import {
-  FaPlus,
   FaTasks,
-  FaAngleDoubleRight,
   FaUndo,
   FaRedo,
   FaShare,
   FaDownload,
-  FaRegAddressBook
+  FaRegAddressBook,
+  FaCode,
+  FaPaintBrush,
+  FaAngleDoubleRight
 } from 'react-icons/fa';
 import { PiNotepad } from 'react-icons/pi';
 import Link from 'next/link';
 
 interface ToolbarProps {
-  onAddNode: (nodeType: 'note' | 'task' | 'custom') => void;
+  onAddNode: (nodeType: 'note' | 'task' | 'custom' | 'code' | 'draw') => void;
   onUndo: () => void;
   onRedo: () => void;
   onShare: () => void;
@@ -46,37 +47,51 @@ const Toolbar: React.FC<ToolbarProps> = ({
 
       <button
         onClick={() => onAddNode('note')}
-        className="buttonClass"
+        className={buttonClass}
         title="Add Note Node"
       >
         <PiNotepad size="16" />
       </button>
       <button
         onClick={() => onAddNode('task')}
-        className="buttonClass"
+        className={buttonClass}
         title="Add Task Node"
       >
         <FaTasks size="16" />
       </button>
       <button
         onClick={() => onAddNode('custom')}
-        className="buttonClass"
+        className={buttonClass}
         title="Add Custom Node"
       >
         <FaRegAddressBook size="16" />
       </button>
+      <button
+        onClick={() => onAddNode('code')}
+        className={buttonClass}
+        title="Add Code Node"
+      >
+        <FaCode size="16" />
+      </button>
+      <button
+        onClick={() => onAddNode('draw')}
+        className={buttonClass}
+        title="Add Draw Node"
+      >
+        <FaPaintBrush size="16" />
+      </button>
 
-      <button onClick={onUndo} className="buttonClass" title="Undo">
+      <button onClick={onUndo} className={buttonClass} title="Undo">
         <FaUndo size="16" />
       </button>
-      <button onClick={onRedo} className="buttonClass" title="Redo">
+      <button onClick={onRedo} className={buttonClass} title="Redo">
         <FaRedo size="16" />
       </button>
 
-      <button onClick={onShare} className="buttonClass" title="Share">
+      <button onClick={onShare} className={buttonClass} title="Share">
         <FaShare size="16" />
       </button>
-      <button onClick={onDownload} className="buttonClass" title="Download">
+      <button onClick={onDownload} className={buttonClass} title="Download">
         <FaDownload size="16" />
       </button>
     </div>

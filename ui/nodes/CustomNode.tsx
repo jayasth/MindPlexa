@@ -2,16 +2,17 @@
 import React from 'react';
 import styles from './CustomNode.module.css';
 import { FaTrash, FaPalette, FaExpand } from 'react-icons/fa';
+import { Tables } from 'types_db';
 
 interface CustomNodeProps {
-  data: any;
+  node: Tables<'custom_nodes'>;
   onDelete: () => void;
   onChangeColor: (color: string) => void;
   onResize: (width: number, height: number) => void;
 }
 
 const CustomNode: React.FC<CustomNodeProps> = ({
-  data,
+  node,
   onDelete,
   onChangeColor,
   onResize
@@ -26,6 +27,7 @@ const CustomNode: React.FC<CustomNodeProps> = ({
   return (
     <div className={styles.customNode}>
       <div className={styles.customNodeHeader}>
+        <span className={styles.customNodeTitle}>{node.title}</span>
         <button
           onClick={onDelete}
           className={styles.deleteButton}
@@ -34,14 +36,16 @@ const CustomNode: React.FC<CustomNodeProps> = ({
           <FaTrash size="10" />
         </button>
         <button
-          onClick={() => onChangeColor(data.color)}
+          onClick={() => node.color && onChangeColor(node.color)}
           className={styles.colorButton}
           title="Change Color"
         >
           <FaPalette size="10" />
         </button>
         <button
-          onClick={() => onResize(data.width, data.height)}
+          onClick={() =>
+            node.width && node.height && onResize(node.width, node.height)
+          }
           className={styles.resizeButton}
           title="Resize Node"
         >
@@ -49,12 +53,14 @@ const CustomNode: React.FC<CustomNodeProps> = ({
         </button>
       </div>
       <div className={styles.customNodeContent}>
-        {Object.entries(data).map(([key, value]) => (
-          <div key={key} className={styles.customNodeField}>
-            <span className={styles.customNodeFieldLabel}>{key}: </span>
-            {renderValue(value)}
-          </div>
-        ))}
+        {node.data &&
+          Object.entries(node.data).map(([key, value]) => (
+            <div key={key} className={styles.customNodeField}>
+              <span className={styles.customNodeFieldLabel}>{key}: </span>
+              {renderValue(value)}
+            </div>
+          ))}
+        ))
       </div>
     </div>
   );

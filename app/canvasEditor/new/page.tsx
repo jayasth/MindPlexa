@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/supabaseClient';
 import type { Tables } from 'types_db';
 import Modal from '@/ui/Modal/Modal';
-import CanvasEditor from '@/ui/canvasEditor/CanvasEditor';
 
 type Canvas = Tables<'canvases'>;
 
@@ -14,7 +13,6 @@ export default function NewCanvasPage() {
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(true);
   const [canvasTitle, setCanvasTitle] = useState('');
-  const [createdCanvasId, setCreatedCanvasId] = useState<string | null>(null);
   const supabase = createClient();
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -23,17 +21,29 @@ export default function NewCanvasPage() {
 
   const handleCreateCanvas = async () => {
     if (canvasTitle.trim() !== '') {
+      const insertResponse = await supabase
+        .from('canvases')
+        .insert({ name: canvasTitle });
+
+      console.log('Insert response:', insertResponse);
+
       const { data, error } = await supabase
         .from('canvases')
-        .insert({ name: canvasTitle })
-        .single<Canvas>();
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(1);
 
-      if (!error && data) {
-        setCreatedCanvasId(data.id);
+      console.log('Select data:', data);
+      console.log('Select error:', error);
+
+      if (error) {
+        console.error('Error fetching canvas:', error);
+      } else if (data && data[0]) {
+        console.log('Redirecting to new canvas...');
         setIsModalOpen(false);
-        router.push(`/workspace/canvases/${data.id}`); // Adjust the URL as needed
+        router.push(`/canvasEditor/${data[0].id}`);
       } else {
-        console.error('Error creating canvas:', error);
+        console.log('Fetch operation returned no data');
       }
     }
   };
@@ -43,24 +53,24 @@ export default function NewCanvasPage() {
     router.push('/workspace/canvases');
   };
 
-  if (createdCanvasId) {
-    return <CanvasEditor key={createdCanvasId} />;
-  }
-
   return (
-    <Modal
-      isOpen={isModalOpen}
-      onClose={handleCloseModal}
-      onSubmit={handleCreateCanvas}
-      title="Create New Canvas"
-    >
-      <input
-        type="text"
-        placeholder="Enter canvas title"
-        value={canvasTitle}
-        onChange={handleTitleChange}
-        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-      />
-    </Modal>
+    <>
+      {isModalOpen && (
+        <Modal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          onSubmit={handleCreateCanvas}
+          title="Create New Canvas"
+        >
+          <input
+            type="text"
+            placeholder="Enter canvas title"
+            value={canvasTitle}
+            onChange={handleTitleChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          />
+        </Modal>
+      )}
+    </>
   );
 }

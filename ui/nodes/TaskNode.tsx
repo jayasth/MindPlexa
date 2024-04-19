@@ -2,17 +2,19 @@
 import React from 'react';
 import styles from './TaskNode.module.css';
 import { FaTrash, FaPalette, FaExpand } from 'react-icons/fa';
+import { Tables } from 'types_db';
 
 interface TaskNodeProps {
-  task: string;
-  completed: boolean;
+  node: Tables<'task_nodes'>;
+  task: string | null; // Adjusted for possible null
+  completed: boolean | null; // Adjusted for possible null
   onToggleComplete: () => void;
   onDelete: () => void;
   onChangeColor: (color: string) => void;
   onResize: (width: number, height: number) => void;
-  color: string; // new prop
-  width: number; // new prop
-  height: number; // new prop
+  color: string | null; // Adjusted for possible null
+  width: number | null; // Adjusted for possible null
+  height: number | null; // Adjusted for possible null
 }
 
 const TaskNode: React.FC<TaskNodeProps> = ({
@@ -22,10 +24,17 @@ const TaskNode: React.FC<TaskNodeProps> = ({
   onDelete,
   onChangeColor,
   onResize,
-  color, // new prop
-  width, // new prop
-  height // new prop
+  color,
+  width,
+  height
 }) => {
+  // Providing default values for nullable props
+  const safeColor = color || 'defaultColor'; // Replace 'defaultColor' with an actual default color if needed
+  const safeWidth = width || 100; // Default width if null
+  const safeHeight = height || 100; // Default height if null
+  const safeTask = task || ''; // Default task text if null
+  const isCompleted = !!completed; // Converts null to false
+
   return (
     <div className={styles.taskNode}>
       <div className={styles.taskHeader}>
@@ -37,14 +46,14 @@ const TaskNode: React.FC<TaskNodeProps> = ({
           <FaTrash size="10" />
         </button>
         <button
-          onClick={() => onChangeColor(color)} // use color prop
+          onClick={() => onChangeColor(safeColor)} // Using safeColor
           className={styles.colorButton}
           title="Change Color"
         >
           <FaPalette size="10" />
         </button>
         <button
-          onClick={() => onResize(width, height)} // use width and height props
+          onClick={() => onResize(safeWidth, safeHeight)} // Using safeWidth and safeHeight
           className={styles.resizeButton}
           title="Resize Task"
         >
@@ -54,11 +63,12 @@ const TaskNode: React.FC<TaskNodeProps> = ({
       <label className={styles.taskLabel}>
         <input
           type="checkbox"
-          checked={completed}
+          checked={isCompleted} // Using isCompleted
           onChange={onToggleComplete}
           className={styles.taskCheckbox}
         />
-        <span className={styles.taskText}>{task}</span>
+        <span className={styles.taskText}>{safeTask}</span>{' '}
+        {/* Using safeTask */}
       </label>
     </div>
   );

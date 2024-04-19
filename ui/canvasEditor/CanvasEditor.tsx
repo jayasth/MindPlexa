@@ -5,16 +5,19 @@
 import React, { useState, useEffect, useCallback, useReducer } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/supabaseClient';
-import type { Tables } from 'types_db';
+
 import Diagram from '@/ui/canvasEditor/diagram';
 import Button from '@/ui/Button/Button';
 import { Textarea } from '@/ui/Textarea/textarea';
 import Toolbar from '@/ui/canvasEditor/toolbar';
 import { useCompletion } from 'ai/react';
 import debounce from 'lodash/debounce';
-import NoteNode from '../nodes/NoteNode';
-import TaskNode from '../nodes/TaskNode';
-import CustomNode from '../nodes/CustomNode';
+import type { Json, Tables } from 'types_db';
+import CustomNode from '@/ui/nodes/CustomNode';
+import NoteNode from '@/ui/nodes/NoteNode';
+import TaskNode from '@/ui/nodes/TaskNode';
+import CodeNode from '@/ui/nodes/CodeNode';
+import DrawNode from '@/ui/nodes/DrawNode';
 import {
   canvasEditorReducer,
   CanvasEditorState,
@@ -32,6 +35,31 @@ type CanvasEditorProps = {
   initialCanvas?: Canvas | null;
   onCanvasUpdate?: (updatedCanvas: Canvas) => void;
 };
+
+// Define a type that encompasses all node types
+type NodeType = {
+  id: string;
+  canvas_id: string | null;
+  color: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+  position: Json;
+  height: number | null;
+  width: number | null;
+  title: string | null;
+  type: 'note' | 'task' | 'custom' | 'code' | 'draw';
+} & (
+  | { type: 'note'; content: string | null }
+  | { type: 'task'; task: string | null; completed: boolean | null }
+  | { type: 'custom'; data: Json }
+  | { type: 'code'; code: string | null; language: string | null }
+  | { type: 'draw'; data: Json }
+);
+
+// Type guard to check if an object matches the NodeType
+function isNodeType(node: any): node is NodeType {
+  return node && typeof node === 'object' && 'type' in node;
+}
 
 export default function CanvasEditor({
   initialCanvas,
@@ -93,7 +121,7 @@ export default function CanvasEditor({
     const link = document.createElement('a');
     link.href = url;
     link.download = 'canvas.json';
-    link.click();
+    link.click;
     URL.revokeObjectURL(url);
   };
 
@@ -123,7 +151,9 @@ export default function CanvasEditor({
     </div>
   );
 
-  const handleAddNode = (nodeType: 'note' | 'task' | 'custom') => {
+  const handleAddNode = (
+    nodeType: 'note' | 'task' | 'custom' | 'code' | 'draw'
+  ) => {
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
     let newNode: Node;
@@ -173,6 +203,33 @@ export default function CanvasEditor({
           data: {}
         };
         break;
+      case 'code':
+        newNode = {
+          id: `node-${Date.now()}`,
+          type: 'code',
+          position: {
+            x: viewportWidth / 2 - 100,
+            y: viewportHeight / 2 - 100
+          },
+          data: {
+            code: '', // Initialize as empty string or appropriate default
+            language: '' // Initialize language
+          }
+        };
+        break;
+      case 'draw':
+        newNode = {
+          id: `node-${Date.now()}`,
+          type: 'draw',
+          position: { x: viewportWidth / 2 - 100, y: viewportHeight / 2 - 100 },
+          data: {
+            data: {}, // Initialize with empty or default drawing data
+            color: '',
+            width: 100, // Default width
+            height: 100 // Default height
+          }
+        };
+        break;
     }
 
     dispatch({ type: 'ADD_NODE', payload: newNode });
@@ -207,46 +264,81 @@ export default function CanvasEditor({
     dispatch({ type: 'REDO' });
   };
 
-  const renderNode = (node: Node) => {
+  // Define toggleTaskCompletion function
+  const toggleTaskCompletion = (id: string) => {
+    const nodeIndex = state.nodes.findIndex((node) => node.id === id);
+    if (nodeIndex !== -1) {
+      const node = state.nodes[nodeIndex];
+      if (node.type === 'task') {
+        const updatedNode = {
+          ...node,
+          data: {
+            ...node.data,
+            completed: !node.data.completed
+          }
+        };
+        dispatch({ type: 'UPDATE_NODE', payload: updatedNode });
+      }
+    }
+  };
+
+  // Adjusted renderNode function
+  const renderNode = (node: any) => {
     switch (node.type) {
       case 'note':
         return (
           <NoteNode
-            content={node.data.content}
+            node={node}
             onDelete={() => handleDeleteNode(node.id)}
             onChangeColor={(color) => handleChangeNodeColor(node.id, color)}
             onResize={(width, height) =>
               handleResizeNode(node.id, width, height)
             }
-            color={node.data.color}
-            width={node.data.width}
-            height={node.data.height}
           />
         );
       case 'task':
         return (
           <TaskNode
-            task={node.data.task}
-            completed={node.data.completed}
+            node={node}
+            task={node.task}
+            completed={node.completed}
+            color={node.color}
+            width={node.width}
+            height={node.height}
             onDelete={() => handleDeleteNode(node.id)}
             onChangeColor={(color) => handleChangeNodeColor(node.id, color)}
+            onToggleComplete={() => toggleTaskCompletion(node.id)}
             onResize={(width, height) =>
               handleResizeNode(node.id, width, height)
             }
-            onToggleComplete={() => {
-              const updatedNode = { ...node };
-              updatedNode.data.completed = !updatedNode.data.completed;
-              dispatch({ type: 'UPDATE_NODE', payload: updatedNode });
-            }}
-            color={node.data.color}
-            width={node.data.width}
-            height={node.data.height}
           />
         );
       case 'custom':
         return (
           <CustomNode
-            data={node.data}
+            node={node}
+            onDelete={() => handleDeleteNode(node.id)}
+            onChangeColor={(color) => handleChangeNodeColor(node.id, color)}
+            onResize={(width, height) =>
+              handleResizeNode(node.id, width, height)
+            }
+          />
+        );
+      case 'code':
+        return (
+          <CodeNode
+            node={node}
+            onDelete={() => handleDeleteNode(node.id)}
+            onChangeColor={(color) => handleChangeNodeColor(node.id, color)}
+            onResize={(width, height) =>
+              handleResizeNode(node.id, width, height)
+            }
+          />
+        );
+      case 'draw':
+        return (
+          <DrawNode
+            node={node}
             onDelete={() => handleDeleteNode(node.id)}
             onChangeColor={(color) => handleChangeNodeColor(node.id, color)}
             onResize={(width, height) =>
