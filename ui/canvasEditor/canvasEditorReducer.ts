@@ -1,4 +1,3 @@
-// ui/canvasEditor/canvasEditorReducer.ts
 import { produce } from 'immer';
 
 export interface NoteNode {
@@ -86,6 +85,11 @@ export type CanvasEditorAction =
   | { type: 'UPDATE_NODE'; payload: Node }
   | { type: 'ADD_EDGE'; payload: Edge }
   | { type: 'DELETE_EDGE'; payload: string }
+  | { type: 'CHANGE_NODE_COLOR'; payload: { id: string; color: string } }
+  | {
+      type: 'RESIZE_NODE';
+      payload: { id: string; width: number; height: number };
+    }
   | { type: 'UNDO' }
   | { type: 'REDO' };
 
@@ -106,11 +110,28 @@ export const canvasEditorReducer = produce(
         draft.nodes = draft.nodes.filter((node) => node.id !== action.payload);
         break;
       case 'UPDATE_NODE':
+        const index = draft.nodes.findIndex(
+          (node) => node.id === action.payload.id
+        );
+        if (index !== -1) {
+          draft.nodes[index] = action.payload;
+        }
+        break;
+      case 'CHANGE_NODE_COLOR':
         const nodeIndex = draft.nodes.findIndex(
           (node) => node.id === action.payload.id
         );
         if (nodeIndex !== -1) {
-          draft.nodes[nodeIndex] = action.payload;
+          draft.nodes[nodeIndex].data.color = action.payload.color;
+        }
+        break;
+      case 'RESIZE_NODE':
+        const resizeIndex = draft.nodes.findIndex(
+          (node) => node.id === action.payload.id
+        );
+        if (resizeIndex !== -1) {
+          draft.nodes[resizeIndex].data.width = action.payload.width;
+          draft.nodes[resizeIndex].data.height = action.payload.height;
         }
         break;
       case 'ADD_EDGE':
