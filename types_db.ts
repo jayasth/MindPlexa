@@ -9,6 +9,47 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      base_nodes: {
+        Row: {
+          canvas_id: string | null
+          color: string | null
+          created_at: string | null
+          height: number | null
+          id: string
+          position: Json | null
+          updated_at: string | null
+          width: number | null
+        }
+        Insert: {
+          canvas_id?: string | null
+          color?: string | null
+          created_at?: string | null
+          height?: number | null
+          id?: string
+          position?: Json | null
+          updated_at?: string | null
+          width?: number | null
+        }
+        Update: {
+          canvas_id?: string | null
+          color?: string | null
+          created_at?: string | null
+          height?: number | null
+          id?: string
+          position?: Json | null
+          updated_at?: string | null
+          width?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "base_nodes_canvas_id_fkey"
+            columns: ["canvas_id"]
+            isOneToOne: false
+            referencedRelation: "canvases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       canvases: {
         Row: {
           content: string | null
@@ -102,6 +143,13 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "code_nodes_canvas_id_fkey"
+            columns: ["canvas_id"]
+            isOneToOne: false
+            referencedRelation: "canvases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_canvas_id"
             columns: ["canvas_id"]
             isOneToOne: false
             referencedRelation: "canvases"

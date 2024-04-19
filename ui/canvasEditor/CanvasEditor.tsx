@@ -10,11 +10,7 @@ import { Textarea } from '@/ui/Textarea/textarea';
 import Toolbar from '@/ui/canvasEditor/toolbar';
 import { useCompletion } from 'ai/react';
 import type { Tables } from 'types_db';
-import CustomNode from '@/ui/nodes/CustomNode';
-import NoteNode from '@/ui/nodes/NoteNode';
-import TaskNode from '@/ui/nodes/TaskNode';
-import CodeNode from '@/ui/nodes/CodeNode';
-import DrawNode from '@/ui/nodes/DrawNode';
+import NodeRenderer from '@/ui/nodes/NodeRenderer';
 import {
   canvasEditorReducer,
   Edge,
@@ -23,10 +19,6 @@ import {
 import SharingModal from './SharingModal';
 import {
   handleAddNode,
-  handleDeleteNode,
-  handleChangeNodeColor,
-  handleResizeNode,
-  toggleTaskCompletion,
   handleDownload,
   handleShare
 } from '@/ui/canvasEditor/utils/canvasEditorUtils';
@@ -73,87 +65,6 @@ export default function CanvasEditor({
     </div>
   );
 
-  // Adjusted renderNode function
-  const renderNode = (node: any) => {
-    switch (node.type) {
-      case 'note':
-        return (
-          <NoteNode
-            node={node}
-            onDelete={() => handleDeleteNode(node.id, dispatch)}
-            onChangeColor={(color) =>
-              handleChangeNodeColor(node.id, color, state.nodes, dispatch)
-            }
-            onResize={(width, height) =>
-              handleResizeNode(node.id, width, height, state.nodes, dispatch)
-            }
-          />
-        );
-      case 'task':
-        return (
-          <TaskNode
-            node={node}
-            task={node.task}
-            completed={node.completed}
-            color={node.color}
-            width={node.width}
-            height={node.height}
-            onDelete={() => handleDeleteNode(node.id, dispatch)}
-            onChangeColor={(color) =>
-              handleChangeNodeColor(node.id, color, state.nodes, dispatch)
-            }
-            onToggleComplete={() =>
-              toggleTaskCompletion(node.id, state.nodes, dispatch)
-            }
-            onResize={(width, height) =>
-              handleResizeNode(node.id, width, height, state.nodes, dispatch)
-            }
-          />
-        );
-      case 'custom':
-        return (
-          <CustomNode
-            node={node}
-            onDelete={() => handleDeleteNode(node.id, dispatch)}
-            onChangeColor={(color) =>
-              handleChangeNodeColor(node.id, color, state.nodes, dispatch)
-            }
-            onResize={(width, height) =>
-              handleResizeNode(node.id, width, height, state.nodes, dispatch)
-            }
-          />
-        );
-      case 'code':
-        return (
-          <CodeNode
-            node={node}
-            onDelete={() => handleDeleteNode(node.id, dispatch)}
-            onChangeColor={(color) =>
-              handleChangeNodeColor(node.id, color, state.nodes, dispatch)
-            }
-            onResize={(width, height) =>
-              handleResizeNode(node.id, width, height, state.nodes, dispatch)
-            }
-          />
-        );
-      case 'draw':
-        return (
-          <DrawNode
-            node={node}
-            onDelete={() => handleDeleteNode(node.id, dispatch)}
-            onChangeColor={(color) =>
-              handleChangeNodeColor(node.id, color, state.nodes, dispatch)
-            }
-            onResize={(width, height) =>
-              handleResizeNode(node.id, width, height, state.nodes, dispatch)
-            }
-          />
-        );
-      default:
-        return null;
-    }
-  };
-
   return (
     <form onSubmit={handleSubmit} className="flex flex-col h-screen">
       <div className="flex flex-1">
@@ -195,7 +106,9 @@ export default function CanvasEditor({
                 </div>
                 <div>
                   {state.nodes.map((node) => (
-                    <div key={node.id}>{renderNode(node)}</div>
+                    <div key={node.id}>
+                      <NodeRenderer node={node} dispatch={dispatch} />
+                    </div>
                   ))}
                 </div>
               </>

@@ -1,67 +1,48 @@
 import { produce } from 'immer';
 
-export interface NoteNode {
+type Json = any;
+
+export interface BaseNode {
   id: string;
+  canvas_id: string | null;
+  color: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+  position: Json;
+  width: number | null;
+  height: number | null;
+}
+
+export interface NoteNode extends BaseNode {
   type: 'note';
-  data: {
-    content: string;
-    color: string;
-    width: number;
-    height: number;
-  };
-  position: {
-    x: number;
-    y: number;
-  };
+  content: string | null;
+  title: string | null;
 }
 
-export interface TaskNode {
-  id: string;
+export interface TaskNode extends BaseNode {
   type: 'task';
-  data: {
-    task: string;
-    completed: boolean;
-    color: string;
-    width: number;
-    height: number;
-  };
-  position: {
-    x: number;
-    y: number;
-  };
+  task: string | null;
+  completed: boolean | null;
+  title: string | null;
 }
 
-export interface CustomNode {
-  id: string;
+export interface CustomNode extends BaseNode {
   type: 'custom';
-  data: any;
-  position: {
-    x: number;
-    y: number;
-  };
+  data: Json;
+  title: string | null;
 }
 
-export interface CodeNode {
-  id: string;
+export interface CodeNode extends BaseNode {
   type: 'code';
-  data: {
-    code: string | null;
-    language: string | null;
-  };
-  position: {
-    x: number;
-    y: number;
-  };
+  code: string | null;
+  language: string | null;
+  title: string | null;
 }
 
-export interface DrawNode {
-  id: string;
+export interface DrawNode extends BaseNode {
   type: 'draw';
-  data: any;
-  position: {
-    x: number;
-    y: number;
-  };
+  data: Json;
+  title: string | null;
 }
 
 export type Node = NoteNode | TaskNode | CustomNode | CodeNode | DrawNode;
@@ -122,39 +103,11 @@ export const canvasEditorReducer = produce(
           (node) => node.id === action.payload.id
         );
         if (nodeIndex !== -1) {
-          draft.nodes[nodeIndex].data.color = action.payload.color;
+          draft.nodes[nodeIndex].color = action.payload.color;
         }
         break;
-      case 'RESIZE_NODE':
-        const resizeIndex = draft.nodes.findIndex(
-          (node) => node.id === action.payload.id
-        );
-        if (resizeIndex !== -1) {
-          draft.nodes[resizeIndex].data.width = action.payload.width;
-          draft.nodes[resizeIndex].data.height = action.payload.height;
-        }
-        break;
-      case 'ADD_EDGE':
-        draft.edges.push(action.payload);
-        break;
-      case 'DELETE_EDGE':
-        draft.edges = draft.edges.filter((edge) => edge.id !== action.payload);
-        break;
-      case 'UNDO':
-        if (draft.currentVersion > 0) {
-          draft.currentVersion--;
-          const prevState = draft.versions[draft.currentVersion];
-          draft.nodes = prevState.nodes;
-          draft.edges = prevState.edges;
-        }
-        break;
-      case 'REDO':
-        if (draft.currentVersion < draft.versions.length - 1) {
-          draft.currentVersion++;
-          const nextState = draft.versions[draft.currentVersion];
-          draft.nodes = nextState.nodes;
-          draft.edges = nextState.edges;
-        }
+      // Add more cases as necessary for other actions like resizing, updating position, etc.
+      default:
         break;
     }
   },

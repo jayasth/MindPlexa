@@ -5,7 +5,7 @@ import TaskNode from './TaskNode';
 import CustomNode from './CustomNode';
 import CodeNode from './CodeNode';
 import DrawNode from './DrawNode';
-import { Node, CanvasEditorAction } from '../canvasEditor/canvasEditorReducer'; // Adjust the import path as necessary
+import { Node, CanvasEditorAction } from '../canvasEditor/canvasEditorReducer';
 
 interface NodeRendererProps {
   node: Node;
@@ -36,7 +36,15 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({ node, dispatch }) => {
           node={node}
           onDelete={() => handleDeleteNode(node.id)}
           onChangeColor={(color) => handleChangeNodeColor(node.id, color)}
+          onToggleComplete={() => {
+            /* Implement toggle completion logic here */
+          }}
           onResize={(width, height) => handleResizeNode(node.id, width, height)}
+          task={null}
+          completed={null}
+          color={null}
+          width={null}
+          height={null}
         />
       );
     case 'custom':
