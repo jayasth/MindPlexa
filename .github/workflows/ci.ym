@@ -1,0 +1,27 @@
+name: Branch Test Workflow
+
+on:
+  push:
+    branches:
+      - mp2.11
+  pull_request:
+    branches:
+      - mp2.11
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '21.7.0'  # Adjust the version as needed for your project
+    
+    - name: Install dependencies
+      run: npm install  # Modify this line for different build systems
+    
+    - name: Run tests
+      run: npm test  # Adjust this command according to your test scripts
