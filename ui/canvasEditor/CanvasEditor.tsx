@@ -2,13 +2,14 @@
 
 'use client';
 
-import React, { useState, useReducer } from 'react';
+import React, { useState, useReducer, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Diagram from '@/ui/canvasEditor/diagram';
 import Button from '@/ui/Button/Button';
 import { Textarea } from '@/ui/Textarea/textarea';
 import Toolbar from '@/ui/canvasEditor/toolbar';
 import { useCompletion } from 'ai/react';
+import { ReactFlowProvider, useReactFlow, ReactFlowInstance } from 'reactflow';
 import type { Tables } from 'types_db';
 import NodeRenderer from '@/ui/nodes/NodeRenderer';
 import {
@@ -22,7 +23,7 @@ import {
   handleDownload,
   handleShare
 } from '@/ui/canvasEditor/utils/canvasEditorUtils';
-import { useCanvas } from '@/hooks/useCanvas'; // Import the useCanvas hook
+import { useCanvas } from '@/hooks/useCanvas';
 
 type Canvas = Tables<'canvases'> & {
   nodes?: Node[];
@@ -34,13 +35,16 @@ type CanvasEditorProps = {
   onCanvasUpdate?: (updatedCanvas: Canvas) => void;
 };
 
-export default function CanvasEditor({
+const CanvasEditorContent = ({
   initialCanvas,
   onCanvasUpdate
-}: CanvasEditorProps) {
+}: CanvasEditorProps) => {
+  const reactFlowInstance = useReactFlow(); // Now inside a child component
+
   const router = useRouter();
   const [isSharingModalOpen, setIsSharingModalOpen] = useState(false);
-  const [canvas, setCanvas] = useCanvas(initialCanvas); // Use the custom hook
+  const [canvas, setCanvas] = useCanvas(initialCanvas);
+  const reactFlowWrapper = useRef<HTMLDivElement>(null);
 
   const [state, dispatch] = useReducer(canvasEditorReducer, {
     nodes: initialCanvas?.nodes || [],
@@ -70,21 +74,23 @@ export default function CanvasEditor({
       <div className="flex flex-1">
         <div className="bg-myLightGray-800 p-4">
           <Toolbar
-            onAddNode={(nodeType) =>
-              handleAddNode(
-                nodeType,
-                dispatch,
-                window.innerWidth,
-                window.innerHeight
-              )
-            }
+            onAddNode={(nodeType) => {
+              if (reactFlowInstance && reactFlowWrapper.current) {
+                handleAddNode(
+                  nodeType,
+                  dispatch,
+                  reactFlowWrapper,
+                  reactFlowInstance
+                );
+              }
+            }}
             onUndo={() => dispatch({ type: 'UNDO' })}
             onRedo={() => dispatch({ type: 'REDO' })}
             onShare={() => setIsSharingModalOpen(true)}
             onDownload={() => handleDownload(state)}
           />
         </div>
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col" ref={reactFlowWrapper}>
           <div className="p-4">
             <Textarea
               placeholder="Type here..."
@@ -100,18 +106,17 @@ export default function CanvasEditor({
             {isLoading ? (
               <Loading />
             ) : (
-              <>
-                <div style={{ height: '100%' }}>
-                  <Diagram mermaidCode={mermaidCode} isComplete={!isLoading} />
-                </div>
-                <div>
+              <Diagram mermaidCode={mermaidCode} isComplete={!isLoading}>
+                <>
                   {state.nodes.map((node) => (
-                    <div key={node.id}>
-                      <NodeRenderer node={node} dispatch={dispatch} />
-                    </div>
+                    <NodeRenderer
+                      key={node.id}
+                      node={node}
+                      dispatch={dispatch}
+                    />
                   ))}
-                </div>
-              </>
+                </>
+              </Diagram>
             )}
           </div>
         </div>
@@ -122,5 +127,13 @@ export default function CanvasEditor({
         onShare={() => handleShare(state)}
       />
     </form>
+  );
+};
+
+export default function CanvasEditor(props: CanvasEditorProps) {
+  return (
+    <ReactFlowProvider>
+      <CanvasEditorContent {...props} />
+    </ReactFlowProvider>
   );
 }

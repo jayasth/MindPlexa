@@ -1,10 +1,11 @@
-// ui/nodes/NoteNode.tsx
 import React from 'react';
+import { NodeProps } from 'reactflow';
 import styles from './NoteNode.module.css';
 import { FaTrash, FaPalette, FaExpand } from 'react-icons/fa';
 import { Tables } from 'types_db';
 
-interface NoteNodeProps {
+interface NoteNodeProps extends NodeProps {
+  // Extend NodeProps
   node: Tables<'note_nodes'>;
   onDelete: () => void;
   onChangeColor: (color: string) => void;
@@ -57,4 +58,5 @@ const NoteNode: React.FC<NoteNodeProps> = ({
     </div>
   );
 };
+
 export default NoteNode;

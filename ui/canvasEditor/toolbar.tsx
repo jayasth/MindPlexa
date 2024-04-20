@@ -1,5 +1,3 @@
-// File: ui/canvasEditor/toolbar.tsx
-
 import React from 'react';
 import {
   FaTasks,

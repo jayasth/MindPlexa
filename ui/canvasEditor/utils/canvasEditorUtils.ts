@@ -1,26 +1,47 @@
 import { Dispatch } from 'react';
 import {
   CanvasEditorAction,
-  CanvasEditorState,
-  Node
+  Node,
+  NoteNode,
+  TaskNode,
+  CustomNode,
+  CodeNode,
+  DrawNode,
+  CanvasEditorState
 } from '../canvasEditorReducer';
+import { useReactFlow } from 'reactflow';
 
 export const handleAddNode = (
   nodeType: 'note' | 'task' | 'custom' | 'code' | 'draw',
   dispatch: Dispatch<CanvasEditorAction>,
-  viewportWidth: number,
-  viewportHeight: number
+  reactFlowWrapper: React.RefObject<HTMLDivElement>,
+  reactFlowInstance: any // Add this parameter to access React Flow instance methods
 ) => {
+  if (!reactFlowWrapper.current) {
+    console.error('React Flow wrapper is not available.');
+    return;
+  }
+
+  const canvasRect = reactFlowWrapper.current.getBoundingClientRect();
+  if (!canvasRect) {
+    console.error('Unable to get canvas rectangle.');
+    return;
+  }
+
+  const centerViewport = {
+    x: canvasRect.width / 2,
+    y: canvasRect.height / 2
+  };
+  const centerCanvas = reactFlowInstance.project(centerViewport); // Convert viewport position to canvas position
+
   let newNode: Node;
+
   switch (nodeType) {
     case 'note':
       newNode = {
         id: `node-${Date.now()}`,
         type: 'note',
-        position: {
-          x: viewportWidth / 2 - 100,
-          y: viewportHeight / 2 - 150
-        },
+        position: centerCanvas, // Use the converted position
         canvas_id: null,
         color: '#ffffff',
         created_at: null,
@@ -28,17 +49,14 @@ export const handleAddNode = (
         width: 200,
         height: 300,
         content: '',
-        title: 'New Note'
-      };
+        title: `New Note Node`
+      } as NoteNode;
       break;
     case 'task':
       newNode = {
         id: `node-${Date.now()}`,
         type: 'task',
-        position: {
-          x: viewportWidth / 2 - 100,
-          y: viewportHeight / 2 - 150
-        },
+        position: centerCanvas,
         canvas_id: null,
         color: '#ffffff',
         created_at: null,
@@ -47,35 +65,29 @@ export const handleAddNode = (
         height: 300,
         task: '',
         completed: false,
-        title: 'New Task'
-      };
+        title: `New Task Node`
+      } as TaskNode;
       break;
     case 'custom':
       newNode = {
         id: `node-${Date.now()}`,
         type: 'custom',
-        position: {
-          x: viewportWidth / 2 - 100,
-          y: viewportHeight / 2 - 150
-        },
+        position: centerCanvas,
         canvas_id: null,
         color: '#ffffff',
         created_at: null,
         updated_at: null,
         width: 200,
         height: 300,
-        data: null,
-        title: 'New Custom Node'
-      };
+        data: {},
+        title: `New Custom Node`
+      } as CustomNode;
       break;
     case 'code':
       newNode = {
         id: `node-${Date.now()}`,
         type: 'code',
-        position: {
-          x: viewportWidth / 2 - 100,
-          y: viewportHeight / 2 - 150
-        },
+        position: centerCanvas,
         canvas_id: null,
         color: '#ffffff',
         created_at: null,
@@ -84,93 +96,29 @@ export const handleAddNode = (
         height: 300,
         code: '',
         language: '',
-        title: 'New Code Node'
-      };
+        title: `New Code Node`
+      } as CodeNode;
       break;
     case 'draw':
       newNode = {
         id: `node-${Date.now()}`,
         type: 'draw',
-        position: {
-          x: viewportWidth / 2 - 100,
-          y: viewportHeight / 2 - 150
-        },
+        position: centerCanvas,
         canvas_id: null,
         color: '#ffffff',
         created_at: null,
         updated_at: null,
         width: 200,
         height: 300,
-        data: null,
-        title: 'New Draw Node'
-      };
+        data: {},
+        title: `New Draw Node`
+      } as DrawNode;
       break;
+    default:
+      throw new Error('Unsupported node type');
   }
 
   dispatch({ type: 'ADD_NODE', payload: newNode });
-};
-
-// Function to handle deleting a node
-export const handleDeleteNode = (
-  nodeId: string,
-  dispatch: Dispatch<CanvasEditorAction>
-) => {
-  dispatch({ type: 'DELETE_NODE', payload: nodeId });
-};
-
-// Function to handle changing node color
-export const handleChangeNodeColor = (
-  nodeId: string,
-  color: string,
-  nodes: Node[],
-  dispatch: Dispatch<CanvasEditorAction>
-) => {
-  const nodeToUpdate = nodes.find((node) => node.id === nodeId);
-  if (nodeToUpdate) {
-    const updatedNode = {
-      ...nodeToUpdate,
-      color
-    };
-    dispatch({ type: 'UPDATE_NODE', payload: updatedNode });
-  }
-};
-
-// Function to handle resizing a node
-export const handleResizeNode = (
-  nodeId: string,
-  width: number,
-  height: number,
-  nodes: Node[],
-  dispatch: Dispatch<CanvasEditorAction>
-) => {
-  const nodeToUpdate = nodes.find((node) => node.id === nodeId);
-  if (nodeToUpdate) {
-    const updatedNode = {
-      ...nodeToUpdate,
-      width,
-      height
-    };
-    dispatch({ type: 'UPDATE_NODE', payload: updatedNode });
-  }
-};
-
-// Function to toggle task completion
-export const toggleTaskCompletion = (
-  id: string,
-  nodes: Node[],
-  dispatch: Dispatch<CanvasEditorAction>
-) => {
-  const nodeIndex = nodes.findIndex((node) => node.id === id);
-  if (nodeIndex !== -1) {
-    const node = nodes[nodeIndex];
-    if (node.type === 'task') {
-      const updatedNode = {
-        ...node,
-        completed: !node.completed
-      };
-      dispatch({ type: 'UPDATE_NODE', payload: updatedNode });
-    }
-  }
 };
 
 // Function to handle downloading the canvas

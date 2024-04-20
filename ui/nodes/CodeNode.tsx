@@ -2,8 +2,9 @@ import React from 'react';
 import styles from './CodeNode.module.css';
 import { FaTrash, FaPalette, FaExpand } from 'react-icons/fa';
 import { Tables } from 'types_db';
+import { NodeProps } from 'reactflow';
 
-interface CodeNodeProps {
+interface CodeNodeProps extends NodeProps {
   node: Tables<'code_nodes'>;
   onDelete: () => void;
   onChangeColor: (color: string) => void;

@@ -2,8 +2,10 @@ import React from 'react';
 import styles from './DrawNode.module.css';
 import { FaTrash, FaPalette, FaExpand } from 'react-icons/fa';
 import { Tables } from 'types_db';
+import { NodeProps } from 'reactflow'; // Imported NodeProps from reactflow
 
-interface DrawNodeProps {
+interface DrawNodeProps extends NodeProps {
+  // Extended NodeProps
   node: Tables<'draw_nodes'>;
   onDelete: () => void;
   onChangeColor: (color: string) => void;

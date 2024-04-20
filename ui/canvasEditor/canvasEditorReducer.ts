@@ -1,6 +1,7 @@
 //ui/canvasEditor/canvasEditorReducer.ts
 
 import { produce } from 'immer';
+import { NodeProps } from 'reactflow'; // Import NodeProps from React Flow
 
 type Json = any;
 type Position = {
@@ -17,13 +18,14 @@ export type Node = (NoteNode | TaskNode | CustomNode | CodeNode | DrawNode) & {
 };
 
 // Ensure each Node type definition includes all necessary properties
-export interface BaseNode {
+export interface BaseNode extends NodeProps {
+  // Extend from NodeProps
   id: string;
   canvas_id: string | null;
   color: string | null;
   created_at: string | null;
   updated_at: string | null;
-  position: Position; // Ensure this is correctly typed as needed
+  position: Position;
   width: number | null;
   height: number | null;
 }
@@ -43,7 +45,7 @@ export interface TaskNode extends BaseNode {
 
 export interface CustomNode extends BaseNode {
   type: 'custom';
-  data: any; // Ensure this is correctly typed as needed
+  data: any;
   title: string | null;
 }
 
@@ -56,7 +58,7 @@ export interface CodeNode extends BaseNode {
 
 export interface DrawNode extends BaseNode {
   type: 'draw';
-  data: any; // Ensure this is correctly typed as needed
+  data: any;
   title: string | null;
 }
 

@@ -1,10 +1,12 @@
 // ui/nodes/TaskNode.tsx
 import React from 'react';
+import { NodeProps } from 'reactflow'; // Imported NodeProps from reactflow
 import styles from './TaskNode.module.css';
 import { FaTrash, FaPalette, FaExpand } from 'react-icons/fa';
 import { Tables } from 'types_db';
 
-interface TaskNodeProps {
+interface TaskNodeProps extends NodeProps {
+  // Extended NodeProps
   node: Tables<'task_nodes'>;
   task: string | null; // Adjusted for possible null
   completed: boolean | null; // Adjusted for possible null

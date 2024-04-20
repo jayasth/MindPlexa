@@ -1,0 +1,503 @@
+A. File Structure:
+
+mindmap/
+    App.tsx
+    MindMapEdge.tsx
+    MindMapNode.tsx
+    index.css
+    index.tsx
+    package.json
+    store.ts
+    styles.css
+
+
+================================================================================
+
+B. Codes:
+
+
+
+C:/coding/sandbox_examples/mindmap\App.tsx:
+
+--------------------------------------------------------------------------------
+
+import React, { useCallback, useRef } from 'react';
+import ReactFlow, {
+  Controls,
+  OnConnectEnd,
+  OnConnectStart,
+  Panel,
+  useStoreApi,
+  Node,
+  useReactFlow,
+  ReactFlowProvider,
+  NodeOrigin,
+  ConnectionLineType,
+} from 'reactflow';
+import { shallow } from 'zustand/shallow';
+
+import useStore, { RFState } from './store';
+import MindMapNode from './MindMapNode';
+import MindMapEdge from './MindMapEdge';
+
+import './index.css';
+
+// we need to import the React Flow styles to make it work
+import 'reactflow/dist/style.css';
+
+const selector = (state: RFState) => ({
+  nodes: state.nodes,
+  edges: state.edges,
+  onNodesChange: state.onNodesChange,
+  onEdgesChange: state.onEdgesChange,
+  addChildNode: state.addChildNode,
+});
+
+const nodeTypes = {
+  mindmap: MindMapNode,
+};
+
+const edgeTypes = {
+  mindmap: MindMapEdge,
+};
+
+const nodeOrigin: NodeOrigin = [0.5, 0.5];
+const connectionLineStyle = { stroke: '#F6AD55', strokeWidth: 3 };
+const defaultEdgeOptions = { style: connectionLineStyle, type: 'mindmap' };
+
+function Flow() {
+  // whenever you use multiple values, you should use shallow for making sure that the component only re-renders when one of the values change
+  const { nodes, edges, onNodesChange, onEdgesChange, addChildNode } = useStore(
+    selector,
+    shallow,
+  );
+  const connectingNodeId = useRef<string | null>(null);
+  const store = useStoreApi();
+  const { screenToFlowPosition } = useReactFlow();
+
+  const getChildNodePosition = (
+    event: MouseEvent | TouchEvent,
+    parentNode?: Node,
+  ) => {
+    const { domNode } = store.getState();
+
+    if (
+      !domNode ||
+      // we need to check if these properites exist, because when a node is not initialized yet,
+      // it doesn't have a positionAbsolute nor a width or height
+      !parentNode?.positionAbsolute ||
+      !parentNode?.width ||
+      !parentNode?.height
+    ) {
+      return;
+    }
+
+    const { top, left } = domNode.getBoundingClientRect();
+
+    const isTouchEvent = 'touches' in event;
+    const x = isTouchEvent ? event.touches[0].clientX : event.clientX;
+    const y = isTouchEvent ? event.touches[0].clientY : event.clientY;
+    // we need to remove the wrapper bounds, in order to get the correct mouse position
+    const panePosition = screenToFlowPosition({
+      x,
+      y,
+    });
+
+    // we are calculating with positionAbsolute here because child nodes are positioned relative to their parent
+    return {
+      x: panePosition.x - parentNode.positionAbsolute.x + parentNode.width / 2,
+      y: panePosition.y - parentNode.positionAbsolute.y + parentNode.height / 2,
+    };
+  };
+
+  const onConnectStart: OnConnectStart = useCallback((_, { nodeId }) => {
+    connectingNodeId.current = nodeId;
+  }, []);
+
+  const onConnectEnd: OnConnectEnd = useCallback(
+    (event) => {
+      const { nodeInternals } = store.getState();
+      const targetIsPane = (event.target as Element).classList.contains(
+        'react-flow__pane',
+      );
+
+      if (targetIsPane && connectingNodeId.current) {
+        const parentNode = nodeInternals.get(connectingNodeId.current);
+        const childNodePosition = getChildNodePosition(event, parentNode);
+
+        if (parentNode && childNodePosition) {
+          addChildNode(parentNode, childNodePosition);
+        }
+      }
+    },
+    [getChildNodePosition],
+  );
+
+  return (
+    <ReactFlow
+      nodes={nodes}
+      edges={edges}
+      onNodesChange={onNodesChange}
+      onEdgesChange={onEdgesChange}
+      nodeTypes={nodeTypes}
+      edgeTypes={edgeTypes}
+      onConnectStart={onConnectStart}
+      onConnectEnd={onConnectEnd}
+      nodeOrigin={nodeOrigin}
+      connectionLineStyle={connectionLineStyle}
+      defaultEdgeOptions={defaultEdgeOptions}
+      connectionLineType={ConnectionLineType.Straight}
+      fitView
+    >
+      <Controls showInteractive={false} />
+      <Panel position="top-left" className="header">
+        React Flow Mind Map
+      </Panel>
+    </ReactFlow>
+  );
+}
+
+export default () => (
+  <ReactFlowProvider>
+    <Flow />
+  </ReactFlowProvider>
+);
+
+
+--------------------------------------------------------------------------------
+
+
+
+C:/coding/sandbox_examples/mindmap\MindMapEdge.tsx:
+
+--------------------------------------------------------------------------------
+
+import React from 'react';
+import { BaseEdge, EdgeProps, getStraightPath } from 'reactflow';
+
+function MindMapEdge(props: EdgeProps) {
+  const { sourceX, sourceY, targetX, targetY } = props;
+
+  const [edgePath] = getStraightPath({
+    sourceX,
+    sourceY: sourceY + 20,
+    targetX,
+    targetY,
+  });
+
+  return <BaseEdge path={edgePath} {...props} />;
+}
+
+export default MindMapEdge;
+
+
+--------------------------------------------------------------------------------
+
+
+
+C:/coding/sandbox_examples/mindmap\MindMapNode.tsx:
+
+--------------------------------------------------------------------------------
+
+import React, { useRef, useEffect, useLayoutEffect } from 'react';
+import { Handle, NodeProps, Position } from 'reactflow';
+
+import useStore from './store';
+
+export type NodeData = {
+  label: string;
+};
+
+function MindMapNode({ id, data }: NodeProps<NodeData>) {
+  const inputRef = useRef<HTMLInputElement>();
+  const updateNodeLabel = useStore((state) => state.updateNodeLabel);
+
+  useLayoutEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.style.width = `${data.label.length * 8}px`;
+    }
+  }, [data.label.length]);
+
+  useEffect(() => {
+    setTimeout(() => {
+      if (inputRef.current) {
+        inputRef.current.focus({ preventScroll: true });
+      }
+    }, 1);
+  }, []);
+
+  return (
+    <>
+      <div className="inputWrapper">
+        <div className="dragHandle">
+          {/* icon taken from grommet https://icons.grommet.io */}
+          <svg viewBox="0 0 24 24">
+            <path
+              fill="#333"
+              stroke="#333"
+              strokeWidth="1"
+              d="M15 5h2V3h-2v2zM7 5h2V3H7v2zm8 8h2v-2h-2v2zm-8 0h2v-2H7v2zm8 8h2v-2h-2v2zm-8 0h2v-2H7v2z"
+            />
+          </svg>
+        </div>
+        <input
+          value={data.label}
+          onChange={(evt) => updateNodeLabel(id, evt.target.value)}
+          className="input"
+          ref={inputRef}
+        />
+      </div>
+
+      <Handle type="target" position={Position.Top} />
+      <Handle type="source" position={Position.Top} />
+    </>
+  );
+}
+
+export default MindMapNode;
+
+
+--------------------------------------------------------------------------------
+
+
+
+C:/coding/sandbox_examples/mindmap\index.css:
+
+--------------------------------------------------------------------------------
+
+body {
+  margin: 0;
+  background-color: #f8f8f8;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+.header {
+  color: #cdcdcd;
+}
+
+.react-flow__node-mindmap {
+  background: #f6ad55;
+  border-radius: 2px;
+  border: 1px solid transparent;
+  padding: 2px 5px;
+  font-weight: 700;
+}
+
+.react-flow__handle.target {
+  top: 50%;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.react-flow__handle.source {
+  top: 0;
+  left: 0;
+  transform: none;
+  background: #f6ad55;
+  height: 100%;
+  width: 100%;
+  border-radius: 2px;
+  border: none;
+}
+
+.react-flow .react-flow__connectionline {
+  z-index: 0;
+}
+
+.inputWrapper {
+  display: flex;
+  height: 20px;
+  z-index: 1;
+  position: relative;
+  pointer-events: none;
+}
+
+.dragHandle {
+  background: transparent;
+  width: 14px;
+  height: 100%;
+  margin-right: 4px;
+  display: flex;
+  align-items: center;
+  pointer-events: all;
+}
+
+.input {
+  border: none;
+  padding: 0 2px;
+  border-radius: 1px;
+  font-weight: 700;
+  background: transparent;
+  height: 100%;
+  color: #222;
+  pointer-events: none;
+}
+
+.input:focus {
+  border: none;
+  outline: none;
+  background: rgba(255, 255, 255, 0.25);
+  pointer-events: all;
+}
+
+
+--------------------------------------------------------------------------------
+
+
+
+C:/coding/sandbox_examples/mindmap\index.tsx:
+
+--------------------------------------------------------------------------------
+
+import React, { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import "./styles.css";
+
+import App from "./App";
+
+const root = createRoot(document.getElementById("root"));
+root.render(
+  <StrictMode>
+    <App />
+  </StrictMode>
+);
+
+--------------------------------------------------------------------------------
+
+
+
+C:/coding/sandbox_examples/mindmap\package.json:
+
+--------------------------------------------------------------------------------
+
+{
+  "dependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-scripts": "^4.0.0",
+    "reactflow": "11.11.1",
+    "nanoid": "latest",
+    "zustand": "4.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "typescript": "^4.0.0"
+  },
+  "main": "/index.tsx"
+}
+
+--------------------------------------------------------------------------------
+
+
+
+C:/coding/sandbox_examples/mindmap\store.ts:
+
+--------------------------------------------------------------------------------
+
+import {
+  Edge,
+  EdgeChange,
+  Node,
+  NodeChange,
+  OnNodesChange,
+  OnEdgesChange,
+  applyNodeChanges,
+  applyEdgeChanges,
+  XYPosition,
+} from 'reactflow';
+import { create } from 'zustand';
+import { nanoid } from 'nanoid/non-secure';
+
+export type RFState = {
+  nodes: Node[];
+  edges: Edge[];
+  onNodesChange: OnNodesChange;
+  onEdgesChange: OnEdgesChange;
+  addChildNode: (parentNode: Node, position: XYPosition) => void;
+  updateNodeLabel: (nodeId: string, label: string) => void;
+};
+
+const useStore = create<RFState>((set, get) => ({
+  nodes: [
+    {
+      id: 'root',
+      type: 'mindmap',
+      data: { label: 'React Flow Mind Map' },
+      position: { x: 0, y: 0 },
+    },
+  ],
+  edges: [],
+  onNodesChange: (changes: NodeChange[]) => {
+    set({
+      nodes: applyNodeChanges(changes, get().nodes),
+    });
+  },
+  onEdgesChange: (changes: EdgeChange[]) => {
+    set({
+      edges: applyEdgeChanges(changes, get().edges),
+    });
+  },
+  addChildNode: (parentNode: Node, position: XYPosition) => {
+    const newNode = {
+      id: nanoid(),
+      type: 'mindmap',
+      data: { label: 'New Node' },
+      position,
+      parentId: parentNode.id,
+    };
+
+    const newEdge = {
+      id: nanoid(),
+      source: parentNode.id,
+      target: newNode.id,
+    };
+
+    set({
+      nodes: [...get().nodes, newNode],
+      edges: [...get().edges, newEdge],
+    });
+  },
+  updateNodeLabel: (nodeId: string, label: string) => {
+    set({
+      nodes: get().nodes.map((node) => {
+        if (node.id === nodeId) {
+          // it's important to create a new object here, to inform React Flow about the changes
+          node.data = { ...node.data, label };
+        }
+
+        return node;
+      }),
+    });
+  },
+}));
+
+export default useStore;
+
+
+--------------------------------------------------------------------------------
+
+
+
+C:/coding/sandbox_examples/mindmap\styles.css:
+
+--------------------------------------------------------------------------------
+
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: sans-serif;
+}
+
+
+--------------------------------------------------------------------------------
+

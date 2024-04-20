@@ -1,10 +1,12 @@
 // ui/nodes/CustomNode.tsx
 import React from 'react';
+import { NodeProps } from 'reactflow'; // Imported NodeProps from reactflow
 import styles from './CustomNode.module.css';
 import { FaTrash, FaPalette, FaExpand } from 'react-icons/fa';
 import { Tables } from 'types_db';
 
-interface CustomNodeProps {
+interface CustomNodeProps extends NodeProps {
+  // Extended NodeProps
   node: Tables<'custom_nodes'>;
   onDelete: () => void;
   onChangeColor: (color: string) => void;
