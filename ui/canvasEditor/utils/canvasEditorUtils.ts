@@ -1,7 +1,10 @@
 import { Dispatch } from 'react';
-import { CanvasEditorAction, Node } from '../canvasEditorReducer'; // Adjust the import path as necessary
+import {
+  CanvasEditorAction,
+  CanvasEditorState,
+  Node
+} from '../canvasEditorReducer';
 
-// Function to handle adding a node
 export const handleAddNode = (
   nodeType: 'note' | 'task' | 'custom' | 'code' | 'draw',
   dispatch: Dispatch<CanvasEditorAction>,
@@ -16,14 +19,16 @@ export const handleAddNode = (
         type: 'note',
         position: {
           x: viewportWidth / 2 - 100,
-          y: viewportHeight / 2 - 100
+          y: viewportHeight / 2 - 150
         },
-        data: {
-          content: '',
-          color: '',
-          width: 0,
-          height: 0
-        }
+        canvas_id: null,
+        color: '#ffffff',
+        created_at: null,
+        updated_at: null,
+        width: 200,
+        height: 300,
+        content: '',
+        title: 'New Note'
       };
       break;
     case 'task':
@@ -32,15 +37,17 @@ export const handleAddNode = (
         type: 'task',
         position: {
           x: viewportWidth / 2 - 100,
-          y: viewportHeight / 2 - 100
+          y: viewportHeight / 2 - 150
         },
-        data: {
-          task: '',
-          completed: false,
-          color: '',
-          width: 0,
-          height: 0
-        }
+        canvas_id: null,
+        color: '#ffffff',
+        created_at: null,
+        updated_at: null,
+        width: 200,
+        height: 300,
+        task: '',
+        completed: false,
+        title: 'New Task'
       };
       break;
     case 'custom':
@@ -49,9 +56,16 @@ export const handleAddNode = (
         type: 'custom',
         position: {
           x: viewportWidth / 2 - 100,
-          y: viewportHeight / 2 - 100
+          y: viewportHeight / 2 - 150
         },
-        data: {}
+        canvas_id: null,
+        color: '#ffffff',
+        created_at: null,
+        updated_at: null,
+        width: 200,
+        height: 300,
+        data: null,
+        title: 'New Custom Node'
       };
       break;
     case 'code':
@@ -60,25 +74,35 @@ export const handleAddNode = (
         type: 'code',
         position: {
           x: viewportWidth / 2 - 100,
-          y: viewportHeight / 2 - 100
+          y: viewportHeight / 2 - 150
         },
-        data: {
-          code: '', // Initialize as empty string or appropriate default
-          language: '' // Initialize language
-        }
+        canvas_id: null,
+        color: '#ffffff',
+        created_at: null,
+        updated_at: null,
+        width: 200,
+        height: 300,
+        code: '',
+        language: '',
+        title: 'New Code Node'
       };
       break;
     case 'draw':
       newNode = {
         id: `node-${Date.now()}`,
         type: 'draw',
-        position: { x: viewportWidth / 2 - 100, y: viewportHeight / 2 - 100 },
-        data: {
-          data: {}, // Initialize with empty or default drawing data
-          color: '',
-          width: 100, // Default width
-          height: 100 // Default height
-        }
+        position: {
+          x: viewportWidth / 2 - 100,
+          y: viewportHeight / 2 - 150
+        },
+        canvas_id: null,
+        color: '#ffffff',
+        created_at: null,
+        updated_at: null,
+        width: 200,
+        height: 300,
+        data: null,
+        title: 'New Draw Node'
       };
       break;
   }
@@ -105,7 +129,7 @@ export const handleChangeNodeColor = (
   if (nodeToUpdate) {
     const updatedNode = {
       ...nodeToUpdate,
-      data: { ...nodeToUpdate.data, color }
+      color
     };
     dispatch({ type: 'UPDATE_NODE', payload: updatedNode });
   }
@@ -123,7 +147,8 @@ export const handleResizeNode = (
   if (nodeToUpdate) {
     const updatedNode = {
       ...nodeToUpdate,
-      data: { ...nodeToUpdate.data, width, height }
+      width,
+      height
     };
     dispatch({ type: 'UPDATE_NODE', payload: updatedNode });
   }
@@ -141,39 +166,30 @@ export const toggleTaskCompletion = (
     if (node.type === 'task') {
       const updatedNode = {
         ...node,
-        data: {
-          ...node.data,
-          completed: !node.data.completed
-        }
+        completed: !node.completed
       };
       dispatch({ type: 'UPDATE_NODE', payload: updatedNode });
     }
   }
 };
 
-// Function to handle downloading the canvas data
-export const handleDownload = (state: any) => {
-  const canvasData = {
-    nodes: state.nodes,
-    edges: state.edges
-  };
-  const json = JSON.stringify(canvasData, null, 2);
-  const blob = new Blob([json], { type: 'application/json' });
+// Function to handle downloading the canvas
+export const handleDownload = (state: CanvasEditorState) => {
+  // Implement the logic to download the canvas state
+  // You can convert the state to a JSON string and create a downloadable file
+  const jsonString = JSON.stringify(state, null, 2);
+  const blob = new Blob([jsonString], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
   link.download = 'canvas.json';
   link.click();
-  URL.revokeObjectURL(url);
 };
 
 // Function to handle sharing the canvas
-export const handleShare = (state: any) => {
-  const canvasData = {
-    nodes: state.nodes,
-    edges: state.edges
-  };
-  const json = JSON.stringify(canvasData, null, 2);
-  const url = `data:application/json;charset=utf-8,${encodeURIComponent(json)}`;
-  window.open(url, '_blank');
+export const handleShare = (state: CanvasEditorState) => {
+  // Implement the logic to share the canvas
+  // You can use an API or service to share the canvas state
+  console.log('Sharing canvas:', state);
+  // Add your sharing logic here
 };

@@ -1,59 +1,51 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useCallback, useMemo } from 'react';
 import ReactFlow, {
   Background,
   Controls,
-  EdgeChange,
-  Node,
-  NodeChange,
-  applyEdgeChanges,
-  applyNodeChanges,
   addEdge,
   Connection,
-  Edge
+  useNodesState,
+  useEdgesState
 } from 'reactflow';
 import { CustomNode } from './custom-node';
 import { parseMermaidCode } from '@/utils/canvas/mermaid-utils';
+import { Node } from '@/ui/canvasEditor/canvasEditorReducer'; // Correct import
 
 interface DiagramProps {
   mermaidCode?: string;
   isComplete?: boolean;
 }
 
-const Diagram = ({ mermaidCode = '', isComplete = false }: DiagramProps) => {
-  const [nodes, setNodes] = useState<Node[]>([]);
-  const [edges, setEdges] = useState<Edge[]>([]);
+const Diagram: React.FC<DiagramProps> = ({
+  mermaidCode = '',
+  isComplete = false
+}) => {
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node[]>([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
   useEffect(() => {
     async function parse() {
       const { nodes, edges } = await parseMermaidCode(mermaidCode);
-      setEdges(edges);
       setNodes(nodes);
+      setEdges(edges);
     }
     if (isComplete && mermaidCode) {
       parse();
     }
   }, [mermaidCode, isComplete]);
 
-  const onNodesChange = useCallback(
-    (changes: NodeChange[]) =>
-      setNodes((nds) => applyNodeChanges(changes, nds)),
-    []
-  );
-  const onEdgesChange = useCallback(
-    (changes: EdgeChange[]) =>
-      setEdges((eds) => applyEdgeChanges(changes, eds)),
-    []
-  );
   const onConnect = useCallback(
-    (params: Edge | Connection) => setEdges((eds) => addEdge(params, eds)),
+    (params: Connection) => setEdges((eds) => addEdge(params, eds)),
     []
   );
 
+  const onLoad = useCallback((reactFlowInstance) => {
+    reactFlowInstance.fitView();
+  }, []);
+
   const nodeTypes = useMemo(
     () => ({
-      startEvent: CustomNode,
-      endEvent: CustomNode,
-      activity: CustomNode
+      custom: CustomNode // Define custom nodes here if required
     }),
     []
   );
@@ -61,14 +53,15 @@ const Diagram = ({ mermaidCode = '', isComplete = false }: DiagramProps) => {
   return (
     <ReactFlow
       nodes={nodes}
-      onNodesChange={onNodesChange}
       edges={edges}
+      onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
       onConnect={onConnect}
+      onLoad={onLoad}
       nodeTypes={nodeTypes}
-      style={{ width: '100%', height: '100%' }}
+      fitView
     >
-      <Background />
+      <Background color="#aaa" gap={16} />
       <Controls />
     </ReactFlow>
   );

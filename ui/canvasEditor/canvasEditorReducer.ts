@@ -1,14 +1,29 @@
+//ui/canvasEditor/canvasEditorReducer.ts
+
 import { produce } from 'immer';
 
 type Json = any;
+type Position = {
+  x: number;
+  y: number;
+};
 
+export type Node = (NoteNode | TaskNode | CustomNode | CodeNode | DrawNode) & {
+  title: string | null;
+  canvas_id: string | null;
+  color: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+};
+
+// Ensure each Node type definition includes all necessary properties
 export interface BaseNode {
   id: string;
   canvas_id: string | null;
   color: string | null;
   created_at: string | null;
   updated_at: string | null;
-  position: Json;
+  position: Position; // Ensure this is correctly typed as needed
   width: number | null;
   height: number | null;
 }
@@ -28,7 +43,7 @@ export interface TaskNode extends BaseNode {
 
 export interface CustomNode extends BaseNode {
   type: 'custom';
-  data: Json;
+  data: any; // Ensure this is correctly typed as needed
   title: string | null;
 }
 
@@ -41,11 +56,9 @@ export interface CodeNode extends BaseNode {
 
 export interface DrawNode extends BaseNode {
   type: 'draw';
-  data: Json;
+  data: any; // Ensure this is correctly typed as needed
   title: string | null;
 }
-
-export type Node = NoteNode | TaskNode | CustomNode | CodeNode | DrawNode;
 
 export interface Edge {
   id: string;
@@ -72,7 +85,8 @@ export type CanvasEditorAction =
       payload: { id: string; width: number; height: number };
     }
   | { type: 'UNDO' }
-  | { type: 'REDO' };
+  | { type: 'REDO' }
+  | { type: 'TOGGLE_TASK_COMPLETION'; payload: string }; // Added TOGGLE_TASK_COMPLETION action type
 
 const initialState: CanvasEditorState = {
   nodes: [],
@@ -106,6 +120,16 @@ export const canvasEditorReducer = produce(
           draft.nodes[nodeIndex].color = action.payload.color;
         }
         break;
+      case 'TOGGLE_TASK_COMPLETION':
+        const toggleIndex = draft.nodes.findIndex(
+          (node) => node.id === action.payload
+        );
+        if (toggleIndex !== -1 && draft.nodes[toggleIndex].type === 'task') {
+          const taskNode = draft.nodes[toggleIndex] as TaskNode; // Cast to TaskNode to access the 'completed' property
+          taskNode.completed = !taskNode.completed;
+        }
+        break;
+
       // Add more cases as necessary for other actions like resizing, updating position, etc.
       default:
         break;

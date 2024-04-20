@@ -1,3 +1,4 @@
+// ui/nodes/NodeRenderer.tsx
 import React from 'react';
 import { Dispatch } from 'react';
 import NoteNode from './NoteNode';
@@ -5,7 +6,10 @@ import TaskNode from './TaskNode';
 import CustomNode from './CustomNode';
 import CodeNode from './CodeNode';
 import DrawNode from './DrawNode';
-import { Node, CanvasEditorAction } from '../canvasEditor/canvasEditorReducer';
+import {
+  Node,
+  CanvasEditorAction
+} from '@/ui/canvasEditor/canvasEditorReducer';
 
 interface NodeRendererProps {
   node: Node;
@@ -36,17 +40,18 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({ node, dispatch }) => {
           node={node}
           onDelete={() => handleDeleteNode(node.id)}
           onChangeColor={(color) => handleChangeNodeColor(node.id, color)}
-          onToggleComplete={() => {
-            /* Implement toggle completion logic here */
-          }}
+          onToggleComplete={() =>
+            dispatch({ type: 'TOGGLE_TASK_COMPLETION', payload: node.id })
+          }
           onResize={(width, height) => handleResizeNode(node.id, width, height)}
-          task={null}
-          completed={null}
-          color={null}
-          width={null}
-          height={null}
+          task={node.task}
+          completed={node.completed}
+          color={node.color}
+          width={node.width}
+          height={node.height}
         />
       );
+
     case 'custom':
       return (
         <CustomNode
