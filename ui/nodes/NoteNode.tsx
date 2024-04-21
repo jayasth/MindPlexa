@@ -2,18 +2,23 @@ import React from 'react';
 import { NodeProps } from 'reactflow';
 import styles from './NoteNode.module.css';
 import { FaTrash, FaPalette, FaExpand } from 'react-icons/fa';
-import { Tables } from 'types_db';
+
+interface NoteNodeData {
+  content?: string;
+  color?: string;
+  width?: number;
+  height?: number;
+}
 
 interface NoteNodeProps extends NodeProps {
-  // Extend NodeProps
-  node: Tables<'note_nodes'>;
+  data: NoteNodeData;
   onDelete: () => void;
   onChangeColor: (color: string) => void;
   onResize: (width: number, height: number) => void;
 }
 
 const NoteNode: React.FC<NoteNodeProps> = ({
-  node,
+  data,
   onDelete,
   onChangeColor,
   onResize
@@ -22,9 +27,9 @@ const NoteNode: React.FC<NoteNodeProps> = ({
     <div
       className={styles.noteNode}
       style={{
-        backgroundColor: node.color || undefined,
-        width: node.width || undefined,
-        height: node.height || undefined
+        backgroundColor: data?.color || 'transparent', // Use optional chaining to safely access color
+        width: data?.width || 'auto', // Use optional chaining to safely access width
+        height: data?.height || 'auto' // Use optional chaining to safely access height
       }}
     >
       <div className={styles.noteHeader}>
@@ -33,26 +38,26 @@ const NoteNode: React.FC<NoteNodeProps> = ({
           className={styles.deleteButton}
           title="Delete Node"
         >
-          <FaTrash size="10" />
+          <FaTrash size={10} />
         </button>
         <button
-          onClick={() => node.color && onChangeColor(node.color)}
+          onClick={() => onChangeColor(data?.color || '#ffffff')} // Use optional chaining here as well
           className={styles.colorButton}
           title="Change Color"
         >
-          <FaPalette size="10" />
+          <FaPalette size={10} />
         </button>
         <button
-          onClick={() => onResize(node.width ?? 0, node.height ?? 0)}
+          onClick={() => onResize(data?.width ?? 100, data?.height ?? 50)} // Use optional chaining here too
           className={styles.resizeButton}
           title="Resize Node"
         >
-          <FaExpand size="10" />
+          <FaExpand size={10} />
         </button>
       </div>
       <textarea
         className={styles.noteContent}
-        value={node.content || ''}
+        value={data?.content || ''} // Use optional chaining to safely access content
         readOnly
       />
     </div>

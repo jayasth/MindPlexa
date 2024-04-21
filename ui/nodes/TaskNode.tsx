@@ -1,76 +1,73 @@
-// ui/nodes/TaskNode.tsx
 import React from 'react';
-import { NodeProps } from 'reactflow'; // Imported NodeProps from reactflow
+import { NodeProps } from 'reactflow';
 import styles from './TaskNode.module.css';
 import { FaTrash, FaPalette, FaExpand } from 'react-icons/fa';
-import { Tables } from 'types_db';
+
+interface TaskNodeData {
+  task?: string;
+  completed?: boolean;
+  color?: string;
+  width?: number;
+  height?: number;
+}
 
 interface TaskNodeProps extends NodeProps {
-  // Extended NodeProps
-  node: Tables<'task_nodes'>;
-  task: string | null; // Adjusted for possible null
-  completed: boolean | null; // Adjusted for possible null
-  onToggleComplete: () => void;
+  data: TaskNodeData;
   onDelete: () => void;
   onChangeColor: (color: string) => void;
   onResize: (width: number, height: number) => void;
-  color: string | null; // Adjusted for possible null
-  width: number | null; // Adjusted for possible null
-  height: number | null; // Adjusted for possible null
+  onToggleComplete: () => void;
 }
 
 const TaskNode: React.FC<TaskNodeProps> = ({
-  task,
-  completed,
-  onToggleComplete,
+  data,
   onDelete,
   onChangeColor,
   onResize,
-  color,
-  width,
-  height
+  onToggleComplete
 }) => {
-  // Providing default values for nullable props
-  const safeColor = color || 'defaultColor'; // Replace 'defaultColor' with an actual default color if needed
-  const safeWidth = width || 100; // Default width if null
-  const safeHeight = height || 100; // Default height if null
-  const safeTask = task || ''; // Default task text if null
-  const isCompleted = !!completed; // Converts null to false
-
   return (
-    <div className={styles.taskNode}>
+    <div
+      className={styles.taskNode}
+      style={{
+        backgroundColor: data.color || 'transparent',
+        width: data.width || 'auto',
+        height: data.height || 'auto'
+      }}
+    >
       <div className={styles.taskHeader}>
         <button
           onClick={onDelete}
           className={styles.deleteButton}
           title="Delete Task"
         >
-          <FaTrash size="10" />
+          <FaTrash size={10} />
         </button>
         <button
-          onClick={() => onChangeColor(safeColor)} // Using safeColor
+          onClick={() => onChangeColor(data.color || '#ffffff')}
           className={styles.colorButton}
           title="Change Color"
         >
-          <FaPalette size="10" />
+          <FaPalette size={10} />
         </button>
         <button
-          onClick={() => onResize(safeWidth, safeHeight)} // Using safeWidth and safeHeight
+          onClick={() => onResize(data.width ?? 100, data.height ?? 50)}
           className={styles.resizeButton}
           title="Resize Task"
         >
-          <FaExpand size="10" />
+          <FaExpand size={10} />
         </button>
       </div>
       <label className={styles.taskLabel}>
         <input
           type="checkbox"
-          checked={isCompleted} // Using isCompleted
+          checked={data.completed || false}
           onChange={onToggleComplete}
           className={styles.taskCheckbox}
         />
-        <span className={styles.taskText}>{safeTask}</span>{' '}
-        {/* Using safeTask */}
+        <span className={styles.taskText}>
+          {data.task || 'No task description'}
+        </span>
       </label>
     </div>
   );

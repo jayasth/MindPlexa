@@ -1,130 +1,88 @@
-import { Dispatch } from 'react';
-import {
-  CanvasEditorAction,
-  Node,
+import { Dispatch, SetStateAction } from 'react';
+import type { Json, Tables } from '@/types_db';
+import type {
   NoteNode,
   TaskNode,
   CustomNode,
   CodeNode,
-  DrawNode,
-  CanvasEditorState
-} from '../canvasEditorReducer';
-import { useReactFlow } from 'reactflow';
+  DrawNode
+} from '@/ui/canvasEditor/canvasEditorReducer';
+
+type BaseNode = Tables<'base_nodes'>;
 
 export const handleAddNode = (
   nodeType: 'note' | 'task' | 'custom' | 'code' | 'draw',
-  dispatch: Dispatch<CanvasEditorAction>,
-  reactFlowWrapper: React.RefObject<HTMLDivElement>,
-  reactFlowInstance: any // Add this parameter to access React Flow instance methods
+  setNodes: Dispatch<SetStateAction<BaseNode[]>>,
+  reactFlowWrapper: React.RefObject<HTMLDivElement>
 ) => {
-  if (!reactFlowWrapper.current) {
-    console.error('React Flow wrapper is not available.');
-    return;
-  }
+  const reactFlowBounds = reactFlowWrapper.current?.getBoundingClientRect();
+  const position: Json = reactFlowBounds
+    ? {
+        x: reactFlowBounds.width / 2 - 100,
+        y: reactFlowBounds.height / 2 - 50
+      }
+    : { x: 0, y: 0 };
 
-  const canvasRect = reactFlowWrapper.current.getBoundingClientRect();
-  if (!canvasRect) {
-    console.error('Unable to get canvas rectangle.');
-    return;
-  }
-
-  const centerViewport = {
-    x: canvasRect.width / 2,
-    y: canvasRect.height / 2
+  const baseProperties = {
+    id: `${nodeType}-${Date.now()}`,
+    canvas_id: null,
+    color: 'lightblue', // Default color
+    created_at: null,
+    updated_at: null,
+    height: 100,
+    width: 200,
+    position: position,
+    type: nodeType
   };
-  const centerCanvas = reactFlowInstance.project(centerViewport); // Convert viewport position to canvas position
 
-  let newNode: Node;
+  let specificNode: NoteNode | TaskNode | CustomNode | CodeNode | DrawNode;
 
   switch (nodeType) {
     case 'note':
-      newNode = {
-        id: `node-${Date.now()}`,
-        type: 'note',
-        position: centerCanvas, // Use the converted position
-        canvas_id: null,
-        color: '#ffffff',
-        created_at: null,
-        updated_at: null,
-        width: 200,
-        height: 300,
+      specificNode = {
+        ...baseProperties,
         content: '',
-        title: `New Note Node`
+        title: 'New Note'
       } as NoteNode;
       break;
     case 'task':
-      newNode = {
-        id: `node-${Date.now()}`,
-        type: 'task',
-        position: centerCanvas,
-        canvas_id: null,
-        color: '#ffffff',
-        created_at: null,
-        updated_at: null,
-        width: 200,
-        height: 300,
-        task: '',
+      specificNode = {
+        ...baseProperties,
         completed: false,
-        title: `New Task Node`
+        task: 'New Task',
+        title: 'New Task'
       } as TaskNode;
       break;
     case 'custom':
-      newNode = {
-        id: `node-${Date.now()}`,
-        type: 'custom',
-        position: centerCanvas,
-        canvas_id: null,
-        color: '#ffffff',
-        created_at: null,
-        updated_at: null,
-        width: 200,
-        height: 300,
+      specificNode = {
+        ...baseProperties,
         data: {},
-        title: `New Custom Node`
+        title: 'New Custom Node'
       } as CustomNode;
       break;
     case 'code':
-      newNode = {
-        id: `node-${Date.now()}`,
-        type: 'code',
-        position: centerCanvas,
-        canvas_id: null,
-        color: '#ffffff',
-        created_at: null,
-        updated_at: null,
-        width: 200,
-        height: 300,
+      specificNode = {
+        ...baseProperties,
         code: '',
-        language: '',
-        title: `New Code Node`
+        language: 'plaintext',
+        title: 'New Code'
       } as CodeNode;
       break;
     case 'draw':
-      newNode = {
-        id: `node-${Date.now()}`,
-        type: 'draw',
-        position: centerCanvas,
-        canvas_id: null,
-        color: '#ffffff',
-        created_at: null,
-        updated_at: null,
-        width: 200,
-        height: 300,
+      specificNode = {
+        ...baseProperties,
         data: {},
-        title: `New Draw Node`
+        title: 'New Drawing'
       } as DrawNode;
       break;
     default:
-      throw new Error('Unsupported node type');
+      throw new Error('Invalid node type');
   }
 
-  dispatch({ type: 'ADD_NODE', payload: newNode });
+  setNodes((nds) => [...nds, specificNode as BaseNode]);
 };
-
 // Function to handle downloading the canvas
-export const handleDownload = (state: CanvasEditorState) => {
-  // Implement the logic to download the canvas state
-  // You can convert the state to a JSON string and create a downloadable file
+export const handleDownload = (state: any) => {
   const jsonString = JSON.stringify(state, null, 2);
   const blob = new Blob([jsonString], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
@@ -135,9 +93,7 @@ export const handleDownload = (state: CanvasEditorState) => {
 };
 
 // Function to handle sharing the canvas
-export const handleShare = (state: CanvasEditorState) => {
-  // Implement the logic to share the canvas
-  // You can use an API or service to share the canvas state
+export const handleShare = (state: any) => {
   console.log('Sharing canvas:', state);
   // Add your sharing logic here
 };

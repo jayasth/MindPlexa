@@ -1,18 +1,24 @@
 import React from 'react';
+import { NodeProps } from 'reactflow';
 import styles from './CodeNode.module.css';
 import { FaTrash, FaPalette, FaExpand } from 'react-icons/fa';
-import { Tables } from 'types_db';
-import { NodeProps } from 'reactflow';
+
+interface CodeNodeData {
+  code?: string;
+  color?: string;
+  width?: number;
+  height?: number;
+}
 
 interface CodeNodeProps extends NodeProps {
-  node: Tables<'code_nodes'>;
+  data: CodeNodeData;
   onDelete: () => void;
   onChangeColor: (color: string) => void;
   onResize: (width: number, height: number) => void;
 }
 
 const CodeNode: React.FC<CodeNodeProps> = ({
-  node,
+  data,
   onDelete,
   onChangeColor,
   onResize
@@ -21,9 +27,9 @@ const CodeNode: React.FC<CodeNodeProps> = ({
     <div
       className={styles.codeNode}
       style={{
-        backgroundColor: node.color || undefined,
-        width: node.width || undefined,
-        height: node.height || undefined
+        backgroundColor: data.color || 'transparent',
+        width: data.width || 'auto',
+        height: data.height || 'auto'
       }}
     >
       <div className={styles.codeHeader}>
@@ -32,26 +38,26 @@ const CodeNode: React.FC<CodeNodeProps> = ({
           className={styles.deleteButton}
           title="Delete Node"
         >
-          <FaTrash size="10" />
+          <FaTrash size={10} />
         </button>
         <button
-          onClick={() => node.color && onChangeColor(node.color)}
+          onClick={() => onChangeColor(data.color || '#ffffff')}
           className={styles.colorButton}
           title="Change Color"
         >
-          <FaPalette size="10" />
+          <FaPalette size={10} />
         </button>
         <button
-          onClick={() => onResize(node.width ?? 0, node.height ?? 0)}
+          onClick={() => onResize(data.width ?? 100, data.height ?? 50)}
           className={styles.resizeButton}
           title="Resize Node"
         >
-          <FaExpand size="10" />
+          <FaExpand size={10} />
         </button>
       </div>
       <textarea
         className={styles.codeContent}
-        value={node.code || ''}
+        value={data.code || ''}
         readOnly
       />
     </div>

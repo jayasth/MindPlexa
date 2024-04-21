@@ -1,30 +1,26 @@
-//ui/canvasEditor/diagram.tsx
-import React, { useEffect, useCallback, useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import ReactFlow, {
+  useReactFlow,
   Background,
   Controls,
   addEdge,
   Connection,
   useNodesState,
-  useEdgesState
+  useEdgesState,
+  Node
 } from 'reactflow';
-import { nodeTypes, edgeTypes } from './nodeTypes'; // Import nodeTypes and edgeTypes
+import 'reactflow/dist/style.css';
 import { parseMermaidCode } from '@/utils/canvas/mermaid-utils';
-import { Node } from '@/ui/canvasEditor/canvasEditorReducer'; // Correct import
+import { nodeTypes, edgeTypes } from './nodeTypes'; // Ensure these are defined to handle different node and edge types
 
 interface DiagramProps {
   mermaidCode?: string;
-  isComplete?: boolean;
-  children?: React.ReactNode;
 }
 
-const Diagram: React.FC<DiagramProps> = ({
-  mermaidCode = '',
-  isComplete = false,
-  children
-}) => {
-  const [nodes, setNodes, onNodesChange] = useNodesState<Node[]>([]);
+const Diagram: React.FC<DiagramProps> = ({ mermaidCode = '' }) => {
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node<any>>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const { setViewport } = useReactFlow();
 
   const memoizedNodeTypes = useMemo(() => nodeTypes, []);
   const memoizedEdgeTypes = useMemo(() => edgeTypes, []);
@@ -32,43 +28,43 @@ const Diagram: React.FC<DiagramProps> = ({
   useEffect(() => {
     async function parse() {
       const { nodes, edges } = await parseMermaidCode(mermaidCode);
-      const adjustedNodes = nodes.map((node) => ({
-        ...node,
-        position: {
-          x: node.position.x || window.innerWidth / 2 - 150,
-          y: node.position.y || window.innerHeight / 2 - 75
-        }
-      }));
-      setNodes(adjustedNodes);
+      setNodes(
+        nodes.map((node) => ({
+          ...node,
+          data: {
+            ...node,
+            label: node.type // Assuming you want to display the type as label
+          },
+          position: {
+            x: node.position.x || window.innerWidth / 2 - 150,
+            y: node.position.y || window.innerHeight / 2 - 75
+          }
+        }))
+      );
       setEdges(edges);
     }
-    if (isComplete && mermaidCode) {
+    if (mermaidCode) {
       parse();
     }
-  }, [mermaidCode, isComplete]);
+  }, [mermaidCode, setNodes, setEdges]);
 
-  const onConnect = useCallback(
-    (params: Connection) => setEdges((eds) => addEdge(params, eds)),
-    []
-  );
+  const onConnect = (params: Connection) =>
+    setEdges((eds) => addEdge(params, eds));
 
   return (
-    <div style={{ width: '100%', height: '100%' }}>
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
-        nodeTypes={memoizedNodeTypes}
-        edgeTypes={memoizedEdgeTypes} // Use memoized edgeTypes here
-        fitView
-      >
-        <Controls />
-        <Background color="#aaa" gap={16} />
-      </ReactFlow>
-      {children}
-    </div>
+    <ReactFlow
+      nodes={nodes}
+      edges={edges}
+      onNodesChange={onNodesChange}
+      onEdgesChange={onEdgesChange}
+      onConnect={onConnect}
+      nodeTypes={memoizedNodeTypes}
+      edgeTypes={memoizedEdgeTypes}
+      fitView
+    >
+      <Controls />
+      <Background color="#aaa" gap={16} />
+    </ReactFlow>
   );
 };
 

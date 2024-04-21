@@ -17,6 +17,7 @@ export type Database = {
           height: number | null
           id: string
           position: Json | null
+          type: string | null
           updated_at: string | null
           width: number | null
         }
@@ -27,6 +28,7 @@ export type Database = {
           height?: number | null
           id?: string
           position?: Json | null
+          type?: string | null
           updated_at?: string | null
           width?: number | null
         }
@@ -37,6 +39,7 @@ export type Database = {
           height?: number | null
           id?: string
           position?: Json | null
+          type?: string | null
           updated_at?: string | null
           width?: number | null
         }
@@ -102,107 +105,78 @@ export type Database = {
       }
       code_nodes: {
         Row: {
-          canvas_id: string | null
+          base_node_id: string | null
           code: string | null
-          color: string | null
-          created_at: string | null
-          height: number | null
           id: string
           language: string | null
-          position: Json | null
           title: string | null
-          updated_at: string | null
-          width: number | null
         }
         Insert: {
-          canvas_id?: string | null
+          base_node_id?: string | null
           code?: string | null
-          color?: string | null
-          created_at?: string | null
-          height?: number | null
           id?: string
           language?: string | null
-          position?: Json | null
           title?: string | null
-          updated_at?: string | null
-          width?: number | null
         }
         Update: {
-          canvas_id?: string | null
+          base_node_id?: string | null
           code?: string | null
-          color?: string | null
-          created_at?: string | null
-          height?: number | null
           id?: string
           language?: string | null
-          position?: Json | null
           title?: string | null
-          updated_at?: string | null
-          width?: number | null
         }
         Relationships: [
           {
-            foreignKeyName: "code_nodes_canvas_id_fkey"
-            columns: ["canvas_id"]
+            foreignKeyName: "code_nodes_base_node_id_fkey"
+            columns: ["base_node_id"]
             isOneToOne: false
-            referencedRelation: "canvases"
+            referencedRelation: "base_nodes"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "fk_canvas_id"
-            columns: ["canvas_id"]
+            foreignKeyName: "code_nodes_base_node_id_fkey1"
+            columns: ["base_node_id"]
             isOneToOne: false
-            referencedRelation: "canvases"
+            referencedRelation: "base_nodes"
             referencedColumns: ["id"]
           },
         ]
       }
       custom_nodes: {
         Row: {
-          canvas_id: string | null
-          color: string | null
-          created_at: string | null
+          base_node_id: string | null
           data: Json | null
-          height: number | null
           id: string
-          position: Json | null
           title: string | null
           type: string | null
-          updated_at: string | null
-          width: number | null
         }
         Insert: {
-          canvas_id?: string | null
-          color?: string | null
-          created_at?: string | null
+          base_node_id?: string | null
           data?: Json | null
-          height?: number | null
           id?: string
-          position?: Json | null
           title?: string | null
           type?: string | null
-          updated_at?: string | null
-          width?: number | null
         }
         Update: {
-          canvas_id?: string | null
-          color?: string | null
-          created_at?: string | null
+          base_node_id?: string | null
           data?: Json | null
-          height?: number | null
           id?: string
-          position?: Json | null
           title?: string | null
           type?: string | null
-          updated_at?: string | null
-          width?: number | null
         }
         Relationships: [
           {
-            foreignKeyName: "custom_nodes_canvas_id_fkey"
-            columns: ["canvas_id"]
+            foreignKeyName: "custom_nodes_base_node_id_fkey"
+            columns: ["base_node_id"]
             isOneToOne: false
-            referencedRelation: "canvases"
+            referencedRelation: "base_nodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "custom_nodes_base_node_id_fkey1"
+            columns: ["base_node_id"]
+            isOneToOne: false
+            referencedRelation: "base_nodes"
             referencedColumns: ["id"]
           },
         ]
@@ -232,47 +206,36 @@ export type Database = {
       }
       draw_nodes: {
         Row: {
-          canvas_id: string | null
-          color: string | null
-          created_at: string | null
+          base_node_id: string | null
           data: Json | null
-          height: number | null
           id: string
-          position: Json | null
           title: string | null
-          updated_at: string | null
-          width: number | null
         }
         Insert: {
-          canvas_id?: string | null
-          color?: string | null
-          created_at?: string | null
+          base_node_id?: string | null
           data?: Json | null
-          height?: number | null
           id?: string
-          position?: Json | null
           title?: string | null
-          updated_at?: string | null
-          width?: number | null
         }
         Update: {
-          canvas_id?: string | null
-          color?: string | null
-          created_at?: string | null
+          base_node_id?: string | null
           data?: Json | null
-          height?: number | null
           id?: string
-          position?: Json | null
           title?: string | null
-          updated_at?: string | null
-          width?: number | null
         }
         Relationships: [
           {
-            foreignKeyName: "draw_nodes_canvas_id_fkey"
-            columns: ["canvas_id"]
+            foreignKeyName: "draw_nodes_base_node_id_fkey"
+            columns: ["base_node_id"]
             isOneToOne: false
-            referencedRelation: "canvases"
+            referencedRelation: "base_nodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "draw_nodes_base_node_id_fkey1"
+            columns: ["base_node_id"]
+            isOneToOne: false
+            referencedRelation: "base_nodes"
             referencedColumns: ["id"]
           },
         ]
@@ -309,47 +272,36 @@ export type Database = {
       }
       note_nodes: {
         Row: {
-          canvas_id: string | null
-          color: string | null
+          base_node_id: string | null
           content: string | null
-          created_at: string | null
-          height: number | null
           id: string
-          position: Json | null
           title: string | null
-          updated_at: string | null
-          width: number | null
         }
         Insert: {
-          canvas_id?: string | null
-          color?: string | null
+          base_node_id?: string | null
           content?: string | null
-          created_at?: string | null
-          height?: number | null
           id?: string
-          position?: Json | null
           title?: string | null
-          updated_at?: string | null
-          width?: number | null
         }
         Update: {
-          canvas_id?: string | null
-          color?: string | null
+          base_node_id?: string | null
           content?: string | null
-          created_at?: string | null
-          height?: number | null
           id?: string
-          position?: Json | null
           title?: string | null
-          updated_at?: string | null
-          width?: number | null
         }
         Relationships: [
           {
-            foreignKeyName: "note_nodes_canvas_id_fkey"
-            columns: ["canvas_id"]
+            foreignKeyName: "note_nodes_base_node_id_fkey"
+            columns: ["base_node_id"]
             isOneToOne: false
-            referencedRelation: "canvases"
+            referencedRelation: "base_nodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "note_nodes_base_node_id_fkey1"
+            columns: ["base_node_id"]
+            isOneToOne: false
+            referencedRelation: "base_nodes"
             referencedColumns: ["id"]
           },
         ]
@@ -585,50 +537,39 @@ export type Database = {
       }
       task_nodes: {
         Row: {
-          canvas_id: string | null
-          color: string | null
+          base_node_id: string | null
           completed: boolean | null
-          created_at: string | null
-          height: number | null
           id: string
-          position: Json | null
           task: string | null
           title: string | null
-          updated_at: string | null
-          width: number | null
         }
         Insert: {
-          canvas_id?: string | null
-          color?: string | null
+          base_node_id?: string | null
           completed?: boolean | null
-          created_at?: string | null
-          height?: number | null
           id?: string
-          position?: Json | null
           task?: string | null
           title?: string | null
-          updated_at?: string | null
-          width?: number | null
         }
         Update: {
-          canvas_id?: string | null
-          color?: string | null
+          base_node_id?: string | null
           completed?: boolean | null
-          created_at?: string | null
-          height?: number | null
           id?: string
-          position?: Json | null
           task?: string | null
           title?: string | null
-          updated_at?: string | null
-          width?: number | null
         }
         Relationships: [
           {
-            foreignKeyName: "task_nodes_canvas_id_fkey"
-            columns: ["canvas_id"]
+            foreignKeyName: "task_nodes_base_node_id_fkey"
+            columns: ["base_node_id"]
             isOneToOne: false
-            referencedRelation: "canvases"
+            referencedRelation: "base_nodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_nodes_base_node_id_fkey1"
+            columns: ["base_node_id"]
+            isOneToOne: false
+            referencedRelation: "base_nodes"
             referencedColumns: ["id"]
           },
         ]
@@ -724,7 +665,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      duplicate_canvas: {
+        Args: {
+          original_canvas_id: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       price_interval: "day" | "week" | "month" | "year"

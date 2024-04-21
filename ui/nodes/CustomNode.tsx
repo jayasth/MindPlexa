@@ -1,68 +1,74 @@
-// ui/nodes/CustomNode.tsx
 import React from 'react';
-import { NodeProps } from 'reactflow'; // Imported NodeProps from reactflow
+import { NodeProps } from 'reactflow';
 import styles from './CustomNode.module.css';
 import { FaTrash, FaPalette, FaExpand } from 'react-icons/fa';
-import { Tables } from 'types_db';
+
+interface CustomNodeData {
+  title?: string;
+  color?: string;
+  width?: number;
+  height?: number;
+  data?: any; // Assuming 'data' is a dynamic property
+}
 
 interface CustomNodeProps extends NodeProps {
-  // Extended NodeProps
-  node: Tables<'custom_nodes'>;
+  data: CustomNodeData;
   onDelete: () => void;
   onChangeColor: (color: string) => void;
   onResize: (width: number, height: number) => void;
 }
 
 const CustomNode: React.FC<CustomNodeProps> = ({
-  node,
+  data,
   onDelete,
   onChangeColor,
   onResize
 }) => {
-  const renderValue = (value: unknown) => {
-    if (typeof value === 'string' || typeof value === 'number') {
-      return <span className={styles.customNodeFieldValue}>{value}</span>;
-    }
-    return null;
-  };
-
   return (
-    <div className={styles.customNode}>
+    <div
+      className={styles.customNode}
+      style={{
+        backgroundColor: data.color || 'transparent',
+        width: data.width || 'auto',
+        height: data.height || 'auto'
+      }}
+    >
       <div className={styles.customNodeHeader}>
-        <span className={styles.customNodeTitle}>{node.title}</span>
+        <span className={styles.customNodeTitle}>
+          {data.title || 'Custom Node'}
+        </span>
         <button
           onClick={onDelete}
           className={styles.deleteButton}
           title="Delete Node"
         >
-          <FaTrash size="10" />
+          <FaTrash size={10} />
         </button>
         <button
-          onClick={() => node.color && onChangeColor(node.color)}
+          onClick={() => onChangeColor(data.color || '#ffffff')}
           className={styles.colorButton}
           title="Change Color"
         >
-          <FaPalette size="10" />
+          <FaPalette size={10} />
         </button>
         <button
-          onClick={() =>
-            node.width && node.height && onResize(node.width, node.height)
-          }
+          onClick={() => onResize(data.width ?? 100, data.height ?? 50)}
           className={styles.resizeButton}
           title="Resize Node"
         >
-          <FaExpand size="10" />
+          <FaExpand size={10} />
         </button>
       </div>
       <div className={styles.customNodeContent}>
-        {node.data &&
-          Object.entries(node.data).map(([key, value]) => (
+        {data.data &&
+          Object.entries(data.data).map(([key, value]) => (
             <div key={key} className={styles.customNodeField}>
               <span className={styles.customNodeFieldLabel}>{key}: </span>
-              {renderValue(value)}
+              {typeof value === 'string' || typeof value === 'number'
+                ? value
+                : JSON.stringify(value)}
             </div>
           ))}
-        ))
       </div>
     </div>
   );

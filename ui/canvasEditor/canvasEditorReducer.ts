@@ -1,73 +1,45 @@
-//ui/canvasEditor/canvasEditorReducer.ts
+import type { Json } from '@/types_db';
+import type { Tables } from '@/types_db';
 
-import { produce } from 'immer';
-import { NodeProps } from 'reactflow'; // Import NodeProps from React Flow
+// Define Node type using the Tables type from types_db.ts and export it
+// This will ensure Node type aligns with the base_nodes table structure.
+export type Node = Tables<'base_nodes'>;
 
-type Json = any;
-type Position = {
-  x: number;
-  y: number;
-};
-
-export type Node = (NoteNode | TaskNode | CustomNode | CodeNode | DrawNode) & {
-  title: string | null;
-  canvas_id: string | null;
-  color: string | null;
-  created_at: string | null;
-  updated_at: string | null;
-};
-
-// Ensure each Node type definition includes all necessary properties
-export interface BaseNode extends NodeProps {
-  // Extend from NodeProps
-  id: string;
-  canvas_id: string | null;
-  color: string | null;
-  created_at: string | null;
-  updated_at: string | null;
-  position: Position;
-  width: number | null;
-  height: number | null;
-}
-
-export interface NoteNode extends BaseNode {
-  type: 'note';
-  content: string | null;
-  title: string | null;
-}
-
-export interface TaskNode extends BaseNode {
-  type: 'task';
-  task: string | null;
-  completed: boolean | null;
-  title: string | null;
-}
-
-export interface CustomNode extends BaseNode {
-  type: 'custom';
-  data: any;
-  title: string | null;
-}
-
-export interface CodeNode extends BaseNode {
-  type: 'code';
-  code: string | null;
-  language: string | null;
-  title: string | null;
-}
-
-export interface DrawNode extends BaseNode {
-  type: 'draw';
-  data: any;
-  title: string | null;
-}
-
+// Correcting the Edge export to match the expected structure
 export interface Edge {
   id: string;
   source: string;
   target: string;
 }
 
+// Define interfaces for each specific node type, inheriting from Node
+// These interfaces now correctly reflect the unique properties of each node type
+// based on the database schema provided.
+
+export interface NoteNode extends Node {
+  content: string | null;
+}
+
+export interface TaskNode extends Node {
+  task: string | null;
+  completed: boolean | null;
+}
+
+export interface CustomNode extends Node {
+  title: string;
+  data: Json | null;
+}
+
+export interface CodeNode extends Node {
+  code: string | null;
+  language: string | null;
+}
+
+export interface DrawNode extends Node {
+  data: Json | null;
+}
+
+// The state structure and action types seem correctly defined based on your requirements.
 export interface CanvasEditorState {
   nodes: Node[];
   edges: Edge[];
@@ -88,7 +60,7 @@ export type CanvasEditorAction =
     }
   | { type: 'UNDO' }
   | { type: 'REDO' }
-  | { type: 'TOGGLE_TASK_COMPLETION'; payload: string }; // Added TOGGLE_TASK_COMPLETION action type
+  | { type: 'TOGGLE_TASK_COMPLETION'; payload: string };
 
 const initialState: CanvasEditorState = {
   nodes: [],
@@ -97,45 +69,64 @@ const initialState: CanvasEditorState = {
   versions: []
 };
 
-export const canvasEditorReducer = produce(
-  (draft: CanvasEditorState, action: CanvasEditorAction) => {
-    switch (action.type) {
-      case 'ADD_NODE':
-        draft.nodes.push(action.payload);
-        break;
-      case 'DELETE_NODE':
-        draft.nodes = draft.nodes.filter((node) => node.id !== action.payload);
-        break;
-      case 'UPDATE_NODE':
-        const index = draft.nodes.findIndex(
-          (node) => node.id === action.payload.id
-        );
-        if (index !== -1) {
-          draft.nodes[index] = action.payload;
-        }
-        break;
-      case 'CHANGE_NODE_COLOR':
-        const nodeIndex = draft.nodes.findIndex(
-          (node) => node.id === action.payload.id
-        );
-        if (nodeIndex !== -1) {
-          draft.nodes[nodeIndex].color = action.payload.color;
-        }
-        break;
-      case 'TOGGLE_TASK_COMPLETION':
-        const toggleIndex = draft.nodes.findIndex(
-          (node) => node.id === action.payload
-        );
-        if (toggleIndex !== -1 && draft.nodes[toggleIndex].type === 'task') {
-          const taskNode = draft.nodes[toggleIndex] as TaskNode; // Cast to TaskNode to access the 'completed' property
-          taskNode.completed = !taskNode.completed;
-        }
-        break;
-
-      // Add more cases as necessary for other actions like resizing, updating position, etc.
-      default:
-        break;
-    }
-  },
-  initialState
-);
+export const canvasEditorReducer = (
+  state: CanvasEditorState = initialState,
+  action: CanvasEditorAction
+): CanvasEditorState => {
+  switch (action.type) {
+    case 'ADD_NODE':
+      return { ...state, nodes: [...state.nodes, action.payload] };
+    case 'DELETE_NODE':
+      return {
+        ...state,
+        nodes: state.nodes.filter((node) => node.id !== action.payload)
+      };
+    case 'UPDATE_NODE':
+      return {
+        ...state,
+        nodes: state.nodes.map((node) =>
+          node.id === action.payload.id ? { ...node, ...action.payload } : node
+        )
+      };
+    case 'ADD_EDGE':
+      return { ...state, edges: [...state.edges, action.payload] };
+    case 'DELETE_EDGE':
+      return {
+        ...state,
+        edges: state.edges.filter((edge) => edge.id !== action.payload)
+      };
+    case 'CHANGE_NODE_COLOR':
+      return {
+        ...state,
+        nodes: state.nodes.map((node) =>
+          node.id === action.payload.id
+            ? { ...node, color: action.payload.color }
+            : node
+        )
+      };
+    case 'RESIZE_NODE':
+      return {
+        ...state,
+        nodes: state.nodes.map((node) =>
+          node.id === action.payload.id
+            ? {
+                ...node,
+                width: action.payload.width,
+                height: action.payload.height
+              }
+            : node
+        )
+      };
+    case 'TOGGLE_TASK_COMPLETION':
+      return {
+        ...state,
+        nodes: state.nodes.map((node) =>
+          node.id === action.payload && 'completed' in node
+            ? { ...node, completed: !node.completed }
+            : node
+        )
+      };
+    default:
+      return state;
+  }
+};

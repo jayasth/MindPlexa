@@ -1,139 +1,103 @@
-// ui/canvasEditor/CanvasEditor.tsx
-
-'use client';
-
-import React, { useState, useReducer, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import Diagram from '@/ui/canvasEditor/diagram';
-import Button from '@/ui/Button/Button';
-import { Textarea } from '@/ui/Textarea/textarea';
-import Toolbar from '@/ui/canvasEditor/toolbar';
-import { useCompletion } from 'ai/react';
-import { ReactFlowProvider, useReactFlow, ReactFlowInstance } from 'reactflow';
-import type { Tables } from 'types_db';
-import NodeRenderer from '@/ui/nodes/NodeRenderer';
-import {
-  canvasEditorReducer,
-  Edge,
+import React, { useCallback, useRef } from 'react';
+import ReactFlow, {
+  Controls,
+  Background,
+  useNodesState,
+  useEdgesState,
+  addEdge,
+  Connection,
+  NodeTypes,
+  EdgeTypes,
   Node
+} from 'reactflow';
+import 'reactflow/dist/style.css';
+
+import Toolbar from './toolbar';
+import {
+  Edge,
+  Node as CanvasNode
 } from '@/ui/canvasEditor/canvasEditorReducer';
-import SharingModal from './SharingModal';
 import {
   handleAddNode,
   handleDownload,
   handleShare
-} from '@/ui/canvasEditor/utils/canvasEditorUtils';
-import { useCanvas } from '@/hooks/useCanvas';
+} from './utils/canvasEditorUtils';
+import Diagram from './diagram';
 
-type Canvas = Tables<'canvases'> & {
-  nodes?: Node[];
-  edges?: Edge[];
+// Import custom node components
+import NoteNode from '@/ui/nodes/NoteNode';
+import TaskNode from '@/ui/nodes/TaskNode';
+import CustomNode from '@/ui/nodes/CustomNode';
+import CodeNode from '@/ui/nodes/CodeNode';
+import DrawNode from '@/ui/nodes/DrawNode';
+
+// Define custom node types
+const nodeTypes: NodeTypes = {
+  note: NoteNode,
+  task: TaskNode,
+  custom: CustomNode,
+  code: CodeNode,
+  draw: DrawNode
 };
 
-type CanvasEditorProps = {
-  initialCanvas?: Canvas | null;
-  onCanvasUpdate?: (updatedCanvas: Canvas) => void;
-};
+const edgeTypes: EdgeTypes = {};
 
-const CanvasEditorContent = ({
-  initialCanvas,
-  onCanvasUpdate
-}: CanvasEditorProps) => {
-  const reactFlowInstance = useReactFlow(); // Now inside a child component
-
-  const router = useRouter();
-  const [isSharingModalOpen, setIsSharingModalOpen] = useState(false);
-  const [canvas, setCanvas] = useCanvas(initialCanvas);
-  const reactFlowWrapper = useRef<HTMLDivElement>(null);
-
-  const [state, dispatch] = useReducer(canvasEditorReducer, {
-    nodes: initialCanvas?.nodes || [],
-    edges: initialCanvas?.edges || [],
-    currentVersion: 0,
-    versions: []
-  });
-
-  const {
-    completion: mermaidCode,
-    input,
-    handleInputChange,
-    handleSubmit,
-    isLoading
-  } = useCompletion();
-
-  const Loading = () => (
-    <div className="relative h-full">
-      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-        Loading...
-      </div>
-    </div>
-  );
-
-  return (
-    <form onSubmit={handleSubmit} className="flex flex-col h-screen">
-      <div className="flex flex-1">
-        <div className="bg-myLightGray-800 p-4">
-          <Toolbar
-            onAddNode={(nodeType) => {
-              if (reactFlowInstance && reactFlowWrapper.current) {
-                handleAddNode(
-                  nodeType,
-                  dispatch,
-                  reactFlowWrapper,
-                  reactFlowInstance
-                );
-              }
-            }}
-            onUndo={() => dispatch({ type: 'UNDO' })}
-            onRedo={() => dispatch({ type: 'REDO' })}
-            onShare={() => setIsSharingModalOpen(true)}
-            onDownload={() => handleDownload(state)}
-          />
-        </div>
-        <div className="flex-1 flex flex-col" ref={reactFlowWrapper}>
-          <div className="p-4">
-            <Textarea
-              placeholder="Type here..."
-              value={input}
-              onChange={handleInputChange}
-              className="w-full rounded-b-none focus:outline-none"
-            />
-            <Button className="rounded-t-none" type="submit">
-              Submit
-            </Button>
-          </div>
-          <div className="flex-1 bg-myLightGray-500 p-4 overflow-auto">
-            {isLoading ? (
-              <Loading />
-            ) : (
-              <Diagram mermaidCode={mermaidCode} isComplete={!isLoading}>
-                <>
-                  {state.nodes.map((node) => (
-                    <NodeRenderer
-                      key={node.id}
-                      node={node}
-                      dispatch={dispatch}
-                    />
-                  ))}
-                </>
-              </Diagram>
-            )}
-          </div>
-        </div>
-      </div>
-      <SharingModal
-        isOpen={isSharingModalOpen}
-        onClose={() => setIsSharingModalOpen(false)}
-        onShare={() => handleShare(state)}
-      />
-    </form>
-  );
-};
+interface CanvasEditorProps {
+  initialCanvas?: {
+    nodes: CanvasNode[];
+    edges: Edge[];
+  };
+  mermaidCode?: string;
+}
 
 export default function CanvasEditor(props: CanvasEditorProps) {
+  const [nodes, setNodes, onNodesChange] = useNodesState(
+    (props.initialCanvas?.nodes || []).map((node) => ({
+      id: node.id,
+      type: node.type || 'default', // Ensure a valid type or fallback to a default type
+      position: node.position ? JSON.parse(node.position) : { x: 0, y: 0 }, // Parse position if it's stored as JSON
+      data: node // Assign the entire node object to data
+    }))
+  );
+  const [edges, setEdges, onEdgesChange] = useEdgesState(
+    props.initialCanvas?.edges || []
+  );
+  const reactFlowWrapper = useRef<HTMLDivElement>(null);
+
+  const onConnect = useCallback(
+    (params: Connection) => setEdges((eds) => addEdge(params, eds)),
+    [setEdges]
+  );
+
   return (
-    <ReactFlowProvider>
-      <CanvasEditorContent {...props} />
-    </ReactFlowProvider>
+    <div className="flex h-screen">
+      <div className="w-1/6 bg-gray-100 p-2">
+        <Toolbar
+          onAddNode={(nodeType) =>
+            handleAddNode(nodeType, setNodes, reactFlowWrapper)
+          }
+          onUndo={() => console.log('Undo')}
+          onRedo={() => console.log('Redo')}
+          onShare={() => handleShare({ nodes, edges })}
+          onDownload={() => handleDownload({ nodes, edges })}
+        />
+      </div>
+      <div className="w-5/6" ref={reactFlowWrapper}>
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
+          fitView
+        >
+          <Background color="#aaa" gap={16} />
+          <Controls />
+          <Diagram mermaidCode={props.mermaidCode} />
+        </ReactFlow>
+      </div>
+    </div>
   );
 }
