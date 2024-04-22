@@ -7,35 +7,38 @@ import type {
   CodeNode,
   DrawNode
 } from '@/ui/canvasEditor/canvasEditorReducer';
+import { Node, XYPosition } from 'reactflow';
 
 type BaseNode = Tables<'base_nodes'>;
 
 export const handleAddNode = (
   nodeType: 'note' | 'task' | 'custom' | 'code' | 'draw',
-  setNodes: Dispatch<SetStateAction<BaseNode[]>>,
+  setNodes: Dispatch<SetStateAction<Node<any>[]>>,
   reactFlowWrapper: React.RefObject<HTMLDivElement>
 ) => {
   const reactFlowBounds = reactFlowWrapper.current?.getBoundingClientRect();
-  const position: Json = reactFlowBounds
+  const position: XYPosition = reactFlowBounds
     ? {
         x: reactFlowBounds.width / 2 - 100,
         y: reactFlowBounds.height / 2 - 50
       }
     : { x: 0, y: 0 };
 
-  const baseProperties = {
+  const baseProperties: Partial<BaseNode> = {
     id: `${nodeType}-${Date.now()}`,
     canvas_id: null,
-    color: 'lightblue', // Default color
+    color: 'lightblue',
     created_at: null,
     updated_at: null,
-    height: 100,
+    height: 300,
     width: 200,
-    position: position,
-    type: nodeType
+    type: nodeType,
+    position: position as unknown as Json
   };
 
-  let specificNode: NoteNode | TaskNode | CustomNode | CodeNode | DrawNode;
+  let specificNode: Partial<
+    NoteNode | TaskNode | CustomNode | CodeNode | DrawNode
+  >;
 
   switch (nodeType) {
     case 'note':
@@ -43,7 +46,7 @@ export const handleAddNode = (
         ...baseProperties,
         content: '',
         title: 'New Note'
-      } as NoteNode;
+      } as Partial<NoteNode>;
       break;
     case 'task':
       specificNode = {
@@ -51,14 +54,14 @@ export const handleAddNode = (
         completed: false,
         task: 'New Task',
         title: 'New Task'
-      } as TaskNode;
+      } as Partial<TaskNode>;
       break;
     case 'custom':
       specificNode = {
         ...baseProperties,
         data: {},
         title: 'New Custom Node'
-      } as CustomNode;
+      } as Partial<CustomNode>;
       break;
     case 'code':
       specificNode = {
@@ -66,21 +69,27 @@ export const handleAddNode = (
         code: '',
         language: 'plaintext',
         title: 'New Code'
-      } as CodeNode;
+      } as Partial<CodeNode>;
       break;
     case 'draw':
       specificNode = {
         ...baseProperties,
         data: {},
         title: 'New Drawing'
-      } as DrawNode;
+      } as Partial<DrawNode>;
       break;
     default:
       throw new Error('Invalid node type');
   }
 
-  setNodes((nds) => [...nds, specificNode as BaseNode]);
+  const newNode: Node<any> = {
+    ...specificNode,
+    data: specificNode
+  };
+
+  setNodes((nds) => nds.concat(newNode));
 };
+
 // Function to handle downloading the canvas
 export const handleDownload = (state: any) => {
   const jsonString = JSON.stringify(state, null, 2);

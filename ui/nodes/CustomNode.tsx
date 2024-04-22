@@ -1,14 +1,23 @@
 import React from 'react';
-import { NodeProps } from 'reactflow';
+import { NodeProps, Handle, Position } from 'reactflow';
 import styles from './CustomNode.module.css';
 import { FaTrash, FaPalette, FaExpand } from 'react-icons/fa';
 
-interface CustomNodeData {
-  title?: string;
-  color?: string;
-  width?: number;
-  height?: number;
-  data?: any; // Assuming 'data' is a dynamic property
+interface BaseNodeData {
+  id: string;
+  canvas_id?: string | null;
+  color?: string | null;
+  created_at?: string | null;
+  height?: number | null;
+  position?: any; // Assuming position is a complex type, replace 'any' with the correct type if available
+  type?: string | null;
+  updated_at?: string | null;
+  width?: number | null;
+}
+
+interface CustomNodeData extends BaseNodeData {
+  data?: any; // Assuming 'data' is a dynamic property, replace 'any' with the correct type if available
+  title?: string | null;
 }
 
 interface CustomNodeProps extends NodeProps {
@@ -16,6 +25,14 @@ interface CustomNodeProps extends NodeProps {
   onDelete: () => void;
   onChangeColor: (color: string) => void;
   onResize: (width: number, height: number) => void;
+  id: string;
+  selected: boolean;
+  type: string;
+  zIndex: number;
+  isConnectable: boolean;
+  xPos: number;
+  yPos: number;
+  dragging: boolean;
 }
 
 const CustomNode: React.FC<CustomNodeProps> = ({
@@ -25,51 +42,66 @@ const CustomNode: React.FC<CustomNodeProps> = ({
   onResize
 }) => {
   return (
-    <div
-      className={styles.customNode}
-      style={{
-        backgroundColor: data.color || 'transparent',
-        width: data.width || 'auto',
-        height: data.height || 'auto'
-      }}
-    >
-      <div className={styles.customNodeHeader}>
-        <span className={styles.customNodeTitle}>
-          {data.title || 'Custom Node'}
-        </span>
-        <button
-          onClick={onDelete}
-          className={styles.deleteButton}
-          title="Delete Node"
-        >
-          <FaTrash size={10} />
-        </button>
-        <button
-          onClick={() => onChangeColor(data.color || '#ffffff')}
-          className={styles.colorButton}
-          title="Change Color"
-        >
-          <FaPalette size={10} />
-        </button>
-        <button
-          onClick={() => onResize(data.width ?? 100, data.height ?? 50)}
-          className={styles.resizeButton}
-          title="Resize Node"
-        >
-          <FaExpand size={10} />
-        </button>
+    <div className={styles.customNode}>
+      {/* Top handle */}
+      <Handle
+        type="target"
+        position={Position.Top}
+        style={{ background: '#555' }}
+        onConnect={(params) => console.log('handle onConnect', params)}
+      />
+      <div
+        style={{
+          backgroundColor: data.color || 'transparent',
+          width: data.width ? `${data.width}px` : 'auto',
+          height: data.height ? `${data.height}px` : 'auto'
+        }}
+      >
+        <div className={styles.customNodeHeader}>
+          <span className={styles.customNodeTitle}>
+            {data.title || 'Custom Node'}
+          </span>
+          <button
+            onClick={onDelete}
+            className={styles.deleteButton}
+            title="Delete Node"
+          >
+            <FaTrash size={10} />
+          </button>
+          <button
+            onClick={() => onChangeColor(data.color || '#ffffff')}
+            className={styles.colorButton}
+            title="Change Color"
+          >
+            <FaPalette size={10} />
+          </button>
+          <button
+            onClick={() => onResize(data.width ?? 100, data.height ?? 50)}
+            className={styles.resizeButton}
+            title="Resize Node"
+          >
+            <FaExpand size={10} />
+          </button>
+        </div>
+        <div className={styles.customNodeContent}>
+          {data.data &&
+            Object.entries(data.data).map(([key, value]) => (
+              <div key={key} className={styles.customNodeField}>
+                <span className={styles.customNodeFieldLabel}>{key}: </span>
+                {typeof value === 'string' || typeof value === 'number'
+                  ? value
+                  : JSON.stringify(value)}
+              </div>
+            ))}
+        </div>
       </div>
-      <div className={styles.customNodeContent}>
-        {data.data &&
-          Object.entries(data.data).map(([key, value]) => (
-            <div key={key} className={styles.customNodeField}>
-              <span className={styles.customNodeFieldLabel}>{key}: </span>
-              {typeof value === 'string' || typeof value === 'number'
-                ? value
-                : JSON.stringify(value)}
-            </div>
-          ))}
-      </div>
+      {/* Bottom handle */}
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        id="a"
+        style={{ background: '#555' }}
+      />
     </div>
   );
 };

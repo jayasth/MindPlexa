@@ -1,20 +1,13 @@
 import type { Json } from '@/types_db';
 import type { Tables } from '@/types_db';
 
-// Define Node type using the Tables type from types_db.ts and export it
-// This will ensure Node type aligns with the base_nodes table structure.
 export type Node = Tables<'base_nodes'>;
 
-// Correcting the Edge export to match the expected structure
 export interface Edge {
   id: string;
   source: string;
   target: string;
 }
-
-// Define interfaces for each specific node type, inheriting from Node
-// These interfaces now correctly reflect the unique properties of each node type
-// based on the database schema provided.
 
 export interface NoteNode extends Node {
   content: string | null;
@@ -39,7 +32,6 @@ export interface DrawNode extends Node {
   data: Json | null;
 }
 
-// The state structure and action types seem correctly defined based on your requirements.
 export interface CanvasEditorState {
   nodes: Node[];
   edges: Edge[];

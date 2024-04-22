@@ -1,4 +1,5 @@
 import React from 'react';
+import { NodeProps } from 'reactflow';
 import { Node as BaseNode } from '@/ui/canvasEditor/canvasEditorReducer';
 import NoteNode from './NoteNode';
 import TaskNode from './TaskNode';
@@ -6,74 +7,95 @@ import CustomNode from './CustomNode';
 import CodeNode from './CodeNode';
 import DrawNode from './DrawNode';
 
-// Assuming these are the correct interfaces for each node type
-import {
-  NoteNode as NoteNodeType,
-  TaskNode as TaskNodeType,
-  CustomNode as CustomNodeType,
-  CodeNode as CodeNodeType,
-  DrawNode as DrawNodeType
-} from '@/ui/canvasEditor/canvasEditorReducer';
+const NodeRenderer: React.FC<NodeProps> = ({ data, selected, id }) => {
+  const node = data as BaseNode;
 
-interface NodeRendererProps {
-  node: BaseNode;
-  onDelete: () => void;
-  onChangeColor: (color: string) => void;
-  onResize: (width: number, height: number) => void;
-}
-
-const NodeRenderer: React.FC<NodeRendererProps> = ({
-  node,
-  onDelete,
-  onChangeColor,
-  onResize
-}) => {
   // Determine the type of node and render the appropriate component
   switch (node.type) {
     case 'note':
       return (
         <NoteNode
-          node={node as NoteNodeType}
-          onDelete={onDelete}
-          onChangeColor={onChangeColor}
-          onResize={onResize}
+          data={node}
+          onDelete={() => {}}
+          onChangeColor={() => {}}
+          onResize={() => {}}
+          id={id}
+          selected={selected}
+          type={node.type}
+          zIndex={0}
+          isConnectable={true}
+          xPos={0}
+          yPos={0}
+          dragging={false}
         />
       );
     case 'task':
       return (
         <TaskNode
-          node={node as TaskNodeType}
-          onDelete={onDelete}
-          onChangeColor={onChangeColor}
-          onResize={onResize}
+          data={node}
+          onDelete={() => {}}
+          onChangeColor={() => {}}
+          onResize={() => {}}
+          id={id}
+          selected={selected}
+          type={node.type}
+          zIndex={0}
+          isConnectable={true}
+          xPos={0}
+          yPos={0}
+          dragging={false}
           onToggleComplete={() => {}}
         />
       );
     case 'custom':
       return (
         <CustomNode
-          node={node as CustomNodeType}
-          onDelete={onDelete}
-          onChangeColor={onChangeColor}
-          onResize={onResize}
+          data={node}
+          onDelete={() => {}}
+          onChangeColor={() => {}}
+          onResize={() => {}}
+          id={id}
+          selected={selected}
+          type={node.type}
+          zIndex={0}
+          isConnectable={true}
+          xPos={0}
+          yPos={0}
+          dragging={false}
         />
       );
     case 'code':
       return (
         <CodeNode
-          node={node as CodeNodeType}
-          onDelete={onDelete}
-          onChangeColor={onChangeColor}
-          onResize={onResize}
+          data={node}
+          onDelete={() => {}}
+          onChangeColor={() => {}}
+          onResize={() => {}}
+          id={id}
+          selected={selected}
+          type={node.type}
+          zIndex={0}
+          isConnectable={true}
+          xPos={0}
+          yPos={0}
+          dragging={false}
         />
       );
     case 'draw':
       return (
         <DrawNode
-          node={node as DrawNodeType}
-          onDelete={onDelete}
-          onChangeColor={onChangeColor}
-          onResize={onResize}
+          data={node}
+          onDelete={() => {}}
+          onChangeColor={() => {}}
+          onResize={() => {}}
+          id={id}
+          selected={selected}
+          type={node.type}
+          zIndex={0}
+          isConnectable={true}
+          xPos={0}
+          yPos={0}
+          dragging={false}
         />
       );
     default:
