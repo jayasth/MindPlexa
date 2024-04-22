@@ -1,0 +1,23 @@
+.baseNode {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background-color: #fff; /* Light background for contrast */
+  border: 1px solid #ddd; /* Subtle border */
+  border-radius: 8px; /* Rounded corners for a modern look */
+  padding: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
+  width: 200px; /* Default width */
+  height: 300px; /* Default height */
+  overflow: hidden; /* Ensures content does not overflow */
+}
+
+.header,
+.footer {
+  width: 100%;
+}
+
+.content {
+  flex-grow: 1;
+  overflow: auto; /* Allows scrolling within the node */
+}

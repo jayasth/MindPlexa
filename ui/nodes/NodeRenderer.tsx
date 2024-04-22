@@ -16,11 +16,13 @@ const NodeRenderer: React.FC<NodeProps> = ({ data, selected, id }) => {
       return (
         <NoteNode
           data={node}
-          onDelete={() => {}}
-          onChangeColor={() => {}}
-          onResize={() => {}}
-          id={id}
+          onDelete={() => console.log('Delete Note')}
+          onChangeColor={() => console.log('Change Color')}
+          onResize={() => console.log('Resize Note')}
+          onTag={() => console.log('Tag Note')}
+          onAttach={() => console.log('Attach File')}
           selected={selected}
+          id={id}
           type={node.type}
           zIndex={0}
           isConnectable={true}
@@ -33,11 +35,13 @@ const NodeRenderer: React.FC<NodeProps> = ({ data, selected, id }) => {
       return (
         <TaskNode
           data={node}
-          onDelete={() => {}}
-          onChangeColor={() => {}}
-          onResize={() => {}}
-          id={id}
+          onDelete={() => console.log('Delete Task')}
+          onChangeColor={() => console.log('Change Color')}
+          onResize={() => console.log('Resize Note')}
+          onTag={() => console.log('Tag Task')}
+          onAttach={() => console.log('Attach File')}
           selected={selected}
+          id={id}
           type={node.type}
           zIndex={0}
           isConnectable={true}
@@ -51,11 +55,13 @@ const NodeRenderer: React.FC<NodeProps> = ({ data, selected, id }) => {
       return (
         <CustomNode
           data={node}
-          onDelete={() => {}}
-          onChangeColor={() => {}}
-          onResize={() => {}}
-          id={id}
+          onDelete={() => console.log('Delete Custom')}
+          onChangeColor={() => console.log('Change Color')}
+          onResize={() => console.log('Resize Note')}
+          onTag={() => console.log('Tag Custom')}
+          onAttach={() => console.log('Attach File')}
           selected={selected}
+          id={id}
           type={node.type}
           zIndex={0}
           isConnectable={true}
@@ -68,11 +74,13 @@ const NodeRenderer: React.FC<NodeProps> = ({ data, selected, id }) => {
       return (
         <CodeNode
           data={node}
-          onDelete={() => {}}
-          onChangeColor={() => {}}
-          onResize={() => {}}
-          id={id}
+          onDelete={() => console.log('Delete Code')}
+          onChangeColor={() => console.log('Change Color')}
+          onResize={() => console.log('Resize Note')}
+          onTag={() => console.log('Tag Code')}
+          onAttach={() => console.log('Attach File')}
           selected={selected}
+          id={id}
           type={node.type}
           zIndex={0}
           isConnectable={true}
@@ -85,11 +93,13 @@ const NodeRenderer: React.FC<NodeProps> = ({ data, selected, id }) => {
       return (
         <DrawNode
           data={node}
-          onDelete={() => {}}
-          onChangeColor={() => {}}
-          onResize={() => {}}
-          id={id}
+          onDelete={() => console.log('Delete Draw Node')}
+          onChangeColor={() => console.log('Change Color')}
+          onResize={() => console.log('Resize Note')}
+          onTag={() => console.log('Tag Draw')}
+          onAttach={() => console.log('Attach File')}
           selected={selected}
+          id={id}
           type={node.type}
           zIndex={0}
           isConnectable={true}

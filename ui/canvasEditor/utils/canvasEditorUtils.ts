@@ -19,19 +19,13 @@ export const handleAddNode = (
   const reactFlowBounds = reactFlowWrapper.current?.getBoundingClientRect();
   const position: XYPosition = reactFlowBounds
     ? {
-        x: reactFlowBounds.width / 2 - 100,
-        y: reactFlowBounds.height / 2 - 50
+        x: reactFlowBounds.width / 2,
+        y: reactFlowBounds.height / 2
       }
     : { x: 0, y: 0 };
 
   const baseProperties: Partial<BaseNode> = {
     id: `${nodeType}-${Date.now()}`,
-    canvas_id: null,
-    color: 'lightblue',
-    created_at: null,
-    updated_at: null,
-    height: 300,
-    width: 200,
     type: nodeType,
     position: position as unknown as Json
   };
@@ -43,6 +37,7 @@ export const handleAddNode = (
   switch (nodeType) {
     case 'note':
       specificNode = {
+        id: baseProperties.id, // Include id here
         ...baseProperties,
         content: '',
         title: 'New Note'
@@ -50,6 +45,7 @@ export const handleAddNode = (
       break;
     case 'task':
       specificNode = {
+        id: baseProperties.id, // Include id here
         ...baseProperties,
         completed: false,
         task: 'New Task',
@@ -58,6 +54,7 @@ export const handleAddNode = (
       break;
     case 'custom':
       specificNode = {
+        id: baseProperties.id, // Include id here
         ...baseProperties,
         data: {},
         title: 'New Custom Node'
@@ -65,6 +62,7 @@ export const handleAddNode = (
       break;
     case 'code':
       specificNode = {
+        id: baseProperties.id, // Include id here
         ...baseProperties,
         code: '',
         language: 'plaintext',
@@ -73,6 +71,7 @@ export const handleAddNode = (
       break;
     case 'draw':
       specificNode = {
+        id: baseProperties.id, // Include id here
         ...baseProperties,
         data: {},
         title: 'New Drawing'

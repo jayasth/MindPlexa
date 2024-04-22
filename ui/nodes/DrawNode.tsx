@@ -1,7 +1,10 @@
 import React from 'react';
 import { NodeProps, Handle, Position } from 'reactflow';
-import styles from './DrawNode.module.css';
-import { FaTrash, FaPalette, FaExpand } from 'react-icons/fa';
+
+import BaseNodeHeader from './BaseNodeHeader';
+import BaseNodeFooter from './BaseNodeFooter';
+import drawStyles from './DrawNode.module.css';
+import baseStyles from './BaseNode.module.css';
 
 interface BaseNodeData {
   id: string;
@@ -9,7 +12,7 @@ interface BaseNodeData {
   color?: string | null;
   created_at?: string | null;
   height?: number | null;
-  position?: any; // Assuming position is a complex type, replace 'any' with the correct type if available
+  position?: any;
   type?: string | null;
   updated_at?: string | null;
   width?: number | null;
@@ -24,8 +27,10 @@ interface DrawNodeData extends BaseNodeData {
 interface DrawNodeProps extends NodeProps {
   data: DrawNodeData;
   onDelete: () => void;
-  onChangeColor: (color: string) => void;
-  onResize: (width: number, height: number) => void;
+  onChangeColor: () => void;
+  onResize: () => void;
+  onTag: () => void;
+  onAttach: () => void;
   id: string;
   selected: boolean;
   type: string;
@@ -40,59 +45,44 @@ const DrawNode: React.FC<DrawNodeProps> = ({
   data,
   onDelete,
   onChangeColor,
-  onResize
+  onResize,
+  onTag,
+  onAttach,
+  selected,
+  id,
+  type,
+  zIndex,
+  isConnectable,
+  xPos,
+  yPos,
+  dragging
 }) => {
   return (
-    <div
-      className={styles.drawNode}
-      style={{
-        backgroundColor: data.color || 'transparent',
-        width: data.width ? `${data.width}px` : 'auto',
-        height: data.height ? `${data.height}px` : 'auto'
-      }}
-    >
-      {/* Top handle */}
+    <div className={baseStyles.baseNode}>
       <Handle
         type="target"
         position={Position.Top}
         style={{ background: '#555' }}
-        onConnect={(params) => console.log('handle onConnect', params)}
+        isConnectable={isConnectable}
       />
-      <div className={styles.drawHeader}>
-        <span className={styles.drawTitle}>
-          {data.title || 'Untitled Drawing'}
-        </span>
-        <button
-          onClick={onDelete}
-          className={styles.deleteButton}
-          title="Delete Node"
-        >
-          <FaTrash size={10} />
-        </button>
-        <button
-          onClick={() => onChangeColor(data.color || '#ffffff')}
-          className={styles.colorButton}
-          title="Change Color"
-        >
-          <FaPalette size={10} />
-        </button>
-        <button
-          onClick={() => onResize(data.width ?? 100, data.height ?? 50)}
-          className={styles.resizeButton}
-          title="Resize Node"
-        >
-          <FaExpand size={10} />
-        </button>
-      </div>
-      <div className={styles.drawContent}>
+      <BaseNodeHeader
+        title={data.title || 'Untitled Note'}
+        onDelete={onDelete}
+      />
+      <div className={drawStyles.drawContent}>
         {/* Drawing content would be rendered here */}
       </div>
-      {/* Bottom handle */}
+      <BaseNodeFooter
+        onChangeColor={onChangeColor}
+        onResize={onResize}
+        onTag={onTag}
+        onAttach={onAttach}
+      />
       <Handle
         type="source"
         position={Position.Bottom}
-        id="a"
         style={{ background: '#555' }}
+        isConnectable={isConnectable}
       />
     </div>
   );
