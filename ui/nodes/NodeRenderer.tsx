@@ -10,7 +10,22 @@ import DrawNode from './DrawNode';
 const NodeRenderer: React.FC<NodeProps> = ({ data, selected, id }) => {
   const node = data as BaseNode;
 
-  // Determine the type of node and render the appropriate component
+  const commonProps = {
+    onDelete: () => console.log(`Delete ${node.type}`),
+    onChangeColor: () => console.log('Change Color'),
+    onResize: () => console.log('Resize Node'),
+    onTag: () => console.log('Tag Node'),
+    onAttach: () => console.log('Attach File'),
+    selected: selected,
+    id: id,
+    type: node.type,
+    zIndex: 0,
+    isConnectable: true,
+    xPos: 0,
+    yPos: 0,
+    dragging: false
+  };
+
   switch (node.type) {
     case 'note':
       return (
@@ -18,7 +33,6 @@ const NodeRenderer: React.FC<NodeProps> = ({ data, selected, id }) => {
           data={node}
           onDelete={() => console.log('Delete Note')}
           onChangeColor={() => console.log('Change Color')}
-          onResize={() => console.log('Resize Note')}
           onTag={() => console.log('Tag Note')}
           onAttach={() => console.log('Attach File')}
           selected={selected}

@@ -9,12 +9,10 @@ interface BaseNodeHeaderProps {
 
 const BaseNodeHeader: React.FC<BaseNodeHeaderProps> = ({ title, onDelete }) => {
   return (
-    <div
-      className={`${styles.header} flex justify-between items-center text-xs bg-myGray-100 rounded-t-sm`}
-    >
-      <span>{title}</span>
+    <div className={styles.header}>
+      <span className={styles.title}>{title}</span>
       <button onClick={onDelete} className={styles.iconButton}>
-        <FaTrash />
+        <FaTrash className={styles.icon} />
       </button>
     </div>
   );

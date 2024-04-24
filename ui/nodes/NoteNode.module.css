@@ -1,24 +1,10 @@
-/* ui/nodes/NoteNode.module.css */
 .noteNode {
   background-color: #f8f8f8;
   border-radius: 4px;
   padding: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.noteHeader {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 8px;
-}
-
-.deleteButton,
-.colorButton,
-.resizeButton {
-  background: none;
-  border: none;
-  cursor: pointer;
-  margin-left: 8px;
+  resize: both;
+  overflow: auto;
 }
 
 .noteContent {
