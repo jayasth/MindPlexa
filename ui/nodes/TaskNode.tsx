@@ -1,92 +1,81 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { NodeProps, Handle, Position } from 'reactflow';
-import taskStyles from './TaskNode.module.css';
 import BaseNodeHeader from './BaseNodeHeader';
 import BaseNodeFooter from './BaseNodeFooter';
+import taskStyles from './TaskNode.module.css';
 import baseStyles from './BaseNode.module.css';
 
-interface BaseNodeData {
+interface TaskNodeData {
   id: string;
-  canvas_id?: string | null;
-  color?: string | null;
-  created_at?: string | null;
-  height?: number | null;
-  position?: any;
-  type?: string | null;
-  updated_at?: string | null;
-  width?: number | null;
-}
-
-interface TaskNodeData extends BaseNodeData {
-  completed?: boolean | null;
-  task?: string | null;
-  title?: string | null;
+  task?: string;
+  completed?: boolean;
+  title?: string;
+  width?: number;
+  height?: number;
 }
 
 interface TaskNodeProps extends NodeProps {
   data: TaskNodeData;
   onDelete: () => void;
   onChangeColor: () => void;
-  onResize: () => void;
   onTag: () => void;
   onAttach: () => void;
   onToggleComplete: () => void;
-
-  id: string;
-  selected: boolean;
-  type: string;
-  zIndex: number;
-  isConnectable: boolean;
-  xPos: number;
-  yPos: number;
-  dragging: boolean;
 }
 
 const TaskNode: React.FC<TaskNodeProps> = ({
   data,
   onDelete,
   onChangeColor,
-  onResize,
   onTag,
   onAttach,
-  onToggleComplete,
-  selected,
-  id,
-  type,
-  zIndex,
-  isConnectable,
-  xPos,
-  yPos,
-  dragging
+  onToggleComplete
 }) => {
+  const [size, setSize] = useState({
+    width: data.width || 200,
+    height: data.height || 300
+  });
+
+  useEffect(() => {
+    if (data.width && data.height) {
+      setSize({ width: data.width, height: data.height });
+    }
+  }, [data.width, data.height]);
+
   return (
-    <div className={baseStyles.baseNode}>
+    <div
+      className={`${baseStyles.baseNode} resizable`}
+      style={{
+        width: `${size.width}px`,
+        height: `${size.height}px`,
+        resize: 'both',
+        overflow: 'auto'
+      }}
+    >
       <Handle
         type="target"
         position={Position.Top}
         style={{ background: '#555' }}
-        isConnectable={isConnectable}
       />
       <BaseNodeHeader
-        title={data.title || 'Untitled Tasklist'}
+        title={data.title || 'Untitled Task'}
         onDelete={onDelete}
       />
-      <label className={taskStyles.taskLabel}>
-        {' '}
-        {/* Apply task-specific styles */}
-        <input
-          type="checkbox"
-          checked={data.completed || false}
-          onChange={onToggleComplete}
-          className={taskStyles.taskCheckbox}
-        />
-        <span className={taskStyles.taskText}>
-          {data.task || 'No task description'}
-        </span>
-      </label>
+      <div className={taskStyles.taskContent}>
+        <label className={taskStyles.taskLabel}>
+          <input
+            type="checkbox"
+            checked={data.completed || false}
+            onChange={onToggleComplete}
+            className={taskStyles.taskCheckbox}
+          />
+          <span className={taskStyles.taskText}>
+            {data.task || 'No task description'}
+          </span>
+        </label>
+      </div>
       <BaseNodeFooter
         onChangeColor={onChangeColor}
-        onResize={onResize}
         onTag={onTag}
         onAttach={onAttach}
       />
@@ -94,7 +83,6 @@ const TaskNode: React.FC<TaskNodeProps> = ({
         type="source"
         position={Position.Bottom}
         style={{ background: '#555' }}
-        isConnectable={isConnectable}
       />
     </div>
   );

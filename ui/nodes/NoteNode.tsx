@@ -1,24 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { Handle, Position } from 'reactflow';
+import { NodeProps, Handle, Position } from 'reactflow';
 import BaseNodeHeader from './BaseNodeHeader';
 import BaseNodeFooter from './BaseNodeFooter';
 import noteStyles from './NoteNode.module.css';
 import baseStyles from './BaseNode.module.css';
 
-interface NoteNodeProps {
-  data: any;
+interface NoteNodeData {
+  id: string;
+  content?: string;
+  title?: string;
+  width?: number;
+  height?: number;
+}
+
+interface NoteNodeProps extends NodeProps {
+  data: NoteNodeData;
   onDelete: () => void;
   onChangeColor: () => void;
   onTag: () => void;
   onAttach: () => void;
-  selected: boolean;
-  id: string;
-  type: string;
-  zIndex: number;
-  isConnectable: boolean;
-  xPos: number;
-  yPos: number;
-  dragging: boolean;
 }
 
 const NoteNode: React.FC<NoteNodeProps> = ({
@@ -26,49 +26,18 @@ const NoteNode: React.FC<NoteNodeProps> = ({
   onDelete,
   onChangeColor,
   onTag,
-  onAttach,
-  selected,
-  id,
-  type,
-  zIndex,
-  isConnectable,
-  xPos,
-  yPos,
-  dragging
+  onAttach
 }) => {
-  // State to manage width and height
-  const [size, setSize] = useState({ width: 200, height: 100 });
+  const [size, setSize] = useState({
+    width: data.width || 200,
+    height: data.height || 300
+  });
 
-  // Effect to handle changes from external props
   useEffect(() => {
-    console.log(
-      'Checking if data.width and data.height are provided:',
-      data.width,
-      data.height
-    );
     if (data.width && data.height) {
-      console.log('Setting size from data:', data.width, data.height);
       setSize({ width: data.width, height: data.height });
     }
   }, [data.width, data.height]);
-
-  // Function to handle manual resizing
-  const handleResize = (e) => {
-    console.log('Mouse up event on resizable element:', e);
-    const element = e.target.closest('.resizable');
-    if (element) {
-      const newWidth = element.clientWidth;
-      const newHeight = element.clientHeight;
-      console.log(
-        'New dimensions from resizable element:',
-        newWidth,
-        newHeight
-      );
-      setSize({ width: newWidth, height: newHeight });
-    } else {
-      console.log('No resizable element found on mouse up event.');
-    }
-  };
 
   return (
     <div
@@ -79,13 +48,11 @@ const NoteNode: React.FC<NoteNodeProps> = ({
         resize: 'both',
         overflow: 'auto'
       }}
-      onMouseUp={handleResize}
     >
       <Handle
         type="target"
         position={Position.Top}
         style={{ background: '#555' }}
-        isConnectable={isConnectable}
       />
       <BaseNodeHeader
         title={data.title || 'Untitled Note'}
@@ -105,7 +72,6 @@ const NoteNode: React.FC<NoteNodeProps> = ({
         type="source"
         position={Position.Bottom}
         style={{ background: '#555' }}
-        isConnectable={isConnectable}
       />
     </div>
   );

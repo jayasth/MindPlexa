@@ -1,37 +1,26 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { NodeProps, Handle, Position } from 'reactflow';
-
 import BaseNodeHeader from './BaseNodeHeader';
 import BaseNodeFooter from './BaseNodeFooter';
 import customStyles from './CustomNode.module.css';
 import baseStyles from './BaseNode.module.css';
 
-interface BaseNodeData {
+interface CustomNodeData {
   id: string;
-  canvas_id?: string | null;
-  color?: string | null;
-  created_at?: string | null;
-  height?: number | null;
-  position?: any;
-  type?: string | null;
-  updated_at?: string | null;
-  width?: number | null;
-}
-
-interface CustomNodeData extends BaseNodeData {
-  data?: any; // Assuming 'data' is a dynamic property, replace 'any' with the correct type if available
   title?: string | null;
+  data?: any;
+  width?: number | null;
+  height?: number | null;
 }
 
 interface CustomNodeProps extends NodeProps {
   data: CustomNodeData;
   onDelete: () => void;
   onChangeColor: () => void;
-  onResize: () => void;
   onTag: () => void;
   onAttach: () => void;
-  id: string;
   selected: boolean;
+  id: string;
   type: string;
   zIndex: number;
   isConnectable: boolean;
@@ -44,7 +33,6 @@ const CustomNode: React.FC<CustomNodeProps> = ({
   data,
   onDelete,
   onChangeColor,
-  onResize,
   onTag,
   onAttach,
   selected,
@@ -56,8 +44,34 @@ const CustomNode: React.FC<CustomNodeProps> = ({
   yPos,
   dragging
 }) => {
+  const [size, setSize] = useState({ width: 200, height: 300 });
+
+  useEffect(() => {
+    if (data.width && data.height) {
+      setSize({ width: data.width, height: data.height });
+    }
+  }, [data.width, data.height]);
+
+  const handleResize = (e) => {
+    const element = e.target.closest('.resizable');
+    if (element) {
+      const newWidth = element.clientWidth;
+      const newHeight = element.clientHeight;
+      setSize({ width: newWidth, height: newHeight });
+    }
+  };
+
   return (
-    <div className={baseStyles.baseNode}>
+    <div
+      className={`${baseStyles.baseNode} resizable`}
+      style={{
+        width: `${size.width}px`,
+        height: `${size.height}px`,
+        resize: 'both',
+        overflow: 'auto'
+      }}
+      onMouseUp={handleResize}
+    >
       <Handle
         type="target"
         position={Position.Top}
@@ -81,7 +95,6 @@ const CustomNode: React.FC<CustomNodeProps> = ({
       </div>
       <BaseNodeFooter
         onChangeColor={onChangeColor}
-        onResize={onResize}
         onTag={onTag}
         onAttach={onAttach}
       />
