@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
+import { NodeProps, Handle, Position, NodeResizer, OnResize } from 'reactflow';
 import BaseNodeHeader from './BaseNodeHeader';
 import BaseNodeFooter from './BaseNodeFooter';
 import noteStyles from './NoteNode.module.css';
@@ -42,7 +42,12 @@ const NoteNode: React.FC<NoteNodeProps> = ({
     }
   }, [data.width, data.height]);
 
-  const handleResizeStop = (newSize: { width: number; height: number }) => {
+  const handleResizeStop: OnResize = (event, node) => {
+    const newSize = {
+      width: node.width,
+      height: node.height
+    };
+    console.log('New Size:', newSize);
     setSize(newSize);
     onNodeResizeStop(newSize);
   };
@@ -57,9 +62,9 @@ const NoteNode: React.FC<NoteNodeProps> = ({
     >
       <NodeResizer
         minWidth={100}
-        minHeight={100}
+        minHeight={150}
         isVisible={selected}
-        onResizeStop={handleResizeStop}
+        onResize={handleResizeStop}
         lineStyle={{ stroke: '#ff0071', strokeWidth: 2 }}
         handleStyle={{ fill: '#ff0071' }}
       />

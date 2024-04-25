@@ -14,7 +14,12 @@ interface NodeRendererProps extends NodeProps {
   ) => void;
 }
 
-const NodeRenderer: React.FC<NodeProps> = ({ data, selected, id }) => {
+const NodeRenderer: React.FC<NodeRendererProps> = ({
+  data,
+  selected,
+  id,
+  onNodeResizeStop
+}) => {
   const node = data as BaseNode;
 
   const commonProps = {
@@ -27,6 +32,7 @@ const NodeRenderer: React.FC<NodeProps> = ({ data, selected, id }) => {
     height: node.height,
     selected: selected,
     onNodeResizeStop: (newSize: { width: number; height: number }) => {
+      console.log('Resizing Node:', id, newSize);
       onNodeResizeStop(id, newSize);
     },
     id: id,
@@ -59,6 +65,12 @@ const NodeRenderer: React.FC<NodeProps> = ({ data, selected, id }) => {
           xPos={0}
           yPos={0}
           dragging={false}
+          onNodeResizeStop={function (newSize: {
+            width: number;
+            height: number;
+          }): void {
+            onNodeResizeStop(id, newSize);
+          }}
         />
       );
     case 'task':

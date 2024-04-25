@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useRef, useMemo } from 'react';
 import ReactFlow, {
   Controls,
   Background,
@@ -66,7 +66,7 @@ export default function MindMapCanvas() {
                 x: event.clientX,
                 y: event.clientY
               }
-            : { x: 0, y: 0 }; // Default to (0, 0) if the event is not a MouseEvent
+            : { x: 0, y: 0 };
 
         if (sourceNode) {
           const newNode = {
@@ -97,8 +97,22 @@ export default function MindMapCanvas() {
     [setEdges]
   );
 
+  const handleNodeResizeStop = (
+    nodeId: string,
+    newSize: { width: number; height: number }
+  ) => {
+    setNodes((currentNodes) =>
+      currentNodes.map((node) =>
+        node.id === nodeId
+          ? { ...node, width: newSize.width, height: newSize.height }
+          : node
+      )
+    );
+  };
+
   const onNodeResizeStop = useCallback(
     (nodeId: string, newSize: { width: number; height: number }) => {
+      console.log('onNodeResizeStop called with parameters:', nodeId, newSize);
       setNodes((nodes) =>
         nodes.map((node) => {
           if (node.id === nodeId) {
@@ -112,7 +126,7 @@ export default function MindMapCanvas() {
         })
       );
     },
-    []
+    [setNodes]
   );
 
   return (
@@ -138,14 +152,21 @@ export default function MindMapCanvas() {
             onConnect={onConnect}
             onConnectStart={onConnectStart}
             onConnectEnd={onConnectEnd}
-            nodeTypes={nodeTypes}
+            nodeTypes={{
+              note: (props) => (
+                <NodeRenderer
+                  {...props}
+                  onNodeResizeStop={handleNodeResizeStop}
+                />
+              )
+              // ...
+            }}
             edgeTypes={edgeTypes}
             nodeOrigin={nodeOrigin}
             connectionLineStyle={connectionLineStyle}
             defaultEdgeOptions={defaultEdgeOptions}
             connectionLineType={ConnectionLineType.Straight}
             fitView
-            onNodeResizeStop={onNodeResizeStop}
           >
             <Background color="#aaa" gap={16} />
             <Controls />
