@@ -97,33 +97,22 @@ export default function MindMapCanvas() {
     [setEdges]
   );
 
-  const handleNodeResizeStop = (
-    nodeId: string,
-    newSize: { width: number; height: number }
-  ) => {
-    setNodes((currentNodes) =>
-      currentNodes.map((node) =>
-        node.id === nodeId
-          ? { ...node, width: newSize.width, height: newSize.height }
-          : node
-      )
-    );
-  };
-
-  const onNodeResizeStop = useCallback(
+  const handleNodeResizeStop = useCallback(
     (nodeId: string, newSize: { width: number; height: number }) => {
-      console.log('onNodeResizeStop called with parameters:', nodeId, newSize);
-      setNodes((nodes) =>
-        nodes.map((node) => {
-          if (node.id === nodeId) {
-            return {
-              ...node,
-              width: newSize.width,
-              height: newSize.height
-            };
-          }
-          return node;
-        })
+      setNodes((currentNodes) =>
+        currentNodes.map((node) =>
+          node.id === nodeId
+            ? {
+                ...node,
+                data: {
+                  ...node.data,
+                  width: newSize.width,
+                  height: newSize.height
+                },
+                style: { width: newSize.width, height: newSize.height }
+              }
+            : node
+        )
       );
     },
     [setNodes]
@@ -166,7 +155,7 @@ export default function MindMapCanvas() {
             connectionLineStyle={connectionLineStyle}
             defaultEdgeOptions={defaultEdgeOptions}
             connectionLineType={ConnectionLineType.Straight}
-            fitView
+            fitView={true}
           >
             <Background color="#aaa" gap={16} />
             <Controls />

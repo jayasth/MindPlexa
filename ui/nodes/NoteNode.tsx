@@ -48,12 +48,12 @@ const NoteNode: React.FC<NoteNodeProps> = ({
       height: node.height
     };
     console.log('New Size:', newSize);
-    setSize(newSize);
+    setSize((prevSize) => ({ ...prevSize, ...newSize }));
     onNodeResizeStop(newSize);
   };
-
   return (
     <div
+      key={`${size.width}-${size.height}`}
       className={`${baseStyles.baseNode}`}
       style={{
         width: `${size.width}px`,
