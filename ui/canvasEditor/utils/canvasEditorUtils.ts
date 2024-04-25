@@ -24,8 +24,8 @@ export const handleAddNode = (
       }
     : { x: 0, y: 0 };
 
-  const baseProperties: Partial<BaseNode> = {
-    id: `${nodeType}-${Date.now()}`,
+  const baseProperties: Partial<BaseNode> & { id: string } = {
+    id: `${nodeType}-${Date.now()}` as string, // Explicitly marked as string
     type: nodeType,
     position: position as unknown as Json
   };
@@ -37,7 +37,6 @@ export const handleAddNode = (
   switch (nodeType) {
     case 'note':
       specificNode = {
-        id: baseProperties.id, // Include id here
         ...baseProperties,
         content: '',
         title: 'New Note'
@@ -45,7 +44,6 @@ export const handleAddNode = (
       break;
     case 'task':
       specificNode = {
-        id: baseProperties.id, // Include id here
         ...baseProperties,
         completed: false,
         task: 'New Task',
@@ -54,7 +52,6 @@ export const handleAddNode = (
       break;
     case 'custom':
       specificNode = {
-        id: baseProperties.id, // Include id here
         ...baseProperties,
         data: {},
         title: 'New Custom Node'
@@ -62,7 +59,6 @@ export const handleAddNode = (
       break;
     case 'code':
       specificNode = {
-        id: baseProperties.id, // Include id here
         ...baseProperties,
         code: '',
         language: 'plaintext',
@@ -71,7 +67,6 @@ export const handleAddNode = (
       break;
     case 'draw':
       specificNode = {
-        id: baseProperties.id, // Include id here
         ...baseProperties,
         data: {},
         title: 'New Drawing'
@@ -88,7 +83,6 @@ export const handleAddNode = (
 
   setNodes((nds) => nds.concat(newNode));
 };
-
 // Function to handle downloading the canvas
 export const handleDownload = (state: any) => {
   const jsonString = JSON.stringify(state, null, 2);

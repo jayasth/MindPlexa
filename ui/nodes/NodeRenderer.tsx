@@ -30,7 +30,11 @@ const NodeRenderer: React.FC<NodeProps> = ({ data, selected, id }) => {
     case 'note':
       return (
         <NoteNode
-          data={node}
+          data={{
+            ...node,
+            width: node.width === null ? undefined : node.width,
+            height: node.height === null ? undefined : node.height
+          }}
           onDelete={() => console.log('Delete Note')}
           onChangeColor={() => console.log('Change Color')}
           onTag={() => console.log('Tag Note')}
@@ -48,12 +52,16 @@ const NodeRenderer: React.FC<NodeProps> = ({ data, selected, id }) => {
     case 'task':
       return (
         <TaskNode
-          data={node}
+          data={{
+            ...node,
+            width: node.width === null ? undefined : node.width,
+            height: node.height === null ? undefined : node.height
+          }}
           onDelete={() => console.log('Delete Task')}
           onChangeColor={() => console.log('Change Color')}
-          onResize={() => console.log('Resize Note')}
           onTag={() => console.log('Tag Task')}
           onAttach={() => console.log('Attach File')}
+          onToggleComplete={() => console.log('Toggle Task Completion')}
           selected={selected}
           id={id}
           type={node.type}
@@ -62,16 +70,18 @@ const NodeRenderer: React.FC<NodeProps> = ({ data, selected, id }) => {
           xPos={0}
           yPos={0}
           dragging={false}
-          onToggleComplete={() => {}}
         />
       );
     case 'custom':
       return (
         <CustomNode
-          data={node}
+          data={{
+            ...node,
+            width: node.width === null ? undefined : node.width,
+            height: node.height === null ? undefined : node.height
+          }}
           onDelete={() => console.log('Delete Custom')}
           onChangeColor={() => console.log('Change Color')}
-          onResize={() => console.log('Resize Note')}
           onTag={() => console.log('Tag Custom')}
           onAttach={() => console.log('Attach File')}
           selected={selected}
@@ -87,10 +97,13 @@ const NodeRenderer: React.FC<NodeProps> = ({ data, selected, id }) => {
     case 'code':
       return (
         <CodeNode
-          data={node}
+          data={{
+            ...node,
+            width: node.width === null ? undefined : node.width,
+            height: node.height === null ? undefined : node.height
+          }}
           onDelete={() => console.log('Delete Code')}
           onChangeColor={() => console.log('Change Color')}
-          onResize={() => console.log('Resize Note')}
           onTag={() => console.log('Tag Code')}
           onAttach={() => console.log('Attach File')}
           selected={selected}
@@ -106,10 +119,13 @@ const NodeRenderer: React.FC<NodeProps> = ({ data, selected, id }) => {
     case 'draw':
       return (
         <DrawNode
-          data={node}
-          onDelete={() => console.log('Delete Draw Node')}
+          data={{
+            ...node,
+            width: node.width === null ? undefined : node.width,
+            height: node.height === null ? undefined : node.height
+          }}
+          onDelete={() => console.log('Delete Draw')}
           onChangeColor={() => console.log('Change Color')}
-          onResize={() => console.log('Resize Note')}
           onTag={() => console.log('Tag Draw')}
           onAttach={() => console.log('Attach File')}
           selected={selected}
@@ -123,7 +139,7 @@ const NodeRenderer: React.FC<NodeProps> = ({ data, selected, id }) => {
         />
       );
     default:
-      return null; // Return null if the node type is unrecognized
+      return null;
   }
 };
 
