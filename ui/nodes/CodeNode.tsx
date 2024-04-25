@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { NodeProps, Handle, Position } from 'reactflow';
+import { NodeProps, Handle, Position, NodeResizer, OnResize } from 'reactflow';
 import BaseNodeHeader from './BaseNodeHeader';
 import BaseNodeFooter from './BaseNodeFooter';
 import codeStyles from './CodeNode.module.css';
@@ -20,6 +20,7 @@ interface CodeNodeProps extends NodeProps {
   onChangeColor: () => void;
   onTag: () => void;
   onAttach: () => void;
+  selected: boolean;
 }
 
 const CodeNode: React.FC<CodeNodeProps> = ({
@@ -27,7 +28,8 @@ const CodeNode: React.FC<CodeNodeProps> = ({
   onDelete,
   onChangeColor,
   onTag,
-  onAttach
+  onAttach,
+  selected
 }) => {
   const [size, setSize] = useState({
     width: data.width || 200,
@@ -40,16 +42,28 @@ const CodeNode: React.FC<CodeNodeProps> = ({
     }
   }, [data.width, data.height]);
 
+  const handleResizeStop: OnResize = (event, node) => {
+    const newSize = {
+      width: node.width,
+      height: node.height
+    };
+    setSize(newSize);
+  };
+
   return (
     <div
-      className={`${baseStyles.baseNode} resizable`}
+      className={`${baseStyles.baseNode} ${codeStyles.codeNode}`}
       style={{
         width: `${size.width}px`,
-        height: `${size.height}px`,
-        resize: 'both',
-        overflow: 'auto'
+        height: `${size.height}px`
       }}
     >
+      <NodeResizer
+        minWidth={100}
+        minHeight={150}
+        isVisible={selected}
+        onResize={handleResizeStop}
+      />
       <Handle
         type="target"
         position={Position.Top}

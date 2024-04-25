@@ -94,6 +94,12 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
           xPos={0}
           yPos={0}
           dragging={false}
+          onNodeResizeStop={function (newSize: {
+            width: number;
+            height: number;
+          }): void {
+            throw new Error('Function not implemented.');
+          }}
         />
       );
     case 'custom':

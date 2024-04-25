@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { NodeProps, Handle, Position } from 'reactflow';
+import { NodeProps, Handle, Position, NodeResizer, OnResize } from 'reactflow';
 import BaseNodeHeader from './BaseNodeHeader';
 import BaseNodeFooter from './BaseNodeFooter';
 import customStyles from './CustomNode.module.css';
@@ -20,13 +20,6 @@ interface CustomNodeProps extends NodeProps {
   onTag: () => void;
   onAttach: () => void;
   selected: boolean;
-  id: string;
-  type: string;
-  zIndex: number;
-  isConnectable: boolean;
-  xPos: number;
-  yPos: number;
-  dragging: boolean;
 }
 
 const CustomNode: React.FC<CustomNodeProps> = ({
@@ -35,16 +28,12 @@ const CustomNode: React.FC<CustomNodeProps> = ({
   onChangeColor,
   onTag,
   onAttach,
-  selected,
-  id,
-  type,
-  zIndex,
-  isConnectable,
-  xPos,
-  yPos,
-  dragging
+  selected
 }) => {
-  const [size, setSize] = useState({ width: 200, height: 300 });
+  const [size, setSize] = useState({
+    width: data.width || 200,
+    height: data.height || 300
+  });
 
   useEffect(() => {
     if (data.width && data.height) {
@@ -52,58 +41,42 @@ const CustomNode: React.FC<CustomNodeProps> = ({
     }
   }, [data.width, data.height]);
 
-  const handleResize = (e) => {
-    const element = e.target.closest('.resizable');
-    if (element) {
-      const newWidth = element.clientWidth;
-      const newHeight = element.clientHeight;
-      setSize({ width: newWidth, height: newHeight });
-    }
+  const handleResizeStop: OnResize = (event, node) => {
+    const newSize = {
+      width: node.width,
+      height: node.height
+    };
+    setSize(newSize);
   };
 
   return (
     <div
-      className={`${baseStyles.baseNode} resizable`}
+      className={`${baseStyles.baseNode} ${customStyles.customNode}`}
       style={{
         width: `${size.width}px`,
-        height: `${size.height}px`,
-        resize: 'both',
-        overflow: 'auto'
+        height: `${size.height}px`
       }}
-      onMouseUp={handleResize}
     >
-      <Handle
-        type="target"
-        position={Position.Top}
-        style={{ background: '#555' }}
-        isConnectable={isConnectable}
+      <NodeResizer
+        minWidth={100}
+        minHeight={150}
+        isVisible={selected}
+        onResize={handleResizeStop}
       />
+      <Handle type="target" position={Position.Top} />
       <BaseNodeHeader
         title={data.title || 'Untitled Custom Node'}
         onDelete={onDelete}
       />
       <div className={customStyles.customNodeContent}>
-        {data.data &&
-          Object.entries(data.data).map(([key, value]) => (
-            <div key={key} className={customStyles.customNodeField}>
-              <span className={customStyles.customNodeFieldLabel}>{key}: </span>
-              {typeof value === 'string' || typeof value === 'number'
-                ? value
-                : JSON.stringify(value)}
-            </div>
-          ))}
+        {/* Content rendering */}
       </div>
       <BaseNodeFooter
         onChangeColor={onChangeColor}
         onTag={onTag}
         onAttach={onAttach}
       />
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        style={{ background: '#555' }}
-        isConnectable={isConnectable}
-      />
+      <Handle type="source" position={Position.Bottom} />
     </div>
   );
 };

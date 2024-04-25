@@ -24,11 +24,21 @@ import NodeRenderer from '@/ui/nodes/NodeRenderer';
 import CustomEdge from '@/ui/canvasEditor/CustomEdge';
 
 const nodeTypes = {
-  note: NodeRenderer,
-  task: NodeRenderer,
-  custom: NodeRenderer,
-  code: NodeRenderer,
-  draw: NodeRenderer
+  note: (props) => (
+    <NodeRenderer {...props} onNodeResizeStop={handleNodeResizeStop} />
+  ),
+  task: (props) => (
+    <NodeRenderer {...props} onNodeResizeStop={handleNodeResizeStop} />
+  ),
+  custom: (props) => (
+    <NodeRenderer {...props} onNodeResizeStop={handleNodeResizeStop} />
+  ),
+  code: (props) => (
+    <NodeRenderer {...props} onNodeResizeStop={handleNodeResizeStop} />
+  ),
+  draw: (props) => (
+    <NodeRenderer {...props} onNodeResizeStop={handleNodeResizeStop} />
+  )
 };
 
 const edgeTypes = {
@@ -141,15 +151,7 @@ export default function MindMapCanvas() {
             onConnect={onConnect}
             onConnectStart={onConnectStart}
             onConnectEnd={onConnectEnd}
-            nodeTypes={{
-              note: (props) => (
-                <NodeRenderer
-                  {...props}
-                  onNodeResizeStop={handleNodeResizeStop}
-                />
-              )
-              // ...
-            }}
+            nodeTypes={nodeTypes}
             edgeTypes={edgeTypes}
             nodeOrigin={nodeOrigin}
             connectionLineStyle={connectionLineStyle}
@@ -164,4 +166,10 @@ export default function MindMapCanvas() {
       </ReactFlowProvider>
     </div>
   );
+}
+function handleNodeResizeStop(
+  nodeId: string,
+  newSize: { width: number; height: number }
+): void {
+  throw new Error('Function not implemented.');
 }
