@@ -7,6 +7,13 @@ import CustomNode from './CustomNode';
 import CodeNode from './CodeNode';
 import DrawNode from './DrawNode';
 
+interface NodeRendererProps extends NodeProps {
+  onNodeResizeStop: (
+    nodeId: string,
+    newSize: { width: number; height: number }
+  ) => void;
+}
+
 const NodeRenderer: React.FC<NodeProps> = ({ data, selected, id }) => {
   const node = data as BaseNode;
 
@@ -16,7 +23,12 @@ const NodeRenderer: React.FC<NodeProps> = ({ data, selected, id }) => {
     onResize: () => console.log('Resize Node'),
     onTag: () => console.log('Tag Node'),
     onAttach: () => console.log('Attach File'),
+    width: node.width,
+    height: node.height,
     selected: selected,
+    onNodeResizeStop: (newSize: { width: number; height: number }) => {
+      onNodeResizeStop(id, newSize);
+    },
     id: id,
     type: node.type,
     zIndex: 0,

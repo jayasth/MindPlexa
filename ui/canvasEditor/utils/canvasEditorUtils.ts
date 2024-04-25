@@ -39,7 +39,9 @@ export const handleAddNode = (
       specificNode = {
         ...baseProperties,
         content: '',
-        title: 'New Note'
+        title: 'New Note',
+        width: 200,
+        height: 300
       } as Partial<NoteNode>;
       break;
     case 'task':
@@ -47,7 +49,9 @@ export const handleAddNode = (
         ...baseProperties,
         completed: false,
         task: 'New Task',
-        title: 'New Task'
+        title: 'New Task',
+        width: 200,
+        height: 100
       } as Partial<TaskNode>;
       break;
     case 'custom':

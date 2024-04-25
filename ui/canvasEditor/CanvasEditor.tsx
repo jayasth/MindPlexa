@@ -97,6 +97,24 @@ export default function MindMapCanvas() {
     [setEdges]
   );
 
+  const onNodeResizeStop = useCallback(
+    (nodeId: string, newSize: { width: number; height: number }) => {
+      setNodes((nodes) =>
+        nodes.map((node) => {
+          if (node.id === nodeId) {
+            return {
+              ...node,
+              width: newSize.width,
+              height: newSize.height
+            };
+          }
+          return node;
+        })
+      );
+    },
+    []
+  );
+
   return (
     <div className="flex h-screen">
       <ReactFlowProvider>
@@ -127,6 +145,7 @@ export default function MindMapCanvas() {
             defaultEdgeOptions={defaultEdgeOptions}
             connectionLineType={ConnectionLineType.Straight}
             fitView
+            onNodeResizeStop={onNodeResizeStop}
           >
             <Background color="#aaa" gap={16} />
             <Controls />
