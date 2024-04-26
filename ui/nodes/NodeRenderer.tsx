@@ -6,6 +6,7 @@ import TaskNode from './TaskNode';
 import CustomNode from './CustomNode';
 import CodeNode from './CodeNode';
 import DrawNode from './DrawNode';
+import NodeSelectionMenu, { NodeSelectionMenuProps } from './NodeSelectionMenu';
 
 interface NodeRendererProps extends NodeProps {
   onNodeResizeStop: (
@@ -13,7 +14,6 @@ interface NodeRendererProps extends NodeProps {
     newSize: { width: number; height: number }
   ) => void;
 }
-
 const NodeRenderer: React.FC<NodeRendererProps> = ({
   data,
   selected,
@@ -45,6 +45,9 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
   };
 
   switch (node.type) {
+    case 'selectionMenu':
+      const extendedNode = node as unknown as NodeSelectionMenuProps;
+      return <NodeSelectionMenu data={extendedNode.data} />;
     case 'note':
       return (
         <NoteNode
@@ -168,6 +171,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
           dragging={false}
         />
       );
+
     default:
       return null;
   }
