@@ -67,6 +67,7 @@ export const canvasEditorReducer = (
 ): CanvasEditorState => {
   switch (action.type) {
     case 'ADD_NODE':
+      console.log('Adding node:', action.payload);
       return { ...state, nodes: [...state.nodes, action.payload] };
     case 'DELETE_NODE':
       return {

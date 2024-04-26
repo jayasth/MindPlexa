@@ -11,6 +11,12 @@ import { Node, XYPosition } from 'reactflow';
 
 type BaseNode = Tables<'base_nodes'>;
 
+function isXYPosition(position: any): position is XYPosition {
+  return (
+    position && typeof position.x === 'number' && typeof position.y === 'number'
+  );
+}
+
 export const handleAddNode = (
   nodeType: 'note' | 'task' | 'custom' | 'code' | 'draw',
   setNodes: Dispatch<SetStateAction<Node<any>[]>>,
@@ -24,10 +30,16 @@ export const handleAddNode = (
       }
     : { x: 0, y: 0 };
 
-  const baseProperties: Partial<BaseNode> & { id: string } = {
-    id: `${nodeType}-${Date.now()}` as string, // Explicitly marked as string
+  console.log('Node position:', position);
+
+  const positionAsJson: Json = isXYPosition(position)
+    ? { x: position.x, y: position.y }
+    : {};
+
+  const baseProperties: Partial<BaseNode> & { id: string; position: Json } = {
+    id: `${nodeType}-${Date.now()}`,
     type: nodeType,
-    position: position as unknown as Json
+    position: positionAsJson
   };
 
   let specificNode: Partial<
@@ -51,7 +63,7 @@ export const handleAddNode = (
         task: 'New Task',
         title: 'New Task',
         width: 200,
-        height: 100
+        height: 300
       } as Partial<TaskNode>;
       break;
     case 'custom':
@@ -82,9 +94,11 @@ export const handleAddNode = (
 
   const newNode: Node<any> = {
     ...specificNode,
-    data: specificNode
+    data: specificNode,
+    id: baseProperties.id // Explicitly set id from baseProperties
   };
 
+  console.log('Adding new node:', newNode);
   setNodes((nds) => nds.concat(newNode));
 };
 // Function to handle downloading the canvas

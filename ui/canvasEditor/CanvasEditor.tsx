@@ -72,15 +72,15 @@ export default function MindMapCanvas() {
         const sourceNode = nodes.find(
           (node) => node.id === connectingNodeId.current
         );
-        const reactFlowInstance =
+        const reactFlowBounds =
           reactFlowWrapper.current?.getBoundingClientRect();
 
         // Calculate position based on the canvas offset
         const targetPosition =
-          reactFlowInstance && event instanceof MouseEvent
+          reactFlowBounds && event instanceof MouseEvent
             ? {
-                x: event.clientX - reactFlowInstance.left,
-                y: event.clientY - reactFlowInstance.top
+                x: event.clientX - reactFlowBounds.left + window.scrollX,
+                y: event.clientY - reactFlowBounds.top + window.scrollY
               }
             : { x: 0, y: 0 };
 
@@ -95,8 +95,7 @@ export default function MindMapCanvas() {
               position: targetPosition,
               data: {
                 onSelect: (nodeType: string) => {
-                  console.log(`Node type selected from menu: ${nodeType}`); // Debug: Log selected node type
-
+                  console.log('Creating node of type:', nodeType);
                   const newNodeId = `${nodeType}-${Date.now()}`;
                   const newNode = {
                     id: newNodeId,
@@ -109,6 +108,8 @@ export default function MindMapCanvas() {
                     }
                   };
 
+                  console.log('New node details:', newNode);
+
                   const newEdge = {
                     id: `edge-${Date.now()}`,
                     source: sourceNode.id,
@@ -116,23 +117,18 @@ export default function MindMapCanvas() {
                     type: 'mindmap'
                   };
 
-                  console.log(`Creating new node:`, newNode); // Debug: Log new node details
-                  console.log(`Creating new edge:`, newEdge); // Debug: Log new edge details
-
-                  // Remove the selection menu and add the new node and edge
+                  // Update nodes and edges
                   setNodes((currentNodes) => {
-                    const updatedNodes = currentNodes
+                    const newNodes = currentNodes
                       .filter((node) => node.id !== selectionMenuId)
                       .concat(newNode);
-                    console.log(`Updated nodes state:`, updatedNodes); // Debug: Log updated nodes state
-                    return updatedNodes;
+                    console.log('Updated nodes state:', newNodes);
+                    return newNodes;
                   });
                   setEdges((currentEdges) => {
-                    const updatedEdges = currentEdges
-                      .filter((edge) => edge.target !== selectionMenuId)
-                      .concat(newEdge);
-                    console.log(`Updated edges state:`, updatedEdges); // Debug: Log updated edges state
-                    return updatedEdges;
+                    const newEdges = currentEdges.concat(newEdge);
+                    console.log('Updated edges state:', newEdges);
+                    return newEdges;
                   });
                 }
               }
@@ -182,7 +178,45 @@ export default function MindMapCanvas() {
     [setNodes]
   );
 
-  console.log('Rendering ReactFlow with nodes:', nodes, 'and edges:', edges);
+  const onSelect = (nodeType: string, position: { x: number; y: number }) => {
+    console.log(`Creating node of type: ${nodeType} at position:`, position);
+    const newNode = {
+      id: `${nodeType}-${Date.now()}`,
+      type: nodeType,
+      position: position,
+      data: {
+        label: `New ${nodeType.charAt(0).toUpperCase() + nodeType.slice(1)}`,
+        width: 200,
+        height: 300
+      }
+    };
+
+    console.log('New node details:', newNode);
+
+    setNodes((prevNodes) => {
+      const updatedNodes = [...prevNodes, newNode];
+      console.log('Updated nodes state:', updatedNodes);
+      return updatedNodes;
+    });
+
+    if (connectingNodeId.current) {
+      const newEdge = {
+        id: `edge-${Date.now()}`,
+        source: connectingNodeId.current,
+        target: newNode.id,
+        type: 'mindmap'
+      };
+
+      setEdges((prevEdges) => {
+        const updatedEdges = [...prevEdges, newEdge];
+        console.log('Updated edges state:', updatedEdges);
+        return updatedEdges;
+      });
+    }
+
+    connectingNodeId.current = null;
+  };
+
   return (
     <div className="flex h-screen">
       <ReactFlowProvider>

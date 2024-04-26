@@ -7,7 +7,7 @@ import { Node as BaseNode } from '@/ui/canvasEditor/canvasEditorReducer';
 
 export interface NodeSelectionMenuProps {
   data: {
-    onSelect: (nodeType: string) => void;
+    onSelect: (nodeType: string, position: { x: number; y: number }) => void;
   } & BaseNode;
 }
 
@@ -22,6 +22,19 @@ const icons = {
 const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({ data }) => {
   const nodeTypes = ['note', 'task', 'custom', 'code', 'draw'];
 
+  // Type guard to check if position is valid
+  const isValidPosition = (
+    position: any
+  ): position is { x: number; y: number } => {
+    return (
+      position &&
+      typeof position.x === 'number' &&
+      typeof position.y === 'number'
+    );
+  };
+
+  const defaultPosition = { x: 0, y: 0 }; // Default position if not valid
+
   return (
     <div className="bg-white shadow-lg rounded p-1">
       <Handle type="target" position={Position.Top} />
@@ -30,7 +43,12 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({ data }) => {
           <button
             key={type}
             className="p-1 m-1 bg-gray-200 rounded hover:bg-gray-300 flex items-center justify-center"
-            onClick={() => data.onSelect(type)}
+            onClick={() => {
+              const position = isValidPosition(data.position)
+                ? data.position
+                : defaultPosition;
+              data.onSelect(type, position);
+            }}
             title={type.charAt(0).toUpperCase() + type.slice(1)}
           >
             {icons[type]}
