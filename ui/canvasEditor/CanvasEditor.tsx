@@ -8,7 +8,7 @@ import ReactFlow, {
   Node
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-
+import { CanvasProvider } from './CanvasContext';
 import Toolbar from './toolbar';
 import { handleDownload, handleShare } from './utils/canvasEditorUtils';
 import NodeRenderer from '@/ui/nodes/NodeRenderer';
@@ -47,43 +47,63 @@ export default function CanvasEditor() {
     onConnect,
     onConnectStart,
     onConnectEnd,
-    reactFlowWrapper
+    reactFlowWrapper,
+    showNodeSelectionMenu,
+    menuPosition,
+    setShowNodeSelectionMenu
   } = useCanvasState();
 
   return (
-    <div className="flex h-screen">
-      <ReactFlowProvider>
-        <div className="w-1/6 bg-gray-100 p-2">
-          <Toolbar
-            onUndo={() => console.log('Undo')}
-            onRedo={() => console.log('Redo')}
-            onShare={() => handleShare(nodes)}
-            onDownload={() => handleDownload({ nodes, edges })}
-            setNodes={setNodes} // Correctly passing setNodes from useCanvasState
-          />
-        </div>
-        <div className="w-5/6" ref={reactFlowWrapper}>
-          <ReactFlow
-            nodes={nodes}
-            edges={edges}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            onConnect={onConnect}
-            onConnectStart={onConnectStart}
-            onConnectEnd={onConnectEnd}
-            nodeTypes={nodeTypes}
-            edgeTypes={edgeTypes}
-            nodeOrigin={nodeOrigin}
-            connectionLineStyle={connectionLineStyle}
-            defaultEdgeOptions={defaultEdgeOptions}
-            connectionLineType={ConnectionLineType.Straight}
-            fitView={true}
-          >
-            <Background color="#aaa" gap={16} />
-            <Controls />
-          </ReactFlow>
-        </div>
-      </ReactFlowProvider>
-    </div>
+    <CanvasProvider>
+      <div className="flex h-screen">
+        <ReactFlowProvider>
+          <div className="w-1/6 bg-gray-100 p-2">
+            <Toolbar
+              onUndo={() => console.log('Undo')}
+              onRedo={() => console.log('Redo')}
+              onShare={() => handleShare(nodes)}
+              onDownload={() => handleDownload({ nodes, edges })}
+              setNodes={setNodes}
+            />
+          </div>
+          <div className="w-5/6" ref={reactFlowWrapper}>
+            {showNodeSelectionMenu && (
+              <NodeSelectionMenu
+                data={{
+                  onSelect: (nodeType, position) => {
+                    console.log(
+                      `Node type ${nodeType} selected at position`,
+                      position
+                    );
+                  },
+                  position: menuPosition,
+                  onClose: () => setShowNodeSelectionMenu(false),
+                  id: 'nodeSelectionMenu'
+                }}
+              />
+            )}
+            <ReactFlow
+              nodes={nodes}
+              edges={edges}
+              onNodesChange={onNodesChange}
+              onEdgesChange={onEdgesChange}
+              onConnect={onConnect}
+              onConnectStart={onConnectStart}
+              onConnectEnd={onConnectEnd}
+              nodeTypes={nodeTypes}
+              edgeTypes={edgeTypes}
+              nodeOrigin={nodeOrigin}
+              connectionLineStyle={connectionLineStyle}
+              defaultEdgeOptions={defaultEdgeOptions}
+              connectionLineType={ConnectionLineType.Straight}
+              fitView={true}
+            >
+              <Background color="#aaa" gap={16} />
+              <Controls />
+            </ReactFlow>
+          </div>
+        </ReactFlowProvider>
+      </div>
+    </CanvasProvider>
   );
 }

@@ -14,11 +14,13 @@ import { useCanvas } from '../canvasEditor/CanvasContext'; // Use CanvasContext
 export interface NodeSelectionMenuProps {
   data: {
     onSelect: (nodeType: string, position: { x: number; y: number }) => void;
+    position: { x: number; y: number };
+    onClose: () => void;
   } & BaseNode;
 }
 
 const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({ data }) => {
-  const { setNodes } = useCanvas(); // Use setNodes from CanvasContext
+  const { setNodes, nodes, setEdges, edges } = useCanvas(); // Use setNodes from CanvasContext
   const nodeTypes: ('note' | 'task' | 'custom' | 'code' | 'draw')[] = [
     'note',
     'task',
@@ -45,20 +47,43 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({ data }) => {
     );
   };
 
+  const handleNodeTypeSelect = (
+    nodeType: 'note' | 'task' | 'custom' | 'code' | 'draw'
+  ) => {
+    const position = isValidPosition(data.position)
+      ? data.position
+      : defaultPosition;
+    createNode(nodeType, position, setNodes);
+    // Assuming createNode updates the nodes state, now update the edges to connect the new node
+    const newNodeId = `${nodeType}-${Date.now()}`; // This should match the ID generation logic in createNode
+    setEdges([
+      ...edges,
+      {
+        id: `e${newNodeId}`,
+        source: data.id,
+        target: newNodeId,
+        type: 'straight',
+        animated: true
+      }
+    ]);
+  };
+
   return (
-    <div className="bg-white shadow-lg rounded p-1">
+    <div
+      className="bg-white shadow-lg rounded p-1"
+      style={{
+        position: 'absolute',
+        left: data.position.x,
+        top: data.position.y
+      }}
+    >
       <Handle type="target" position={Position.Top} />
       <div className="flex flex-row">
         {nodeTypes.map((type) => (
           <button
             key={type}
             className="p-1 m-1 bg-gray-200 rounded hover:bg-gray-300 flex items-center justify-center"
-            onClick={() => {
-              const position = isValidPosition(data.position)
-                ? data.position
-                : defaultPosition;
-              createNode(type, position, setNodes);
-            }}
+            onClick={() => handleNodeTypeSelect(type)}
             title={type.charAt(0).toUpperCase() + type.slice(1)}
           >
             {icons[type]}
