@@ -1,4 +1,3 @@
-import { Dispatch, SetStateAction } from 'react';
 import { Node, XYPosition } from 'reactflow';
 import type { Json, Tables } from '@/types_db';
 import type {
@@ -14,7 +13,7 @@ type BaseNode = Tables<'base_nodes'>;
 export const createNode = (
   nodeType: 'note' | 'task' | 'custom' | 'code' | 'draw',
   position: { x: number; y: number },
-  setNodes: Dispatch<SetStateAction<Node<any>[]>>
+  callback: (newNode: Node<any>) => void
 ) => {
   // Ensure position is strictly XYPosition
   const positionAsXYPosition: XYPosition = { x: position.x, y: position.y };
@@ -86,5 +85,5 @@ export const createNode = (
   };
 
   console.log('Adding new node:', newNode);
-  setNodes((nds) => nds.concat(newNode));
+  callback(newNode);
 };

@@ -54,34 +54,23 @@ export const useCanvasState = () => {
             type: 'selectionMenu',
             position: targetPosition,
             data: {
-              onSelect: (nodeType: string) => {
+              onSelect: (
+                nodeType: 'note' | 'task' | 'custom' | 'code' | 'draw',
+                position: { x: number; y: number }
+              ) => {
                 const newNodeId = `${nodeType}-${Date.now()}`;
-                const newNode = {
-                  id: newNodeId,
-                  type: nodeType,
-                  position: targetPosition,
-                  data: {
-                    label: `New ${nodeType} Node`,
-                    width: 200,
-                    height: 300
-                  }
-                };
-
-                setNodes((currentNodes) => {
-                  const newNodes = currentNodes
-                    .filter((node) => node.id !== selectionMenuNode.id)
-                    .concat(newNode);
-                  return newNodes;
+                createNode(nodeType, position, (newNode) => {
+                  setNodes((currentNodes) => [...currentNodes, newNode]);
+                  setEdges((currentEdges) => [
+                    ...currentEdges,
+                    {
+                      id: `edge-${Date.now()}`,
+                      source: sourceNode.id,
+                      target: newNodeId,
+                      type: 'mindmap'
+                    }
+                  ]);
                 });
-                setEdges((currentEdges) => [
-                  ...currentEdges,
-                  {
-                    id: `edge-${Date.now()}`,
-                    source: sourceNode.id,
-                    target: newNodeId,
-                    type: 'mindmap'
-                  }
-                ]);
               },
               onClose: () => setShowNodeSelectionMenu(false)
             },
@@ -98,7 +87,7 @@ export const useCanvasState = () => {
             {
               id: `edge-${Date.now()}`,
               source: sourceNode.id,
-              target: selectionMenuNode.id, // Corrected from selectionMenuId to selectionMenuNode.id
+              target: selectionMenuNode.id,
               type: 'mindmap'
             }
           ]);
@@ -108,7 +97,6 @@ export const useCanvasState = () => {
     },
     [nodes, setNodes, setEdges, reactFlowWrapper]
   );
-
   return {
     nodes,
     setNodes,

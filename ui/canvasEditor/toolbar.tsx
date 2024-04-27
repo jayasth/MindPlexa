@@ -46,35 +46,55 @@ const Toolbar: React.FC<ToolbarProps> = ({
       </div>
 
       <button
-        onClick={() => createNode('note', { x: 0, y: 0 }, setNodes)}
+        onClick={() =>
+          createNode('note', { x: 0, y: 0 }, (newNode) =>
+            setNodes((prevNodes) => [...prevNodes, newNode])
+          )
+        }
         className={buttonClass}
         title="Add Note Node"
       >
         <PiNotepad size="16" />
       </button>
       <button
-        onClick={() => createNode('task', { x: 0, y: 0 }, setNodes)}
+        onClick={() =>
+          createNode('task', { x: 0, y: 0 }, (newNode) =>
+            setNodes((prevNodes) => [...prevNodes, newNode])
+          )
+        }
         className={buttonClass}
         title="Add Task Node"
       >
         <FaTasks size="16" />
       </button>
       <button
-        onClick={() => createNode('custom', { x: 0, y: 0 }, setNodes)}
+        onClick={() =>
+          createNode('custom', { x: 0, y: 0 }, (newNode) =>
+            setNodes((prevNodes) => [...prevNodes, newNode])
+          )
+        }
         className={buttonClass}
         title="Add Custom Node"
       >
         <FaRegAddressBook size="16" />
       </button>
       <button
-        onClick={() => createNode('code', { x: 0, y: 0 }, setNodes)}
+        onClick={() =>
+          createNode('code', { x: 0, y: 0 }, (newNode) =>
+            setNodes((prevNodes) => [...prevNodes, newNode])
+          )
+        }
         className={buttonClass}
         title="Add Code Node"
       >
         <FaCode size="16" />
       </button>
       <button
-        onClick={() => createNode('draw', { x: 0, y: 0 }, setNodes)}
+        onClick={() =>
+          createNode('draw', { x: 0, y: 0 }, (newNode) =>
+            setNodes((prevNodes) => [...prevNodes, newNode])
+          )
+        }
         className={buttonClass}
         title="Add Draw Node"
       >

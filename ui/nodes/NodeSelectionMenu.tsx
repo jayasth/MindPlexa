@@ -9,7 +9,7 @@ import {
 import { PiNotepad } from 'react-icons/pi';
 import { createNode } from '@/ui/canvasEditor/utils/nodeCreation';
 import { Node as BaseNode } from '@/ui/canvasEditor/canvasEditorReducer';
-import { useCanvas } from '../canvasEditor/CanvasContext'; // Use CanvasContext
+import { useCanvas } from '../canvasEditor/CanvasContext';
 
 export interface NodeSelectionMenuProps {
   data: {
@@ -20,7 +20,7 @@ export interface NodeSelectionMenuProps {
 }
 
 const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({ data }) => {
-  const { setNodes, nodes, setEdges, edges } = useCanvas(); // Use setNodes from CanvasContext
+  const { setNodes, nodes, setEdges, edges } = useCanvas();
   const nodeTypes: ('note' | 'task' | 'custom' | 'code' | 'draw')[] = [
     'note',
     'task',
@@ -53,19 +53,19 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({ data }) => {
     const position = isValidPosition(data.position)
       ? data.position
       : defaultPosition;
-    createNode(nodeType, position, setNodes);
-    // Assuming createNode updates the nodes state, now update the edges to connect the new node
-    const newNodeId = `${nodeType}-${Date.now()}`; // This should match the ID generation logic in createNode
-    setEdges([
-      ...edges,
-      {
-        id: `e${newNodeId}`,
-        source: data.id,
-        target: newNodeId,
-        type: 'straight',
-        animated: true
-      }
-    ]);
+    createNode(nodeType, position, (newNode) => {
+      setNodes((currentNodes) => [...currentNodes, newNode]);
+      setEdges((currentEdges) => [
+        ...currentEdges,
+        {
+          id: `e${newNode.id}`,
+          source: data.id,
+          target: newNode.id,
+          type: 'mindmap',
+          animated: true
+        }
+      ]);
+    });
   };
 
   return (
