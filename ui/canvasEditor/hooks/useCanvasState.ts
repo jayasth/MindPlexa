@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import { Node, Edge, useNodesState, useEdgesState } from 'reactflow';
+import { createNode } from '../utils/nodeCreation';
 
 export const useCanvasState = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
@@ -27,21 +28,79 @@ export const useCanvasState = () => {
       const targetIsPane = (event.target as Element).classList.contains(
         'react-flow__pane'
       );
-      console.log('Is target a pane?', targetIsPane);
       if (targetIsPane && connectingNodeId.current) {
+        const sourceNode = nodes.find(
+          (node) => node.id === connectingNodeId.current
+        );
         const reactFlowBounds =
           reactFlowWrapper.current?.getBoundingClientRect();
-        const position = {
-          x: event.clientX - (reactFlowBounds?.left ?? 0) + window.scrollX,
-          y: event.clientY - (reactFlowBounds?.top ?? 0) + window.scrollY
-        };
-        console.log('Menu position set to:', position);
-        setMenuPosition(position);
-        setShowNodeSelectionMenu(true);
+        const targetPosition =
+          reactFlowBounds && event instanceof MouseEvent
+            ? {
+                x: event.clientX - reactFlowBounds.left + window.scrollX,
+                y: event.clientY - reactFlowBounds.top + window.scrollY
+              }
+            : { x: 0, y: 0 };
+
+        if (sourceNode) {
+          const selectionMenuId = `selection-menu-${Date.now()}`;
+          const selectionMenuNode = {
+            id: selectionMenuId,
+            type: 'selectionMenu',
+            position: targetPosition,
+            data: {
+              onSelect: (nodeType: string) => {
+                const newNodeId = `${nodeType}-${Date.now()}`;
+                const newNode = {
+                  id: newNodeId,
+                  type: nodeType,
+                  position: targetPosition,
+                  data: {
+                    label: `New ${nodeType} Node`,
+                    width: 200,
+                    height: 300
+                  }
+                };
+
+                setNodes((currentNodes) => {
+                  const newNodes = currentNodes
+                    .filter((node) => node.id !== selectionMenuId)
+                    .concat(newNode);
+                  return newNodes;
+                });
+
+                setEdges((currentEdges) => [
+                  ...currentEdges,
+                  {
+                    id: `edge-${Date.now()}`,
+                    source: sourceNode.id,
+                    target: newNodeId,
+                    type: 'mindmap'
+                  }
+                ]);
+              },
+              onClose: () => setShowNodeSelectionMenu(false)
+            },
+            draggable: true,
+            connectable: true
+          };
+
+          setNodes((nds) => [...nds, selectionMenuNode]);
+
+          setEdges((eds) => [
+            ...eds,
+            {
+              id: `edge-${Date.now()}`,
+              source: sourceNode.id,
+              target: selectionMenuId,
+              type: 'mindmap'
+            }
+          ]);
+        }
       }
       connectingNodeId.current = null;
     },
-    [reactFlowWrapper]
+    [nodes, setNodes, setEdges, reactFlowWrapper]
   );
 
   return {

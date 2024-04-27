@@ -25,7 +25,7 @@ const nodeTypes = {
   custom: (props) => <NodeRenderer {...props} />,
   code: (props) => <NodeRenderer {...props} />,
   draw: (props) => <NodeRenderer {...props} />,
-  selectionMenu: NodeSelectionMenu
+  selectionMenu: (props) => <NodeRenderer {...props} />
 };
 
 const edgeTypes = {
