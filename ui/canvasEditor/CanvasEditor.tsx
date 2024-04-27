@@ -78,7 +78,10 @@ export default function CanvasEditor() {
                   },
                   position: menuPosition,
                   onClose: () => setShowNodeSelectionMenu(false),
-                  id: 'nodeSelectionMenu'
+                  id: 'nodeSelectionMenu',
+                  type: 'selectionMenu', // Assuming 'selectionMenu' is a valid type
+                  width: 200, // Default width for the selection menu
+                  height: 100 // Default height for the selection menu
                 }}
               />
             )}

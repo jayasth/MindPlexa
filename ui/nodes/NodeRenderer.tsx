@@ -14,6 +14,7 @@ interface NodeRendererProps extends NodeProps {
     newSize: { width: number; height: number }
   ) => void;
 }
+
 const NodeRenderer: React.FC<NodeRendererProps> = ({
   data,
   selected,
@@ -49,126 +50,26 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
       const extendedNode = node as unknown as NodeSelectionMenuProps;
       return <NodeSelectionMenu data={extendedNode.data} />;
     case 'note':
-      return (
-        <NoteNode
-          data={{
-            ...node,
-            width: node.width === null ? undefined : node.width,
-            height: node.height === null ? undefined : node.height
-          }}
-          onDelete={() => console.log('Delete Note')}
-          onChangeColor={() => console.log('Change Color')}
-          onTag={() => console.log('Tag Note')}
-          onAttach={() => console.log('Attach File')}
-          selected={selected}
-          id={id}
-          type={node.type}
-          zIndex={0}
-          isConnectable={true}
-          xPos={0}
-          yPos={0}
-          dragging={false}
-          onNodeResizeStop={function (newSize: {
-            width: number;
-            height: number;
-          }): void {
-            onNodeResizeStop(id, newSize);
-          }}
-        />
-      );
     case 'task':
-      return (
-        <TaskNode
-          data={{
-            ...node,
-            width: node.width === null ? undefined : node.width,
-            height: node.height === null ? undefined : node.height
-          }}
-          onDelete={() => console.log('Delete Task')}
-          onChangeColor={() => console.log('Change Color')}
-          onTag={() => console.log('Tag Task')}
-          onAttach={() => console.log('Attach File')}
-          onToggleComplete={() => console.log('Toggle Task Completion')}
-          selected={selected}
-          id={id}
-          type={node.type}
-          zIndex={0}
-          isConnectable={true}
-          xPos={0}
-          yPos={0}
-          dragging={false}
-          onNodeResizeStop={function (newSize: {
-            width: number;
-            height: number;
-          }): void {
-            throw new Error('Function not implemented.');
-          }}
-        />
-      );
     case 'custom':
-      return (
-        <CustomNode
-          data={{
-            ...node,
-            width: node.width === null ? undefined : node.width,
-            height: node.height === null ? undefined : node.height
-          }}
-          onDelete={() => console.log('Delete Custom')}
-          onChangeColor={() => console.log('Change Color')}
-          onTag={() => console.log('Tag Custom')}
-          onAttach={() => console.log('Attach File')}
-          selected={selected}
-          id={id}
-          type={node.type}
-          zIndex={0}
-          isConnectable={true}
-          xPos={0}
-          yPos={0}
-          dragging={false}
-        />
-      );
     case 'code':
-      return (
-        <CodeNode
-          data={{
-            ...node,
-            width: node.width === null ? undefined : node.width,
-            height: node.height === null ? undefined : node.height
-          }}
-          onDelete={() => console.log('Delete Code')}
-          onChangeColor={() => console.log('Change Color')}
-          onTag={() => console.log('Tag Code')}
-          onAttach={() => console.log('Attach File')}
-          selected={selected}
-          id={id}
-          type={node.type}
-          zIndex={0}
-          isConnectable={true}
-          xPos={0}
-          yPos={0}
-          dragging={false}
-        />
-      );
     case 'draw':
+      const NodeComponent = {
+        note: NoteNode,
+        task: TaskNode,
+        custom: CustomNode,
+        code: CodeNode,
+        draw: DrawNode
+      }[node.type];
+
       return (
-        <DrawNode
+        <NodeComponent
+          {...commonProps}
           data={{
             ...node,
-            width: node.width === null ? undefined : node.width,
-            height: node.height === null ? undefined : node.height
+            width: node.width ?? 200, // Default width if not specified
+            height: node.height ?? 100 // Default height if not specified
           }}
-          onDelete={() => console.log('Delete Draw')}
-          onChangeColor={() => console.log('Change Color')}
-          onTag={() => console.log('Tag Draw')}
-          onAttach={() => console.log('Attach File')}
-          selected={selected}
-          id={id}
-          type={node.type}
-          zIndex={0}
-          isConnectable={true}
-          xPos={0}
-          yPos={0}
-          dragging={false}
         />
       );
 
