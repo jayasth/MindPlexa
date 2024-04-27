@@ -1,7 +1,9 @@
-import type { Json } from '@/types_db';
-import type { Tables } from '@/types_db';
+import type { Json, JsonPosition } from '@/types_db';
 
-export type Node = Tables<'base_nodes'>;
+export interface Node {
+  id: string;
+  position: JsonPosition;
+}
 
 export interface Edge {
   id: string;

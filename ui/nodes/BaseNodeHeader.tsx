@@ -4,16 +4,24 @@ import { FaTrash } from 'react-icons/fa';
 
 interface BaseNodeHeaderProps {
   title: string;
-  onDelete: () => void;
+  onDelete?: () => void; // Optional if not all nodes need a delete function
+  children?: React.ReactNode; // Allow passing additional elements for customization
 }
 
-const BaseNodeHeader: React.FC<BaseNodeHeaderProps> = ({ title, onDelete }) => {
+const BaseNodeHeader: React.FC<BaseNodeHeaderProps> = ({
+  title,
+  onDelete,
+  children
+}) => {
   return (
     <div className={styles.header}>
       <span className={styles.title}>{title}</span>
-      <button onClick={onDelete} className={styles.iconButton}>
-        <FaTrash className={styles.icon} />
-      </button>
+      {children}
+      {onDelete && (
+        <button onClick={onDelete} className={styles.iconButton}>
+          <FaTrash className={styles.icon} />
+        </button>
+      )}
     </div>
   );
 };

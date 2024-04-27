@@ -1,5 +1,5 @@
 import React from 'react';
-import { Handle, Position } from 'reactflow';
+import { Handle, Position, NodeProps } from 'reactflow';
 import {
   FaTasks,
   FaCode,
@@ -9,19 +9,16 @@ import {
 import { PiNotepad } from 'react-icons/pi';
 import { createNode } from '@/ui/canvasEditor/utils/nodeCreation';
 import { Node as BaseNode } from '@/ui/canvasEditor/canvasEditorReducer';
-import { Dispatch, SetStateAction } from 'react';
+import { useCanvas } from '../canvasEditor/CanvasContext'; // Use CanvasContext
 
 export interface NodeSelectionMenuProps {
   data: {
     onSelect: (nodeType: string, position: { x: number; y: number }) => void;
   } & BaseNode;
-  setNodes: Dispatch<SetStateAction<any[]>>;
 }
 
-const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
-  data,
-  setNodes
-}) => {
+const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({ data }) => {
+  const { setNodes } = useCanvas(); // Use setNodes from CanvasContext
   const nodeTypes: ('note' | 'task' | 'custom' | 'code' | 'draw')[] = [
     'note',
     'task',
