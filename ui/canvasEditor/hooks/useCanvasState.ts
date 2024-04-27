@@ -25,27 +25,32 @@ export const useCanvasState = () => {
 
   const onConnectEnd = useCallback(
     (event) => {
+      console.log('onConnectEnd triggered', event);
       const targetIsPane = (event.target as Element).classList.contains(
         'react-flow__pane'
       );
-      if (targetIsPane && connectingNodeId.current) {
+      const elementUnderCursor = document.elementFromPoint(
+        event.clientX,
+        event.clientY
+      );
+      const noNodeUnderCursor =
+        elementUnderCursor && !elementUnderCursor.closest('.react-flow__node');
+
+      if (targetIsPane && connectingNodeId.current && noNodeUnderCursor) {
         const sourceNode = nodes.find(
           (node) => node.id === connectingNodeId.current
         );
         const reactFlowBounds =
           reactFlowWrapper.current?.getBoundingClientRect();
-        const targetPosition =
-          reactFlowBounds && event instanceof MouseEvent
-            ? {
-                x: event.clientX - reactFlowBounds.left + window.scrollX,
-                y: event.clientY - reactFlowBounds.top + window.scrollY
-              }
-            : { x: 0, y: 0 };
 
-        if (sourceNode) {
-          const selectionMenuId = `selection-menu-${Date.now()}`;
+        if (reactFlowBounds && sourceNode) {
+          const targetPosition = {
+            x: event.clientX - reactFlowBounds.left + window.scrollX,
+            y: event.clientY - reactFlowBounds.top + window.scrollY
+          };
+
           const selectionMenuNode = {
-            id: selectionMenuId,
+            id: `selection-menu-${Date.now()}`,
             type: 'selectionMenu',
             position: targetPosition,
             data: {
@@ -64,11 +69,10 @@ export const useCanvasState = () => {
 
                 setNodes((currentNodes) => {
                   const newNodes = currentNodes
-                    .filter((node) => node.id !== selectionMenuId)
+                    .filter((node) => node.id !== selectionMenuNode.id)
                     .concat(newNode);
                   return newNodes;
                 });
-
                 setEdges((currentEdges) => [
                   ...currentEdges,
                   {
@@ -86,13 +90,15 @@ export const useCanvasState = () => {
           };
 
           setNodes((nds) => [...nds, selectionMenuNode]);
+          setShowNodeSelectionMenu(true);
+          setMenuPosition(targetPosition);
 
           setEdges((eds) => [
             ...eds,
             {
               id: `edge-${Date.now()}`,
               source: sourceNode.id,
-              target: selectionMenuId,
+              target: selectionMenuNode.id, // Corrected from selectionMenuId to selectionMenuNode.id
               type: 'mindmap'
             }
           ]);

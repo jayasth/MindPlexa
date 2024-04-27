@@ -48,7 +48,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
   switch (node.type) {
     case 'selectionMenu':
       const extendedNode = node as unknown as NodeSelectionMenuProps;
-      return <NodeSelectionMenu data={extendedNode.data} />;
+      return <NodeSelectionMenu {...commonProps} data={extendedNode.data} />;
     case 'note':
     case 'task':
     case 'custom':
