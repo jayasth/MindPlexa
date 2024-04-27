@@ -47,9 +47,7 @@ export default function CanvasEditor() {
     onConnect,
     onConnectStart,
     onConnectEnd,
-    reactFlowWrapper,
-    menuPosition,
-    setMenuPosition
+    reactFlowWrapper
   } = useCanvasState();
 
   return (

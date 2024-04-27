@@ -4,10 +4,6 @@ import { Node, Edge, useNodesState, useEdgesState } from 'reactflow';
 export const useCanvasState = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-  const [menuPosition, setMenuPosition] = useState<{
-    x: number;
-    y: number;
-  } | null>(null);
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const connectingNodeId = useRef<string | null>(null);
 
@@ -28,9 +24,12 @@ export const useCanvasState = () => {
         'react-flow__pane'
       );
       if (targetIsPane && connectingNodeId.current) {
+        const sourceNode = nodes.find(
+          (node) => node.id === connectingNodeId.current
+        );
         const reactFlowBounds =
           reactFlowWrapper.current?.getBoundingClientRect();
-        const position =
+        const targetPosition =
           reactFlowBounds && event instanceof MouseEvent
             ? {
                 x: event.clientX - reactFlowBounds.left + window.scrollX,
@@ -38,11 +37,11 @@ export const useCanvasState = () => {
               }
             : { x: 0, y: 0 };
 
-        setMenuPosition(position);
+        // Additional logic for handling node creation and connection can be added here
       }
       connectingNodeId.current = null;
     },
-    [reactFlowWrapper]
+    [nodes, setEdges, reactFlowWrapper]
   );
 
   return {
@@ -55,8 +54,6 @@ export const useCanvasState = () => {
     onConnect,
     onConnectStart,
     onConnectEnd,
-    menuPosition,
-    setMenuPosition,
     reactFlowWrapper
   };
 };
