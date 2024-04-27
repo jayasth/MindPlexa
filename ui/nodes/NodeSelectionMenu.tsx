@@ -1,28 +1,43 @@
 import React from 'react';
 import { Handle, Position } from 'reactflow';
-import { FaTasks, FaCode, FaPaintBrush } from 'react-icons/fa';
+import {
+  FaTasks,
+  FaCode,
+  FaPaintBrush,
+  FaRegAddressBook
+} from 'react-icons/fa';
 import { PiNotepad } from 'react-icons/pi';
-import { FaRegAddressBook } from 'react-icons/fa';
+import { createNode } from '@/ui/canvasEditor/utils/nodeCreation';
 import { Node as BaseNode } from '@/ui/canvasEditor/canvasEditorReducer';
+import { Dispatch, SetStateAction } from 'react';
 
 export interface NodeSelectionMenuProps {
   data: {
     onSelect: (nodeType: string, position: { x: number; y: number }) => void;
   } & BaseNode;
+  setNodes: Dispatch<SetStateAction<any[]>>;
 }
 
-const icons = {
-  note: <PiNotepad size="15" />,
-  task: <FaTasks size="15" />,
-  custom: <FaRegAddressBook size="15" />,
-  code: <FaCode size="15" />,
-  draw: <FaPaintBrush size="15" />
-};
+const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
+  data,
+  setNodes
+}) => {
+  const nodeTypes: ('note' | 'task' | 'custom' | 'code' | 'draw')[] = [
+    'note',
+    'task',
+    'custom',
+    'code',
+    'draw'
+  ];
+  const icons = {
+    note: <PiNotepad size="16" />,
+    task: <FaTasks size="16" />,
+    custom: <FaRegAddressBook size="16" />,
+    code: <FaCode size="16" />,
+    draw: <FaPaintBrush size="16" />
+  };
+  const defaultPosition = { x: 0, y: 0 };
 
-const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({ data }) => {
-  const nodeTypes = ['note', 'task', 'custom', 'code', 'draw'];
-
-  // Type guard to check if position is valid
   const isValidPosition = (
     position: any
   ): position is { x: number; y: number } => {
@@ -32,8 +47,6 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({ data }) => {
       typeof position.y === 'number'
     );
   };
-
-  const defaultPosition = { x: 0, y: 0 }; // Default position if not valid
 
   return (
     <div className="bg-white shadow-lg rounded p-1">
@@ -47,7 +60,7 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({ data }) => {
               const position = isValidPosition(data.position)
                 ? data.position
                 : defaultPosition;
-              data.onSelect(type, position);
+              createNode(type, position, setNodes);
             }}
             title={type.charAt(0).toUpperCase() + type.slice(1)}
           >

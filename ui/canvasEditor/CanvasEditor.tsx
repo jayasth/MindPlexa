@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useMemo } from 'react';
+import React, { useCallback, useRef } from 'react';
 import ReactFlow, {
   Controls,
   Background,
@@ -51,12 +51,19 @@ const nodeOrigin: NodeOrigin = [0.5, 0.5];
 const connectionLineStyle = { stroke: '#F6AD55', strokeWidth: 3 };
 const defaultEdgeOptions = { style: connectionLineStyle, type: 'mindmap' };
 
-export default function MindMapCanvas() {
+export default function CanvasEditor() {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
   const connectingNodeId = useRef<string | null>(null);
+
+  const onConnect = useCallback(
+    (params) => {
+      setEdges((eds) => [...eds, { ...params, type: 'mindmap' }]);
+    },
+    [setEdges]
+  );
 
   const onConnectStart: OnConnectStart = useCallback((_, { nodeId }) => {
     connectingNodeId.current = nodeId;
@@ -152,11 +159,6 @@ export default function MindMapCanvas() {
     [nodes, setEdges, setNodes, reactFlowWrapper]
   );
 
-  const onConnect = useCallback(
-    (params: Connection) => setEdges((eds) => addEdge(params, eds)),
-    [setEdges]
-  );
-
   const handleNodeResizeStop = useCallback(
     (nodeId: string, newSize: { width: number; height: number }) => {
       setNodes((currentNodes) =>
@@ -222,13 +224,11 @@ export default function MindMapCanvas() {
       <ReactFlowProvider>
         <div className="w-1/6 bg-gray-100 p-2">
           <Toolbar
-            onAddNode={(nodeType) =>
-              handleAddNode(nodeType, setNodes, reactFlowWrapper)
-            }
             onUndo={() => console.log('Undo')}
             onRedo={() => console.log('Redo')}
-            onShare={() => handleShare({ nodes, edges })}
-            onDownload={() => handleDownload({ nodes, edges })}
+            onShare={() => console.log('Share')}
+            onDownload={() => console.log('Download')}
+            setNodes={setNodes}
           />
         </div>
         <div className="w-5/6" ref={reactFlowWrapper}>

@@ -11,30 +11,12 @@ import { Node, XYPosition } from 'reactflow';
 
 type BaseNode = Tables<'base_nodes'>;
 
-function isXYPosition(position: any): position is XYPosition {
-  return (
-    position && typeof position.x === 'number' && typeof position.y === 'number'
-  );
-}
-
 export const handleAddNode = (
   nodeType: 'note' | 'task' | 'custom' | 'code' | 'draw',
   setNodes: Dispatch<SetStateAction<Node<any>[]>>,
-  reactFlowWrapper: React.RefObject<HTMLDivElement>
+  position: { x: number; y: number }
 ) => {
-  const reactFlowBounds = reactFlowWrapper.current?.getBoundingClientRect();
-  const position: XYPosition = reactFlowBounds
-    ? {
-        x: reactFlowBounds.width / 2,
-        y: reactFlowBounds.height / 2
-      }
-    : { x: 0, y: 0 };
-
-  console.log('Node position:', position);
-
-  const positionAsJson: Json = isXYPosition(position)
-    ? { x: position.x, y: position.y }
-    : {};
+  const positionAsJson: Json = { x: position.x, y: position.y };
 
   const baseProperties: Partial<BaseNode> & { id: string; position: Json } = {
     id: `${nodeType}-${Date.now()}`,
@@ -95,7 +77,7 @@ export const handleAddNode = (
   const newNode: Node<any> = {
     ...specificNode,
     data: specificNode,
-    id: baseProperties.id // Explicitly set id from baseProperties
+    id: baseProperties.id
   };
 
   console.log('Adding new node:', newNode);

@@ -12,23 +12,25 @@ import {
 } from 'react-icons/fa';
 import { PiNotepad } from 'react-icons/pi';
 import Link from 'next/link';
+import { createNode } from '@/ui/canvasEditor/utils/nodeCreation';
+import { Node } from 'reactflow';
+import { Dispatch, SetStateAction } from 'react';
 
 interface ToolbarProps {
-  onAddNode: (nodeType: 'note' | 'task' | 'custom' | 'code' | 'draw') => void;
   onUndo: () => void;
   onRedo: () => void;
   onShare: () => void;
   onDownload: () => void;
+  setNodes: Dispatch<SetStateAction<Node<any>[]>>;
 }
 
 const Toolbar: React.FC<ToolbarProps> = ({
-  onAddNode,
   onUndo,
   onRedo,
   onShare,
-  onDownload
+  onDownload,
+  setNodes
 }) => {
-  // Base button class
   const buttonClass = 'buttonClass';
 
   return (
@@ -44,35 +46,35 @@ const Toolbar: React.FC<ToolbarProps> = ({
       </div>
 
       <button
-        onClick={() => onAddNode('note')}
+        onClick={() => createNode('note', { x: 0, y: 0 }, setNodes)}
         className={buttonClass}
         title="Add Note Node"
       >
         <PiNotepad size="16" />
       </button>
       <button
-        onClick={() => onAddNode('task')}
+        onClick={() => createNode('task', { x: 0, y: 0 }, setNodes)}
         className={buttonClass}
         title="Add Task Node"
       >
         <FaTasks size="16" />
       </button>
       <button
-        onClick={() => onAddNode('custom')}
+        onClick={() => createNode('custom', { x: 0, y: 0 }, setNodes)}
         className={buttonClass}
         title="Add Custom Node"
       >
         <FaRegAddressBook size="16" />
       </button>
       <button
-        onClick={() => onAddNode('code')}
+        onClick={() => createNode('code', { x: 0, y: 0 }, setNodes)}
         className={buttonClass}
         title="Add Code Node"
       >
         <FaCode size="16" />
       </button>
       <button
-        onClick={() => onAddNode('draw')}
+        onClick={() => createNode('draw', { x: 0, y: 0 }, setNodes)}
         className={buttonClass}
         title="Add Draw Node"
       >
