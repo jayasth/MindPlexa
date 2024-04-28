@@ -13,7 +13,16 @@ export const useCanvasState = () => {
 
   const onConnect = useCallback(
     (params) => {
-      setEdges((eds) => [...eds, { ...params, type: 'mindmap' }]);
+      setEdges((eds) => [...eds, { ...params, type: 'customEdge' }]);
+    },
+    [setEdges]
+  );
+
+  const onDeleteEdge = useCallback(
+    (edgeId) => {
+      setEdges((currentEdges) =>
+        currentEdges.filter((edge) => edge.id !== edgeId)
+      );
     },
     [setEdges]
   );
@@ -29,21 +38,23 @@ export const useCanvasState = () => {
       const targetIsPane = (event.target as Element).classList.contains(
         'react-flow__pane'
       );
+
+      // Improved node detection logic
       const elementUnderCursor = document.elementFromPoint(
         event.clientX,
         event.clientY
       );
-      const noNodeUnderCursor =
-        elementUnderCursor && !elementUnderCursor.closest('.react-flow__node');
+      const nodeUnderCursor = elementUnderCursor?.closest('.react-flow__node');
 
       console.log(
         'Target is pane:',
         targetIsPane,
-        'No node under cursor:',
-        noNodeUnderCursor
+        'Node under cursor:',
+        !!nodeUnderCursor
       );
 
-      if (targetIsPane && connectingNodeId.current && noNodeUnderCursor) {
+      // Only proceed if the target is the pane and there is no node under the cursor
+      if (targetIsPane && !nodeUnderCursor) {
         const sourceNode = nodes.find(
           (node) => node.id === connectingNodeId.current
         );
@@ -77,12 +88,15 @@ export const useCanvasState = () => {
                       id: `edge-${Date.now()}`,
                       source: sourceNode.id,
                       target: newNodeId,
-                      type: 'mindmap'
+                      type: 'customEdge'
                     }
                   ]);
                 });
               },
-              onClose: () => setShowNodeSelectionMenu(false),
+              onClose: () => {
+                setShowNodeSelectionMenu(false);
+                setMenuNodeId(null);
+              },
               id: selectionMenuNodeId, // Ensuring data.id is passed correctly
               isStandalone: false // Ensuring isStandalone is set correctly
             },
@@ -105,7 +119,7 @@ export const useCanvasState = () => {
               id: `edge-${Date.now()}`,
               source: sourceNode.id,
               target: selectionMenuNodeId,
-              type: 'mindmap'
+              type: 'customEdge'
             }
           ]);
         }
@@ -130,6 +144,7 @@ export const useCanvasState = () => {
     setShowNodeSelectionMenu,
     menuPosition,
     setMenuPosition,
-    menuNodeId
+    menuNodeId,
+    onDeleteEdge // Make onDeleteEdge available in the returned object
   };
 };

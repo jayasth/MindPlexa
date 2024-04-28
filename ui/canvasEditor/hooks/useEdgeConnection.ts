@@ -10,7 +10,12 @@ export const useEdgeConnection = (
 
   const onConnect = useCallback(
     (params) => {
-      setEdges((eds) => [...eds, { ...params, type: 'mindmap' }]);
+      const newEdge = {
+        ...params,
+        id: `edge-${Date.now()}`, // Unique ID for each new edge
+        type: 'customEdge'
+      };
+      setEdges((eds) => [...eds, newEdge]);
     },
     [setEdges]
   );

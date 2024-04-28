@@ -63,10 +63,12 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({ data }) => {
           id: `e${newNode.id}`,
           source: data.id,
           target: newNode.id,
-          type: 'mindmap',
+          type: 'customEdge',
           animated: true
         }
       ]);
+      // Invoke the onSelect callback after node creation
+      data.onSelect(nodeType, position);
     });
   };
 

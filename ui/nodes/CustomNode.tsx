@@ -4,6 +4,7 @@ import BaseNodeHeader from './BaseNodeHeader';
 import BaseNodeFooter from './BaseNodeFooter';
 import customStyles from './CustomNode.module.css';
 import baseStyles from './BaseNode.module.css';
+import styles from '@/ui/edges/EdgeStyles.module.css';
 
 interface CustomNodeData {
   id: string;
@@ -63,7 +64,11 @@ const CustomNode: React.FC<CustomNodeProps> = ({
         isVisible={selected}
         onResize={handleResizeStop}
       />
-      <Handle type="target" position={Position.Top} />
+      <Handle
+        type="target"
+        position={Position.Top}
+        className={`${styles.reactFlowHandle} ${styles.reactFlowHandleTop}`}
+      />
       <BaseNodeHeader
         title={data.title || 'Untitled Custom Node'}
         onDelete={onDelete}
@@ -76,7 +81,11 @@ const CustomNode: React.FC<CustomNodeProps> = ({
         onTag={onTag}
         onAttach={onAttach}
       />
-      <Handle type="source" position={Position.Bottom} />
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        className={`${styles.reactFlowHandle} ${styles.reactFlowHandleBottom}`}
+      />
     </div>
   );
 };

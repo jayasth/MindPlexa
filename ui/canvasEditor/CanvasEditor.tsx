@@ -4,20 +4,15 @@ import ReactFlow, {
   Background,
   ReactFlowProvider,
   NodeOrigin,
-  ConnectionLineType,
-  Node
+  ConnectionLineType
 } from 'reactflow';
-import 'reactflow/dist/style.css';
 import { CanvasProvider } from './CanvasContext';
 import Toolbar from './toolbar';
 import { handleDownload, handleShare } from './utils/canvasEditorUtils';
 import NodeRenderer from '@/ui/nodes/NodeRenderer';
-import CustomEdge from '@/ui/canvasEditor/CustomEdge';
+import CustomEdge from '@/ui/edges/CustomEdge';
 import NodeSelectionMenu from '@/ui/nodes/NodeSelectionMenu';
 import { useCanvasState } from './hooks/useCanvasState';
-import { useNodeResizing } from './hooks/useNodeResizing';
-import { useEdgeConnection } from './hooks/useEdgeConnection';
-import { createNode } from './utils/nodeCreation';
 
 const nodeTypes = {
   note: (props) => <NodeRenderer {...props} />,
@@ -29,12 +24,13 @@ const nodeTypes = {
 };
 
 const edgeTypes = {
-  mindmap: CustomEdge
+  customEdge: CustomEdge
 };
 
 const nodeOrigin: NodeOrigin = [0.5, 0.5];
-const connectionLineStyle = { stroke: '#F6AD55', strokeWidth: 3 };
-const defaultEdgeOptions = { style: connectionLineStyle, type: 'mindmap' };
+const defaultEdgeOptions = {
+  type: 'customEdge'
+};
 
 export default function CanvasEditor() {
   const {
@@ -79,9 +75,9 @@ export default function CanvasEditor() {
                   position: menuPosition,
                   onClose: () => setShowNodeSelectionMenu(false),
                   id: 'nodeSelectionMenu',
-                  type: 'selectionMenu', // Ensuring 'selectionMenu' is a valid type
-                  width: 200, // Default width for the selection menu
-                  height: 100 // Default height for the selection menu
+                  type: 'selectionMenu',
+                  width: 200,
+                  height: 100
                 }}
               />
             )}
@@ -96,7 +92,6 @@ export default function CanvasEditor() {
               nodeTypes={nodeTypes}
               edgeTypes={edgeTypes}
               nodeOrigin={nodeOrigin}
-              connectionLineStyle={connectionLineStyle}
               defaultEdgeOptions={defaultEdgeOptions}
               connectionLineType={ConnectionLineType.Straight}
               fitView={true}

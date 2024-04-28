@@ -7,6 +7,7 @@ import CustomNode from './CustomNode';
 import CodeNode from './CodeNode';
 import DrawNode from './DrawNode';
 import NodeSelectionMenu, { NodeSelectionMenuProps } from './NodeSelectionMenu';
+import styles from '@/ui/edges/EdgeStyles.module.css'; // Importing styles
 
 interface NodeRendererProps extends NodeProps {
   onNodeResizeStop: (
@@ -42,7 +43,8 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     isConnectable: true,
     xPos: 0,
     yPos: 0,
-    dragging: false
+    dragging: false,
+    className: styles.reactFlowNode // Applying styles to nodes
   };
 
   switch (node.type) {

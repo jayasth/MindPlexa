@@ -4,6 +4,7 @@ import BaseNodeHeader from './BaseNodeHeader';
 import BaseNodeFooter from './BaseNodeFooter';
 import codeStyles from './CodeNode.module.css';
 import baseStyles from './BaseNode.module.css';
+import styles from '@/ui/edges/EdgeStyles.module.css';
 
 interface CodeNodeData {
   id: string;
@@ -67,7 +68,7 @@ const CodeNode: React.FC<CodeNodeProps> = ({
       <Handle
         type="target"
         position={Position.Top}
-        style={{ background: '#555' }}
+        className={`${styles.reactFlowHandle} ${styles.reactFlowHandleTop}`}
       />
       <BaseNodeHeader
         title={data.title || 'Untitled Code'}
@@ -86,7 +87,7 @@ const CodeNode: React.FC<CodeNodeProps> = ({
       <Handle
         type="source"
         position={Position.Bottom}
-        style={{ background: '#555' }}
+        className={`${styles.reactFlowHandle} ${styles.reactFlowHandleBottom}`}
       />
     </div>
   );

@@ -9,6 +9,7 @@ interface CanvasContextType {
   setEdges: React.Dispatch<React.SetStateAction<any[]>>;
   onNodesChange: (changes: any) => void;
   onEdgesChange: (changes: any) => void;
+  onDeleteEdge: (edgeId: string) => void; // Added onDeleteEdge to the context type
 }
 
 // Create the context
@@ -17,12 +18,27 @@ const CanvasContext = createContext<CanvasContextType | undefined>(undefined);
 export const CanvasProvider: React.FC<{ children: React.ReactNode }> = ({
   children
 }) => {
-  const { nodes, setNodes, edges, setEdges, onNodesChange, onEdgesChange } =
-    useCanvasState();
+  const {
+    nodes,
+    setNodes,
+    edges,
+    setEdges,
+    onNodesChange,
+    onEdgesChange,
+    onDeleteEdge
+  } = useCanvasState(); // Included onDeleteEdge from useCanvasState
 
   return (
     <CanvasContext.Provider
-      value={{ nodes, setNodes, edges, setEdges, onNodesChange, onEdgesChange }}
+      value={{
+        nodes,
+        setNodes,
+        edges,
+        setEdges,
+        onNodesChange,
+        onEdgesChange,
+        onDeleteEdge
+      }} // Provided onDeleteEdge through context
     >
       {children}
     </CanvasContext.Provider>

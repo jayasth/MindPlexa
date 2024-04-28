@@ -4,6 +4,7 @@ import BaseNodeHeader from './BaseNodeHeader';
 import BaseNodeFooter from './BaseNodeFooter';
 import taskStyles from './TaskNode.module.css';
 import baseStyles from './BaseNode.module.css';
+import styles from '@/ui/edges/EdgeStyles.module.css';
 
 interface TaskNodeData {
   id: string;
@@ -74,7 +75,7 @@ const TaskNode: React.FC<TaskNodeProps> = ({
       <Handle
         type="target"
         position={Position.Top}
-        style={{ background: '#555' }}
+        className={`${styles.reactFlowHandle} ${styles.reactFlowHandleTop}`}
       />
       <BaseNodeHeader
         title={data.title || 'Untitled Task'}
@@ -101,7 +102,7 @@ const TaskNode: React.FC<TaskNodeProps> = ({
       <Handle
         type="source"
         position={Position.Bottom}
-        style={{ background: '#555' }}
+        className={`${styles.reactFlowHandle} ${styles.reactFlowHandleBottom}`}
       />
     </div>
   );
