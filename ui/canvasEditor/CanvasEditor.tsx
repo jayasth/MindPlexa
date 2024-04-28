@@ -25,7 +25,7 @@ const nodeTypes = {
   custom: (props) => <NodeRenderer {...props} />,
   code: (props) => <NodeRenderer {...props} />,
   draw: (props) => <NodeRenderer {...props} />,
-  selectionMenu: (props) => <NodeRenderer {...props} />
+  selectionMenu: (props) => <NodeSelectionMenu {...props} />
 };
 
 const edgeTypes = {
@@ -67,7 +67,7 @@ export default function CanvasEditor() {
             />
           </div>
           <div className="w-5/6" ref={reactFlowWrapper}>
-            {showNodeSelectionMenu && (
+            {showNodeSelectionMenu && menuPosition && (
               <NodeSelectionMenu
                 data={{
                   onSelect: (nodeType, position) => {

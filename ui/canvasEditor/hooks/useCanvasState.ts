@@ -36,12 +36,22 @@ export const useCanvasState = () => {
       const noNodeUnderCursor =
         elementUnderCursor && !elementUnderCursor.closest('.react-flow__node');
 
+      console.log(
+        'Target is pane:',
+        targetIsPane,
+        'No node under cursor:',
+        noNodeUnderCursor
+      );
+
       if (targetIsPane && connectingNodeId.current && noNodeUnderCursor) {
         const sourceNode = nodes.find(
           (node) => node.id === connectingNodeId.current
         );
+        console.log('Source Node:', sourceNode);
+
         const reactFlowBounds =
           reactFlowWrapper.current?.getBoundingClientRect();
+        console.log('React Flow Bounds:', reactFlowBounds);
 
         if (reactFlowBounds && sourceNode) {
           const targetPosition = {
@@ -49,15 +59,15 @@ export const useCanvasState = () => {
             y: event.clientY - reactFlowBounds.top + window.scrollY
           };
 
+          console.log('Target Position:', targetPosition);
+
+          const selectionMenuNodeId = `selection-menu-${Date.now()}`;
           const selectionMenuNode = {
-            id: `selection-menu-${Date.now()}`,
+            id: selectionMenuNodeId,
             type: 'selectionMenu',
             position: targetPosition,
             data: {
-              onSelect: (
-                nodeType: 'note' | 'task' | 'custom' | 'code' | 'draw',
-                position: { x: number; y: number }
-              ) => {
+              onSelect: (nodeType, position) => {
                 const newNodeId = `${nodeType}-${Date.now()}`;
                 createNode(nodeType, position, (newNode) => {
                   setNodes((currentNodes) => [...currentNodes, newNode]);
@@ -75,19 +85,24 @@ export const useCanvasState = () => {
               onClose: () => setShowNodeSelectionMenu(false)
             },
             draggable: true,
-            connectable: true
+            connectable: true,
+            width: 200,
+            height: 100
           };
 
+          console.log('Selection Menu Node:', selectionMenuNode);
+
           setNodes((nds) => [...nds, selectionMenuNode]);
-          setShowNodeSelectionMenu(true);
           setMenuPosition(targetPosition);
+          setShowNodeSelectionMenu(true);
+          setMenuNodeId(selectionMenuNodeId);
 
           setEdges((eds) => [
             ...eds,
             {
               id: `edge-${Date.now()}`,
               source: sourceNode.id,
-              target: selectionMenuNode.id,
+              target: selectionMenuNodeId,
               type: 'mindmap'
             }
           ]);
@@ -97,6 +112,7 @@ export const useCanvasState = () => {
     },
     [nodes, setNodes, setEdges, reactFlowWrapper]
   );
+
   return {
     nodes,
     setNodes,
@@ -111,6 +127,7 @@ export const useCanvasState = () => {
     showNodeSelectionMenu,
     setShowNodeSelectionMenu,
     menuPosition,
-    setMenuPosition
+    setMenuPosition,
+    menuNodeId
   };
 };

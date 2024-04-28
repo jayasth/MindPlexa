@@ -14,8 +14,10 @@ import { useCanvas } from '../canvasEditor/CanvasContext';
 export interface NodeSelectionMenuProps {
   data: {
     onSelect: (nodeType: string, position: { x: number; y: number }) => void;
-    position: { x: number; y: number };
+    position?: { x: number; y: number }; // position can be optional
     onClose: () => void;
+    id?: string; // Node ID can be optional
+    isStandalone?: boolean; // Indicates if the menu is standalone or part of a node
   } & BaseNode;
 }
 
@@ -68,16 +70,24 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({ data }) => {
     });
   };
 
+  // Use defaultPosition if data.position is undefined
+  const menuPosition = data.position || defaultPosition;
+
   return (
     <div
       className="bg-white shadow-lg rounded p-1"
       style={{
         position: 'absolute',
-        left: data.position.x,
-        top: data.position.y
+        left: menuPosition.x,
+        top: menuPosition.y
       }}
     >
-      <Handle type="target" position={Position.Top} />
+      {data.id && !data.isStandalone && (
+        <>
+          <Handle type="target" position={Position.Top} />
+          <Handle type="source" position={Position.Bottom} />
+        </>
+      )}
       <div className="flex flex-row">
         {nodeTypes.map((type) => (
           <button
@@ -90,7 +100,6 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({ data }) => {
           </button>
         ))}
       </div>
-      <Handle type="source" position={Position.Bottom} />
     </div>
   );
 };
