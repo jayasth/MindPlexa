@@ -84,8 +84,16 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({ data }) => {
     >
       {data.id && !data.isStandalone && (
         <>
-          <Handle type="target" position={Position.Top} />
-          <Handle type="source" position={Position.Bottom} />
+          <Handle
+            type="target"
+            position={Position.Top}
+            id={`handle-${data.id}-top`}
+          />
+          <Handle
+            type="source"
+            position={Position.Bottom}
+            id={`handle-${data.id}-bottom`}
+          />
         </>
       )}
       <div className="flex flex-row">

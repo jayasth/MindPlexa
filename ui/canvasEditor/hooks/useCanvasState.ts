@@ -82,7 +82,9 @@ export const useCanvasState = () => {
                   ]);
                 });
               },
-              onClose: () => setShowNodeSelectionMenu(false)
+              onClose: () => setShowNodeSelectionMenu(false),
+              id: selectionMenuNodeId, // Ensuring data.id is passed correctly
+              isStandalone: false // Ensuring isStandalone is set correctly
             },
             draggable: true,
             connectable: true,
