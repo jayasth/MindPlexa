@@ -27,17 +27,22 @@ export const createNode = (
 ) => {
   const positionAsXYPosition = setPosition(position.x, position.y);
 
+  const defaultProperties = {
+    draggable: true,
+    connectable: true,
+    width: 200,
+    height: 300,
+    title: `New ${nodeType.charAt(0).toUpperCase() + nodeType.slice(1)}`
+  };
+
   const baseProperties: Partial<BaseNode> & {
     id: string;
     position: XYPosition;
-    draggable: boolean;
-    connectable: boolean;
   } = {
     id: `${nodeType}-${Date.now()}`,
     type: nodeType,
     position: positionAsXYPosition,
-    draggable: true,
-    connectable: true
+    ...defaultProperties
   };
 
   let specificNode: Partial<
@@ -48,42 +53,33 @@ export const createNode = (
     case 'note':
       specificNode = {
         ...baseProperties,
-        content: '',
-        title: 'New Note',
-        width: 200,
-        height: 300
+        content: ''
       } as Partial<NoteNode>;
       break;
     case 'task':
       specificNode = {
         ...baseProperties,
         completed: false,
-        task: 'New Task',
-        title: 'New Task',
-        width: 200,
-        height: 300
+        task: 'New Task'
       } as Partial<TaskNode>;
       break;
     case 'custom':
       specificNode = {
         ...baseProperties,
-        data: {},
-        title: 'New Custom Node'
+        data: {}
       } as Partial<CustomNode>;
       break;
     case 'code':
       specificNode = {
         ...baseProperties,
         code: '',
-        language: 'plaintext',
-        title: 'New Code'
+        language: 'plaintext'
       } as Partial<CodeNode>;
       break;
     case 'draw':
       specificNode = {
         ...baseProperties,
-        data: {},
-        title: 'New Drawing'
+        data: {}
       } as Partial<DrawNode>;
       break;
     default:

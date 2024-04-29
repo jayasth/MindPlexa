@@ -9,6 +9,7 @@ import {
 import { PiNotepad } from 'react-icons/pi';
 import { useStore } from '@/app/store/useCanvasStore';
 import { Node as BaseNode } from '@/ui/canvasEditor/nodeTypes';
+import { createNode } from '@/ui/canvasEditor/utils/nodeCreation';
 
 export interface NodeSelectionMenuProps {
   data: {
@@ -44,15 +45,19 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({ data }) => {
   const handleNodeTypeSelect = (
     nodeType: 'note' | 'task' | 'custom' | 'code' | 'draw'
   ) => {
-    const position = data.position || defaultPosition;
+    const position = data.position || { x: 0, y: 0 };
     const parentNode: Node = {
-      id: data.id || 'new-node', // Ensure there's a fallback ID
+      id: data.id || 'new-node',
       type: data.type,
       position: position,
-      data: {} // Assuming data is an empty object for simplicity; adjust as needed
+      data: {}
     };
-    addChildNode(parentNode, position, nodeType);
-    data.onSelect(nodeType, position);
+
+    createNode(nodeType, position, (newNode) => {
+      addChildNode(parentNode, newNode.position, nodeType);
+      data.onSelect(nodeType, position);
+      data.onClose();
+    });
   };
 
   const menuPosition = data.position || defaultPosition;

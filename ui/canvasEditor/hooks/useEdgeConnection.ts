@@ -71,8 +71,13 @@ export const useEdgeConnection = () => {
 
         if (parentNode && childNodePosition) {
           addChildNode(parentNode, childNodePosition, 'note'); // Provide the node type as the third argument
+          setShowNodeSelectionMenu(false); // Close the menu after adding the node
         } else {
-          setMenuPosition({ x: 0, y: 0 });
+          const menuPosition = screenToFlowPosition({
+            x: event.clientX,
+            y: event.clientY
+          });
+          setMenuPosition(menuPosition);
           setShowNodeSelectionMenu(true);
         }
       }
@@ -84,7 +89,8 @@ export const useEdgeConnection = () => {
       addChildNode,
       setShowNodeSelectionMenu,
       setMenuPosition,
-      nodeInternals
+      nodeInternals,
+      screenToFlowPosition
     ]
   );
 
