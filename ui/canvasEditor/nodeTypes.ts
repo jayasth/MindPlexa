@@ -38,14 +38,14 @@ export interface DrawNode extends Node {
   data: Json | null;
 }
 
-export interface CanvasEditorState {
+export interface NodeTypesState {
   nodes: Node[];
   edges: Edge[];
   currentVersion: number;
-  versions: CanvasEditorState[];
+  versions: NodeTypesState[];
 }
 
-export type CanvasEditorAction =
+export type NodeTypesAction =
   | { type: 'ADD_NODE'; payload: Node }
   | { type: 'DELETE_NODE'; payload: string }
   | { type: 'UPDATE_NODE'; payload: Node }
@@ -60,17 +60,17 @@ export type CanvasEditorAction =
   | { type: 'REDO' }
   | { type: 'TOGGLE_TASK_COMPLETION'; payload: string };
 
-const initialState: CanvasEditorState = {
+const initialState: NodeTypesState = {
   nodes: [],
   edges: [],
   currentVersion: 0,
   versions: []
 };
 
-export const canvasEditorReducer = (
-  state: CanvasEditorState = initialState,
-  action: CanvasEditorAction
-): CanvasEditorState => {
+export const nodeTypesReducer = (
+  state: NodeTypesState = initialState,
+  action: NodeTypesAction
+): NodeTypesState => {
   switch (action.type) {
     case 'ADD_NODE':
       console.log('Adding node:', action.payload);

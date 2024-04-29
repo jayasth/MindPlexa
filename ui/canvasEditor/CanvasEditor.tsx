@@ -6,7 +6,6 @@ import ReactFlow, {
   NodeOrigin,
   ConnectionLineType
 } from 'reactflow';
-import { CanvasProvider } from './CanvasContext';
 import Toolbar from './toolbar';
 import {
   handleDownload,
@@ -15,7 +14,6 @@ import {
 import NodeRenderer from '@/ui/nodes/NodeRenderer';
 import CustomEdge from '@/ui/edges/CustomEdge';
 import NodeSelectionMenu from '@/ui/nodes/NodeSelectionMenu';
-import { useCanvasState } from './hooks/useCanvasState';
 import { useStore } from '@/app/store/useCanvasStore';
 import { useEdgeConnection } from './hooks/useEdgeConnection';
 
@@ -40,75 +38,82 @@ const defaultEdgeOptions = {
 export default function CanvasEditor() {
   const {
     nodes,
-    setNodes,
-    onNodesChange,
     edges,
+    setNodes,
     setEdges,
+    onNodesChange,
     onEdgesChange,
-    reactFlowWrapper,
     showNodeSelectionMenu,
     menuPosition,
     setShowNodeSelectionMenu
-  } = useCanvasState();
+  } = useStore((state) => ({
+    nodes: state.nodes,
+    edges: state.edges,
+    setNodes: state.setNodes,
+    setEdges: state.setEdges,
+    onNodesChange: state.onNodesChange,
+    onEdgesChange: state.onEdgesChange,
+    showNodeSelectionMenu: state.showNodeSelectionMenu,
+    menuPosition: state.menuPosition,
+    setShowNodeSelectionMenu: state.setShowNodeSelectionMenu
+  }));
 
-  const { onConnectStart, onConnectEnd } = useEdgeConnection();
-
-  const updateNodes = useStore((state) => state.setNodes);
-  const updateEdges = useStore((state) => state.setEdges);
+  function setPosition(
+    x: number,
+    y: number
+  ): { x: number; y: number } & import('../../types_db').JsonPosition {
+    throw new Error('Function not implemented.');
+  }
 
   return (
-    <CanvasProvider>
-      <div className="flex h-screen">
-        <ReactFlowProvider>
-          <div className="w-1/6 bg-gray-100 p-2">
-            <Toolbar
-              onUndo={() => console.log('Undo')}
-              onRedo={() => console.log('Redo')}
-              onShare={() => handleShare(nodes)}
-              onDownload={() => handleDownload({ nodes, edges })}
-              setNodes={updateNodes}
+    <div className="flex h-screen">
+      <ReactFlowProvider>
+        <div className="w-1/6 bg-gray-100 p-2">
+          <Toolbar
+            onUndo={() => console.log('Undo')}
+            onRedo={() => console.log('Redo')}
+            onShare={() => handleShare({ nodes, edges })}
+            onDownload={() => handleDownload({ nodes, edges })}
+            setNodes={setNodes}
+          />
+        </div>
+        <div className="w-5/6">
+          {showNodeSelectionMenu && menuPosition && (
+            <NodeSelectionMenu
+              data={{
+                onSelect: (nodeType, position) => {
+                  console.log(
+                    `Node type ${nodeType} selected at position`,
+                    position
+                  );
+                },
+                position: setPosition(menuPosition.x, menuPosition.y),
+                onClose: () => setShowNodeSelectionMenu(false),
+                id: 'nodeSelectionMenu',
+                type: 'selectionMenu',
+                width: 200,
+                height: 100,
+                data: {}
+              }}
             />
-          </div>
-          <div className="w-5/6" ref={reactFlowWrapper}>
-            {showNodeSelectionMenu && menuPosition && (
-              <NodeSelectionMenu
-                data={{
-                  onSelect: (nodeType, position) => {
-                    console.log(
-                      `Node type ${nodeType} selected at position`,
-                      position
-                    );
-                  },
-                  position: menuPosition,
-                  onClose: () => setShowNodeSelectionMenu(false),
-                  id: 'nodeSelectionMenu',
-                  type: 'selectionMenu',
-                  width: 200,
-                  height: 100,
-                  data: {}
-                }}
-              />
-            )}
-            <ReactFlow
-              nodes={nodes}
-              edges={edges}
-              onNodesChange={onNodesChange}
-              onEdgesChange={onEdgesChange}
-              onConnectStart={onConnectStart}
-              onConnectEnd={onConnectEnd}
-              nodeTypes={nodeTypes}
-              edgeTypes={edgeTypes}
-              nodeOrigin={nodeOrigin}
-              defaultEdgeOptions={defaultEdgeOptions}
-              connectionLineType={ConnectionLineType.Straight}
-              fitView={true}
-            >
-              <Background color="#aaa" gap={16} />
-              <Controls />
-            </ReactFlow>
-          </div>
-        </ReactFlowProvider>
-      </div>
-    </CanvasProvider>
+          )}
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            nodeTypes={nodeTypes}
+            edgeTypes={edgeTypes}
+            nodeOrigin={nodeOrigin}
+            defaultEdgeOptions={defaultEdgeOptions}
+            connectionLineType={ConnectionLineType.Straight}
+            fitView={true}
+          >
+            <Background color="#aaa" gap={16} />
+            <Controls />
+          </ReactFlow>
+        </div>
+      </ReactFlowProvider>
+    </div>
   );
 }

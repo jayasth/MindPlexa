@@ -28,6 +28,8 @@ interface CanvasState {
   setShowNodeSelectionMenu: (show: boolean) => void;
   menuPosition: XYPosition | null;
   setMenuPosition: (position: XYPosition | null) => void;
+  onNodesChange: (changes: any) => void;
+  onEdgesChange: (changes: any) => void;
 }
 
 const createStore = <T extends object>(
@@ -118,7 +120,15 @@ export const useStore = create<CanvasState>((set, get) => ({
   },
   setShowNodeSelectionMenu: (show) =>
     set(() => ({ showNodeSelectionMenu: show })),
-  setMenuPosition: (position) => set(() => ({ menuPosition: position }))
+  setMenuPosition: (position) => set(() => ({ menuPosition: position })),
+  onNodesChange: (changes) =>
+    set((state) => ({
+      nodes: applyNodeChanges(changes, state.nodes)
+    })),
+  onEdgesChange: (changes) =>
+    set((state) => ({
+      edges: applyEdgeChanges(changes, state.edges)
+    }))
 }));
 
 export type { CanvasState };

@@ -7,8 +7,8 @@ import {
   FaRegAddressBook
 } from 'react-icons/fa';
 import { PiNotepad } from 'react-icons/pi';
-import { useStore } from '@/app/store/useCanvasStore'; // Adjust the import path as necessary
-import { Node as BaseNode } from '@/ui/canvasEditor/canvasEditorReducer';
+import { useStore } from '@/app/store/useCanvasStore';
+import { Node as BaseNode } from '@/ui/canvasEditor/nodeTypes';
 
 export interface NodeSelectionMenuProps {
   data: {

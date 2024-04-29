@@ -6,17 +6,26 @@ import type {
   CustomNode,
   CodeNode,
   DrawNode
-} from '@/ui/canvasEditor/canvasEditorReducer';
+} from '@/ui/canvasEditor/nodeTypes';
 
 type BaseNode = Tables<'base_nodes'>;
+
+interface JsonPosition {
+  x: number;
+  y: number;
+  [key: string]: Json | number | undefined;
+}
+
+const setPosition = (x: number, y: number): JsonPosition => {
+  return { x, y };
+};
 
 export const createNode = (
   nodeType: 'note' | 'task' | 'custom' | 'code' | 'draw',
   position: { x: number; y: number },
   callback: (newNode: Node<any>) => void
 ) => {
-  // Ensure position is strictly XYPosition
-  const positionAsXYPosition: XYPosition = { x: position.x, y: position.y };
+  const positionAsXYPosition = setPosition(position.x, position.y);
 
   const baseProperties: Partial<BaseNode> & {
     id: string;
@@ -24,7 +33,7 @@ export const createNode = (
   } = {
     id: `${nodeType}-${Date.now()}`,
     type: nodeType,
-    position: positionAsXYPosition as Json & XYPosition
+    position: positionAsXYPosition
   };
 
   let specificNode: Partial<
@@ -81,7 +90,7 @@ export const createNode = (
     ...specificNode,
     data: specificNode,
     id: baseProperties.id,
-    position: positionAsXYPosition // Ensure position is explicitly set here
+    position: positionAsXYPosition
   };
 
   console.log('Adding new node:', newNode);

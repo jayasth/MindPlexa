@@ -1,6 +1,6 @@
 import React from 'react';
 import { NodeProps } from 'reactflow';
-import { Node as BaseNode } from '@/ui/canvasEditor/canvasEditorReducer';
+import { Node as BaseNode } from '@/ui/canvasEditor/nodeTypes';
 import NoteNode from './NoteNode';
 import TaskNode from './TaskNode';
 import CustomNode from './CustomNode';
