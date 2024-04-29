@@ -45,7 +45,8 @@ export default function CanvasEditor() {
     onEdgesChange,
     showNodeSelectionMenu,
     menuPosition,
-    setShowNodeSelectionMenu
+    setShowNodeSelectionMenu,
+    addNode
   } = useStore((state) => ({
     nodes: state.nodes,
     edges: state.edges,
@@ -55,7 +56,8 @@ export default function CanvasEditor() {
     onEdgesChange: state.onEdgesChange,
     showNodeSelectionMenu: state.showNodeSelectionMenu,
     menuPosition: state.menuPosition,
-    setShowNodeSelectionMenu: state.setShowNodeSelectionMenu
+    setShowNodeSelectionMenu: state.setShowNodeSelectionMenu,
+    addNode: state.addNode
   }));
 
   function setPosition(
@@ -74,7 +76,7 @@ export default function CanvasEditor() {
             onRedo={() => console.log('Redo')}
             onShare={() => handleShare({ nodes, edges })}
             onDownload={() => handleDownload({ nodes, edges })}
-            setNodes={setNodes}
+            addNode={(node: Node) => addNode(node as any)}
           />
         </div>
         <div className="w-5/6">

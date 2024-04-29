@@ -13,37 +13,33 @@ import {
 import { PiNotepad } from 'react-icons/pi';
 import Link from 'next/link';
 import { useStore } from '@/app/store/useCanvasStore';
-import { Node } from 'reactflow';
+import { createNode } from '@/ui/canvasEditor/utils/nodeCreation';
 
 interface ToolbarProps {
   onUndo: () => void;
   onRedo: () => void;
   onShare: () => void;
   onDownload: () => void;
-  setNodes: (updater: (nodes: Node[]) => Node[]) => void;
+  addNode: (node: Node) => void;
 }
 
 const Toolbar: React.FC<ToolbarProps> = ({
   onUndo,
   onRedo,
   onShare,
-  onDownload,
-  setNodes
+  onDownload
 }) => {
   const addNode = useStore((state) => state.addNode);
 
-  const handleAddNode = (type: string) => {
-    const newNode = {
-      id: Math.random().toString(36).substr(2, 9), // Generating a pseudo-random ID
-      type,
-      position: {
-        x: Math.random() * window.innerWidth - 100,
-        y: Math.random() * window.innerHeight
-      },
-      data: { label: `New ${type} node` }
+  const handleAddNode = (
+    type: 'note' | 'task' | 'custom' | 'code' | 'draw'
+  ) => {
+    const position = {
+      x: Math.random() * window.innerWidth - 100,
+      y: Math.random() * window.innerHeight
     };
-    console.log('Adding new node:', newNode);
-    addNode(newNode);
+
+    createNode(type, position, addNode);
   };
 
   const buttonClass = 'p-2 bg-gray-200 rounded hover:bg-gray-300';
