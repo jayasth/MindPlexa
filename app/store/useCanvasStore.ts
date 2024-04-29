@@ -46,7 +46,7 @@ export const useStore = create<CanvasState>((set, get) => ({
   addNode: (node) =>
     set((state) => {
       console.log('Store: Adding node', node);
-      const newNode = { ...node, id: nanoid(), position: { x: 0, y: 0 } }; // Added default position
+      const newNode = { ...node, id: nanoid() };
       console.log('New node with position:', newNode);
       return { nodes: [...state.nodes, newNode] };
     }),
