@@ -36,7 +36,7 @@ const createStore = <T extends object>(
   return create(devtools(config));
 };
 
-export const useStore = create<CanvasState>((set) => ({
+export const useStore = create<CanvasState>((set, get) => ({
   nodes: [],
   edges: [],
   showNodeSelectionMenu: false,

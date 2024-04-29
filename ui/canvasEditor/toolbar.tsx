@@ -34,7 +34,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
 
   const handleAddNode = (type: string) => {
     const newNode = {
-      id: Math.random().toString(),
+      id: Math.random().toString(36).substr(2, 9), // Generating a pseudo-random ID
       type,
       position: {
         x: Math.random() * window.innerWidth - 100,
@@ -42,7 +42,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
       },
       data: { label: `New ${type} node` }
     };
-    console.log('New node details:', newNode);
+    console.log('Adding new node:', newNode);
     addNode(newNode);
   };
 
