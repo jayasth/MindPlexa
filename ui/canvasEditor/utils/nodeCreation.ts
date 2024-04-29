@@ -30,10 +30,14 @@ export const createNode = (
   const baseProperties: Partial<BaseNode> & {
     id: string;
     position: XYPosition;
+    draggable: boolean;
+    connectable: boolean;
   } = {
     id: `${nodeType}-${Date.now()}`,
     type: nodeType,
-    position: positionAsXYPosition
+    position: positionAsXYPosition,
+    draggable: true,
+    connectable: true
   };
 
   let specificNode: Partial<

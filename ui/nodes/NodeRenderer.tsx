@@ -26,6 +26,8 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
   const updateNode = useStore((state) => state.updateNode);
 
   const commonProps = {
+    draggable: true,
+    connectable: true,
     onDelete: () => console.log(`Delete ${node.type}`),
     onChangeColor: () => console.log('Change Color'),
     onResize: () => console.log('Resize Node'),

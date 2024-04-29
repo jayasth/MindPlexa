@@ -1,49 +1,83 @@
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 import { useStore } from '@/app/store/useCanvasStore';
+import { Node, XYPosition } from 'reactflow';
 
 export const useEdgeConnection = () => {
-  const {
-    nodes,
-    createChildNodeFromDrag,
-    setShowNodeSelectionMenu,
-    setMenuPosition
-  } = useStore((state) => ({
-    nodes: state.nodes,
-    createChildNodeFromDrag: state.createChildNodeFromDrag,
-    setShowNodeSelectionMenu: state.setShowNodeSelectionMenu,
-    setMenuPosition: state.setMenuPosition
-  }));
+  const { nodes, setShowNodeSelectionMenu, setMenuPosition, addChildNode } =
+    useStore((state) => ({
+      nodes: state.nodes,
+      setShowNodeSelectionMenu: state.setShowNodeSelectionMenu,
+      setMenuPosition: state.setMenuPosition,
+      addChildNode: state.addChildNode
+    }));
+
+  const connectingNodeId = useRef<string | null>(null);
+
+  const getChildNodePosition = useCallback(
+    (event: MouseEvent | TouchEvent, parentNode?: Node) => {
+      const { domNode, screenToFlowPosition } = useStore.getState();
+
+      if (
+        !domNode ||
+        !parentNode?.positionAbsolute ||
+        !parentNode?.width ||
+        !parentNode?.height
+      ) {
+        return;
+      }
+
+      const isTouchEvent = 'touches' in event;
+      const x = isTouchEvent ? event.touches[0].clientX : event.clientX;
+      const y = isTouchEvent ? event.touches[0].clientY : event.clientY;
+      const panePosition = screenToFlowPosition({
+        x,
+        y
+      });
+
+      return {
+        x:
+          panePosition.x - parentNode.positionAbsolute.x + parentNode.width / 2,
+        y:
+          panePosition.y - parentNode.positionAbsolute.y + parentNode.height / 2
+      };
+    },
+    []
+  );
 
   const onConnectStart = useCallback((_, { nodeId }) => {
-    console.log('Connect started from node:', nodeId);
+    connectingNodeId.current = nodeId;
   }, []);
 
   const onConnectEnd = useCallback(
     (event) => {
-      const targetIsPane = event.target.classList.contains('react-flow__pane');
+      const { nodeInternals } = useStore.getState();
+      const targetIsPane = (event.target as Element).classList.contains(
+        'react-flow__pane'
+      );
+      const node = (event.target as Element).closest('.react-flow__node');
 
-      if (targetIsPane) {
-        const { clientX, clientY, sourceHandle } = event;
-        const parentNode = nodes.find(
-          (node) => node.id === sourceHandle?.split('-')[1]
-        );
+      if (node) {
+        node.querySelector('input')?.focus({ preventScroll: true });
+      } else if (targetIsPane && connectingNodeId.current) {
+        const parentNode = nodeInternals.get(connectingNodeId.current);
+        const childNodePosition = getChildNodePosition(event, parentNode);
 
-        if (parentNode) {
-          const childPosition = {
-            x: clientX - parentNode.position.x - (parentNode.width ?? 0) / 2,
-            y: clientY - parentNode.position.y - (parentNode.height ?? 0) / 2
-          };
-
-          console.log('Creating child node with position:', childPosition);
-          createChildNodeFromDrag(parentNode, childPosition, 'custom');
+        if (parentNode && childNodePosition) {
+          addChildNode(parentNode, childNodePosition);
         } else {
-          // Show node selection menu when the edge is released on an empty space
-          setMenuPosition({ x: clientX, y: clientY });
+          setMenuPosition({ x: 0, y: 0 });
           setShowNodeSelectionMenu(true);
         }
       }
+
+      connectingNodeId.current = null;
     },
-    [nodes, createChildNodeFromDrag, setShowNodeSelectionMenu, setMenuPosition]
+    [
+      getChildNodePosition,
+      addChildNode,
+      setShowNodeSelectionMenu,
+      setMenuPosition
+    ]
   );
 
   return {
