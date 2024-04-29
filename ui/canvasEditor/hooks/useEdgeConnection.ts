@@ -3,20 +3,28 @@ import { useStore } from '@/app/store/useCanvasStore';
 import { Node, XYPosition } from 'reactflow';
 
 export const useEdgeConnection = () => {
-  const { nodes, setShowNodeSelectionMenu, setMenuPosition, addChildNode } =
-    useStore((state) => ({
-      nodes: state.nodes,
-      setShowNodeSelectionMenu: state.setShowNodeSelectionMenu,
-      setMenuPosition: state.setMenuPosition,
-      addChildNode: state.addChildNode
-    }));
+  const {
+    nodes,
+    setShowNodeSelectionMenu,
+    setMenuPosition,
+    addChildNode,
+    domNode,
+    screenToFlowPosition,
+    nodeInternals
+  } = useStore((state) => ({
+    nodes: state.nodes,
+    setShowNodeSelectionMenu: state.setShowNodeSelectionMenu,
+    setMenuPosition: state.setMenuPosition,
+    addChildNode: state.addChildNode,
+    domNode: state.domNode,
+    screenToFlowPosition: state.screenToFlowPosition,
+    nodeInternals: state.nodeInternals
+  }));
 
   const connectingNodeId = useRef<string | null>(null);
 
   const getChildNodePosition = useCallback(
     (event: MouseEvent | TouchEvent, parentNode?: Node) => {
-      const { domNode, screenToFlowPosition } = useStore.getState();
-
       if (
         !domNode ||
         !parentNode?.positionAbsolute ||
@@ -41,7 +49,7 @@ export const useEdgeConnection = () => {
           panePosition.y - parentNode.positionAbsolute.y + parentNode.height / 2
       };
     },
-    []
+    [domNode, screenToFlowPosition]
   );
 
   const onConnectStart = useCallback((_, { nodeId }) => {
@@ -50,7 +58,6 @@ export const useEdgeConnection = () => {
 
   const onConnectEnd = useCallback(
     (event) => {
-      const { nodeInternals } = useStore.getState();
       const targetIsPane = (event.target as Element).classList.contains(
         'react-flow__pane'
       );
@@ -63,7 +70,7 @@ export const useEdgeConnection = () => {
         const childNodePosition = getChildNodePosition(event, parentNode);
 
         if (parentNode && childNodePosition) {
-          addChildNode(parentNode, childNodePosition);
+          addChildNode(parentNode, childNodePosition, 'note'); // Provide the node type as the third argument
         } else {
           setMenuPosition({ x: 0, y: 0 });
           setShowNodeSelectionMenu(true);
@@ -76,7 +83,8 @@ export const useEdgeConnection = () => {
       getChildNodePosition,
       addChildNode,
       setShowNodeSelectionMenu,
-      setMenuPosition
+      setMenuPosition,
+      nodeInternals
     ]
   );
 

@@ -10,6 +10,9 @@ import type { Node, Edge, XYPosition } from 'reactflow';
 interface CanvasState {
   nodes: Node[];
   edges: Edge[];
+  domNode: HTMLDivElement | null;
+  screenToFlowPosition: (position: { x: number; y: number }) => XYPosition;
+  nodeInternals: Map<string, Node>;
   setNodes: (updater: (nodes: Node[]) => Node[]) => void;
   setEdges: (updater: (edges: Edge[]) => Edge[]) => void;
   addNode: (node: Node) => void;
@@ -38,9 +41,12 @@ const createStore = <T extends object>(
   return create(devtools(config));
 };
 
-export const useStore = create<CanvasState>((set, get) => ({
+export const useStore = createStore<CanvasState>((set, get) => ({
   nodes: [],
   edges: [],
+  domNode: null,
+  screenToFlowPosition: (position) => position,
+  nodeInternals: new Map(),
   showNodeSelectionMenu: false,
   menuPosition: null,
   setNodes: (updater) => set((state) => ({ nodes: updater(state.nodes) })),
