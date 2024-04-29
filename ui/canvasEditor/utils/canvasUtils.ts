@@ -1,4 +1,15 @@
-// Function to handle downloading the canvas
+import type { Node, Edge } from 'reactflow';
+
+export function applyNodeChanges(changes: any, nodes: Node[]): Node[] {
+  // Implement logic to apply changes to nodes
+  return nodes; // return updated nodes
+}
+
+export function applyEdgeChanges(changes: any, edges: Edge[]): Edge[] {
+  // Implement logic to apply changes to edges
+  return edges; // return updated edges
+}
+
 export const handleDownload = (state: any) => {
   const jsonString = JSON.stringify(state, null, 2);
   const blob = new Blob([jsonString], { type: 'application/json' });

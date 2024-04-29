@@ -1,5 +1,5 @@
 import React from 'react';
-import { Handle, Position } from 'reactflow';
+import { Handle, Position, Node } from 'reactflow';
 import {
   FaTasks,
   FaCode,
@@ -7,22 +7,24 @@ import {
   FaRegAddressBook
 } from 'react-icons/fa';
 import { PiNotepad } from 'react-icons/pi';
-import { createNode } from '@/ui/canvasEditor/utils/nodeCreation';
+import { useStore } from '@/app/store/useCanvasStore'; // Adjust the import path as necessary
 import { Node as BaseNode } from '@/ui/canvasEditor/canvasEditorReducer';
-import { useCanvas } from '../canvasEditor/CanvasContext';
 
 export interface NodeSelectionMenuProps {
   data: {
     onSelect: (nodeType: string, position: { x: number; y: number }) => void;
-    position?: { x: number; y: number }; // position can be optional
+    position?: { x: number; y: number };
     onClose: () => void;
-    id?: string; // Node ID can be optional
-    isStandalone?: boolean; // Indicates if the menu is standalone or part of a node
+    id?: string;
+    isStandalone?: boolean;
   } & BaseNode;
 }
 
 const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({ data }) => {
-  const { setNodes, nodes, setEdges, edges } = useCanvas();
+  const { addChildNode } = useStore((state) => ({
+    addChildNode: state.addChildNode
+  }));
+
   const nodeTypes: ('note' | 'task' | 'custom' | 'code' | 'draw')[] = [
     'note',
     'task',
@@ -39,40 +41,20 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({ data }) => {
   };
   const defaultPosition = { x: 0, y: 0 };
 
-  const isValidPosition = (
-    position: any
-  ): position is { x: number; y: number } => {
-    return (
-      position &&
-      typeof position.x === 'number' &&
-      typeof position.y === 'number'
-    );
-  };
-
   const handleNodeTypeSelect = (
     nodeType: 'note' | 'task' | 'custom' | 'code' | 'draw'
   ) => {
-    const position = isValidPosition(data.position)
-      ? data.position
-      : defaultPosition;
-    createNode(nodeType, position, (newNode) => {
-      setNodes((currentNodes) => [...currentNodes, newNode]);
-      setEdges((currentEdges) => [
-        ...currentEdges,
-        {
-          id: `e${newNode.id}`,
-          source: data.id,
-          target: newNode.id,
-          type: 'customEdge',
-          animated: true
-        }
-      ]);
-      // Invoke the onSelect callback after node creation
-      data.onSelect(nodeType, position);
-    });
+    const position = data.position || defaultPosition;
+    const parentNode: Node = {
+      id: data.id || 'new-node', // Ensure there's a fallback ID
+      type: data.type,
+      position: position,
+      data: {} // Assuming data is an empty object for simplicity; adjust as needed
+    };
+    addChildNode(parentNode, position, nodeType);
+    data.onSelect(nodeType, position);
   };
 
-  // Use defaultPosition if data.position is undefined
   const menuPosition = data.position || defaultPosition;
 
   return (

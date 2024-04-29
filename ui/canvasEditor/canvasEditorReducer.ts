@@ -1,6 +1,7 @@
 import type { Json, JsonPosition } from '@/types_db';
 
 export interface Node {
+  data: any;
   height: any;
   width: any;
   type: any;

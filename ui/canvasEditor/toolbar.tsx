@@ -1,27 +1,26 @@
 import React from 'react';
 import {
+  FaAngleDoubleRight,
   FaTasks,
-  FaUndo,
-  FaRedo,
-  FaShare,
-  FaDownload,
   FaRegAddressBook,
   FaCode,
   FaPaintBrush,
-  FaAngleDoubleRight
+  FaUndo,
+  FaRedo,
+  FaShare,
+  FaDownload
 } from 'react-icons/fa';
 import { PiNotepad } from 'react-icons/pi';
 import Link from 'next/link';
-import { createNode } from '@/ui/canvasEditor/utils/nodeCreation';
+import { useStore } from '@/app/store/useCanvasStore';
 import { Node } from 'reactflow';
-import { Dispatch, SetStateAction } from 'react';
 
 interface ToolbarProps {
   onUndo: () => void;
   onRedo: () => void;
   onShare: () => void;
   onDownload: () => void;
-  setNodes: Dispatch<SetStateAction<Node<any>[]>>;
+  setNodes: (updater: (nodes: Node[]) => Node[]) => void;
 }
 
 const Toolbar: React.FC<ToolbarProps> = ({
@@ -31,76 +30,67 @@ const Toolbar: React.FC<ToolbarProps> = ({
   onDownload,
   setNodes
 }) => {
-  const buttonClass = 'buttonClass';
+  const addNode = useStore((state) => state.addNode);
+
+  const handleAddNode = (type: string) => {
+    const newNode = {
+      id: Math.random().toString(),
+      type,
+      position: {
+        x: Math.random() * window.innerWidth - 100,
+        y: Math.random() * window.innerHeight
+      },
+      data: { label: `New ${type} node` }
+    };
+    console.log('New node details:', newNode);
+    addNode(newNode);
+  };
+
+  const buttonClass = 'p-2 bg-gray-200 rounded hover:bg-gray-300';
 
   return (
-    <div className="flex flex-col space-y-2">
-      <div className="flex space-x-2">
-        <Link
-          href="/workspace/canvases"
-          className={buttonClass}
-          title="View List"
-        >
+    <div className="absolute top-0 left-0 z-10 flex flex-col items-center space-y-2 p-2">
+      <Link href="/workspace/canvases" passHref>
+        <button className={buttonClass} title="Open Editor">
           <FaAngleDoubleRight size="16" />
-        </Link>
-      </div>
+        </button>
+      </Link>
 
       <button
-        onClick={() =>
-          createNode('note', { x: 0, y: 0 }, (newNode) =>
-            setNodes((prevNodes) => [...prevNodes, newNode])
-          )
-        }
+        onClick={() => handleAddNode('note')}
         className={buttonClass}
-        title="Add Note Node"
+        title="Add Note"
       >
         <PiNotepad size="16" />
       </button>
       <button
-        onClick={() =>
-          createNode('task', { x: 0, y: 0 }, (newNode) =>
-            setNodes((prevNodes) => [...prevNodes, newNode])
-          )
-        }
+        onClick={() => handleAddNode('task')}
         className={buttonClass}
-        title="Add Task Node"
+        title="Add Task"
       >
         <FaTasks size="16" />
       </button>
       <button
-        onClick={() =>
-          createNode('custom', { x: 0, y: 0 }, (newNode) =>
-            setNodes((prevNodes) => [...prevNodes, newNode])
-          )
-        }
+        onClick={() => handleAddNode('custom')}
         className={buttonClass}
-        title="Add Custom Node"
+        title="Add Custom"
       >
         <FaRegAddressBook size="16" />
       </button>
       <button
-        onClick={() =>
-          createNode('code', { x: 0, y: 0 }, (newNode) =>
-            setNodes((prevNodes) => [...prevNodes, newNode])
-          )
-        }
+        onClick={() => handleAddNode('code')}
         className={buttonClass}
-        title="Add Code Node"
+        title="Add Code"
       >
         <FaCode size="16" />
       </button>
       <button
-        onClick={() =>
-          createNode('draw', { x: 0, y: 0 }, (newNode) =>
-            setNodes((prevNodes) => [...prevNodes, newNode])
-          )
-        }
+        onClick={() => handleAddNode('draw')}
         className={buttonClass}
-        title="Add Draw Node"
+        title="Add Draw"
       >
         <FaPaintBrush size="16" />
       </button>
-
       <button onClick={onUndo} className={buttonClass} title="Undo">
         <FaUndo size="16" />
       </button>

@@ -8,11 +8,16 @@ import ReactFlow, {
 } from 'reactflow';
 import { CanvasProvider } from './CanvasContext';
 import Toolbar from './toolbar';
-import { handleDownload, handleShare } from './utils/canvasEditorUtils';
+import {
+  handleDownload,
+  handleShare
+} from '@/ui/canvasEditor/utils/canvasUtils';
 import NodeRenderer from '@/ui/nodes/NodeRenderer';
 import CustomEdge from '@/ui/edges/CustomEdge';
 import NodeSelectionMenu from '@/ui/nodes/NodeSelectionMenu';
 import { useCanvasState } from './hooks/useCanvasState';
+import { useStore } from '@/app/store/useCanvasStore';
+import { useEdgeConnection } from './hooks/useEdgeConnection';
 
 const nodeTypes = {
   note: (props) => <NodeRenderer {...props} />,
@@ -40,14 +45,16 @@ export default function CanvasEditor() {
     edges,
     setEdges,
     onEdgesChange,
-    onConnect,
-    onConnectStart,
-    onConnectEnd,
     reactFlowWrapper,
     showNodeSelectionMenu,
     menuPosition,
     setShowNodeSelectionMenu
   } = useCanvasState();
+
+  const { onConnectStart, onConnectEnd } = useEdgeConnection();
+
+  const updateNodes = useStore((state) => state.setNodes);
+  const updateEdges = useStore((state) => state.setEdges);
 
   return (
     <CanvasProvider>
@@ -59,7 +66,7 @@ export default function CanvasEditor() {
               onRedo={() => console.log('Redo')}
               onShare={() => handleShare(nodes)}
               onDownload={() => handleDownload({ nodes, edges })}
-              setNodes={setNodes}
+              setNodes={updateNodes}
             />
           </div>
           <div className="w-5/6" ref={reactFlowWrapper}>
@@ -77,7 +84,8 @@ export default function CanvasEditor() {
                   id: 'nodeSelectionMenu',
                   type: 'selectionMenu',
                   width: 200,
-                  height: 100
+                  height: 100,
+                  data: {}
                 }}
               />
             )}
@@ -86,7 +94,6 @@ export default function CanvasEditor() {
               edges={edges}
               onNodesChange={onNodesChange}
               onEdgesChange={onEdgesChange}
-              onConnect={onConnect}
               onConnectStart={onConnectStart}
               onConnectEnd={onConnectEnd}
               nodeTypes={nodeTypes}

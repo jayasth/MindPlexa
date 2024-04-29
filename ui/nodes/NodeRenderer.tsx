@@ -7,7 +7,7 @@ import CustomNode from './CustomNode';
 import CodeNode from './CodeNode';
 import DrawNode from './DrawNode';
 import NodeSelectionMenu, { NodeSelectionMenuProps } from './NodeSelectionMenu';
-import styles from '@/ui/edges/EdgeStyles.module.css'; // Importing styles
+import { useStore } from '@/app/store/useCanvasStore';
 
 interface NodeRendererProps extends NodeProps {
   onNodeResizeStop: (
@@ -23,6 +23,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
   onNodeResizeStop
 }) => {
   const node = data as BaseNode;
+  const updateNode = useStore((state) => state.updateNode);
 
   const commonProps = {
     onDelete: () => console.log(`Delete ${node.type}`),
@@ -33,18 +34,9 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     width: node.width,
     height: node.height,
     selected: selected,
-    onNodeResizeStop: (newSize: { width: number; height: number }) => {
-      console.log('Resizing Node:', id, newSize);
-      onNodeResizeStop(id, newSize);
-    },
-    id: id,
-    type: node.type,
-    zIndex: 0,
-    isConnectable: true,
-    xPos: 0,
-    yPos: 0,
-    dragging: false,
-    className: styles.reactFlowNode // Applying styles to nodes
+    onNodeResizeStop: onNodeResizeStop,
+    onLabelChange: (label: string) =>
+      updateNode(id, { data: { ...node.data, label } })
   };
 
   switch (node.type) {
@@ -69,8 +61,8 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
           {...commonProps}
           data={{
             ...node,
-            width: node.width ?? 200, // Default width if not specified
-            height: node.height ?? 100 // Default height if not specified
+            width: node.width ?? 200,
+            height: node.height ?? 100
           }}
         />
       );

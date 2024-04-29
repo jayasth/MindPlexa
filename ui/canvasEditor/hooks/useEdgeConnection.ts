@@ -1,56 +1,52 @@
-import { useCallback, useRef } from 'react';
-import { Node, Edge, useEdgesState } from 'reactflow';
+import { useCallback } from 'react';
+import { useStore } from '@/app/store/useCanvasStore';
 
-export const useEdgeConnection = (
-  nodes: Node[],
-  setNodes: (func: (nodes: Node[]) => Node[]) => void
-) => {
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-  const connectingNodeId = useRef<string | null>(null);
-
-  const onConnect = useCallback(
-    (params) => {
-      const newEdge = {
-        ...params,
-        id: `edge-${Date.now()}`, // Unique ID for each new edge
-        type: 'customEdge'
-      };
-      setEdges((eds) => [...eds, newEdge]);
-    },
-    [setEdges]
-  );
+export const useEdgeConnection = () => {
+  const {
+    nodes,
+    createChildNodeFromDrag,
+    setShowNodeSelectionMenu,
+    setMenuPosition
+  } = useStore((state) => ({
+    nodes: state.nodes,
+    createChildNodeFromDrag: state.createChildNodeFromDrag,
+    setShowNodeSelectionMenu: state.setShowNodeSelectionMenu,
+    setMenuPosition: state.setMenuPosition
+  }));
 
   const onConnectStart = useCallback((_, { nodeId }) => {
-    connectingNodeId.current = nodeId;
+    console.log('Connect started from node:', nodeId);
   }, []);
 
   const onConnectEnd = useCallback(
     (event) => {
-      const targetIsPane = (event.target as Element).classList.contains(
-        'react-flow__pane'
-      );
-      if (targetIsPane && connectingNodeId.current) {
-        const sourceNode = nodes.find(
-          (node) => node.id === connectingNodeId.current
-        );
-        const reactFlowBounds = event.currentTarget.getBoundingClientRect();
-        const targetPosition = {
-          x: event.clientX - reactFlowBounds.left + window.scrollX,
-          y: event.clientY - reactFlowBounds.top + window.scrollY
-        };
+      const targetIsPane = event.target.classList.contains('react-flow__pane');
 
-        // Logic to create a new node at targetPosition can be added here
+      if (targetIsPane) {
+        const { clientX, clientY, sourceHandle } = event;
+        const parentNode = nodes.find(
+          (node) => node.id === sourceHandle?.split('-')[1]
+        );
+
+        if (parentNode) {
+          const childPosition = {
+            x: clientX - parentNode.position.x - (parentNode.width ?? 0) / 2,
+            y: clientY - parentNode.position.y - (parentNode.height ?? 0) / 2
+          };
+
+          console.log('Creating child node with position:', childPosition);
+          createChildNodeFromDrag(parentNode, childPosition, 'custom');
+        } else {
+          // Show node selection menu when the edge is released on an empty space
+          setMenuPosition({ x: clientX, y: clientY });
+          setShowNodeSelectionMenu(true);
+        }
       }
-      connectingNodeId.current = null;
     },
-    [nodes, setEdges]
+    [nodes, createChildNodeFromDrag, setShowNodeSelectionMenu, setMenuPosition]
   );
 
   return {
-    edges,
-    setEdges,
-    onEdgesChange,
-    onConnect,
     onConnectStart,
     onConnectEnd
   };
