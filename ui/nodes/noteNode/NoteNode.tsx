@@ -1,35 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import { NodeProps, Handle, Position, NodeResizer, OnResize } from 'reactflow';
-import BaseNodeHeader from './BaseNodeHeader';
-import BaseNodeFooter from './BaseNodeFooter';
-import customStyles from './CustomNode.module.css';
-import baseStyles from './BaseNode.module.css';
+import BaseNodeHeader from '@/ui/nodes/BaseNodeHeader';
+import BaseNodeFooter from '@/ui/nodes/BaseNodeFooter';
+import noteStyles from './NoteNode.module.css';
+import baseStyles from '@/ui/nodes/BaseNode.module.css';
 import styles from '@/ui/edges/EdgeStyles.module.css';
 
-interface CustomNodeData {
+interface NoteNodeData {
   id: string;
-  title?: string | null;
-  data?: any;
-  width?: number | null;
-  height?: number | null;
+  content?: string;
+  title?: string;
+  width?: number;
+  height?: number;
 }
-
-interface CustomNodeProps extends NodeProps {
-  data: CustomNodeData;
+interface NoteNodeProps extends NodeProps {
+  data: NoteNodeData;
   onDelete: () => void;
   onChangeColor: () => void;
   onTag: () => void;
   onAttach: () => void;
-  selected: boolean;
+  onNodeResizeStop: (newSize: { width: number; height: number }) => void;
 }
 
-const CustomNode: React.FC<CustomNodeProps> = ({
+const NoteNode: React.FC<NoteNodeProps> = ({
   data,
+  id,
+  selected,
   onDelete,
   onChangeColor,
   onTag,
   onAttach,
-  selected
+  onNodeResizeStop
 }) => {
   const [size, setSize] = useState({
     width: data.width || 200,
@@ -47,12 +48,14 @@ const CustomNode: React.FC<CustomNodeProps> = ({
       width: node.width,
       height: node.height
     };
-    setSize(newSize);
+    console.log('New Size:', newSize);
+    setSize((prevSize) => ({ ...prevSize, ...newSize }));
+    onNodeResizeStop(newSize);
   };
-
   return (
     <div
-      className={`${baseStyles.baseNode} ${customStyles.customNode}`}
+      key={`${size.width}-${size.height}`}
+      className={`${baseStyles.baseNode}`}
       style={{
         width: `${size.width}px`,
         height: `${size.height}px`
@@ -63,6 +66,8 @@ const CustomNode: React.FC<CustomNodeProps> = ({
         minHeight={150}
         isVisible={selected}
         onResize={handleResizeStop}
+        lineStyle={{ stroke: '#ff0071', strokeWidth: 2 }}
+        handleStyle={{ fill: '#ff0071' }}
       />
       <Handle
         type="target"
@@ -70,12 +75,14 @@ const CustomNode: React.FC<CustomNodeProps> = ({
         className={`${styles.reactFlowHandle} ${styles.reactFlowHandleTop}`}
       />
       <BaseNodeHeader
-        title={data.title || 'Untitled Custom Node'}
+        title={data.title || 'Untitled Note'}
         onDelete={onDelete}
       />
-      <div className={customStyles.customNodeContent}>
-        {/* Content rendering */}
-      </div>
+      <textarea
+        className={noteStyles.noteContent}
+        value={data.content || ''}
+        readOnly
+      />
       <BaseNodeFooter
         onChangeColor={onChangeColor}
         onTag={onTag}
@@ -90,4 +97,4 @@ const CustomNode: React.FC<CustomNodeProps> = ({
   );
 };
 
-export default CustomNode;
+export default NoteNode;

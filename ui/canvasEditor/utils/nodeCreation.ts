@@ -7,6 +7,7 @@ import type {
   CodeNode,
   DrawNode
 } from '@/ui/canvasEditor/nodeTypes';
+import { getNodeSpecificProperties } from '@/ui/canvasEditor/utils/nodeProperties';
 
 type BaseNode = Tables<'base_nodes'>;
 
@@ -45,46 +46,10 @@ export const createNode = (
     ...defaultProperties
   };
 
-  let specificNode: Partial<
-    NoteNode | TaskNode | CustomNode | CodeNode | DrawNode
-  >;
-
-  switch (nodeType) {
-    case 'note':
-      specificNode = {
-        ...baseProperties,
-        content: ''
-      } as Partial<NoteNode>;
-      break;
-    case 'task':
-      specificNode = {
-        ...baseProperties,
-        completed: false,
-        task: 'New Task'
-      } as Partial<TaskNode>;
-      break;
-    case 'custom':
-      specificNode = {
-        ...baseProperties,
-        data: {}
-      } as Partial<CustomNode>;
-      break;
-    case 'code':
-      specificNode = {
-        ...baseProperties,
-        code: '',
-        language: 'plaintext'
-      } as Partial<CodeNode>;
-      break;
-    case 'draw':
-      specificNode = {
-        ...baseProperties,
-        data: {}
-      } as Partial<DrawNode>;
-      break;
-    default:
-      throw new Error('Invalid node type');
-  }
+  const specificNode = {
+    ...baseProperties,
+    ...getNodeSpecificProperties(nodeType)
+  };
 
   const newNode: Node<any> = {
     ...specificNode,

@@ -1,4 +1,4 @@
-import type { Json, JsonPosition } from '@/types_db';
+import type { Json } from '@/types_db';
 
 export interface Node {
   data: any;
@@ -6,7 +6,7 @@ export interface Node {
   width: any;
   type: any;
   id: string;
-  position: JsonPosition;
+  position: { x: number; y: number };
 }
 
 export interface Edge {

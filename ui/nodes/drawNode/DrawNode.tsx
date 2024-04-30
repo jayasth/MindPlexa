@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { NodeProps, Handle, Position, NodeResizer, OnResize } from 'reactflow';
-import BaseNodeHeader from './BaseNodeHeader';
-import BaseNodeFooter from './BaseNodeFooter';
+import BaseNodeHeader from '@/ui/nodes/BaseNodeHeader';
+import BaseNodeFooter from '@/ui/nodes/BaseNodeFooter';
 import drawStyles from './DrawNode.module.css';
-import baseStyles from './BaseNode.module.css';
+import baseStyles from '@/ui/nodes/BaseNode.module.css';
 import styles from '@/ui/edges/EdgeStyles.module.css';
 
 interface DrawNodeData {

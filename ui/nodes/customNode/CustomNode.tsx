@@ -1,40 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import { NodeProps, Handle, Position, NodeResizer, OnResize } from 'reactflow';
-import BaseNodeHeader from './BaseNodeHeader';
-import BaseNodeFooter from './BaseNodeFooter';
-import taskStyles from './TaskNode.module.css';
-import baseStyles from './BaseNode.module.css';
+import BaseNodeHeader from '@/ui/nodes/BaseNodeHeader';
+import BaseNodeFooter from '@/ui/nodes/BaseNodeFooter';
+import customStyles from './CustomNode.module.css';
+import baseStyles from '@/ui/nodes/BaseNode.module.css';
 import styles from '@/ui/edges/EdgeStyles.module.css';
 
-interface TaskNodeData {
+interface CustomNodeData {
   id: string;
-  task?: string;
-  completed?: boolean;
-  title?: string;
-  width?: number;
-  height?: number;
+  title?: string | null;
+  data?: any;
+  width?: number | null;
+  height?: number | null;
 }
 
-interface TaskNodeProps extends NodeProps {
-  data: TaskNodeData;
+interface CustomNodeProps extends NodeProps {
+  data: CustomNodeData;
   onDelete: () => void;
   onChangeColor: () => void;
   onTag: () => void;
   onAttach: () => void;
-  onToggleComplete: () => void;
-  onNodeResizeStop: (newSize: { width: number; height: number }) => void;
+  selected: boolean;
 }
 
-const TaskNode: React.FC<TaskNodeProps> = ({
+const CustomNode: React.FC<CustomNodeProps> = ({
   data,
-  id,
-  selected,
   onDelete,
   onChangeColor,
   onTag,
   onAttach,
-  onToggleComplete,
-  onNodeResizeStop
+  selected
 }) => {
   const [size, setSize] = useState({
     width: data.width || 200,
@@ -53,12 +48,11 @@ const TaskNode: React.FC<TaskNodeProps> = ({
       height: node.height
     };
     setSize(newSize);
-    onNodeResizeStop(newSize);
   };
 
   return (
     <div
-      className={`${baseStyles.baseNode} ${taskStyles.taskNode}`}
+      className={`${baseStyles.baseNode} ${customStyles.customNode}`}
       style={{
         width: `${size.width}px`,
         height: `${size.height}px`
@@ -69,8 +63,6 @@ const TaskNode: React.FC<TaskNodeProps> = ({
         minHeight={150}
         isVisible={selected}
         onResize={handleResizeStop}
-        lineStyle={{ stroke: '#ff0071', strokeWidth: 2 }}
-        handleStyle={{ fill: '#ff0071' }}
       />
       <Handle
         type="target"
@@ -78,21 +70,11 @@ const TaskNode: React.FC<TaskNodeProps> = ({
         className={`${styles.reactFlowHandle} ${styles.reactFlowHandleTop}`}
       />
       <BaseNodeHeader
-        title={data.title || 'Untitled Task'}
+        title={data.title || 'Untitled Custom Node'}
         onDelete={onDelete}
       />
-      <div className={taskStyles.taskContent}>
-        <label className={taskStyles.taskLabel}>
-          <input
-            type="checkbox"
-            checked={data.completed || false}
-            onChange={onToggleComplete}
-            className={taskStyles.taskCheckbox}
-          />
-          <span className={taskStyles.taskText}>
-            {data.task || 'No task description'}
-          </span>
-        </label>
+      <div className={customStyles.customNodeContent}>
+        {/* Content rendering */}
       </div>
       <BaseNodeFooter
         onChangeColor={onChangeColor}
@@ -108,4 +90,4 @@ const TaskNode: React.FC<TaskNodeProps> = ({
   );
 };
 
-export default TaskNode;
+export default CustomNode;

@@ -1,28 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import { NodeProps, Handle, Position, NodeResizer, OnResize } from 'reactflow';
-import BaseNodeHeader from './BaseNodeHeader';
-import BaseNodeFooter from './BaseNodeFooter';
-import noteStyles from './NoteNode.module.css';
-import baseStyles from './BaseNode.module.css';
+import BaseNodeHeader from '@/ui/nodes/BaseNodeHeader';
+import BaseNodeFooter from '@/ui/nodes/BaseNodeFooter';
+import taskStyles from './TaskNode.module.css';
+import baseStyles from '@/ui/nodes/BaseNode.module.css';
 import styles from '@/ui/edges/EdgeStyles.module.css';
 
-interface NoteNodeData {
+interface TaskNodeData {
   id: string;
-  content?: string;
+  task?: string;
+  completed?: boolean;
   title?: string;
   width?: number;
   height?: number;
 }
-interface NoteNodeProps extends NodeProps {
-  data: NoteNodeData;
+
+interface TaskNodeProps extends NodeProps {
+  data: TaskNodeData;
   onDelete: () => void;
   onChangeColor: () => void;
   onTag: () => void;
   onAttach: () => void;
+  onToggleComplete: () => void;
   onNodeResizeStop: (newSize: { width: number; height: number }) => void;
 }
 
-const NoteNode: React.FC<NoteNodeProps> = ({
+const TaskNode: React.FC<TaskNodeProps> = ({
   data,
   id,
   selected,
@@ -30,6 +33,7 @@ const NoteNode: React.FC<NoteNodeProps> = ({
   onChangeColor,
   onTag,
   onAttach,
+  onToggleComplete,
   onNodeResizeStop
 }) => {
   const [size, setSize] = useState({
@@ -48,14 +52,13 @@ const NoteNode: React.FC<NoteNodeProps> = ({
       width: node.width,
       height: node.height
     };
-    console.log('New Size:', newSize);
-    setSize((prevSize) => ({ ...prevSize, ...newSize }));
+    setSize(newSize);
     onNodeResizeStop(newSize);
   };
+
   return (
     <div
-      key={`${size.width}-${size.height}`}
-      className={`${baseStyles.baseNode}`}
+      className={`${baseStyles.baseNode} ${taskStyles.taskNode}`}
       style={{
         width: `${size.width}px`,
         height: `${size.height}px`
@@ -75,14 +78,22 @@ const NoteNode: React.FC<NoteNodeProps> = ({
         className={`${styles.reactFlowHandle} ${styles.reactFlowHandleTop}`}
       />
       <BaseNodeHeader
-        title={data.title || 'Untitled Note'}
+        title={data.title || 'Untitled Task'}
         onDelete={onDelete}
       />
-      <textarea
-        className={noteStyles.noteContent}
-        value={data.content || ''}
-        readOnly
-      />
+      <div className={taskStyles.taskContent}>
+        <label className={taskStyles.taskLabel}>
+          <input
+            type="checkbox"
+            checked={data.completed || false}
+            onChange={onToggleComplete}
+            className={taskStyles.taskCheckbox}
+          />
+          <span className={taskStyles.taskText}>
+            {data.task || 'No task description'}
+          </span>
+        </label>
+      </div>
       <BaseNodeFooter
         onChangeColor={onChangeColor}
         onTag={onTag}
@@ -97,4 +108,4 @@ const NoteNode: React.FC<NoteNodeProps> = ({
   );
 };
 
-export default NoteNode;
+export default TaskNode;

@@ -1,11 +1,11 @@
 import React from 'react';
 import { NodeProps } from 'reactflow';
 import { Node as BaseNode } from '@/ui/canvasEditor/nodeTypes';
-import NoteNode from './NoteNode';
-import TaskNode from './TaskNode';
-import CustomNode from './CustomNode';
-import CodeNode from './CodeNode';
-import DrawNode from './DrawNode';
+import NoteNode from '@/ui/nodes/noteNode/NoteNode';
+import TaskNode from '@/ui/nodes/tasNode/TaskNode';
+import CustomNode from '@/ui/nodes/customNode/CustomNode';
+import CodeNode from '@/ui/nodes/codeNode/CodeNode';
+import DrawNode from '@/ui/nodes/drawNode/DrawNode';
 import NodeSelectionMenu, { NodeSelectionMenuProps } from './NodeSelectionMenu';
 import { useStore } from '@/app/store/useCanvasStore';
 

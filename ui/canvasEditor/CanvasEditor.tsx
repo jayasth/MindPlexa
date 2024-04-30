@@ -60,11 +60,8 @@ export default function CanvasEditor() {
     addNode: state.addNode
   }));
 
-  function setPosition(
-    x: number,
-    y: number
-  ): { x: number; y: number } & import('../../types_db').JsonPosition {
-    throw new Error('Function not implemented.');
+  function setPosition(x: number, y: number): { x: number; y: number } {
+    return { x, y };
   }
 
   return (
