@@ -82,7 +82,7 @@ export default function CanvasEditor() {
   return (
     <div className="flex h-screen">
       <ReactFlowProvider>
-        <div className="w-1/6">
+        <div className="w-1/12 bg-gray-100 p-2">
           <Toolbar
             onUndo={() => console.log('Undo')}
             onRedo={() => console.log('Redo')}

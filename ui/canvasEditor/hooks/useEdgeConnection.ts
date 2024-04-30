@@ -1,6 +1,7 @@
 import { useCallback, useRef } from 'react';
 import { useStore } from '@/app/store/useCanvasStore';
 import { Node, XYPosition } from 'reactflow';
+import { createNode } from '@/ui/canvasEditor/utils/nodeCreation';
 
 export const useEdgeConnection = () => {
   const {
@@ -8,17 +9,25 @@ export const useEdgeConnection = () => {
     setShowNodeSelectionMenu,
     setMenuPosition,
     addChildNode,
+    addEdge,
+    removeNode,
     domNode,
     screenToFlowPosition,
-    nodeInternals
+    nodeInternals,
+    addNode,
+    updateNode
   } = useStore((state) => ({
     nodes: state.nodes,
     setShowNodeSelectionMenu: state.setShowNodeSelectionMenu,
     setMenuPosition: state.setMenuPosition,
     addChildNode: state.addChildNode,
+    addEdge: state.addEdge,
+    removeNode: state.removeNode,
     domNode: state.domNode,
     screenToFlowPosition: state.screenToFlowPosition,
-    nodeInternals: state.nodeInternals
+    nodeInternals: state.nodeInternals,
+    addNode: state.addNode,
+    updateNode: state.updateNode
   }));
 
   const connectingNodeId = useRef<string | null>(null);
@@ -64,14 +73,46 @@ export const useEdgeConnection = () => {
       const node = (event.target as Element).closest('.react-flow__node');
 
       if (node) {
-        node.querySelector('input')?.focus({ preventScroll: true });
+        const targetNodeId = node.getAttribute('data-id');
+        if (connectingNodeId.current && targetNodeId) {
+          const sourceNode = nodeInternals.get(connectingNodeId.current);
+          const targetNode = nodeInternals.get(targetNodeId);
+          if (sourceNode && targetNode) {
+            const newEdge = {
+              id: `edge-${Date.now()}`,
+              source: sourceNode.id,
+              target: targetNode.id,
+              type: 'customEdge'
+            };
+            addEdge(newEdge);
+          }
+        }
       } else if (targetIsPane && connectingNodeId.current) {
         const parentNode = nodeInternals.get(connectingNodeId.current);
         const childNodePosition = getChildNodePosition(event, parentNode);
-
         if (parentNode && childNodePosition) {
-          addChildNode(parentNode, childNodePosition, 'note'); // Provide the node type as the third argument
-          setShowNodeSelectionMenu(false); // Close the menu after adding the node
+          createNode('custom', childNodePosition, (newNode) => {
+            addNode(newNode);
+            const handleNodeSelect = (
+              nodeType: 'note' | 'task' | 'custom' | 'code' | 'draw',
+              position: XYPosition
+            ) => {
+              createNode(nodeType, position, addNode);
+              removeNode(newNode.id);
+            };
+            const handleCloseMenu = () => {
+              removeNode(newNode.id);
+            };
+            updateNode(newNode.id, {
+              data: {
+                onSelect: handleNodeSelect,
+                position: childNodePosition,
+                onClose: handleCloseMenu,
+                id: newNode.id,
+                isStandalone: true
+              }
+            });
+          });
         } else {
           const menuPosition = screenToFlowPosition({
             x: event.clientX,
@@ -90,7 +131,11 @@ export const useEdgeConnection = () => {
       setShowNodeSelectionMenu,
       setMenuPosition,
       nodeInternals,
-      screenToFlowPosition
+      screenToFlowPosition,
+      addEdge,
+      addNode,
+      removeNode,
+      updateNode
     ]
   );
 
