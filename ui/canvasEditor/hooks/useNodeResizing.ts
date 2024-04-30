@@ -1,11 +1,12 @@
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 import { Node } from 'reactflow';
+import debounce from 'lodash.debounce';
 
 export const useNodeResizing = (
   setNodes: (func: (nodes: Node[]) => Node[]) => void
 ) => {
-  const handleNodeResizeStop = useCallback(
-    (nodeId: string, newSize: { width: number; height: number }) => {
+  const debouncedSetNodes = useRef(
+    debounce((newSize: { width: number; height: number }, nodeId: string) => {
       setNodes((currentNodes) =>
         currentNodes.map((node) =>
           node.id === nodeId
@@ -21,8 +22,14 @@ export const useNodeResizing = (
             : node
         )
       );
+    }, 150) // Debounce period in milliseconds
+  ).current;
+
+  const handleNodeResizeStop = useCallback(
+    (nodeId: string, newSize: { width: number; height: number }) => {
+      debouncedSetNodes(newSize, nodeId);
     },
-    [setNodes]
+    [debouncedSetNodes]
   );
 
   return { handleNodeResizeStop };

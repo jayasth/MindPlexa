@@ -16,15 +16,7 @@ import CustomEdge from '@/ui/edges/CustomEdge';
 import NodeSelectionMenu from '@/ui/canvasEditor/NodeSelectionMenu';
 import { useStore } from '@/app/store/useCanvasStore';
 import { useEdgeConnection } from './hooks/useEdgeConnection';
-
-const nodeTypes = {
-  note: (props) => <NodeRenderer {...props} />,
-  task: (props) => <NodeRenderer {...props} />,
-  custom: (props) => <NodeRenderer {...props} />,
-  code: (props) => <NodeRenderer {...props} />,
-  draw: (props) => <NodeRenderer {...props} />,
-  selectionMenu: (props) => <NodeSelectionMenu {...props} />
-};
+import { useNodeResizing } from './hooks/useNodeResizing'; // Make sure this is correctly imported
 
 const edgeTypes = {
   customEdge: CustomEdge
@@ -60,6 +52,29 @@ export default function CanvasEditor() {
     addNode: state.addNode
   }));
 
+  const { onConnectStart, onConnectEnd } = useEdgeConnection();
+  const { handleNodeResizeStop } = useNodeResizing(setNodes); // Use the hook here
+
+  // Define nodeTypes using the handleNodeResizeStop from the hook
+  const nodeTypes = {
+    note: (props) => (
+      <NodeRenderer {...props} onNodeResizeStop={handleNodeResizeStop} />
+    ),
+    task: (props) => (
+      <NodeRenderer {...props} onNodeResizeStop={handleNodeResizeStop} />
+    ),
+    custom: (props) => (
+      <NodeRenderer {...props} onNodeResizeStop={handleNodeResizeStop} />
+    ),
+    code: (props) => (
+      <NodeRenderer {...props} onNodeResizeStop={handleNodeResizeStop} />
+    ),
+    draw: (props) => (
+      <NodeRenderer {...props} onNodeResizeStop={handleNodeResizeStop} />
+    ),
+    selectionMenu: (props) => <NodeSelectionMenu {...props} />
+  };
+
   function setPosition(x: number, y: number): { x: number; y: number } {
     return { x, y };
   }
@@ -67,7 +82,7 @@ export default function CanvasEditor() {
   return (
     <div className="flex h-screen">
       <ReactFlowProvider>
-        <div className="w-1/12 bg-gray-100 p-2">
+        <div className="w-1/6">
           <Toolbar
             onUndo={() => console.log('Undo')}
             onRedo={() => console.log('Redo')}
@@ -106,6 +121,8 @@ export default function CanvasEditor() {
             nodeOrigin={nodeOrigin}
             defaultEdgeOptions={defaultEdgeOptions}
             connectionLineType={ConnectionLineType.Straight}
+            onConnectStart={onConnectStart}
+            onConnectEnd={onConnectEnd}
             fitView={true}
           >
             <Background color="#aaa" gap={16} />
