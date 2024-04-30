@@ -1,13 +1,42 @@
 import type { Node, Edge } from 'reactflow';
 
-export function applyNodeChanges(changes: any, nodes: Node[]): Node[] {
-  // Implement logic to apply changes to nodes
-  return nodes; // return updated nodes
-}
+export function applyNodeChanges(changes: any[], nodes: Node[]): Node[] {
+  return nodes.map((node) => {
+    const change = changes.find((c) => c.id === node.id);
+    if (change) {
+      // Safely update data and style
+      const updatedData = change.data
+        ? { ...node.data, ...change.data }
+        : node.data;
+      const updatedStyle = {
+        ...node.style,
+        width: change.data?.width ?? node.style?.width,
+        height: change.data?.height ?? node.style?.height
+      };
 
-export function applyEdgeChanges(changes: any, edges: Edge[]): Edge[] {
-  // Implement logic to apply changes to edges
-  return edges; // return updated edges
+      return {
+        ...node,
+        position: change.position || node.position,
+        data: updatedData,
+        style: updatedStyle
+      };
+    }
+    return node;
+  });
+}
+export function applyEdgeChanges(changes: any[], edges: Edge[]): Edge[] {
+  return edges.map((edge) => {
+    const change = changes.find((c) => c.id === edge.id);
+    if (change) {
+      return {
+        ...edge,
+        source: change.source || edge.source,
+        target: change.target || edge.target,
+        style: { ...edge.style, ...change.style }
+      };
+    }
+    return edge;
+  });
 }
 
 export const handleDownload = (state: any) => {

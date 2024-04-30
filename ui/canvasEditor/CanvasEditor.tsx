@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import ReactFlow, {
   Controls,
   Background,
@@ -15,16 +15,7 @@ import NodeRenderer from '@/ui/canvasEditor/NodeRenderer';
 import CustomEdge from '@/ui/edges/CustomEdge';
 import NodeSelectionMenu from '@/ui/canvasEditor/NodeSelectionMenu';
 import { useStore } from '@/app/store/useCanvasStore';
-import { useEdgeConnection } from './hooks/useEdgeConnection';
-
-const nodeTypes = {
-  note: (props) => <NodeRenderer {...props} />,
-  task: (props) => <NodeRenderer {...props} />,
-  custom: (props) => <NodeRenderer {...props} />,
-  code: (props) => <NodeRenderer {...props} />,
-  draw: (props) => <NodeRenderer {...props} />,
-  selectionMenu: (props) => <NodeSelectionMenu {...props} />
-};
+import { useNodeResizing } from './hooks/useNodeResizing';
 
 const edgeTypes = {
   customEdge: CustomEdge
@@ -59,6 +50,30 @@ export default function CanvasEditor() {
     setShowNodeSelectionMenu: state.setShowNodeSelectionMenu,
     addNode: state.addNode
   }));
+
+  const { handleNodeResizeStop } = useNodeResizing(setNodes);
+
+  const nodeTypes = useMemo(
+    () => ({
+      note: (props) => (
+        <NodeRenderer {...props} onNodeResizeStop={handleNodeResizeStop} />
+      ),
+      task: (props) => (
+        <NodeRenderer {...props} onNodeResizeStop={handleNodeResizeStop} />
+      ),
+      custom: (props) => (
+        <NodeRenderer {...props} onNodeResizeStop={handleNodeResizeStop} />
+      ),
+      code: (props) => (
+        <NodeRenderer {...props} onNodeResizeStop={handleNodeResizeStop} />
+      ),
+      draw: (props) => (
+        <NodeRenderer {...props} onNodeResizeStop={handleNodeResizeStop} />
+      ),
+      selectionMenu: (props) => <NodeSelectionMenu {...props} />
+    }),
+    [handleNodeResizeStop]
+  );
 
   function setPosition(x: number, y: number): { x: number; y: number } {
     return { x, y };

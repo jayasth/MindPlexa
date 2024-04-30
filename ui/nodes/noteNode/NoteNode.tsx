@@ -50,6 +50,7 @@ const NoteNode: React.FC<NoteNodeProps> = ({
     };
     console.log('New Size:', newSize);
     setSize(newSize);
+    onNodeResizeStop(newSize);
   };
   return (
     <div
