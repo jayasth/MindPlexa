@@ -2,7 +2,7 @@ import React from 'react';
 import { NodeProps } from 'reactflow';
 import { Node as BaseNode } from '@/ui/canvasEditor/nodeTypes';
 import NoteNode from '@/ui/nodes/noteNode/NoteNode';
-import TaskNode from '@/ui/nodes/tasNode/TaskNode';
+import TaskNode from '@/ui/nodes/taskNode/TaskNode';
 import CustomNode from '@/ui/nodes/customNode/CustomNode';
 import CodeNode from '@/ui/nodes/codeNode/CodeNode';
 import DrawNode from '@/ui/nodes/drawNode/DrawNode';
