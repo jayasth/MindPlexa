@@ -53,7 +53,6 @@ const TaskNode: React.FC<TaskNodeProps> = ({
       height: node.height
     };
     setSize(newSize);
-    onNodeResizeStop(newSize);
   };
 
   return (
