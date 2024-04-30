@@ -11,9 +11,9 @@ import {
   handleDownload,
   handleShare
 } from '@/ui/canvasEditor/utils/canvasUtils';
-import NodeRenderer from '@/ui/nodes/NodeRenderer';
+import NodeRenderer from '@/ui/canvasEditor/NodeRenderer';
 import CustomEdge from '@/ui/edges/CustomEdge';
-import NodeSelectionMenu from '@/ui/nodes/NodeSelectionMenu';
+import NodeSelectionMenu from '@/ui/canvasEditor/NodeSelectionMenu';
 import { useStore } from '@/app/store/useCanvasStore';
 import { useEdgeConnection } from './hooks/useEdgeConnection';
 
