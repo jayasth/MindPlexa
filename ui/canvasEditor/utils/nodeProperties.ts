@@ -1,4 +1,3 @@
-import type { Json } from '@/types_db';
 import type {
   NoteNode,
   TaskNode,
@@ -6,6 +5,12 @@ import type {
   CodeNode,
   DrawNode
 } from '@/ui/canvasEditor/nodeTypes';
+
+// Define default dimensions for nodes
+export const defaultNodeDimensions = {
+  width: 200,
+  height: 300
+};
 
 export const getNodeSpecificProperties = (
   nodeType: 'note' | 'task' | 'custom' | 'code' | 'draw'

@@ -1,13 +1,9 @@
 import { Node, XYPosition } from 'reactflow';
 import type { Json, Tables } from '@/types_db';
-import type {
-  NoteNode,
-  TaskNode,
-  CustomNode,
-  CodeNode,
-  DrawNode
-} from '@/ui/canvasEditor/nodeTypes';
-import { getNodeSpecificProperties } from '@/ui/canvasEditor/utils/nodeProperties';
+import {
+  getNodeSpecificProperties,
+  defaultNodeDimensions
+} from './nodeProperties';
 
 type BaseNode = Tables<'base_nodes'>;
 
@@ -31,8 +27,8 @@ export const createNode = (
   const defaultProperties = {
     draggable: true,
     connectable: true,
-    width: 200,
-    height: 300,
+    width: defaultNodeDimensions.width,
+    height: defaultNodeDimensions.height,
     title: `New ${nodeType.charAt(0).toUpperCase() + nodeType.slice(1)}`
   };
 
