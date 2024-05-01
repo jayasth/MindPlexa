@@ -56,8 +56,16 @@ export default function CanvasEditor() {
 
   const { handleNodeResizeStop } = useNodeResizing(setNodes);
 
+  // Modify the existing onConnect or edge creation handler:
+
+  // Modify the existing onConnect or edge creation handler:
+
   const handleConnect = useCallback(
     (connection) => {
+      if (!connection.source || !connection.target) {
+        console.error('Incomplete connection data:', connection);
+        return;
+      }
       const newEdge = {
         ...connection,
         id: `e-${nanoid()}`,

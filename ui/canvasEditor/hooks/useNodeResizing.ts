@@ -29,7 +29,7 @@ export const useNodeResizing = (
           )
         );
       },
-      150
+      500
     ) // Debounce period in milliseconds
   ).current;
 
