@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { NodeProps } from 'reactflow';
 import { Node as BaseNode } from '@/ui/canvasEditor/nodeTypes';
 import NoteNode from '@/ui/nodes/noteNode/NoteNode';
@@ -25,6 +25,13 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
   const node = data as BaseNode;
   const updateNode = useStore((state) => state.updateNode);
 
+  const handleNodeResizeStop = useCallback(
+    (size: { width: number; height: number }) => {
+      onNodeResizeStop(id, size);
+    },
+    [id, onNodeResizeStop]
+  );
+
   const commonProps = {
     draggable: true,
     connectable: true,
@@ -36,7 +43,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     width: node.width,
     height: node.height,
     selected: selected,
-    onNodeResizeStop: onNodeResizeStop,
+    onNodeResizeStop: handleNodeResizeStop,
     onLabelChange: (label: string) =>
       updateNode(id, { data: { ...node.data, label } })
   };
@@ -66,7 +73,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
             width: node.width ?? 200,
             height: node.height ?? 100
           }}
-          onNodeResizeStop={(size) => onNodeResizeStop(id, size)}
+          onNodeResizeStop={(size) => handleNodeResizeStop(size)}
         />
       );
 
