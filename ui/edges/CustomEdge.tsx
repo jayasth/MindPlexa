@@ -1,20 +1,10 @@
 import React from 'react';
-import { EdgeProps, getBezierPath } from 'reactflow';
+import { EdgeProps, getBezierPath, Position } from 'reactflow';
 import { FaTimes } from 'react-icons/fa';
 import styles from '@/ui/edges/EdgeStyles.module.css';
 
-import { Position } from 'reactflow';
-
-interface CustomEdgeProps {
-  id: string;
-  sourceX: number;
-  sourceY: number;
-  targetX: number;
-  targetY: number;
-  sourcePosition: Position;
-  targetPosition: Position;
-  style: React.CSSProperties;
-  onDelete: (id: string) => void;
+interface CustomEdgeProps extends EdgeProps {
+  onDelete?: (id: string) => void;
 }
 
 const CustomEdge: React.FC<CustomEdgeProps> = ({
@@ -60,7 +50,7 @@ const CustomEdge: React.FC<CustomEdgeProps> = ({
           fill: 'red',
           zIndex: 1000
         }}
-        onClick={() => onDelete(id)}
+        onClick={() => onDelete && onDelete(id)}
       >
         <FaTimes size="10" />
       </text>
