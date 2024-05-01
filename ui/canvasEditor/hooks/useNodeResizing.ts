@@ -1,33 +1,11 @@
-import { useCallback, useRef } from 'react';
+import { useCallback } from 'react';
 import { Node, XYPosition } from 'reactflow';
-import debounce from 'lodash.debounce';
+import { useStore } from '@/app/store/useCanvasStore';
 
-export const useNodeResizing = (
-  setNodes: (func: (nodes: Node[]) => Node[]) => void
-) => {
-  const debouncedSetNodes = useRef(
-    debounce(
-      (
-        newSize: { width: number; height: number },
-        newPosition: XYPosition,
-        nodeId: string
-      ) => {
-        setNodes((currentNodes) =>
-          currentNodes.map((node) =>
-            node.id === nodeId
-              ? {
-                  ...node,
-                  position: newPosition,
-                  width: newSize.width,
-                  height: newSize.height
-                }
-              : node
-          )
-        );
-      },
-      500
-    ) // Debounce period in milliseconds
-  ).current;
+export const useNodeResizing = () => {
+  const { setNodes } = useStore((state) => ({
+    setNodes: state.setNodes
+  }));
 
   const handleNodeResizeStop = useCallback(
     (
@@ -35,9 +13,20 @@ export const useNodeResizing = (
       newSize: { width: number; height: number },
       newPosition: XYPosition
     ) => {
-      debouncedSetNodes(newSize, newPosition, nodeId);
+      setNodes((currentNodes) =>
+        currentNodes.map((node) =>
+          node.id === nodeId
+            ? {
+                ...node,
+                position: newPosition,
+                width: newSize.width,
+                height: newSize.height
+              }
+            : node
+        )
+      );
     },
-    [debouncedSetNodes]
+    [setNodes]
   );
 
   return { handleNodeResizeStop };

@@ -35,16 +35,20 @@ const Toolbar: React.FC<ToolbarProps> = ({
     type: 'note' | 'task' | 'custom' | 'code' | 'draw'
   ) => {
     const position = {
-      x: Math.random() * window.innerWidth - 100,
-      y: Math.random() * window.innerHeight
+      x: Math.random() * (window.innerWidth - 100),
+      y: Math.random() * (window.innerHeight - 100)
     };
 
     // Retrieve existing nodes here
     const existingNodes = []; // Replace this with your actual existing nodes
 
-    createNode(type, position, existingNodes, addNode);
-  };
+    const canvasSize = {
+      width: window.innerWidth,
+      height: window.innerHeight
+    };
 
+    createNode(type, position, existingNodes, addNode, canvasSize);
+  };
   const buttonClass = 'p-2 bg-gray-200 rounded hover:bg-gray-300';
 
   return (

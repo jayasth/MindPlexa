@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Handle, Position, Node } from 'reactflow';
 import {
   FaTasks,
@@ -22,8 +22,9 @@ export interface NodeSelectionMenuProps {
 }
 
 const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({ data }) => {
-  const { addChildNode } = useStore((state) => ({
-    addChildNode: state.addChildNode
+  const { addChildNode, removeNode } = useStore((state) => ({
+    addChildNode: state.addChildNode,
+    removeNode: state.removeNode
   }));
 
   const nodeTypes: ('note' | 'task' | 'custom' | 'code' | 'draw')[] = [
@@ -53,15 +54,20 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({ data }) => {
       data: {}
     };
 
-    // Retrieve existing nodes here
-    const existingNodes = []; // Replace this with your actual existing nodes
-
-    createNode(nodeType, position, existingNodes, (newNode) => {
+    createNode(nodeType, position, [], (newNode) => {
       addChildNode(parentNode, newNode.position, nodeType);
       data.onSelect(nodeType, position);
       data.onClose();
     });
   };
+
+  useEffect(() => {
+    return () => {
+      if (data.isStandalone) {
+        removeNode(data.id || '');
+      }
+    };
+  }, [data.id, data.isStandalone, removeNode]);
 
   const menuPosition = data.position || defaultPosition;
 

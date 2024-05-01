@@ -5,12 +5,20 @@ export function applyNodeChanges(changes: any[], nodes: Node[]): Node[] {
     const change = changes.find((c) => c.id === node.id);
     if (change) {
       const updatedStyle = { ...node.style, ...change.style };
+      const updatedPosition = change.position || node.position;
+      const updatedSize = {
+        width: change.width || node.width,
+        height: change.height || node.height
+      };
 
       return {
         ...node,
-        position: change.position || node.position,
+        position: updatedPosition,
         data: { ...node.data, ...change.data },
-        style: updatedStyle
+        style: updatedStyle,
+        width: updatedSize.width,
+        height: updatedSize.height,
+        positionAbsolute: change.positionAbsolute || node.positionAbsolute
       };
     }
     return node;

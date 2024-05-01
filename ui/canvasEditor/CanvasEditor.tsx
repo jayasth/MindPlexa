@@ -54,27 +54,7 @@ export default function CanvasEditor() {
     addNode: state.addNode
   }));
 
-  const { handleNodeResizeStop } = useNodeResizing(setNodes);
-
-  // Modify the existing onConnect or edge creation handler:
-
-  // Modify the existing onConnect or edge creation handler:
-
-  const handleConnect = useCallback(
-    (connection) => {
-      if (!connection.source || !connection.target) {
-        console.error('Incomplete connection data:', connection);
-        return;
-      }
-      const newEdge = {
-        ...connection,
-        id: `e-${nanoid()}`,
-        type: 'customEdge'
-      };
-      setEdges((eds) => [...eds, newEdge]);
-    },
-    [setEdges]
-  );
+  const { handleNodeResizeStop } = useNodeResizing();
 
   const nodeTypes = useMemo(
     () => ({
@@ -96,6 +76,22 @@ export default function CanvasEditor() {
       selectionMenu: (props) => <NodeSelectionMenu {...props} />
     }),
     [handleNodeResizeStop]
+  );
+
+  const handleConnect = useCallback(
+    (connection) => {
+      if (!connection.source || !connection.target) {
+        console.error('Incomplete connection data:', connection);
+        return;
+      }
+      const newEdge = {
+        ...connection,
+        id: `e-${nanoid()}`,
+        type: 'customEdge'
+      };
+      setEdges((eds) => [...eds, newEdge]);
+    },
+    [setEdges]
   );
 
   function setPosition(x: number, y: number): { x: number; y: number } {

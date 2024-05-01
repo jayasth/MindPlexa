@@ -66,7 +66,15 @@ export const useStore = createStore<CanvasState>((set, get) => ({
   updateNode: (id, data) =>
     set((state) => ({
       nodes: state.nodes.map((node) =>
-        node.id === id ? { ...node, ...data } : node
+        node.id === id
+          ? {
+              ...node,
+              ...data,
+              position: data.position || node.position,
+              width: data.width || node.width,
+              height: data.height || node.height
+            }
+          : node
       )
     })),
   addEdge: (edge) =>

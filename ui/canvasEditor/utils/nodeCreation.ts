@@ -41,21 +41,29 @@ export const createNode = (
   nodeType: 'note' | 'task' | 'custom' | 'code' | 'draw',
   position: { x: number; y: number },
   existingNodes: Node<any>[],
-  callback: (newNode: Node<any>) => void
+  callback: (newNode: Node<any>) => void,
+  canvasSize: { width: number; height: number }
 ) => {
-  // Adjust position based on zoom level here
-  // This is just an example, you'll need to replace this with your actual zoom level
   const zoomLevel = 1.0;
   position.x /= zoomLevel;
   position.y /= zoomLevel;
 
   if (Array.isArray(existingNodes)) {
     while (isPositionOccupied(position, existingNodes)) {
-      position.x += 10; // Adjust these values based on your needs
-      position.y += 10;
+      position.x += 5;
+      position.y += 5;
+
+      // Ensure the position is within the visible area
+      position.x = Math.min(
+        position.x,
+        canvasSize.width - defaultNodeDimensions.width
+      );
+      position.y = Math.min(
+        position.y,
+        canvasSize.height - defaultNodeDimensions.height
+      );
     }
   }
-
   const positionAsXYPosition = setPosition(position.x, position.y);
 
   const defaultProperties = {

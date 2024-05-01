@@ -8,8 +8,8 @@ import type {
 
 // Define default dimensions for nodes
 export const defaultNodeDimensions = {
-  width: 200,
-  height: 300
+  width: 100,
+  height: 150
 };
 
 export const getNodeSpecificProperties = (

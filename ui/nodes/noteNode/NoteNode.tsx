@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { NodeProps, Handle, Position, NodeResizer, OnResize } from 'reactflow';
 import BaseNodeHeader from '@/ui/nodes/BaseNodeHeader';
 import BaseNodeFooter from '@/ui/nodes/BaseNodeFooter';
 import noteStyles from './NoteNode.module.css';
 import baseStyles from '@/ui/nodes/BaseNode.module.css';
 import styles from '@/ui/edges/EdgeStyles.module.css';
+import { useStore } from '@/app/store/useCanvasStore';
 
 interface NoteNodeData {
   id: string;
@@ -19,7 +20,6 @@ interface NoteNodeProps extends NodeProps {
   onChangeColor: () => void;
   onTag: () => void;
   onAttach: () => void;
-  onNodeResizeStop: (newSize: { width: number; height: number }) => void;
 }
 
 const NoteNode: React.FC<NoteNodeProps> = ({
@@ -29,9 +29,12 @@ const NoteNode: React.FC<NoteNodeProps> = ({
   onDelete,
   onChangeColor,
   onTag,
-  onAttach,
-  onNodeResizeStop
+  onAttach
 }) => {
+  const { updateNode } = useStore((state) => ({
+    updateNode: state.updateNode
+  }));
+
   const [size, setSize] = useState({
     width: data.width || 200,
     height: data.height || 300
@@ -43,15 +46,18 @@ const NoteNode: React.FC<NoteNodeProps> = ({
     }
   }, [data.width, data.height]);
 
-  const handleResizeStop: OnResize = (event, node) => {
-    const newSize = {
-      width: node.width,
-      height: node.height
-    };
-    console.log('New Size:', newSize);
-    setSize(newSize);
-    onNodeResizeStop(newSize);
-  };
+  const handleResizeStop: OnResize = useCallback(
+    (event, node) => {
+      const newSize = {
+        width: node.width,
+        height: node.height
+      };
+      setSize(newSize);
+      updateNode(id, { width: newSize.width, height: newSize.height });
+    },
+    [id, updateNode]
+  );
+
   return (
     <div
       key={`${size.width}-${size.height}`}

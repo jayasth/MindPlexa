@@ -1,5 +1,5 @@
-import React, { useCallback } from 'react';
-import { NodeProps } from 'reactflow';
+import React, { useState, useEffect, useCallback } from 'react';
+import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
 import { Node as BaseNode } from '@/ui/canvasEditor/nodeTypes';
 import NoteNode from '@/ui/nodes/noteNode/NoteNode';
 import TaskNode from '@/ui/nodes/taskNode/TaskNode';
@@ -8,6 +8,7 @@ import CodeNode from '@/ui/nodes/codeNode/CodeNode';
 import DrawNode from '@/ui/nodes/drawNode/DrawNode';
 import NodeSelectionMenu, { NodeSelectionMenuProps } from './NodeSelectionMenu';
 import { useStore } from '@/app/store/useCanvasStore';
+import { defaultNodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 
 interface NodeRendererProps extends NodeProps {
   onNodeResizeStop: (
@@ -26,12 +27,25 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
   const node = data as BaseNode;
   const updateNode = useStore((state) => state.updateNode);
 
-  const handleNodeResizeStop = useCallback(
-    (
-      size: { width: number; height: number },
-      position: { x: number; y: number }
-    ) => {
-      onNodeResizeStop(id, size, position);
+  const [size, setSize] = useState({
+    width: node.width || defaultNodeDimensions.width,
+    height: node.height || defaultNodeDimensions.height
+  });
+
+  useEffect(() => {
+    if (node.width && node.height) {
+      setSize({ width: node.width, height: node.height });
+    }
+  }, [node.width, node.height]);
+
+  const handleResizeStop = useCallback(
+    (event, newSize) => {
+      const newPosition = {
+        x: newSize.x,
+        y: newSize.y
+      };
+      setSize(newSize);
+      onNodeResizeStop(id, newSize, newPosition);
     },
     [id, onNodeResizeStop]
   );
@@ -44,10 +58,9 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     onResize: () => console.log('Resize Node'),
     onTag: () => console.log('Tag Node'),
     onAttach: () => console.log('Attach File'),
-    width: node.width,
-    height: node.height,
+    width: size.width,
+    height: size.height,
     selected: selected,
-    onNodeResizeStop: handleNodeResizeStop,
     onLabelChange: (label: string) =>
       updateNode(id, { data: { ...node.data, label } })
   };
@@ -74,11 +87,28 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
           {...commonProps}
           data={{
             ...node,
-            width: node.width ?? 200,
-            height: node.height ?? 100
+            width: size.width,
+            height: size.height
           }}
-          onNodeResizeStop={handleNodeResizeStop}
-        />
+        >
+          <NodeResizer
+            minWidth={100}
+            minHeight={100}
+            isVisible={selected}
+            onResize={handleResizeStop}
+            handleStyle={{ fill: '#ff0071' }}
+          />
+          <Handle
+            type="target"
+            position={Position.Top}
+            style={{ background: '#555' }}
+          />
+          <Handle
+            type="source"
+            position={Position.Bottom}
+            style={{ background: '#555' }}
+          />
+        </NodeComponent>
       );
 
     default:

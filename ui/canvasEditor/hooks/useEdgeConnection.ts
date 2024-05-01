@@ -86,35 +86,41 @@ export const useEdgeConnection = () => {
         const parentNode = nodeInternals.get(connectingNodeId.current);
         const childNodePosition = getChildNodePosition(event, parentNode);
         if (parentNode && childNodePosition) {
-          createNode('custom', childNodePosition, nodes, (newNode) => {
-            addNode(newNode);
-            const handleNodeSelect = (
-              nodeType: 'note' | 'task' | 'custom' | 'code' | 'draw',
-              position: XYPosition
-            ) => {
-              createNode(nodeType, position, nodes, addNode);
-              removeNode(newNode.id);
-            };
-            const handleCloseMenu = () => {
-              removeNode(newNode.id);
-            };
-            updateNode(newNode.id, {
-              data: {
-                onSelect: handleNodeSelect,
-                position: childNodePosition,
-                onClose: handleCloseMenu,
-                id: newNode.id,
-                isStandalone: true
-              }
-            });
-          });
-        } else {
-          const menuPosition = screenToFlowPosition({
-            x: event.clientX,
-            y: event.clientY
-          });
-          setMenuPosition(menuPosition);
-          setShowNodeSelectionMenu(true);
+          const canvasSize = {
+            width: window.innerWidth,
+            height: window.innerHeight
+          };
+          createNode(
+            'custom',
+            childNodePosition,
+            nodes,
+            (newNode) => {
+              addNode(newNode);
+              const handleNodeSelect = (
+                nodeType: 'note' | 'task' | 'custom' | 'code' | 'draw',
+                position: XYPosition
+              ) => {
+                createNode(nodeType, position, nodes, addNode, canvasSize);
+                removeNode(newNode.id);
+              };
+              const handleCloseMenu = () => {
+                removeNode(newNode.id);
+              };
+              updateNode(newNode.id, {
+                data: {
+                  onSelect: handleNodeSelect,
+                  position: childNodePosition,
+                  onClose: handleCloseMenu,
+                  id: newNode.id,
+                  isStandalone: true
+                }
+              });
+              setMenuPosition(childNodePosition);
+              setShowNodeSelectionMenu(true);
+              addChildNode(parentNode, childNodePosition, 'custom');
+            },
+            canvasSize
+          );
         }
       }
 
@@ -130,7 +136,8 @@ export const useEdgeConnection = () => {
       nodeInternals,
       screenToFlowPosition,
       setMenuPosition,
-      setShowNodeSelectionMenu
+      setShowNodeSelectionMenu,
+      addChildNode
     ]
   );
 
