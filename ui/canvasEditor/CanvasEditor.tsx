@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback } from 'react';
+import React, { useMemo, useCallback, useRef } from 'react';
 import ReactFlow, {
   Controls,
   Background,
@@ -6,7 +6,8 @@ import ReactFlow, {
   NodeOrigin,
   ConnectionLineType,
   addEdge,
-  Edge
+  Edge,
+  ReactFlowInstance
 } from 'reactflow';
 import Toolbar from './toolbar';
 import {
@@ -94,6 +95,8 @@ export default function CanvasEditor() {
     [setEdges]
   );
 
+  const reactFlowInstance = useRef<ReactFlowInstance | null>(null);
+
   function setPosition(x: number, y: number): { x: number; y: number } {
     return { x, y };
   }
@@ -107,7 +110,11 @@ export default function CanvasEditor() {
             onRedo={() => console.log('Redo')}
             onShare={() => handleShare({ nodes, edges })}
             onDownload={() => handleDownload({ nodes, edges })}
-            addNode={(node: Node) => addNode(node as any)}
+            addNode={(node: Node) => {
+              addNode(node as any);
+              reactFlowInstance.current?.fitView({ padding: 0.2 });
+            }}
+            reactFlowInstance={undefined}
           />
         </div>
         <div className="w-11/12">

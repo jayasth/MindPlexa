@@ -22,19 +22,19 @@ function isPositionOccupied(
   newPosition: { x: number; y: number },
   existingNodes: Node<any>[]
 ): boolean {
-  const minimumDistance = 50; // Adjust this value based on your needs
-  if (!Array.isArray(existingNodes)) {
-    return false;
-  }
+  const nodeDimensions = defaultNodeDimensions;
+
   for (let node of existingNodes) {
-    const distance = Math.sqrt(
-      Math.pow(newPosition.x - node.position.x, 2) +
-        Math.pow(newPosition.y - node.position.y, 2)
-    );
-    if (distance < minimumDistance) {
+    if (
+      newPosition.x < node.position.x + nodeDimensions.width &&
+      newPosition.x + nodeDimensions.width > node.position.x &&
+      newPosition.y < node.position.y + nodeDimensions.height &&
+      newPosition.y + nodeDimensions.height > node.position.y
+    ) {
       return true;
     }
   }
+
   return false;
 }
 
@@ -49,13 +49,20 @@ export const createNode = (
   position.x /= zoomLevel;
   position.y /= zoomLevel;
 
+  const defaultNodeDimensions = { width: 100, height: 150 };
+
   if (Array.isArray(existingNodes)) {
     while (isPositionOccupied(position, existingNodes)) {
-      position.x += 5;
-      position.y += 5;
+      const randomOffsetX =
+        Math.random() * defaultNodeDimensions.width -
+        defaultNodeDimensions.width / 2;
+      const randomOffsetY =
+        Math.random() * defaultNodeDimensions.height -
+        defaultNodeDimensions.height / 2;
+      position.x += defaultNodeDimensions.width / 2 + randomOffsetX;
+      position.y += defaultNodeDimensions.height / 2 + randomOffsetY;
     }
   }
-
   position.x = Math.max(
     0,
     Math.min(position.x, canvasSize.width - defaultNodeDimensions.width)

@@ -10,6 +10,7 @@ import {
   FaShare,
   FaDownload
 } from 'react-icons/fa';
+
 import { PiNotepad } from 'react-icons/pi';
 import Link from 'next/link';
 import { useStore } from '@/app/store/useCanvasStore';
@@ -21,15 +22,18 @@ interface ToolbarProps {
   onShare: () => void;
   onDownload: () => void;
   addNode: (node: Node) => void;
+  reactFlowInstance: any;
 }
 
 const Toolbar: React.FC<ToolbarProps> = ({
   onUndo,
   onRedo,
   onShare,
-  onDownload
+  onDownload,
+  reactFlowInstance
 }) => {
   const addNode = useStore((state) => state.addNode);
+  const nodes = useStore((state) => state.nodes); // Fetch the existing nodes from the store
 
   const handleAddNode = (
     type: 'note' | 'task' | 'custom' | 'code' | 'draw'
@@ -40,23 +44,26 @@ const Toolbar: React.FC<ToolbarProps> = ({
     };
 
     const position = {
-      x: Math.max(
-        0,
-        Math.min(
-          Math.random() * (canvasSize.width - 100),
-          canvasSize.width - 100
-        )
-      ),
-      y: Math.max(
-        0,
-        Math.min(
-          Math.random() * (canvasSize.height - 100),
-          canvasSize.height - 100
-        )
-      )
+      x: canvasSize.width / 2 - 50 + nodes.length * 10, // Adjust the initial position based on the number of existing nodes
+      y: canvasSize.height / 2 - 75 + nodes.length * 10
     };
 
-    createNode(type, position, [], addNode, canvasSize);
+    createNode(
+      type,
+      position,
+      nodes,
+      (node) => {
+        addNode(node);
+        if (reactFlowInstance) {
+          reactFlowInstance.setCenter(
+            node.position.x,
+            node.position.y,
+            reactFlowInstance.zoomPanHelper.transform.k
+          );
+        }
+      },
+      canvasSize
+    ); // Pass the existing nodes to the createNode function
   };
 
   const buttonClass = 'p-2 bg-gray-200 rounded hover:bg-gray-300';
