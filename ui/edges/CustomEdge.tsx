@@ -3,7 +3,21 @@ import { EdgeProps, getBezierPath } from 'reactflow';
 import { FaTimes } from 'react-icons/fa';
 import styles from '@/ui/edges/EdgeStyles.module.css';
 
-const CustomEdge: React.FC<EdgeProps> = ({
+import { Position } from 'reactflow';
+
+interface CustomEdgeProps {
+  id: string;
+  sourceX: number;
+  sourceY: number;
+  targetX: number;
+  targetY: number;
+  sourcePosition: Position;
+  targetPosition: Position;
+  style: React.CSSProperties;
+  onDelete: (id: string) => void;
+}
+
+const CustomEdge: React.FC<CustomEdgeProps> = ({
   id,
   sourceX,
   sourceY,
@@ -11,7 +25,8 @@ const CustomEdge: React.FC<EdgeProps> = ({
   targetY,
   sourcePosition,
   targetPosition,
-  style
+  style,
+  onDelete
 }) => {
   const edgePath = getBezierPath({
     sourceX,
@@ -22,7 +37,10 @@ const CustomEdge: React.FC<EdgeProps> = ({
     targetPosition
   });
 
-  const pathD = typeof edgePath === 'string' ? edgePath : edgePath.join(' ');
+  const pathD = Array.isArray(edgePath) ? edgePath[0] : edgePath;
+
+  console.log('edgePath:', edgePath);
+  console.log('pathD:', pathD);
 
   return (
     <>
@@ -34,10 +52,15 @@ const CustomEdge: React.FC<EdgeProps> = ({
         markerEnd="url(#markerArrow)"
       />
       <text
-        x={(sourceX + targetX) / 2}
-        y={(sourceY + targetY) / 2}
-        style={{ cursor: 'pointer', userSelect: 'none', fill: 'red' }}
-        onClick={() => console.log('Delete edge:', id)}
+        x={(sourceX + targetX) / 2 - 10} // Adjust the x and y attributes
+        y={(sourceY + targetY) / 2 - 10}
+        style={{
+          cursor: 'pointer',
+          userSelect: 'none',
+          fill: 'red',
+          zIndex: 1000
+        }}
+        onClick={() => onDelete(id)}
       >
         <FaTimes size="10" />
       </text>

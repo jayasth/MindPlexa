@@ -39,7 +39,10 @@ const Toolbar: React.FC<ToolbarProps> = ({
       y: Math.random() * window.innerHeight
     };
 
-    createNode(type, position, addNode);
+    // Retrieve existing nodes here
+    const existingNodes = []; // Replace this with your actual existing nodes
+
+    createNode(type, position, existingNodes, addNode);
   };
 
   const buttonClass = 'p-2 bg-gray-200 rounded hover:bg-gray-300';

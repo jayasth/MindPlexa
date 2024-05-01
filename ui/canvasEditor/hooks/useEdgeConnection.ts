@@ -86,13 +86,13 @@ export const useEdgeConnection = () => {
         const parentNode = nodeInternals.get(connectingNodeId.current);
         const childNodePosition = getChildNodePosition(event, parentNode);
         if (parentNode && childNodePosition) {
-          createNode('custom', childNodePosition, (newNode) => {
+          createNode('custom', childNodePosition, nodes, (newNode) => {
             addNode(newNode);
             const handleNodeSelect = (
               nodeType: 'note' | 'task' | 'custom' | 'code' | 'draw',
               position: XYPosition
             ) => {
-              createNode(nodeType, position, addNode);
+              createNode(nodeType, position, nodes, addNode);
               removeNode(newNode.id);
             };
             const handleCloseMenu = () => {
@@ -122,15 +122,15 @@ export const useEdgeConnection = () => {
     },
     [
       getChildNodePosition,
-      addChildNode,
-      setShowNodeSelectionMenu,
-      setMenuPosition,
-      nodeInternals,
-      screenToFlowPosition,
       addEdge,
       addNode,
       removeNode,
-      updateNode
+      updateNode,
+      nodes,
+      nodeInternals,
+      screenToFlowPosition,
+      setMenuPosition,
+      setShowNodeSelectionMenu
     ]
   );
 

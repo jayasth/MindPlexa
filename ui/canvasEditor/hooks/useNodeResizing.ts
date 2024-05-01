@@ -17,13 +17,9 @@ export const useNodeResizing = (
             node.id === nodeId
               ? {
                   ...node,
-                  data: {
-                    ...node.data,
-                    width: newSize.width,
-                    height: newSize.height
-                  },
                   position: newPosition,
-                  style: { width: newSize.width, height: newSize.height }
+                  width: newSize.width,
+                  height: newSize.height
                 }
               : node
           )

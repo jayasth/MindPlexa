@@ -53,7 +53,10 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({ data }) => {
       data: {}
     };
 
-    createNode(nodeType, position, (newNode) => {
+    // Retrieve existing nodes here
+    const existingNodes = []; // Replace this with your actual existing nodes
+
+    createNode(nodeType, position, existingNodes, (newNode) => {
       addChildNode(parentNode, newNode.position, nodeType);
       data.onSelect(nodeType, position);
       data.onClose();

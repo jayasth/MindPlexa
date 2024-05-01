@@ -17,11 +17,45 @@ const setPosition = (x: number, y: number): JsonPosition => {
   return { x, y };
 };
 
+function isPositionOccupied(
+  newPosition: { x: number; y: number },
+  existingNodes: Node<any>[]
+): boolean {
+  const minimumDistance = 50; // Adjust this value based on your needs
+  if (!Array.isArray(existingNodes)) {
+    return false;
+  }
+  for (let node of existingNodes) {
+    const distance = Math.sqrt(
+      Math.pow(newPosition.x - node.position.x, 2) +
+        Math.pow(newPosition.y - node.position.y, 2)
+    );
+    if (distance < minimumDistance) {
+      return true;
+    }
+  }
+  return false;
+}
+
 export const createNode = (
   nodeType: 'note' | 'task' | 'custom' | 'code' | 'draw',
   position: { x: number; y: number },
+  existingNodes: Node<any>[],
   callback: (newNode: Node<any>) => void
 ) => {
+  // Adjust position based on zoom level here
+  // This is just an example, you'll need to replace this with your actual zoom level
+  const zoomLevel = 1.0;
+  position.x /= zoomLevel;
+  position.y /= zoomLevel;
+
+  if (Array.isArray(existingNodes)) {
+    while (isPositionOccupied(position, existingNodes)) {
+      position.x += 10; // Adjust these values based on your needs
+      position.y += 10;
+    }
+  }
+
   const positionAsXYPosition = setPosition(position.x, position.y);
 
   const defaultProperties = {
@@ -51,7 +85,10 @@ export const createNode = (
     ...specificNode,
     data: specificNode,
     id: baseProperties.id,
-    position: positionAsXYPosition
+    position: {
+      x: position.x,
+      y: position.y
+    }
   };
 
   console.log('Adding new node:', newNode);
