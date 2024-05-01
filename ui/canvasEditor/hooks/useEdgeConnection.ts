@@ -75,17 +75,12 @@ export const useEdgeConnection = () => {
       if (node) {
         const targetNodeId = node.getAttribute('data-id');
         if (connectingNodeId.current && targetNodeId) {
-          const sourceNode = nodeInternals.get(connectingNodeId.current);
-          const targetNode = nodeInternals.get(targetNodeId);
-          if (sourceNode && targetNode) {
-            const newEdge = {
-              id: `edge-${Date.now()}`,
-              source: sourceNode.id,
-              target: targetNode.id,
-              type: 'customEdge'
-            };
-            addEdge(newEdge);
-          }
+          addEdge({
+            id: `edge-${Date.now()}`,
+            source: connectingNodeId.current,
+            target: targetNodeId,
+            type: 'customEdge'
+          });
         }
       } else if (targetIsPane && connectingNodeId.current) {
         const parentNode = nodeInternals.get(connectingNodeId.current);

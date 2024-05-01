@@ -66,6 +66,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
             width: node.width ?? 200,
             height: node.height ?? 100
           }}
+          onNodeResizeStop={(size) => onNodeResizeStop(id, size)}
         />
       );
 

@@ -22,19 +22,21 @@ const CustomEdge: React.FC<EdgeProps> = ({
     targetPosition
   });
 
+  const pathD = typeof edgePath === 'string' ? edgePath : edgePath.join(' ');
+
   return (
     <>
       <path
         id={id}
         style={{ ...style, stroke: 'currentColor', strokeWidth: 2 }}
         className={`${styles.reactFlowEdgePath} react-flow__edge-path`}
-        d={edgePath.join(' ')}
+        d={pathD}
         markerEnd="url(#markerArrow)"
       />
       <text
         x={(sourceX + targetX) / 2}
         y={(sourceY + targetY) / 2}
-        style={{ cursor: 'pointer', userSelect: 'none' }}
+        style={{ cursor: 'pointer', userSelect: 'none', fill: 'red' }}
         onClick={() => console.log('Delete edge:', id)}
       >
         <FaTimes size="10" />

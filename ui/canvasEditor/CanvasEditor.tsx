@@ -1,10 +1,12 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import ReactFlow, {
   Controls,
   Background,
   ReactFlowProvider,
   NodeOrigin,
-  ConnectionLineType
+  ConnectionLineType,
+  addEdge,
+  Edge
 } from 'reactflow';
 import Toolbar from './toolbar';
 import {
@@ -16,6 +18,7 @@ import CustomEdge from '@/ui/edges/CustomEdge';
 import NodeSelectionMenu from '@/ui/canvasEditor/NodeSelectionMenu';
 import { useStore } from '@/app/store/useCanvasStore';
 import { useNodeResizing } from './hooks/useNodeResizing';
+import { nanoid } from 'nanoid';
 
 const edgeTypes = {
   customEdge: CustomEdge
@@ -52,6 +55,18 @@ export default function CanvasEditor() {
   }));
 
   const { handleNodeResizeStop } = useNodeResizing(setNodes);
+
+  const handleConnect = useCallback(
+    (connection) => {
+      const newEdge = {
+        ...connection,
+        id: `e-${nanoid()}`,
+        type: 'customEdge'
+      };
+      setEdges((eds) => [...eds, newEdge]);
+    },
+    [setEdges]
+  );
 
   const nodeTypes = useMemo(
     () => ({
@@ -116,6 +131,7 @@ export default function CanvasEditor() {
             edges={edges}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
+            onConnect={handleConnect}
             nodeTypes={nodeTypes}
             edgeTypes={edgeTypes}
             nodeOrigin={nodeOrigin}

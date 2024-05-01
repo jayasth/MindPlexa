@@ -16,6 +16,7 @@
 .reactFlowEdgePath,
 .reactFlowConnectionLinePath {
   stroke-width: 2;
+  stroke: currentColor;
 }
 
 .wrapper {
