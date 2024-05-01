@@ -110,7 +110,7 @@ export default function CanvasEditor() {
             addNode={(node: Node) => addNode(node as any)}
           />
         </div>
-        <div className="w-5/6">
+        <div className="w-11/12">
           {showNodeSelectionMenu && menuPosition && (
             <NodeSelectionMenu
               data={{
@@ -141,7 +141,8 @@ export default function CanvasEditor() {
             nodeOrigin={nodeOrigin}
             defaultEdgeOptions={defaultEdgeOptions}
             connectionLineType={ConnectionLineType.Straight}
-            fitView={true}
+            fitView={false}
+            fitViewOptions={{ padding: 0.2 }}
           >
             <Background color="#aaa" gap={16} />
             <Controls />

@@ -51,11 +51,29 @@ export const useEdgeConnection = () => {
         y
       });
 
-      return {
-        x:
+      // Ensure the new node is within the visible area of the canvas
+      const canvasWidth = domNode.offsetWidth;
+      const canvasHeight = domNode.offsetHeight;
+      const newNodeX = Math.max(
+        0,
+        Math.min(
           panePosition.x - parentNode.positionAbsolute.x + parentNode.width / 2,
-        y:
-          panePosition.y - parentNode.positionAbsolute.y + parentNode.height / 2
+          canvasWidth - 100
+        )
+      );
+      const newNodeY = Math.max(
+        0,
+        Math.min(
+          panePosition.y -
+            parentNode.positionAbsolute.y +
+            parentNode.height / 2,
+          canvasHeight - 100
+        )
+      );
+
+      return {
+        x: newNodeX,
+        y: newNodeY
       };
     },
     [domNode, screenToFlowPosition]

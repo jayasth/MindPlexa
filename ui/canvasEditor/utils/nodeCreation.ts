@@ -4,6 +4,7 @@ import {
   getNodeSpecificProperties,
   defaultNodeDimensions
 } from './nodeProperties';
+import { nanoid } from 'nanoid';
 
 type BaseNode = Tables<'base_nodes'>;
 
@@ -52,18 +53,18 @@ export const createNode = (
     while (isPositionOccupied(position, existingNodes)) {
       position.x += 5;
       position.y += 5;
-
-      // Ensure the position is within the visible area
-      position.x = Math.min(
-        position.x,
-        canvasSize.width - defaultNodeDimensions.width
-      );
-      position.y = Math.min(
-        position.y,
-        canvasSize.height - defaultNodeDimensions.height
-      );
     }
   }
+
+  position.x = Math.max(
+    0,
+    Math.min(position.x, canvasSize.width - defaultNodeDimensions.width)
+  );
+  position.y = Math.max(
+    0,
+    Math.min(position.y, canvasSize.height - defaultNodeDimensions.height)
+  );
+
   const positionAsXYPosition = setPosition(position.x, position.y);
 
   const defaultProperties = {
@@ -78,7 +79,7 @@ export const createNode = (
     id: string;
     position: XYPosition;
   } = {
-    id: `${nodeType}-${Date.now()}`,
+    id: `${nodeType}-${nanoid()}`,
     type: nodeType,
     position: positionAsXYPosition,
     ...defaultProperties
