@@ -33,7 +33,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
   reactFlowInstance
 }) => {
   const addNode = useStore((state) => state.addNode);
-  const nodes = useStore((state) => state.nodes); // Fetch the existing nodes from the store
+  const nodes = useStore((state) => state.nodes);
 
   const handleAddNode = (
     type: 'note' | 'task' | 'custom' | 'code' | 'draw'
@@ -44,8 +44,8 @@ const Toolbar: React.FC<ToolbarProps> = ({
     };
 
     const position = {
-      x: canvasSize.width / 2 - 50 + nodes.length * 10, // Adjust the initial position based on the number of existing nodes
-      y: canvasSize.height / 2 - 75 + nodes.length * 10
+      x: canvasSize.width / 2 - 50,
+      y: canvasSize.height / 2 - 75
     };
 
     createNode(
@@ -55,15 +55,18 @@ const Toolbar: React.FC<ToolbarProps> = ({
       (node) => {
         addNode(node);
         if (reactFlowInstance) {
-          reactFlowInstance.setCenter(
-            node.position.x,
-            node.position.y,
-            reactFlowInstance.zoomPanHelper.transform.k
-          );
+          const { x, y, zoom } = reactFlowInstance.getViewport();
+          const newX = node.position.x - x;
+          const newY = node.position.y - y;
+          reactFlowInstance.setViewport({
+            x: newX,
+            y: newY,
+            zoom
+          });
         }
       },
       canvasSize
-    ); // Pass the existing nodes to the createNode function
+    );
   };
 
   const buttonClass = 'p-2 bg-gray-200 rounded hover:bg-gray-300';

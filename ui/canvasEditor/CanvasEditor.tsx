@@ -79,6 +79,8 @@ export default function CanvasEditor() {
     [handleNodeResizeStop]
   );
 
+  const reactFlowInstance = useRef<ReactFlowInstance | null>(null);
+
   const handleConnect = useCallback(
     (connection) => {
       if (!connection.source || !connection.target) {
@@ -91,11 +93,10 @@ export default function CanvasEditor() {
         type: 'customEdge'
       };
       setEdges((eds) => [...eds, newEdge]);
+      reactFlowInstance.current?.fitView({ padding: 0.2 });
     },
     [setEdges]
   );
-
-  const reactFlowInstance = useRef<ReactFlowInstance | null>(null);
 
   function setPosition(x: number, y: number): { x: number; y: number } {
     return { x, y };
@@ -150,6 +151,9 @@ export default function CanvasEditor() {
             connectionLineType={ConnectionLineType.Straight}
             fitView={false}
             fitViewOptions={{ padding: 0.2 }}
+            onInit={(instance) => {
+              reactFlowInstance.current = instance;
+            }}
           >
             <Background color="#aaa" gap={16} />
             <Controls />
