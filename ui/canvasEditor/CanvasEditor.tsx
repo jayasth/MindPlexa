@@ -17,7 +17,7 @@ import NodeRenderer from '@/ui/canvasEditor/NodeRenderer';
 import CustomEdge from '@/ui/edges/CustomEdge';
 import NodeSelectionMenu from '@/ui/canvasEditor/NodeSelectionMenu';
 import { useStore } from '@/app/store/useCanvasStore';
-import { useNodeResizing } from './hooks/useNodeResizing';
+import { useNodeResizing } from '@/ui/canvasEditor/hooks/useNodeResizing';
 import { nanoid } from 'nanoid';
 
 const edgeTypes = {

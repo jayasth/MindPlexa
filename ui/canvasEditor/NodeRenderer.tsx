@@ -12,7 +12,8 @@ import { useStore } from '@/app/store/useCanvasStore';
 interface NodeRendererProps extends NodeProps {
   onNodeResizeStop: (
     nodeId: string,
-    newSize: { width: number; height: number }
+    newSize: { width: number; height: number },
+    newPosition: { x: number; y: number }
   ) => void;
 }
 
@@ -26,8 +27,11 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
   const updateNode = useStore((state) => state.updateNode);
 
   const handleNodeResizeStop = useCallback(
-    (size: { width: number; height: number }) => {
-      onNodeResizeStop(id, size);
+    (
+      size: { width: number; height: number },
+      position: { x: number; y: number }
+    ) => {
+      onNodeResizeStop(id, size, position);
     },
     [id, onNodeResizeStop]
   );
@@ -73,7 +77,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
             width: node.width ?? 200,
             height: node.height ?? 100
           }}
-          onNodeResizeStop={(size) => handleNodeResizeStop(size)}
+          onNodeResizeStop={handleNodeResizeStop}
         />
       );
 
