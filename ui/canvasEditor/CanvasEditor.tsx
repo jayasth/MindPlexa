@@ -19,6 +19,7 @@ import CustomEdge from '@/ui/edges/CustomEdge';
 import NodeSelectionMenu from '@/ui/canvasEditor/NodeSelectionMenu';
 import { useStore } from '@/app/store/useCanvasStore';
 import { useNodeResizing } from '@/ui/canvasEditor/hooks/useNodeResizing';
+import { useEdgeConnection } from '@/ui/canvasEditor/hooks/useEdgeConnection'; // Added import for useEdgeConnection
 import { nanoid } from 'nanoid';
 
 const edgeTypes = {
@@ -56,6 +57,7 @@ export default function CanvasEditor() {
   }));
 
   const { handleNodeResizeStop } = useNodeResizing();
+  const { onConnectStart, onConnectEnd } = useEdgeConnection(); // Added use of useEdgeConnection
 
   const nodeTypes = useMemo(
     () => ({
@@ -153,6 +155,8 @@ export default function CanvasEditor() {
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             onConnect={handleConnect}
+            onConnectStart={onConnectStart}
+            onConnectEnd={onConnectEnd}
             nodeTypes={nodeTypes}
             edgeTypes={edgeTypes}
             nodeOrigin={nodeOrigin}
