@@ -20,10 +20,6 @@ import { useNodeResizing } from '@/ui/canvasEditor/hooks/useNodeResizing';
 import { useEdgeConnection } from '@/ui/canvasEditor/hooks/useEdgeConnection';
 import { nanoid } from 'nanoid';
 
-const edgeTypes = {
-  customEdge: (props) => <CustomEdge {...props} onDelete={handleDeleteEdge} />
-};
-
 const nodeOrigin: NodeOrigin = [0.5, 0.5];
 const defaultEdgeOptions = {
   type: 'customEdge'
@@ -41,8 +37,8 @@ export default function CanvasEditor() {
     menuPosition,
     setShowNodeSelectionMenu,
     addNode,
-    setDomNode, // Added setDomNode to the destructuring from useStore
-    domNode // Added domNode to the destructuring from useStore
+    setDomNode,
+    domNode
   } = useStore((state) => ({
     nodes: state.nodes,
     edges: state.edges,
@@ -54,12 +50,28 @@ export default function CanvasEditor() {
     menuPosition: state.menuPosition,
     setShowNodeSelectionMenu: state.setShowNodeSelectionMenu,
     addNode: state.addNode,
-    setDomNode: state.setDomNode, // Added setDomNode to the selector from useStore
-    domNode: state.domNode // Added domNode to the selector from useStore
+    setDomNode: state.setDomNode,
+    domNode: state.domNode
   }));
 
   const { handleNodeResizeStop } = useNodeResizing();
-  const { onConnectStart, onConnectEnd } = useEdgeConnection(); // Added use of useEdgeConnection
+  const { onConnectStart, onConnectEnd } = useEdgeConnection();
+
+  const handleDeleteEdge = useCallback(
+    (edgeId) => {
+      console.log('Deleting edge with id:', edgeId);
+      setEdges((currentEdges) => {
+        const updatedEdges = currentEdges.filter((edge) => edge.id !== edgeId);
+        console.log('Updated edges:', updatedEdges);
+        return updatedEdges;
+      });
+    },
+    [setEdges]
+  );
+
+  const edgeTypes = {
+    customEdge: (props) => <CustomEdge {...props} onDelete={handleDeleteEdge} />
+  };
 
   const nodeTypes = useMemo(
     () => ({
@@ -103,15 +115,6 @@ export default function CanvasEditor() {
     [setEdges]
   );
 
-  const handleDeleteEdge = useCallback(
-    (edgeId) => {
-      setEdges((currentEdges) =>
-        currentEdges.filter((edge) => edge.id !== edgeId)
-      );
-    },
-    [setEdges]
-  );
-
   function setPosition(x: number, y: number): { x: number; y: number } {
     return { x, y };
   }
@@ -140,7 +143,7 @@ export default function CanvasEditor() {
             reactFlowInstance={undefined}
           />
         </div>
-        <div className="w-11/12">
+        <div ref={reactFlowWrapper} className="w-11/12">
           {showNodeSelectionMenu && menuPosition && (
             <NodeSelectionMenu
               data={{
@@ -187,7 +190,4 @@ export default function CanvasEditor() {
       </ReactFlowProvider>
     </div>
   );
-}
-function handleDeleteEdge(id: string): void {
-  throw new Error('Function not implemented.');
 }

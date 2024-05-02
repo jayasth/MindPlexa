@@ -17,8 +17,9 @@ const CustomEdge = ({
   sourcePosition,
   targetPosition,
   style = {},
-  markerEnd
-}: EdgeProps) => {
+  markerEnd,
+  onDelete // Add this prop
+}: EdgeProps & { onDelete?: (id: string) => void }) => {
   const { setEdges } = useReactFlow();
   const [edgePath, labelX, labelY] = getBezierPath({
     sourceX,
@@ -30,7 +31,14 @@ const CustomEdge = ({
   });
 
   const onEdgeClick = () => {
-    setEdges((edges) => edges.filter((edge) => edge.id !== id));
+    console.log('onEdgeClick called with id:', id);
+    onDelete?.(id);
+    setEdges((edges) => {
+      console.log('edges before:', edges); // Log the edges state before it's updated
+      const newEdges = edges.filter((edge) => edge.id !== id);
+      console.log('edges after:', newEdges); // Log the edges state after it's updated
+      return newEdges;
+    });
   };
 
   return (
@@ -42,7 +50,7 @@ const CustomEdge = ({
             position: 'absolute',
             transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
             fontSize: 12,
-            pointerEvents: 'all' // Ensure the button is clickable
+            pointerEvents: 'all'
           }}
           className={`${styles.nodrag} ${styles.nopan}`}
         >

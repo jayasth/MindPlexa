@@ -31,9 +31,11 @@ export const useEdgeConnection = () => {
   }));
 
   const connectingNodeId = useRef<string | null>(null);
+  console.log('connectingNodeId.current:', connectingNodeId.current);
 
   const getChildNodePosition = useCallback(
     (event: MouseEvent | TouchEvent, parentNode?: Node) => {
+      console.log('parentNode:', parentNode);
       if (!domNode) {
         console.error(
           'domNode is not available at the time of event handling.'
@@ -84,7 +86,9 @@ export const useEdgeConnection = () => {
   );
 
   const onConnectStart = useCallback((_, { nodeId }) => {
+    console.log('onConnectStart called with nodeId:', nodeId);
     connectingNodeId.current = nodeId;
+    console.log('connectingNodeId.current:', connectingNodeId.current);
   }, []);
 
   const onConnectEnd = useCallback(
@@ -109,6 +113,7 @@ export const useEdgeConnection = () => {
         }
       } else if (targetIsPane && connectingNodeId.current) {
         const parentNode = nodeInternals.get(connectingNodeId.current);
+        console.log('nodeInternals keys:', Array.from(nodeInternals.keys()));
         const childNodePosition = getChildNodePosition(event, parentNode);
 
         if (childNodePosition) {

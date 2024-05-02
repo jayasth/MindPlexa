@@ -65,6 +65,7 @@ export const createNode = (
         Math.random() * nodeDimension.height - nodeDimension.height / 2;
       position.x += nodeDimension.width / 2 + randomOffsetX;
       position.y += nodeDimension.height / 2 + randomOffsetY;
+      console.log('New position:', position);
     }
   }
   position.x = Math.max(
@@ -75,6 +76,8 @@ export const createNode = (
     0,
     Math.min(position.y, canvasSize.height - nodeDimension.height)
   );
+
+  console.log('Clamped position:', position);
 
   const positionAsXYPosition = setPosition(position.x, position.y);
 
