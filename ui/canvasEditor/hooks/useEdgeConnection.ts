@@ -35,7 +35,9 @@ export const useEdgeConnection = () => {
   const getChildNodePosition = useCallback(
     (event: MouseEvent | TouchEvent, parentNode?: Node) => {
       if (!domNode) {
-        console.error('domNode is not available.');
+        console.error(
+          'domNode is not available at the time of event handling.'
+        );
         return null;
       }
 

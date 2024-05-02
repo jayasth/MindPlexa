@@ -117,8 +117,12 @@ export default function CanvasEditor() {
   }
 
   useEffect(() => {
-    console.log('domNode has changed:', domNode);
-  }, [domNode]);
+    console.log('ReactFlowWrapper ref:', reactFlowWrapper.current);
+    if (reactFlowWrapper.current && !domNode) {
+      console.log('Setting domNode');
+      setDomNode(reactFlowWrapper.current);
+    }
+  }, [reactFlowWrapper.current, domNode]);
 
   return (
     <div className="flex h-screen">
