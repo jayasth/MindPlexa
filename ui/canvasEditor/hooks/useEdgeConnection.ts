@@ -34,14 +34,18 @@ export const useEdgeConnection = () => {
 
   const getChildNodePosition = useCallback(
     (event: MouseEvent | TouchEvent, parentNode?: Node) => {
-      if (
-        !domNode ||
-        !parentNode?.positionAbsolute ||
-        !parentNode?.width ||
-        !parentNode?.height
-      ) {
-        return;
+      if (!domNode) {
+        console.error('domNode is not available.');
+        return null;
       }
+
+      if (!parentNode || !parentNode.positionAbsolute) {
+        console.error('Invalid or incomplete parentNode details.');
+        return null;
+      }
+
+      const parentNodeWidth = parentNode.width || 0;
+      const parentNodeHeight = parentNode.height || 0;
 
       const isTouchEvent = 'touches' in event;
       const x = isTouchEvent ? event.touches[0].clientX : event.clientX;
@@ -57,16 +61,14 @@ export const useEdgeConnection = () => {
       const newNodeX = Math.max(
         0,
         Math.min(
-          panePosition.x - parentNode.positionAbsolute.x + parentNode.width / 2,
+          panePosition.x - parentNode.positionAbsolute.x + parentNodeWidth / 2,
           canvasWidth - 100
         )
       );
       const newNodeY = Math.max(
         0,
         Math.min(
-          panePosition.y -
-            parentNode.positionAbsolute.y +
-            parentNode.height / 2,
+          panePosition.y - parentNode.positionAbsolute.y + parentNodeHeight / 2,
           canvasHeight - 100
         )
       );
@@ -104,12 +106,10 @@ export const useEdgeConnection = () => {
           });
         }
       } else if (targetIsPane && connectingNodeId.current) {
-        console.log('targetIsPane and connectingNodeId.current are true');
         const parentNode = nodeInternals.get(connectingNodeId.current);
         const childNodePosition = getChildNodePosition(event, parentNode);
-        console.log('parentNode:', parentNode);
-        console.log('childNodePosition:', childNodePosition);
-        if (parentNode && childNodePosition) {
+
+        if (childNodePosition) {
           const canvasSize = {
             width: window.innerWidth,
             height: window.innerHeight
@@ -165,19 +165,18 @@ export const useEdgeConnection = () => {
             canvasSize,
             true
           );
+        } else {
+          console.error('Failed to get valid child node position');
         }
       } else {
-        console.log(
+        console.error(
           'targetIsPane or connectingNodeId.current is not as expected'
         );
-        console.log('targetIsPane:', targetIsPane);
-        console.log('connectingNodeId.current:', connectingNodeId.current);
       }
 
       connectingNodeId.current = null;
     },
     [
-      getChildNodePosition,
       addEdge,
       addNode,
       removeNode,
@@ -187,7 +186,8 @@ export const useEdgeConnection = () => {
       screenToFlowPosition,
       setMenuPosition,
       setShowNodeSelectionMenu,
-      addChildNode
+      addChildNode,
+      getChildNodePosition
     ]
   );
 

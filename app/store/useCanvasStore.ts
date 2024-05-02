@@ -11,6 +11,7 @@ interface CanvasState {
   nodes: Node[];
   edges: Edge[];
   domNode: HTMLDivElement | null;
+  setDomNode: (node: HTMLDivElement | null) => void;
   screenToFlowPosition: (position: { x: number; y: number }) => XYPosition;
   nodeInternals: Map<string, Node>;
   setNodes: (updater: (nodes: Node[]) => Node[]) => void;
@@ -45,6 +46,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
   nodes: [],
   edges: [],
   domNode: null,
+  setDomNode: (node) => set({ domNode: node }),
   screenToFlowPosition: (position) => position,
   nodeInternals: new Map(),
   showNodeSelectionMenu: false,

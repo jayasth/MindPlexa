@@ -5,8 +5,6 @@ import ReactFlow, {
   ReactFlowProvider,
   NodeOrigin,
   ConnectionLineType,
-  addEdge,
-  Edge,
   ReactFlowInstance
 } from 'reactflow';
 import Toolbar from './toolbar';
@@ -19,7 +17,7 @@ import CustomEdge from '@/ui/edges/CustomEdge';
 import NodeSelectionMenu from '@/ui/canvasEditor/NodeSelectionMenu';
 import { useStore } from '@/app/store/useCanvasStore';
 import { useNodeResizing } from '@/ui/canvasEditor/hooks/useNodeResizing';
-import { useEdgeConnection } from '@/ui/canvasEditor/hooks/useEdgeConnection'; // Added import for useEdgeConnection
+import { useEdgeConnection } from '@/ui/canvasEditor/hooks/useEdgeConnection';
 import { nanoid } from 'nanoid';
 
 const edgeTypes = {
@@ -42,7 +40,8 @@ export default function CanvasEditor() {
     showNodeSelectionMenu,
     menuPosition,
     setShowNodeSelectionMenu,
-    addNode
+    addNode,
+    setDomNode // Added setDomNode to the destructuring from useStore
   } = useStore((state) => ({
     nodes: state.nodes,
     edges: state.edges,
@@ -53,7 +52,8 @@ export default function CanvasEditor() {
     showNodeSelectionMenu: state.showNodeSelectionMenu,
     menuPosition: state.menuPosition,
     setShowNodeSelectionMenu: state.setShowNodeSelectionMenu,
-    addNode: state.addNode
+    addNode: state.addNode,
+    setDomNode: state.setDomNode // Added setDomNode to the selector from useStore
   }));
 
   const { handleNodeResizeStop } = useNodeResizing();
@@ -81,6 +81,7 @@ export default function CanvasEditor() {
     [handleNodeResizeStop]
   );
 
+  const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const reactFlowInstance = useRef<ReactFlowInstance | null>(null);
 
   const handleConnect = useCallback(
@@ -166,6 +167,7 @@ export default function CanvasEditor() {
             fitViewOptions={{ padding: 0.2 }}
             onInit={(instance) => {
               reactFlowInstance.current = instance;
+              useStore.getState().setDomNode(reactFlowWrapper.current);
             }}
           >
             <Background color="#aaa" gap={16} />
