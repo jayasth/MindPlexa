@@ -1,9 +1,6 @@
 import { Node, XYPosition } from 'reactflow';
 import type { Json, Tables } from '@/types_db';
-import {
-  getNodeSpecificProperties,
-  defaultNodeDimensions
-} from './nodeProperties';
+import { getNodeSpecificProperties, nodeDimensions } from './nodeProperties';
 import { nanoid } from 'nanoid';
 
 type BaseNode = Tables<'base_nodes'>;
@@ -20,16 +17,15 @@ const setPosition = (x: number, y: number): JsonPosition => {
 
 function isPositionOccupied(
   newPosition: { x: number; y: number },
-  existingNodes: Node<any>[]
+  existingNodes: Node<any>[],
+  nodeDimension: { width: number; height: number }
 ): boolean {
-  const nodeDimensions = defaultNodeDimensions;
-
   for (let node of existingNodes) {
     if (
-      newPosition.x < node.position.x + nodeDimensions.width &&
-      newPosition.x + nodeDimensions.width > node.position.x &&
-      newPosition.y < node.position.y + nodeDimensions.height &&
-      newPosition.y + nodeDimensions.height > node.position.y
+      newPosition.x < node.position.x + nodeDimension.width &&
+      newPosition.x + nodeDimension.width > node.position.x &&
+      newPosition.y < node.position.y + nodeDimension.height &&
+      newPosition.y + nodeDimension.height > node.position.y
     ) {
       return true;
     }
@@ -43,33 +39,41 @@ export const createNode = (
   position: { x: number; y: number },
   existingNodes: Node<any>[],
   callback: (newNode: Node<any>) => void,
-  canvasSize: { width: number; height: number }
+  canvasSize: { width: number; height: number },
+  isTemporary = false
 ) => {
+  console.log(
+    'createNode called with nodeType:',
+    nodeType,
+    'position:',
+    position,
+    'isTemporary:',
+    isTemporary
+  );
   const zoomLevel = 1.0;
   position.x /= zoomLevel;
   position.y /= zoomLevel;
 
-  const defaultNodeDimensions = { width: 100, height: 150 };
+  const nodeDimension = nodeDimensions[nodeType];
 
   if (Array.isArray(existingNodes)) {
-    while (isPositionOccupied(position, existingNodes)) {
+    while (isPositionOccupied(position, existingNodes, nodeDimension)) {
+      console.log('Position is occupied, adjusting position');
       const randomOffsetX =
-        Math.random() * defaultNodeDimensions.width -
-        defaultNodeDimensions.width / 2;
+        Math.random() * nodeDimension.width - nodeDimension.width / 2;
       const randomOffsetY =
-        Math.random() * defaultNodeDimensions.height -
-        defaultNodeDimensions.height / 2;
-      position.x += defaultNodeDimensions.width / 2 + randomOffsetX;
-      position.y += defaultNodeDimensions.height / 2 + randomOffsetY;
+        Math.random() * nodeDimension.height - nodeDimension.height / 2;
+      position.x += nodeDimension.width / 2 + randomOffsetX;
+      position.y += nodeDimension.height / 2 + randomOffsetY;
     }
   }
   position.x = Math.max(
     0,
-    Math.min(position.x, canvasSize.width - defaultNodeDimensions.width)
+    Math.min(position.x, canvasSize.width - nodeDimension.width)
   );
   position.y = Math.max(
     0,
-    Math.min(position.y, canvasSize.height - defaultNodeDimensions.height)
+    Math.min(position.y, canvasSize.height - nodeDimension.height)
   );
 
   const positionAsXYPosition = setPosition(position.x, position.y);
@@ -77,8 +81,8 @@ export const createNode = (
   const defaultProperties = {
     draggable: true,
     connectable: true,
-    width: defaultNodeDimensions.width,
-    height: defaultNodeDimensions.height,
+    width: nodeDimension.width,
+    height: nodeDimension.height,
     title: `New ${nodeType.charAt(0).toUpperCase() + nodeType.slice(1)}`
   };
 
@@ -99,7 +103,7 @@ export const createNode = (
 
   const newNode: Node<any> = {
     ...specificNode,
-    data: specificNode,
+    data: isTemporary ? { isTemporary: true } : specificNode,
     id: baseProperties.id,
     position: {
       x: position.x,

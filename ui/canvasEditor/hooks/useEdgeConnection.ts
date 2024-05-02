@@ -85,6 +85,7 @@ export const useEdgeConnection = () => {
 
   const onConnectEnd = useCallback(
     (event) => {
+      console.log('onConnectEnd called');
       const targetIsPane = (event.target as Element).classList.contains(
         'react-flow__pane'
       );
@@ -101,8 +102,11 @@ export const useEdgeConnection = () => {
           });
         }
       } else if (targetIsPane && connectingNodeId.current) {
+        console.log('targetIsPane and connectingNodeId.current are true');
         const parentNode = nodeInternals.get(connectingNodeId.current);
         const childNodePosition = getChildNodePosition(event, parentNode);
+        console.log('parentNode:', parentNode);
+        console.log('childNodePosition:', childNodePosition);
         if (parentNode && childNodePosition) {
           const canvasSize = {
             width: window.innerWidth,
@@ -113,12 +117,27 @@ export const useEdgeConnection = () => {
             childNodePosition,
             nodes,
             (newNode) => {
+              console.log('createNode callback called with newNode:', newNode);
               addNode(newNode);
               const handleNodeSelect = (
                 nodeType: 'note' | 'task' | 'custom' | 'code' | 'draw',
                 position: XYPosition
               ) => {
-                createNode(nodeType, position, nodes, addNode, canvasSize);
+                console.log(
+                  'handleNodeSelect called with nodeType:',
+                  nodeType,
+                  'and position:',
+                  position
+                );
+                createNode(
+                  nodeType,
+                  position,
+                  nodes,
+                  (newNode) => {
+                    addNode(newNode);
+                  },
+                  canvasSize
+                );
                 removeNode(newNode.id);
               };
               const handleCloseMenu = () => {
