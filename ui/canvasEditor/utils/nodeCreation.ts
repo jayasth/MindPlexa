@@ -35,7 +35,7 @@ function isPositionOccupied(
 }
 
 export const createNode = (
-  nodeType: 'note' | 'task' | 'custom' | 'code' | 'draw',
+  nodeType: 'note' | 'task' | 'custom' | 'code' | 'draw' | 'selectionMenu',
   position: { x: number; y: number },
   existingNodes: Node<any>[],
   callback: (newNode: Node<any>) => void,
@@ -81,24 +81,33 @@ export const createNode = (
   const defaultProperties = {
     draggable: true,
     connectable: true,
-    width: nodeDimension.width,
-    height: nodeDimension.height,
+    width: nodeDimensions[nodeType].width,
+    height: nodeDimensions[nodeType].height,
     title: `New ${nodeType.charAt(0).toUpperCase() + nodeType.slice(1)}`
   };
-
-  const baseProperties: Partial<BaseNode> & {
+  let baseProperties: Partial<BaseNode> & {
     id: string;
     position: XYPosition;
-  } = {
-    id: `${nodeType}-${nanoid()}`,
-    type: nodeType,
-    position: positionAsXYPosition,
-    ...defaultProperties
   };
 
+  if (nodeType === 'selectionMenu' && isTemporary) {
+    baseProperties = {
+      id: `selectionMenu-${nanoid()}`,
+      type: 'selectionMenu',
+      position: setPosition(position.x, position.y),
+      ...defaultProperties
+    };
+  } else {
+    baseProperties = {
+      id: `${nodeType}-${nanoid()}`,
+      type: nodeType,
+      position: { x: position.x, y: position.y },
+      ...defaultProperties
+    };
+  }
   const specificNode = {
     ...baseProperties,
-    ...getNodeSpecificProperties(nodeType)
+    ...(nodeType !== 'selectionMenu' ? getNodeSpecificProperties(nodeType) : {})
   };
 
   const newNode: Node<any> = {

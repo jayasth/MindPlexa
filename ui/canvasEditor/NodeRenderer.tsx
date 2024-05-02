@@ -8,7 +8,7 @@ import CodeNode from '@/ui/nodes/codeNode/CodeNode';
 import DrawNode from '@/ui/nodes/drawNode/DrawNode';
 import NodeSelectionMenu, { NodeSelectionMenuProps } from './NodeSelectionMenu';
 import { useStore } from '@/app/store/useCanvasStore';
-import { defaultNodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
+import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 
 interface NodeRendererProps extends NodeProps {
   onNodeResizeStop: (
@@ -28,8 +28,8 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
   const updateNode = useStore((state) => state.updateNode);
 
   const [size, setSize] = useState({
-    width: node.width || defaultNodeDimensions.width,
-    height: node.height || defaultNodeDimensions.height
+    width: node.width || nodeDimensions[node.type].width,
+    height: node.height || nodeDimensions[node.type].height
   });
 
   useEffect(() => {
@@ -67,8 +67,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
 
   switch (node.type) {
     case 'selectionMenu':
-      const extendedNode = node as unknown as NodeSelectionMenuProps;
-      return <NodeSelectionMenu {...commonProps} data={extendedNode.data} />;
+      return <NodeSelectionMenu {...commonProps} data={node.data} />;
     case 'note':
     case 'task':
     case 'custom':

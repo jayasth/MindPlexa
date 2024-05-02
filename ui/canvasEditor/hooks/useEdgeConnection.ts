@@ -112,51 +112,56 @@ export const useEdgeConnection = () => {
             width: window.innerWidth,
             height: window.innerHeight
           };
+
           createNode(
-            'custom',
+            'selectionMenu',
             childNodePosition,
             nodes,
             (newNode) => {
               console.log('createNode callback called with newNode:', newNode);
               addNode(newNode);
+
               const handleNodeSelect = (
                 nodeType: 'note' | 'task' | 'custom' | 'code' | 'draw',
                 position: XYPosition
               ) => {
-                console.log(
-                  'handleNodeSelect called with nodeType:',
-                  nodeType,
-                  'and position:',
-                  position
-                );
                 createNode(
                   nodeType,
                   position,
                   nodes,
                   (newNode) => {
                     addNode(newNode);
+                    addEdge({
+                      id: `edge-${Date.now()}`,
+                      source: connectingNodeId.current!,
+                      target: newNode.id,
+                      type: 'customEdge'
+                    });
                   },
                   canvasSize
                 );
                 removeNode(newNode.id);
               };
+
               const handleCloseMenu = () => {
                 removeNode(newNode.id);
               };
+
               updateNode(newNode.id, {
                 data: {
                   onSelect: handleNodeSelect,
                   position: childNodePosition,
                   onClose: handleCloseMenu,
                   id: newNode.id,
-                  isStandalone: true
+                  isTemporary: true
                 }
               });
+
               setMenuPosition(childNodePosition);
               setShowNodeSelectionMenu(true);
-              addChildNode(parentNode, childNodePosition, 'custom');
             },
-            canvasSize
+            canvasSize,
+            true
           );
         }
       }

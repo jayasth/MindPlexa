@@ -1,13 +1,14 @@
 import React from 'react';
-import { EdgeProps, getBezierPath, Position } from 'reactflow';
-import { FaTimes } from 'react-icons/fa';
-import styles from '@/ui/edges/EdgeStyles.module.css';
+import {
+  BaseEdge,
+  EdgeLabelRenderer,
+  EdgeProps,
+  getBezierPath,
+  useReactFlow
+} from 'reactflow';
+import styles from '@/ui/edges/CustomEdgeStyles.module.css';
 
-interface CustomEdgeProps extends EdgeProps {
-  onDelete?: (id: string) => void;
-}
-
-const CustomEdge: React.FC<CustomEdgeProps> = ({
+const CustomEdge = ({
   id,
   sourceX,
   sourceY,
@@ -15,10 +16,11 @@ const CustomEdge: React.FC<CustomEdgeProps> = ({
   targetY,
   sourcePosition,
   targetPosition,
-  style,
-  onDelete
-}) => {
-  const edgePath = getBezierPath({
+  style = {},
+  markerEnd
+}: EdgeProps) => {
+  const { setEdges } = useReactFlow();
+  const [edgePath, labelX, labelY] = getBezierPath({
     sourceX,
     sourceY,
     sourcePosition,
@@ -27,33 +29,28 @@ const CustomEdge: React.FC<CustomEdgeProps> = ({
     targetPosition
   });
 
-  const pathD = Array.isArray(edgePath) ? edgePath[0] : edgePath;
-
-  console.log('edgePath:', edgePath);
-  console.log('pathD:', pathD);
+  const onEdgeClick = () => {
+    setEdges((edges) => edges.filter((edge) => edge.id !== id));
+  };
 
   return (
     <>
-      <path
-        id={id}
-        style={{ ...style, stroke: 'currentColor', strokeWidth: 2 }}
-        className={`${styles.reactFlowEdgePath} react-flow__edge-path`}
-        d={pathD}
-        markerEnd="url(#markerArrow)"
-      />
-      <text
-        x={(sourceX + targetX) / 2 - 10} // Adjust the x and y attributes
-        y={(sourceY + targetY) / 2 - 10}
-        style={{
-          cursor: 'pointer',
-          userSelect: 'none',
-          fill: 'red',
-          zIndex: 1000
-        }}
-        onClick={() => onDelete && onDelete(id)}
-      >
-        <FaTimes size="10" />
-      </text>
+      <BaseEdge path={edgePath} markerEnd={markerEnd} style={style} />
+      <EdgeLabelRenderer>
+        <div
+          style={{
+            position: 'absolute',
+            transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
+            fontSize: 12,
+            pointerEvents: 'all' // Ensure the button is clickable
+          }}
+          className={`${styles.nodrag} ${styles.nopan}`}
+        >
+          <button className={styles.edgebutton} onClick={onEdgeClick}>
+            ×
+          </button>
+        </div>
+      </EdgeLabelRenderer>
     </>
   );
 };

@@ -18,6 +18,7 @@ export interface NodeSelectionMenuProps {
     onClose: () => void;
     id?: string;
     isStandalone?: boolean;
+    isTemporary?: boolean; // Add this line
   } & BaseNode;
 }
 
@@ -54,20 +55,31 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({ data }) => {
       data: {}
     };
 
-    createNode(nodeType, position, [], (newNode) => {
-      addChildNode(parentNode, newNode.position, nodeType);
-      data.onSelect(nodeType, position);
-      data.onClose();
-    });
+    const canvasSize = {
+      width: window.innerWidth,
+      height: window.innerHeight
+    };
+
+    createNode(
+      nodeType,
+      position,
+      [],
+      (newNode) => {
+        addChildNode(parentNode, newNode.position, nodeType);
+        data.onSelect(nodeType, position);
+        data.onClose();
+      },
+      canvasSize
+    );
   };
 
   useEffect(() => {
     return () => {
-      if (data.isStandalone) {
+      if (data.isTemporary) {
         removeNode(data.id || '');
       }
     };
-  }, [data.id, data.isStandalone, removeNode]);
+  }, [data.id, data.isTemporary, removeNode]);
 
   const menuPosition = data.position || defaultPosition;
 

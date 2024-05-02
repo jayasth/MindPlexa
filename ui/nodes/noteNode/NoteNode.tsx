@@ -4,7 +4,7 @@ import BaseNodeHeader from '@/ui/nodes/BaseNodeHeader';
 import BaseNodeFooter from '@/ui/nodes/BaseNodeFooter';
 import noteStyles from './NoteNode.module.css';
 import baseStyles from '@/ui/nodes/BaseNode.module.css';
-import styles from '@/ui/edges/EdgeStyles.module.css';
+import styles from '@/ui/edges/CustomEdgeStyles.module.css';
 import { useStore } from '@/app/store/useCanvasStore';
 
 interface NoteNodeData {

@@ -1,0 +1,50 @@
+.reactFlowHandle {
+  width: 20px;
+  height: 8px;
+  border-radius: 3px;
+  background-color: #989ff0;
+}
+
+.reactFlowHandleTop {
+  top: -5px;
+}
+
+.reactFlowHandleBottom {
+  bottom: -5px;
+}
+
+.reactFlowEdgePath,
+.reactFlowConnectionLinePath {
+  stroke-width: 2;
+  stroke: currentColor;
+}
+
+.wrapper {
+  flex-grow: 1;
+  height: 100%;
+}
+
+.edgebutton {
+  width: 12px;
+  height: 12px;
+  background: #eee;
+  border: 1px solid #fff;
+  cursor: pointer;
+  border-radius: 50%;
+  font-size: 8px;
+  line-height: 1;
+}
+
+.edgebutton:hover {
+  box-shadow: 0 0 6px 2px rgba(0, 0, 0, 0.08);
+}
+
+/* Ensure no dragging or panning interferes with button interaction */
+.nodrag {
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+.nopan {
+  pointer-events: all;
+}

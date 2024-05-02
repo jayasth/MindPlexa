@@ -22,7 +22,7 @@ import { useNodeResizing } from '@/ui/canvasEditor/hooks/useNodeResizing';
 import { nanoid } from 'nanoid';
 
 const edgeTypes = {
-  customEdge: CustomEdge
+  customEdge: (props) => <CustomEdge {...props} onDelete={handleDeleteEdge} />
 };
 
 const nodeOrigin: NodeOrigin = [0.5, 0.5];
@@ -98,6 +98,15 @@ export default function CanvasEditor() {
     [setEdges]
   );
 
+  const handleDeleteEdge = useCallback(
+    (edgeId) => {
+      setEdges((currentEdges) =>
+        currentEdges.filter((edge) => edge.id !== edgeId)
+      );
+    },
+    [setEdges]
+  );
+
   function setPosition(x: number, y: number): { x: number; y: number } {
     return { x, y };
   }
@@ -162,4 +171,7 @@ export default function CanvasEditor() {
       </ReactFlowProvider>
     </div>
   );
+}
+function handleDeleteEdge(id: string): void {
+  throw new Error('Function not implemented.');
 }

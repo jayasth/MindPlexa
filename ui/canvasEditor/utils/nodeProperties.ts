@@ -12,12 +12,12 @@ export const nodeDimensions = {
   task: { width: 120, height: 160 },
   custom: { width: 130, height: 170 },
   code: { width: 140, height: 180 },
-  draw: { width: 150, height: 190 }
-  // Add more node types and their dimensions here
+  draw: { width: 150, height: 190 },
+  selectionMenu: { width: 200, height: 100 }
 };
 
 export const getNodeSpecificProperties = (
-  nodeType: 'note' | 'task' | 'custom' | 'code' | 'draw'
+  nodeType: 'note' | 'task' | 'custom' | 'code' | 'draw' | 'selectionMenu'
 ) => {
   switch (nodeType) {
     case 'note':
@@ -42,6 +42,8 @@ export const getNodeSpecificProperties = (
       return {
         data: {}
       } as Partial<DrawNode>;
+    case 'selectionMenu':
+      return {};
     default:
       throw new Error('Invalid node type');
   }
