@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback, useRef } from 'react';
+import React, { useMemo, useCallback, useRef, useEffect } from 'react';
 import ReactFlow, {
   Controls,
   Background,
@@ -41,7 +41,8 @@ export default function CanvasEditor() {
     menuPosition,
     setShowNodeSelectionMenu,
     addNode,
-    setDomNode // Added setDomNode to the destructuring from useStore
+    setDomNode, // Added setDomNode to the destructuring from useStore
+    domNode // Added domNode to the destructuring from useStore
   } = useStore((state) => ({
     nodes: state.nodes,
     edges: state.edges,
@@ -53,7 +54,8 @@ export default function CanvasEditor() {
     menuPosition: state.menuPosition,
     setShowNodeSelectionMenu: state.setShowNodeSelectionMenu,
     addNode: state.addNode,
-    setDomNode: state.setDomNode // Added setDomNode to the selector from useStore
+    setDomNode: state.setDomNode, // Added setDomNode to the selector from useStore
+    domNode: state.domNode // Added domNode to the selector from useStore
   }));
 
   const { handleNodeResizeStop } = useNodeResizing();
@@ -113,6 +115,10 @@ export default function CanvasEditor() {
   function setPosition(x: number, y: number): { x: number; y: number } {
     return { x, y };
   }
+
+  useEffect(() => {
+    console.log('domNode has changed:', domNode);
+  }, [domNode]);
 
   return (
     <div className="flex h-screen">
