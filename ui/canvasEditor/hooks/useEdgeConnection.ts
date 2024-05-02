@@ -86,9 +86,11 @@ export const useEdgeConnection = () => {
   const onConnectEnd = useCallback(
     (event) => {
       console.log('onConnectEnd called');
+      console.log('event.target:', event.target);
       const targetIsPane = (event.target as Element).classList.contains(
         'react-flow__pane'
       );
+      console.log('targetIsPane:', targetIsPane);
       const node = (event.target as Element).closest('.react-flow__node');
 
       if (node) {
@@ -164,6 +166,12 @@ export const useEdgeConnection = () => {
             true
           );
         }
+      } else {
+        console.log(
+          'targetIsPane or connectingNodeId.current is not as expected'
+        );
+        console.log('targetIsPane:', targetIsPane);
+        console.log('connectingNodeId.current:', connectingNodeId.current);
       }
 
       connectingNodeId.current = null;
