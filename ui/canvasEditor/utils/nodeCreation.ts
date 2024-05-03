@@ -68,16 +68,18 @@ export const createNode = (
       console.log('New position:', position);
     }
   }
-  position.x = Math.max(
-    0,
-    Math.min(position.x, canvasSize.width - nodeDimension.width)
-  );
-  position.y = Math.max(
-    0,
-    Math.min(position.y, canvasSize.height - nodeDimension.height)
-  );
 
-  console.log('Clamped position:', position);
+  if (nodeType !== 'selectionMenu') {
+    position.x = Math.max(
+      0,
+      Math.min(position.x, canvasSize.width - nodeDimension.width)
+    );
+    position.y = Math.max(
+      0,
+      Math.min(position.y, canvasSize.height - nodeDimension.height)
+    );
+    console.log('Clamped position:', position);
+  }
 
   const positionAsXYPosition = setPosition(position.x, position.y);
 

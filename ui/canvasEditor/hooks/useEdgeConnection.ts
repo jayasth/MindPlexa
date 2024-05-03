@@ -2,6 +2,7 @@ import { useCallback, useRef } from 'react';
 import { useStore } from '@/app/store/useCanvasStore';
 import { Node, XYPosition } from 'reactflow';
 import { createNode } from '@/ui/canvasEditor/utils/nodeCreation';
+import { getChildNodePosition } from '@/ui/canvasEditor/utils/getChildNodePosition';
 
 export const useEdgeConnection = () => {
   const {
@@ -35,45 +36,6 @@ export const useEdgeConnection = () => {
   const connectingNodeId = useRef<string | null>(null);
   console.log('connectingNodeId.current:', connectingNodeId.current);
 
-  const getChildNodePosition = useCallback(
-    (event: MouseEvent | TouchEvent, parentNode?: Node) => {
-      if (!domNode) {
-        console.error(
-          'domNode is not available at the time of event handling.'
-        );
-        return null;
-      }
-
-      if (!parentNode || !parentNode.position) {
-        console.error('Invalid or incomplete parentNode details.');
-        return null;
-      }
-
-      const parentNodeWidth = parentNode.width || 0;
-      const parentNodeHeight = parentNode.height || 0;
-
-      const isTouchEvent = 'touches' in event;
-      const x = isTouchEvent ? event.touches[0].clientX : event.clientX;
-      const y = isTouchEvent ? event.touches[0].clientY : event.clientY;
-      const panePosition = screenToFlowPosition({
-        x,
-        y
-      });
-
-      // Calculate the child node position relative to the parent node
-      const childNodeX =
-        panePosition.x - parentNode.position.x + parentNodeWidth / 2;
-      const childNodeY =
-        panePosition.y - parentNode.position.y + parentNodeHeight / 2;
-
-      return {
-        x: childNodeX,
-        y: childNodeY
-      };
-    },
-    [domNode, screenToFlowPosition]
-  );
-
   const onConnectStart = useCallback(
     (event, node) => {
       console.log('onConnectStart event:', event);
@@ -99,8 +61,13 @@ export const useEdgeConnection = () => {
         const parentNode = nodeInternals.get(connectingNodeId.current);
         console.log('parentNode:', parentNode);
 
-        if (parentNode) {
-          const childNodePosition = getChildNodePosition(event, parentNode);
+        if (parentNode && domNode) {
+          const childNodePosition = getChildNodePosition(
+            event,
+            parentNode,
+            domNode,
+            screenToFlowPosition
+          );
           console.log('childNodePosition:', childNodePosition);
 
           if (childNodePosition) {
@@ -150,7 +117,9 @@ export const useEdgeConnection = () => {
       setShowNodeSelectionMenu,
       setMenuPosition,
       nodes,
-      addNode
+      addNode,
+      domNode,
+      screenToFlowPosition
     ]
   );
 

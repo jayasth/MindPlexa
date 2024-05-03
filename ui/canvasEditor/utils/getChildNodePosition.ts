@@ -20,9 +20,9 @@ export const getChildNodePosition = (
   const flowPosition = screenToFlowPosition({ x: clientX, y: clientY });
 
   const childNodeX =
-    flowPosition.x - parentNode.position.x - parentNodeWidth / 2;
+    flowPosition.x - parentNode.position.x + parentNodeWidth / 2;
   const childNodeY =
-    flowPosition.y - parentNode.position.y - parentNodeHeight / 2;
+    flowPosition.y - parentNode.position.y + parentNodeHeight / 2;
 
   return { x: childNodeX, y: childNodeY };
 };
