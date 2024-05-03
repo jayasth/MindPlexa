@@ -87,8 +87,9 @@ export const useEdgeConnection = () => {
 
   const onConnectStart = useCallback(
     (event, node) => {
-      console.log('onConnectStart called with nodeId:', node.id);
-      connectingNodeId.current = node.id;
+      console.log('onConnectStart event:', event);
+      console.log('onConnectStart node:', node);
+      connectingNodeId.current = node.nodeId || '';
       console.log('connectingNodeId.current:', connectingNodeId.current);
     },
     [connectingNodeId]
@@ -104,13 +105,18 @@ export const useEdgeConnection = () => {
       console.log('targetIsPane:', targetIsPane);
 
       if (targetIsPane && connectingNodeId.current) {
+        console.log('connectingNodeId.current:', connectingNodeId.current);
+        console.log('nodeInternals:', nodeInternals);
         const parentNode = nodeInternals.get(connectingNodeId.current);
         console.log('parentNode:', parentNode);
 
         if (parentNode) {
           const childNodePosition = getChildNodePosition(event, parentNode);
+          console.log('childNodePosition:', childNodePosition);
 
           if (childNodePosition) {
+            setShowNodeSelectionMenu(true);
+            setMenuPosition({ x: event.clientX, y: event.clientY });
             return { parentNode, childNodePosition };
           } else {
             console.error('Failed to get valid child node position');
@@ -134,10 +140,16 @@ export const useEdgeConnection = () => {
         }
       }
 
-      connectingNodeId.current = null;
-      return null; // Return null if the target is not the canvas pane or there is no connecting node ID
+      connectingNodeId.current = '';
+      return null;
     },
-    [addEdge, nodeInternals, getChildNodePosition, useStore]
+    [
+      addEdge,
+      nodeInternals,
+      getChildNodePosition,
+      setShowNodeSelectionMenu,
+      setMenuPosition
+    ]
   );
 
   return {
