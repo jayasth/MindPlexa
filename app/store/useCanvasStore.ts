@@ -111,6 +111,11 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       edges
     })),
   addChildNode: (parentNode, position, type) => {
+    // Remove the temporary NodeSelectionMenu node
+    set((state) => ({
+      nodes: state.nodes.filter((node) => node.type !== 'selectionMenu')
+    }));
+
     const newNode = {
       id: nanoid(),
       type: type,

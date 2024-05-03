@@ -46,7 +46,8 @@ export default function CanvasEditor() {
     setDomNode,
     domNode,
     nodeInternals,
-    createChildNodeFromDrag
+    createChildNodeFromDrag,
+    removeNode // Added removeNode from the store
   } = useStore((state) => ({
     nodes: state.nodes,
     edges: state.edges,
@@ -60,7 +61,8 @@ export default function CanvasEditor() {
     setDomNode: state.setDomNode,
     domNode: state.domNode,
     nodeInternals: state.nodeInternals,
-    createChildNodeFromDrag: state.createChildNodeFromDrag
+    createChildNodeFromDrag: state.createChildNodeFromDrag,
+    removeNode: state.removeNode // Extract removeNode function from the store
   }));
 
   const { handleNodeResizeStop } = useNodeResizing();
@@ -188,11 +190,11 @@ export default function CanvasEditor() {
                 height: nodeDimensions['selectionMenu'].height,
                 data: {
                   parentNode: parentNode
-                }
+                },
+                isTemporary: true
               }}
             />
           )}
-
           <ReactFlow
             nodes={nodes}
             edges={edges}

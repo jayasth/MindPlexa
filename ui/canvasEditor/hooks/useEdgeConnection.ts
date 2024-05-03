@@ -37,7 +37,6 @@ export const useEdgeConnection = () => {
 
   const getChildNodePosition = useCallback(
     (event: MouseEvent | TouchEvent, parentNode?: Node) => {
-      console.log('parentNode:', parentNode);
       if (!domNode) {
         console.error(
           'domNode is not available at the time of event handling.'
@@ -45,7 +44,7 @@ export const useEdgeConnection = () => {
         return null;
       }
 
-      if (!parentNode || !parentNode.positionAbsolute) {
+      if (!parentNode || !parentNode.position) {
         console.error('Invalid or incomplete parentNode details.');
         return null;
       }
@@ -61,27 +60,15 @@ export const useEdgeConnection = () => {
         y
       });
 
-      // Ensure the new node is within the visible area of the canvas
-      const canvasWidth = domNode.offsetWidth;
-      const canvasHeight = domNode.offsetHeight;
-      const newNodeX = Math.max(
-        0,
-        Math.min(
-          panePosition.x - parentNode.positionAbsolute.x + parentNodeWidth / 2,
-          canvasWidth - 100
-        )
-      );
-      const newNodeY = Math.max(
-        0,
-        Math.min(
-          panePosition.y - parentNode.positionAbsolute.y + parentNodeHeight / 2,
-          canvasHeight - 100
-        )
-      );
+      // Calculate the child node position relative to the parent node
+      const childNodeX =
+        panePosition.x - parentNode.position.x + parentNodeWidth / 2;
+      const childNodeY =
+        panePosition.y - parentNode.position.y + parentNodeHeight / 2;
 
       return {
-        x: newNodeX,
-        y: newNodeY
+        x: childNodeX,
+        y: childNodeY
       };
     },
     [domNode, screenToFlowPosition]
@@ -119,6 +106,17 @@ export const useEdgeConnection = () => {
           if (childNodePosition) {
             setShowNodeSelectionMenu(true);
             setMenuPosition({ x: event.clientX, y: event.clientY });
+
+            // Create a new temporary NodeSelectionMenu node
+            createNode(
+              'selectionMenu',
+              childNodePosition,
+              nodes,
+              (newNode) => addNode(newNode),
+              { width: 0, height: 0 },
+              true
+            );
+
             return { parentNode, childNodePosition };
           } else {
             console.error('Failed to get valid child node position');
@@ -150,7 +148,9 @@ export const useEdgeConnection = () => {
       nodeInternals,
       getChildNodePosition,
       setShowNodeSelectionMenu,
-      setMenuPosition
+      setMenuPosition,
+      nodes,
+      addNode
     ]
   );
 

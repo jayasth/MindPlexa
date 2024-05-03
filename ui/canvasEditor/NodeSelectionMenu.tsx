@@ -56,6 +56,11 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({ data }) => {
     if (parentNode && position) {
       data.onSelect(nodeType, position);
       data.onClose();
+
+      // Remove the temporary NodeSelectionMenu node
+      if (data.isTemporary) {
+        removeNode(data.id || '');
+      }
     } else {
       console.error('Invalid or incomplete parent node or position.');
     }
