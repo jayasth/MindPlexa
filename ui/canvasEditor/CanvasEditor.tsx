@@ -63,22 +63,21 @@ export default function CanvasEditor() {
     (edgeId) => {
       console.log('Deleting edge with id:', edgeId);
       setEdges((currentEdges) => {
-        console.log('Current edges before deletion:', currentEdges);
         const updatedEdges = currentEdges.filter((edge) => edge.id !== edgeId);
         console.log('Updated edges after deletion:', updatedEdges);
         return updatedEdges;
       });
+      // Remove the edge from the CustomEdge component
+      useStore.getState().removeEdge(edgeId);
     },
     [setEdges]
   );
 
   const edgeTypes = useMemo(
     () => ({
-      customEdge: (props) => (
-        <CustomEdge {...props} onDelete={handleDeleteEdge} />
-      )
+      customEdge: (props) => <CustomEdge {...props} />
     }),
-    [handleDeleteEdge]
+    []
   );
 
   const nodeTypes = useMemo(
