@@ -85,11 +85,14 @@ export const useEdgeConnection = () => {
     [domNode, screenToFlowPosition]
   );
 
-  const onConnectStart = useCallback((_, { nodeId }) => {
-    console.log('onConnectStart called with nodeId:', nodeId);
-    connectingNodeId.current = nodeId;
-    console.log('connectingNodeId.current:', connectingNodeId.current);
-  }, []);
+  const onConnectStart = useCallback(
+    (event, node) => {
+      console.log('onConnectStart called with nodeId:', node.id);
+      connectingNodeId.current = node.id;
+      console.log('connectingNodeId.current:', connectingNodeId.current);
+    },
+    [connectingNodeId]
+  );
 
   const onConnectEnd = useCallback(
     (event) => {
@@ -99,107 +102,48 @@ export const useEdgeConnection = () => {
         'react-flow__pane'
       );
       console.log('targetIsPane:', targetIsPane);
-      const node = (event.target as Element).closest('.react-flow__node');
 
-      if (node) {
-        const targetNodeId = node.getAttribute('data-id');
-        if (connectingNodeId.current && targetNodeId) {
-          addEdge({
-            id: `edge-${Date.now()}`,
-            source: connectingNodeId.current,
-            target: targetNodeId,
-            type: 'customEdge'
-          });
-        }
-      } else if (targetIsPane && connectingNodeId.current) {
+      if (targetIsPane && connectingNodeId.current) {
         const parentNode = nodeInternals.get(connectingNodeId.current);
-        console.log('nodeInternals keys:', Array.from(nodeInternals.keys()));
-        const childNodePosition = getChildNodePosition(event, parentNode);
+        console.log('parentNode:', parentNode);
 
-        if (childNodePosition) {
-          const canvasSize = {
-            width: window.innerWidth,
-            height: window.innerHeight
-          };
+        if (parentNode) {
+          const childNodePosition = getChildNodePosition(event, parentNode);
 
-          createNode(
-            'selectionMenu',
-            childNodePosition,
-            nodes,
-            (newNode) => {
-              console.log('createNode callback called with newNode:', newNode);
-              addNode(newNode);
-
-              const handleNodeSelect = (
-                nodeType: 'note' | 'task' | 'custom' | 'code' | 'draw',
-                position: XYPosition
-              ) => {
-                createNode(
-                  nodeType,
-                  position,
-                  nodes,
-                  (newNode) => {
-                    addNode(newNode);
-                    addEdge({
-                      id: `edge-${Date.now()}`,
-                      source: connectingNodeId.current!,
-                      target: newNode.id,
-                      type: 'customEdge'
-                    });
-                  },
-                  canvasSize
-                );
-                removeNode(newNode.id);
-              };
-
-              const handleCloseMenu = () => {
-                removeNode(newNode.id);
-              };
-
-              updateNode(newNode.id, {
-                data: {
-                  onSelect: handleNodeSelect,
-                  position: childNodePosition,
-                  onClose: handleCloseMenu,
-                  id: newNode.id,
-                  isTemporary: true
-                }
-              });
-
-              setMenuPosition(childNodePosition);
-              setShowNodeSelectionMenu(true);
-            },
-            canvasSize,
-            true
-          );
+          if (childNodePosition) {
+            return { parentNode, childNodePosition };
+          } else {
+            console.error('Failed to get valid child node position');
+          }
         } else {
-          console.error('Failed to get valid child node position');
+          console.error('Invalid or incomplete parentNode details.');
         }
       } else {
-        console.error(
-          'targetIsPane or connectingNodeId.current is not as expected'
-        );
+        const node = (event.target as Element).closest('.react-flow__node');
+
+        if (node) {
+          const targetNodeId = node.getAttribute('data-id');
+          if (connectingNodeId.current && targetNodeId) {
+            addEdge({
+              id: `edge-${Date.now()}`,
+              source: connectingNodeId.current,
+              target: targetNodeId,
+              type: 'customEdge'
+            });
+          }
+        }
       }
 
       connectingNodeId.current = null;
+      return null; // Return null if the target is not the canvas pane or there is no connecting node ID
     },
-    [
-      addEdge,
-      addNode,
-      removeNode,
-      updateNode,
-      nodes,
-      nodeInternals,
-      screenToFlowPosition,
-      setMenuPosition,
-      setShowNodeSelectionMenu,
-      addChildNode,
-      getChildNodePosition
-    ]
+    [addEdge, nodeInternals, getChildNodePosition, useStore]
   );
 
   return {
     onConnectStart,
-    onConnectEnd
+    onConnectEnd,
+    parentNode: null,
+    childNodePosition: null
   };
 };

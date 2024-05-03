@@ -10,6 +10,7 @@ import { PiNotepad } from 'react-icons/pi';
 import { useStore } from '@/app/store/useCanvasStore';
 import { Node as BaseNode } from '@/ui/canvasEditor/nodeTypes';
 import { createNode } from '@/ui/canvasEditor/utils/nodeCreation';
+import { nanoid } from 'nanoid';
 
 export interface NodeSelectionMenuProps {
   data: {
@@ -19,6 +20,8 @@ export interface NodeSelectionMenuProps {
     id?: string;
     isStandalone?: boolean;
     isTemporary?: boolean; // Add this line
+    parentNode?: Node;
+    childNodePosition?: { x: number; y: number };
   } & BaseNode;
 }
 
@@ -47,30 +50,15 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({ data }) => {
   const handleNodeTypeSelect = (
     nodeType: 'note' | 'task' | 'custom' | 'code' | 'draw'
   ) => {
-    const position = data.position || { x: 0, y: 0 };
-    const parentNode: Node = {
-      id: data.id || 'new-node',
-      type: data.type,
-      position: position,
-      data: {}
-    };
+    const { parentNode } = data;
+    const position = data.position;
 
-    const canvasSize = {
-      width: window.innerWidth,
-      height: window.innerHeight
-    };
-
-    createNode(
-      nodeType,
-      position,
-      [],
-      (newNode) => {
-        addChildNode(parentNode, newNode.position, nodeType);
-        data.onSelect(nodeType, position);
-        data.onClose();
-      },
-      canvasSize
-    );
+    if (parentNode && position) {
+      data.onSelect(nodeType, position);
+      data.onClose();
+    } else {
+      console.error('Invalid or incomplete parent node or position.');
+    }
   };
 
   useEffect(() => {

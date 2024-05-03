@@ -20,6 +20,7 @@ import { useStore } from '@/app/store/useCanvasStore';
 import { useNodeResizing } from '@/ui/canvasEditor/hooks/useNodeResizing';
 import { useEdgeConnection } from '@/ui/canvasEditor/hooks/useEdgeConnection';
 import { nanoid } from 'nanoid';
+import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 
 const nodeOrigin: NodeOrigin = [0.5, 0.5];
 const defaultEdgeOptions = {
@@ -29,6 +30,8 @@ const defaultEdgeOptions = {
 export default function CanvasEditor() {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const reactFlowInstance = useRef<ReactFlowInstance | null>(null);
+  const { onConnectStart, onConnectEnd, parentNode, childNodePosition } =
+    useEdgeConnection();
 
   const {
     nodes,
@@ -41,7 +44,9 @@ export default function CanvasEditor() {
     setShowNodeSelectionMenu,
     addNode,
     setDomNode,
-    domNode
+    domNode,
+    nodeInternals,
+    createChildNodeFromDrag
   } = useStore((state) => ({
     nodes: state.nodes,
     edges: state.edges,
@@ -53,11 +58,12 @@ export default function CanvasEditor() {
     setShowNodeSelectionMenu: state.setShowNodeSelectionMenu,
     addNode: state.addNode,
     setDomNode: state.setDomNode,
-    domNode: state.domNode
+    domNode: state.domNode,
+    nodeInternals: state.nodeInternals,
+    createChildNodeFromDrag: state.createChildNodeFromDrag
   }));
 
   const { handleNodeResizeStop } = useNodeResizing();
-  const { onConnectStart, onConnectEnd } = useEdgeConnection();
 
   const handleDeleteEdge = useCallback(
     (edgeId) => {
@@ -160,7 +166,7 @@ export default function CanvasEditor() {
           />
         </div>
         <div ref={reactFlowWrapper} className="w-11/12">
-          {showNodeSelectionMenu && menuPosition && (
+          {showNodeSelectionMenu && childNodePosition && (
             <NodeSelectionMenu
               data={{
                 onSelect: (nodeType, position) => {
@@ -168,17 +174,25 @@ export default function CanvasEditor() {
                     `Node type ${nodeType} selected at position`,
                     position
                   );
+                  if (parentNode) {
+                    createChildNodeFromDrag(parentNode, position, nodeType);
+                  } else {
+                    console.error('Invalid or incomplete parent node details.');
+                  }
                 },
-                position: setPosition(menuPosition.x, menuPosition.y),
+                position: childNodePosition,
                 onClose: () => setShowNodeSelectionMenu(false),
                 id: 'nodeSelectionMenu',
                 type: 'selectionMenu',
-                width: 200,
-                height: 100,
-                data: {}
+                width: nodeDimensions['selectionMenu'].width,
+                height: nodeDimensions['selectionMenu'].height,
+                data: {
+                  parentNode: parentNode
+                }
               }}
             />
           )}
+
           <ReactFlow
             nodes={nodes}
             edges={edges}
