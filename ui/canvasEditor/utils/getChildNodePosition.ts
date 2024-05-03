@@ -1,34 +1,28 @@
 import { Node, XYPosition } from 'reactflow';
-import { nodeDimensions } from './nodeProperties';
 
 export const getChildNodePosition = (
-  event: React.MouseEvent<Element, MouseEvent>,
-  parentNode: Node<any>
+  event: MouseEvent | TouchEvent,
+  parentNode: Node,
+  domNode: HTMLElement,
+  screenToFlowPosition: (position: { x: number; y: number }) => XYPosition
 ): XYPosition | null => {
-  console.log('Event:', event);
-  console.log('Parent Node:', parentNode);
-  const canvasRect = event.currentTarget.getBoundingClientRect();
-  console.log('Canvas Rect:', canvasRect);
-  const canvasX = event.clientX - canvasRect.left;
-  const canvasY = event.clientY - canvasRect.top;
+  if (!domNode || !parentNode || !parentNode.position) {
+    return null;
+  }
 
-  const parentNodeType = parentNode.type || 'note'; // Use 'note' as the default type if parentNode.type is undefined
-  console.log('Parent Node Type:', parentNodeType);
-  const parentNodeDimensions = nodeDimensions[parentNodeType] || {
-    width: 100,
-    height: 150
-  }; // Use default dimensions if parentNodeType is not found in nodeDimensions
-  console.log('Parent Node Dimensions:', parentNodeDimensions);
-  const childNodeDimensions = nodeDimensions['selectionMenu'];
-  console.log('Child Node Dimensions:', childNodeDimensions);
+  const parentNodeWidth = parentNode.width || 100;
+  const parentNodeHeight = parentNode.height || 100;
 
-  const childX =
-    canvasX - childNodeDimensions.width / 2 + parentNodeDimensions.width / 2;
-  const childY =
-    canvasY - childNodeDimensions.height / 2 + parentNodeDimensions.height / 2;
+  const isTouchEvent = 'touches' in event;
+  const clientX = isTouchEvent ? event.touches[0].clientX : event.clientX;
+  const clientY = isTouchEvent ? event.touches[0].clientY : event.clientY;
 
-  const childPosition = { x: childX, y: childY };
-  console.log('Child Position:', childPosition);
+  const flowPosition = screenToFlowPosition({ x: clientX, y: clientY });
 
-  return childPosition;
+  const childNodeX =
+    flowPosition.x - parentNode.position.x - parentNodeWidth / 2;
+  const childNodeY =
+    flowPosition.y - parentNode.position.y - parentNodeHeight / 2;
+
+  return { x: childNodeX, y: childNodeY };
 };

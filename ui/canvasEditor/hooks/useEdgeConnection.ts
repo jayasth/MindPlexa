@@ -30,6 +30,8 @@ export const useEdgeConnection = () => {
     updateNode: state.updateNode
   }));
 
+  console.log('nodeInternals:', nodeInternals);
+
   const connectingNodeId = useRef<string | null>(null);
   console.log('connectingNodeId.current:', connectingNodeId.current);
 

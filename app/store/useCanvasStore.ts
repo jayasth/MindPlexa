@@ -63,21 +63,25 @@ export const useStore = createStore<CanvasState>((set, get) => ({
         connectable: true
       };
       console.log('New node with position:', newNode);
+      state.nodeInternals.set(newNode.id, newNode); // Ensure node is added to nodeInternals
       return { nodes: [...state.nodes, newNode] };
     }),
   updateNode: (id, data) =>
     set((state) => ({
-      nodes: state.nodes.map((node) =>
-        node.id === id
-          ? {
-              ...node,
-              ...data,
-              position: data.position || node.position,
-              width: data.width || node.width,
-              height: data.height || node.height
-            }
-          : node
-      )
+      nodes: state.nodes.map((node) => {
+        if (node.id === id) {
+          const updatedNode = {
+            ...node,
+            ...data,
+            position: data.position || node.position,
+            width: data.width || node.width,
+            height: data.height || node.height
+          };
+          state.nodeInternals.set(id, updatedNode); // Update nodeInternals
+          return updatedNode;
+        }
+        return node;
+      })
     })),
   addEdge: (edge) =>
     set((state) => ({
