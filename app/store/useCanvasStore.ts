@@ -91,9 +91,16 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       )
     })),
   removeEdge: (id) =>
-    set((state) => ({
-      edges: state.edges.filter((edge) => edge.id !== id)
-    })),
+    set((state) => {
+      const updatedEdges = state.edges.filter((edge) => edge.id !== id);
+      state.onEdgesChange([
+        {
+          type: 'remove',
+          id: id
+        }
+      ]);
+      return { edges: updatedEdges };
+    }),
   setInitialState: (nodes, edges) =>
     set(() => ({
       nodes,

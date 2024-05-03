@@ -10,7 +10,8 @@ import ReactFlow, {
 import Toolbar from './toolbar';
 import {
   handleDownload,
-  handleShare
+  handleShare,
+  applyEdgeChanges
 } from '@/ui/canvasEditor/utils/canvasUtils';
 import NodeRenderer from '@/ui/canvasEditor/NodeRenderer';
 import CustomEdge from '@/ui/edges/CustomEdge';
@@ -26,13 +27,15 @@ const defaultEdgeOptions = {
 };
 
 export default function CanvasEditor() {
+  const reactFlowWrapper = useRef<HTMLDivElement>(null);
+  const reactFlowInstance = useRef<ReactFlowInstance | null>(null);
+
   const {
     nodes,
     edges,
     setNodes,
     setEdges,
     onNodesChange,
-    onEdgesChange,
     showNodeSelectionMenu,
     menuPosition,
     setShowNodeSelectionMenu,
@@ -45,7 +48,6 @@ export default function CanvasEditor() {
     setNodes: state.setNodes,
     setEdges: state.setEdges,
     onNodesChange: state.onNodesChange,
-    onEdgesChange: state.onEdgesChange,
     showNodeSelectionMenu: state.showNodeSelectionMenu,
     menuPosition: state.menuPosition,
     setShowNodeSelectionMenu: state.setShowNodeSelectionMenu,
@@ -61,17 +63,23 @@ export default function CanvasEditor() {
     (edgeId) => {
       console.log('Deleting edge with id:', edgeId);
       setEdges((currentEdges) => {
+        console.log('Current edges before deletion:', currentEdges);
         const updatedEdges = currentEdges.filter((edge) => edge.id !== edgeId);
-        console.log('Updated edges:', updatedEdges);
+        console.log('Updated edges after deletion:', updatedEdges);
         return updatedEdges;
       });
     },
     [setEdges]
   );
 
-  const edgeTypes = {
-    customEdge: (props) => <CustomEdge {...props} onDelete={handleDeleteEdge} />
-  };
+  const edgeTypes = useMemo(
+    () => ({
+      customEdge: (props) => (
+        <CustomEdge {...props} onDelete={handleDeleteEdge} />
+      )
+    }),
+    [handleDeleteEdge]
+  );
 
   const nodeTypes = useMemo(
     () => ({
@@ -95,9 +103,6 @@ export default function CanvasEditor() {
     [handleNodeResizeStop]
   );
 
-  const reactFlowWrapper = useRef<HTMLDivElement>(null);
-  const reactFlowInstance = useRef<ReactFlowInstance | null>(null);
-
   const handleConnect = useCallback(
     (connection) => {
       if (!connection.source || !connection.target) {
@@ -111,6 +116,18 @@ export default function CanvasEditor() {
       };
       setEdges((eds) => [...eds, newEdge]);
       reactFlowInstance.current?.fitView({ padding: 0.2 });
+    },
+    [setEdges]
+  );
+
+  const onEdgesChange = useCallback(
+    (changes) => {
+      setEdges((eds) => {
+        if (changes[0].type === 'remove') {
+          return eds.filter((e) => e.id !== changes[0].id);
+        }
+        return applyEdgeChanges(changes, eds);
+      });
     },
     [setEdges]
   );

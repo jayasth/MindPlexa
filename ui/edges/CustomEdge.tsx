@@ -7,6 +7,7 @@ import {
   useReactFlow
 } from 'reactflow';
 import styles from '@/ui/edges/CustomEdgeStyles.module.css';
+import { useStore } from '@/app/store/useCanvasStore'; // Import useStore
 
 const CustomEdge = ({
   id,
@@ -20,7 +21,6 @@ const CustomEdge = ({
   markerEnd,
   onDelete // Add this prop
 }: EdgeProps & { onDelete?: (id: string) => void }) => {
-  const { setEdges } = useReactFlow();
   const [edgePath, labelX, labelY] = getBezierPath({
     sourceX,
     sourceY,
@@ -33,12 +33,7 @@ const CustomEdge = ({
   const onEdgeClick = () => {
     console.log('onEdgeClick called with id:', id);
     onDelete?.(id);
-    setEdges((edges) => {
-      console.log('edges before:', edges); // Log the edges state before it's updated
-      const newEdges = edges.filter((edge) => edge.id !== id);
-      console.log('edges after:', newEdges); // Log the edges state after it's updated
-      return newEdges;
-    });
+    useStore.getState().removeEdge(id);
   };
 
   return (
