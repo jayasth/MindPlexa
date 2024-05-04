@@ -8,7 +8,8 @@ import {
 } from 'react-icons/fa';
 import { PiNotepad } from 'react-icons/pi';
 import { useStore } from '@/app/store/useCanvasStore';
-import styles from './NodeSelectionMenu.module.css';
+import menuStyles from './NodeSelectionMenu.module.css';
+import styles from '@/ui/edges/CustomEdgeStyles.module.css';
 
 export interface NodeSelectionMenuProps {
   data: {
@@ -72,16 +73,16 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({ data }) => {
 
   return (
     <div
-      className={styles.nodeSelectionMenu}
+      className={menuStyles.nodeSelectionMenu}
       style={{
-        left: menuPosition.x,
-        top: menuPosition.y
+        width: `${size.width}px`,
+        height: `${size.height}px`
       }}
     >
       <Handle
         type="target"
         position={Position.Top}
-        className={styles.nodeSelectionMenuHandle}
+        className={`${styles.reactFlowHandle} ${styles.reactFlowHandleTop}`}
       />
       <div className="flex flex-row">
         {nodeTypes.map((type) => (
@@ -98,7 +99,7 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({ data }) => {
       <Handle
         type="source"
         position={Position.Bottom}
-        className={styles.nodeSelectionMenuHandle}
+        className={`${styles.reactFlowHandle} ${styles.reactFlowHandleBottom}`}
       />
     </div>
   );
