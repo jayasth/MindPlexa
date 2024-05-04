@@ -167,7 +167,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
     set((state) => ({
       edges: applyEdgeChanges(changes, state.edges)
     })),
-  toggleEditMode: (nodeId) =>
+  toggleEditMode: (nodeId: string) =>
     set((state) => ({
       nodes: state.nodes.map((node) =>
         node.id === nodeId ? { ...node, isEditing: !node.isEditing } : node

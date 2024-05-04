@@ -31,6 +31,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
 }) => {
   const node = data as BaseNode;
   const updateNode = useStore((state) => state.updateNode);
+  const toggleEditMode = useStore((state) => state.toggleEditMode);
 
   const [size, setSize] = useState({
     width: node.width || nodeDimensions[node.type].width,
@@ -54,6 +55,21 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     },
     [id, onNodeResizeStop]
   );
+
+  const handleEdit = () => {
+    toggleEditMode(id);
+    const newWidth = node.isEditing
+      ? nodeDimensions[node.type].width
+      : nodeDimensions[node.type].editWidth;
+    const newHeight = node.isEditing
+      ? nodeDimensions[node.type].height
+      : nodeDimensions[node.type].editHeight;
+    updateNode(id, {
+      width: newWidth,
+      height: newHeight
+    });
+    onNodeResizeStop(id, { width: newWidth, height: newHeight }, node.position);
+  };
 
   const commonProps = {
     draggable: true,

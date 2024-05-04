@@ -1,9 +1,9 @@
 export const nodeDimensions = {
-  note: { width: 200, height: 150 },
-  task: { width: 200, height: 150 },
-  custom: { width: 200, height: 150 },
-  code: { width: 200, height: 150 },
-  draw: { width: 200, height: 150 },
+  note: { width: 300, height: 400 },
+  task: { width: 300, height: 400 },
+  custom: { width: 300, height: 400 },
+  code: { width: 300, height: 400 },
+  draw: { width: 300, height: 400 },
   selectionMenu: { width: 150, height: 50 }
 };
 

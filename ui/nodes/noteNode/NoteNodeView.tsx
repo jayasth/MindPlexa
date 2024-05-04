@@ -1,26 +1,35 @@
 import React from 'react';
 import { NodeProps, Handle, Position } from 'reactflow';
+import { useStore } from '@/app/store/useCanvasStore';
 import styles from './NoteNodeView.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 
 interface NoteNodeViewProps extends NodeProps {
   data: {
+    id: string;
     title?: string;
-    onEdit: () => void;
   };
 }
 
 const NoteNodeView: React.FC<NoteNodeViewProps> = ({ data }) => {
+  const toggleEditMode = useStore((state) => state.toggleEditMode);
+
   return (
     <div className={styles.noteNode}>
       <div className={styles.header}>
-        <span className={styles.title}>{data.title || 'Untitled Noteing'}</span>
-        <button className={styles.editButton} onClick={data.onEdit}>
+        <span className={styles.title}>{data.title || 'Untitled Note'}</span>
+        <button
+          className={styles.editButton}
+          onClick={() => {
+            console.log(`Toggling edit mode for node ID: ${data.id}`);
+            toggleEditMode(data.id);
+          }}
+        >
           Edit
         </button>
       </div>
       <div className={styles.noteContent}>
-        {/* Noting content would be rendered here */}
+        {/* Note content would be rendered here */}
       </div>
       <Handle
         type="target"
