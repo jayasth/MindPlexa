@@ -73,6 +73,7 @@ export const createNode = (
   const positionAsXYPosition = setPosition(position.x, position.y);
 
   const defaultProperties = {
+    isEditing: false,
     draggable: true,
     connectable: true,
     width: nodeDimensions[nodeType].width,

@@ -29,7 +29,9 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
   id,
   onNodeResizeStop
 }) => {
-  const node = data as BaseNode;
+  const node = useStore((state) =>
+    state.nodes.find((n) => n.id === id)
+  ) as BaseNode;
   const updateNode = useStore((state) => state.updateNode);
   const toggleEditMode = useStore((state) => state.toggleEditMode);
 
@@ -43,6 +45,12 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
       setSize({ width: node.width, height: node.height });
     }
   }, [node.width, node.height]);
+
+  useEffect(() => {
+    console.log(
+      `Component re-rendered. Current edit mode for node ${id}: ${node.isEditing}`
+    );
+  }, [node]);
 
   const handleResizeStop = useCallback(
     (event, newSize) => {
