@@ -17,7 +17,8 @@ export const useEdgeConnection = () => {
     screenToFlowPosition,
     nodeInternals,
     addNode,
-    updateNode
+    updateNode,
+    toggleEditMode
   } = useStore((state) => ({
     nodes: state.nodes,
     setShowNodeSelectionMenu: state.setShowNodeSelectionMenu,
@@ -29,7 +30,8 @@ export const useEdgeConnection = () => {
     screenToFlowPosition: state.screenToFlowPosition,
     nodeInternals: state.nodeInternals,
     addNode: state.addNode,
-    updateNode: state.updateNode
+    updateNode: state.updateNode,
+    toggleEditMode: state.toggleEditMode
   }));
 
   console.log('nodeInternals:', nodeInternals);

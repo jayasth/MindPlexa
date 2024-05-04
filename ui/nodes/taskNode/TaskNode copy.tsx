@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { NodeProps, Handle, Position, NodeResizer, OnResize } from 'reactflow';
 import BaseNodeHeader from '@/ui/nodes/BaseNodeHeader';
 import BaseNodeFooter from '@/ui/nodes/BaseNodeFooter';
-import taskStyles from './TaskNode.module.css';
+import taskStyles from '@/ui/nodes/taskNode/TaskNodeView.module.css';
 import baseStyles from '@/ui/nodes/BaseNode.module.css';
 import styles from '@/ui/edges/CustomEdgeStyles.module.css';
 

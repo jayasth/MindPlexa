@@ -1,49 +1,41 @@
-import type {
-  NoteNode,
-  TaskNode,
-  CustomNode,
-  CodeNode,
-  DrawNode
-} from '@/ui/canvasEditor/nodeTypes';
-
-// Define default dimensions for nodes
 export const nodeDimensions = {
-  note: { width: 100, height: 150 },
-  task: { width: 120, height: 160 },
-  custom: { width: 130, height: 170 },
-  code: { width: 140, height: 180 },
-  draw: { width: 150, height: 190 },
+  note: { width: 200, height: 150 },
+  task: { width: 200, height: 150 },
+  custom: { width: 200, height: 150 },
+  code: { width: 200, height: 150 },
+  draw: { width: 200, height: 150 },
   selectionMenu: { width: 150, height: 50 }
 };
 
-export const getNodeSpecificProperties = (
-  nodeType: 'note' | 'task' | 'custom' | 'code' | 'draw' | 'selectionMenu'
-) => {
+export const getNodeSpecificProperties = (nodeType: string) => {
+  const baseProperties = {
+    draggable: true,
+    connectable: true,
+    width: nodeDimensions[nodeType].width,
+    height: nodeDimensions[nodeType].height
+  };
+
   switch (nodeType) {
     case 'note':
-      return {
-        content: ''
-      } as Partial<NoteNode>;
+      return { ...baseProperties, isEditing: false };
     case 'task':
       return {
+        ...baseProperties,
         completed: false,
-        task: 'New Task'
-      } as Partial<TaskNode>;
+        isEditing: false
+      };
     case 'custom':
-      return {
-        data: {}
-      } as Partial<CustomNode>;
+      return { ...baseProperties, isEditing: false };
     case 'code':
       return {
-        code: '',
-        language: 'plaintext'
-      } as Partial<CodeNode>;
+        ...baseProperties,
+        language: 'plaintext',
+        isEditing: false
+      };
     case 'draw':
-      return {
-        data: {}
-      } as Partial<DrawNode>;
+      return { ...baseProperties, isEditing: false };
     case 'selectionMenu':
-      return {};
+      return { ...baseProperties };
     default:
       throw new Error('Invalid node type');
   }

@@ -1,0 +1,38 @@
+.noteNode {
+  display: flex;
+  flex-direction: column;
+  background-color: #f8f8f8;
+  border-radius: 4px;
+  padding: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  height: 100%;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background-color: #f1f1f1;
+  z-index: 1;
+}
+
+.title {
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.editButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 8px;
+}
+
+.noteContent {
+  flex-grow: 1;
+  overflow: auto;
+  background-color: transparent;
+}

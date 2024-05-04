@@ -7,6 +7,7 @@ export interface Node {
   type: any;
   id: string;
   position: { x: number; y: number };
+  isEditing: boolean;
 }
 
 export interface Edge {
@@ -58,7 +59,8 @@ export type NodeTypesAction =
     }
   | { type: 'UNDO' }
   | { type: 'REDO' }
-  | { type: 'TOGGLE_TASK_COMPLETION'; payload: string };
+  | { type: 'TOGGLE_TASK_COMPLETION'; payload: string }
+  | { type: 'TOGGLE_EDIT_MODE'; payload: string };
 
 const initialState: NodeTypesState = {
   nodes: [],

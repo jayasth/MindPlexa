@@ -34,6 +34,7 @@ interface CanvasState {
   setMenuPosition: (position: XYPosition | null) => void;
   onNodesChange: (changes: any) => void;
   onEdgesChange: (changes: any) => void;
+  toggleEditMode: (nodeId: string) => void; // Add this action
 }
 
 const createStore = <T extends object>(
@@ -165,6 +166,12 @@ export const useStore = createStore<CanvasState>((set, get) => ({
   onEdgesChange: (changes) =>
     set((state) => ({
       edges: applyEdgeChanges(changes, state.edges)
+    })),
+  toggleEditMode: (nodeId) =>
+    set((state) => ({
+      nodes: state.nodes.map((node) =>
+        node.id === nodeId ? { ...node, isEditing: !node.isEditing } : node
+      )
     }))
 }));
 

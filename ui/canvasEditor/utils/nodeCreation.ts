@@ -42,14 +42,6 @@ export const createNode = (
   canvasSize: { width: number; height: number },
   isTemporary = false
 ) => {
-  console.log(
-    'createNode called with nodeType:',
-    nodeType,
-    'position:',
-    position,
-    'isTemporary:',
-    isTemporary
-  );
   const zoomLevel = 1.0;
   position.x /= zoomLevel;
   position.y /= zoomLevel;
@@ -58,14 +50,12 @@ export const createNode = (
 
   if (Array.isArray(existingNodes)) {
     while (isPositionOccupied(position, existingNodes, nodeDimension)) {
-      console.log('Position is occupied, adjusting position');
       const randomOffsetX =
         Math.random() * nodeDimension.width - nodeDimension.width / 2;
       const randomOffsetY =
         Math.random() * nodeDimension.height - nodeDimension.height / 2;
       position.x += nodeDimension.width / 2 + randomOffsetX;
       position.y += nodeDimension.height / 2 + randomOffsetY;
-      console.log('New position:', position);
     }
   }
 
@@ -78,7 +68,6 @@ export const createNode = (
       0,
       Math.min(position.y, canvasSize.height - nodeDimension.height)
     );
-    console.log('Clamped position:', position);
   }
 
   const positionAsXYPosition = setPosition(position.x, position.y);
@@ -93,6 +82,7 @@ export const createNode = (
   let baseProperties: Partial<BaseNode> & {
     id: string;
     position: XYPosition;
+    type: string;
   };
 
   if (nodeType === 'selectionMenu' && isTemporary) {
@@ -117,14 +107,14 @@ export const createNode = (
 
   const newNode: Node<any> = {
     ...specificNode,
-    data: isTemporary ? { isTemporary: true } : specificNode,
     id: baseProperties.id,
+    type: baseProperties.type,
     position: {
       x: position.x,
       y: position.y
-    }
+    },
+    data: isTemporary ? { isTemporary: true } : specificNode
   };
 
-  console.log('Adding new node:', newNode);
   callback(newNode);
 };

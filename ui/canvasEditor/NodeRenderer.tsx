@@ -1,12 +1,17 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
 import { Node as BaseNode } from '@/ui/canvasEditor/nodeTypes';
-import NoteNode from '@/ui/nodes/noteNode/NoteNode';
-import TaskNode from '@/ui/nodes/taskNode/TaskNode';
-import CustomNode from '@/ui/nodes/customNode/CustomNode';
-import CodeNode from '@/ui/nodes/codeNode/CodeNode';
-import DrawNode from '@/ui/nodes/drawNode/DrawNode';
-import NodeSelectionMenu, { NodeSelectionMenuProps } from '@/ui/nodes/nodeSelectionMenu/NodeSelectionMenu';
+import NoteNode from '@/ui/nodes/noteNode/NoteNodeView';
+import NoteNodeEdit from '@/ui/nodes/noteNode/NoteNodeEdit';
+import TaskNode from '@/ui/nodes/taskNode/TaskNodeView';
+import TaskNodeEdit from '@/ui/nodes/taskNode/TaskNodeEdit';
+import CustomNode from '@/ui/nodes/customNode/CustomNodeView';
+import CustomNodeEdit from '@/ui/nodes/customNode/CustomNodeEdit';
+import CodeNode from '@/ui/nodes/codeNode/CodeNodeView';
+import CodeNodeEdit from '@/ui/nodes/codeNode/CodeNodeEdit';
+import DrawNode from '@/ui/nodes/drawNode/DrawNodeView';
+import DrawNodeEdit from '@/ui/nodes/drawNode/DrawNodeEdit';
+import NodeSelectionMenu from '@/ui/nodes/nodeSelectionMenu/NodeSelectionMenu';
 import { useStore } from '@/app/store/useCanvasStore';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 
@@ -74,11 +79,11 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     case 'code':
     case 'draw':
       const NodeComponent = {
-        note: NoteNode,
-        task: TaskNode,
-        custom: CustomNode,
-        code: CodeNode,
-        draw: DrawNode
+        note: node.isEditing ? NoteNodeEdit : NoteNode,
+        task: node.isEditing ? TaskNodeEdit : TaskNode,
+        custom: node.isEditing ? CustomNodeEdit : CustomNode,
+        code: node.isEditing ? CodeNodeEdit : CodeNode,
+        draw: node.isEditing ? DrawNodeEdit : DrawNode
       }[node.type];
 
       return (

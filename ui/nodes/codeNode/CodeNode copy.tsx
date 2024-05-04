@@ -2,20 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { NodeProps, Handle, Position, NodeResizer, OnResize } from 'reactflow';
 import BaseNodeHeader from '@/ui/nodes/BaseNodeHeader';
 import BaseNodeFooter from '@/ui/nodes/BaseNodeFooter';
-import customStyles from './CustomNode.module.css';
+import codeStyles from '@/ui/nodes/codeNode/CodeNodeView.module.css';
 import baseStyles from '@/ui/nodes/BaseNode.module.css';
 import styles from '@/ui/edges/CustomEdgeStyles.module.css';
 
-interface CustomNodeData {
+interface CodeNodeData {
   id: string;
-  title?: string | null;
-  data?: any;
-  width?: number | null;
-  height?: number | null;
+  code?: string;
+  language?: string;
+  title?: string;
+  width?: number;
+  height?: number;
 }
 
-interface CustomNodeProps extends NodeProps {
-  data: CustomNodeData;
+interface CodeNodeProps extends NodeProps {
+  data: CodeNodeData;
   onDelete: () => void;
   onChangeColor: () => void;
   onTag: () => void;
@@ -23,7 +24,7 @@ interface CustomNodeProps extends NodeProps {
   selected: boolean;
 }
 
-const CustomNode: React.FC<CustomNodeProps> = ({
+const CodeNode: React.FC<CodeNodeProps> = ({
   data,
   onDelete,
   onChangeColor,
@@ -52,7 +53,7 @@ const CustomNode: React.FC<CustomNodeProps> = ({
 
   return (
     <div
-      className={`${baseStyles.baseNode} ${customStyles.customNode}`}
+      className={`${baseStyles.baseNode} ${codeStyles.codeNode}`}
       style={{
         width: `${size.width}px`,
         height: `${size.height}px`
@@ -70,12 +71,14 @@ const CustomNode: React.FC<CustomNodeProps> = ({
         className={`${styles.reactFlowHandle} ${styles.reactFlowHandleTop}`}
       />
       <BaseNodeHeader
-        title={data.title || 'Untitled Custom Node'}
+        title={data.title || 'Untitled Code'}
         onDelete={onDelete}
       />
-      <div className={customStyles.customNodeContent}>
-        {/* Content rendering */}
-      </div>
+      <textarea
+        className={codeStyles.codeContent}
+        value={data.code || ''}
+        readOnly
+      />
       <BaseNodeFooter
         onChangeColor={onChangeColor}
         onTag={onTag}
@@ -90,4 +93,4 @@ const CustomNode: React.FC<CustomNodeProps> = ({
   );
 };
 
-export default CustomNode;
+export default CodeNode;

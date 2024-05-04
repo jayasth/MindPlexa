@@ -2,20 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { NodeProps, Handle, Position, NodeResizer, OnResize } from 'reactflow';
 import BaseNodeHeader from '@/ui/nodes/BaseNodeHeader';
 import BaseNodeFooter from '@/ui/nodes/BaseNodeFooter';
-import drawStyles from './DrawNode.module.css';
+import customStyles from '@/ui/nodes/customNode/CustomNodeView.module.css';
 import baseStyles from '@/ui/nodes/BaseNode.module.css';
 import styles from '@/ui/edges/CustomEdgeStyles.module.css';
 
-interface DrawNodeData {
+interface CustomNodeData {
   id: string;
-  data?: any; // Replace 'any' with the correct type if available
-  title?: string;
-  width?: number;
-  height?: number;
+  title?: string | null;
+  data?: any;
+  width?: number | null;
+  height?: number | null;
 }
 
-interface DrawNodeProps extends NodeProps {
-  data: DrawNodeData;
+interface CustomNodeProps extends NodeProps {
+  data: CustomNodeData;
   onDelete: () => void;
   onChangeColor: () => void;
   onTag: () => void;
@@ -23,7 +23,7 @@ interface DrawNodeProps extends NodeProps {
   selected: boolean;
 }
 
-const DrawNode: React.FC<DrawNodeProps> = ({
+const CustomNode: React.FC<CustomNodeProps> = ({
   data,
   onDelete,
   onChangeColor,
@@ -52,7 +52,7 @@ const DrawNode: React.FC<DrawNodeProps> = ({
 
   return (
     <div
-      className={`${baseStyles.baseNode} ${drawStyles.drawNode}`}
+      className={`${baseStyles.baseNode} ${customStyles.customNode}`}
       style={{
         width: `${size.width}px`,
         height: `${size.height}px`
@@ -70,11 +70,11 @@ const DrawNode: React.FC<DrawNodeProps> = ({
         className={`${styles.reactFlowHandle} ${styles.reactFlowHandleTop}`}
       />
       <BaseNodeHeader
-        title={data.title || 'Untitled Drawing'}
+        title={data.title || 'Untitled Custom Node'}
         onDelete={onDelete}
       />
-      <div className={drawStyles.drawContent}>
-        {/* Drawing content would be rendered here */}
+      <div className={customStyles.customNodeContent}>
+        {/* Content rendering */}
       </div>
       <BaseNodeFooter
         onChangeColor={onChangeColor}
@@ -90,4 +90,4 @@ const DrawNode: React.FC<DrawNodeProps> = ({
   );
 };
 
-export default DrawNode;
+export default CustomNode;
