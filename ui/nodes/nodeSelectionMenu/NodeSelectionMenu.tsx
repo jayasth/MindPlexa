@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Handle, Position, Node } from 'reactflow';
+import { Handle, Position } from 'reactflow';
 import {
   FaTasks,
   FaCode,
@@ -8,9 +8,7 @@ import {
 } from 'react-icons/fa';
 import { PiNotepad } from 'react-icons/pi';
 import { useStore } from '@/app/store/useCanvasStore';
-import { Node as BaseNode } from '@/ui/canvasEditor/nodeTypes';
-import { createNode } from '@/ui/canvasEditor/utils/nodeCreation';
-import { nanoid } from 'nanoid';
+import styles from './NodeSelectionMenu.module.css';
 
 export interface NodeSelectionMenuProps {
   data: {
@@ -18,11 +16,12 @@ export interface NodeSelectionMenuProps {
     position?: { x: number; y: number };
     onClose: () => void;
     id?: string;
-    isStandalone?: boolean;
-    isTemporary?: boolean; // Add this line
-    parentNode?: Node;
-    childNodePosition?: { x: number; y: number };
-  } & BaseNode;
+    type: string;
+    parentNode?: Node | null;
+    isTemporary?: boolean;
+  };
+  width?: number;
+  height?: number;
 }
 
 const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({ data }) => {
@@ -45,19 +44,14 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({ data }) => {
     code: <FaCode size="16" />,
     draw: <FaPaintBrush size="16" />
   };
-  const defaultPosition = { x: 0, y: 0 };
 
   const handleNodeTypeSelect = (
     nodeType: 'note' | 'task' | 'custom' | 'code' | 'draw'
   ) => {
-    const { parentNode } = data;
-    const position = data.position;
-
+    const { parentNode, position } = data;
     if (parentNode && position) {
       data.onSelect(nodeType, position);
       data.onClose();
-
-      // Remove the temporary NodeSelectionMenu node
       if (data.isTemporary) {
         removeNode(data.id || '');
       }
@@ -74,36 +68,26 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({ data }) => {
     };
   }, [data.id, data.isTemporary, removeNode]);
 
-  const menuPosition = data.position || defaultPosition;
+  const menuPosition = data.position || { x: 0, y: 0 };
 
   return (
     <div
-      className="bg-white shadow-lg rounded p-1"
+      className={styles.nodeSelectionMenu}
       style={{
-        position: 'absolute',
         left: menuPosition.x,
         top: menuPosition.y
       }}
     >
-      {data.id && !data.isStandalone && (
-        <>
-          <Handle
-            type="target"
-            position={Position.Top}
-            id={`handle-${data.id}-top`}
-          />
-          <Handle
-            type="source"
-            position={Position.Bottom}
-            id={`handle-${data.id}-bottom`}
-          />
-        </>
-      )}
+      <Handle
+        type="target"
+        position={Position.Top}
+        className={styles.nodeSelectionMenuHandle}
+      />
       <div className="flex flex-row">
         {nodeTypes.map((type) => (
           <button
             key={type}
-            className="p-1 m-1 bg-gray-200 rounded hover:bg-gray-300 flex items-center justify-center"
+            className={styles.nodeButton}
             onClick={() => handleNodeTypeSelect(type)}
             title={type.charAt(0).toUpperCase() + type.slice(1)}
           >
@@ -111,6 +95,11 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({ data }) => {
           </button>
         ))}
       </div>
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        className={styles.nodeSelectionMenuHandle}
+      />
     </div>
   );
 };

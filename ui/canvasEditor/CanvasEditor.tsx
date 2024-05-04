@@ -15,7 +15,7 @@ import {
 } from '@/ui/canvasEditor/utils/canvasUtils';
 import NodeRenderer from '@/ui/canvasEditor/NodeRenderer';
 import CustomEdge from '@/ui/edges/CustomEdge';
-import NodeSelectionMenu from '@/ui/canvasEditor/NodeSelectionMenu';
+import NodeSelectionMenu from '@/ui/nodes/nodeSelectionMenu/NodeSelectionMenu';
 import { useStore } from '@/app/store/useCanvasStore';
 import { useNodeResizing } from '@/ui/canvasEditor/hooks/useNodeResizing';
 import { useEdgeConnection } from '@/ui/canvasEditor/hooks/useEdgeConnection';
@@ -186,13 +186,11 @@ export default function CanvasEditor() {
                 onClose: () => setShowNodeSelectionMenu(false),
                 id: 'nodeSelectionMenu',
                 type: 'selectionMenu',
-                width: nodeDimensions['selectionMenu'].width,
-                height: nodeDimensions['selectionMenu'].height,
-                data: {
-                  parentNode: parentNode
-                },
+                parentNode: parentNode,
                 isTemporary: true
               }}
+              width={nodeDimensions['selectionMenu'].width}
+              height={nodeDimensions['selectionMenu'].height}
             />
           )}
           <ReactFlow

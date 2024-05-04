@@ -6,7 +6,7 @@ import TaskNode from '@/ui/nodes/taskNode/TaskNode';
 import CustomNode from '@/ui/nodes/customNode/CustomNode';
 import CodeNode from '@/ui/nodes/codeNode/CodeNode';
 import DrawNode from '@/ui/nodes/drawNode/DrawNode';
-import NodeSelectionMenu, { NodeSelectionMenuProps } from './NodeSelectionMenu';
+import NodeSelectionMenu, { NodeSelectionMenuProps } from '@/ui/nodes/nodeSelectionMenu/NodeSelectionMenu';
 import { useStore } from '@/app/store/useCanvasStore';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 

@@ -3,6 +3,7 @@ import { useStore } from '@/app/store/useCanvasStore';
 import { Node, XYPosition } from 'reactflow';
 import { createNode } from '@/ui/canvasEditor/utils/nodeCreation';
 import { getChildNodePosition } from '@/ui/canvasEditor/utils/getChildNodePosition';
+import { nanoid } from 'nanoid';
 
 export const useEdgeConnection = () => {
   const {
@@ -79,7 +80,16 @@ export const useEdgeConnection = () => {
               'selectionMenu',
               childNodePosition,
               nodes,
-              (newNode) => addNode(newNode),
+              (newNode) => {
+                addNode(newNode);
+                const newEdge = {
+                  id: nanoid(),
+                  source: parentNode.id,
+                  target: newNode.id,
+                  type: 'customEdge'
+                };
+                addEdge(newEdge);
+              },
               { width: 0, height: 0 },
               true
             );
