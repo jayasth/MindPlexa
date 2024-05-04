@@ -13,7 +13,7 @@ export const nodeDimensions = {
   custom: { width: 130, height: 170 },
   code: { width: 140, height: 180 },
   draw: { width: 150, height: 190 },
-  selectionMenu: { width: 200, height: 100 }
+  selectionMenu: { width: 150, height: 50 }
 };
 
 export const getNodeSpecificProperties = (

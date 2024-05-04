@@ -10,6 +10,7 @@ import { PiNotepad } from 'react-icons/pi';
 import { useStore } from '@/app/store/useCanvasStore';
 import menuStyles from './NodeSelectionMenu.module.css';
 import styles from '@/ui/edges/CustomEdgeStyles.module.css';
+import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 
 export interface NodeSelectionMenuProps {
   data: {
@@ -75,8 +76,8 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({ data }) => {
     <div
       className={menuStyles.nodeSelectionMenu}
       style={{
-        width: `${size.width}px`,
-        height: `${size.height}px`
+        width: `${nodeDimensions.selectionMenu.width}px`,
+        height: `${nodeDimensions.selectionMenu.height}px`
       }}
     >
       <Handle
