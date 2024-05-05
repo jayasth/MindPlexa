@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Handle, Position } from 'reactflow';
+import { NodeProps, Handle, Position } from 'reactflow';
 import {
   FaTasks,
   FaCode,
@@ -8,22 +8,21 @@ import {
 } from 'react-icons/fa';
 import { PiNotepad } from 'react-icons/pi';
 import { useStore } from '@/app/store/useCanvasStore';
-import menuStyles from './NodeSelectionMenu.module.css';
-import styles from '@/ui/edges/CustomEdgeStyles.module.css';
-import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
+import styles from './NodeSelectionMenu.module.css';
+import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 
-export interface NodeSelectionMenuProps {
+interface NodeSelectionMenuProps extends NodeProps {
   data: {
     onSelect: (nodeType: string, position: { x: number; y: number }) => void;
-    position?: { x: number; y: number };
     onClose: () => void;
-    id?: string;
+    position: { x: number; y: number };
+    id: string;
     type: string;
-    parentNode?: Node | null;
+    parentNode: any;
     isTemporary?: boolean;
   };
-  width?: number;
-  height?: number;
+  width: number;
+  height: number;
 }
 
 const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
@@ -77,17 +76,11 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
   const menuPosition = data.position || { x: 0, y: 0 };
 
   return (
-    <div
-      className={menuStyles.nodeSelectionMenu}
-      style={{
-        width: `${width || nodeDimensions.selectionMenu.width}px`,
-        height: `${height || nodeDimensions.selectionMenu.height}px`
-      }}
-    >
+    <div className={styles.nodeSelectionMenu} style={{ width, height }}>
       <Handle
         type="target"
         position={Position.Top}
-        className={`${styles.reactFlowHandle} ${styles.reactFlowHandleTop}`}
+        className={`${styles.nodeSelectionMenuHandle} ${edgeStyles.reactFlowHandleTop}`}
       />
       <div className="flex flex-row">
         {nodeTypes.map((type) => (
@@ -104,7 +97,7 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
       <Handle
         type="source"
         position={Position.Bottom}
-        className={`${styles.reactFlowHandle} ${styles.reactFlowHandleBottom}`}
+        className={`${styles.nodeSelectionMenuHandle} ${edgeStyles.reactFlowHandleBottom}`}
       />
     </div>
   );

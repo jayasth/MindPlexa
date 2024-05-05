@@ -1,16 +1,18 @@
 .nodeSelectionMenu {
+  display: flex;
+  flex-direction: column;
   background-color: #fff;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
-  padding: 8px;
-  position: absolute;
+  border-radius: 4px;
+  padding: 4px;
+  overflow: hidden;
 }
 
 .nodeSelectionMenuHandle {
-  background-color: #007bff; /* Blue color for handles */
-  width: 10px;
-  height: 10px;
-  border-radius: 5px;
+  width: 20px;
+  height: 8px;
+  border-radius: 3px;
+  background-color: #f098d8;
 }
 
 .nodeButton {

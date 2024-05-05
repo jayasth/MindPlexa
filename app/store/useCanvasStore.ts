@@ -4,8 +4,11 @@ import {
   applyNodeChanges,
   applyEdgeChanges
 } from '@/ui/canvasEditor/utils/canvasUtils';
+import { createNode } from '@/ui/canvasEditor/utils/nodeCreation';
+import { getChildNodePosition } from '@/ui/canvasEditor/utils/getChildNodePosition';
 import { nanoid } from 'nanoid';
 import type { Node, Edge, XYPosition } from 'reactflow';
+import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 
 interface CanvasState {
   nodes: Node[];
@@ -135,25 +138,79 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       edges: [...state.edges, newEdge]
     }));
   },
-  createChildNodeFromDrag: (parentNode, position, type) => {
+  createChildNodeFromDrag: (parentNode, position, nodeType) => {
+    const {
+      domNode,
+      screenToFlowPosition,
+      nodes,
+      addNode,
+      setEdges,
+      removeNode
+    } = get();
+
+    if (!domNode) {
+      console.error('DOM node is not available.');
+      return;
+    }
+
+    const flowPosition = screenToFlowPosition(position);
+    const childNodePosition = getChildNodePosition(
+      flowPosition,
+      parentNode,
+      domNode,
+      screenToFlowPosition
+    );
+    if (!childNodePosition) {
+      console.error('Failed to calculate child node position.');
+      return;
+    }
+
     const newNode = {
-      id: nanoid(),
-      type: type,
-      data: { label: 'New Node' },
-      position
+      id: `selectionMenu-${nanoid()}`,
+      type: 'selectionMenu',
+      position: childNodePosition,
+      data: {
+        onSelect: (selectedNodeType, selectedPosition) => {
+          createNode(
+            selectedNodeType,
+            selectedPosition,
+            nodes,
+            (newNode) => {
+              addNode(newNode);
+              setEdges((edges) => [
+                ...edges,
+                {
+                  id: `e-${nanoid()}`,
+                  source: parentNode.id,
+                  target: newNode.id,
+                  type: 'customEdge'
+                }
+              ]);
+            },
+            { width: 0, height: 0 },
+            false,
+            false
+          );
+          removeNode(newNode.id);
+        },
+        onClose: () => removeNode(newNode.id),
+        parentNode: parentNode,
+        isTemporary: true
+      },
+      width: nodeDimensions['selectionMenu'].width,
+      height: nodeDimensions['selectionMenu'].height
     };
 
-    const newEdge = {
-      id: nanoid(),
-      source: parentNode.id,
-      target: newNode.id,
-      type: 'customEdge'
-    };
-
-    set((state) => ({
-      nodes: [...state.nodes, newNode],
-      edges: [...state.edges, newEdge]
-    }));
+    addNode(newNode);
+    setEdges((edges) => [
+      ...edges,
+      {
+        id: `e-${nanoid()}`,
+        source: parentNode.id,
+        target: newNode.id,
+        type: 'customEdge'
+      }
+    ]);
   },
   setShowNodeSelectionMenu: (show) =>
     set(() => ({ showNodeSelectionMenu: show })),

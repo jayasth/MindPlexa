@@ -112,7 +112,19 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
   };
 
   if (node.type === 'selectionMenu') {
-    return <NodeSelectionMenu {...commonProps} data={node.data} />;
+    return (
+      <NodeSelectionMenu
+        id={''}
+        type={''}
+        zIndex={0}
+        isConnectable={false}
+        xPos={0}
+        yPos={0}
+        dragging={false}
+        {...commonProps}
+        data={node.data}
+      />
+    );
   } else if (node.type in nodeComponents) {
     const { view, edit } = nodeComponents[node.type];
     const NodeComponent = node.isEditing ? edit : view;

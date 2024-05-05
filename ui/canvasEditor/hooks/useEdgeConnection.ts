@@ -52,18 +52,12 @@ export const useEdgeConnection = () => {
   const onConnectEnd = useCallback(
     (event) => {
       console.log('onConnectEnd called');
-      console.log('event.target:', event.target);
       const targetIsPane = (event.target as Element).classList.contains(
         'react-flow__pane'
       );
-      console.log('targetIsPane:', targetIsPane);
 
       if (targetIsPane && connectingNodeId.current) {
-        console.log('connectingNodeId.current:', connectingNodeId.current);
-        console.log('nodeInternals:', nodeInternals);
         const parentNode = nodeInternals.get(connectingNodeId.current);
-        console.log('parentNode:', parentNode);
-
         if (parentNode && domNode) {
           const childNodePosition = getChildNodePosition(
             event,
@@ -71,8 +65,6 @@ export const useEdgeConnection = () => {
             domNode,
             screenToFlowPosition
           );
-          console.log('childNodePosition:', childNodePosition);
-
           if (childNodePosition) {
             setShowNodeSelectionMenu(true);
             setMenuPosition({ x: event.clientX, y: event.clientY });
@@ -95,8 +87,6 @@ export const useEdgeConnection = () => {
               { width: 0, height: 0 },
               true
             );
-
-            return { parentNode, childNodePosition };
           } else {
             console.error('Failed to get valid child node position');
           }
@@ -105,7 +95,6 @@ export const useEdgeConnection = () => {
         }
       } else {
         const node = (event.target as Element).closest('.react-flow__node');
-
         if (node) {
           const targetNodeId = node.getAttribute('data-id');
           if (connectingNodeId.current && targetNodeId) {
@@ -120,7 +109,6 @@ export const useEdgeConnection = () => {
       }
 
       connectingNodeId.current = '';
-      return null;
     },
     [
       addEdge,

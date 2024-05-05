@@ -191,6 +191,14 @@ export default function CanvasEditor() {
               }}
               width={nodeDimensions['selectionMenu'].width}
               height={nodeDimensions['selectionMenu'].height}
+              id={''}
+              selected={false}
+              type={''}
+              zIndex={0}
+              isConnectable={false}
+              xPos={0}
+              yPos={0}
+              dragging={false}
             />
           )}
           <ReactFlow
