@@ -23,12 +23,16 @@ interface NodeSelectionMenuProps extends NodeProps {
   };
   width: number;
   height: number;
+  xPos: number; // Added xPos and yPos props
+  yPos: number;
 }
 
 const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
   data,
   width,
-  height
+  height,
+  xPos, // Use xPos and yPos props
+  yPos
 }) => {
   const { addChildNode, removeNode } = useStore((state) => ({
     addChildNode: state.addChildNode,

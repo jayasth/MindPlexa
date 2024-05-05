@@ -195,7 +195,7 @@ export default function CanvasEditor() {
               selected={false}
               type={''}
               zIndex={0}
-              isConnectable={false}
+              isConnectable={true}
               xPos={0}
               yPos={0}
               dragging={false}
