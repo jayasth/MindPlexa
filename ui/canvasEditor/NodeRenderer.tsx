@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
 import { Node as BaseNode } from '@/ui/canvasEditor/nodeTypes';
 import NoteNode from '@/ui/nodes/noteNode/NoteNodeView';
@@ -41,36 +41,27 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
   });
 
   useEffect(() => {
-    setSize({
+    const newSize = {
       width: node.isEditing
         ? nodeDimensions[node.type].editWidth
         : nodeDimensions[node.type].width,
       height: node.isEditing
         ? nodeDimensions[node.type].editHeight
         : nodeDimensions[node.type].height
-    });
-    console.log('Node size:', {
-      width: node.isEditing
-        ? nodeDimensions[node.type].editWidth
-        : nodeDimensions[node.type].width,
-      height: node.isEditing
-        ? nodeDimensions[node.type].editHeight
-        : nodeDimensions[node.type].height
-    });
-    console.log('Node object:', node);
-  }, [node.isEditing, node.type]);
+    };
+    setSize(newSize);
+    updateNode(id, newSize);
+  }, [node.isEditing, node.type, updateNode, id]);
 
-  const handleResizeStop = useCallback(
-    (event, newSize) => {
-      const newPosition = {
-        x: newSize.x,
-        y: newSize.y
-      };
-      setSize(newSize);
-      onNodeResizeStop(id, newSize, newPosition);
-    },
-    [id, onNodeResizeStop]
-  );
+  const handleResizeStop = (event, newSize) => {
+    const newPosition = {
+      x: newSize.x,
+      y: newSize.y
+    };
+    setSize(newSize);
+    updateNode(id, newSize);
+    onNodeResizeStop(id, newSize, newPosition);
+  };
 
   const handleEdit = () => {
     toggleEditMode(id);

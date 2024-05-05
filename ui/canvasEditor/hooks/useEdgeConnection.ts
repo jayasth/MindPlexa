@@ -98,11 +98,15 @@ export const useEdgeConnection = () => {
         if (node) {
           const targetNodeId = node.getAttribute('data-id');
           if (connectingNodeId.current && targetNodeId) {
+            const targetNode = nodeInternals.get(targetNodeId);
+            const edgeType = targetNode?.data.isEditing
+              ? 'editingEdge'
+              : 'customEdge';
             addEdge({
               id: `edge-${Date.now()}`,
               source: connectingNodeId.current,
               target: targetNodeId,
-              type: 'customEdge'
+              type: edgeType
             });
           }
         }
