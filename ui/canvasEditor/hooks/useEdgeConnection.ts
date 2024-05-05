@@ -4,6 +4,7 @@ import { Node, XYPosition } from 'reactflow';
 import { createNode } from '@/ui/canvasEditor/utils/nodeCreation';
 import { getChildNodePosition } from '@/ui/canvasEditor/utils/getChildNodePosition';
 import { nanoid } from 'nanoid';
+import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 
 export const useEdgeConnection = () => {
   const {
@@ -55,9 +56,12 @@ export const useEdgeConnection = () => {
       const targetIsPane = (event.target as Element).classList.contains(
         'react-flow__pane'
       );
+      console.log('targetIsPane:', targetIsPane);
 
       if (targetIsPane && connectingNodeId.current) {
         const parentNode = nodeInternals.get(connectingNodeId.current);
+        console.log('parentNode:', parentNode);
+
         if (parentNode && domNode) {
           const childNodePosition = getChildNodePosition(
             event,
@@ -65,28 +69,64 @@ export const useEdgeConnection = () => {
             domNode,
             screenToFlowPosition
           );
+          console.log('childNodePosition:', childNodePosition);
           if (childNodePosition) {
-            setShowNodeSelectionMenu(true);
-            setMenuPosition({ x: event.clientX, y: event.clientY });
-
-            // Create a new temporary NodeSelectionMenu node
-            createNode(
-              'selectionMenu',
-              childNodePosition,
-              nodes,
-              (newNode) => {
-                addNode(newNode);
-                const newEdge = {
-                  id: nanoid(),
-                  source: parentNode.id,
-                  target: newNode.id,
-                  type: 'customEdge'
-                };
-                addEdge(newEdge);
+            console.log('Child node position calculated:', childNodePosition);
+            const newNode = {
+              id: `selectionMenu-${nanoid()}`,
+              type: 'selectionMenu',
+              position: childNodePosition,
+              data: {
+                onSelect: (selectedNodeType, selectedPosition) => {
+                  console.log('Selected node type:', selectedNodeType);
+                  console.log(
+                    'Selected position for new node:',
+                    selectedPosition
+                  );
+                  createNode(
+                    selectedNodeType,
+                    selectedPosition,
+                    nodes,
+                    (newNode) => {
+                      console.log('New node created:', newNode);
+                      addNode(newNode);
+                      addEdge({
+                        id: `e-${nanoid()}`,
+                        source: parentNode.id,
+                        target: newNode.id,
+                        type: 'customEdge'
+                      });
+                      console.log(
+                        'Edge added between parent and new node:',
+                        parentNode.id,
+                        newNode.id
+                      );
+                    },
+                    { width: 0, height: 0 },
+                    false,
+                    false
+                  );
+                  removeNode(newNode.id);
+                  console.log('Temporary node removed:', newNode.id);
+                },
+                onClose: () => removeNode(newNode.id),
+                parentNode: parentNode,
+                isTemporary: true
               },
-              { width: 0, height: 0 },
-              true
-            );
+              width: nodeDimensions['selectionMenu'].width,
+              height: nodeDimensions['selectionMenu'].height
+            };
+
+            addNode(newNode);
+            addEdge({
+              id: `e-${nanoid()}`,
+              source: parentNode.id,
+              target: newNode.id,
+              type: 'customEdge'
+            });
+
+            // Update the parentNode and childNodePosition values
+            return { parentNode, childNodePosition: newNode.position };
           } else {
             console.error('Failed to get valid child node position');
           }
@@ -123,7 +163,8 @@ export const useEdgeConnection = () => {
       nodes,
       addNode,
       domNode,
-      screenToFlowPosition
+      screenToFlowPosition,
+      removeNode
     ]
   );
 

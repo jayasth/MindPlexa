@@ -105,12 +105,12 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
   if (node.type === 'selectionMenu') {
     return (
       <NodeSelectionMenu
-        id={''}
-        type={''}
+        id={id}
+        type={node.type}
         zIndex={0}
-        isConnectable={false}
-        xPos={0}
-        yPos={0}
+        isConnectable={true}
+        xPos={node.position.x}
+        yPos={node.position.y}
         dragging={false}
         {...commonProps}
         data={node.data}

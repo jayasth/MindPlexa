@@ -35,7 +35,7 @@ export const createNode = (
   existingNodes: Node<any>[],
   callback: (newNode: Node<any>) => void,
   canvasSize: { width: number; height: number },
-  isTemporary = false,
+  isTemporary = false, // Added new parameter to indicate temporary NodeSelectionMenu
   isEditing = false
 ) => {
   console.log('Creating node:', nodeType);
@@ -104,7 +104,7 @@ export const createNode = (
   };
 
   if (nodeType === 'selectionMenu' && isTemporary) {
-    baseProperties.id = `selectionMenu-${nanoid()}`;
+    baseProperties.id = `selectionMenu-${nanoid()}`; // Different ID format for temporary NodeSelectionMenu
   }
 
   const specificNode = {
