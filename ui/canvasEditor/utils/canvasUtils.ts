@@ -40,18 +40,25 @@ export function applyEdgeChanges(changes: any[], edges: Edge[]): Edge[] {
   });
 }
 
-export const handleDownload = (state: any) => {
-  const jsonString = JSON.stringify(state, null, 2);
-  const blob = new Blob([jsonString], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = 'canvas.json';
-  link.click();
+export const handleDownload = (state: { nodes: Node[]; edges: Edge[] }) => {
+  try {
+    const dataStr = `data:text/json;charset=utf-8,${encodeURIComponent(
+      JSON.stringify(state)
+    )}`;
+    const link = document.createElement('a');
+    link.setAttribute('href', dataStr);
+    link.setAttribute('download', 'canvas.json');
+    link.click();
+  } catch (error) {
+    console.error('Failed to download the canvas:', error);
+  }
 };
 
-// Function to handle sharing the canvas
-export const handleShare = (state: any) => {
-  console.log('Sharing canvas:', state);
-  // Add your sharing logic here
+export const handleShare = (state: { nodes: Node[]; edges: Edge[] }) => {
+  try {
+    console.log('Sharing canvas:', state);
+    // Implement sharing logic here, possibly using an API or local sharing options
+  } catch (error) {
+    console.error('Failed to share the canvas:', error);
+  }
 };

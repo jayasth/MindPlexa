@@ -34,7 +34,7 @@ interface CanvasState {
   setMenuPosition: (position: XYPosition | null) => void;
   onNodesChange: (changes: any) => void;
   onEdgesChange: (changes: any) => void;
-  toggleEditMode: (nodeId: string) => void; // Add this action
+  toggleEditMode: (nodeId: string) => void;
 }
 
 const createStore = <T extends object>(
@@ -64,7 +64,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
         connectable: true
       };
       console.log('New node with position:', newNode);
-      state.nodeInternals.set(newNode.id, newNode); // Ensure node is added to nodeInternals
+      state.nodeInternals.set(newNode.id, newNode);
       return { nodes: [...state.nodes, newNode] };
     }),
   updateNode: (id, data) =>
@@ -78,7 +78,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
             width: data.width || node.width,
             height: data.height || node.height
           };
-          state.nodeInternals.set(id, updatedNode); // Update nodeInternals
+          state.nodeInternals.set(id, updatedNode);
           return updatedNode;
         }
         return node;
@@ -112,7 +112,6 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       edges
     })),
   addChildNode: (parentNode, position, type) => {
-    // Remove the temporary NodeSelectionMenu node
     set((state) => ({
       nodes: state.nodes.filter((node) => node.type !== 'selectionMenu')
     }));
@@ -173,7 +172,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       nodes: state.nodes.map((node) => {
         if (node.id === nodeId) {
           console.log(`Before toggling, isEditing is ${node.isEditing}`);
-          return { ...node, isEditing: !node.isEditing }; // Return a new object
+          return { ...node, isEditing: !node.isEditing };
         }
         return node;
       })

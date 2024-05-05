@@ -20,18 +20,13 @@ function isPositionOccupied(
   existingNodes: Node<any>[],
   nodeDimension: { width: number; height: number }
 ): boolean {
-  for (let node of existingNodes) {
-    if (
+  return existingNodes.some(
+    (node) =>
       newPosition.x < node.position.x + nodeDimension.width &&
       newPosition.x + nodeDimension.width > node.position.x &&
       newPosition.y < node.position.y + nodeDimension.height &&
       newPosition.y + nodeDimension.height > node.position.y
-    ) {
-      return true;
-    }
-  }
-
-  return false;
+  );
 }
 
 export const createNode = (
@@ -48,15 +43,15 @@ export const createNode = (
 
   const nodeDimension = nodeDimensions[nodeType];
 
-  if (Array.isArray(existingNodes)) {
-    while (isPositionOccupied(position, existingNodes, nodeDimension)) {
-      const randomOffsetX =
-        Math.random() * nodeDimension.width - nodeDimension.width / 2;
-      const randomOffsetY =
-        Math.random() * nodeDimension.height - nodeDimension.height / 2;
-      position.x += nodeDimension.width / 2 + randomOffsetX;
-      position.y += nodeDimension.height / 2 + randomOffsetY;
-    }
+  if (!Array.isArray(existingNodes)) {
+    console.error('Invalid existingNodes array');
+    return;
+  }
+
+  while (isPositionOccupied(position, existingNodes, nodeDimension)) {
+    position.x += Math.random() * nodeDimension.width - nodeDimension.width / 2;
+    position.y +=
+      Math.random() * nodeDimension.height - nodeDimension.height / 2;
   }
 
   if (nodeType !== 'selectionMenu') {
@@ -76,31 +71,26 @@ export const createNode = (
     isEditing: false,
     draggable: true,
     connectable: true,
-    width: nodeDimensions[nodeType].width,
-    height: nodeDimensions[nodeType].height,
+    width: nodeDimension.width,
+    height: nodeDimension.height,
     title: `New ${nodeType.charAt(0).toUpperCase() + nodeType.slice(1)}`
   };
+
   let baseProperties: Partial<BaseNode> & {
     id: string;
     position: XYPosition;
     type: string;
+  } = {
+    id: `${nodeType}-${nanoid()}`,
+    type: nodeType,
+    position: positionAsXYPosition,
+    ...defaultProperties
   };
 
   if (nodeType === 'selectionMenu' && isTemporary) {
-    baseProperties = {
-      id: `selectionMenu-${nanoid()}`,
-      type: 'selectionMenu',
-      position: setPosition(position.x, position.y),
-      ...defaultProperties
-    };
-  } else {
-    baseProperties = {
-      id: `${nodeType}-${nanoid()}`,
-      type: nodeType,
-      position: { x: position.x, y: position.y },
-      ...defaultProperties
-    };
+    baseProperties.id = `selectionMenu-${nanoid()}`;
   }
+
   const specificNode = {
     ...baseProperties,
     ...(nodeType !== 'selectionMenu' ? getNodeSpecificProperties(nodeType) : {})
@@ -110,10 +100,7 @@ export const createNode = (
     ...specificNode,
     id: baseProperties.id,
     type: baseProperties.type,
-    position: {
-      x: position.x,
-      y: position.y
-    },
+    position: positionAsXYPosition,
     data: isTemporary ? { isTemporary: true } : specificNode
   };
 

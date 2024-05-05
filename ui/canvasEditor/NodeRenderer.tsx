@@ -18,6 +18,7 @@ import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 interface NodeRendererProps extends NodeProps {
   onNodeResizeStop: (
     nodeId: string,
+
     newSize: { width: number; height: number },
     newPosition: { x: number; y: number }
   ) => void;
@@ -94,54 +95,51 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
       updateNode(id, { data: { ...node.data, label } })
   };
 
-  switch (node.type) {
-    case 'selectionMenu':
-      return <NodeSelectionMenu {...commonProps} data={node.data} />;
-    case 'note':
-    case 'task':
-    case 'custom':
-    case 'code':
-    case 'draw':
-      const NodeComponent = {
-        note: node.isEditing ? NoteNodeEdit : NoteNode,
-        task: node.isEditing ? TaskNodeEdit : TaskNode,
-        custom: node.isEditing ? CustomNodeEdit : CustomNode,
-        code: node.isEditing ? CodeNodeEdit : CodeNode,
-        draw: node.isEditing ? DrawNodeEdit : DrawNode
-      }[node.type];
+  const nodeComponents = {
+    note: { view: NoteNode, edit: NoteNodeEdit },
+    task: { view: TaskNode, edit: TaskNodeEdit },
+    custom: { view: CustomNode, edit: CustomNodeEdit },
+    code: { view: CodeNode, edit: CodeNodeEdit },
+    draw: { view: DrawNode, edit: DrawNodeEdit }
+  };
 
-      return (
-        <NodeComponent
-          {...commonProps}
-          data={{
-            ...node,
-            width: size.width,
-            height: size.height
-          }}
-        >
-          <NodeResizer
-            minWidth={100}
-            minHeight={100}
-            isVisible={selected}
-            onResize={handleResizeStop}
-            handleStyle={{ fill: '#ff0071' }}
-          />
-          <Handle
-            type="target"
-            position={Position.Top}
-            style={{ background: '#555' }}
-          />
-          <Handle
-            type="source"
-            position={Position.Bottom}
-            style={{ background: '#555' }}
-          />
-        </NodeComponent>
-      );
+  if (node.type === 'selectionMenu') {
+    return <NodeSelectionMenu {...commonProps} data={node.data} />;
+  } else if (node.type in nodeComponents) {
+    const { view, edit } = nodeComponents[node.type];
+    const NodeComponent = node.isEditing ? edit : view;
 
-    default:
-      return null;
+    return (
+      <NodeComponent
+        {...commonProps}
+        data={{
+          ...node,
+          width: size.width,
+          height: size.height
+        }}
+      >
+        <NodeResizer
+          minWidth={100}
+          minHeight={100}
+          isVisible={selected}
+          onResize={handleResizeStop}
+          handleStyle={{ fill: '#ff0071' }}
+        />
+        <Handle
+          type="target"
+          position={Position.Top}
+          style={{ background: '#555' }}
+        />
+        <Handle
+          type="source"
+          position={Position.Bottom}
+          style={{ background: '#555' }}
+        />
+      </NodeComponent>
+    );
   }
+
+  return null;
 };
 
 export default NodeRenderer;

@@ -1,5 +1,6 @@
 import React from 'react';
 import { NodeProps, Handle, Position } from 'reactflow';
+import { useStore } from '@/app/store/useCanvasStore';
 import styles from './NoteNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 
@@ -14,6 +15,8 @@ interface NoteNodeEditProps extends NodeProps {
 }
 
 const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({ data }) => {
+  const toggleEditMode = useStore((state) => state.toggleEditMode);
+
   return (
     <div className={styles.noteNode}>
       <div className={styles.header}>
@@ -25,6 +28,15 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({ data }) => {
         />
         <button className={styles.saveButton} onClick={data.onSave}>
           Save
+        </button>
+        <button
+          className={styles.cancelButton}
+          onClick={() => {
+            console.log(`Toggling edit mode off for node ID: ${data.id}`);
+            toggleEditMode(data.id);
+          }}
+        >
+          Cancel
         </button>
       </div>
       <textarea

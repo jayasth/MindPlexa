@@ -38,35 +38,37 @@ const Toolbar: React.FC<ToolbarProps> = ({
   const handleAddNode = (
     type: 'note' | 'task' | 'custom' | 'code' | 'draw'
   ) => {
-    const canvasSize = {
-      width: window.innerWidth,
-      height: window.innerHeight
-    };
+    try {
+      const canvasSize = {
+        width: window.innerWidth,
+        height: window.innerHeight
+      };
 
-    const position = {
-      x: canvasSize.width / 2 - 50,
-      y: canvasSize.height / 2 - 75
-    };
+      const position = {
+        x: canvasSize.width / 2 - 50,
+        y: canvasSize.height / 2 - 75
+      };
 
-    createNode(
-      type,
-      position,
-      nodes,
-      (node) => {
-        addNode(node);
-        if (reactFlowInstance) {
-          const { x, y, zoom } = reactFlowInstance.getViewport();
-          const newX = node.position.x - x;
-          const newY = node.position.y - y;
-          reactFlowInstance.setViewport({
-            x: newX,
-            y: newY,
-            zoom
-          });
-        }
-      },
-      canvasSize
-    );
+      createNode(
+        type,
+        position,
+        nodes,
+        (node) => {
+          addNode(node);
+          if (reactFlowInstance) {
+            const { x, y, zoom } = reactFlowInstance.getViewport();
+            reactFlowInstance.setViewport({
+              x: node.position.x - x,
+              y: node.position.y - y,
+              zoom
+            });
+          }
+        },
+        canvasSize
+      );
+    } catch (error) {
+      console.error(`Failed to add node of type ${type}:`, error);
+    }
   };
 
   const buttonClass = 'p-2 bg-gray-200 rounded hover:bg-gray-300';
