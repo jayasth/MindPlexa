@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { NodeProps, Handle, Position } from 'reactflow';
 import {
   FaTasks,
@@ -23,21 +23,38 @@ interface NodeSelectionMenuProps extends NodeProps {
   };
   width: number;
   height: number;
-  xPos: number; // Added xPos and yPos props
-  yPos: number;
 }
 
 const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
   data,
   width,
-  height,
-  xPos, // Use xPos and yPos props
-  yPos
+  height
 }) => {
-  const { addChildNode, removeNode } = useStore((state) => ({
-    addChildNode: state.addChildNode,
-    removeNode: state.removeNode
-  }));
+  const { addChildNode, removeNode, createChildNodeFromDrag } = useStore(
+    (state) => ({
+      addChildNode: state.addChildNode,
+      removeNode: state.removeNode,
+      createChildNodeFromDrag: state.createChildNodeFromDrag
+    })
+  );
+
+  const nodeRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (nodeRef.current && !nodeRef.current.contains(event.target as Node)) {
+        data.onClose();
+        if (data.isTemporary) {
+          removeNode(data.id || '');
+        }
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [data.id, data.isTemporary, data.onClose, removeNode]);
 
   const nodeTypes: ('note' | 'task' | 'custom' | 'code' | 'draw')[] = [
     'note',
@@ -59,7 +76,7 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
   ) => {
     const { parentNode, position } = data;
     if (parentNode && position) {
-      data.onSelect(nodeType, position);
+      createChildNodeFromDrag(parentNode, position, nodeType);
       data.onClose();
       if (data.isTemporary) {
         removeNode(data.id || '');
@@ -69,23 +86,17 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
     }
   };
 
-  useEffect(() => {
-    return () => {
-      if (data.isTemporary) {
-        removeNode(data.id || '');
-      }
-    };
-  }, [data.id, data.isTemporary, removeNode]);
-
-  const menuPosition = data.position || { x: 0, y: 0 };
-
   return (
-    <div className={styles.nodeSelectionMenu} style={{ width, height }}>
-      <Handle
-        type="target"
-        position={Position.Top}
-        className={`${styles.nodeSelectionMenuHandle} ${edgeStyles.reactFlowHandleTop}`}
-      />
+    <div
+      className={styles.nodeSelectionMenu}
+      style={{
+        width,
+        height,
+        left: data.position ? data.position.x : 0,
+        top: data.position ? data.position.y : 0
+      }}
+      ref={nodeRef}
+    >
       <div className="flex flex-row">
         {nodeTypes.map((type) => (
           <button
@@ -98,6 +109,11 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
           </button>
         ))}
       </div>
+      <Handle
+        type="target"
+        position={Position.Top}
+        className={`${styles.nodeSelectionMenuHandle} ${edgeStyles.reactFlowHandleTop}`}
+      />
       <Handle
         type="source"
         position={Position.Bottom}

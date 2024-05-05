@@ -27,8 +27,12 @@ export const getChildNodePosition = (
     y: adjustedClientY
   });
 
+  console.log('Flow position:', flowPosition);
+
   const childNodeWidth = nodeDimensions['selectionMenu'].width;
   const childNodeHeight = nodeDimensions['selectionMenu'].height;
+
+  console.log('Child node dimensions:', childNodeWidth, childNodeHeight);
 
   // Position the child node at the exact location where the mouse was released
   const childNodeX = flowPosition.x - childNodeWidth / 2;

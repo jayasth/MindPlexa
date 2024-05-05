@@ -90,6 +90,7 @@ export const useEdgeConnection = () => {
                     (newNode) => {
                       console.log('New node created:', newNode);
                       addNode(newNode);
+
                       addEdge({
                         id: `e-${nanoid()}`,
                         source: parentNode.id,
@@ -118,12 +119,20 @@ export const useEdgeConnection = () => {
             };
 
             addNode(newNode);
+            console.log('New node added, useEdgeConnection:', newNode);
+            console.log('width, useEdgeConnection:', newNode.width);
+            console.log('height, useEdgeConnection:', newNode.height);
             addEdge({
               id: `e-${nanoid()}`,
               source: parentNode.id,
               target: newNode.id,
               type: 'customEdge'
             });
+            console.log(
+              'Edge added between parent and new node:',
+              parentNode.id,
+              newNode.id
+            );
 
             // Update the parentNode and childNodePosition values
             return { parentNode, childNodePosition: newNode.position };

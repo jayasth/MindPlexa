@@ -39,7 +39,6 @@ export const createNode = (
   isEditing = false
 ) => {
   console.log('Creating node:', nodeType);
-  console.log('Node dimensions:', nodeDimensions[nodeType]);
   const zoomLevel = 1.0;
   position.x /= zoomLevel;
   position.y /= zoomLevel;
@@ -119,8 +118,14 @@ export const createNode = (
     id: baseProperties.id,
     type: baseProperties.type,
     position: positionAsXYPosition,
-    data: isTemporary ? { isTemporary: true } : specificNode
+    data: isTemporary ? { isTemporary: true } : specificNode,
+    width: nodeDimensions[nodeType].width, // Use the width from nodeDimensions
+    height: nodeDimensions[nodeType].height // Use the height from nodeDimensions
   };
+
+  console.log('New node, nodeCreation:', newNode);
+  console.log('Width, NodeCreation:', newNode.width);
+  console.log('Height, NodeCreation:', newNode.height);
 
   callback(newNode);
 };

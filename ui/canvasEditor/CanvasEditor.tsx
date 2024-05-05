@@ -105,7 +105,9 @@ export default function CanvasEditor() {
       draw: (props) => (
         <NodeRenderer {...props} onNodeResizeStop={handleNodeResizeStop} />
       ),
-      selectionMenu: (props) => <NodeSelectionMenu {...props} />
+      selectionMenu: (props) => {
+        return <NodeSelectionMenu {...props} />;
+      }
     }),
     [handleNodeResizeStop]
   );
@@ -168,7 +170,7 @@ export default function CanvasEditor() {
           />
         </div>
         <div ref={reactFlowWrapper} className="w-11/12">
-          {showNodeSelectionMenu && childNodePosition && (
+          {showNodeSelectionMenu && childNodePosition !== null && (
             <NodeSelectionMenu
               data={{
                 onSelect: (nodeType, position) => {
@@ -191,13 +193,13 @@ export default function CanvasEditor() {
               }}
               width={nodeDimensions['selectionMenu'].width}
               height={nodeDimensions['selectionMenu'].height}
+              xPos={menuPosition ? menuPosition.x : 0}
+              yPos={menuPosition ? menuPosition.y : 0}
               id={''}
               selected={false}
               type={''}
               zIndex={0}
               isConnectable={true}
-              xPos={0}
-              yPos={0}
               dragging={false}
             />
           )}
