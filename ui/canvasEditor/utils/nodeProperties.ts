@@ -1,39 +1,56 @@
-export const nodeDimensions = {
-  note: { width: 300, height: 400 },
-  task: { width: 300, height: 400 },
-  custom: { width: 300, height: 400 },
-  code: { width: 300, height: 400 },
-  draw: { width: 300, height: 400 },
+interface BaseNodeDimension {
+  width: number;
+  height: number;
+}
+
+interface EditableNodeDimension extends BaseNodeDimension {
+  editWidth: number;
+  editHeight: number;
+}
+
+type NodeDimensionTypes = {
+  [K in 'note' | 'task' | 'custom' | 'code' | 'draw']: EditableNodeDimension;
+} & {
+  [K in 'selectionMenu']: BaseNodeDimension;
+};
+
+export const nodeDimensions: NodeDimensionTypes = {
+  note: { width: 200, height: 150, editWidth: 300, editHeight: 300 },
+  task: { width: 200, height: 150, editWidth: 300, editHeight: 200 },
+  custom: { width: 200, height: 150, editWidth: 300, editHeight: 200 },
+  code: { width: 200, height: 150, editWidth: 300, editHeight: 200 },
+  draw: { width: 200, height: 150, editWidth: 300, editHeight: 200 },
   selectionMenu: { width: 150, height: 50 }
 };
 
-export const getNodeSpecificProperties = (nodeType: string) => {
+export const getNodeSpecificProperties = (
+  nodeType: string,
+  isEditing: boolean
+) => {
+  const dimensions = nodeDimensions[nodeType];
   const baseProperties = {
     draggable: true,
     connectable: true,
-    width: nodeDimensions[nodeType].width,
-    height: nodeDimensions[nodeType].height
+    width:
+      isEditing && 'editWidth' in dimensions
+        ? dimensions.editWidth
+        : dimensions.width,
+    height:
+      isEditing && 'editHeight' in dimensions
+        ? dimensions.editHeight
+        : dimensions.height
   };
 
   switch (nodeType) {
     case 'note':
-      return { ...baseProperties, isEditing: false };
     case 'task':
-      return {
-        ...baseProperties,
-        completed: false,
-        isEditing: false
-      };
     case 'custom':
-      return { ...baseProperties, isEditing: false };
     case 'code':
+    case 'draw':
       return {
         ...baseProperties,
-        language: 'plaintext',
-        isEditing: false
+        isEditing: isEditing
       };
-    case 'draw':
-      return { ...baseProperties, isEditing: false };
     case 'selectionMenu':
       return { ...baseProperties };
     default:

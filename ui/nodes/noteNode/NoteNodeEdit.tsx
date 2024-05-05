@@ -12,13 +12,15 @@ interface NoteNodeEditProps extends NodeProps {
     onSave: () => void;
     onChangeContent: (content: string) => void;
   };
+  width: number;
+  height: number;
 }
 
-const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({ data }) => {
+const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({ data, width, height }) => {
   const toggleEditMode = useStore((state) => state.toggleEditMode);
 
   return (
-    <div className={styles.noteNode}>
+    <div className={styles.noteNode} style={{ width, height }}>
       <div className={styles.header}>
         <input
           type="text"

@@ -35,13 +35,29 @@ export const createNode = (
   existingNodes: Node<any>[],
   callback: (newNode: Node<any>) => void,
   canvasSize: { width: number; height: number },
-  isTemporary = false
+  isTemporary = false,
+  isEditing = false
 ) => {
+  console.log('Creating node:', nodeType);
+  console.log('Node dimensions:', nodeDimensions[nodeType]);
   const zoomLevel = 1.0;
   position.x /= zoomLevel;
   position.y /= zoomLevel;
 
-  const nodeDimension = nodeDimensions[nodeType];
+  const dimensions = nodeDimensions[nodeType];
+  let nodeDimension: { width: number; height: number };
+
+  if (isEditing && 'editWidth' in dimensions && 'editHeight' in dimensions) {
+    nodeDimension = {
+      width: dimensions.editWidth,
+      height: dimensions.editHeight
+    };
+  } else {
+    nodeDimension = {
+      width: dimensions.width,
+      height: dimensions.height
+    };
+  }
 
   if (!Array.isArray(existingNodes)) {
     console.error('Invalid existingNodes array');
@@ -68,7 +84,7 @@ export const createNode = (
   const positionAsXYPosition = setPosition(position.x, position.y);
 
   const defaultProperties = {
-    isEditing: false,
+    isEditing: isEditing,
     draggable: true,
     connectable: true,
     width: nodeDimension.width,
@@ -93,7 +109,9 @@ export const createNode = (
 
   const specificNode = {
     ...baseProperties,
-    ...(nodeType !== 'selectionMenu' ? getNodeSpecificProperties(nodeType) : {})
+    ...(nodeType !== 'selectionMenu'
+      ? getNodeSpecificProperties(nodeType, isEditing)
+      : {})
   };
 
   const newNode: Node<any> = {

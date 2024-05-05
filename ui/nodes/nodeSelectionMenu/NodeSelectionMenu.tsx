@@ -26,7 +26,11 @@ export interface NodeSelectionMenuProps {
   height?: number;
 }
 
-const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({ data }) => {
+const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
+  data,
+  width,
+  height
+}) => {
   const { addChildNode, removeNode } = useStore((state) => ({
     addChildNode: state.addChildNode,
     removeNode: state.removeNode
@@ -76,8 +80,8 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({ data }) => {
     <div
       className={menuStyles.nodeSelectionMenu}
       style={{
-        width: `${nodeDimensions.selectionMenu.width}px`,
-        height: `${nodeDimensions.selectionMenu.height}px`
+        width: `${width || nodeDimensions.selectionMenu.width}px`,
+        height: `${height || nodeDimensions.selectionMenu.height}px`
       }}
     >
       <Handle

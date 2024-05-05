@@ -18,7 +18,6 @@ import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 interface NodeRendererProps extends NodeProps {
   onNodeResizeStop: (
     nodeId: string,
-
     newSize: { width: number; height: number },
     newPosition: { x: number; y: number }
   ) => void;
@@ -42,16 +41,24 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
   });
 
   useEffect(() => {
-    if (node.width && node.height) {
-      setSize({ width: node.width, height: node.height });
-    }
-  }, [node.width, node.height]);
-
-  useEffect(() => {
-    console.log(
-      `Component re-rendered. Current edit mode for node ${id}: ${node.isEditing}`
-    );
-  }, [node]);
+    setSize({
+      width: node.isEditing
+        ? nodeDimensions[node.type].editWidth
+        : nodeDimensions[node.type].width,
+      height: node.isEditing
+        ? nodeDimensions[node.type].editHeight
+        : nodeDimensions[node.type].height
+    });
+    console.log('Node size:', {
+      width: node.isEditing
+        ? nodeDimensions[node.type].editWidth
+        : nodeDimensions[node.type].width,
+      height: node.isEditing
+        ? nodeDimensions[node.type].editHeight
+        : nodeDimensions[node.type].height
+    });
+    console.log('Node object:', node);
+  }, [node.isEditing, node.type]);
 
   const handleResizeStop = useCallback(
     (event, newSize) => {
@@ -92,7 +99,8 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     height: size.height,
     selected: selected,
     onLabelChange: (label: string) =>
-      updateNode(id, { data: { ...node.data, label } })
+      updateNode(id, { data: { ...node.data, label } }),
+    onEdit: handleEdit
   };
 
   const nodeComponents = {
@@ -112,6 +120,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     return (
       <NodeComponent
         {...commonProps}
+        onEdit={handleEdit}
         data={{
           ...node,
           width: size.width,

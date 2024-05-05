@@ -9,13 +9,15 @@ interface NoteNodeViewProps extends NodeProps {
     id: string;
     title?: string;
   };
+  width: number;
+  height: number;
 }
 
-const NoteNodeView: React.FC<NoteNodeViewProps> = ({ data }) => {
+const NoteNodeView: React.FC<NoteNodeViewProps> = ({ data, width, height }) => {
   const toggleEditMode = useStore((state) => state.toggleEditMode);
 
   return (
-    <div className={styles.noteNode}>
+    <div className={styles.noteNode} style={{ width, height }}>
       <div className={styles.header}>
         <span className={styles.title}>{data.title || 'Untitled Note'}</span>
         <button
