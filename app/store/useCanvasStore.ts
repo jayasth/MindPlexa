@@ -66,7 +66,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
         draggable: true,
         connectable: true
       };
-      console.log('New node with position:', newNode);
+      console.log('Store: New node with position:', newNode);
       state.nodeInternals.set(newNode.id, newNode);
       return { nodes: [...state.nodes, newNode] };
     }),

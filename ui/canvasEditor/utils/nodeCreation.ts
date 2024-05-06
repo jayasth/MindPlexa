@@ -47,7 +47,7 @@ export const createNode = (
   isTemporary = false,
   isEditing = false
 ) => {
-  console.log('Creating node:', nodeType);
+  console.log('nodeCreation: Creating node:', nodeType);
   const zoomLevel = 1.0;
   position.x /= zoomLevel;
   position.y /= zoomLevel;
@@ -176,9 +176,7 @@ export const createNode = (
     height: nodeDimensions[nodeType].height
   };
 
-  console.log('New node, nodeCreation:', newNode);
-  console.log('Width, NodeCreation:', newNode.width);
-  console.log('Height, NodeCreation:', newNode.height);
+  console.log('nodeCreation: New node:', newNode);
 
   callback(newNode);
 };

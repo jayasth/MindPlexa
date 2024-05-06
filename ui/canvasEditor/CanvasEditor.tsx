@@ -20,7 +20,6 @@ import { useStore } from '@/app/store/useCanvasStore';
 import { useNodeResizing } from '@/ui/canvasEditor/hooks/useNodeResizing';
 import { useEdgeConnection } from '@/ui/canvasEditor/hooks/useEdgeConnection';
 import { nanoid } from 'nanoid';
-import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 
 const nodeOrigin: NodeOrigin = [0.5, 0.5];
 const defaultEdgeOptions = {

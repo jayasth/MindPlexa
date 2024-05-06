@@ -42,7 +42,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
 
   useEffect(() => {
     console.log(
-      `Node ${id} type ${node.type}: width = ${node.width}, height = ${node.height}`
+      `NodeRenderer: Node ${id} type ${node.type}: width = ${node.width}, height = ${node.height}`
     );
   }, [node.width, node.height, node.type, id]);
 
@@ -58,7 +58,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     setSize(newSize);
     updateNode(id, newSize);
     console.log(
-      `Updated size for node ${id}: width = ${newSize.width}, height = ${newSize.height}`
+      `NodeRenderer: Updated size for node ${id}: width = ${newSize.width}, height = ${newSize.height}`
     );
   }, [node.isEditing, node.type, updateNode, id]);
 
@@ -71,7 +71,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     updateNode(id, newSize);
     onNodeResizeStop(id, newSize, newPosition);
     console.log(
-      `Resize stop for node ${id}: new size = width: ${newSize.width}, height: ${newSize.height}`
+      `NodeRenderer: Resize stop for node ${id}: new size = width: ${newSize.width}, height: ${newSize.height}`
     );
   };
 
@@ -89,7 +89,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     });
     onNodeResizeStop(id, { width: newWidth, height: newHeight }, node.position);
     console.log(
-      `Edit toggle for node ${id}: new size = width: ${newWidth}, height: ${newHeight}`
+      `NodeRenderer: Edit toggle for node ${id}: new size = width: ${newWidth}, height: ${newHeight}`
     );
   };
 
@@ -114,7 +114,8 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     task: { view: TaskNode, edit: TaskNodeEdit },
     custom: { view: CustomNode, edit: CustomNodeEdit },
     code: { view: CodeNode, edit: CodeNodeEdit },
-    draw: { view: DrawNode, edit: DrawNodeEdit }
+    draw: { view: DrawNode, edit: DrawNodeEdit },
+    selectionMenu: NodeSelectionMenu
   };
 
   if (node.type === 'selectionMenu') {
