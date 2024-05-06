@@ -19,7 +19,6 @@ interface NodeSelectionMenuProps extends NodeProps {
     id: string;
     type: string;
     parentNode: any;
-    isTemporary?: boolean;
   };
   width: number;
   height: number;
@@ -30,14 +29,10 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
   width,
   height
 }) => {
-  console.log('Received props, NodeSelecitonMenu:', { data, width, height }); // Log received props at instantiation
-  const { addChildNode, removeNode, createChildNodeFromDrag } = useStore(
-    (state) => ({
-      addChildNode: state.addChildNode,
-      removeNode: state.removeNode,
-      createChildNodeFromDrag: state.createChildNodeFromDrag
-    })
-  );
+  const { createChildNodeFromDrag, removeNode } = useStore((state) => ({
+    createChildNodeFromDrag: state.createChildNodeFromDrag,
+    removeNode: state.removeNode
+  }));
 
   const nodeRef = useRef<HTMLDivElement>(null);
 
@@ -45,9 +40,7 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
     const handleClickOutside = (event: MouseEvent) => {
       if (nodeRef.current && !nodeRef.current.contains(event.target as Node)) {
         data.onClose();
-        if (data.isTemporary) {
-          removeNode(data.id || '');
-        }
+        removeNode(data.id || '');
       }
     };
 
@@ -55,7 +48,7 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [data.id, data.isTemporary, data.onClose, removeNode]);
+  }, [data.id, data.onClose, removeNode]);
 
   const nodeTypes: ('note' | 'task' | 'custom' | 'code' | 'draw')[] = [
     'note',
@@ -79,9 +72,7 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
     if (parentNode && position) {
       createChildNodeFromDrag(parentNode, position, nodeType);
       data.onClose();
-      if (data.isTemporary) {
-        removeNode(data.id || '');
-      }
+      removeNode(data.id || '');
     } else {
       console.error('Invalid or incomplete parent node or position.');
     }

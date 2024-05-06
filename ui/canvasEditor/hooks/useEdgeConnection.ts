@@ -71,79 +71,25 @@ export const useEdgeConnection = () => {
           );
           console.log('childNodePosition:', childNodePosition);
           if (childNodePosition) {
-            console.log('Child node position calculated:', childNodePosition);
-            console.log(
-              'Selection Menu Node Width, before creating:',
-              nodeDimensions['selectionMenu'].width
-            );
-            console.log(
-              'Selection Menu Node Height, before creating:',
-              nodeDimensions['selectionMenu'].height
-            );
-            const newNode = {
-              id: `selectionMenu-${nanoid()}`,
-              type: 'selectionMenu',
-              position: childNodePosition,
-              data: {
-                onSelect: (selectedNodeType, selectedPosition) => {
-                  console.log('Selected node type:', selectedNodeType);
-                  console.log(
-                    'Selected position for new node:',
-                    selectedPosition
-                  );
-                  createNode(
-                    selectedNodeType,
-                    selectedPosition,
-                    nodes,
-                    (newNode) => {
-                      console.log('New node created:', newNode);
-                      addNode(newNode);
-
-                      addEdge({
-                        id: `e-${nanoid()}`,
-                        source: parentNode.id,
-                        target: newNode.id,
-                        type: 'customEdge'
-                      });
-                      console.log(
-                        'Edge added between parent and new node:',
-                        parentNode.id,
-                        newNode.id
-                      );
-                    },
-                    { width: 0, height: 0 },
-                    false,
-                    false
-                  );
-                  removeNode(newNode.id);
-                  console.log('Temporary node removed:', newNode.id);
-                },
-                onClose: () => removeNode(newNode.id),
-                parentNode: parentNode,
-                isTemporary: true
+            createNode(
+              'selectionMenu',
+              childNodePosition,
+              nodes,
+              (newNode) => {
+                addNode(newNode);
+                addEdge({
+                  id: `e-${nanoid()}`,
+                  source: parentNode.id,
+                  target: newNode.id,
+                  type: 'customEdge'
+                });
               },
-              width: nodeDimensions['selectionMenu'].width,
-              height: nodeDimensions['selectionMenu'].height
-            };
-
-            addNode(newNode);
-            console.log('New node added, useEdgeConnection:', newNode);
-            console.log('width, useEdgeConnection:', newNode.width);
-            console.log('height, useEdgeConnection:', newNode.height);
-            addEdge({
-              id: `e-${nanoid()}`,
-              source: parentNode.id,
-              target: newNode.id,
-              type: 'customEdge'
-            });
-            console.log(
-              'Edge added between parent and new node:',
-              parentNode.id,
-              newNode.id
+              {
+                width: nodeDimensions['selectionMenu'].width,
+                height: nodeDimensions['selectionMenu'].height
+              },
+              true
             );
-
-            // Update the parentNode and childNodePosition values
-            return { parentNode, childNodePosition: newNode.position };
           } else {
             console.error('Failed to get valid child node position');
           }
@@ -175,13 +121,11 @@ export const useEdgeConnection = () => {
       addEdge,
       nodeInternals,
       getChildNodePosition,
-      setShowNodeSelectionMenu,
-      setMenuPosition,
       nodes,
       addNode,
       domNode,
       screenToFlowPosition,
-      removeNode
+      createNode
     ]
   );
 

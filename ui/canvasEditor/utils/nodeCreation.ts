@@ -2,6 +2,7 @@ import { Node, XYPosition } from 'reactflow';
 import type { Json, Tables } from '@/types_db';
 import { getNodeSpecificProperties, nodeDimensions } from './nodeProperties';
 import { nanoid } from 'nanoid';
+import { useStore } from '@/app/store/useCanvasStore';
 
 type BaseNode = Tables<'base_nodes'>;
 
@@ -29,13 +30,21 @@ function isPositionOccupied(
   );
 }
 
+const isEditableNode = (
+  nodeType: string
+): nodeType is 'note' | 'task' | 'custom' | 'code' | 'draw' => {
+  return ['note', 'task', 'custom', 'code', 'draw'].includes(
+    nodeType as 'note' | 'task' | 'custom' | 'code' | 'draw'
+  );
+};
+
 export const createNode = (
   nodeType: 'note' | 'task' | 'custom' | 'code' | 'draw' | 'selectionMenu',
   position: { x: number; y: number },
   existingNodes: Node<any>[],
   callback: (newNode: Node<any>) => void,
   canvasSize: { width: number; height: number },
-  isTemporary = false, // Added new parameter to indicate temporary NodeSelectionMenu
+  isTemporary = false,
   isEditing = false
 ) => {
   console.log('Creating node:', nodeType);
@@ -46,7 +55,16 @@ export const createNode = (
   const dimensions = nodeDimensions[nodeType];
   let nodeDimension: { width: number; height: number };
 
-  if (isEditing && 'editWidth' in dimensions && 'editHeight' in dimensions) {
+  if (nodeType === 'selectionMenu') {
+    nodeDimension = {
+      width: dimensions.width,
+      height: dimensions.height
+    };
+  } else if (
+    isEditing &&
+    'editWidth' in dimensions &&
+    'editHeight' in dimensions
+  ) {
     nodeDimension = {
       width: dimensions.editWidth,
       height: dimensions.editHeight
@@ -69,7 +87,48 @@ export const createNode = (
       Math.random() * nodeDimension.height - nodeDimension.height / 2;
   }
 
-  if (nodeType !== 'selectionMenu') {
+  if (nodeType === 'selectionMenu') {
+    const positionAsXYPosition = setPosition(position.x, position.y);
+    const { removeNode } = useStore.getState();
+    const newNode: Node<any> = {
+      id: `selectionMenu-${nanoid()}`,
+      type: 'selectionMenu',
+      position: positionAsXYPosition,
+      data: {
+        onSelect: (selectedNodeType, selectedPosition) => {
+          createNode(
+            selectedNodeType,
+            selectedPosition,
+            existingNodes,
+            (newNode) => {
+              const { addNode, addEdge } = useStore.getState();
+              addNode(newNode);
+              addEdge({
+                id: `e-${nanoid()}`,
+                source: newNode.data.parentNode.id,
+                target: newNode.id,
+                type: 'customEdge'
+              });
+            },
+            canvasSize,
+            false,
+            false
+          );
+          removeNode(newNode.id);
+        },
+        onClose: () => removeNode(newNode.id),
+        parentNode: null, // Set parentNode to null initially
+        isTemporary: isTemporary
+      },
+      width: nodeDimensions[nodeType].width,
+      height: nodeDimensions[nodeType].height
+    };
+
+    callback(newNode);
+    return;
+  }
+
+  if (isEditableNode(nodeType)) {
     position.x = Math.max(
       0,
       Math.min(position.x, canvasSize.width - nodeDimension.width)
@@ -102,15 +161,9 @@ export const createNode = (
     ...defaultProperties
   };
 
-  if (nodeType === 'selectionMenu' && isTemporary) {
-    baseProperties.id = `selectionMenu-${nanoid()}`; // Different ID format for temporary NodeSelectionMenu
-  }
-
   const specificNode = {
     ...baseProperties,
-    ...(nodeType !== 'selectionMenu'
-      ? getNodeSpecificProperties(nodeType, isEditing)
-      : {})
+    ...getNodeSpecificProperties(nodeType, isEditing)
   };
 
   const newNode: Node<any> = {
@@ -119,8 +172,8 @@ export const createNode = (
     type: baseProperties.type,
     position: positionAsXYPosition,
     data: isTemporary ? { isTemporary: true } : specificNode,
-    width: nodeDimensions[nodeType].width, // Use the width from nodeDimensions
-    height: nodeDimensions[nodeType].height // Use the height from nodeDimensions
+    width: nodeDimensions[nodeType].width,
+    height: nodeDimensions[nodeType].height
   };
 
   console.log('New node, nodeCreation:', newNode);

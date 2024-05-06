@@ -39,9 +39,6 @@ export default function CanvasEditor() {
     setNodes,
     setEdges,
     onNodesChange,
-    showNodeSelectionMenu,
-    menuPosition,
-    setShowNodeSelectionMenu,
     addNode,
     setDomNode,
     domNode,
@@ -54,9 +51,6 @@ export default function CanvasEditor() {
     setNodes: state.setNodes,
     setEdges: state.setEdges,
     onNodesChange: state.onNodesChange,
-    showNodeSelectionMenu: state.showNodeSelectionMenu,
-    menuPosition: state.menuPosition,
-    setShowNodeSelectionMenu: state.setShowNodeSelectionMenu,
     addNode: state.addNode,
     setDomNode: state.setDomNode,
     domNode: state.domNode,
@@ -170,39 +164,6 @@ export default function CanvasEditor() {
           />
         </div>
         <div ref={reactFlowWrapper} className="w-11/12">
-          {showNodeSelectionMenu && childNodePosition !== null && (
-            <NodeSelectionMenu
-              data={{
-                onSelect: (nodeType, position) => {
-                  console.log(
-                    `Node type ${nodeType} selected at position`,
-                    position
-                  );
-                  if (parentNode) {
-                    createChildNodeFromDrag(parentNode, position, nodeType);
-                  } else {
-                    console.error('Invalid or incomplete parent node details.');
-                  }
-                },
-                position: childNodePosition,
-                onClose: () => setShowNodeSelectionMenu(false),
-                id: 'nodeSelectionMenu',
-                type: 'selectionMenu',
-                parentNode: parentNode,
-                isTemporary: true
-              }}
-              width={nodeDimensions['selectionMenu'].width}
-              height={nodeDimensions['selectionMenu'].height}
-              xPos={menuPosition ? menuPosition.x : 0}
-              yPos={menuPosition ? menuPosition.y : 0}
-              id={''}
-              selected={false}
-              type={''}
-              zIndex={0}
-              isConnectable={true}
-              dragging={false}
-            />
-          )}
           <ReactFlow
             nodes={nodes}
             edges={edges}
