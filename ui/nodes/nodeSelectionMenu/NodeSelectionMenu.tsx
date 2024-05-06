@@ -30,6 +30,7 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
   width,
   height
 }) => {
+  console.log('Received props, NodeSelecitonMenu:', { data, width, height }); // Log received props at instantiation
   const { addChildNode, removeNode, createChildNodeFromDrag } = useStore(
     (state) => ({
       addChildNode: state.addChildNode,
@@ -87,16 +88,7 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
   };
 
   return (
-    <div
-      className={styles.nodeSelectionMenu}
-      style={{
-        width,
-        height,
-        left: data.position ? data.position.x : 0,
-        top: data.position ? data.position.y : 0
-      }}
-      ref={nodeRef}
-    >
+    <div className={styles.nodeSelectionMenu} style={{ width, height }}>
       <div className="flex flex-row">
         {nodeTypes.map((type) => (
           <button

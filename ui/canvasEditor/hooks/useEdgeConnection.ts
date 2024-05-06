@@ -72,6 +72,14 @@ export const useEdgeConnection = () => {
           console.log('childNodePosition:', childNodePosition);
           if (childNodePosition) {
             console.log('Child node position calculated:', childNodePosition);
+            console.log(
+              'Selection Menu Node Width, before creating:',
+              nodeDimensions['selectionMenu'].width
+            );
+            console.log(
+              'Selection Menu Node Height, before creating:',
+              nodeDimensions['selectionMenu'].height
+            );
             const newNode = {
               id: `selectionMenu-${nanoid()}`,
               type: 'selectionMenu',

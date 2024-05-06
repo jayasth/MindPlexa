@@ -41,6 +41,12 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
   });
 
   useEffect(() => {
+    console.log(
+      `Node ${id} type ${node.type}: width = ${node.width}, height = ${node.height}`
+    );
+  }, [node.width, node.height, node.type, id]);
+
+  useEffect(() => {
     const newSize = {
       width: node.isEditing
         ? nodeDimensions[node.type].editWidth
@@ -51,6 +57,9 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     };
     setSize(newSize);
     updateNode(id, newSize);
+    console.log(
+      `Updated size for node ${id}: width = ${newSize.width}, height = ${newSize.height}`
+    );
   }, [node.isEditing, node.type, updateNode, id]);
 
   const handleResizeStop = (event, newSize) => {
@@ -61,6 +70,9 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     setSize(newSize);
     updateNode(id, newSize);
     onNodeResizeStop(id, newSize, newPosition);
+    console.log(
+      `Resize stop for node ${id}: new size = width: ${newSize.width}, height: ${newSize.height}`
+    );
   };
 
   const handleEdit = () => {
@@ -76,6 +88,9 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
       height: newHeight
     });
     onNodeResizeStop(id, { width: newWidth, height: newHeight }, node.position);
+    console.log(
+      `Edit toggle for node ${id}: new size = width: ${newWidth}, height: ${newHeight}`
+    );
   };
 
   const commonProps = {
@@ -114,6 +129,8 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
         dragging={false}
         {...commonProps}
         data={node.data}
+        width={node.width || nodeDimensions[node.type].width}
+        height={node.height || nodeDimensions[node.type].height}
       />
     );
   } else if (node.type in nodeComponents) {
