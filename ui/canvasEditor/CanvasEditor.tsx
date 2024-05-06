@@ -98,9 +98,9 @@ export default function CanvasEditor() {
       draw: (props) => (
         <NodeRenderer {...props} onNodeResizeStop={handleNodeResizeStop} />
       ),
-      selectionMenu: (props) => {
-        return <NodeSelectionMenu {...props} />;
-      }
+      selectionMenu: (props) => (
+        <NodeRenderer {...props} onNodeResizeStop={handleNodeResizeStop} />
+      )
     }),
     [handleNodeResizeStop]
   );

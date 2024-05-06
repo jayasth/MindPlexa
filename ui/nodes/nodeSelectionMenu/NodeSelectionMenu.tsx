@@ -58,11 +58,11 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
     'draw'
   ];
   const icons = {
-    note: <PiNotepad size="16" />,
-    task: <FaTasks size="16" />,
-    custom: <FaRegAddressBook size="16" />,
-    code: <FaCode size="16" />,
-    draw: <FaPaintBrush size="16" />
+    note: <PiNotepad size="12" />,
+    task: <FaTasks size="12" />,
+    custom: <FaRegAddressBook size="12" />,
+    code: <FaCode size="12" />,
+    draw: <FaPaintBrush size="12" />
   };
 
   const handleNodeTypeSelect = (
