@@ -3,6 +3,7 @@ import { NodeProps, Handle, Position } from 'reactflow';
 import { useStore } from '@/app/store/useCanvasStore';
 import styles from './NoteNodeView.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
+import { FaEdit } from 'react-icons/fa';
 
 interface NoteNodeViewProps extends NodeProps {
   data: {
@@ -20,15 +21,13 @@ const NoteNodeView: React.FC<NoteNodeViewProps> = ({ data, width, height }) => {
     <div className={styles.noteNode} style={{ width, height }}>
       <div className={styles.header}>
         <span className={styles.title}>{data.title || 'Untitled Note'}</span>
-        <button
+        <FaEdit
           className={styles.editButton}
           onClick={() => {
             console.log(`Toggling edit mode for node ID: ${data.id}`);
             toggleEditMode(data.id);
           }}
-        >
-          Edit
-        </button>
+        />
       </div>
       <div className={styles.noteContent}>
         {/* Note content would be rendered here */}

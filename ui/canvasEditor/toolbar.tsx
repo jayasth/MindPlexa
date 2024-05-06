@@ -10,6 +10,7 @@ import {
   FaShare,
   FaDownload
 } from 'react-icons/fa';
+import { MdFormatListBulletedAdd } from 'react-icons/md';
 
 import { PiNotepad } from 'react-icons/pi';
 import Link from 'next/link';
@@ -36,7 +37,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
   const nodes = useStore((state) => state.nodes);
 
   const handleAddNode = (
-    type: 'note' | 'task' | 'custom' | 'code' | 'draw'
+    type: 'note' | 'task' | 'custom' | 'code' | 'draw' | 'selectionMenu'
   ) => {
     try {
       const canvasSize = {
@@ -115,6 +116,13 @@ const Toolbar: React.FC<ToolbarProps> = ({
         title="Add Draw"
       >
         <FaPaintBrush size="16" />
+      </button>
+      <button
+        onClick={() => handleAddNode('selectionMenu')}
+        className={buttonClass}
+        title="Add Node Selection Menu"
+      >
+        <MdFormatListBulletedAdd size="16" />
       </button>
       <button onClick={onUndo} className={buttonClass} title="Undo">
         <FaUndo size="16" />
