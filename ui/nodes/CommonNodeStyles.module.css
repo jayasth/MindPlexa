@@ -1,0 +1,11 @@
+.actionButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 4px;
+}
+
+.fileInput {
+  display: none;
+}

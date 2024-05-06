@@ -147,7 +147,7 @@ export const createNode = (
     connectable: true,
     width: nodeDimension.width,
     height: nodeDimension.height,
-    title: `New ${nodeType.charAt(0).toUpperCase() + nodeType.slice(1)}`
+    title: `Untitled ${nodeType.charAt(0).toUpperCase() + nodeType.slice(1)}`
   };
 
   let baseProperties: Partial<BaseNode> & {
