@@ -34,17 +34,17 @@ export const useEdgeConnection = () => {
     toggleEditMode: state.toggleEditMode
   }));
 
-  console.log('Store: nodeInternals:', nodeInternals);
+  console.log('useEdgeConnection: nodeInternals:', nodeInternals);
 
   const connectingNodeId = useRef<string | null>(null);
-  console.log('Store: connectingNodeId.current:', connectingNodeId.current);
+ console.log('useEdgeConnection: connectingNodeId.current:', connectingNodeId.current);
 
   const onConnectStart = useCallback(
     (event, node) => {
-      console.log('Store: onConnectStart event:', event);
-      console.log('Store: onConnectStart node:', node);
+     console.log('useEdgeConnection: onConnectStart event:', event);
+     console.log('useEdgeConnection: onConnectStart node:', node);
       connectingNodeId.current = node.nodeId || '';
-      console.log('Store: connectingNodeId.current:', connectingNodeId.current);
+     console.log('useEdgeConnection: connectingNodeId.current:', connectingNodeId.current);
     },
     [connectingNodeId]
   );
@@ -54,28 +54,25 @@ export const useEdgeConnection = () => {
       const targetIsPane = (event.target as Element).classList.contains(
         'react-flow__pane'
       );
-      console.log('Store: onConnectEnd: targetIsPane', targetIsPane);
+     console.log('useEdgeConnection: onConnectEnd: targetIsPane', targetIsPane);
 
       if (targetIsPane && connectingNodeId.current) {
         const parentNode = nodeInternals.get(connectingNodeId.current);
-        console.log('Store: onConnectEnd: parentNode', parentNode);
+        console.log('onConnectEnd: parentNode:', parentNode);
 
         if (parentNode && domNode) {
-          const childNodePosition = getChildNodePosition(
+          const position = getChildNodePosition(
             event,
             parentNode,
             domNode,
             screenToFlowPosition
           );
-          console.log(
-            'Store: onConnectEnd: childNodePosition',
-            childNodePosition
-          );
+          console.log('onConnectEnd: position:', position);
 
-          if (childNodePosition) {
+          if (position) {
             createNode(
               'selectionMenu',
-              childNodePosition,
+              position,
               nodes,
               (newNode) => {
                 addNode(newNode);
@@ -85,7 +82,7 @@ export const useEdgeConnection = () => {
                   target: newNode.id,
                   type: 'customEdge'
                 });
-                console.log('Store: onConnectEnd: newNode added', newNode);
+               console.log('useEdgeConnection: onConnectEnd: newNode added', newNode);
               },
               {
                 width: nodeDimensions['selectionMenu'].width,
@@ -94,7 +91,7 @@ export const useEdgeConnection = () => {
               true
             );
           } else {
-            console.error('Failed to get valid child node position');
+            console.error('Failed to get valid position');
           }
         } else {
           console.error('Invalid or incomplete parentNode details.');

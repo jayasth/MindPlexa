@@ -26,7 +26,7 @@ const defaultEdgeOptions = {
   type: 'customEdge'
 };
 
-export default function CanvasEditor() {
+export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const reactFlowInstance = useRef<ReactFlowInstance | null>(null);
   const { onConnectStart, onConnectEnd, parentNode, childNodePosition } =
@@ -102,7 +102,7 @@ export default function CanvasEditor() {
         <NodeRenderer {...props} onNodeResizeStop={handleNodeResizeStop} />
       )
     }),
-    [handleNodeResizeStop]
+    [handleNodeResizeStop, parentNode, childNodePosition]
   );
 
   const handleConnect = useCallback(

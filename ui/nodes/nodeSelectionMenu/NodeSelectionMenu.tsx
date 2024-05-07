@@ -69,12 +69,17 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
     nodeType: 'note' | 'task' | 'custom' | 'code' | 'draw'
   ) => {
     const { parentNode, position } = data;
+    console.log('NodeSelectionMenu: Parent Node:', parentNode);
+    console.log('NodeSelectionMenu: Position:', position);
+
     if (parentNode && position) {
       createChildNodeFromDrag(parentNode, position, nodeType);
       data.onClose();
       removeNode(data.id || '');
     } else {
-      console.error('Invalid or incomplete parent node or position.');
+      console.error(
+        'NodeSelectionMenu: Invalid or incomplete parent node or position.'
+      );
     }
   };
 

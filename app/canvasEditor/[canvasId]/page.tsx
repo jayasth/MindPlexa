@@ -1,7 +1,6 @@
-// app/canvasEditor/[canvasId]/page.tsx
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import { createClient } from '@/utils/supabase/supabaseClient';
 import type { Tables } from 'types_db';
@@ -48,7 +47,5 @@ export default function CanvasEditorPage() {
     return <div>Loading...</div>;
   }
 
-  return (
-    <CanvasEditor initialCanvas={canvas} onCanvasUpdate={handleCanvasUpdate} />
-  );
+  return <CanvasEditor initialCanvas={undefined} onCanvasUpdate={undefined} />;
 }
