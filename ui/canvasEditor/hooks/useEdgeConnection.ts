@@ -53,16 +53,21 @@ export const useEdgeConnection = () => {
           setChildNodePosition(position);
 
           if (position) {
+            const newNodeId = `node-${nanoid()}`; // Generate a unique ID for the new node
             createNode(
               'selectionMenu',
               position,
               nodes,
               (newNode) => {
-                addNode(newNode);
+                addNode({
+                  ...newNode,
+                  id: newNodeId,
+                  parentNode: parentNode.id // Ensure parent node ID is passed
+                });
                 addEdge({
-                  id: `e-${nanoid()}`,
+                  id: `e-${newNodeId}-${parentNode.id}`,
                   source: parentNode.id,
-                  target: newNode.id,
+                  target: newNodeId,
                   type: 'customEdge'
                 });
               },

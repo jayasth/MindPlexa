@@ -46,7 +46,7 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
     const handleClickOutside = (event: MouseEvent) => {
       if (nodeRef.current && !nodeRef.current.contains(event.target as Node)) {
         data.onClose();
-        removeNode(data.id || '');
+        removeNode(data.id);
       }
     };
 
@@ -89,7 +89,7 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
       createNode(
         nodeType,
         position,
-        nodes,
+        useStore.getState().nodes,
         (newNode) => {
           updateNode(id, { ...newNode, id });
           addNode(newNode);
@@ -100,8 +100,9 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
             type: 'customEdge'
           });
           data.onClose();
+          removeNode(id);
         },
-        canvasSize,
+        { width: window.innerWidth, height: window.innerHeight },
         false,
         false,
         parentNode
