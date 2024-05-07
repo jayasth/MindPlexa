@@ -189,7 +189,8 @@ export const useStore = createStore<CanvasState>((set, get) => ({
             },
             { width: 0, height: 0 },
             false,
-            false
+            false,
+            parentNode
           );
           removeNode(newNode.id);
         },
