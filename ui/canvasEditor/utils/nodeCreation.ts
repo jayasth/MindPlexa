@@ -45,7 +45,8 @@ export const createNode = (
   callback: (newNode: Node<any>) => void,
   canvasSize: { width: number; height: number },
   isTemporary = false,
-  isEditing = false
+  isEditing = false,
+  parentNode?: Node<any> // Added parentNode parameter
 ) => {
   console.log('nodeCreation: Creating node:', nodeType);
   const zoomLevel = 1.0;
@@ -105,19 +106,20 @@ export const createNode = (
               addNode(newNode);
               addEdge({
                 id: `e-${nanoid()}`,
-                source: newNode.data.parentNode.id,
+                source: parentNode?.id || '', // Use parentNode if available
                 target: newNode.id,
                 type: 'customEdge'
               });
             },
             canvasSize,
             false,
-            false
+            false,
+            parentNode // Pass the parentNode to createNode
           );
           removeNode(newNode.id);
         },
         onClose: () => removeNode(newNode.id),
-        parentNode: null, // Set parentNode to null initially
+        parentNode: parentNode || null, // Set parentNode to null if not available
         isTemporary: isTemporary
       },
       width: nodeDimensions[nodeType].width,
