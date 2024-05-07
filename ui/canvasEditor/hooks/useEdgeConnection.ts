@@ -1,35 +1,37 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useStore } from '@/app/store/useCanvasStore';
 import { createNode } from '@/ui/canvasEditor/utils/nodeCreation';
 import { getChildNodePosition } from '@/ui/canvasEditor/utils/getChildNodePosition';
 import { nanoid } from 'nanoid';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
+import type { XYPosition } from 'reactflow';
 
 export const useEdgeConnection = () => {
   const {
     nodes,
-    setEdges,
     addEdge,
-    removeNode,
-    domNode,
-    screenToFlowPosition,
     nodeInternals,
-    addNode
+    addNode,
+    domNode,
+    screenToFlowPosition
   } = useStore((state) => ({
     nodes: state.nodes,
-    setEdges: state.setEdges,
     addEdge: state.addEdge,
-    removeNode: state.removeNode,
-    domNode: state.domNode,
-    screenToFlowPosition: state.screenToFlowPosition,
     nodeInternals: state.nodeInternals,
-    addNode: state.addNode
+    addNode: state.addNode,
+    domNode: state.domNode,
+    screenToFlowPosition: state.screenToFlowPosition
   }));
 
   const connectingNodeId = useRef<string | null>(null);
+  const [parentNode, setParentNode] = useState(null);
+  const [childNodePosition, setChildNodePosition] = useState<XYPosition | null>(
+    null
+  );
 
   const onConnectStart = useCallback((event, node) => {
     connectingNodeId.current = node.nodeId || '';
+    setParentNode(node);
   }, []);
 
   const onConnectEnd = useCallback(
@@ -48,6 +50,7 @@ export const useEdgeConnection = () => {
             domNode,
             screenToFlowPosition
           );
+          setChildNodePosition(position);
 
           if (position) {
             createNode(
@@ -80,6 +83,8 @@ export const useEdgeConnection = () => {
 
   return {
     onConnectStart,
-    onConnectEnd
+    onConnectEnd,
+    parentNode,
+    childNodePosition
   };
 };
