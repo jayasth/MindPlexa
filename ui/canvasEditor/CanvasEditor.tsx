@@ -1,4 +1,10 @@
-import React, { useMemo, useCallback, useRef, useEffect } from 'react';
+import React, {
+  useMemo,
+  useCallback,
+  useRef,
+  useEffect,
+  useState
+} from 'react';
 import ReactFlow, {
   Controls,
   Background,
@@ -62,10 +68,13 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
 
   const handleDeleteEdge = useCallback(
     (edgeId) => {
-      console.log('Deleting edge with id:', edgeId);
+      console.log('CanvasEditor: Deleting edge with id:', edgeId);
       setEdges((currentEdges) => {
         const updatedEdges = currentEdges.filter((edge) => edge.id !== edgeId);
-        console.log('Updated edges after deletion:', updatedEdges);
+        console.log(
+          'CanvasEditor: Updated edges after deletion:',
+          updatedEdges
+        );
         return updatedEdges;
       });
       // Remove the edge from the CustomEdge component
@@ -108,7 +117,7 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
   const handleConnect = useCallback(
     (connection) => {
       if (!connection.source || !connection.target) {
-        console.error('Incomplete connection data:', connection);
+        console.error('CanvasEditor: Incomplete connection data:', connection);
         return;
       }
       const newEdge = {
@@ -139,12 +148,18 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
   }
 
   useEffect(() => {
-    console.log('ReactFlowWrapper ref:', reactFlowWrapper.current);
+    console.log(
+      'CanvasEditor: ReactFlowWrapper ref:',
+      reactFlowWrapper.current
+    );
     if (reactFlowWrapper.current && !domNode) {
-      console.log('Setting domNode');
+      console.log('CanvasEditor: Setting domNode');
       setDomNode(reactFlowWrapper.current);
     }
   }, [reactFlowWrapper.current, domNode]);
+
+  // Log data just before rendering NodeSelectionMenu
+  console.log('CanvasEditor: Parent Component - data:', { nodes, edges });
 
   return (
     <div className="flex h-screen">

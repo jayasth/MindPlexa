@@ -10,6 +10,7 @@ import { PiNotepad } from 'react-icons/pi';
 import { useStore } from '@/app/store/useCanvasStore';
 import styles from './NodeSelectionMenu.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
+import { createNode } from '@/ui/canvasEditor/utils/nodeCreation';
 
 interface NodeSelectionMenuProps extends NodeProps {
   data: {
@@ -29,10 +30,15 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
   width,
   height
 }) => {
-  const { createChildNodeFromDrag, removeNode } = useStore((state) => ({
-    createChildNodeFromDrag: state.createChildNodeFromDrag,
-    removeNode: state.removeNode
-  }));
+  console.log('NodeSelectionMenu data:', data);
+  const { createChildNodeFromDrag, removeNode, updateNode, addNode } = useStore(
+    (state) => ({
+      createChildNodeFromDrag: state.createChildNodeFromDrag,
+      removeNode: state.removeNode,
+      updateNode: state.updateNode,
+      addNode: state.addNode
+    })
+  );
 
   const nodeRef = useRef<HTMLDivElement>(null);
 
@@ -68,17 +74,35 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
   const handleNodeTypeSelect = (
     nodeType: 'note' | 'task' | 'custom' | 'code' | 'draw'
   ) => {
-    const { parentNode, position } = data;
-    console.log('NodeSelectionMenu: Parent Node:', parentNode);
+    const { id, position, parentNode } = data;
+    console.log('NodeSelectionMenu: Selected nodeType:', nodeType);
+    console.log('NodeSelectionMenu: Current node ID:', id);
     console.log('NodeSelectionMenu: Position:', position);
 
-    if (parentNode && position) {
-      createChildNodeFromDrag(parentNode, position, nodeType);
-      data.onClose();
-      removeNode(data.id || '');
+    if (id && position) {
+      const { nodes, domNode } = useStore.getState();
+      const canvasSize = {
+        width: domNode?.clientWidth || 0,
+        height: domNode?.clientHeight || 0
+      };
+
+      createNode(
+        nodeType,
+        position,
+        nodes,
+        (newNode) => {
+          updateNode(id, { ...newNode, id });
+          addNode(newNode);
+          data.onClose();
+        },
+        canvasSize,
+        false,
+        false,
+        parentNode
+      );
     } else {
       console.error(
-        'NodeSelectionMenu: Invalid or incomplete parent node or position.'
+        'NodeSelectionMenu: Invalid or incomplete node ID or position.'
       );
     }
   };
