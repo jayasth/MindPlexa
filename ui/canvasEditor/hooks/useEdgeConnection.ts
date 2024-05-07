@@ -18,118 +18,28 @@ export const useEdgeConnection = () => {
   } = useStore((state) => ({
     nodes: state.nodes,
     setEdges: state.setEdges,
-    setShowNodeSelectionMenu: state.setShowNodeSelectionMenu,
-    setMenuPosition: state.setMenuPosition,
-    addChildNode: state.addChildNode,
     addEdge: state.addEdge,
     removeNode: state.removeNode,
     domNode: state.domNode,
     screenToFlowPosition: state.screenToFlowPosition,
     nodeInternals: state.nodeInternals,
-    addNode: state.addNode,
-    updateNode: state.updateNode,
-    toggleEditMode: state.toggleEditMode
+    addNode: state.addNode
   }));
 
-  console.log('useEdgeConnection: nodeInternals:', nodeInternals);
-
-  const createChildNodeFromDrag = useCallback(
-    (parentNode, position, nodeType) => {
-      const {
-        domNode,
-        screenToFlowPosition,
-        nodes,
-        addNode,
-        setEdges,
-        removeNode
-      } = useStore.getState();
-
-      if (!domNode) {
-        console.error('DOM node is not available.');
-        return;
-      }
-
-      const flowPosition = screenToFlowPosition(position);
-      const event = new MouseEvent('click', {
-        clientX: flowPosition.x,
-        clientY: flowPosition.y
-      });
-      const childNodePosition = getChildNodePosition(
-        event,
-        parentNode,
-        domNode,
-        screenToFlowPosition
-      );
-      if (!childNodePosition) {
-        console.error('Failed to calculate child node position.');
-        return;
-      }
-
-      createNode(
-        nodeType,
-        childNodePosition,
-        nodes,
-        (newNode) => {
-          addNode(newNode);
-          setEdges((edges) => [
-            ...edges,
-            {
-              id: `e-${nanoid()}`,
-              source: parentNode.id,
-              target: newNode.id,
-              type: 'customEdge'
-            }
-          ]);
-        },
-        { width: 0, height: 0 },
-        false,
-        false,
-        parentNode
-      );
-    },
-    [
-      domNode,
-      screenToFlowPosition,
-      nodes,
-      addNode,
-      setEdges,
-      removeNode,
-      createNode
-    ]
-  );
-
   const connectingNodeId = useRef<string | null>(null);
-  console.log(
-    'useEdgeConnection: connectingNodeId.current:',
-    connectingNodeId.current
-  );
 
-  const onConnectStart = useCallback(
-    (event, node) => {
-      console.log('useEdgeConnection: onConnectStart event:', event);
-      console.log('useEdgeConnection: onConnectStart node:', node);
-      connectingNodeId.current = node.nodeId || '';
-      console.log(
-        'useEdgeConnection: connectingNodeId.current:',
-        connectingNodeId.current
-      );
-    },
-    [connectingNodeId]
-  );
+  const onConnectStart = useCallback((event, node) => {
+    connectingNodeId.current = node.nodeId || '';
+  }, []);
 
   const onConnectEnd = useCallback(
     (event) => {
       const targetIsPane = (event.target as Element).classList.contains(
         'react-flow__pane'
       );
-      console.log(
-        'useEdgeConnection: onConnectEnd: targetIsPane',
-        targetIsPane
-      );
 
       if (targetIsPane && connectingNodeId.current) {
         const parentNode = nodeInternals.get(connectingNodeId.current);
-        console.log('onConnectEnd: parentNode:', parentNode);
 
         if (parentNode && domNode) {
           const position = getChildNodePosition(
@@ -138,7 +48,6 @@ export const useEdgeConnection = () => {
             domNode,
             screenToFlowPosition
           );
-          console.log('onConnectEnd: position:', position);
 
           if (position) {
             createNode(
@@ -153,10 +62,6 @@ export const useEdgeConnection = () => {
                   target: newNode.id,
                   type: 'customEdge'
                 });
-                console.log(
-                  'useEdgeConnection: onConnectEnd: newNode added',
-                  newNode
-                );
               },
               {
                 width: nodeDimensions['selectionMenu'].width,
@@ -164,33 +69,17 @@ export const useEdgeConnection = () => {
               },
               true,
               false,
-              parentNode // Pass the parentNode to createNode
+              parentNode
             );
-          } else {
-            console.error('Failed to get valid position');
           }
-        } else {
-          console.error('Invalid or incomplete parentNode details.');
         }
       }
     },
-    [
-      addEdge,
-      nodeInternals,
-      getChildNodePosition,
-      nodes,
-      addNode,
-      domNode,
-      screenToFlowPosition,
-      createNode
-    ]
+    [addEdge, nodeInternals, nodes, addNode, domNode, screenToFlowPosition]
   );
 
   return {
     onConnectStart,
-    onConnectEnd,
-    createChildNodeFromDrag,
-    parentNode: null,
-    childNodePosition: null
+    onConnectEnd
   };
 };

@@ -31,14 +31,14 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
   height
 }) => {
   console.log('NodeSelectionMenu data:', data);
-  const { createChildNodeFromDrag, removeNode, updateNode, addNode } = useStore(
-    (state) => ({
+  const { createChildNodeFromDrag, removeNode, updateNode, addNode, addEdge } =
+    useStore((state) => ({
       createChildNodeFromDrag: state.createChildNodeFromDrag,
       removeNode: state.removeNode,
       updateNode: state.updateNode,
-      addNode: state.addNode
-    })
-  );
+      addNode: state.addNode,
+      addEdge: state.addEdge
+    }));
 
   const nodeRef = useRef<HTMLDivElement>(null);
 
@@ -79,7 +79,7 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
     console.log('NodeSelectionMenu: Current node ID:', id);
     console.log('NodeSelectionMenu: Position:', position);
 
-    if (id && position) {
+    if (id && position && parentNode) {
       const { nodes, domNode } = useStore.getState();
       const canvasSize = {
         width: domNode?.clientWidth || 0,
@@ -93,6 +93,12 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
         (newNode) => {
           updateNode(id, { ...newNode, id });
           addNode(newNode);
+          addEdge({
+            id: `e-${newNode.id}-${parentNode.id}`,
+            source: parentNode.id,
+            target: newNode.id,
+            type: 'customEdge'
+          });
           data.onClose();
         },
         canvasSize,

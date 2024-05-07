@@ -46,7 +46,7 @@ export const createNode = (
   canvasSize: { width: number; height: number },
   isTemporary = false,
   isEditing = false,
-  parentNode?: Node<any>
+  parentNode?: Node<any> | null
 ) => {
   console.log('nodeCreation: Creating node:', nodeType);
   const zoomLevel = 1.0;
