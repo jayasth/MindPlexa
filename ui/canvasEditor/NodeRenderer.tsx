@@ -36,30 +36,45 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
   const toggleEditMode = useStore((state) => state.toggleEditMode);
 
   const [size, setSize] = useState({
-    width: node.width || nodeDimensions[node.type].width,
-    height: node.height || nodeDimensions[node.type].height
+    width:
+      node?.type !== 'selectionMenu'
+        ? node?.width || nodeDimensions[node?.type]?.width || 0
+        : nodeDimensions[node?.type]?.width || 0,
+    height:
+      node?.type !== 'selectionMenu'
+        ? node?.height || nodeDimensions[node?.type]?.height || 0
+        : nodeDimensions[node?.type]?.height || 0
   });
 
   useEffect(() => {
-    console.log(
-      `NodeRenderer: Node ${id} type ${node.type}: width = ${node.width}, height = ${node.height}`
-    );
-  }, [node.width, node.height, node.type, id]);
+    if (node && node.type !== 'selectionMenu') {
+      console.log(
+        `NodeRenderer: Node ${id} type ${node.type}: width = ${node.width}, height = ${node.height}`
+      );
+    }
+  }, [node?.width, node?.height, node?.type, id]);
 
   useEffect(() => {
-    const newSize = {
-      width: node.isEditing
-        ? nodeDimensions[node.type].editWidth
-        : nodeDimensions[node.type].width,
-      height: node.isEditing
-        ? nodeDimensions[node.type].editHeight
-        : nodeDimensions[node.type].height
-    };
-    setSize(newSize);
-    updateNode(id, newSize);
-    console.log(
-      `NodeRenderer: Updated size for node ${id}: width = ${newSize.width}, height = ${newSize.height}`
-    );
+    if (node.type === 'selectionMenu') {
+      setSize({
+        width: nodeDimensions[node.type].width,
+        height: nodeDimensions[node.type].height
+      });
+    } else {
+      const newSize = {
+        width: node.isEditing
+          ? nodeDimensions[node.type].editWidth
+          : nodeDimensions[node.type].width,
+        height: node.isEditing
+          ? nodeDimensions[node.type].editHeight
+          : nodeDimensions[node.type].height
+      };
+      setSize(newSize);
+      updateNode(id, newSize);
+      console.log(
+        `NodeRenderer: Updated size for node ${id}: width = ${newSize.width}, height = ${newSize.height}`
+      );
+    }
   }, [node.isEditing, node.type, updateNode, id]);
 
   const handleResizeStop = (event, newSize) => {
@@ -76,21 +91,27 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
   };
 
   const handleEdit = () => {
-    toggleEditMode(id);
-    const newWidth = node.isEditing
-      ? nodeDimensions[node.type].width
-      : nodeDimensions[node.type].editWidth;
-    const newHeight = node.isEditing
-      ? nodeDimensions[node.type].height
-      : nodeDimensions[node.type].editHeight;
-    updateNode(id, {
-      width: newWidth,
-      height: newHeight
-    });
-    onNodeResizeStop(id, { width: newWidth, height: newHeight }, node.position);
-    console.log(
-      `NodeRenderer: Edit toggle for node ${id}: new size = width: ${newWidth}, height: ${newHeight}`
-    );
+    if (node.type !== 'selectionMenu') {
+      toggleEditMode(id);
+      const newWidth = node.isEditing
+        ? nodeDimensions[node.type].width
+        : nodeDimensions[node.type].editWidth;
+      const newHeight = node.isEditing
+        ? nodeDimensions[node.type].height
+        : nodeDimensions[node.type].editHeight;
+      updateNode(id, {
+        width: newWidth,
+        height: newHeight
+      });
+      onNodeResizeStop(
+        id,
+        { width: newWidth, height: newHeight },
+        node.position
+      );
+      console.log(
+        `NodeRenderer: Edit toggle for node ${id}: new size = width: ${newWidth}, height = ${newHeight}`
+      );
+    }
   };
 
   const commonProps = {
@@ -129,9 +150,23 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
         yPos={node.position.y}
         dragging={false}
         {...commonProps}
-        data={node.data}
-        width={node.width || nodeDimensions[node.type].width}
-        height={node.height || nodeDimensions[node.type].height}
+        data={{
+          onSelect: (selectedNodeType, selectedPosition) => {
+            // Your existing onSelect logic
+          },
+          onClose: () => {
+            // Your existing onClose logic
+          },
+          position: {
+            x: node.position.x,
+            y: node.position.y
+          },
+          id: id,
+          type: node.type,
+          parentNode: node
+        }}
+        width={nodeDimensions[node.type].width}
+        height={nodeDimensions[node.type].height}
       />
     );
   } else if (node.type in nodeComponents) {

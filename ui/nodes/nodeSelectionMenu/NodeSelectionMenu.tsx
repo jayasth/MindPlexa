@@ -11,6 +11,7 @@ import { useStore } from '@/app/store/useCanvasStore';
 import styles from './NodeSelectionMenu.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 import { createNode } from '@/ui/canvasEditor/utils/nodeCreation';
+import { nanoid } from 'nanoid';
 
 interface NodeSelectionMenuProps extends NodeProps {
   data: {
@@ -31,14 +32,12 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
   height
 }) => {
   console.log('NodeSelectionMenu: Received data:', data);
-  const { createChildNodeFromDrag, addNode, addEdge, removeNode, updateNode } =
-    useStore((state) => ({
-      createChildNodeFromDrag: state.createChildNodeFromDrag,
-      addNode: state.addNode,
-      addEdge: state.addEdge,
-      removeNode: state.removeNode,
-      updateNode: state.updateNode
-    }));
+  const { addNode, addEdge, removeNode, updateNode } = useStore((state) => ({
+    addNode: state.addNode,
+    addEdge: state.addEdge,
+    removeNode: state.removeNode,
+    updateNode: state.updateNode
+  }));
 
   const nodeRef = useRef<HTMLDivElement>(null);
 
@@ -79,11 +78,10 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
     code: <FaCode />,
     draw: <FaPaintBrush />
   };
+
   const handleNodeTypeSelect = (nodeType: string) => {
     console.log('NodeSelectionMenu: Selected nodeType:', nodeType);
     const { id, position, parentNode } = data;
-    console.log('NodeSelectionMenu: Current node ID:', id);
-    console.log('NodeSelectionMenu: Position:', position);
 
     if (id && position) {
       createNode(
@@ -97,16 +95,16 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
         position,
         useStore.getState().nodes,
         (newNode) => {
-          const { addNode, addEdge, removeNode } = useStore.getState();
           addNode(newNode);
           if (parentNode) {
             addEdge({
-              id: `e-${newNode.id}-${parentNode.id}`,
+              id: `e-${nanoid()}`,
               source: parentNode.id,
               target: newNode.id,
               type: 'customEdge'
             });
           }
+
           removeNode(id);
         },
         { width: 0, height: 0 },
