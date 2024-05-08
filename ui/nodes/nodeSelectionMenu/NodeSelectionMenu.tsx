@@ -68,7 +68,6 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
     code: <FaCode />,
     draw: <FaPaintBrush />
   };
-
   const handleNodeTypeSelect = (nodeType: string) => {
     console.log('NodeSelectionMenu: Selected nodeType:', nodeType);
     const { id, position, parentNode } = data;
@@ -87,6 +86,7 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
         position,
         useStore.getState().nodes,
         (newNode) => {
+          const { addNode, addEdge, removeNode } = useStore.getState();
           addNode(newNode);
           if (parentNode) {
             addEdge({

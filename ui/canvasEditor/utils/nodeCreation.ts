@@ -82,6 +82,8 @@ export const createNode = (
     return;
   }
 
+  const positionAsXYPosition = setPosition(position.x, position.y);
+
   while (isPositionOccupied(position, existingNodes, nodeDimension)) {
     position.x += Math.random() * nodeDimension.width - nodeDimension.width / 2;
     position.y +=
@@ -140,8 +142,6 @@ export const createNode = (
       Math.min(position.y, canvasSize.height - nodeDimension.height)
     );
   }
-
-  const positionAsXYPosition = setPosition(position.x, position.y);
 
   const defaultProperties = {
     isEditing: isEditing,
