@@ -43,6 +43,17 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
   const nodeRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Check if the essential data is present
+    if (!data.id || !data.position) {
+      console.error(
+        'NodeSelectionMenu: Data is missing id or position on mount.'
+      );
+    } else {
+      console.log('NodeSelectionMenu: Initial data check:', data);
+    }
+  }, [data]);
+
+  useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
         nodeRef.current &&
