@@ -30,21 +30,25 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
   width,
   height
 }) => {
-  console.log('NodeSelectionMenu data:', data);
-  const { createChildNodeFromDrag, removeNode, updateNode, addNode, addEdge } =
+  console.log('NodeSelectionMenu: Received data:', data);
+  const { createChildNodeFromDrag, addNode, addEdge, removeNode, updateNode } =
     useStore((state) => ({
       createChildNodeFromDrag: state.createChildNodeFromDrag,
-      removeNode: state.removeNode,
-      updateNode: state.updateNode,
       addNode: state.addNode,
-      addEdge: state.addEdge
+      addEdge: state.addEdge,
+      removeNode: state.removeNode,
+      updateNode: state.updateNode
     }));
 
   const nodeRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (nodeRef.current && !nodeRef.current.contains(event.target as Node)) {
+      if (
+        nodeRef.current &&
+        !nodeRef.current.contains(event.target as Node) &&
+        !(event.target as Element).classList.contains('node-type-button')
+      ) {
         data.onClose();
         removeNode(data.id);
       }
@@ -54,55 +58,47 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [data.id, data.onClose, removeNode]);
+  }, [data, removeNode]);
 
-  const nodeTypes: ('note' | 'task' | 'custom' | 'code' | 'draw')[] = [
-    'note',
-    'task',
-    'custom',
-    'code',
-    'draw'
-  ];
-  const icons = {
-    note: <PiNotepad size="12" />,
-    task: <FaTasks size="12" />,
-    custom: <FaRegAddressBook size="12" />,
-    code: <FaCode size="12" />,
-    draw: <FaPaintBrush size="12" />
+  const nodeTypes = ['note', 'task', 'custom', 'code', 'draw'];
+  const icons: Record<string, JSX.Element> = {
+    note: <PiNotepad />,
+    task: <FaTasks />,
+    custom: <FaRegAddressBook />,
+    code: <FaCode />,
+    draw: <FaPaintBrush />
   };
 
-  const handleNodeTypeSelect = (
-    nodeType: 'note' | 'task' | 'custom' | 'code' | 'draw'
-  ) => {
-    const { id, position, parentNode } = data;
+  const handleNodeTypeSelect = (nodeType: string) => {
     console.log('NodeSelectionMenu: Selected nodeType:', nodeType);
+    const { id, position, parentNode } = data;
     console.log('NodeSelectionMenu: Current node ID:', id);
     console.log('NodeSelectionMenu: Position:', position);
 
-    if (id && position && parentNode) {
-      const { nodes, domNode } = useStore.getState();
-      const canvasSize = {
-        width: domNode?.clientWidth || 0,
-        height: domNode?.clientHeight || 0
-      };
-
+    if (id && position) {
       createNode(
-        nodeType,
+        nodeType as
+          | 'note'
+          | 'task'
+          | 'custom'
+          | 'code'
+          | 'draw'
+          | 'selectionMenu',
         position,
         useStore.getState().nodes,
         (newNode) => {
-          updateNode(id, { ...newNode, id });
           addNode(newNode);
-          addEdge({
-            id: `e-${newNode.id}-${parentNode.id}`,
-            source: parentNode.id,
-            target: newNode.id,
-            type: 'customEdge'
-          });
-          data.onClose();
+          if (parentNode) {
+            addEdge({
+              id: `e-${newNode.id}-${parentNode.id}`,
+              source: parentNode.id,
+              target: newNode.id,
+              type: 'customEdge'
+            });
+          }
           removeNode(id);
         },
-        { width: window.innerWidth, height: window.innerHeight },
+        { width: 0, height: 0 },
         false,
         false,
         parentNode
@@ -115,12 +111,16 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
   };
 
   return (
-    <div className={styles.nodeSelectionMenu} style={{ width, height }}>
+    <div
+      className={styles.nodeSelectionMenu}
+      style={{ width, height }}
+      ref={nodeRef}
+    >
       <div className="flex flex-row">
         {nodeTypes.map((type) => (
           <button
             key={type}
-            className={styles.nodeButton}
+            className={`${styles.nodeButton} node-type-button`}
             onClick={() => handleNodeTypeSelect(type)}
             title={type.charAt(0).toUpperCase() + type.slice(1)}
           >

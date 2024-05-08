@@ -44,7 +44,7 @@ export const createNode = (
   existingNodes: Node<any>[],
   callback: (newNode: Node<any>) => void,
   canvasSize: { width: number; height: number },
-  isTemporary = false,
+  isTemporary = nodeType === 'selectionMenu',
   isEditing = false,
   parentNode?: Node<any> | null
 ) => {
