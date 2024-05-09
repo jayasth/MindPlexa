@@ -80,13 +80,17 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
   const handleNodeTypeSelect = (
     selectedNodeType: 'note' | 'task' | 'custom' | 'code' | 'draw'
   ) => {
-    if (!position || position.x === undefined || position.y === undefined) {
-      console.error('NodeSelectionMenu: Invalid position:', position);
+    if (
+      !data.position ||
+      data.position.x === undefined ||
+      data.position.y === undefined
+    ) {
+      console.error('NodeSelectionMenu: Invalid position:', data.position);
       return; // Prevent further execution if position is invalid
     }
     createNode(
       selectedNodeType,
-      { x: position.x, y: position.y },
+      data.position,
       nodes,
       (newNode) => {
         addNode(newNode);

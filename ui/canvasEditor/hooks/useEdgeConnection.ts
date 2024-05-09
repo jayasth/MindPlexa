@@ -15,7 +15,7 @@ export const useEdgeConnection = () => {
   );
 
   const connectingNodeId = useRef<string | null>(null);
-  const [parentNode, setParentNode] = useState(null);
+  const [parentNode, setParentNode] = useState<Node | null>(null);
   const [childNodePosition, setChildNodePosition] = useState<XYPosition | null>(
     null
   );
