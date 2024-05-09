@@ -47,10 +47,11 @@ export const createNode = (
   canvasSize: { width: number; height: number },
   isTemporary = nodeType === 'selectionMenu',
   isEditing = false,
-  parentNode?: Node<any> | null
+  parentNode?: Node<any> | null,
+  temporaryNodeId?: string
 ) => {
   if (!position) {
-    console.error('createNode called with undefined position');
+    console.error('NodeCreation: createNode called with undefined position');
     return;
   }
 
@@ -151,13 +152,16 @@ export const createNode = (
     };
 
     const newNode: Node<any> = {
-      ...specificNode,
-      id: baseProperties.id,
-      type: baseProperties.type,
-      position: positionAsXYPosition,
-      data: specificNode,
-      width: nodeDimension.width,
-      height: nodeDimension.height
+      id: nanoid(),
+      type: nodeType,
+      position,
+      data: {
+        isTemporary: false,
+        width: nodeDimensions[nodeType].width,
+        height: nodeDimensions[nodeType].height
+      },
+      width: nodeDimensions[nodeType].width,
+      height: nodeDimensions[nodeType].height
     };
 
     const { addNode, addEdge } = useStore.getState();
