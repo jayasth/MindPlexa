@@ -48,8 +48,7 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
     setDomNode,
     domNode,
     nodeInternals,
-    createChildNodeFromDrag,
-    removeNode // Added removeNode from the store
+    removeNode
   } = useStore((state) => ({
     nodes: state.nodes,
     edges: state.edges,
@@ -60,8 +59,7 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
     setDomNode: state.setDomNode,
     domNode: state.domNode,
     nodeInternals: state.nodeInternals,
-    createChildNodeFromDrag: state.createChildNodeFromDrag,
-    removeNode: state.removeNode // Extract removeNode function from the store
+    removeNode: state.removeNode
   }));
 
   const { handleNodeResizeStop } = useNodeResizing();
@@ -77,7 +75,6 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
         );
         return updatedEdges;
       });
-      // Remove the edge from the CustomEdge component
       useStore.getState().removeEdge(edgeId);
     },
     [setEdges]
@@ -108,7 +105,7 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
         <NodeRenderer {...props} onNodeResizeStop={handleNodeResizeStop} />
       ),
       selectionMenu: (props) => (
-        <NodeRenderer {...props} onNodeResizeStop={handleNodeResizeStop} />
+        <NodeSelectionMenu {...props} onNodeResizeStop={handleNodeResizeStop} />
       )
     }),
     [handleNodeResizeStop, parentNode, childNodePosition]
@@ -157,9 +154,6 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
       setDomNode(reactFlowWrapper.current);
     }
   }, [reactFlowWrapper.current, domNode]);
-
-  // Log data just before rendering NodeSelectionMenu
-  console.log('CanvasEditor: Parent Component - data:', { nodes, edges });
 
   return (
     <div className="flex h-screen">

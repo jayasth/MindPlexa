@@ -3,6 +3,7 @@ import type { Json, Tables } from '@/types_db';
 import { getNodeSpecificProperties, nodeDimensions } from './nodeProperties';
 import { nanoid } from 'nanoid';
 import { useStore } from '@/app/store/useCanvasStore';
+import { handleTemporaryNodeCreation } from '@/ui/canvasEditor/utils/TemporaryNodeHandler';
 
 type BaseNode = Tables<'base_nodes'>;
 
@@ -91,44 +92,36 @@ export const createNode = (
   }
 
   if (nodeType === 'selectionMenu') {
-    const positionAsXYPosition = setPosition(position.x, position.y);
-    const { removeNode } = useStore.getState();
-    const newNode: Node<any> = {
-      id: `selectionMenu-${nanoid()}`,
-      type: 'selectionMenu',
-      position: positionAsXYPosition,
-      data: {
-        onSelect: (selectedNodeType, selectedPosition) => {
-          createNode(
-            selectedNodeType,
-            selectedPosition,
-            existingNodes,
-            (newNode) => {
-              const { addNode, addEdge } = useStore.getState();
-              addNode(newNode);
-              addEdge({
-                id: `e-${nanoid()}`,
-                source: parentNode?.id || '',
-                target: newNode.id,
-                type: 'customEdge'
-              });
-            },
-            canvasSize,
-            false,
-            false,
-            parentNode
-          );
-          removeNode(newNode.id);
+    if (parentNode) {
+      handleTemporaryNodeCreation(parentNode, positionAsXYPosition, nodeType);
+    } else {
+      const newNode: Node<any> = {
+        id: `selectionMenu-${nanoid()}`,
+        type: 'selectionMenu',
+        position: positionAsXYPosition,
+        data: {
+          onSelect: (selectedNodeType, selectedPosition) => {
+            createNode(
+              selectedNodeType,
+              selectedPosition,
+              existingNodes,
+              callback,
+              canvasSize,
+              false,
+              false
+            );
+          },
+          onClose: () => {
+            // Handle closing the temporary node
+          },
+          isTemporary: true
         },
-        onClose: () => removeNode(newNode.id),
-        parentNode: parentNode || null,
-        isTemporary: isTemporary
-      },
-      width: nodeDimensions[nodeType].width,
-      height: nodeDimensions[nodeType].height
-    };
+        width: nodeDimensions['selectionMenu'].width,
+        height: nodeDimensions['selectionMenu'].height
+      };
 
-    callback(newNode);
+      callback(newNode);
+    }
     return;
   }
 

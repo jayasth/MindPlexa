@@ -10,8 +10,6 @@ import { PiNotepad } from 'react-icons/pi';
 import { useStore } from '@/app/store/useCanvasStore';
 import styles from './NodeSelectionMenu.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
-import { createNode } from '@/ui/canvasEditor/utils/nodeCreation';
-import { nanoid } from 'nanoid';
 
 interface NodeSelectionMenuProps extends NodeProps {
   data: {
@@ -31,26 +29,11 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
   width,
   height
 }) => {
-  console.log('NodeSelectionMenu: Received data:', data);
-  const { addNode, addEdge, removeNode, updateNode } = useStore((state) => ({
-    addNode: state.addNode,
-    addEdge: state.addEdge,
-    removeNode: state.removeNode,
-    updateNode: state.updateNode
+  const { removeNode } = useStore((state) => ({
+    removeNode: state.removeNode
   }));
 
   const nodeRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    // Check if the essential data is present
-    if (!data.id || !data.position) {
-      console.error(
-        'NodeSelectionMenu: Data is missing id or position on mount.'
-      );
-    } else {
-      console.log('NodeSelectionMenu: Initial data check:', data);
-    }
-  }, [data]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -80,43 +63,7 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
   };
 
   const handleNodeTypeSelect = (nodeType: string) => {
-    console.log('NodeSelectionMenu: Selected nodeType:', nodeType);
-    const { id, position, parentNode } = data;
-
-    if (id && position) {
-      createNode(
-        nodeType as
-          | 'note'
-          | 'task'
-          | 'custom'
-          | 'code'
-          | 'draw'
-          | 'selectionMenu',
-        position,
-        useStore.getState().nodes,
-        (newNode) => {
-          addNode(newNode);
-          if (parentNode) {
-            addEdge({
-              id: `e-${nanoid()}`,
-              source: parentNode.id,
-              target: newNode.id,
-              type: 'customEdge'
-            });
-          }
-
-          removeNode(id);
-        },
-        { width: 0, height: 0 },
-        false,
-        false,
-        parentNode
-      );
-    } else {
-      console.error(
-        'NodeSelectionMenu: Invalid or incomplete node ID or position.'
-      );
-    }
+    data.onSelect(nodeType, data.position);
   };
 
   return (

@@ -1,27 +1,18 @@
 import { useCallback, useRef, useState } from 'react';
 import { useStore } from '@/app/store/useCanvasStore';
-import { createNode } from '@/ui/canvasEditor/utils/nodeCreation';
 import { getChildNodePosition } from '@/ui/canvasEditor/utils/getChildNodePosition';
-import { nanoid } from 'nanoid';
-import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
+import { handleTemporaryNodeCreation } from '@/ui/canvasEditor/utils/TemporaryNodeHandler';
 import type { XYPosition } from 'reactflow';
 
 export const useEdgeConnection = () => {
-  const {
-    nodes,
-    addEdge,
-    nodeInternals,
-    addNode,
-    domNode,
-    screenToFlowPosition
-  } = useStore((state) => ({
-    nodes: state.nodes,
-    addEdge: state.addEdge,
-    nodeInternals: state.nodeInternals,
-    addNode: state.addNode,
-    domNode: state.domNode,
-    screenToFlowPosition: state.screenToFlowPosition
-  }));
+  const { nodes, nodeInternals, domNode, screenToFlowPosition } = useStore(
+    (state) => ({
+      nodes: state.nodes,
+      nodeInternals: state.nodeInternals,
+      domNode: state.domNode,
+      screenToFlowPosition: state.screenToFlowPosition
+    })
+  );
 
   const connectingNodeId = useRef<string | null>(null);
   const [parentNode, setParentNode] = useState(null);
@@ -53,37 +44,12 @@ export const useEdgeConnection = () => {
           setChildNodePosition(position);
 
           if (position) {
-            const newNodeId = `node-${nanoid()}`; // Generate a unique ID for the new node
-            createNode(
-              'selectionMenu',
-              position,
-              nodes,
-              (newNode) => {
-                addNode({
-                  ...newNode,
-                  id: newNodeId,
-                  parentNode: parentNode.id // Ensure parent node ID is passed
-                });
-                addEdge({
-                  id: `e-${newNodeId}-${parentNode.id}`,
-                  source: parentNode.id,
-                  target: newNodeId,
-                  type: 'customEdge'
-                });
-              },
-              {
-                width: nodeDimensions['selectionMenu'].width,
-                height: nodeDimensions['selectionMenu'].height
-              },
-              true,
-              false,
-              parentNode
-            );
+            handleTemporaryNodeCreation(parentNode, position, 'selectionMenu');
           }
         }
       }
     },
-    [addEdge, nodeInternals, nodes, addNode, domNode, screenToFlowPosition]
+    [nodeInternals, domNode, screenToFlowPosition]
   );
 
   return {
