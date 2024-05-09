@@ -7,14 +7,14 @@ import { nodeDimensions } from './nodeProperties';
 export const handleTemporaryNodeCreation = (
   parentNode: Node | null,
   position: XYPosition,
-  nodeType: 'note' | 'task' | 'custom' | 'code' | 'draw' | 'selectionMenu'
+  nodeType: 'selectionMenu'
 ) => {
   const { addNode, addEdge, removeNode, nodes } = useStore.getState();
 
   const temporaryNodeId = `selectionMenu-${nanoid()}`;
   const temporaryNode: Node = {
     id: temporaryNodeId,
-    type: 'selectionMenu',
+    type: nodeType,
     position,
     data: {
       onSelect: (selectedNodeType, selectedPosition) => {
@@ -41,7 +41,7 @@ export const handleTemporaryNodeCreation = (
         );
       },
       onClose: () => removeNode(temporaryNodeId),
-      parentNode,
+      parentNode: parentNode,
       isTemporary: true
     },
     width: nodeDimensions['selectionMenu'].width,
