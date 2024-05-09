@@ -152,29 +152,16 @@ export const createNode = (
     };
 
     const newNode: Node<any> = {
-      id: nanoid(),
-      type: nodeType,
-      position,
-      data: {
-        isTemporary: false,
-        width: nodeDimensions[nodeType].width,
-        height: nodeDimensions[nodeType].height
-      },
-      width: nodeDimensions[nodeType].width,
-      height: nodeDimensions[nodeType].height
+      ...specificNode,
+      id: baseProperties.id,
+      type: baseProperties.type,
+      position: positionAsXYPosition,
+      data: specificNode,
+      width: nodeDimension.width,
+      height: nodeDimension.height
     };
 
-    const { addNode, addEdge } = useStore.getState();
-    addNode(newNode);
-
-    if (parentNode) {
-      addEdge({
-        id: `e-${nanoid()}`,
-        source: parentNode.id,
-        target: newNode.id,
-        type: 'customEdge'
-      });
-    }
+    console.log('nodeCreation: New node:', newNode);
 
     callback(newNode);
   }
