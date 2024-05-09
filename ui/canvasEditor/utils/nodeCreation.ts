@@ -49,7 +49,10 @@ export const createNode = (
   isEditing = false,
   parentNode?: Node<any> | null
 ) => {
-  console.log('nodeCreation: Creating node:', nodeType);
+  if (!position) {
+    console.error('createNode called with undefined position');
+    return;
+  }
 
   const dimensions = nodeDimensions[nodeType];
   let nodeDimension: { width: number; height: number };
@@ -157,7 +160,17 @@ export const createNode = (
       height: nodeDimension.height
     };
 
-    console.log('nodeCreation: New node:', newNode);
+    const { addNode, addEdge } = useStore.getState();
+    addNode(newNode);
+
+    if (parentNode) {
+      addEdge({
+        id: `e-${nanoid()}`,
+        source: parentNode.id,
+        target: newNode.id,
+        type: 'customEdge'
+      });
+    }
 
     callback(newNode);
   }

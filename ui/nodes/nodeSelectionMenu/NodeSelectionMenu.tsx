@@ -27,6 +27,7 @@ interface NodeSelectionMenuProps extends NodeProps {
   width: number;
   height: number;
 }
+
 const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
   data,
   width,
@@ -79,6 +80,10 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
   const handleNodeTypeSelect = (
     selectedNodeType: 'note' | 'task' | 'custom' | 'code' | 'draw'
   ) => {
+    if (!position || position.x === undefined || position.y === undefined) {
+      console.error('NodeSelectionMenu: Invalid position:', position);
+      return; // Prevent further execution if position is invalid
+    }
     createNode(
       selectedNodeType,
       { x: position.x, y: position.y },
