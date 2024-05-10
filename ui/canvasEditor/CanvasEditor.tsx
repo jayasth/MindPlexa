@@ -11,7 +11,8 @@ import ReactFlow, {
   ReactFlowProvider,
   NodeOrigin,
   ConnectionLineType,
-  ReactFlowInstance
+  ReactFlowInstance,
+  XYPosition
 } from 'reactflow';
 import Toolbar from './toolbar';
 import {
@@ -26,6 +27,7 @@ import { useStore } from '@/app/store/useCanvasStore';
 import { useNodeResizing } from '@/ui/canvasEditor/hooks/useNodeResizing';
 import { useEdgeConnection } from '@/ui/canvasEditor/hooks/useEdgeConnection';
 import { nanoid } from 'nanoid';
+import { handleTemporaryNodeCreation } from '@/ui/canvasEditor/utils/TemporaryNodeHandler';
 
 const nodeOrigin: NodeOrigin = [0.5, 0.5];
 const defaultEdgeOptions = {
@@ -48,7 +50,8 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
     setDomNode,
     domNode,
     nodeInternals,
-    removeNode
+    removeNode,
+    addEdge
   } = useStore((state) => ({
     nodes: state.nodes,
     edges: state.edges,
@@ -59,7 +62,8 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
     setDomNode: state.setDomNode,
     domNode: state.domNode,
     nodeInternals: state.nodeInternals,
-    removeNode: state.removeNode
+    removeNode: state.removeNode,
+    addEdge: state.addEdge
   }));
 
   const { handleNodeResizeStop } = useNodeResizing();
@@ -140,9 +144,22 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
     [setEdges]
   );
 
-  function setPosition(x: number, y: number): { x: number; y: number } {
-    return { x, y };
-  }
+  // Pass the necessary store functions to handleTemporaryNodeCreation
+  const handleTemporaryNodeCreationWithStore = (
+    parentNode: Node | null,
+    position: XYPosition,
+    nodeType: 'selectionMenu'
+  ) => {
+    handleTemporaryNodeCreation(
+      parentNode as any,
+      position,
+      nodeType,
+      addNode,
+      addEdge,
+      removeNode,
+      nodes
+    );
+  };
 
   useEffect(() => {
     console.log(

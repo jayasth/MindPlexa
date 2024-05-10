@@ -10,8 +10,8 @@ import { PiNotepad } from 'react-icons/pi';
 import { useStore } from '@/app/store/useCanvasStore';
 import styles from './NodeSelectionMenu.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
-import { createNode } from '@/ui/canvasEditor/utils/nodeCreation';
 import { nanoid } from 'nanoid';
+import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 
 interface NodeSelectionMenuProps extends NodeProps {
   data: {
@@ -38,12 +38,15 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
   position,
   parentNode
 }) => {
-  const { removeNode, addNode, nodes, addEdge } = useStore((state) => ({
-    removeNode: state.removeNode,
-    addNode: state.addNode,
-    nodes: state.nodes,
-    addEdge: state.addEdge
-  }));
+  const { removeNode, addNode, nodes, addEdge, updateNode } = useStore(
+    (state) => ({
+      removeNode: state.removeNode,
+      addNode: state.addNode,
+      nodes: state.nodes,
+      addEdge: state.addEdge,
+      updateNode: state.updateNode
+    })
+  );
 
   const nodeRef = useRef<HTMLDivElement>(null);
 
@@ -86,39 +89,47 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
       alert('Error: Invalid position for node creation.');
       return;
     }
-    createAndReplaceNode(selectedNodeType, data.position);
+    replaceNodeWithType(selectedNodeType, data.position);
   };
 
-  const createAndReplaceNode = (
+  const replaceNodeWithType = (
     nodeType: 'note' | 'task' | 'custom' | 'code' | 'draw',
     position: { x: number; y: number }
   ) => {
+    const newNodeId = nanoid();
+    const newNode = {
+      id: newNodeId,
+      type: nodeType,
+      position: position,
+      data: { label: 'New Node' },
+      width: nodeDimensions[nodeType].width,
+      height: nodeDimensions[nodeType].height
+    };
+
+    // Update the new node with the parent node information
+    if (parentNode) {
+      newNode.data = {
+        ...newNode.data,
+        parentNode: parentNode
+      } as any;
+    }
+
+    // Remove the NodeSelectionMenu
     removeNode(id);
 
-    setTimeout(() => {
-      createNode(
-        nodeType,
-        position,
-        nodes.filter((n) => n.id !== id),
-        (newNode) => {
-          addNode({
-            ...newNode,
-            id: nanoid(),
-            position: position
-          });
-          addEdge({
-            id: `e-${nanoid()}`,
-            source: parentNode.id,
-            target: newNode.id,
-            type: 'customEdge'
-          });
-        },
-        { width: 0, height: 0 },
-        false,
-        false,
-        parentNode
-      );
-    }, 0);
+    // Add the new node
+    addNode(newNode);
+
+    // Update the edges to connect the new node with the parent node
+    if (parentNode) {
+      const newEdgeId = nanoid();
+      addEdge({
+        id: newEdgeId,
+        source: parentNode.id,
+        target: newNodeId,
+        type: 'customEdge'
+      });
+    }
   };
 
   return (

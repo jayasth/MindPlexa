@@ -1,16 +1,18 @@
 import { nanoid } from 'nanoid';
-import { Node, XYPosition } from 'reactflow';
-import { useStore } from '@/app/store/useCanvasStore';
+import { Node, Edge, XYPosition } from 'reactflow';
 import { createNode } from './nodeCreation';
 import { nodeDimensions } from './nodeProperties';
 
 export const handleTemporaryNodeCreation = (
   parentNode: Node | null,
   position: XYPosition,
-  nodeType: 'selectionMenu'
+  nodeType: 'selectionMenu',
+  addNode: (node: Node) => void,
+  addEdge: (edge: Edge) => void,
+  removeNode: (id: string) => void,
+  nodes: Node[]
 ) => {
   console.log('Starting handleTemporaryNodeCreation');
-  const { addNode, addEdge, removeNode, nodes } = useStore.getState();
 
   const temporaryNodeId = `selectionMenu-${nanoid()}`;
 

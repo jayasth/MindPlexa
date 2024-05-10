@@ -25,20 +25,31 @@ function isPositionOccupied(
 function findAvailablePosition(
   initialPosition: XYPosition,
   nodeDimension: { width: number; height: number },
-  nodes: Node<any>[]
+  nodes: Node<any>[],
+  canvasSize: { width: number; height: number }
 ): XYPosition {
   const stepSize = 10;
   let x = 0,
     y = 0;
   let dx = 0;
   let dy = -1;
-  let maxI = 100;
+  let maxIterations = 100;
 
-  for (let i = 0; i < maxI; i++) {
+  const isPositionAvailable = (position: XYPosition): boolean => {
+    return (
+      !isPositionOccupied(position, nodes, nodeDimension) &&
+      position.x >= 0 &&
+      position.y >= 0 &&
+      position.x + nodeDimension.width <= canvasSize.width &&
+      position.y + nodeDimension.height <= canvasSize.height
+    );
+  };
+
+  for (let i = 0; i < maxIterations; i++) {
     let newX = initialPosition.x + x * stepSize;
     let newY = initialPosition.y + y * stepSize;
 
-    if (!isPositionOccupied({ x: newX, y: newY }, nodes, nodeDimension)) {
+    if (isPositionAvailable({ x: newX, y: newY })) {
       return { x: newX, y: newY };
     }
 
@@ -69,7 +80,8 @@ export const createNode = (
   const availablePosition = findAvailablePosition(
     position,
     nodeDimension,
-    nodes
+    nodes,
+    canvasSize
   );
 
   if (isPositionOccupied(availablePosition, nodes, nodeDimension)) {
@@ -125,3 +137,4 @@ export const createNode = (
 
   callback(newNode);
 };
+export { getNodeSpecificProperties };
