@@ -9,6 +9,7 @@ export const handleTemporaryNodeCreation = (
   position: XYPosition,
   nodeType: 'selectionMenu'
 ) => {
+  console.log('Starting handleTemporaryNodeCreation');
   const { addNode, addEdge, removeNode, nodes } = useStore.getState();
 
   const temporaryNodeId = `selectionMenu-${nanoid()}`;
@@ -26,7 +27,7 @@ export const handleTemporaryNodeCreation = (
             addNode(newNode);
             if (parentNode) {
               addEdge({
-                id: `e-${nanoid()}`,
+                id: `e-${temporaryNodeId}-${parentNode.id}`,
                 source: parentNode.id,
                 target: newNode.id,
                 type: 'customEdge'
@@ -58,4 +59,5 @@ export const handleTemporaryNodeCreation = (
       type: 'customEdge'
     });
   }
+  console.log('Finished handleTemporaryNodeCreation');
 };

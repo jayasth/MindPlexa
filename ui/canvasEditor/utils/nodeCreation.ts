@@ -50,6 +50,24 @@ export const createNode = (
   parentNode?: Node<any> | null,
   temporaryNodeId?: string
 ) => {
+  console.log(
+    'NodeCreation: createNode called with nodeType:',
+    nodeType,
+    'position:',
+    position,
+    'nodes:',
+    nodes,
+    'canvasSize:',
+    canvasSize,
+    'isTemporary:',
+    isTemporary,
+    'isEditing:',
+    isEditing,
+    'parentNode:',
+    parentNode,
+    'temporaryNodeId:',
+    temporaryNodeId
+  );
   if (!position) {
     console.error('NodeCreation: createNode called with undefined position');
     return;
@@ -86,9 +104,10 @@ export const createNode = (
 
   const positionAsXYPosition = setPosition(position.x, position.y);
 
-  while (isPositionOccupied(position, nodes, nodeDimension)) {
-    position.x += Math.random() * nodeDimension.width - nodeDimension.width / 2;
-    position.y +=
+  while (isPositionOccupied(positionAsXYPosition, nodes, nodeDimension)) {
+    positionAsXYPosition.x +=
+      Math.random() * nodeDimension.width - nodeDimension.width / 2;
+    positionAsXYPosition.y +=
       Math.random() * nodeDimension.height - nodeDimension.height / 2;
   }
 
@@ -138,7 +157,7 @@ export const createNode = (
     let baseProperties: Partial<BaseNode> & {
       id: string;
       type: string;
-      position: JsonPosition;
+      position: XYPosition;
     } = {
       id: nanoid(),
       type: nodeType,
@@ -160,6 +179,13 @@ export const createNode = (
       width: nodeDimension.width,
       height: nodeDimension.height
     };
+
+    if (parentNode) {
+      newNode.data = {
+        ...newNode.data,
+        parentNode: parentNode
+      };
+    }
 
     console.log('nodeCreation: New node:', newNode);
 

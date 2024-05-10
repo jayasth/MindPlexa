@@ -59,7 +59,6 @@ export const useStore = createStore<CanvasState>((set, get) => ({
   setEdges: (updater) => set((state) => ({ edges: updater(state.edges) })),
   addNode: (node) =>
     set((state) => {
-      console.log('Store: Adding node', node);
       const newNode = {
         ...node,
         id: nanoid(),

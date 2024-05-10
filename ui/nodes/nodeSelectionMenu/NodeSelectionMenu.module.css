@@ -18,6 +18,15 @@
   background-color: #f098d8;
 }
 
+.nodeSelectionMenuHandle.top {
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.nodeSelectionMenuHandle.bottom {
+  bottom: -10px;
+}
+
 .nodeButton {
   padding: 4px 8px;
   margin: 4px;
