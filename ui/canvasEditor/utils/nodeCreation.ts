@@ -8,61 +8,28 @@ const setPosition = (x: number, y: number): XYPosition => {
   return { x, y };
 };
 
-function isPositionOccupied(
-  newPosition: XYPosition,
-  existingNodes: Node<any>[],
-  nodeDimension: { width: number; height: number }
-): boolean {
-  return existingNodes.some(
-    (node) =>
-      newPosition.x < node.position.x + nodeDimension.width &&
-      newPosition.x + nodeDimension.width > node.position.x &&
-      newPosition.y < node.position.y + nodeDimension.height &&
-      newPosition.y + nodeDimension.height > node.position.y
-  );
-}
-
-function findAvailablePosition(
-  initialPosition: XYPosition,
-  nodeDimension: { width: number; height: number },
+function findNewPosition(
   nodes: Node<any>[],
   canvasSize: { width: number; height: number }
 ): XYPosition {
-  const stepSize = 10;
-  let x = 0,
-    y = 0;
-  let dx = 0;
-  let dy = -1;
-  let maxIterations = 100;
-
-  const isPositionAvailable = (position: XYPosition): boolean => {
-    return (
-      !isPositionOccupied(position, nodes, nodeDimension) &&
-      position.x >= 0 &&
-      position.y >= 0 &&
-      position.x + nodeDimension.width <= canvasSize.width &&
-      position.y + nodeDimension.height <= canvasSize.height
-    );
-  };
-
-  for (let i = 0; i < maxIterations; i++) {
-    let newX = initialPosition.x + x * stepSize;
-    let newY = initialPosition.y + y * stepSize;
-
-    if (isPositionAvailable({ x: newX, y: newY })) {
-      return { x: newX, y: newY };
-    }
-
-    if (x === y || (x < 0 && x === -y) || (x > 0 && x === 1 - y)) {
-      [dx, dy] = [-dy, dx];
-    }
-    [x, y] = [x + dx, y + dy];
+  if (nodes.length === 0) {
+    return { x: canvasSize.width / 2, y: canvasSize.height / 2 };
   }
 
-  console.error(
-    'nodeCreation: Failed to find an available position for the node'
-  );
-  return initialPosition;
+  const lastNode = nodes[nodes.length - 1];
+  const newPosition = {
+    x: lastNode.position.x + 50,
+    y: lastNode.position.y + 50
+  };
+
+  if (newPosition.x + 100 > canvasSize.width) {
+    newPosition.x = 50;
+  }
+  if (newPosition.y + 100 > canvasSize.height) {
+    newPosition.y = 50;
+  }
+
+  return newPosition;
 }
 
 export const createNode = (
@@ -77,19 +44,7 @@ export const createNode = (
   temporaryNodeId?: string
 ) => {
   const nodeDimension = nodeDimensions[nodeType];
-  const availablePosition = findAvailablePosition(
-    position,
-    nodeDimension,
-    nodes,
-    canvasSize
-  );
-
-  if (isPositionOccupied(availablePosition, nodes, nodeDimension)) {
-    console.error(
-      'NodeCreation: Position is already occupied. Skipping node creation.'
-    );
-    return;
-  }
+  const availablePosition = findNewPosition(nodes, canvasSize);
 
   const positionAsXYPosition: XYPosition = setPosition(
     availablePosition.x,
