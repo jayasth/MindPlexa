@@ -53,7 +53,7 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
         nodeRef.current &&
         !nodeRef.current.contains(event.target as Node) &&
         !(event.target as Element).classList.contains('node-type-button') &&
-        data.onClose // Check if onClose is a function before calling
+        data.onClose
       ) {
         data.onClose();
         removeNode(data.id);
@@ -84,7 +84,7 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
       data.position.y === undefined
     ) {
       alert('Error: Invalid position for node creation.');
-      return; // Prevent further execution if position is invalid
+      return;
     }
     createAndReplaceNode(selectedNodeType, data.position);
   };
@@ -93,20 +93,18 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
     nodeType: 'note' | 'task' | 'custom' | 'code' | 'draw',
     position: { x: number; y: number }
   ) => {
-    // Remove the NodeSelectionMenu first
     removeNode(id);
 
-    // Use a timeout to delay the creation of the new node to ensure state updates
     setTimeout(() => {
       createNode(
         nodeType,
         position,
-        nodes.filter((n) => n.id !== id), // Ensure the NodeSelectionMenu is not in the list
+        nodes.filter((n) => n.id !== id),
         (newNode) => {
           addNode({
             ...newNode,
-            id: nanoid(), // Generate a new ID for the node
-            position: position // Use the same position as the NodeSelectionMenu
+            id: nanoid(),
+            position: position
           });
           addEdge({
             id: `e-${nanoid()}`,

@@ -22,6 +22,38 @@ function isPositionOccupied(
   );
 }
 
+function findAvailablePosition(
+  initialPosition: XYPosition,
+  nodeDimension: { width: number; height: number },
+  nodes: Node<any>[]
+): XYPosition {
+  const stepSize = 10;
+  let x = 0,
+    y = 0;
+  let dx = 0;
+  let dy = -1;
+  let maxI = 100;
+
+  for (let i = 0; i < maxI; i++) {
+    let newX = initialPosition.x + x * stepSize;
+    let newY = initialPosition.y + y * stepSize;
+
+    if (!isPositionOccupied({ x: newX, y: newY }, nodes, nodeDimension)) {
+      return { x: newX, y: newY };
+    }
+
+    if (x === y || (x < 0 && x === -y) || (x > 0 && x === 1 - y)) {
+      [dx, dy] = [-dy, dx];
+    }
+    [x, y] = [x + dx, y + dy];
+  }
+
+  console.error(
+    'nodeCreation: Failed to find an available position for the node'
+  );
+  return initialPosition;
+}
+
 export const createNode = (
   nodeType: 'note' | 'task' | 'custom' | 'code' | 'draw' | 'selectionMenu',
   position: XYPosition,
@@ -34,15 +66,23 @@ export const createNode = (
   temporaryNodeId?: string
 ) => {
   const nodeDimension = nodeDimensions[nodeType];
+  const availablePosition = findAvailablePosition(
+    position,
+    nodeDimension,
+    nodes
+  );
 
-  if (isPositionOccupied(position, nodes, nodeDimension)) {
+  if (isPositionOccupied(availablePosition, nodes, nodeDimension)) {
     console.error(
       'NodeCreation: Position is already occupied. Skipping node creation.'
     );
     return;
   }
 
-  const positionAsXYPosition: XYPosition = setPosition(position.x, position.y);
+  const positionAsXYPosition: XYPosition = setPosition(
+    availablePosition.x,
+    availablePosition.y
+  );
 
   const nodeId = temporaryNodeId || `${nodeType}-${nanoid()}`;
 
