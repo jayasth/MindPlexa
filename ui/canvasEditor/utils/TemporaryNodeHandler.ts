@@ -13,35 +13,40 @@ export const handleTemporaryNodeCreation = (
   const { addNode, addEdge, removeNode, nodes } = useStore.getState();
 
   const temporaryNodeId = `selectionMenu-${nanoid()}`;
+
   const temporaryNode: Node = {
     id: temporaryNodeId,
     type: nodeType,
     position,
     data: {
       onSelect: (selectedNodeType, selectedPosition) => {
-        createNode(
-          selectedNodeType,
-          selectedPosition,
-          nodes,
-          (newNode) => {
-            addNode(newNode);
-            if (parentNode) {
-              addEdge({
-                id: `e-${temporaryNodeId}-${parentNode.id}`,
-                source: parentNode.id,
-                target: newNode.id,
-                type: 'customEdge'
-              });
-            }
-            removeNode(temporaryNodeId);
-          },
-          { width: 0, height: 0 },
-          false,
-          false,
-          parentNode
-        );
+        removeNode(temporaryNodeId);
+        setTimeout(() => {
+          createNode(
+            selectedNodeType,
+            selectedPosition,
+            nodes.filter((n) => n.id !== temporaryNodeId),
+            (newNode) => {
+              addNode(newNode);
+              if (parentNode) {
+                addEdge({
+                  id: `e-${temporaryNodeId}-${parentNode.id}`,
+                  source: parentNode.id,
+                  target: newNode.id,
+                  type: 'customEdge'
+                });
+              }
+            },
+            { width: 0, height: 0 },
+            false,
+            false,
+            parentNode
+          );
+        }, 0);
       },
-      onClose: () => removeNode(temporaryNodeId),
+      onClose: () => {
+        removeNode(temporaryNodeId);
+      },
       parentNode: parentNode,
       isTemporary: true
     },

@@ -38,15 +38,12 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
   position,
   parentNode
 }) => {
-  const { removeNode, addNode, setNodes, nodes, addEdge } = useStore(
-    (state) => ({
-      removeNode: state.removeNode,
-      addNode: state.addNode,
-      setNodes: state.setNodes,
-      nodes: state.nodes,
-      addEdge: state.addEdge
-    })
-  );
+  const { removeNode, addNode, nodes, addEdge } = useStore((state) => ({
+    removeNode: state.removeNode,
+    addNode: state.addNode,
+    nodes: state.nodes,
+    addEdge: state.addEdge
+  }));
 
   const nodeRef = useRef<HTMLDivElement>(null);
 
@@ -55,7 +52,8 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
       if (
         nodeRef.current &&
         !nodeRef.current.contains(event.target as Node) &&
-        !(event.target as Element).classList.contains('node-type-button')
+        !(event.target as Element).classList.contains('node-type-button') &&
+        data.onClose // Check if onClose is a function before calling
       ) {
         data.onClose();
         removeNode(data.id);
@@ -85,43 +83,44 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
       data.position.x === undefined ||
       data.position.y === undefined
     ) {
-      console.error('NodeSelectionMenu: Invalid position:', data.position);
+      alert('Error: Invalid position for node creation.');
       return; // Prevent further execution if position is invalid
     }
-    createNode(
-      selectedNodeType,
-      data.position,
-      nodes,
-      (newNode) => {
-        addNode(newNode);
-        if (parentNode) {
-          setNodes((prevNodes) =>
-            prevNodes.map((node) =>
-              node.id === parentNode.id
-                ? {
-                    ...node,
-                    data: {
-                      ...node.data,
-                      childNode: newNode.id
-                    }
-                  }
-                : node
-            )
-          );
+    createAndReplaceNode(selectedNodeType, data.position);
+  };
+
+  const createAndReplaceNode = (
+    nodeType: 'note' | 'task' | 'custom' | 'code' | 'draw',
+    position: { x: number; y: number }
+  ) => {
+    // Remove the NodeSelectionMenu first
+    removeNode(id);
+
+    // Use a timeout to delay the creation of the new node to ensure state updates
+    setTimeout(() => {
+      createNode(
+        nodeType,
+        position,
+        nodes.filter((n) => n.id !== id), // Ensure the NodeSelectionMenu is not in the list
+        (newNode) => {
+          addNode({
+            ...newNode,
+            id: nanoid(), // Generate a new ID for the node
+            position: position // Use the same position as the NodeSelectionMenu
+          });
           addEdge({
             id: `e-${nanoid()}`,
             source: parentNode.id,
             target: newNode.id,
             type: 'customEdge'
           });
-        }
-        removeNode(id);
-      },
-      { width: 0, height: 0 },
-      false,
-      false,
-      parentNode
-    );
+        },
+        { width: 0, height: 0 },
+        false,
+        false,
+        parentNode
+      );
+    }, 0);
   };
 
   return (

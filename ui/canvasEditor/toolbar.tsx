@@ -11,6 +11,7 @@ import {
   FaDownload
 } from 'react-icons/fa';
 import { MdFormatListBulletedAdd } from 'react-icons/md';
+import { nanoid } from 'nanoid';
 
 import { PiNotepad } from 'react-icons/pi';
 import Link from 'next/link';
@@ -49,6 +50,9 @@ const Toolbar: React.FC<ToolbarProps> = ({
         x: canvasSize.width / 2 - 50,
         y: canvasSize.height / 2 - 75
       };
+
+      const temporaryNodeId =
+        type === 'selectionMenu' ? `selectionMenu-${nanoid()}` : undefined;
 
       createNode(
         type,

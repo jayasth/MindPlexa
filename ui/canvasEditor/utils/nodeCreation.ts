@@ -3,22 +3,13 @@ import type { Json, Tables } from '@/types_db';
 import { getNodeSpecificProperties, nodeDimensions } from './nodeProperties';
 import { nanoid } from 'nanoid';
 import { useStore } from '@/app/store/useCanvasStore';
-import { handleTemporaryNodeCreation } from '@/ui/canvasEditor/utils/TemporaryNodeHandler';
 
-type BaseNode = Tables<'base_nodes'>;
-
-interface JsonPosition {
-  x: number;
-  y: number;
-  [key: string]: Json | number | undefined;
-}
-
-const setPosition = (x: number, y: number): JsonPosition => {
+const setPosition = (x: number, y: number): XYPosition => {
   return { x, y };
 };
 
 function isPositionOccupied(
-  newPosition: { x: number; y: number },
+  newPosition: XYPosition,
   existingNodes: Node<any>[],
   nodeDimension: { width: number; height: number }
 ): boolean {
@@ -31,14 +22,6 @@ function isPositionOccupied(
   );
 }
 
-const isEditableNode = (
-  nodeType: string
-): nodeType is 'note' | 'task' | 'custom' | 'code' | 'draw' => {
-  return ['note', 'task', 'custom', 'code', 'draw'].includes(
-    nodeType as 'note' | 'task' | 'custom' | 'code' | 'draw'
-  );
-};
-
 export const createNode = (
   nodeType: 'note' | 'task' | 'custom' | 'code' | 'draw' | 'selectionMenu',
   position: XYPosition,
@@ -50,145 +33,55 @@ export const createNode = (
   parentNode?: Node<any> | null,
   temporaryNodeId?: string
 ) => {
-  console.log(
-    'NodeCreation: createNode called with nodeType:',
-    nodeType,
-    'position:',
-    position,
-    'nodes:',
-    nodes,
-    'canvasSize:',
-    canvasSize,
-    'isTemporary:',
-    isTemporary,
-    'isEditing:',
-    isEditing,
-    'parentNode:',
-    parentNode,
-    'temporaryNodeId:',
-    temporaryNodeId
-  );
-  if (!position) {
-    console.error('NodeCreation: createNode called with undefined position');
+  const nodeDimension = nodeDimensions[nodeType];
+
+  if (isPositionOccupied(position, nodes, nodeDimension)) {
+    console.error(
+      'NodeCreation: Position is already occupied. Skipping node creation.'
+    );
     return;
   }
 
-  const dimensions = nodeDimensions[nodeType];
-  let nodeDimension: { width: number; height: number };
+  const positionAsXYPosition: XYPosition = setPosition(position.x, position.y);
 
-  if (nodeType === 'selectionMenu') {
-    nodeDimension = {
-      width: dimensions.width,
-      height: dimensions.height
-    };
-  } else if (
-    isEditing &&
-    'editWidth' in dimensions &&
-    'editHeight' in dimensions
-  ) {
-    nodeDimension = {
-      width: dimensions.editWidth,
-      height: dimensions.editHeight
-    };
-  } else {
-    nodeDimension = {
-      width: dimensions.width,
-      height: dimensions.height
+  const nodeId = temporaryNodeId || `${nodeType}-${nanoid()}`;
+
+  const defaultProperties = {
+    draggable: true,
+    connectable: true,
+    selectable: true
+  };
+
+  const baseProperties: Partial<Node<any>> = {
+    id: nodeId,
+    type: nodeType,
+    position: positionAsXYPosition,
+    ...defaultProperties
+  };
+
+  const specificNode = {
+    ...baseProperties,
+    ...getNodeSpecificProperties(nodeType, isEditing)
+  };
+
+  const newNode: Node<any> = {
+    ...specificNode,
+    id: baseProperties.id || '',
+    type: baseProperties.type || '',
+    position: positionAsXYPosition,
+    data: specificNode,
+    width: nodeDimension.width,
+    height: nodeDimension.height
+  };
+
+  if (parentNode) {
+    newNode.data = {
+      ...newNode.data,
+      parentNode: parentNode
     };
   }
 
-  if (!Array.isArray(nodes)) {
-    console.error('Invalid nodes array');
-    return;
-  }
+  console.log('nodeCreation: New node:', newNode);
 
-  const positionAsXYPosition = setPosition(position.x, position.y);
-
-  while (isPositionOccupied(positionAsXYPosition, nodes, nodeDimension)) {
-    positionAsXYPosition.x +=
-      Math.random() * nodeDimension.width - nodeDimension.width / 2;
-    positionAsXYPosition.y +=
-      Math.random() * nodeDimension.height - nodeDimension.height / 2;
-  }
-
-  if (nodeType === 'selectionMenu') {
-    if (parentNode) {
-      handleTemporaryNodeCreation(parentNode, positionAsXYPosition, nodeType);
-    } else {
-      const newNode: Node<any> = {
-        id: `selectionMenu-${nanoid()}`,
-        type: nodeType,
-        position: positionAsXYPosition,
-        data: {
-          onSelect: (selectedNodeType, selectedPosition) => {
-            createNode(
-              selectedNodeType,
-              selectedPosition,
-              nodes,
-              callback,
-              canvasSize,
-              false,
-              false,
-              null
-            );
-          },
-          onClose: () => {
-            const { removeNode } = useStore.getState();
-            removeNode(newNode.id);
-          },
-          isTemporary: true
-        },
-        width: nodeDimension.width,
-        height: nodeDimension.height
-      };
-
-      callback(newNode);
-    }
-  } else {
-    const defaultProperties = {
-      isEditing: isEditing,
-      draggable: true,
-      connectable: true,
-      width: nodeDimension.width,
-      height: nodeDimension.height,
-      title: `Untitled ${nodeType.charAt(0).toUpperCase() + nodeType.slice(1)}`
-    };
-
-    let baseProperties: Partial<BaseNode> & {
-      id: string;
-      type: string;
-      position: XYPosition;
-    } = {
-      id: nanoid(),
-      type: nodeType,
-      position: positionAsXYPosition,
-      ...defaultProperties
-    };
-
-    const specificNode = {
-      ...baseProperties,
-      ...getNodeSpecificProperties(nodeType, isEditing)
-    };
-
-    const newNode: Node<any> = {
-      ...specificNode,
-      id: baseProperties.id,
-      type: baseProperties.type,
-      position: positionAsXYPosition,
-      data: specificNode,
-      width: nodeDimension.width,
-      height: nodeDimension.height
-    };
-
-    if (parentNode) {
-      newNode.data = {
-        ...newNode.data,
-        parentNode: parentNode
-      };
-    }
-
-    console.log('nodeCreation: New node:', newNode);
-
-    callback(newNode);
-  }
+  callback(newNode);
 };
