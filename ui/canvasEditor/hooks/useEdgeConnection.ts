@@ -1,18 +1,17 @@
 import { useCallback, useRef, useState } from 'react';
 import { useStore } from '@/app/store/useCanvasStore';
 import { getChildNodePosition } from '@/ui/canvasEditor/utils/getChildNodePosition';
-import { handleTemporaryNodeCreation } from '@/ui/canvasEditor/utils/TemporaryNodeHandler';
 import type { XYPosition } from 'reactflow';
 
 export const useEdgeConnection = () => {
-  const { nodes, nodeInternals, domNode, screenToFlowPosition } = useStore(
-    (state) => ({
+  const { nodes, nodeInternals, domNode, screenToFlowPosition, addChildNode } =
+    useStore((state) => ({
       nodes: state.nodes,
       nodeInternals: state.nodeInternals,
       domNode: state.domNode,
-      screenToFlowPosition: state.screenToFlowPosition
-    })
-  );
+      screenToFlowPosition: state.screenToFlowPosition,
+      addChildNode: state.addChildNode
+    }));
 
   const connectingNodeId = useRef<string | null>(null);
   const [parentNode, setParentNode] = useState(null);
@@ -44,12 +43,12 @@ export const useEdgeConnection = () => {
           setChildNodePosition(position);
 
           if (position) {
-            handleTemporaryNodeCreation(parentNode, position, 'selectionMenu');
+            addChildNode(parentNode, position, 'selectionMenu');
           }
         }
       }
     },
-    [nodeInternals, domNode, screenToFlowPosition]
+    [nodeInternals, domNode, screenToFlowPosition, addChildNode]
   );
 
   return {

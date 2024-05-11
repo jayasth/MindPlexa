@@ -196,7 +196,16 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
             onEdgesChange={onEdgesChange}
             onConnect={handleConnect}
             onConnectStart={onConnectStart}
-            onConnectEnd={onConnectEnd}
+            onConnectEnd={(event) => {
+              onConnectEnd(event);
+              if (parentNode && childNodePosition) {
+                handleTemporaryNodeCreationWithStore(
+                  parentNode,
+                  childNodePosition,
+                  'selectionMenu'
+                );
+              }
+            }}
             nodeTypes={nodeTypes}
             edgeTypes={edgeTypes}
             nodeOrigin={nodeOrigin}

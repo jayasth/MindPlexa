@@ -96,11 +96,11 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
     nodeType: 'note' | 'task' | 'custom' | 'code' | 'draw',
     position: { x: number; y: number }
   ) => {
-    const newNodeId = nanoid();
+    console.log('NodeSelectionMenu: replaceNodeWithType');
     const newNode = {
-      id: newNodeId,
+      id: id, // Use existing NodeSelectionMenu id
       type: nodeType,
-      position: position,
+      position: position, // Use existing NodeSelectionMenu position
       data: { label: 'New Node' },
       width: nodeDimensions[nodeType].width,
       height: nodeDimensions[nodeType].height
@@ -126,7 +126,7 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
       addEdge({
         id: newEdgeId,
         source: parentNode.id,
-        target: newNodeId,
+        target: id, // Use existing NodeSelectionMenu id
         type: 'customEdge'
       });
     }

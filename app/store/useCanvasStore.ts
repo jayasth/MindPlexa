@@ -70,22 +70,31 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       return { nodes: [...state.nodes, newNode] };
     }),
   updateNode: (id, data) =>
-    set((state) => ({
-      nodes: state.nodes.map((node) => {
-        if (node.id === id) {
-          const updatedNode = {
-            ...node,
-            ...data,
-            position: data.position || node.position,
-            width: data.width || node.width,
-            height: data.height || node.height
-          };
-          state.nodeInternals.set(id, updatedNode);
-          return updatedNode;
-        }
-        return node;
-      })
-    })),
+    set((state) => {
+      const existingNodeIndex = state.nodes.findIndex((node) => node.id === id);
+      if (existingNodeIndex !== -1) {
+        const updatedNodes = [...state.nodes];
+        const updatedNode = {
+          ...state.nodes[existingNodeIndex],
+          ...data,
+          position: data.position || state.nodes[existingNodeIndex].position,
+          width: data.width || state.nodes[existingNodeIndex].width,
+          height: data.height || state.nodes[existingNodeIndex].height
+        };
+        updatedNodes[existingNodeIndex] = updatedNode;
+        state.nodeInternals.set(id, updatedNode);
+        return { nodes: updatedNodes };
+      } else {
+        const newNode = {
+          ...data,
+          id: id,
+          draggable: true,
+          connectable: true
+        };
+        state.nodeInternals.set(id, newNode);
+        return { nodes: [...state.nodes, newNode] };
+      }
+    }),
   addEdge: (edge) =>
     set((state) => ({
       edges: [...state.edges, { ...edge, id: nanoid() }]
