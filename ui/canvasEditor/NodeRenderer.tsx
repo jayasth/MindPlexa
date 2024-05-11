@@ -13,7 +13,10 @@ import DrawNode from '@/ui/nodes/drawNode/DrawNodeView';
 import DrawNodeEdit from '@/ui/nodes/drawNode/DrawNodeEdit';
 import NodeSelectionMenu from '@/ui/nodes/nodeSelectionMenu/NodeSelectionMenu';
 import { useStore } from '@/app/store/useCanvasStore';
-import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
+import {
+  nodeDimensions,
+  getNodeSpecificProperties
+} from '@/ui/canvasEditor/utils/nodeProperties';
 
 interface NodeRendererProps extends NodeProps {
   onNodeResizeStop: (
@@ -35,16 +38,9 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
   const updateNode = useStore((state) => state.updateNode);
   const toggleEditMode = useStore((state) => state.toggleEditMode);
 
-  const [size, setSize] = useState({
-    width:
-      node?.type !== 'selectionMenu'
-        ? node?.width || nodeDimensions[node?.type]?.width || 0
-        : nodeDimensions[node?.type]?.width || 0,
-    height:
-      node?.type !== 'selectionMenu'
-        ? node?.height || nodeDimensions[node?.type]?.height || 0
-        : nodeDimensions[node?.type]?.height || 0
-  });
+  const [size, setSize] = useState(
+    getNodeSpecificProperties(node.type, node.isEditing)
+  );
 
   useEffect(() => {
     if (node && node.type !== 'selectionMenu') {
@@ -55,26 +51,12 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
   }, [node?.width, node?.height, node?.type, id]);
 
   useEffect(() => {
-    if (node.type === 'selectionMenu') {
-      setSize({
-        width: nodeDimensions[node.type].width,
-        height: nodeDimensions[node.type].height
-      });
-    } else {
-      const newSize = {
-        width: node.isEditing
-          ? nodeDimensions[node.type].editWidth
-          : nodeDimensions[node.type].width,
-        height: node.isEditing
-          ? nodeDimensions[node.type].editHeight
-          : nodeDimensions[node.type].height
-      };
-      setSize(newSize);
-      updateNode(id, newSize);
-      console.log(
-        `NodeRenderer: Updated size for node ${id}: width = ${newSize.width}, height = ${newSize.height}`
-      );
-    }
+    const newSize = getNodeSpecificProperties(node.type, node.isEditing);
+    setSize(newSize);
+    updateNode(id, newSize);
+    console.log(
+      `NodeRenderer: Updated size for node ${id}: width = ${newSize.width}, height = ${newSize.height}`
+    );
   }, [node.isEditing, node.type, updateNode, id]);
 
   const handleResizeStop = (event, newSize) => {
@@ -86,30 +68,18 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     updateNode(id, newSize);
     onNodeResizeStop(id, newSize, newPosition);
     console.log(
-      `NodeRenderer: Resize stop for node ${id}: new size = width: ${newSize.width}, height: ${newSize.height}`
+      `NodeRenderer: Resize stop for node ${id}: new size = width: ${newSize.width}, height = ${newSize.height}`
     );
   };
 
   const handleEdit = () => {
     if (node.type !== 'selectionMenu') {
       toggleEditMode(id);
-      const newWidth = node.isEditing
-        ? nodeDimensions[node.type].width
-        : nodeDimensions[node.type].editWidth;
-      const newHeight = node.isEditing
-        ? nodeDimensions[node.type].height
-        : nodeDimensions[node.type].editHeight;
-      updateNode(id, {
-        width: newWidth,
-        height: newHeight
-      });
-      onNodeResizeStop(
-        id,
-        { width: newWidth, height: newHeight },
-        node.position
-      );
+      const newSize = getNodeSpecificProperties(node.type, !node.isEditing);
+      updateNode(id, newSize);
+      onNodeResizeStop(id, newSize, node.position);
       console.log(
-        `NodeRenderer: Edit toggle for node ${id}: new size = width: ${newWidth}, height = ${newHeight}`
+        `NodeRenderer: Edit toggle for node ${id}: new size = width: ${newSize.width}, height: ${newSize.height}`
       );
     }
   };
@@ -140,6 +110,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
   };
 
   if (node.type === 'selectionMenu') {
+    console.log('NodeRenderer: Rendering NodeSelectionMenu');
     return (
       <NodeSelectionMenu
         id={id}

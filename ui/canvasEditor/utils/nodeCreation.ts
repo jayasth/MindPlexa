@@ -66,7 +66,9 @@ export const createNode = (
 
   const specificNode = {
     ...baseProperties,
-    ...getNodeSpecificProperties(nodeType, isEditing)
+    ...getNodeSpecificProperties(nodeType, isEditing),
+    width: nodeDimension.width,
+    height: nodeDimension.height
   };
 
   const newNode: Node<any> = {

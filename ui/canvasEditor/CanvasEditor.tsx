@@ -215,6 +215,7 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
                 );
               }
             }}
+            onNodeDragStop={onNodeDragStop}
             nodeTypes={nodeTypes}
             edgeTypes={edgeTypes}
             nodeOrigin={nodeOrigin}

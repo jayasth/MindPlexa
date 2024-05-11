@@ -89,29 +89,34 @@ export const useStore = createStore<CanvasState>((set, get) => ({
     });
   },
   updateNode: (id, data) => {
-    console.log('Store: Updating node with id:', id, 'and data:', data);
+    console.log('Store: Pre-update node check:', { id, data });
     set((state) => {
       const existingNodeIndex = state.nodes.findIndex((node) => node.id === id);
       if (existingNodeIndex !== -1) {
-        const updatedNodes = [...state.nodes];
+        // Node exists, update it
+        const existingNode = state.nodes[existingNodeIndex];
         const updatedNode = {
-          ...state.nodes[existingNodeIndex],
+          ...existingNode,
           ...data,
-          position: data.position || state.nodes[existingNodeIndex].position,
-          width: data.width || state.nodes[existingNodeIndex].width,
-          height: data.height || state.nodes[existingNodeIndex].height
+          position: data.position || existingNode.position,
+          width: data.width || existingNode.width,
+          height: data.height || existingNode.height
         };
+        const updatedNodes = [...state.nodes];
         updatedNodes[existingNodeIndex] = updatedNode;
         state.nodeInternals.set(id, updatedNode);
+        console.log('Store: Updated node:', updatedNode);
         return { nodes: updatedNodes };
       } else {
+        // Node does not exist, create new
         const newNode = {
           ...data,
           id: id,
-          draggable: true,
-          connectable: true
+          draggable: data.draggable !== undefined ? data.draggable : true,
+          connectable: data.connectable !== undefined ? data.connectable : true
         };
         state.nodeInternals.set(id, newNode);
+        console.log('Store: Added new node:', newNode);
         return { nodes: [...state.nodes, newNode] };
       }
     });
@@ -283,18 +288,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
     console.log('Store: Applying node changes:', changes);
     set((state) => {
       const updatedNodes = applyNodeChanges(changes, state.nodes);
-      return {
-        nodes: updatedNodes.map((node) => {
-          if (node.type === 'selectionMenu') {
-            return {
-              ...node,
-              width: nodeDimensions['selectionMenu'].width,
-              height: nodeDimensions['selectionMenu'].height
-            };
-          }
-          return node;
-        })
-      };
+      return { nodes: updatedNodes };
     });
   },
   onEdgesChange: (changes) => {
