@@ -1,8 +1,6 @@
 import { Node, XYPosition } from 'reactflow';
-import type { Json, Tables } from '@/types_db';
 import { getNodeSpecificProperties, nodeDimensions } from './nodeProperties';
 import { nanoid } from 'nanoid';
-import { useStore } from '@/app/store/useCanvasStore';
 
 const setPosition = (x: number, y: number): XYPosition => {
   return { x, y };

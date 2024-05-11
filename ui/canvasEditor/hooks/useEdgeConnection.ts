@@ -3,6 +3,7 @@ import { useStore } from '@/app/store/useCanvasStore';
 import { getChildNodePosition } from '@/ui/canvasEditor/utils/getChildNodePosition';
 import { nanoid } from 'nanoid';
 import type { XYPosition } from 'reactflow';
+import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 
 export const useEdgeConnection = () => {
   const {
@@ -11,14 +12,16 @@ export const useEdgeConnection = () => {
     domNode,
     screenToFlowPosition,
     addChildNode,
-    addEdge
+    addEdge,
+    addNode
   } = useStore((state) => ({
     nodes: state.nodes,
     nodeInternals: state.nodeInternals,
     domNode: state.domNode,
     screenToFlowPosition: state.screenToFlowPosition,
     addChildNode: state.addChildNode,
-    addEdge: state.addEdge
+    addEdge: state.addEdge,
+    addNode: state.addNode
   }));
 
   const connectingNodeId = useRef<string | null>(null);
@@ -51,7 +54,26 @@ export const useEdgeConnection = () => {
           setChildNodePosition(position);
 
           if (position) {
-            addChildNode(parentNode, position, 'selectionMenu');
+            const tempNodeId = nanoid();
+            const tempNode = {
+              id: tempNodeId,
+              type: 'selectionMenu',
+              position,
+              data: {},
+              width: nodeDimensions['selectionMenu'].width,
+              height: nodeDimensions['selectionMenu'].height
+            };
+
+            addNode(tempNode);
+
+            const newEdge = {
+              id: nanoid(),
+              source: parentNode.id,
+              target: tempNodeId,
+              type: 'customEdge'
+            };
+
+            addEdge(newEdge);
           }
         }
       } else if (connectingNodeId.current) {
@@ -71,7 +93,14 @@ export const useEdgeConnection = () => {
       setParentNode(null);
       connectingNodeId.current = null;
     },
-    [nodeInternals, domNode, screenToFlowPosition, addChildNode, addEdge]
+    [
+      nodeInternals,
+      domNode,
+      screenToFlowPosition,
+      addChildNode,
+      addEdge,
+      addNode
+    ]
   );
 
   return {

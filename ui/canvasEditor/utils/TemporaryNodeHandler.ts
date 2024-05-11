@@ -39,7 +39,10 @@ export const handleTemporaryNodeCreation = (
                 });
               }
             },
-            { width: 0, height: 0 },
+            {
+              width: nodeDimensions['selectionMenu'].width,
+              height: nodeDimensions['selectionMenu'].height
+            },
             false,
             false,
             parentNode
@@ -55,6 +58,11 @@ export const handleTemporaryNodeCreation = (
     width: nodeDimensions['selectionMenu'].width,
     height: nodeDimensions['selectionMenu'].height
   };
+
+  console.log(
+    'TemporaryNodeHandler: Node dimensions: ',
+    nodeDimensions['selectionMenu']
+  );
 
   addNode(temporaryNode);
 

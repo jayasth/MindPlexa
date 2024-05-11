@@ -30,15 +30,7 @@ export const getNodeSpecificProperties = (
   const dimensions = nodeDimensions[nodeType];
   const baseProperties = {
     draggable: true,
-    connectable: true,
-    width:
-      isEditing && 'editWidth' in dimensions
-        ? dimensions.editWidth
-        : dimensions.width,
-    height:
-      isEditing && 'editHeight' in dimensions
-        ? dimensions.editHeight
-        : dimensions.height
+    connectable: true
   };
 
   switch (nodeType) {
@@ -49,10 +41,22 @@ export const getNodeSpecificProperties = (
     case 'draw':
       return {
         ...baseProperties,
+        width:
+          isEditing && 'editWidth' in dimensions
+            ? dimensions.editWidth
+            : dimensions.width,
+        height:
+          isEditing && 'editHeight' in dimensions
+            ? dimensions.editHeight
+            : dimensions.height,
         isEditing: isEditing
       };
     case 'selectionMenu':
-      return { ...baseProperties };
+      return {
+        ...baseProperties,
+        width: dimensions.width,
+        height: dimensions.height
+      };
     default:
       throw new Error('Invalid node type');
   }

@@ -110,11 +110,9 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
       draw: (props) => (
         <NodeRenderer {...props} onNodeResizeStop={handleNodeResizeStop} />
       ),
-      selectionMenu: (props) => (
-        <NodeSelectionMenu {...props} onNodeResizeStop={handleNodeResizeStop} />
-      )
+      selectionMenu: (props) => <NodeSelectionMenu {...props} />
     }),
-    [handleNodeResizeStop, parentNode, childNodePosition]
+    [parentNode, childNodePosition]
   );
 
   const handleConnect = useCallback(
