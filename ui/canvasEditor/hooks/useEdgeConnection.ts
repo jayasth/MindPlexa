@@ -1,17 +1,25 @@
 import { useCallback, useRef, useState } from 'react';
 import { useStore } from '@/app/store/useCanvasStore';
 import { getChildNodePosition } from '@/ui/canvasEditor/utils/getChildNodePosition';
+import { nanoid } from 'nanoid';
 import type { XYPosition } from 'reactflow';
 
 export const useEdgeConnection = () => {
-  const { nodes, nodeInternals, domNode, screenToFlowPosition, addChildNode } =
-    useStore((state) => ({
-      nodes: state.nodes,
-      nodeInternals: state.nodeInternals,
-      domNode: state.domNode,
-      screenToFlowPosition: state.screenToFlowPosition,
-      addChildNode: state.addChildNode
-    }));
+  const {
+    nodes,
+    nodeInternals,
+    domNode,
+    screenToFlowPosition,
+    addChildNode,
+    addEdge
+  } = useStore((state) => ({
+    nodes: state.nodes,
+    nodeInternals: state.nodeInternals,
+    domNode: state.domNode,
+    screenToFlowPosition: state.screenToFlowPosition,
+    addChildNode: state.addChildNode,
+    addEdge: state.addEdge
+  }));
 
   const connectingNodeId = useRef<string | null>(null);
   const [parentNode, setParentNode] = useState(null);
@@ -46,9 +54,24 @@ export const useEdgeConnection = () => {
             addChildNode(parentNode, position, 'selectionMenu');
           }
         }
+      } else if (connectingNodeId.current) {
+        const sourceNode = nodeInternals.get(connectingNodeId.current);
+        const targetNode = event.target.getAttribute('data-id');
+
+        if (sourceNode && targetNode) {
+          addEdge({
+            id: nanoid(),
+            source: sourceNode.id,
+            target: targetNode,
+            type: 'customEdge'
+          });
+        }
       }
+
+      setParentNode(null);
+      connectingNodeId.current = null;
     },
-    [nodeInternals, domNode, screenToFlowPosition, addChildNode]
+    [nodeInternals, domNode, screenToFlowPosition, addChildNode, addEdge]
   );
 
   return {

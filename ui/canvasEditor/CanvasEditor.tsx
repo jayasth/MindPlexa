@@ -51,7 +51,8 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
     domNode,
     nodeInternals,
     removeNode,
-    addEdge
+    addEdge,
+    updateNode
   } = useStore((state) => ({
     nodes: state.nodes,
     edges: state.edges,
@@ -63,7 +64,8 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
     domNode: state.domNode,
     nodeInternals: state.nodeInternals,
     removeNode: state.removeNode,
-    addEdge: state.addEdge
+    addEdge: state.addEdge,
+    updateNode: state.updateNode
   }));
 
   const { handleNodeResizeStop } = useNodeResizing();
@@ -142,6 +144,15 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
       });
     },
     [setEdges]
+  );
+
+  const onNodeDragStop = useCallback(
+    (event, node) => {
+      if (node.type === 'selectionMenu') {
+        updateNode(node.id, { position: node.position });
+      }
+    },
+    [updateNode]
   );
 
   // Pass the necessary store functions to handleTemporaryNodeCreation

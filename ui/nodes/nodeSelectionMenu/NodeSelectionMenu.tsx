@@ -83,31 +83,27 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
     selectedNodeType: 'note' | 'task' | 'custom' | 'code' | 'draw'
   ) => {
     console.log('NodeSelectionMenu: Node type selected: ', selectedNodeType);
-    if (
-      !data.position ||
-      data.position.x === undefined ||
-      data.position.y === undefined
-    ) {
-      alert('Error: Invalid position for node creation.');
-      return;
-    }
-    replaceNodeWithType(selectedNodeType, data.position);
+    replaceNodeWithType(selectedNodeType);
   };
 
   const replaceNodeWithType = (
-    nodeType: 'note' | 'task' | 'custom' | 'code' | 'draw',
-    position: { x: number; y: number }
+    nodeType: 'note' | 'task' | 'custom' | 'code' | 'draw'
   ) => {
     console.log('NodeSelectionMenu: Replacing node with type: ', nodeType);
     const newNodeId = nanoid();
     const tempNode = nodes.find((n) => n.id === id);
 
+    if (!tempNode) {
+      console.error('Temporary node not found');
+      return;
+    }
+
     const newNode = {
       id: newNodeId,
       type: nodeType,
-      position: position,
+      position: tempNode.position,
       data: {
-        ...(tempNode?.data || {}),
+        ...(tempNode.data || {}),
         label: `${nodeType.charAt(0).toUpperCase() + nodeType.slice(1)} Node`
       },
       width: nodeDimensions[nodeType].width,
@@ -158,12 +154,12 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
       <Handle
         type="target"
         position={Position.Top}
-        className={`${styles.nodeSelectionMenuHandle} ${edgeStyles.reactFlowHandleTop}`}
+        className={`${edgeStyles.reactFlowHandle} ${edgeStyles.reactFlowHandleTop}`}
       />
       <Handle
         type="source"
         position={Position.Bottom}
-        className={`${styles.nodeSelectionMenuHandle} ${edgeStyles.reactFlowHandleBottom}`}
+        className={`${edgeStyles.reactFlowHandle} ${edgeStyles.reactFlowHandleBottom}`}
       />
     </div>
   );
