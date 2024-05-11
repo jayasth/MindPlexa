@@ -38,15 +38,16 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
   position,
   parentNode
 }) => {
-  const { removeNode, addNode, nodes, addEdge, updateNode } = useStore(
-    (state) => ({
+  const { removeNode, addNode, nodes, addEdge, updateNode, edges, removeEdge } =
+    useStore((state) => ({
       removeNode: state.removeNode,
       addNode: state.addNode,
       nodes: state.nodes,
       addEdge: state.addEdge,
-      updateNode: state.updateNode
-    })
-  );
+      updateNode: state.updateNode,
+      edges: state.edges,
+      removeEdge: state.removeEdge
+    }));
 
   const nodeRef = useRef<HTMLDivElement>(null);
 
@@ -81,6 +82,7 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
   const handleNodeTypeSelect = (
     selectedNodeType: 'note' | 'task' | 'custom' | 'code' | 'draw'
   ) => {
+    console.log('NodeSelectionMenu: Node type selected: ', selectedNodeType);
     if (
       !data.position ||
       data.position.x === undefined ||
@@ -96,40 +98,39 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
     nodeType: 'note' | 'task' | 'custom' | 'code' | 'draw',
     position: { x: number; y: number }
   ) => {
-    console.log('NodeSelectionMenu: replaceNodeWithType');
+    console.log('NodeSelectionMenu: Replacing node with type: ', nodeType);
+    const newNodeId = nanoid();
+    const tempNode = nodes.find((n) => n.id === id);
+
     const newNode = {
-      id: id, // Use existing NodeSelectionMenu id
+      id: newNodeId,
       type: nodeType,
-      position: position, // Use existing NodeSelectionMenu position
-      data: { label: 'New Node' },
+      position: position,
+      data: {
+        ...(tempNode?.data || {}),
+        label: `${nodeType.charAt(0).toUpperCase() + nodeType.slice(1)} Node`
+      },
       width: nodeDimensions[nodeType].width,
       height: nodeDimensions[nodeType].height
     };
 
-    // Update the new node with the parent node information
-    if (parentNode) {
-      newNode.data = {
-        ...newNode.data,
-        parentNode: parentNode
-      } as any;
-    }
-
-    // Remove the NodeSelectionMenu
     removeNode(id);
 
-    // Add the new node
     addNode(newNode);
 
-    // Update the edges to connect the new node with the parent node
-    if (parentNode) {
-      const newEdgeId = nanoid();
-      addEdge({
-        id: newEdgeId,
-        source: parentNode.id,
-        target: id, // Use existing NodeSelectionMenu id
-        type: 'customEdge'
-      });
-    }
+    const connectedEdges = edges.filter(
+      (edge) => edge.source === id || edge.target === id
+    );
+    connectedEdges.forEach((edge) => {
+      const newEdge = {
+        ...edge,
+        id: nanoid(),
+        source: edge.source === id ? newNodeId : edge.source,
+        target: edge.target === id ? newNodeId : edge.target
+      };
+      addEdge(newEdge);
+      removeEdge(edge.id);
+    });
   };
 
   return (
