@@ -28,6 +28,7 @@ import { useNodeResizing } from '@/ui/canvasEditor/hooks/useNodeResizing';
 import { useEdgeConnection } from '@/ui/canvasEditor/hooks/useEdgeConnection';
 import { nanoid } from 'nanoid';
 import { handleTemporaryNodeCreation } from '@/ui/canvasEditor/utils/TemporaryNodeHandler';
+import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 
 const nodeOrigin: NodeOrigin = [0.5, 0.5];
 const defaultEdgeOptions = {
@@ -110,11 +111,16 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
       draw: (props) => (
         <NodeRenderer {...props} onNodeResizeStop={handleNodeResizeStop} />
       ),
-      selectionMenu: (props) => <NodeSelectionMenu {...props} />
+      selectionMenu: (props) => (
+        <NodeSelectionMenu
+          {...props}
+          width={nodeDimensions['selectionMenu'].width}
+          height={nodeDimensions['selectionMenu'].height}
+        />
+      )
     }),
     [parentNode, childNodePosition]
   );
-
   const handleConnect = useCallback(
     (connection) => {
       if (!connection.source || !connection.target) {

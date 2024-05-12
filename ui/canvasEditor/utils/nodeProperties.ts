@@ -20,7 +20,7 @@ export const nodeDimensions: NodeDimensionTypes = {
   custom: { width: 200, height: 150, editWidth: 300, editHeight: 200 },
   code: { width: 200, height: 150, editWidth: 300, editHeight: 200 },
   draw: { width: 200, height: 150, editWidth: 300, editHeight: 200 },
-  selectionMenu: { width: 150, height: 250 }
+  selectionMenu: { width: 200, height: 100 }
 };
 
 export const getNodeSpecificProperties = (

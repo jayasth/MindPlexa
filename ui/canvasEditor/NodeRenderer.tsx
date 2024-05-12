@@ -11,7 +11,6 @@ import CodeNode from '@/ui/nodes/codeNode/CodeNodeView';
 import CodeNodeEdit from '@/ui/nodes/codeNode/CodeNodeEdit';
 import DrawNode from '@/ui/nodes/drawNode/DrawNodeView';
 import DrawNodeEdit from '@/ui/nodes/drawNode/DrawNodeEdit';
-import NodeSelectionMenu from '@/ui/nodes/nodeSelectionMenu/NodeSelectionMenu';
 import { useStore } from '@/app/store/useCanvasStore';
 import {
   nodeDimensions,
@@ -79,7 +78,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
       updateNode(id, newSize);
       onNodeResizeStop(id, newSize, node.position);
       console.log(
-        `NodeRenderer: Edit toggle for node ${id}: new size = width: ${newSize.width}, height: ${newSize.height}`
+        `NodeRenderer: Edit toggle for node ${id}: new size = width: ${newSize.width}, height = ${newSize.height}`
       );
     }
   };
@@ -105,44 +104,10 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     task: { view: TaskNode, edit: TaskNodeEdit },
     custom: { view: CustomNode, edit: CustomNodeEdit },
     code: { view: CodeNode, edit: CodeNodeEdit },
-    draw: { view: DrawNode, edit: DrawNodeEdit },
-    selectionMenu: NodeSelectionMenu
+    draw: { view: DrawNode, edit: DrawNodeEdit }
   };
 
-  if (node.type === 'selectionMenu') {
-    console.log('NodeRenderer: Rendering NodeSelectionMenu');
-    return (
-      <NodeSelectionMenu
-        id={id}
-        type={node.type}
-        zIndex={0}
-        isConnectable={true}
-        position={node.position}
-        parentNode={node}
-        xPos={node.position.x}
-        yPos={node.position.y}
-        dragging={false}
-        {...commonProps}
-        data={{
-          onSelect: (selectedNodeType, selectedPosition) => {
-            // Your existing onSelect logic
-          },
-          onClose: () => {
-            // Your existing onClose logic
-          },
-          position: {
-            x: node.position.x,
-            y: node.position.y
-          },
-          id: id,
-          type: node.type,
-          parentNode: node
-        }}
-        width={nodeDimensions[node.type].width}
-        height={nodeDimensions[node.type].height}
-      />
-    );
-  } else if (node.type in nodeComponents) {
+  if (node.type in nodeComponents) {
     const { view, edit } = nodeComponents[node.type];
     const NodeComponent = node.isEditing ? edit : view;
 
