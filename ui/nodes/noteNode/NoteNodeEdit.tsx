@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { NodeProps } from 'reactflow';
+import React, { useState, useEffect } from 'react';
+import { NodeProps, NodeResizer, Handle, Position } from 'reactflow';
 import { useStore } from '@/app/store/useCanvasStore';
 import styles from './NoteNodeEdit.module.css';
+import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 import {
   handleTitleChange,
   handleContentChange,
@@ -36,9 +37,21 @@ interface NoteNodeEditProps extends NodeProps {
   };
   width: number;
   height: number;
+  selected: boolean;
+  onNodeResizeStop: (
+    nodeId: string,
+    newSize: { width: number; height: number },
+    newPosition: { x: number; y: number }
+  ) => void;
 }
 
-const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({ data, width, height }) => {
+const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
+  data,
+  width,
+  height,
+  selected,
+  onNodeResizeStop
+}) => {
   const [title, setTitle] = useState(data.title || 'Untitled Note');
   const [content, setContent] = useState(data.content || '');
   const [backgroundColor, setBackgroundColor] = useState('#f8f8f8');
@@ -93,8 +106,28 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({ data, width, height }) => {
     if (file) setAttachedFile(file as File);
   };
 
+  const handleResizeStop = (event, newSize) => {
+    const newPosition = {
+      x: newSize.x,
+      y: newSize.y
+    };
+    onNodeResizeStop(data.id, newSize, newPosition);
+  };
+
+  useEffect(() => {
+    updateNode(data.id, { width, height });
+  }, [width, height, updateNode, data.id]);
+
   return (
     <div className={styles.noteNode} style={{ width, height, backgroundColor }}>
+      <NodeResizer
+        minWidth={100}
+        minHeight={150}
+        isVisible={selected}
+        onResize={handleResizeStop}
+        lineStyle={{ stroke: '#ff0071', strokeWidth: 2 }}
+        handleStyle={{ fill: '#ff0071' }}
+      />
       <div className={styles.header}>
         <input
           type="text"
@@ -128,6 +161,16 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({ data, width, height }) => {
           Attached file: {attachedFile.name}
         </div>
       )}
+      <Handle
+        type="target"
+        position={Position.Top}
+        className={`${edgeStyles.reactFlowHandle} ${edgeStyles.reactFlowHandleTop}`}
+      />
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        className={`${edgeStyles.reactFlowHandle} ${edgeStyles.reactFlowHandleBottom}`}
+      />
     </div>
   );
 };

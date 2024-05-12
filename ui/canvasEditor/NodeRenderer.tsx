@@ -120,6 +120,8 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
           width: size.width,
           height: size.height
         }}
+        selected={selected}
+        onNodeResizeStop={onNodeResizeStop}
       >
         <NodeResizer
           minWidth={100}
