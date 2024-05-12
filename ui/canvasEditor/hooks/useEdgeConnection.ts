@@ -41,8 +41,11 @@ export const useEdgeConnection = () => {
         'react-flow__pane'
       );
 
+      console.log('onConnectEnd: targetIsPane:', targetIsPane);
+
       if (targetIsPane && connectingNodeId.current) {
         const parentNode = nodeInternals.get(connectingNodeId.current);
+        console.log('onConnectEnd: parentNode:', parentNode);
 
         if (parentNode && domNode) {
           const position = getChildNodePosition(
@@ -51,7 +54,7 @@ export const useEdgeConnection = () => {
             domNode,
             screenToFlowPosition
           );
-          setChildNodePosition(position);
+          console.log('onConnectEnd: position:', position);
 
           if (position) {
             const tempNodeId = nanoid();
@@ -73,6 +76,7 @@ export const useEdgeConnection = () => {
               type: 'customEdge'
             };
 
+            console.log('onConnectEnd: Adding new edge:', newEdge);
             addEdge(newEdge);
           }
         }
@@ -81,12 +85,15 @@ export const useEdgeConnection = () => {
         const targetNode = event.target.getAttribute('data-id');
 
         if (sourceNode && targetNode) {
-          addEdge({
+          const newEdge = {
             id: nanoid(),
             source: sourceNode.id,
             target: targetNode,
             type: 'customEdge'
-          });
+          };
+
+          console.log('onConnectEnd: Adding new edge between nodes:', newEdge);
+          addEdge(newEdge);
         }
       }
 

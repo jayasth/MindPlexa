@@ -110,10 +110,7 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
       height: nodeDimensions[nodeType].height
     };
 
-    console.log(
-      'NodeSelectionMenu: Node dimensions: ',
-      nodeDimensions[nodeType]
-    );
+    console.log('NodeSelectionMenu: New node:', newNode);
 
     removeNode(id);
     addNode(newNode);
@@ -121,6 +118,8 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
     const connectedEdges = edges.filter(
       (edge) => edge.source === id || edge.target === id
     );
+    console.log('NodeSelectionMenu: Connected edges:', connectedEdges);
+
     connectedEdges.forEach((edge) => {
       const newEdge = {
         ...edge,
