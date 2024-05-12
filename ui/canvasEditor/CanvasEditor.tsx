@@ -159,7 +159,6 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
     [updateNode]
   );
 
-  // Pass the necessary store functions to handleTemporaryNodeCreation
   const handleTemporaryNodeCreationWithStore = (
     parentNode: Node | null,
     position: XYPosition,

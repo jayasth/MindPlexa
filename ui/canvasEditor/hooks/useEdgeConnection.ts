@@ -74,7 +74,7 @@ export const useEdgeConnection = () => {
             const newEdge = {
               id: nanoid(),
               source: parentNode.id,
-              target: tempNodeId, // Set the target to the temporary node ID
+              target: tempNode.id,
               type: 'customEdge'
             };
 

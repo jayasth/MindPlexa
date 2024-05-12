@@ -80,7 +80,6 @@ export const useStore = createStore<CanvasState>((set, get) => ({
     const nodeProps = getNodeSpecificProperties(node.type, false);
     const newNode = {
       ...node,
-      id: nanoid(),
       ...nodeProps
     };
     console.log('Store: New node with position and dimensions:', newNode);
@@ -109,7 +108,6 @@ export const useStore = createStore<CanvasState>((set, get) => ({
         console.log('Store: Updated node:', updatedNode);
         return { nodes: updatedNodes };
       } else {
-        // Node does not exist, create new
         const newNode = {
           ...data,
           id: id,
@@ -151,7 +149,6 @@ export const useStore = createStore<CanvasState>((set, get) => ({
     });
   },
   updateEdge: (id, data) => {
-    // Implementation of updateEdge function
     console.log('Store: Updating edge with id:', id, 'and data:', data);
     set((state) => {
       const updatedEdges = state.edges.map((edge) => {

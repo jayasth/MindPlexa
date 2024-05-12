@@ -31,8 +31,9 @@ export const handleTemporaryNodeCreation = (
             (newNode) => {
               addNode(newNode);
               if (parentNode) {
+                const edgeId = `e-${nanoid()}`;
                 addEdge({
-                  id: `e-${temporaryNodeId}-${parentNode.id}`,
+                  id: edgeId,
                   source: parentNode.id,
                   target: newNode.id,
                   type: 'customEdge'
@@ -67,8 +68,9 @@ export const handleTemporaryNodeCreation = (
   addNode(temporaryNode);
 
   if (parentNode) {
+    const edgeId = `e-${nanoid()}`;
     addEdge({
-      id: `e-${temporaryNodeId}-${parentNode.id}`,
+      id: edgeId,
       source: parentNode.id,
       target: temporaryNodeId,
       type: 'customEdge'
