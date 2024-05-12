@@ -74,3 +74,13 @@
   font-size: 12px;
   color: #666;
 }
+
+.resize-handle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  right: 0;
+  bottom: 0;
+  cursor: nwse-resize;
+  z-index: 1000;
+}

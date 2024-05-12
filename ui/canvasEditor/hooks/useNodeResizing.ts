@@ -13,6 +13,9 @@ export const useNodeResizing = () => {
       newSize: { width: number; height: number },
       newPosition: XYPosition
     ) => {
+      console.log(
+        `useNodeResizing: Resizing node ${nodeId} to width: ${newSize.width}, height: ${newSize.height}, position: ${newPosition.x}, ${newPosition.y}`
+      );
       setNodes((currentNodes) =>
         currentNodes.map((node) =>
           node.id === nodeId

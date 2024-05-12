@@ -7,9 +7,11 @@ export function applyNodeChanges(changes: any[], nodes: Node[]): Node[] {
       const updatedStyle = { ...node.style, ...change.style };
       const updatedPosition = change.position || node.position;
       const updatedSize = {
-        width: change.width || node.width,
-        height: change.height || node.height
+        width: change.width !== undefined ? change.width : node.width,
+        height: change.height !== undefined ? change.height : node.height
       };
+
+      console.log(`canvasUtils: Applying changes to node ${node.id}:`, change);
 
       return {
         ...node,
@@ -29,6 +31,7 @@ export function applyEdgeChanges(changes: any[], edges: Edge[]): Edge[] {
   return edges.map((edge) => {
     const change = changes.find((c) => c.id === edge.id);
     if (change) {
+      console.log(`canvasUtils: Applying changes to edge ${edge.id}:`, change);
       return {
         ...edge,
         source: change.source || edge.source,
@@ -49,8 +52,9 @@ export const handleDownload = (state: { nodes: Node[]; edges: Edge[] }) => {
     link.setAttribute('href', dataStr);
     link.setAttribute('download', 'canvas.json');
     link.click();
+    console.log('canvasUtils: Downloaded canvas:', state);
   } catch (error) {
-    console.error('Failed to download the canvas:', error);
+    console.error('canvasUtils: Failed to download the canvas:', error);
   }
 };
 

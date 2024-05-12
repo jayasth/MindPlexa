@@ -114,12 +114,22 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     onNodeResizeStop(data.id, newSize, newPosition);
   };
 
+  const handleMouseDown = (event) => {
+    if (event.target.closest('.resize-handle')) {
+      event.preventDefault();
+    }
+  };
+
   useEffect(() => {
     updateNode(data.id, { width, height });
   }, [width, height, updateNode, data.id]);
 
   return (
-    <div className={styles.noteNode} style={{ width, height, backgroundColor }}>
+    <div
+      className={styles.noteNode}
+      style={{ width, height, backgroundColor }}
+      onMouseDown={handleMouseDown}
+    >
       <NodeResizer
         minWidth={100}
         minHeight={150}

@@ -83,8 +83,18 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     }
   };
 
+  const handleDragStart = (event) => {
+    // Check if the event target is a resize handle
+    if (event.target.closest('.resize-handle')) {
+      event.preventDefault(); // Prevent drag functionality when resizing
+      return;
+    }
+    // Continue with drag functionality if not resizing
+  };
+
   const commonProps = {
     draggable: true,
+    onDragStart: handleDragStart,
     connectable: true,
     onDelete: () => console.log(`Delete ${node.type}`),
     onChangeColor: () => console.log('Change Color'),

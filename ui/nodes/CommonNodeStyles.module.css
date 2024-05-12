@@ -4,6 +4,8 @@
   cursor: pointer;
   padding: 0;
   margin-left: 4px;
+  position: relative;
+  z-index: 500;
 }
 
 .fileInput {
