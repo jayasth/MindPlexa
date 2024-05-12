@@ -62,7 +62,9 @@ export const useEdgeConnection = () => {
               id: tempNodeId,
               type: 'selectionMenu',
               position,
-              data: {},
+              data: {
+                parentNode: parentNode // Add the parent node information
+              },
               width: nodeDimensions['selectionMenu'].width,
               height: nodeDimensions['selectionMenu'].height
             };
@@ -72,7 +74,7 @@ export const useEdgeConnection = () => {
             const newEdge = {
               id: nanoid(),
               source: parentNode.id,
-              target: tempNodeId,
+              target: tempNodeId, // Set the target to the temporary node ID
               type: 'customEdge'
             };
 

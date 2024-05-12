@@ -38,29 +38,32 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
   position,
   parentNode
 }) => {
-  const { removeNode, addNode, nodes, addEdge, updateNode, edges, removeEdge } =
-    useStore((state) => ({
-      removeNode: state.removeNode,
-      addNode: state.addNode,
-      nodes: state.nodes,
-      addEdge: state.addEdge,
-      updateNode: state.updateNode,
-      edges: state.edges,
-      removeEdge: state.removeEdge
-    }));
+  const {
+    removeNode,
+    addNode,
+    nodes,
+    addEdge,
+    updateNode,
+    edges,
+    removeEdge,
+    updateEdge
+  } = useStore((state) => ({
+    removeNode: state.removeNode,
+    addNode: state.addNode,
+    nodes: state.nodes,
+    addEdge: state.addEdge,
+    updateNode: state.updateNode,
+    edges: state.edges,
+    removeEdge: state.removeEdge,
+    updateEdge: state.updateEdge
+  }));
 
   const nodeRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        nodeRef.current &&
-        !nodeRef.current.contains(event.target as Node) &&
-        !(event.target as Element).classList.contains('node-type-button') &&
-        data.onClose
-      ) {
+      if (nodeRef.current && !nodeRef.current.contains(event.target as Node)) {
         data.onClose();
-        removeNode(data.id);
       }
     };
 
@@ -68,10 +71,10 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [data, removeNode]);
+  }, [data]);
 
   const nodeTypes = ['note', 'task', 'custom', 'code', 'draw'];
-  const icons: Record<string, JSX.Element> = {
+  const icons = {
     note: <PiNotepad />,
     task: <FaTasks />,
     custom: <FaRegAddressBook />,
@@ -79,18 +82,10 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
     draw: <FaPaintBrush />
   };
 
-  const handleNodeTypeSelect = (
-    selectedNodeType: 'note' | 'task' | 'custom' | 'code' | 'draw'
-  ) => {
-    console.log('NodeSelectionMenu: Node type selected: ', selectedNodeType);
-    replaceNodeWithType(selectedNodeType);
-  };
-
   const replaceNodeWithType = (
     nodeType: 'note' | 'task' | 'custom' | 'code' | 'draw'
   ) => {
     console.log('NodeSelectionMenu: Replacing node with type: ', nodeType);
-    const newNodeId = nanoid();
     const tempNode = nodes.find((n) => n.id === id);
 
     if (!tempNode) {
@@ -98,9 +93,8 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
       return;
     }
 
-    const newNode = {
+    const updatedNode = {
       ...tempNode,
-      id: newNodeId,
       type: nodeType,
       data: {
         ...(tempNode.data || {}),
@@ -110,26 +104,29 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
       height: nodeDimensions[nodeType].height
     };
 
-    console.log('NodeSelectionMenu: New node:', newNode);
+    console.log('NodeSelectionMenu: Updated node:', updatedNode);
 
-    removeNode(id);
-    addNode(newNode);
+    // Update the node in the store
+    updateNode(id, updatedNode);
 
+    // Update the edges connected to the node
     const connectedEdges = edges.filter(
       (edge) => edge.source === id || edge.target === id
     );
     console.log('NodeSelectionMenu: Connected edges:', connectedEdges);
 
     connectedEdges.forEach((edge) => {
-      const newEdge = {
+      const updatedEdge = {
         ...edge,
-        id: nanoid(),
-        source: edge.source === id ? newNodeId : edge.source,
-        target: edge.target === id ? newNodeId : edge.target
+        source: edge.source === id ? id : edge.source,
+        target: edge.target === id ? id : edge.target
       };
-      addEdge(newEdge);
-      removeEdge(edge.id);
+
+      // Update the edge in the store
+      updateEdge(edge.id, updatedEdge);
     });
+
+    console.log('NodeSelectionMenu: Replacement node and edges updated');
   };
 
   return (
@@ -144,7 +141,7 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
             key={type}
             className={`${styles.nodeButton} node-type-button`}
             onClick={() =>
-              handleNodeTypeSelect(
+              replaceNodeWithType(
                 type as 'note' | 'task' | 'custom' | 'code' | 'draw'
               )
             }

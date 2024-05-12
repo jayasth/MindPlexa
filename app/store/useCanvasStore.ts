@@ -27,6 +27,7 @@ interface CanvasState {
   addEdge: (edge: Edge) => void;
   removeNode: (id: string) => void;
   removeEdge: (id: string) => void;
+  updateEdge: (id: string, data: Partial<Edge>) => void; // Added updateEdge function
   setInitialState: (nodes: Node[], edges: Edge[]) => void;
   addChildNode: (parentNode: Node, position: XYPosition, type: string) => void;
   createChildNodeFromDrag: (
@@ -146,6 +147,19 @@ export const useStore = createStore<CanvasState>((set, get) => ({
           id: id
         }
       ]);
+      return { edges: updatedEdges };
+    });
+  },
+  updateEdge: (id, data) => {
+    // Implementation of updateEdge function
+    console.log('Store: Updating edge with id:', id, 'and data:', data);
+    set((state) => {
+      const updatedEdges = state.edges.map((edge) => {
+        if (edge.id === id) {
+          return { ...edge, ...data };
+        }
+        return edge;
+      });
       return { edges: updatedEdges };
     });
   },
