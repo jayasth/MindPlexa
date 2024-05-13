@@ -26,7 +26,7 @@ export const handleSave = (id: string, onSave: () => void) => {
   toggleEditMode(id);
 };
 
-export const handleCancel = (id: string) => {
+export const handleClose = (id: string) => {
   const { toggleEditMode } = useStore.getState();
   toggleEditMode(id);
 };

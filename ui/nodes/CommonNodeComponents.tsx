@@ -5,7 +5,7 @@ import {
   FaPalette,
   FaTags,
   FaPaperclip,
-  FaTimes
+  FaArrowRight
 } from 'react-icons/fa';
 import styles from './CommonNodeStyles.module.css';
 
@@ -44,8 +44,8 @@ export const AttachFileButton = ({ onChange }) => (
   </label>
 );
 
-export const CancelButton = ({ onClick }) => (
-  <button className={styles.actionButton} onClick={onClick} title="Cancel">
-    <FaTimes size={16} />
+export const CloseButton = ({ onClick }) => (
+  <button className={styles.actionButton} onClick={onClick} title="Close">
+    <FaArrowRight size={16} />
   </button>
 );

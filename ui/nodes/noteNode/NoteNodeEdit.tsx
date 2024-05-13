@@ -1,25 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { NodeProps, NodeResizer, Handle, Position } from 'reactflow';
 import { useStore } from '@/app/store/useCanvasStore';
+import { useNodeResizing } from '@/ui/canvasEditor/hooks/useNodeResizing';
 import styles from './NoteNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 import {
-  handleTitleChange,
-  handleContentChange,
-  handleSave,
-  handleCancel,
-  handleDelete,
-  handleChangeColor,
-  handleAddTag,
-  handleAttachFile
-} from '@/ui/canvasEditor/utils/CommonNodeFunctions';
+  useTitleChange,
+  useContentChange,
+  useSave,
+  useClose, // Replaced useCancel with useClose
+  useDelete,
+  useChangeColor,
+  useAddTag,
+  useAttachFile
+} from './noteNodeEditFunctions';
 import {
   SaveButton,
   DeleteButton,
   ChangeColorButton,
   AddTagButton,
   AttachFileButton,
-  CancelButton
+  CloseButton // Assuming CloseButton is imported correctly
 } from '@/ui/nodes/CommonNodeComponents';
 
 interface NoteNodeEditProps extends NodeProps {
@@ -38,19 +39,13 @@ interface NoteNodeEditProps extends NodeProps {
   width: number;
   height: number;
   selected: boolean;
-  onNodeResizeStop: (
-    nodeId: string,
-    newSize: { width: number; height: number },
-    newPosition: { x: number; y: number }
-  ) => void;
 }
 
 const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   data,
   width,
   height,
-  selected,
-  onNodeResizeStop
+  selected
 }) => {
   const [title, setTitle] = useState(data.title || 'Untitled Note');
   const [content, setContent] = useState(data.content || '');
@@ -63,56 +58,17 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     toggleEditMode: state.toggleEditMode
   }));
 
-  const handleTitleChangeWrapper = (title: string) => {
-    handleTitleChange(data.id, title, data.onChangeTitle);
-    setTitle(title);
-  };
-
-  const handleContentChangeWrapper = (content: string) => {
-    handleContentChange(data.id, content, data.onChangeContent);
-    setContent(content);
-  };
-
-  const handleSaveWrapper = () => {
-    handleSave(data.id, data.onSave);
-  };
-
-  const handleCancelWrapper = () => {
-    handleCancel(data.id);
-  };
-
-  const handleDeleteWrapper = () => {
-    if (window.confirm('Are you sure you want to delete this note?')) {
-      handleDelete(data.id, data.onDelete);
-    }
-  };
-
-  const handleChangeColorWrapper = () => {
-    const newColor = handleChangeColor(
-      data.id,
-      backgroundColor,
-      data.onChangeColor
-    );
-    setBackgroundColor(newColor);
-  };
-
-  const handleAddTagWrapper = () => {
-    const newTags = handleAddTag(data.id, tags, data.onAddTag);
-    setTags(newTags);
-  };
-
-  const handleAttachFileWrapper = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = handleAttachFile(data.id, data.onAttachFile)(e);
-    if (file) setAttachedFile(file as File);
-  };
-
-  const handleResizeStop = (event, newSize) => {
-    const newPosition = {
-      x: newSize.x,
-      y: newSize.y
-    };
-    onNodeResizeStop(data.id, newSize, newPosition);
-  };
+  const handleTitleChangeWrapper = useTitleChange(data.id, data.onChangeTitle);
+  const handleContentChangeWrapper = useContentChange(
+    data.id,
+    data.onChangeContent
+  );
+  const handleSaveWrapper = useSave(data.id, data.onSave);
+  const handleCloseWrapper = useClose(data.id); // Changed handleCancelWrapper to handleCloseWrapper
+  const handleDeleteWrapper = useDelete(data.id, data.onDelete);
+  const handleChangeColorWrapper = useChangeColor(data.id);
+  const handleAddTagWrapper = useAddTag(data.id, tags, data.onAddTag);
+  const handleAttachFileWrapper = useAttachFile(data.id, data.onAttachFile);
 
   const handleMouseDown = (event) => {
     if (event.target.closest('.resize-handle')) {
@@ -134,7 +90,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         minWidth={100}
         minHeight={150}
         isVisible={selected}
-        onResize={handleResizeStop}
+        onResize={useNodeResizing}
         lineStyle={{ stroke: '#ff0071', strokeWidth: 2 }}
         handleStyle={{ fill: '#ff0071' }}
       />
@@ -145,7 +101,8 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
           onChange={(e) => handleTitleChangeWrapper(e.target.value)}
           className={styles.titleInput}
         />
-        <CancelButton onClick={handleCancelWrapper} />
+        <CloseButton onClick={handleCloseWrapper} />{' '}
+        {/* Changed CancelButton to CloseButton */}
       </div>
       <textarea
         className={styles.noteContent}
