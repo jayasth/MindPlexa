@@ -10,16 +10,6 @@ export const handleTitleChange = (
   updateNode(id, { data: { title } });
 };
 
-export const handleContentChange = (
-  id: string,
-  content: string,
-  onChangeContent: (content: string) => void
-) => {
-  const { updateNode } = useStore.getState();
-  onChangeContent(content);
-  updateNode(id, { data: { content } });
-};
-
 export const handleSave = (id: string, onSave: () => void) => {
   const { toggleEditMode } = useStore.getState();
   onSave();

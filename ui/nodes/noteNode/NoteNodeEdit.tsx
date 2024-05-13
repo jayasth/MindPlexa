@@ -5,36 +5,28 @@ import { useNodeResizing } from '@/ui/canvasEditor/hooks/useNodeResizing';
 import styles from './NoteNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 import {
-  useTitleChange,
-  useContentChange,
-  useSave,
-  useClose, // Replaced useCancel with useClose
-  useDelete,
-  useChangeColor,
-  useAddTag,
-  useAttachFile
-} from './noteNodeEditFunctions';
-import {
   SaveButton,
   DeleteButton,
   ChangeColorButton,
   AddTagButton,
   AttachFileButton,
-  CloseButton // Assuming CloseButton is imported correctly
+  CloseButton
 } from '@/ui/nodes/CommonNodeComponents';
+import {
+  handleTitleChange,
+  handleSave,
+  handleClose,
+  handleDelete,
+  handleChangeColor,
+  handleAddTag,
+  handleAttachFile
+} from '@/ui/canvasEditor/utils/CommonNodeFunctions';
 
 interface NoteNodeEditProps extends NodeProps {
   data: {
     id: string;
     content?: string;
     title?: string;
-    onSave: () => void;
-    onChangeContent: (content: string) => void;
-    onChangeTitle: (title: string) => void;
-    onDelete: () => void;
-    onChangeColor: (color: string) => void;
-    onAddTag: (tag: string) => void;
-    onAttachFile: (file: File) => void;
   };
   width: number;
   height: number;
@@ -53,25 +45,34 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   const [tags, setTags] = useState<string[]>([]);
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
 
-  const { updateNode, toggleEditMode } = useStore((state) => ({
-    updateNode: state.updateNode,
-    toggleEditMode: state.toggleEditMode
-  }));
+  const updateNode = useStore((state) => state.updateNode);
 
-  const handleTitleChangeWrapper = useTitleChange(data.id, data.onChangeTitle);
-  const handleContentChangeWrapper = useContentChange(
-    data.id,
-    data.onChangeContent
-  );
-  const handleSaveWrapper = useSave(data.id, data.onSave);
-  const handleCloseWrapper = useClose(data.id); // Changed handleCancelWrapper to handleCloseWrapper
-  const handleDeleteWrapper = useDelete(data.id, data.onDelete);
-  const handleChangeColorWrapper = useChangeColor(data.id);
-  const handleAddTagWrapper = useAddTag(data.id, tags, data.onAddTag);
-  const handleAttachFileWrapper = useAttachFile(data.id, data.onAttachFile);
+  const onChangeTitle = (newTitle: string) => {
+    setTitle(newTitle);
+  };
 
-  const handleMouseDown = (event) => {
-    if (event.target.closest('.resize-handle')) {
+  const handleContentChange = (newContent: string) => {
+    setContent(newContent);
+    updateNode(data.id, { data: { ...data, content: newContent } });
+  };
+
+  const onChangeColor = (newColor: string) => {
+    setBackgroundColor(newColor);
+  };
+
+  const onAddTag = (newTag: string) => {
+    setTags([...tags, newTag]);
+  };
+
+  const onAttachFile = (file: File) => {
+    setAttachedFile(file);
+  };
+
+  const handleMouseDown = (event: React.MouseEvent) => {
+    if (
+      event.target instanceof Element &&
+      event.target.closest('.resize-handle')
+    ) {
       event.preventDefault();
     }
   };
@@ -98,23 +99,30 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         <input
           type="text"
           value={title}
-          onChange={(e) => handleTitleChangeWrapper(e.target.value)}
+          onChange={(e) =>
+            handleTitleChange(data.id, e.target.value, onChangeTitle)
+          }
           className={styles.titleInput}
         />
-        <CloseButton onClick={handleCloseWrapper} />{' '}
-        {/* Changed CancelButton to CloseButton */}
+        <CloseButton onClick={() => handleClose(data.id)} />
       </div>
       <textarea
         className={styles.noteContent}
         value={content}
-        onChange={(e) => handleContentChangeWrapper(e.target.value)}
+        onChange={(e) => handleContentChange(e.target.value)}
       />
       <div className={styles.footer}>
-        <SaveButton onClick={handleSaveWrapper} />
-        <DeleteButton onClick={handleDeleteWrapper} />
-        <ChangeColorButton onClick={handleChangeColorWrapper} />
-        <AddTagButton onClick={handleAddTagWrapper} />
-        <AttachFileButton onChange={handleAttachFileWrapper} />
+        <SaveButton onClick={() => handleSave(data.id, () => {})} />
+        <DeleteButton onClick={() => handleDelete(data.id, () => {})} />
+        <ChangeColorButton
+          onClick={() =>
+            handleChangeColor(data.id, backgroundColor, onChangeColor)
+          }
+        />
+        <AddTagButton onClick={() => handleAddTag(data.id, tags, onAddTag)} />
+        <AttachFileButton
+          onChange={(e) => handleAttachFile(data.id, onAttachFile)(e)}
+        />
       </div>
       <div className={styles.tagContainer}>
         {tags.map((tag, index) => (
