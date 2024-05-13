@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { NodeProps, NodeResizer, Handle, Position } from 'reactflow';
+import { NodeProps, NodeResizer, Handle, Position, Node } from 'reactflow';
 import { useStore } from '@/app/store/useCanvasStore';
 import { useNodeResizing } from '@/ui/canvasEditor/hooks/useNodeResizing';
 import styles from './NoteNodeEdit.module.css';
@@ -70,8 +70,9 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
 
   const handleMouseDown = (event: React.MouseEvent) => {
     if (
+      selected &&
       event.target instanceof Element &&
-      event.target.closest('.resize-handle')
+      !event.target.closest('.resize-handle')
     ) {
       event.preventDefault();
     }

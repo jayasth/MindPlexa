@@ -59,16 +59,18 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
   }, [node.isEditing, node.type, updateNode, id]);
 
   const handleResizeStop = (event, newSize) => {
-    const newPosition = {
-      x: newSize.x,
-      y: newSize.y
-    };
-    setSize(newSize);
-    updateNode(id, newSize);
-    onNodeResizeStop(id, newSize, newPosition);
-    console.log(
-      `NodeRenderer: Resize stop for node ${id}: new size = width: ${newSize.width}, height = ${newSize.height}`
-    );
+    if (selected) {
+      const newPosition = {
+        x: newSize.x,
+        y: newSize.y
+      };
+      setSize(newSize);
+      updateNode(id, newSize);
+      onNodeResizeStop(id, newSize, newPosition);
+      console.log(
+        `NodeRenderer: Resize stop for node ${id}: new size = width: ${newSize.width}, height = ${newSize.height}`
+      );
+    }
   };
 
   const handleEdit = () => {
