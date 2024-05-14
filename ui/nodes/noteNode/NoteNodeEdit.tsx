@@ -78,7 +78,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   };
 
   const handleResize = (event, { width, height }) => {
-    console.log(`Resizing: width = ${width}, height = ${height}`);
+    console.log(`NoteNodeEdit: Resizing: width = ${width}, height = ${height}`);
     handleNodeResize(data.id, width, height, (newWidth, newHeight) => {
       onNodeResizeStop(
         data.id,
@@ -94,12 +94,14 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
 
   return (
     <div className={styles.noteNode} style={{ width, height, backgroundColor }}>
-      <NodeResizer
-        minWidth={100}
-        minHeight={50}
-        onResize={handleResize}
-        isVisible={selected}
-      />
+      {selected && (
+        <NodeResizer
+          minWidth={100}
+          minHeight={50}
+          onResize={handleResize}
+          isVisible={selected}
+        />
+      )}
       <div className={styles.header}>
         <input
           type="text"

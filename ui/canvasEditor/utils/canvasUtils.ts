@@ -30,13 +30,14 @@ export function applyNodeChanges(changes: any[], nodes: Node[]): Node[] {
         style: updatedStyle,
         width: updatedSize.width,
         height: updatedSize.height,
-        positionAbsolute: change.positionAbsolute || node.positionAbsolute
+        positionAbsolute: change.positionAbsolute || node.positionAbsolute,
+        selected:
+          change.selected !== undefined ? change.selected : node.selected
       };
     }
     return node;
   });
 }
-
 export function applyEdgeChanges(changes: any[], edges: Edge[]): Edge[] {
   return edges.map((edge) => {
     const change = changes.find((c) => c.id === edge.id);

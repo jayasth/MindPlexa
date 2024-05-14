@@ -63,7 +63,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
       updateNode(id, newSize);
       onNodeResizeStop(id, newSize, node.position);
       console.log(
-        `NodeRenderer: Edit toggle for node ${id}: new size = width: ${newSize.width}, height = ${newSize.height}`
+        `NodeRenderer: Edit toggle for node ${id}: new size = width: ${newSize.width}, height = ${newSize.height}, position = x: ${node.position.x}, y: ${node.position.y}`
       );
     }
   };
@@ -108,6 +108,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
         }}
         selected={selected}
         onNodeResizeStop={onNodeResizeStop}
+        {...(node.type === 'note' && node.isEditing && { selected: selected })}
       />
     );
   }

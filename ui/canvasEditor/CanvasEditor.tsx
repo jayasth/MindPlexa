@@ -93,6 +93,10 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
 
   const onNodeResizeStop = useCallback(
     (nodeId, newSize, newPosition) => {
+      if (!newPosition) {
+        console.error('CanvasEditor: newPosition is undefined');
+        return;
+      }
       console.log(
         `CanvasEditor: Node ${nodeId} resized to width=${newSize.width}, height=${newSize.height}, position=${newPosition.x},${newPosition.y}`
       );
@@ -192,7 +196,7 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
       setNodes((currentNodes) => {
         return currentNodes.map((node) => ({
           ...node,
-          selected: !!elementsArray.find((el) => el.id === node.id)
+          selected: elementsArray.some((el) => el.id === node.id)
         }));
       });
     },
