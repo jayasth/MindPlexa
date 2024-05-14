@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { NodeProps, Handle, Position } from 'reactflow';
+import { Node, NodeProps, Handle, Position, NodeResizer } from 'reactflow';
 import { useStore } from '@/app/store/useCanvasStore';
 import styles from './NoteNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
@@ -18,7 +18,8 @@ import {
   handleDelete,
   handleChangeColor,
   handleAddTag,
-  handleAttachFile
+  handleAttachFile,
+  handleNodeResize
 } from '@/ui/canvasEditor/utils/CommonNodeFunctions';
 
 interface NoteNodeEditProps extends NodeProps {
@@ -30,13 +31,21 @@ interface NoteNodeEditProps extends NodeProps {
   width: number;
   height: number;
   selected: boolean;
+  onNodeResizeStop: (
+    nodeId: string,
+    newSize: { width: number; height: number },
+    newPosition: { x: number; y: number }
+  ) => void;
+  position: { x: number; y: number };
 }
 
 const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   data,
   width,
   height,
-  selected
+  selected,
+  onNodeResizeStop,
+  position
 }) => {
   const [title, setTitle] = useState(data.title || 'Untitled Note');
   const [content, setContent] = useState(data.content || '');
@@ -71,8 +80,25 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     updateNode(data.id, { width, height });
   }, [width, height, updateNode, data.id]);
 
+  const handleResize = (event, { width, height }) => {
+    console.log(`Resizing: width = ${width}, height = ${height}`);
+    handleNodeResize(data.id, width, height, (newWidth, newHeight) => {
+      onNodeResizeStop(
+        data.id,
+        { width: newWidth, height: newHeight },
+        position
+      );
+    });
+  };
+
   return (
     <div className={styles.noteNode} style={{ width, height, backgroundColor }}>
+      <NodeResizer
+        minWidth={100}
+        minHeight={50}
+        onResize={handleResize}
+        isVisible={selected}
+      />
       <div className={styles.header}>
         <input
           type="text"

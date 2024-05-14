@@ -83,4 +83,5 @@
   bottom: 0;
   cursor: nwse-resize;
   z-index: 1000;
+  background-color: blue;
 }

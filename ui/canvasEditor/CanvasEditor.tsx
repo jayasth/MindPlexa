@@ -91,13 +91,37 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
     []
   );
 
+  const onNodeResizeStop = useCallback(
+    (nodeId, newSize, newPosition) => {
+      console.log(
+        `CanvasEditor: Node ${nodeId} resized to width=${newSize.width}, height=${newSize.height}, position=${newPosition.x},${newPosition.y}`
+      );
+      updateNode(nodeId, {
+        width: newSize.width,
+        height: newSize.height,
+        position: newPosition
+      });
+    },
+    [updateNode]
+  );
+
   const nodeTypes = useMemo(
     () => ({
-      note: (props) => <NodeRenderer {...props} />,
-      task: (props) => <NodeRenderer {...props} />,
-      custom: (props) => <NodeRenderer {...props} />,
-      code: (props) => <NodeRenderer {...props} />,
-      draw: (props) => <NodeRenderer {...props} />,
+      note: (props) => (
+        <NodeRenderer {...props} onNodeResizeStop={onNodeResizeStop} />
+      ),
+      task: (props) => (
+        <NodeRenderer {...props} onNodeResizeStop={onNodeResizeStop} />
+      ),
+      custom: (props) => (
+        <NodeRenderer {...props} onNodeResizeStop={onNodeResizeStop} />
+      ),
+      code: (props) => (
+        <NodeRenderer {...props} onNodeResizeStop={onNodeResizeStop} />
+      ),
+      draw: (props) => (
+        <NodeRenderer {...props} onNodeResizeStop={onNodeResizeStop} />
+      ),
       selectionMenu: (props) => (
         <NodeSelectionMenu
           {...props}
@@ -106,7 +130,7 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
         />
       )
     }),
-    [parentNode, childNodePosition]
+    [parentNode, childNodePosition, onNodeResizeStop]
   );
   const handleConnect = useCallback(
     (connection) => {

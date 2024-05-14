@@ -12,10 +12,7 @@ import CodeNodeEdit from '@/ui/nodes/codeNode/CodeNodeEdit';
 import DrawNode from '@/ui/nodes/drawNode/DrawNodeView';
 import DrawNodeEdit from '@/ui/nodes/drawNode/DrawNodeEdit';
 import { useStore } from '@/app/store/useCanvasStore';
-import {
-  nodeDimensions,
-  getNodeSpecificProperties
-} from '@/ui/canvasEditor/utils/nodeProperties';
+import { getNodeSpecificProperties } from '@/ui/canvasEditor/utils/nodeProperties';
 
 interface NodeRendererProps extends NodeProps {
   onNodeResizeStop: (
@@ -72,7 +69,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
 
   const handleDragStart = (event) => {
     if (event.target.closest('.resize-handle')) {
-      event.preventDefault(); // Prevent drag functionality when resizing
+      event.preventDefault();
       return;
     }
   };
@@ -91,7 +88,8 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     selected: selected,
     onLabelChange: (label: string) =>
       updateNode(id, { data: { ...node.data, label } }),
-    onEdit: handleEdit
+    onEdit: handleEdit,
+    onNodeResizeStop
   };
 
   const nodeComponents = {
@@ -117,18 +115,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
         }}
         selected={selected}
         onNodeResizeStop={onNodeResizeStop}
-      >
-        <Handle
-          type="target"
-          position={Position.Top}
-          style={{ background: '#555' }}
-        />
-        <Handle
-          type="source"
-          position={Position.Bottom}
-          style={{ background: '#555' }}
-        />
-      </NodeComponent>
+      />
     );
   }
 
