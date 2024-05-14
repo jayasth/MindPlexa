@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
+import { NodeProps, Handle, Position } from 'reactflow';
 import { Node as BaseNode } from '@/ui/canvasEditor/nodeTypes';
 import NoteNode from '@/ui/nodes/noteNode/NoteNodeView';
 import NoteNodeEdit from '@/ui/nodes/noteNode/NoteNodeEdit';
@@ -58,21 +58,6 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     );
   }, [node.isEditing, node.type, updateNode, id]);
 
-  const handleResizeStop = (event, newSize) => {
-    if (selected) {
-      const newPosition = {
-        x: newSize.x,
-        y: newSize.y
-      };
-      setSize(newSize);
-      updateNode(id, newSize);
-      onNodeResizeStop(id, newSize, newPosition);
-      console.log(
-        `NodeRenderer: Resize stop for node ${id}: new size = width: ${newSize.width}, height = ${newSize.height}`
-      );
-    }
-  };
-
   const handleEdit = () => {
     if (node.type !== 'selectionMenu') {
       toggleEditMode(id);
@@ -86,12 +71,10 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
   };
 
   const handleDragStart = (event) => {
-    // Check if the event target is a resize handle
     if (event.target.closest('.resize-handle')) {
       event.preventDefault(); // Prevent drag functionality when resizing
       return;
     }
-    // Continue with drag functionality if not resizing
   };
 
   const commonProps = {
@@ -135,13 +118,6 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
         selected={selected}
         onNodeResizeStop={onNodeResizeStop}
       >
-        <NodeResizer
-          minWidth={100}
-          minHeight={100}
-          isVisible={selected}
-          onResize={handleResizeStop}
-          handleStyle={{ fill: '#ff0071' }}
-        />
         <Handle
           type="target"
           position={Position.Top}

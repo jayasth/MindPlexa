@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { NodeProps, NodeResizer, Handle, Position, Node } from 'reactflow';
+import { NodeProps, Handle, Position } from 'reactflow';
 import { useStore } from '@/app/store/useCanvasStore';
-import { useNodeResizing } from '@/ui/canvasEditor/hooks/useNodeResizing';
 import styles from './NoteNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 import {
@@ -68,34 +67,12 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     setAttachedFile(file);
   };
 
-  const handleMouseDown = (event: React.MouseEvent) => {
-    if (
-      selected &&
-      event.target instanceof Element &&
-      !event.target.closest('.resize-handle')
-    ) {
-      event.preventDefault();
-    }
-  };
-
   useEffect(() => {
     updateNode(data.id, { width, height });
   }, [width, height, updateNode, data.id]);
 
   return (
-    <div
-      className={styles.noteNode}
-      style={{ width, height, backgroundColor }}
-      onMouseDown={handleMouseDown}
-    >
-      <NodeResizer
-        minWidth={100}
-        minHeight={150}
-        isVisible={selected}
-        onResize={useNodeResizing}
-        lineStyle={{ stroke: '#ff0071', strokeWidth: 2 }}
-        handleStyle={{ fill: '#ff0071' }}
-      />
+    <div className={styles.noteNode} style={{ width, height, backgroundColor }}>
       <div className={styles.header}>
         <input
           type="text"

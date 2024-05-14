@@ -24,7 +24,6 @@ import NodeRenderer from '@/ui/canvasEditor/NodeRenderer';
 import CustomEdge from '@/ui/edges/CustomEdge';
 import NodeSelectionMenu from '@/ui/nodes/nodeSelectionMenu/NodeSelectionMenu';
 import { useStore } from '@/app/store/useCanvasStore';
-import { useNodeResizing } from '@/ui/canvasEditor/hooks/useNodeResizing';
 import { useEdgeConnection } from '@/ui/canvasEditor/hooks/useEdgeConnection';
 import { nanoid } from 'nanoid';
 import { handleTemporaryNodeCreation } from '@/ui/canvasEditor/utils/TemporaryNodeHandler';
@@ -69,8 +68,6 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
     updateNode: state.updateNode
   }));
 
-  const { handleNodeResizeStop } = useNodeResizing();
-
   const handleDeleteEdge = useCallback(
     (edgeId) => {
       console.log('CanvasEditor: Deleting edge with id:', edgeId);
@@ -96,21 +93,11 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
 
   const nodeTypes = useMemo(
     () => ({
-      note: (props) => (
-        <NodeRenderer {...props} onNodeResizeStop={handleNodeResizeStop} />
-      ),
-      task: (props) => (
-        <NodeRenderer {...props} onNodeResizeStop={handleNodeResizeStop} />
-      ),
-      custom: (props) => (
-        <NodeRenderer {...props} onNodeResizeStop={handleNodeResizeStop} />
-      ),
-      code: (props) => (
-        <NodeRenderer {...props} onNodeResizeStop={handleNodeResizeStop} />
-      ),
-      draw: (props) => (
-        <NodeRenderer {...props} onNodeResizeStop={handleNodeResizeStop} />
-      ),
+      note: (props) => <NodeRenderer {...props} />,
+      task: (props) => <NodeRenderer {...props} />,
+      custom: (props) => <NodeRenderer {...props} />,
+      code: (props) => <NodeRenderer {...props} />,
+      draw: (props) => <NodeRenderer {...props} />,
       selectionMenu: (props) => (
         <NodeSelectionMenu
           {...props}
