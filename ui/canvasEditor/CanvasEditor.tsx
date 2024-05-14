@@ -186,6 +186,19 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
     );
   };
 
+  const onSelectionChange = useCallback(
+    (elements) => {
+      const elementsArray = Array.isArray(elements) ? elements : [];
+      setNodes((currentNodes) => {
+        return currentNodes.map((node) => ({
+          ...node,
+          selected: !!elementsArray.find((el) => el.id === node.id)
+        }));
+      });
+    },
+    [setNodes]
+  );
+
   useEffect(() => {
     console.log(
       'CanvasEditor: ReactFlowWrapper ref:',
@@ -232,6 +245,7 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
               }
             }}
             onNodeDragStop={onNodeDragStop}
+            onSelectionChange={onSelectionChange}
             nodeTypes={nodeTypes}
             edgeTypes={edgeTypes}
             nodeOrigin={nodeOrigin}

@@ -27,7 +27,7 @@ interface CanvasState {
   addEdge: (edge: Edge) => void;
   removeNode: (id: string) => void;
   removeEdge: (id: string) => void;
-  updateEdge: (id: string, data: Partial<Edge>) => void; // Added updateEdge function
+  updateEdge: (id: string, data: Partial<Edge>) => void;
   setInitialState: (nodes: Node[], edges: Edge[]) => void;
   addChildNode: (parentNode: Node, position: XYPosition, type: string) => void;
   createChildNodeFromDrag: (
@@ -42,6 +42,7 @@ interface CanvasState {
   onNodesChange: (changes: any) => void;
   onEdgesChange: (changes: any) => void;
   toggleEditMode: (nodeId: string) => void;
+  setSelectedNodes: (selectedIds: string[]) => void;
 }
 
 const createStore = <T extends object>(
@@ -100,24 +101,17 @@ export const useStore = createStore<CanvasState>((set, get) => ({
           ...data,
           position: data.position || existingNode.position,
           width: data.width || existingNode.width,
-          height: data.height || existingNode.height
+          height: data.height || existingNode.height,
+          selected:
+            data.selected !== undefined ? data.selected : existingNode.selected
         };
         const updatedNodes = [...state.nodes];
         updatedNodes[existingNodeIndex] = updatedNode;
         state.nodeInternals.set(id, updatedNode);
         console.log('Store: Updated node:', updatedNode);
         return { nodes: updatedNodes };
-      } else {
-        const newNode = {
-          ...data,
-          id: id,
-          draggable: data.draggable !== undefined ? data.draggable : true,
-          connectable: data.connectable !== undefined ? data.connectable : true
-        };
-        state.nodeInternals.set(id, newNode);
-        console.log('Store: Added new node:', newNode);
-        return { nodes: [...state.nodes, newNode] };
       }
+      return state;
     });
   },
   addEdge: (edge) => {
@@ -318,6 +312,15 @@ export const useStore = createStore<CanvasState>((set, get) => ({
         }
         return node;
       })
+    }));
+  },
+  setSelectedNodes: (selectedIds) => {
+    console.log('Store: Setting selected nodes:', selectedIds);
+    set((state) => ({
+      nodes: state.nodes.map((node) => ({
+        ...node,
+        selected: selectedIds.includes(node.id)
+      }))
     }));
   }
 }));

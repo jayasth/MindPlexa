@@ -31,6 +31,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
   const node = useStore((state) =>
     state.nodes.find((n) => n.id === id)
   ) as BaseNode;
+  console.log('NodeRenderer: Node selected state:', selected);
   const updateNode = useStore((state) => state.updateNode);
   const toggleEditMode = useStore((state) => state.toggleEditMode);
 
@@ -67,16 +68,8 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     }
   };
 
-  const handleDragStart = (event) => {
-    if (event.target.closest('.resize-handle')) {
-      event.preventDefault();
-      return;
-    }
-  };
-
   const commonProps = {
     draggable: true,
-    onDragStart: handleDragStart,
     connectable: true,
     onDelete: () => console.log(`Delete ${node.type}`),
     onChangeColor: () => console.log('Change Color'),

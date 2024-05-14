@@ -7,8 +7,18 @@ export function applyNodeChanges(changes: any[], nodes: Node[]): Node[] {
       const updatedStyle = { ...node.style, ...change.style };
       const updatedPosition = change.position || node.position;
       const updatedSize = {
-        width: change.width !== undefined ? change.width : node.width,
-        height: change.height !== undefined ? change.height : node.height
+        width:
+          change.width !== undefined
+            ? change.width
+            : node.width !== undefined
+              ? node.width
+              : 0,
+        height:
+          change.height !== undefined
+            ? change.height
+            : node.height !== undefined
+              ? node.height
+              : 0
       };
 
       console.log(`canvasUtils: Applying changes to node ${node.id}:`, change);

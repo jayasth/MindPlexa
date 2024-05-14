@@ -47,6 +47,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   onNodeResizeStop,
   position
 }) => {
+  console.log('NoteNodeEdit: Node selected state:', selected);
   const [title, setTitle] = useState(data.title || 'Untitled Note');
   const [content, setContent] = useState(data.content || '');
   const [backgroundColor, setBackgroundColor] = useState('#f8f8f8');
@@ -76,10 +77,6 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     setAttachedFile(file);
   };
 
-  useEffect(() => {
-    updateNode(data.id, { width, height });
-  }, [width, height, updateNode, data.id]);
-
   const handleResize = (event, { width, height }) => {
     console.log(`Resizing: width = ${width}, height = ${height}`);
     handleNodeResize(data.id, width, height, (newWidth, newHeight) => {
@@ -90,6 +87,10 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
       );
     });
   };
+
+  useEffect(() => {
+    updateNode(data.id, { width, height });
+  }, [width, height, updateNode, data.id]);
 
   return (
     <div className={styles.noteNode} style={{ width, height, backgroundColor }}>
