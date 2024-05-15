@@ -1,26 +1,36 @@
 import React from 'react';
 import { NodeProps, Handle, Position } from 'reactflow';
+import { useStore } from '@/app/store/useCanvasStore';
 import styles from './CodeNodeView.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
+import { FaEdit } from 'react-icons/fa';
 
 interface CodeNodeViewProps extends NodeProps {
   data: {
+    id: string;
     title?: string;
-    onEdit: () => void;
   };
+  width: number;
+  height: number;
 }
 
-const CodeNodeView: React.FC<CodeNodeViewProps> = ({ data }) => {
+const CodeNodeView: React.FC<CodeNodeViewProps> = ({ data, width, height }) => {
+  const toggleEditMode = useStore((state) => state.toggleEditMode);
+
   return (
-    <div className={styles.codeNode}>
+    <div className={styles.codeNode} style={{ width, height }}>
       <div className={styles.header}>
-        <span className={styles.title}>{data.title || 'Untitled Codeing'}</span>
-        <button className={styles.editButton} onClick={data.onEdit}>
-          Edit
-        </button>
+        <span className={styles.title}>{data.title || 'Untitled Code'}</span>
+        <FaEdit
+          className={styles.editButton}
+          onClick={() => {
+            console.log(`Toggling edit mode for node ID: ${data.id}`);
+            toggleEditMode(data.id);
+          }}
+        />
       </div>
       <div className={styles.codeContent}>
-        {/* Coding content would be rendered here */}
+        {/* Code content would be rendered here */}
       </div>
       <Handle
         type="target"

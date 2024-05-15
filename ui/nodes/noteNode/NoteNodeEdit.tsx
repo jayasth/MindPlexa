@@ -100,11 +100,6 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     onNodeResizeStop(data.id, { width, height }, position);
   };
 
-  const controlStyle = {
-    background: 'transparent',
-    border: 'none'
-  };
-
   return (
     <div
       className={styles.noteNode}

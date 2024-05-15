@@ -1,26 +1,36 @@
 import React from 'react';
 import { NodeProps, Handle, Position } from 'reactflow';
+import { useStore } from '@/app/store/useCanvasStore';
 import styles from './TaskNodeView.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
+import { FaEdit } from 'react-icons/fa';
 
 interface TaskNodeViewProps extends NodeProps {
   data: {
+    id: string;
     title?: string;
-    onEdit: () => void;
   };
+  width: number;
+  height: number;
 }
 
-const TaskNodeView: React.FC<TaskNodeViewProps> = ({ data }) => {
+const TaskNodeView: React.FC<TaskNodeViewProps> = ({ data, width, height }) => {
+  const toggleEditMode = useStore((state) => state.toggleEditMode);
+
   return (
-    <div className={styles.taskNode}>
+    <div className={styles.taskNode} style={{ width, height }}>
       <div className={styles.header}>
-        <span className={styles.title}>{data.title || 'Untitled Tasking'}</span>
-        <button className={styles.editButton} onClick={data.onEdit}>
-          Edit
-        </button>
+        <span className={styles.title}>{data.title || 'Untitled Task'}</span>
+        <FaEdit
+          className={styles.editButton}
+          onClick={() => {
+            console.log(`Toggling edit mode for node ID: ${data.id}`);
+            toggleEditMode(data.id);
+          }}
+        />
       </div>
       <div className={styles.taskContent}>
-        {/* Tasking content would be rendered here */}
+        {/* Task content would be rendered here */}
       </div>
       <Handle
         type="target"

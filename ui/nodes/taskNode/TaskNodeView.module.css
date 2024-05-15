@@ -2,11 +2,13 @@
   display: flex;
   flex-direction: column;
   background-color: #f8f8f8;
-  border-radius: 4px;
-  padding: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  padding: 4px;
   overflow: hidden;
   height: 100%;
+  align-items: center;
+  justify-content: center;
 }
 
 .header {
@@ -14,8 +16,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 8px 12px;
-  background-color: #f1f1f1;
   z-index: 1;
+  justify-content: center;
 }
 
 .title {
