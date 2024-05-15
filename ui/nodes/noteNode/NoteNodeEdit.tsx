@@ -53,6 +53,8 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   const [backgroundColor, setBackgroundColor] = useState('#f8f8f8');
   const [tags, setTags] = useState<string[]>([]);
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
+  const [nodeWidth, setNodeWidth] = useState(width);
+  const [nodeHeight, setNodeHeight] = useState(height);
 
   const updateNode = useStore((state) => state.updateNode);
 
@@ -79,6 +81,8 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
 
   const handleResize = (event, { width, height }) => {
     console.log(`NoteNodeEdit: Resizing: width = ${width}, height = ${height}`);
+    setNodeWidth(width);
+    setNodeHeight(height);
     onNodeResizeStop(data.id, { width, height }, position);
   };
 
@@ -87,11 +91,15 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   }, [selected]);
 
   useEffect(() => {
-    updateNode(data.id, { width, height });
-  }, [width, height, updateNode, data.id]);
+    setNodeWidth(width);
+    setNodeHeight(height);
+  }, [width, height]);
 
   return (
-    <div className={styles.noteNode} style={{ width, height, backgroundColor }}>
+    <div
+      className={styles.noteNode}
+      style={{ width: nodeWidth, height: nodeHeight, backgroundColor }}
+    >
       {selected && (
         <NodeResizer
           isVisible={selected}
