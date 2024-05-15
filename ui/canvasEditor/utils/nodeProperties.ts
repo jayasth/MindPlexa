@@ -15,7 +15,7 @@ type NodeDimensionTypes = {
 };
 
 export const nodeDimensions: NodeDimensionTypes = {
-  note: { width: 150, height: 60, editWidth: 300, editHeight: 300 },
+  note: { width: 150, height: 60, editWidth: 500, editHeight: 300 },
   task: { width: 200, height: 150, editWidth: 300, editHeight: 200 },
   custom: { width: 200, height: 150, editWidth: 300, editHeight: 200 },
   code: { width: 200, height: 150, editWidth: 300, editHeight: 200 },

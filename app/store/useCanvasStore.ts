@@ -103,7 +103,8 @@ export const useStore = createStore<CanvasState>((set, get) => ({
           width: data.width !== undefined ? data.width : existingNode.width,
           height: data.height !== undefined ? data.height : existingNode.height,
           selected:
-            data.selected !== undefined ? data.selected : existingNode.selected
+            data.selected !== undefined ? data.selected : existingNode.selected,
+          isEditing: true
         };
         console.log('Store: Node size:', updatedNode.width, updatedNode.height);
         const updatedNodes = [...state.nodes];
