@@ -68,22 +68,6 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
     updateNode: state.updateNode
   }));
 
-  const handleDeleteEdge = useCallback(
-    (edgeId) => {
-      console.log('CanvasEditor: Deleting edge with id:', edgeId);
-      setEdges((currentEdges) => {
-        const updatedEdges = currentEdges.filter((edge) => edge.id !== edgeId);
-        console.log(
-          'CanvasEditor: Updated edges after deletion:',
-          updatedEdges
-        );
-        return updatedEdges;
-      });
-      useStore.getState().removeEdge(edgeId);
-    },
-    [setEdges]
-  );
-
   const edgeTypes = useMemo(
     () => ({
       customEdge: (props) => <CustomEdge {...props} />
@@ -92,18 +76,11 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
   );
 
   const onNodeResizeStop = useCallback(
-    (nodeId, newSize, newPosition) => {
-      if (!newPosition) {
-        console.error('CanvasEditor: newPosition is undefined');
-        return;
-      }
-      console.log(
-        `CanvasEditor: Node ${nodeId} resized to width=${newSize.width}, height=${newSize.height}, position=${newPosition.x},${newPosition.y}`
-      );
-      updateNode(nodeId, {
-        width: newSize.width,
-        height: newSize.height,
-        position: newPosition
+    (event, node) => {
+      updateNode(node.id, {
+        width: node.width,
+        height: node.height,
+        position: node.position
       });
     },
     [updateNode]
@@ -136,6 +113,21 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
     }),
     [parentNode, childNodePosition, onNodeResizeStop]
   );
+
+  const onSelectionChange = useCallback((elements) => {
+    if (Array.isArray(elements)) {
+      const selectedIds = elements.map((el) => el.id);
+      useStore.getState().setSelectedNodes(selectedIds);
+    }
+  }, []);
+
+  const onNodeDragStop = useCallback(
+    (event, node) => {
+      updateNode(node.id, { position: node.position });
+    },
+    [updateNode]
+  );
+
   const handleConnect = useCallback(
     (connection) => {
       if (!connection.source || !connection.target) {
@@ -165,15 +157,6 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
     [setEdges]
   );
 
-  const onNodeDragStop = useCallback(
-    (event, node) => {
-      if (node.type === 'selectionMenu') {
-        updateNode(node.id, { position: node.position });
-      }
-    },
-    [updateNode]
-  );
-
   const handleTemporaryNodeCreationWithStore = (
     parentNode: Node | null,
     position: XYPosition,
@@ -189,19 +172,6 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
       nodes
     );
   };
-
-  const onSelectionChange = useCallback(
-    (elements) => {
-      const elementsArray = Array.isArray(elements) ? elements : [];
-      setNodes((currentNodes) => {
-        return currentNodes.map((node) => ({
-          ...node,
-          selected: elementsArray.some((el) => el.id === node.id)
-        }));
-      });
-    },
-    [setNodes]
-  );
 
   useEffect(() => {
     console.log(

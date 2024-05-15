@@ -47,6 +47,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   onNodeResizeStop,
   position
 }) => {
+  const [isSelected, setIsSelected] = useState(selected);
   console.log('NoteNodeEdit: Node selected state:', selected);
   const [title, setTitle] = useState(data.title || 'Untitled Note');
   const [content, setContent] = useState(data.content || '');
@@ -89,6 +90,10 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   };
 
   useEffect(() => {
+    setIsSelected(selected);
+  }, [selected]);
+
+  useEffect(() => {
     updateNode(data.id, { width, height });
   }, [width, height, updateNode, data.id]);
 
@@ -96,10 +101,12 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     <div className={styles.noteNode} style={{ width, height, backgroundColor }}>
       {selected && (
         <NodeResizer
-          minWidth={100}
-          minHeight={50}
-          onResize={handleResize}
           isVisible={selected}
+          minWidth={200}
+          minHeight={200}
+          onResize={handleResize}
+          lineStyle={{ stroke: 'blue' }}
+          handleStyle={{ fill: 'blue' }}
         />
       )}
       <div className={styles.header}>

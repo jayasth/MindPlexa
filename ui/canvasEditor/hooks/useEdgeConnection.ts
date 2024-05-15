@@ -7,7 +7,6 @@ import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 
 export const useEdgeConnection = () => {
   const {
-    nodes,
     nodeInternals,
     domNode,
     screenToFlowPosition,
