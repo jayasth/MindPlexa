@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Node, NodeProps, Handle, Position, NodeResizer } from 'reactflow';
+import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
 import { useStore } from '@/app/store/useCanvasStore';
 import styles from './NoteNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
@@ -18,8 +18,7 @@ import {
   handleDelete,
   handleChangeColor,
   handleAddTag,
-  handleAttachFile,
-  handleNodeResize
+  handleAttachFile
 } from '@/ui/canvasEditor/utils/CommonNodeFunctions';
 
 interface NoteNodeEditProps extends NodeProps {
@@ -80,13 +79,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
 
   const handleResize = (event, { width, height }) => {
     console.log(`NoteNodeEdit: Resizing: width = ${width}, height = ${height}`);
-    handleNodeResize(data.id, width, height, (newWidth, newHeight) => {
-      onNodeResizeStop(
-        data.id,
-        { width: newWidth, height: newHeight },
-        position
-      );
-    });
+    onNodeResizeStop(data.id, { width, height }, position);
   };
 
   useEffect(() => {
@@ -105,8 +98,6 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
           minWidth={200}
           minHeight={200}
           onResize={handleResize}
-          lineStyle={{ stroke: 'blue' }}
-          handleStyle={{ fill: 'blue' }}
         />
       )}
       <div className={styles.header}>

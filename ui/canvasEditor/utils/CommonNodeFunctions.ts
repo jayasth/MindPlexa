@@ -75,14 +75,3 @@ export const handleAttachFile = (
     return null;
   };
 };
-
-export const handleNodeResize = (
-  id: string,
-  newWidth: number,
-  newHeight: number,
-  onResize: (width: number, height: number) => void
-) => {
-  const { updateNode } = useStore.getState();
-  onResize(newWidth, newHeight);
-  updateNode(id, { width: newWidth, height: newHeight });
-};

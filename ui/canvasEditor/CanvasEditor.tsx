@@ -76,12 +76,18 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
   );
 
   const onNodeResizeStop = useCallback(
-    (event, node) => {
-      updateNode(node.id, {
-        width: node.width,
-        height: node.height,
-        position: node.position
-      });
+    (
+      nodeId: string,
+      newSize: { width: number; height: number },
+      newPosition: { x: number; y: number }
+    ) => {
+      console.log(
+        `CanvasEditor: Node size before resizing: width = ${newSize.width}, height = ${newSize.height}`
+      );
+      updateNode(nodeId, { ...newSize, position: newPosition });
+      console.log(
+        `CanvasEditor: Node size after resizing: width = ${newSize.width}, height = ${newSize.height}`
+      );
     },
     [updateNode]
   );

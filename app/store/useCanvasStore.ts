@@ -89,22 +89,23 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       return { nodes: [...state.nodes, newNode] };
     });
   },
+
   updateNode: (id, data) => {
     console.log('Store: Pre-update node check:', { id, data });
     set((state) => {
       const existingNodeIndex = state.nodes.findIndex((node) => node.id === id);
       if (existingNodeIndex !== -1) {
-        // Node exists, update it
         const existingNode = state.nodes[existingNodeIndex];
         const updatedNode = {
           ...existingNode,
           ...data,
           position: data.position || existingNode.position,
-          width: data.width || existingNode.width,
-          height: data.height || existingNode.height,
+          width: data.width !== undefined ? data.width : existingNode.width,
+          height: data.height !== undefined ? data.height : existingNode.height,
           selected:
             data.selected !== undefined ? data.selected : existingNode.selected
         };
+        console.log('Store: Node size:', updatedNode.width, updatedNode.height);
         const updatedNodes = [...state.nodes];
         updatedNodes[existingNodeIndex] = updatedNode;
         state.nodeInternals.set(id, updatedNode);
@@ -114,6 +115,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       return state;
     });
   },
+
   addEdge: (edge) => {
     console.log('Store: Adding edge:', edge);
     set((state) => ({
