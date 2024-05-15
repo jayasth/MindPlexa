@@ -53,6 +53,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   const [backgroundColor, setBackgroundColor] = useState('#f8f8f8');
   const [tags, setTags] = useState<string[]>([]);
   const [attachedFile, setAttachedFile] = useState<File | null>(null);
+  const [isContainerSelected, setIsContainerSelected] = useState(false);
   const [nodeWidth, setNodeWidth] = useState(width);
   const [nodeHeight, setNodeHeight] = useState(height);
 
@@ -79,6 +80,19 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     setAttachedFile(file);
   };
 
+  useEffect(() => {
+    setNodeWidth(width);
+    setNodeHeight(height);
+  }, [width, height]);
+
+  const handleContainerClick = () => {
+    setIsContainerSelected(true);
+  };
+
+  const handleContainerBlur = () => {
+    setIsContainerSelected(false);
+  };
+
   const handleResize = (event, { width, height }) => {
     console.log(`NoteNodeEdit: Resizing: width = ${width}, height = ${height}`);
     setNodeWidth(width);
@@ -86,28 +100,24 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     onNodeResizeStop(data.id, { width, height }, position);
   };
 
-  useEffect(() => {
-    setIsSelected(selected);
-  }, [selected]);
-
-  useEffect(() => {
-    setNodeWidth(width);
-    setNodeHeight(height);
-  }, [width, height]);
+  const controlStyle = {
+    background: 'transparent',
+    border: 'none'
+  };
 
   return (
     <div
       className={styles.noteNode}
       style={{ width: nodeWidth, height: nodeHeight, backgroundColor }}
+      onClick={handleContainerClick}
+      onBlur={handleContainerBlur}
     >
-      {selected && (
-        <NodeResizer
-          isVisible={selected}
-          minWidth={200}
-          minHeight={200}
-          onResize={handleResize}
-        />
-      )}
+      <NodeResizer
+        isVisible={selected}
+        minWidth={200}
+        minHeight={200}
+        onResize={handleResize}
+      />
       <div className={styles.header}>
         <input
           type="text"
