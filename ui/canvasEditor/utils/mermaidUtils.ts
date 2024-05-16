@@ -42,31 +42,46 @@ const convertToReactFlowElements = (
   nodes: Node[];
   edges: Edge[];
 } => {
-  const parser = new DOMParser();
-  const svgElement = parser.parseFromString(svgCode, 'image/svg+xml');
-  const mermaidNodes = svgElement.querySelectorAll('.node');
-  const mermaidEdges = svgElement.querySelectorAll('.edgeLabel');
+  // Now, you have the SVG code in the svgCode variable.
+  console.log(svgCode);
 
+  // Create a dummy div element to parse the SVG code as HTML
+  const dummyDiv = document.createElement('div');
+  dummyDiv.innerHTML = svgCode;
+
+  // Select nodes and edges from the SVG
+  const mermaidNodes = Array.from(dummyDiv.querySelectorAll('.node'));
+  const mermaidEdges = Array.from(dummyDiv.querySelectorAll('.edgePaths path'));
+
+  // Initialize an array to store React-Flow elements
   const nodes: Node[] = [];
   const edges: Edge[] = [];
 
   // Convert nodes to React-Flow elements
   mermaidNodes.forEach((node, index) => {
-    const id = node.getAttribute('id') || `n${index}`;
-    const { label, type } = extractLabelAndType(node.textContent || '');
+    const elId = node.getAttribute('id') || `n${index}`;
+    let id = elId;
+
+    const classPattern = /^flowchart-([^-\d]+)-\d+$/;
+    const matches = elId.match(classPattern);
+
+    if (matches) {
+      id = matches[1];
+    }
+
+    const nodeLabel = node.querySelector('.nodeLabel')?.textContent;
+    const { label, type } = extractLabelAndType(nodeLabel || '');
+
     const position = {
-      x:
-        parseFloat(
-          node.getAttribute('transform')!.split('(')[1].split(',')[0]
-        ) * 1.2,
+      x: parseFloat(node.getAttribute('transform')!.split('(')[1]) * 1.2,
       y: parseFloat(node.getAttribute('transform')!.split(',')[1]) * 1.2
     };
 
     nodes.push({
       id,
-      type: 'noteNode',
+      type: type,
       position,
-      data: { label, title: label }
+      data: { label }
     });
   });
 
