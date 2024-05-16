@@ -28,15 +28,14 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
   id,
   onNodeResizeStop
 }) => {
-  const node = useStore((state) =>
-    state.nodes.find((n) => n.id === id)
-  ) as BaseNode;
-  console.log('NodeRenderer: Node selected state:', selected);
+  const node = useStore((state) => state.nodes.find((n) => n.id === id)) as
+    | BaseNode
+    | undefined; // node might be undefined if it has been deleted
+
   const updateNode = useStore((state) => state.updateNode);
   const toggleEditMode = useStore((state) => state.toggleEditMode);
-
   const [size, setSize] = useState(
-    getNodeSpecificProperties(node.type, node.isEditing)
+    getNodeSpecificProperties(node?.type, node?.isEditing ?? false)
   );
 
   useEffect(() => {
@@ -48,13 +47,23 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
   }, [node?.width, node?.height, node?.type, id]);
 
   useEffect(() => {
-    const newSize = getNodeSpecificProperties(node.type, node.isEditing);
-    setSize(newSize);
-    updateNode(id, newSize);
+    if (node) {
+      const newSize = getNodeSpecificProperties(node.type, node.isEditing);
+      setSize(newSize);
+      updateNode(id, newSize);
+      console.log(
+        `NodeRenderer: Updated size for node ${id}: width = ${newSize.width}, height = ${newSize.height}`
+      );
+    }
+  }, [node?.isEditing, node?.type, updateNode, id]);
+
+  // Early return if node does not exist
+  if (!node) {
     console.log(
-      `NodeRenderer: Updated size for node ${id}: width = ${newSize.width}, height = ${newSize.height}`
+      `NodeRenderer: Node with ID ${id} not found, possibly deleted.`
     );
-  }, [node.isEditing, node.type, updateNode, id]);
+    return null;
+  }
 
   const handleEdit = () => {
     if (node.type !== 'selectionMenu') {

@@ -52,12 +52,16 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   const [content, setContent] = useState(data.content || '');
   const [backgroundColor, setBackgroundColor] = useState('#f8f8f8');
   const [tags, setTags] = useState<string[]>([]);
-  const [attachedFile, setAttachedFile] = useState<File | null>(null);
+  const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
   const [isContainerSelected, setIsContainerSelected] = useState(false);
   const [nodeWidth, setNodeWidth] = useState(width);
   const [nodeHeight, setNodeHeight] = useState(height);
 
   const updateNode = useStore((state) => state.updateNode);
+
+  useEffect(() => {
+    updateNode(data.id, { data: { title, content, tags, attachedFiles } });
+  }, [title, content, tags, attachedFiles, updateNode, data.id]);
 
   const onChangeTitle = (newTitle: string) => {
     setTitle(newTitle);
@@ -76,8 +80,8 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     setTags([...tags, newTag]);
   };
 
-  const onAttachFile = (file: File) => {
-    setAttachedFile(file);
+  const onAttachFiles = (files: File[]) => {
+    setAttachedFiles(files);
   };
 
   useEffect(() => {
@@ -130,7 +134,16 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         onChange={(e) => handleContentChange(e.target.value)}
       />
       <div className={styles.footer}>
-        <SaveButton onClick={() => handleSave(data.id, () => {})} />
+        <SaveButton
+          onClick={() =>
+            handleSave(data.id, () => {}, {
+              title,
+              content,
+              tags,
+              attachedFiles
+            })
+          }
+        />
         <DeleteButton onClick={() => handleDelete(data.id, () => {})} />
         <ChangeColorButton
           onClick={() =>
@@ -139,7 +152,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         />
         <AddTagButton onClick={() => handleAddTag(data.id, tags, onAddTag)} />
         <AttachFileButton
-          onChange={(e) => handleAttachFile(data.id, onAttachFile)(e)}
+          onChange={(e) => handleAttachFile(data.id, onAttachFiles)(e)}
         />
       </div>
       <div className={styles.tagContainer}>
@@ -149,9 +162,9 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
           </span>
         ))}
       </div>
-      {attachedFile && (
+      {attachedFiles.length > 0 && (
         <div className={styles.attachedFile}>
-          Attached file: {attachedFile.name}
+          Attached files: {attachedFiles.map((file) => file.name).join(', ')}
         </div>
       )}
       <Handle

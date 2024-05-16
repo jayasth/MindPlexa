@@ -10,9 +10,10 @@ export const handleTitleChange = (
   updateNode(id, { data: { title } });
 };
 
-export const handleSave = (id: string, onSave: () => void) => {
-  const { toggleEditMode } = useStore.getState();
+export const handleSave = (id: string, onSave: () => void, nodeData: any) => {
+  const { updateNode, toggleEditMode } = useStore.getState();
   onSave();
+  updateNode(id, { data: nodeData });
   toggleEditMode(id);
 };
 
@@ -22,10 +23,14 @@ export const handleClose = (id: string) => {
 };
 
 export const handleDelete = (id: string, onDelete: () => void) => {
-  const { toggleEditMode } = useStore.getState();
+  const { removeNode, setEdges } = useStore.getState();
   if (window.confirm('Are you sure you want to delete this node?')) {
     onDelete();
-    toggleEditMode(id);
+    removeNode(id);
+    // Update edges to remove any that are connected to the deleted node
+    setEdges((edges) =>
+      edges.filter((edge) => edge.source !== id && edge.target !== id)
+    );
   }
 };
 
@@ -62,15 +67,39 @@ export const handleAddTag = (
 
 export const handleAttachFile = (
   id: string,
-  onAttachFile: (file: File) => void
+  onAttachFile: (files: File[]) => void
 ) => {
   return (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const file = e.target.files[0];
-      onAttachFile(file);
-      const { updateNode } = useStore.getState();
-      updateNode(id, { data: { attachedFile: file } });
-      return file;
+    const maxFiles = 3;
+    const maxFileSize = 2 * 1024 * 1024; // 2 MB in bytes
+    const allowedFileTypes = [
+      'image/jpeg',
+      'image/png',
+      'application/pdf',
+      'text/plain'
+    ];
+
+    if (e.target.files) {
+      const files = Array.from(e.target.files).slice(0, maxFiles);
+      const validFiles = files.filter((file) => {
+        return allowedFileTypes.includes(file.type) && file.size <= maxFileSize;
+      });
+
+      if (validFiles.length > 0) {
+        onAttachFile(validFiles);
+        const { updateNode } = useStore.getState();
+        const existingFiles =
+          useStore.getState().nodes.find((n) => n.id === id)?.data
+            ?.attachedFiles || [];
+        updateNode(id, {
+          data: { attachedFiles: [...existingFiles, ...validFiles] }
+        });
+        return validFiles;
+      } else {
+        alert(
+          'Please select valid files. Only JPEG, PNG, PDF, and TXT files under 2MB.'
+        );
+      }
     }
     return null;
   };
