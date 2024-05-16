@@ -24,12 +24,30 @@ const AIAssistanceModal: React.FC<AIAssistanceModalProps> = ({ onClose }) => {
 
   const handleGenerateMindmap = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    await handleSubmit(e); // Trigger the completion request
-    console.log('AiAssistanceModal: AI Completion:', completion);
-    const { nodes, edges } = await parseMermaidCode(completion);
-    setNodes((currentNodes) => [...currentNodes, ...nodes]);
-    setEdges((currentEdges) => [...currentEdges, ...edges]);
-    onClose();
+
+    try {
+      const response = await fetch('/api/completion', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ prompt: topic })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate mindmap');
+      }
+
+      const data = await response.json();
+      console.log('Response data:', data);
+      const { nodes, edges } = await parseMermaidCode(data.mermaidCode);
+      setNodes((currentNodes) => [...currentNodes, ...nodes]);
+      setEdges((currentEdges) => [...currentEdges, ...edges]);
+      onClose();
+    } catch (error) {
+      console.error('Error generating mindmap:', error);
+      // Handle error state
+    }
   };
 
   return (
