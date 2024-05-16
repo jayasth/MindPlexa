@@ -1,6 +1,7 @@
 import React from 'react';
 import {
   FaAngleDoubleRight,
+  FaBrain,
   FaTasks,
   FaRegAddressBook,
   FaCode,
@@ -25,6 +26,7 @@ interface ToolbarProps {
   onDownload: () => void;
   addNode: (node: Node) => void;
   reactFlowInstance: any;
+  onGenerateMindmap: () => void;
 }
 
 const Toolbar: React.FC<ToolbarProps> = ({
@@ -32,7 +34,8 @@ const Toolbar: React.FC<ToolbarProps> = ({
   onRedo,
   onShare,
   onDownload,
-  reactFlowInstance
+  reactFlowInstance,
+  onGenerateMindmap
 }) => {
   const addNode = useStore((state) => state.addNode);
   const nodes = useStore((state) => state.nodes);
@@ -85,7 +88,13 @@ const Toolbar: React.FC<ToolbarProps> = ({
           <FaAngleDoubleRight size="16" />
         </button>
       </Link>
-
+      <button
+        onClick={onGenerateMindmap}
+        className={buttonClass}
+        title="Generate Mindmap"
+      >
+        <FaBrain size="16" />
+      </button>
       <button
         onClick={() => handleAddNode('note')}
         className={buttonClass}

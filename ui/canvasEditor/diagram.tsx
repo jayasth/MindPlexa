@@ -1,69 +1,76 @@
 import React, { useEffect, useMemo } from 'react';
+import { useState, useCallback } from 'react';
 import ReactFlow, {
-  useReactFlow,
   Background,
   Controls,
+  EdgeChange,
+  Node,
+  NodeChange,
+  applyEdgeChanges,
+  applyNodeChanges,
   addEdge,
   Connection,
-  useNodesState,
-  useEdgesState,
-  Node
+  Edge,
+  MarkerType
 } from 'reactflow';
-import 'reactflow/dist/style.css';
+import { CustomNode } from './custom-node';
 import { parseMermaidCode } from '@/utils/canvas/mermaid-utils';
-import { nodeTypes, edgeTypes } from './nodeTypes'; // Ensure these are defined to handle different node and edge types
 
 interface DiagramProps {
   mermaidCode?: string;
+  isComplete?: boolean;
 }
 
-const Diagram: React.FC<DiagramProps> = ({ mermaidCode = '' }) => {
-  const [nodes, setNodes, onNodesChange] = useNodesState<Node<any>>([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
-  const { setViewport } = useReactFlow();
-
-  const memoizedNodeTypes = useMemo(() => nodeTypes, []);
-  const memoizedEdgeTypes = useMemo(() => edgeTypes, []);
-
+const Diagram = ({ mermaidCode = '', isComplete = false }: DiagramProps) => {
   useEffect(() => {
     async function parse() {
       const { nodes, edges } = await parseMermaidCode(mermaidCode);
-      setNodes(
-        nodes.map((node) => ({
-          ...node,
-          data: {
-            ...node,
-            label: node.type // Assuming you want to display the type as label
-          },
-          position: {
-            x: node.position.x || window.innerWidth / 2 - 150,
-            y: node.position.y || window.innerHeight / 2 - 75
-          }
-        }))
-      );
       setEdges(edges);
+      setNodes(nodes);
     }
-    if (mermaidCode) {
+    if (isComplete && mermaidCode) {
       parse();
     }
-  }, [mermaidCode, setNodes, setEdges]);
+  }, [mermaidCode, isComplete]);
 
-  const onConnect = (params: Connection) =>
-    setEdges((eds) => addEdge(params, eds));
+  const [nodes, setNodes] = useState<Node[]>([]);
+  const [edges, setEdges] = useState<Edge[]>([]);
+
+  const onNodesChange = useCallback(
+    (changes: NodeChange[]) =>
+      setNodes((nds) => applyNodeChanges(changes, nds)),
+    []
+  );
+  const onEdgesChange = useCallback(
+    (changes: EdgeChange[]) =>
+      setEdges((eds) => applyEdgeChanges(changes, eds)),
+    []
+  );
+  const onConnect = useCallback(
+    (params: Edge | Connection) => setEdges((eds) => addEdge(params, eds)),
+    []
+  );
+
+  const nodeTypes = useMemo(
+    () => ({
+      startEvent: CustomNode,
+      endEvent: CustomNode,
+      activity: CustomNode
+    }),
+    []
+  );
 
   return (
     <ReactFlow
       nodes={nodes}
-      edges={edges}
       onNodesChange={onNodesChange}
+      edges={edges}
       onEdgesChange={onEdgesChange}
       onConnect={onConnect}
-      nodeTypes={memoizedNodeTypes}
-      edgeTypes={memoizedEdgeTypes}
-      fitView
+      nodeTypes={nodeTypes}
     >
+      <Background />
       <Controls />
-      <Background color="#aaa" gap={16} />
     </ReactFlow>
   );
 };

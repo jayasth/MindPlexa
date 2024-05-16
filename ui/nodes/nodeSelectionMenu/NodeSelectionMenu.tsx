@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
 import { NodeProps, Handle, Position } from 'reactflow';
 import {
   FaTasks,
@@ -59,19 +59,6 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
   }));
 
   const nodeRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (nodeRef.current && !nodeRef.current.contains(event.target as Node)) {
-        data.onClose();
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [data]);
 
   const nodeTypes = ['note', 'task', 'custom', 'code', 'draw'];
   const icons = {

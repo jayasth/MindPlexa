@@ -15,6 +15,8 @@ import ReactFlow, {
   XYPosition
 } from 'reactflow';
 import Toolbar from './toolbar';
+import { parseMermaidCode } from '@/ui/canvasEditor/utils/mermaidUtils';
+import AIAssistanceModal from '@/ui/canvasEditor/AIAssistanceModal';
 import {
   handleDownload,
   handleShare,
@@ -37,6 +39,8 @@ const defaultEdgeOptions = {
 export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const reactFlowInstance = useRef<ReactFlowInstance | null>(null);
+  const [showAIAssistanceModal, setShowAIAssistanceModal] = useState(false);
+
   const { onConnectStart, onConnectEnd, parentNode, childNodePosition } =
     useEdgeConnection();
 
@@ -68,12 +72,34 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
     updateNode: state.updateNode
   }));
 
+  useEffect(() => {
+    if (initialCanvas) {
+      setNodes(initialCanvas.nodes);
+      setEdges(initialCanvas.edges);
+    }
+  }, [initialCanvas, setNodes, setEdges]);
+
+  const handleGenerateMindmap = async (mermaidCode: string) => {
+    const { nodes: generatedNodes, edges: generatedEdges } =
+      await parseMermaidCode(mermaidCode);
+    setNodes((currentNodes) => [...currentNodes, ...generatedNodes]);
+    setEdges((currentEdges) => [...currentEdges, ...generatedEdges]);
+    setShowAIAssistanceModal(false);
+  };
   const edgeTypes = useMemo(
     () => ({
       customEdge: (props) => <CustomEdge {...props} />
     }),
     []
   );
+
+  const handleOpenAIAssistanceModal = () => {
+    setShowAIAssistanceModal(true);
+  };
+
+  const handleCloseAIAssistanceModal = () => {
+    setShowAIAssistanceModal(false);
+  };
 
   const onNodeResizeStop = useCallback(
     (
@@ -199,6 +225,7 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
             onRedo={() => console.log('Redo')}
             onShare={() => handleShare({ nodes, edges })}
             onDownload={() => handleDownload({ nodes, edges })}
+            onGenerateMindmap={handleOpenAIAssistanceModal}
             addNode={(node: Node) => {
               addNode(node as any);
               reactFlowInstance.current?.fitView({ padding: 0.2 });
@@ -242,6 +269,12 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
             <Controls />
           </ReactFlow>
         </div>
+        {showAIAssistanceModal && (
+          <AIAssistanceModal
+            onClose={handleCloseAIAssistanceModal}
+            onGenerateMindmap={handleGenerateMindmap}
+          />
+        )}
       </ReactFlowProvider>
     </div>
   );
