@@ -25,10 +25,15 @@ const AIAssistanceModal: React.FC<AIAssistanceModalProps> = ({ onClose }) => {
   const handleGenerateMindmap = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     await handleSubmit(e);
-    const { nodes, edges } = await parseMermaidCode(completion);
-    setNodes((currentNodes) => [...currentNodes, ...nodes]);
-    setEdges((currentEdges) => [...currentEdges, ...edges]);
-    onClose();
+    console.log('AI Completion:', completion); 
+    if (completion.startsWith('graph TD;')) {
+      const { nodes, edges } = await parseMermaidCode(completion);
+      setNodes((currentNodes) => [...currentNodes, ...nodes]);
+      setEdges((currentEdges) => [...currentEdges, ...edges]);
+      onClose();
+    } else {
+      console.error('Invalid Mermaid code from AI:', completion);
+    }
   };
 
   return (

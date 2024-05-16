@@ -14,10 +14,11 @@ export async function parseMermaidCode(
   const filteredCode = removeDoubleQuoteInsideParentheses(
     removeDoubleQuoteInsideBrackets(removeMarkdowncode(mermaidCode))
   );
+  console.log('Filtered Mermaid Code:', filteredCode);
   let svgCode: any;
 
   try {
-    mermaid.initialize({ startOnLoad: false }); // Initialize Mermaid (if not already initialized)
+    mermaid.initialize({ startOnLoad: false });
     svgCode = await mermaid.render('mermaid-chart', filteredCode);
   } catch (error: any) {
     console.error('Mermaid parsing error:', error);
@@ -41,7 +42,6 @@ const convertToReactFlowElements = (
   nodes: Node[];
   edges: Edge[];
 } => {
-  // Create a dummy div element to parse the SVG code as HTML
   const dummyDiv = document.createElement('div');
   dummyDiv.innerHTML = svgCode;
 
@@ -49,11 +49,9 @@ const convertToReactFlowElements = (
   const mermaidNodes = Array.from(dummyDiv.querySelectorAll('.node'));
   const mermaidEdges = Array.from(dummyDiv.querySelectorAll('.edgePaths path'));
 
-  // Initialize an array to store React-Flow elements
   const nodes: Node[] = [];
   const edges: Edge[] = [];
 
-  // Convert nodes to React-Flow elements
   mermaidNodes.forEach((node, index) => {
     const elId = node.getAttribute('id') || `n${index}`;
     let id = elId;
@@ -75,9 +73,9 @@ const convertToReactFlowElements = (
 
     nodes.push({
       id,
-      type: type === 'note' ? 'note' : 'custom', // Use 'note' type for note nodes, 'custom' for others
+      type: type === 'note' ? 'note' : 'custom',
       position,
-      data: { label }
+      data: { title: label }
     });
   });
 
@@ -101,7 +99,7 @@ const convertToReactFlowElements = (
       id,
       source,
       target,
-      type: 'customEdge', // Use your custom edge type
+      type: 'customEdge',
       markerEnd: { type: MarkerType.ArrowClosed }
     });
   });
