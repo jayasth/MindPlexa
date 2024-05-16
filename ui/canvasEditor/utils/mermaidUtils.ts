@@ -73,9 +73,9 @@ const convertToReactFlowElements = (
 
     nodes.push({
       id,
-      type: type === 'note' ? 'note' : 'custom',
+      type: 'note',
       position,
-      data: { title: label }
+      data: { label: label, title: label }
     });
   });
 

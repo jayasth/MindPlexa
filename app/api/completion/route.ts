@@ -12,6 +12,7 @@ export async function POST(req: Request) {
   try {
     const response = await openai.completions.create({
       model: 'gpt-3.5-turbo-instruct',
+
       temperature: 0.1,
       max_tokens: 300,
       prompt: promptTemplate(prompt)

@@ -1,3 +1,11 @@
 export const promptTemplate = (userInput: string) => {
-  return `Generate a Mermaid JS flowchart for the topic: ${userInput}. Start with 'graph TD;' to define a top-down directed graph. Each node should include a type in its label, like "Start ¡!startEvent!¡" or "Do something ¡!activity!¡". Ensure the output is valid Mermaid syntax.`;
+  return `You are an assistant helping to generate a multiple-choice flowchart about a topic. Only return the flowchart in mermaid JS format with no other text.
+  Each node has to have a type, which is one of the following: 
+  - startEvent
+  - endEvent
+  - activity
+  You should include the node type in it's label, like this "Start ¡!startEvent!¡" or "Do something ¡!activity!¡".
+  The diagram direction should be TD, top down.
+  Only return the flowchart in mermaid JS format with no markdown markers.
+  Topic: ${userInput}`;
 };

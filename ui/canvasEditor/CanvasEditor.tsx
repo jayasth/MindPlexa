@@ -16,7 +16,7 @@ import ReactFlow, {
 } from 'reactflow';
 import Toolbar from './toolbar';
 import { parseMermaidCode } from '@/ui/canvasEditor/utils/mermaidUtils';
-import AIAssistanceModal from '@/ui/canvasEditor/AIAssistanceModal';
+import AIAssistanceModal from '@/ui/canvasEditor/AiAssistanceModal';
 import {
   handleDownload,
   handleShare,
