@@ -10,29 +10,28 @@ import {
 export async function parseMermaidCode(
   mermaidCode: string
 ): Promise<{ nodes: Node[]; edges: Edge[] }> {
-  console.log('mermaidCode');
-  console.log(mermaidCode);
   // Render the Mermaid code and invoke the callback
   const filteredCode = removeDoubleQuoteInsideParentheses(
     removeDoubleQuoteInsideBrackets(removeMarkdowncode(mermaidCode))
   );
-  console.log('filteredCode');
-  console.log(filteredCode);
   let svgCode: any;
 
   try {
     mermaid.initialize({ startOnLoad: false }); // Initialize Mermaid (if not already initialized)
     svgCode = await mermaid.render('mermaid-chart', filteredCode);
-    // Continue with the code if there are no parsing errors
-  } catch (error) {
-    // Handle parsing errors here
+  } catch (error: any) {
     console.error('Mermaid parsing error:', error);
-    alert('Mermaid parsing error');
+    if (error.message.includes('No diagram type detected')) {
+      console.error(
+        'Mermaid parsing error: UnknownDiagramError - No diagram type detected. Please check the configuration or syntax of your Mermaid code.'
+      );
+    }
     return {
       nodes: [],
       edges: []
     };
   }
+
   return convertToReactFlowElements(svgCode.svg);
 }
 
@@ -42,9 +41,6 @@ const convertToReactFlowElements = (
   nodes: Node[];
   edges: Edge[];
 } => {
-  // Now, you have the SVG code in the svgCode variable.
-  console.log(svgCode);
-
   // Create a dummy div element to parse the SVG code as HTML
   const dummyDiv = document.createElement('div');
   dummyDiv.innerHTML = svgCode;
@@ -79,7 +75,7 @@ const convertToReactFlowElements = (
 
     nodes.push({
       id,
-      type: type,
+      type: type === 'note' ? 'note' : 'custom', // Use 'note' type for note nodes, 'custom' for others
       position,
       data: { label }
     });
@@ -105,13 +101,11 @@ const convertToReactFlowElements = (
       id,
       source,
       target,
-      type: 'default',
+      type: 'customEdge', // Use your custom edge type
       markerEnd: { type: MarkerType.ArrowClosed }
     });
   });
 
-  // Now, you have reactFlowElements containing the data in the format expected by React-Flow.
-  console.log(nodes, edges); // Print for demonstration
   return {
     nodes,
     edges

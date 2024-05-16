@@ -1,39 +1,33 @@
 import React, { useState } from 'react';
 import { useCompletion } from 'ai/react';
+import { parseMermaidCode } from '@/ui/canvasEditor/utils/mermaidUtils';
+import { useStore } from '@/app/store/useCanvasStore';
 
 interface AIAssistanceModalProps {
   onClose: () => void;
-  onGenerateMindmap: (mermaidCode: string) => void;
 }
 
-const AIAssistanceModal: React.FC<AIAssistanceModalProps> = ({
-  onClose,
-  onGenerateMindmap
-}) => {
+const AIAssistanceModal: React.FC<AIAssistanceModalProps> = ({ onClose }) => {
   const [topic, setTopic] = useState('');
+  const { completion, input, handleInputChange, handleSubmit, isLoading } =
+    useCompletion();
 
-  const {
-    completion: mermaidCode,
-    input,
-    handleInputChange,
-    handleSubmit,
-    isLoading
-  } = useCompletion();
+  const { setNodes, setEdges } = useStore((state) => ({
+    setNodes: state.setNodes,
+    setEdges: state.setEdges
+  }));
 
   const handleTopicChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setTopic(e.target.value);
-    const event = {
-      target: {
-        value: e.target.value
-      }
-    } as React.ChangeEvent<HTMLTextAreaElement>;
-    handleInputChange(event);
+    handleInputChange(e);
   };
 
   const handleGenerateMindmap = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     await handleSubmit(e);
-    onGenerateMindmap(mermaidCode);
+    const { nodes, edges } = await parseMermaidCode(completion);
+    setNodes((currentNodes) => [...currentNodes, ...nodes]);
+    setEdges((currentEdges) => [...currentEdges, ...edges]);
     onClose();
   };
 

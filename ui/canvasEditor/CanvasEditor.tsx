@@ -79,20 +79,6 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
     }
   }, [initialCanvas, setNodes, setEdges]);
 
-  const handleGenerateMindmap = async (mermaidCode: string) => {
-    const { nodes: generatedNodes, edges: generatedEdges } =
-      await parseMermaidCode(mermaidCode);
-    setNodes((currentNodes) => [...currentNodes, ...generatedNodes]);
-    setEdges((currentEdges) => [...currentEdges, ...generatedEdges]);
-    setShowAIAssistanceModal(false);
-  };
-  const edgeTypes = useMemo(
-    () => ({
-      customEdge: (props) => <CustomEdge {...props} />
-    }),
-    []
-  );
-
   const handleOpenAIAssistanceModal = () => {
     setShowAIAssistanceModal(true);
   };
@@ -100,6 +86,13 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
   const handleCloseAIAssistanceModal = () => {
     setShowAIAssistanceModal(false);
   };
+
+  const edgeTypes = useMemo(
+    () => ({
+      customEdge: (props) => <CustomEdge {...props} />
+    }),
+    []
+  );
 
   const onNodeResizeStop = useCallback(
     (
@@ -270,10 +263,7 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
           </ReactFlow>
         </div>
         {showAIAssistanceModal && (
-          <AIAssistanceModal
-            onClose={handleCloseAIAssistanceModal}
-            onGenerateMindmap={handleGenerateMindmap}
-          />
+          <AIAssistanceModal onClose={handleCloseAIAssistanceModal} />
         )}
       </ReactFlowProvider>
     </div>
