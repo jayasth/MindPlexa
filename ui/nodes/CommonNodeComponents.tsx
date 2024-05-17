@@ -5,12 +5,17 @@ import {
   FaPalette,
   FaTags,
   FaPaperclip,
-  FaArrowRight
+  FaArrowRight,
+  FaCopy // New import for duplicate icon
 } from 'react-icons/fa';
 import styles from './CommonNodeStyles.module.css';
 
 export const SaveButton = ({ onClick }) => (
-  <button className={styles.actionButton} onClick={onClick} title="Save">
+  <button
+    className={styles.actionButton}
+    onClick={onClick}
+    title="Save to Project"
+  >
     <FaSave size={16} />
   </button>
 );
@@ -47,5 +52,13 @@ export const AttachFileButton = ({ onChange }) => (
 export const CloseButton = ({ onClick }) => (
   <button className={styles.actionButton} onClick={onClick} title="Close">
     <FaArrowRight size={16} />
+  </button>
+);
+
+export const DuplicateButton = (
+  { onClick } // New Duplicate Button
+) => (
+  <button className={styles.actionButton} onClick={onClick} title="Duplicate">
+    <FaCopy size={16} />
   </button>
 );

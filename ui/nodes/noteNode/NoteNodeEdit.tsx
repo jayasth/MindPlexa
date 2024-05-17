@@ -9,7 +9,8 @@ import {
   ChangeColorButton,
   AddTagButton,
   AttachFileButton,
-  CloseButton
+  CloseButton,
+  DuplicateButton // New import for duplicate button
 } from '@/ui/nodes/CommonNodeComponents';
 import {
   handleTitleChange,
@@ -18,7 +19,8 @@ import {
   handleDelete,
   handleChangeColor,
   handleAddTag,
-  handleAttachFile
+  handleAttachFile,
+  handleDuplicate // New import for duplicate functionality
 } from '@/ui/canvasEditor/utils/CommonNodeFunctions';
 
 interface NoteNodeEditProps extends NodeProps {
@@ -47,7 +49,6 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   position
 }) => {
   const [isSelected, setIsSelected] = useState(selected);
-  console.log('NoteNodeEdit: Node selected state:', selected);
   const [title, setTitle] = useState(data.title || 'Untitled Note');
   const [content, setContent] = useState(data.content || '');
   const [backgroundColor, setBackgroundColor] = useState('#f8f8f8');
@@ -64,7 +65,6 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   }, [title, content, tags, attachedFiles, updateNode, data.id]);
 
   const onChangeTitle = (newTitle: string) => {
-    console.log('NoteNodeEdit: Changing title to:', newTitle);
     setTitle(newTitle);
   };
 
@@ -99,7 +99,6 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   };
 
   const handleResize = (event, { width, height }) => {
-    console.log(`NoteNodeEdit: Resizing: width = ${width}, height = ${height}`);
     setNodeWidth(width);
     setNodeHeight(height);
     onNodeResizeStop(data.id, { width, height }, position);
@@ -155,6 +154,8 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         <AttachFileButton
           onChange={(e) => handleAttachFile(data.id, onAttachFiles)(e)}
         />
+        <DuplicateButton onClick={() => handleDuplicate(data.id)} />{' '}
+        {/* New Duplicate Button */}
       </div>
       <div className={styles.tagContainer}>
         {tags.map((tag, index) => (

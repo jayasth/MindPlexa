@@ -111,3 +111,20 @@ export const handleAttachFile = (
     return null;
   };
 };
+
+export const handleDuplicate = (id: string) => {
+  // New duplicate functionality
+  const { nodes, addNode } = useStore.getState();
+  const nodeToDuplicate = nodes.find((node) => node.id === id);
+  if (nodeToDuplicate) {
+    const newNode = {
+      ...nodeToDuplicate,
+      id: `${id}-copy`,
+      position: {
+        x: nodeToDuplicate.position.x + 20,
+        y: nodeToDuplicate.position.y + 20
+      }
+    };
+    addNode(newNode);
+  }
+};
