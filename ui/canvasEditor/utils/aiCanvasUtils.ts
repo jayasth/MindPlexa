@@ -5,16 +5,13 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function extractLabelAndType(input: string): {
-  label: string;
+export function extractTitleAndType(input: string): {
+  title: string;
   type: string;
 } {
-  // expected input: 'label¡!type¡!'
-  const [label, type] = input.split('¡!');
-
   return {
-    label: label.trim(),
-    type: removeNonAlphanumeric(type?.trim().replace('!¡', '')) || 'default'
+    title: input.trim(),
+    type: 'note'
   };
 }
 
@@ -48,4 +45,9 @@ export function removeDoubleQuoteInsideBrackets(input: string): string {
   });
 
   return result;
+}
+
+export function removeSpecialCharacters(text: string): string {
+  // This will remove the special ¡! characters used in your node labels
+  return text.replace(/¡!/g, '');
 }

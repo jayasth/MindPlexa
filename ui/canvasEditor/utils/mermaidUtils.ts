@@ -1,7 +1,7 @@
 import mermaid from 'mermaid';
 import { Node, Edge, MarkerType } from 'reactflow';
 import {
-  extractLabelAndType,
+  extractTitleAndType,
   removeDoubleQuoteInsideBrackets,
   removeDoubleQuoteInsideParentheses,
   removeMarkdowncode
@@ -63,8 +63,8 @@ const convertToReactFlowElements = (
       id = matches[1];
     }
 
-    const nodeLabel = node.querySelector('.nodeLabel')?.textContent;
-    const { label, type } = extractLabelAndType(nodeLabel || '');
+    const nodeTitle = node.querySelector('.nodeTitle')?.textContent;
+    const { title, type } = extractTitleAndType(nodeTitle || '');
 
     const position = {
       x: parseFloat(node.getAttribute('transform')!.split('(')[1]) * 1.2,
@@ -73,9 +73,9 @@ const convertToReactFlowElements = (
 
     nodes.push({
       id,
-      type: 'note',
+      type: type || 'note', // Updated to use extracted type or default to 'note'
       position,
-      data: { label: label, title: label }
+      data: { title: title }
     });
   });
 
