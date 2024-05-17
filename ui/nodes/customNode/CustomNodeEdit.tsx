@@ -24,10 +24,8 @@ import {
 interface CustomNodeEditProps extends NodeProps {
   data: {
     id: string;
+    formFields?: { type: string; label: string; value: any }[];
     title?: string;
-    data?: any;
-    onSave: () => void;
-    onChangeData: (data: any) => void;
   };
   width: number;
   height: number;
@@ -50,26 +48,37 @@ const CustomNodeEdit: React.FC<CustomNodeEditProps> = ({
 }) => {
   const [isSelected, setIsSelected] = useState(selected);
   const [title, setTitle] = useState(data.title || 'Untitled Custom Node');
-  const [customData, setCustomData] = useState(data.data || {});
+  const [formFields, setFormFields] = useState(data.formFields || []);
   const [backgroundColor, setBackgroundColor] = useState('#f8f8f8');
   const [tags, setTags] = useState<string[]>([]);
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
+  const [isContainerSelected, setIsContainerSelected] = useState(false);
   const [nodeWidth, setNodeWidth] = useState(width);
   const [nodeHeight, setNodeHeight] = useState(height);
 
   const updateNode = useStore((state) => state.updateNode);
 
   useEffect(() => {
-    updateNode(data.id, { data: { title, customData, tags, attachedFiles } });
-  }, [title, customData, tags, attachedFiles, updateNode, data.id]);
+    updateNode(data.id, { data: { title, formFields, tags, attachedFiles } });
+  }, [title, formFields, tags, attachedFiles, updateNode, data.id]);
 
   const onChangeTitle = (newTitle: string) => {
     setTitle(newTitle);
   };
 
-  const onChangeCustomData = (newData: any) => {
-    setCustomData(newData);
-    data.onChangeData(newData);
+  const handleFormFieldChange = (
+    index: number,
+    newField: { type: string; label: string; value: any }
+  ) => {
+    const updatedFields = formFields.map((field, i) =>
+      i === index ? newField : field
+    );
+    setFormFields(updatedFields);
+    updateNode(data.id, { data: { ...data, formFields: updatedFields } });
+  };
+
+  const addFormField = (type: string) => {
+    setFormFields([...formFields, { type, label: '', value: '' }]);
   };
 
   const onChangeColor = (newColor: string) => {
@@ -89,6 +98,14 @@ const CustomNodeEdit: React.FC<CustomNodeEditProps> = ({
     setNodeHeight(height);
   }, [width, height]);
 
+  const handleContainerClick = () => {
+    setIsContainerSelected(true);
+  };
+
+  const handleContainerBlur = () => {
+    setIsContainerSelected(false);
+  };
+
   const handleResize = (event, { width, height }) => {
     setNodeWidth(width);
     setNodeHeight(height);
@@ -99,8 +116,8 @@ const CustomNodeEdit: React.FC<CustomNodeEditProps> = ({
     <div
       className={styles.customNode}
       style={{ width: nodeWidth, height: nodeHeight, backgroundColor }}
-      onClick={() => setIsSelected(true)}
-      onBlur={() => setIsSelected(false)}
+      onClick={handleContainerClick}
+      onBlur={handleContainerBlur}
     >
       <NodeResizer
         isVisible={selected}
@@ -112,24 +129,65 @@ const CustomNodeEdit: React.FC<CustomNodeEditProps> = ({
         <input
           type="text"
           value={title}
-          onChange={(e) =>
-            handleTitleChange(data.id, e.target.value, onChangeTitle)
-          }
+          onChange={(e) => onChangeTitle(e.target.value)}
           className={styles.titleInput}
         />
-        <CloseButton onClick={() => handleClose(data.id)} />
+        <CloseButton
+          onClick={() =>
+            handleClose(data.id, () => {}, title, JSON.stringify(formFields))
+          }
+        />
       </div>
-      <textarea
-        className={styles.customContent}
-        value={JSON.stringify(customData, null, 2)}
-        onChange={(e) => onChangeCustomData(JSON.parse(e.target.value))}
-      />
+      <div className={styles.formBuilder}>
+        {formFields.map((field, index) => (
+          <div key={index} className={styles.formField}>
+            <select
+              value={field.type}
+              onChange={(e) =>
+                handleFormFieldChange(index, { ...field, type: e.target.value })
+              }
+            >
+              <option value="text">Text</option>
+              <option value="dropdown">Dropdown</option>
+              <option value="checkbox">Checkbox</option>
+            </select>
+            <input
+              type="text"
+              value={field.label}
+              onChange={(e) =>
+                handleFormFieldChange(index, {
+                  ...field,
+                  label: e.target.value
+                })
+              }
+              placeholder="Label"
+            />
+            <input
+              type="text"
+              value={field.value}
+              onChange={(e) =>
+                handleFormFieldChange(index, {
+                  ...field,
+                  value: e.target.value
+                })
+              }
+              placeholder="Value"
+            />
+          </div>
+        ))}
+        <button
+          onClick={() => addFormField('text')}
+          className={styles.addFormFieldButton}
+        >
+          Add Field
+        </button>
+      </div>
       <div className={styles.footer}>
         <SaveButton
           onClick={() =>
-            handleSave(data.id, data.onSave, {
+            handleSave(data.id, () => {}, {
               title,
-              customData,
+              formFields,
               tags,
               attachedFiles
             })

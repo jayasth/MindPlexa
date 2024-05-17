@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
 import { useStore } from '@/app/store/useCanvasStore';
 import styles from './DrawNodeEdit.module.css';
@@ -24,12 +24,11 @@ import {
 interface DrawNodeEditProps extends NodeProps {
   data: {
     id: string;
+    drawing?: string;
     title?: string;
-    onSave: () => void;
-    onChangeColor: (color: string) => void;
-    onAddTag: (tag: string) => void;
-    onAttachFile: (file: File) => void;
   };
+  width: number;
+  height: number;
   selected: boolean;
   onNodeResizeStop: (
     nodeId: string,
@@ -37,25 +36,25 @@ interface DrawNodeEditProps extends NodeProps {
     newPosition: { x: number; y: number }
   ) => void;
   position: { x: number; y: number };
-  width: number;
-  height: number;
 }
 
 const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   data,
+  width,
+  height,
   selected,
   onNodeResizeStop,
-  position,
-  width,
-  height
+  position
 }) => {
   const [isSelected, setIsSelected] = useState(selected);
   const [title, setTitle] = useState(data.title || 'Untitled Drawing');
   const [backgroundColor, setBackgroundColor] = useState('#f8f8f8');
   const [tags, setTags] = useState<string[]>([]);
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
+  const [isContainerSelected, setIsContainerSelected] = useState(false);
   const [nodeWidth, setNodeWidth] = useState(width);
   const [nodeHeight, setNodeHeight] = useState(height);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const updateNode = useStore((state) => state.updateNode);
 
@@ -80,10 +79,17 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   };
 
   useEffect(() => {
-    setIsSelected(selected);
     setNodeWidth(width);
     setNodeHeight(height);
-  }, [selected, width, height]);
+  }, [width, height]);
+
+  const handleContainerClick = () => {
+    setIsContainerSelected(true);
+  };
+
+  const handleContainerBlur = () => {
+    setIsContainerSelected(false);
+  };
 
   const handleResize = (event, { width, height }) => {
     setNodeWidth(width);
@@ -91,12 +97,22 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     onNodeResizeStop(data.id, { width, height }, position);
   };
 
+  const handleDrawing = () => {
+    const canvas = canvasRef.current;
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        // Drawing logic here
+      }
+    }
+  };
+
   return (
     <div
       className={styles.drawNode}
       style={{ width: nodeWidth, height: nodeHeight, backgroundColor }}
-      onClick={() => setIsSelected(true)}
-      onBlur={() => setIsSelected(false)}
+      onClick={handleContainerClick}
+      onBlur={handleContainerBlur}
     >
       <NodeResizer
         isVisible={selected}
@@ -108,20 +124,28 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         <input
           type="text"
           value={title}
-          onChange={(e) =>
-            handleTitleChange(data.id, e.target.value, onChangeTitle)
-          }
+          onChange={(e) => onChangeTitle(e.target.value)}
           className={styles.titleInput}
         />
-        <CloseButton onClick={() => handleClose(data.id)} />
+        <CloseButton
+          onClick={() => handleClose(data.id, () => {}, title, '')}
+        />
       </div>
-      <div className={styles.drawContent}>
-        {/* Drawing content would be rendered here */}
-      </div>
+      <canvas
+        ref={canvasRef}
+        className={styles.canvas}
+        width={nodeWidth - 16}
+        height={nodeHeight - 100}
+        onMouseDown={handleDrawing}
+      />
       <div className={styles.footer}>
         <SaveButton
           onClick={() =>
-            handleSave(data.id, data.onSave, { title, tags, attachedFiles })
+            handleSave(data.id, () => {}, {
+              title,
+              tags,
+              attachedFiles
+            })
           }
         />
         <DeleteButton onClick={() => handleDelete(data.id, () => {})} />

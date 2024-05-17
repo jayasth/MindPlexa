@@ -27,6 +27,13 @@
   flex-grow: 1;
 }
 
+.canvas {
+  flex-grow: 1;
+  border: 1px solid #ccc;
+  margin-top: 8px;
+  background-color: white;
+}
+
 .footer {
   display: flex;
   justify-content: space-between;
@@ -43,17 +50,6 @@
 
 .fileInput {
   display: none;
-}
-
-.drawContent {
-  flex-grow: 1;
-  overflow: auto;
-  background-color: transparent;
-  border: 1px solid #ccc;
-  outline: none;
-  resize: none;
-  padding: 8px;
-  z-index: 0;
 }
 
 .tagContainer {

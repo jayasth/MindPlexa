@@ -9,6 +9,7 @@ interface CustomNodeViewProps extends NodeProps {
   data: {
     id: string;
     title?: string;
+    formFields?: { type: string; label: string; value: any }[];
   };
   width: number;
   height: number;
@@ -19,22 +20,25 @@ const CustomNodeView: React.FC<CustomNodeViewProps> = ({
   width,
   height
 }) => {
+  const { title, formFields, id } = data;
   const toggleEditMode = useStore((state) => state.toggleEditMode);
 
   return (
     <div className={styles.customNode} style={{ width, height }}>
       <div className={styles.header}>
-        <span className={styles.title}>{data.title || 'Untitled Custom'}</span>
+        <span className={styles.title}>{title || 'Untitled Custom Node'}</span>
         <FaEdit
           className={styles.editButton}
-          onClick={() => {
-            console.log(`Toggling edit mode for node ID: ${data.id}`);
-            toggleEditMode(data.id);
-          }}
+          onClick={() => toggleEditMode(id)}
         />
       </div>
-      <div className={styles.customContent}>
-        {/* Custom content would be rendered here */}
+      <div className={styles.contentPreview}>
+        {formFields?.map((field, index) => (
+          <div key={index} className={styles.formField}>
+            <span className={styles.fieldLabel}>{field.label}:</span>
+            <span className={styles.fieldValue}>{field.value}</span>
+          </div>
+        ))}
       </div>
       <Handle
         type="target"

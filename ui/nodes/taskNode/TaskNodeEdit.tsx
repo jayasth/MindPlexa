@@ -24,8 +24,7 @@ import {
 interface TaskNodeEditProps extends NodeProps {
   data: {
     id: string;
-    task?: string;
-    completed?: boolean;
+    tasks?: { text: string; completed: boolean }[];
     title?: string;
   };
   width: number;
@@ -47,25 +46,37 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
   onNodeResizeStop,
   position
 }) => {
+  const [isSelected, setIsSelected] = useState(selected);
   const [title, setTitle] = useState(data.title || 'Untitled Task');
-  const [task, setTask] = useState(data.task || '');
-  const [completed, setCompleted] = useState(data.completed || false);
+  const [tasks, setTasks] = useState(data.tasks || []);
   const [backgroundColor, setBackgroundColor] = useState('#f8f8f8');
   const [tags, setTags] = useState<string[]>([]);
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
+  const [isContainerSelected, setIsContainerSelected] = useState(false);
   const [nodeWidth, setNodeWidth] = useState(width);
   const [nodeHeight, setNodeHeight] = useState(height);
 
   const updateNode = useStore((state) => state.updateNode);
 
   useEffect(() => {
-    updateNode(data.id, {
-      data: { title, task, completed, tags, attachedFiles }
-    });
-  }, [title, task, completed, tags, attachedFiles, updateNode, data.id]);
+    updateNode(data.id, { data: { title, tasks, tags, attachedFiles } });
+  }, [title, tasks, tags, attachedFiles, updateNode, data.id]);
 
   const onChangeTitle = (newTitle: string) => {
     setTitle(newTitle);
+  };
+
+  const handleTaskChange = (
+    index: number,
+    newTask: { text: string; completed: boolean }
+  ) => {
+    const updatedTasks = tasks.map((task, i) => (i === index ? newTask : task));
+    setTasks(updatedTasks);
+    updateNode(data.id, { data: { ...data, tasks: updatedTasks } });
+  };
+
+  const addTask = () => {
+    setTasks([...tasks, { text: '', completed: false }]);
   };
 
   const onChangeColor = (newColor: string) => {
@@ -86,25 +97,17 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
   }, [width, height]);
 
   const handleContainerClick = () => {
-    // Set isSelected state here if needed
+    setIsContainerSelected(true);
   };
 
   const handleContainerBlur = () => {
-    // Set isSelected state here if needed
+    setIsContainerSelected(false);
   };
 
   const handleResize = (event, { width, height }) => {
     setNodeWidth(width);
     setNodeHeight(height);
     onNodeResizeStop(data.id, { width, height }, position);
-  };
-
-  const handleTaskChange = (newTask: string) => {
-    setTask(newTask);
-  };
-
-  const handleToggleComplete = () => {
-    setCompleted(!completed);
   };
 
   return (
@@ -124,36 +127,48 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
         <input
           type="text"
           value={title}
-          onChange={(e) =>
-            handleTitleChange(data.id, e.target.value, onChangeTitle)
-          }
+          onChange={(e) => onChangeTitle(e.target.value)}
           className={styles.titleInput}
         />
-        <CloseButton onClick={() => handleClose(data.id)} />
+        <CloseButton
+          onClick={() =>
+            handleClose(data.id, () => {}, title, JSON.stringify(tasks))
+          }
+        />
       </div>
-      <div className={styles.taskContent}>
-        <label className={styles.taskLabel}>
-          <input
-            type="checkbox"
-            checked={completed}
-            onChange={handleToggleComplete}
-            className={styles.taskCheckbox}
-          />
-          <input
-            type="text"
-            value={task}
-            onChange={(e) => handleTaskChange(e.target.value)}
-            className={styles.taskTextInput}
-          />
-        </label>
+      <div className={styles.taskList}>
+        {tasks.map((task, index) => (
+          <div key={index} className={styles.taskItem}>
+            <input
+              type="checkbox"
+              checked={task.completed}
+              onChange={(e) =>
+                handleTaskChange(index, {
+                  ...task,
+                  completed: e.target.checked
+                })
+              }
+            />
+            <input
+              type="text"
+              value={task.text}
+              onChange={(e) =>
+                handleTaskChange(index, { ...task, text: e.target.value })
+              }
+              className={styles.taskInput}
+            />
+          </div>
+        ))}
+        <button onClick={addTask} className={styles.addTaskButton}>
+          Add Task
+        </button>
       </div>
       <div className={styles.footer}>
         <SaveButton
           onClick={() =>
             handleSave(data.id, () => {}, {
               title,
-              task,
-              completed,
+              tasks,
               tags,
               attachedFiles
             })
@@ -162,7 +177,7 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
         <DeleteButton onClick={() => handleDelete(data.id, () => {})} />
         <ChangeColorButton
           onClick={() =>
-            handleChangeColor(data.id, backgroundColor, setBackgroundColor)
+            handleChangeColor(data.id, backgroundColor, onChangeColor)
           }
         />
         <AddTagButton onClick={() => handleAddTag(data.id, tags, onAddTag)} />

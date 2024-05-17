@@ -15,7 +15,7 @@
   justify-content: space-between;
   padding: 8px 12px;
   background-color: #f1f1f1;
-  z-index: 1;
+  z-index: 0;
 }
 
 .titleInput {
@@ -25,6 +25,25 @@
   background-color: transparent;
   outline: none;
   flex-grow: 1;
+}
+
+.codeContent {
+  flex-grow: 1;
+  overflow: auto;
+  background-color: transparent;
+  border: 1px solid #ccc;
+  outline: none;
+  resize: none;
+  padding: 8px;
+  z-index: 0;
+  font-family: monospace;
+}
+
+.languageSelect {
+  margin-top: 8px;
+  padding: 4px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
 }
 
 .footer {
@@ -43,16 +62,6 @@
 
 .fileInput {
   display: none;
-}
-
-.codeContent {
-  flex-grow: 1;
-  overflow: auto;
-  background-color: transparent;
-  border: none;
-  outline: none;
-  resize: none;
-  padding: 8px;
 }
 
 .tagContainer {

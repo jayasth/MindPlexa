@@ -15,7 +15,7 @@
   justify-content: space-between;
   padding: 8px 12px;
   background-color: #f1f1f1;
-  z-index: 1;
+  z-index: 0;
 }
 
 .titleInput {
@@ -25,6 +25,38 @@
   background-color: transparent;
   outline: none;
   flex-grow: 1;
+}
+
+.taskList {
+  flex-grow: 1;
+  overflow: auto;
+  background-color: transparent;
+  border: 1px solid #ccc;
+  outline: none;
+  padding: 8px;
+  z-index: 0;
+}
+
+.taskItem {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.taskInput {
+  flex-grow: 1;
+  border: none;
+  background-color: transparent;
+  outline: none;
+  margin-left: 8px;
+}
+
+.addTaskButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #007bff;
+  margin-top: 8px;
 }
 
 .footer {
@@ -43,30 +75,6 @@
 
 .fileInput {
   display: none;
-}
-
-.taskContent {
-  flex-grow: 1;
-  display: flex;
-  align-items: center;
-  padding: 8px;
-}
-
-.taskLabel {
-  display: flex;
-  align-items: center;
-  width: 100%;
-}
-
-.taskCheckbox {
-  margin-right: 8px;
-}
-
-.taskTextInput {
-  flex-grow: 1;
-  border: none;
-  background-color: transparent;
-  outline: none;
 }
 
 .tagContainer {

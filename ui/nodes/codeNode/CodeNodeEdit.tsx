@@ -49,20 +49,35 @@ const CodeNodeEdit: React.FC<CodeNodeEditProps> = ({
 }) => {
   const [isSelected, setIsSelected] = useState(selected);
   const [title, setTitle] = useState(data.title || 'Untitled Code');
+  const [code, setCode] = useState(data.code || '');
+  const [language, setLanguage] = useState(data.language || 'javascript');
   const [backgroundColor, setBackgroundColor] = useState('#f8f8f8');
   const [tags, setTags] = useState<string[]>([]);
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
+  const [isContainerSelected, setIsContainerSelected] = useState(false);
   const [nodeWidth, setNodeWidth] = useState(width);
   const [nodeHeight, setNodeHeight] = useState(height);
 
   const updateNode = useStore((state) => state.updateNode);
 
   useEffect(() => {
-    updateNode(data.id, { data: { title, tags, attachedFiles } });
-  }, [title, tags, attachedFiles, updateNode, data.id]);
+    updateNode(data.id, {
+      data: { title, code, language, tags, attachedFiles }
+    });
+  }, [title, code, language, tags, attachedFiles, updateNode, data.id]);
 
   const onChangeTitle = (newTitle: string) => {
     setTitle(newTitle);
+  };
+
+  const handleCodeChange = (newCode: string) => {
+    setCode(newCode);
+    updateNode(data.id, { data: { ...data, code: newCode } });
+  };
+
+  const handleLanguageChange = (newLanguage: string) => {
+    setLanguage(newLanguage);
+    updateNode(data.id, { data: { ...data, language: newLanguage } });
   };
 
   const onChangeColor = (newColor: string) => {
@@ -83,11 +98,11 @@ const CodeNodeEdit: React.FC<CodeNodeEditProps> = ({
   }, [width, height]);
 
   const handleContainerClick = () => {
-    setIsSelected(true);
+    setIsContainerSelected(true);
   };
 
   const handleContainerBlur = () => {
-    setIsSelected(false);
+    setIsContainerSelected(false);
   };
 
   const handleResize = (event, { width, height }) => {
@@ -113,25 +128,39 @@ const CodeNodeEdit: React.FC<CodeNodeEditProps> = ({
         <input
           type="text"
           value={title}
-          onChange={(e) =>
-            handleTitleChange(data.id, e.target.value, onChangeTitle)
-          }
+          onChange={(e) => onChangeTitle(e.target.value)}
           className={styles.titleInput}
         />
-        <CloseButton onClick={() => handleClose(data.id)} />
+        <CloseButton
+          onClick={() => handleClose(data.id, () => {}, title, code)}
+        />
       </div>
       <textarea
         className={styles.codeContent}
-        value={data.code || ''}
-        onChange={(e) =>
-          updateNode(data.id, { data: { ...data, code: e.target.value } })
-        }
+        value={code}
+        onChange={(e) => handleCodeChange(e.target.value)}
       />
+      <select
+        value={language}
+        onChange={(e) => handleLanguageChange(e.target.value)}
+        className={styles.languageSelect}
+      >
+        <option value="javascript">JavaScript</option>
+        <option value="python">Python</option>
+        <option value="java">Java</option>
+        <option value="csharp">C#</option>
+        <option value="cpp">C++</option>
+        <option value="ruby">Ruby</option>
+        <option value="go">Go</option>
+        <option value="php">PHP</option>
+      </select>
       <div className={styles.footer}>
         <SaveButton
           onClick={() =>
             handleSave(data.id, () => {}, {
               title,
+              code,
+              language,
               tags,
               attachedFiles
             })

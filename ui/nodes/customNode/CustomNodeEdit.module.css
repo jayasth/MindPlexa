@@ -15,7 +15,7 @@
   justify-content: space-between;
   padding: 8px 12px;
   background-color: #f1f1f1;
-  z-index: 1;
+  z-index: 0;
 }
 
 .titleInput {
@@ -25,6 +25,30 @@
   background-color: transparent;
   outline: none;
   flex-grow: 1;
+}
+
+.formBuilder {
+  flex-grow: 1;
+  overflow: auto;
+  background-color: transparent;
+  border: 1px solid #ccc;
+  outline: none;
+  padding: 8px;
+  z-index: 0;
+}
+
+.formField {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.addFormFieldButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #007bff;
+  margin-top: 8px;
 }
 
 .footer {
@@ -41,14 +65,8 @@
   margin-left: 4px;
 }
 
-.customContent {
-  flex-grow: 1;
-  overflow: auto;
-  background-color: transparent;
-  border: none;
-  outline: none;
-  resize: none;
-  padding: 8px;
+.fileInput {
+  display: none;
 }
 
 .tagContainer {

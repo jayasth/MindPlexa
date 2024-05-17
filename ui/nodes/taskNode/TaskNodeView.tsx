@@ -9,28 +9,34 @@ interface TaskNodeViewProps extends NodeProps {
   data: {
     id: string;
     title?: string;
+    tasks?: { text: string; completed: boolean }[];
   };
   width: number;
   height: number;
 }
 
 const TaskNodeView: React.FC<TaskNodeViewProps> = ({ data, width, height }) => {
+  const { title, tasks, id } = data;
   const toggleEditMode = useStore((state) => state.toggleEditMode);
 
   return (
     <div className={styles.taskNode} style={{ width, height }}>
       <div className={styles.header}>
-        <span className={styles.title}>{data.title || 'Untitled Task'}</span>
+        <span className={styles.title}>{title || 'Untitled Task'}</span>
         <FaEdit
           className={styles.editButton}
-          onClick={() => {
-            console.log(`Toggling edit mode for node ID: ${data.id}`);
-            toggleEditMode(data.id);
-          }}
+          onClick={() => toggleEditMode(id)}
         />
       </div>
-      <div className={styles.taskContent}>
-        {/* Task content would be rendered here */}
+      <div className={styles.contentPreview}>
+        {tasks?.map((task, index) => (
+          <div key={index} className={styles.taskItem}>
+            <input type="checkbox" checked={task.completed} readOnly />
+            <span className={task.completed ? styles.completedTask : ''}>
+              {task.text}
+            </span>
+          </div>
+        ))}
       </div>
       <Handle
         type="target"

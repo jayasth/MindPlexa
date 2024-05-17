@@ -6,35 +6,45 @@
   border-radius: 4px;
   padding: 4px;
   overflow: hidden;
-  height: 100%;
-  align-items: center;
-  justify-content: center;
 }
 
 .header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  padding: 8px 12px;
-  z-index: 1;
-  justify-content: center;
+  align-items: center;
+  padding: 4px;
 }
 
 .title {
-  font-size: 12px;
   font-weight: bold;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .editButton {
-  background: none;
-  border: none;
   cursor: pointer;
-  padding: 0;
-  margin-left: 8px;
+  color: #888;
 }
 
-.codeContent {
+.editButton:hover {
+  color: #333;
+}
+
+.contentPreview {
   flex-grow: 1;
-  overflow: auto;
-  background-color: transparent;
+  overflow: hidden;
+  padding: 4px;
+  font-size: 12px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  max-height: 100px;
+}
+
+.codeBlock {
+  background-color: #f1f1f1;
+  padding: 8px;
+  border-radius: 4px;
+  overflow-x: auto;
 }

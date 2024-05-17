@@ -9,28 +9,30 @@ interface CodeNodeViewProps extends NodeProps {
   data: {
     id: string;
     title?: string;
+    code?: string;
+    language?: string;
   };
   width: number;
   height: number;
 }
 
 const CodeNodeView: React.FC<CodeNodeViewProps> = ({ data, width, height }) => {
+  const { title, code, language, id } = data;
   const toggleEditMode = useStore((state) => state.toggleEditMode);
 
   return (
     <div className={styles.codeNode} style={{ width, height }}>
       <div className={styles.header}>
-        <span className={styles.title}>{data.title || 'Untitled Code'}</span>
+        <span className={styles.title}>{title || 'Untitled Code'}</span>
         <FaEdit
           className={styles.editButton}
-          onClick={() => {
-            console.log(`Toggling edit mode for node ID: ${data.id}`);
-            toggleEditMode(data.id);
-          }}
+          onClick={() => toggleEditMode(id)}
         />
       </div>
-      <div className={styles.codeContent}>
-        {/* Code content would be rendered here */}
+      <div className={styles.contentPreview}>
+        <pre className={styles.codeBlock}>
+          <code>{code}</code>
+        </pre>
       </div>
       <Handle
         type="target"
