@@ -64,6 +64,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   }, [title, content, tags, attachedFiles, updateNode, data.id]);
 
   const onChangeTitle = (newTitle: string) => {
+    console.log('NoteNodeEdit: Changing title to:', newTitle);
     setTitle(newTitle);
   };
 
@@ -121,9 +122,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         <input
           type="text"
           value={title}
-          onChange={(e) =>
-            handleTitleChange(data.id, e.target.value, onChangeTitle)
-          }
+          onChange={(e) => onChangeTitle(e.target.value)}
           className={styles.titleInput}
         />
         <CloseButton onClick={() => handleClose(data.id)} />

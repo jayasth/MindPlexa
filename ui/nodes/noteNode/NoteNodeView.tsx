@@ -15,6 +15,9 @@ interface NoteNodeViewProps extends NodeProps {
 }
 
 const NoteNodeView: React.FC<NoteNodeViewProps> = ({ data, width, height }) => {
+  const { title, id } = data;
+  console.log('NoteNodeView: Data received:', data);
+  console.log('NoteNodeView: Rendering with title:', data.title);
   const toggleEditMode = useStore((state) => state.toggleEditMode);
 
   return (
@@ -24,8 +27,8 @@ const NoteNodeView: React.FC<NoteNodeViewProps> = ({ data, width, height }) => {
         <FaEdit
           className={styles.editButton}
           onClick={() => {
-            console.log(`Toggling edit mode for node ID: ${data.id}`);
-            toggleEditMode(data.id);
+            console.log(`Toggling edit mode for node ID: ${id}`);
+            toggleEditMode(id);
           }}
         />
       </div>

@@ -112,6 +112,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
         onEdit={handleEdit}
         data={{
           ...node,
+          ...node.data,
           width: size.width,
           height: size.height
         }}

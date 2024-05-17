@@ -99,13 +99,17 @@ export const useStore = createStore<CanvasState>((set, get) => ({
         const updatedNode = {
           ...existingNode,
           ...data,
+          data: {
+            ...existingNode.data,
+            ...data.data
+          },
           position: data.position || existingNode.position,
           width: data.width !== undefined ? data.width : existingNode.width,
           height: data.height !== undefined ? data.height : existingNode.height,
           selected:
             data.selected !== undefined ? data.selected : existingNode.selected
         };
-        console.log('Store: Node size:', updatedNode.width, updatedNode.height);
+        console.log('Store: Updated node data:', updatedNode);
         const updatedNodes = [...state.nodes];
         updatedNodes[existingNodeIndex] = updatedNode;
         state.nodeInternals.set(id, updatedNode);
