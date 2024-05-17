@@ -16,10 +16,10 @@ type NodeDimensionTypes = {
 
 export const nodeDimensions: NodeDimensionTypes = {
   note: { width: 150, height: 60, editWidth: 300, editHeight: 450 },
-  task: { width: 200, height: 150, editWidth: 300, editHeight: 200 },
-  custom: { width: 200, height: 150, editWidth: 300, editHeight: 200 },
-  code: { width: 200, height: 150, editWidth: 300, editHeight: 200 },
-  draw: { width: 200, height: 150, editWidth: 300, editHeight: 200 },
+  task: { width: 150, height: 60, editWidth: 300, editHeight: 450 },
+  custom: { width: 150, height: 60, editWidth: 300, editHeight: 450 },
+  code: { width: 150, height: 60, editWidth: 300, editHeight: 450 },
+  draw: { width: 150, height: 60, editWidth: 300, editHeight: 450 },
   selectionMenu: { width: 200, height: 100 }
 };
 
@@ -28,36 +28,29 @@ export const getNodeSpecificProperties = (
   isEditing: boolean
 ) => {
   const dimensions = nodeDimensions[nodeType];
+  if (!dimensions) {
+    console.warn(`Unknown node type: ${nodeType}`);
+    return { width: 100, height: 100, draggable: true, connectable: true }; // Default properties
+  }
+
   const baseProperties = {
     draggable: true,
     connectable: true
   };
 
-  switch (nodeType) {
-    case 'note':
-    case 'task':
-    case 'custom':
-    case 'code':
-    case 'draw':
-      return {
-        ...baseProperties,
-        width:
-          isEditing && 'editWidth' in dimensions
-            ? dimensions.editWidth
-            : dimensions.width,
-        height:
-          isEditing && 'editHeight' in dimensions
-            ? dimensions.editHeight
-            : dimensions.height,
-        isEditing: isEditing
-      };
-    case 'selectionMenu':
-      return {
-        ...baseProperties,
-        width: dimensions.width,
-        height: dimensions.height
-      };
-    default:
-      throw new Error('Invalid node type');
+  if ('editWidth' in dimensions && 'editHeight' in dimensions) {
+    return {
+      ...baseProperties,
+      width: isEditing ? dimensions.editWidth : dimensions.width,
+      height: isEditing ? dimensions.editHeight : dimensions.height,
+      isEditing: isEditing
+    };
+  } else {
+    return {
+      ...baseProperties,
+      width: dimensions.width,
+      height: dimensions.height,
+      isEditing: isEditing
+    };
   }
 };
