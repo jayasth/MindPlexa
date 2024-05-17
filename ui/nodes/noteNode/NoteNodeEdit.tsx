@@ -125,7 +125,9 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
           onChange={(e) => onChangeTitle(e.target.value)}
           className={styles.titleInput}
         />
-        <CloseButton onClick={() => handleClose(data.id)} />
+        <CloseButton
+          onClick={() => handleClose(data.id, () => {}, title, content)}
+        />
       </div>
       <textarea
         className={styles.noteContent}

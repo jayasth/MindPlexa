@@ -17,9 +17,16 @@ export const handleSave = (id: string, onSave: () => void, nodeData: any) => {
   toggleEditMode(id);
 };
 
-export const handleClose = (id: string) => {
-  const { toggleEditMode } = useStore.getState();
-  toggleEditMode(id);
+export const handleClose = (
+  nodeId: string,
+  onClose: () => void,
+  title: string,
+  content: string
+) => {
+  const { updateNode, toggleEditMode } = useStore.getState();
+  updateNode(nodeId, { data: { title, content } });
+  onClose();
+  toggleEditMode(nodeId);
 };
 
 export const handleDelete = (id: string, onDelete: () => void) => {

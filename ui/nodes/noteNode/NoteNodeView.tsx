@@ -9,13 +9,14 @@ interface NoteNodeViewProps extends NodeProps {
   data: {
     id: string;
     title?: string;
+    content?: string;
   };
   width: number;
   height: number;
 }
 
 const NoteNodeView: React.FC<NoteNodeViewProps> = ({ data, width, height }) => {
-  const { title, id } = data;
+  const { title, content, id } = data;
   console.log('NoteNodeView: Data received:', data);
   console.log('NoteNodeView: Rendering with title:', data.title);
   const toggleEditMode = useStore((state) => state.toggleEditMode);
@@ -23,7 +24,7 @@ const NoteNodeView: React.FC<NoteNodeViewProps> = ({ data, width, height }) => {
   return (
     <div className={styles.noteNode} style={{ width, height }}>
       <div className={styles.header}>
-        <span className={styles.title}>{data.title || 'Untitled Note'}</span>
+        <span className={styles.title}>{title || 'Untitled Note'}</span>
         <FaEdit
           className={styles.editButton}
           onClick={() => {
@@ -32,9 +33,7 @@ const NoteNodeView: React.FC<NoteNodeViewProps> = ({ data, width, height }) => {
           }}
         />
       </div>
-      <div className={styles.noteContent}>
-        {/* Note content would be rendered here */}
-      </div>
+      <div className={styles.contentPreview}>{content}</div>
       <Handle
         type="target"
         position={Position.Top}

@@ -118,7 +118,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
         }}
         selected={selected}
         onNodeResizeStop={onNodeResizeStop}
-        {...(node.type === 'note' && node.isEditing && { selected: selected })}
+        {...(node.isEditing && { selected: selected })}
       />
     );
   }
