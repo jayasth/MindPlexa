@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
+import { useStore } from '@/app/store/useCanvasStore';
 import styles from './TaskNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 import {
@@ -46,15 +47,22 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
   onNodeResizeStop,
   position
 }) => {
-  const [isSelected, setIsSelected] = useState(selected);
   const [title, setTitle] = useState(data.title || 'Untitled Task');
   const [task, setTask] = useState(data.task || '');
   const [completed, setCompleted] = useState(data.completed || false);
   const [backgroundColor, setBackgroundColor] = useState('#f8f8f8');
   const [tags, setTags] = useState<string[]>([]);
-  const [attachedFile, setAttachedFile] = useState<File | null>(null);
+  const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
   const [nodeWidth, setNodeWidth] = useState(width);
   const [nodeHeight, setNodeHeight] = useState(height);
+
+  const updateNode = useStore((state) => state.updateNode);
+
+  useEffect(() => {
+    updateNode(data.id, {
+      data: { title, task, completed, tags, attachedFiles }
+    });
+  }, [title, task, completed, tags, attachedFiles, updateNode, data.id]);
 
   const onChangeTitle = (newTitle: string) => {
     setTitle(newTitle);
@@ -68,16 +76,21 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
     setTags([...tags, newTag]);
   };
 
-  const onAttachFile = (file: File) => {
-    setAttachedFile(file);
+  const onAttachFiles = (files: File[]) => {
+    setAttachedFiles(files);
   };
 
+  useEffect(() => {
+    setNodeWidth(width);
+    setNodeHeight(height);
+  }, [width, height]);
+
   const handleContainerClick = () => {
-    setIsSelected(true);
+    // Set isSelected state here if needed
   };
 
   const handleContainerBlur = () => {
-    setIsSelected(false);
+    // Set isSelected state here if needed
   };
 
   const handleResize = (event, { width, height }) => {
@@ -111,7 +124,9 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
         <input
           type="text"
           value={title}
-          onChange={(e) => handleTitleChange(data.id, e.target.value, setTitle)}
+          onChange={(e) =>
+            handleTitleChange(data.id, e.target.value, onChangeTitle)
+          }
           className={styles.titleInput}
         />
         <CloseButton onClick={() => handleClose(data.id)} />
@@ -133,7 +148,17 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
         </label>
       </div>
       <div className={styles.footer}>
-        <SaveButton onClick={() => handleSave(data.id, () => {})} />
+        <SaveButton
+          onClick={() =>
+            handleSave(data.id, () => {}, {
+              title,
+              task,
+              completed,
+              tags,
+              attachedFiles
+            })
+          }
+        />
         <DeleteButton onClick={() => handleDelete(data.id, () => {})} />
         <ChangeColorButton
           onClick={() =>
@@ -142,7 +167,7 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
         />
         <AddTagButton onClick={() => handleAddTag(data.id, tags, onAddTag)} />
         <AttachFileButton
-          onChange={(e) => handleAttachFile(data.id, onAttachFile)(e)}
+          onChange={(e) => handleAttachFile(data.id, onAttachFiles)(e)}
         />
       </div>
       <div className={styles.tagContainer}>
@@ -152,9 +177,9 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
           </span>
         ))}
       </div>
-      {attachedFile && (
+      {attachedFiles.length > 0 && (
         <div className={styles.attachedFile}>
-          Attached file: {attachedFile.name}
+          Attached files: {attachedFiles.map((file) => file.name).join(', ')}
         </div>
       )}
       <Handle

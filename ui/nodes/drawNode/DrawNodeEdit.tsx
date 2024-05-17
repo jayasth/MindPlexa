@@ -1,87 +1,139 @@
-import React, { useState } from 'react';
-import { NodeProps, Handle, Position } from 'reactflow';
+import React, { useState, useEffect } from 'react';
+import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
+import { useStore } from '@/app/store/useCanvasStore';
 import styles from './DrawNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
+import {
+  SaveButton,
+  DeleteButton,
+  ChangeColorButton,
+  AddTagButton,
+  AttachFileButton,
+  CloseButton
+} from '@/ui/nodes/CommonNodeComponents';
+import {
+  handleTitleChange,
+  handleSave,
+  handleClose,
+  handleDelete,
+  handleChangeColor,
+  handleAddTag,
+  handleAttachFile
+} from '@/ui/canvasEditor/utils/CommonNodeFunctions';
 
 interface DrawNodeEditProps extends NodeProps {
   data: {
     id: string;
     title?: string;
-    width: number;
-    height: number;
     onSave: () => void;
     onChangeColor: (color: string) => void;
     onAddTag: (tag: string) => void;
     onAttachFile: (file: File) => void;
   };
+  selected: boolean;
+  onNodeResizeStop: (
+    nodeId: string,
+    newSize: { width: number; height: number },
+    newPosition: { x: number; y: number }
+  ) => void;
+  position: { x: number; y: number };
+  width: number;
+  height: number;
 }
 
-const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({ data }) => {
+const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
+  data,
+  selected,
+  onNodeResizeStop,
+  position,
+  width,
+  height
+}) => {
+  const [isSelected, setIsSelected] = useState(selected);
   const [title, setTitle] = useState(data.title || 'Untitled Drawing');
   const [backgroundColor, setBackgroundColor] = useState('#f8f8f8');
   const [tags, setTags] = useState<string[]>([]);
-  const [attachedFile, setAttachedFile] = useState<File | null>(null);
+  const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
+  const [nodeWidth, setNodeWidth] = useState(width);
+  const [nodeHeight, setNodeHeight] = useState(height);
 
-  const handleTitleChange = (newTitle: string) => {
+  const updateNode = useStore((state) => state.updateNode);
+
+  useEffect(() => {
+    updateNode(data.id, { data: { title, tags, attachedFiles } });
+  }, [title, tags, attachedFiles, updateNode, data.id]);
+
+  const onChangeTitle = (newTitle: string) => {
     setTitle(newTitle);
   };
 
-  const handleColorChange = () => {
-    const newColor = '#' + Math.floor(Math.random() * 16777215).toString(16);
+  const onChangeColor = (newColor: string) => {
     setBackgroundColor(newColor);
-    data.onChangeColor(newColor);
   };
 
-  const handleAddTag = () => {
-    const newTag = prompt('Enter a new tag:');
-    if (newTag) {
-      setTags([...tags, newTag]);
-      data.onAddTag(newTag);
-    }
+  const onAddTag = (newTag: string) => {
+    setTags([...tags, newTag]);
   };
 
-  const handleAttachFile = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files.length > 0) {
-      const file = event.target.files[0];
-      setAttachedFile(file);
-      data.onAttachFile(file);
-    }
+  const onAttachFiles = (files: File[]) => {
+    setAttachedFiles(files);
+  };
+
+  useEffect(() => {
+    setIsSelected(selected);
+    setNodeWidth(width);
+    setNodeHeight(height);
+  }, [selected, width, height]);
+
+  const handleResize = (event, { width, height }) => {
+    setNodeWidth(width);
+    setNodeHeight(height);
+    onNodeResizeStop(data.id, { width, height }, position);
   };
 
   return (
     <div
       className={styles.drawNode}
-      style={{ backgroundColor, width: data.width, height: data.height }}
+      style={{ width: nodeWidth, height: nodeHeight, backgroundColor }}
+      onClick={() => setIsSelected(true)}
+      onBlur={() => setIsSelected(false)}
     >
+      <NodeResizer
+        isVisible={selected}
+        minWidth={200}
+        minHeight={200}
+        onResize={handleResize}
+      />
       <div className={styles.header}>
         <input
           type="text"
           value={title}
-          onChange={(e) => handleTitleChange(e.target.value)}
+          onChange={(e) =>
+            handleTitleChange(data.id, e.target.value, onChangeTitle)
+          }
           className={styles.titleInput}
         />
-        <button className={styles.saveButton} onClick={data.onSave}>
-          Save
-        </button>
+        <CloseButton onClick={() => handleClose(data.id)} />
       </div>
       <div className={styles.drawContent}>
         {/* Drawing content would be rendered here */}
       </div>
       <div className={styles.footer}>
-        <button className={styles.iconButton} onClick={handleColorChange}>
-          Change Color
-        </button>
-        <button className={styles.iconButton} onClick={handleAddTag}>
-          Add Tag
-        </button>
-        <label className={styles.iconButton}>
-          Attach File
-          <input
-            type="file"
-            className={styles.fileInput}
-            onChange={handleAttachFile}
-          />
-        </label>
+        <SaveButton
+          onClick={() =>
+            handleSave(data.id, data.onSave, { title, tags, attachedFiles })
+          }
+        />
+        <DeleteButton onClick={() => handleDelete(data.id, () => {})} />
+        <ChangeColorButton
+          onClick={() =>
+            handleChangeColor(data.id, backgroundColor, onChangeColor)
+          }
+        />
+        <AddTagButton onClick={() => handleAddTag(data.id, tags, onAddTag)} />
+        <AttachFileButton
+          onChange={(e) => handleAttachFile(data.id, onAttachFiles)(e)}
+        />
       </div>
       <div className={styles.tagContainer}>
         {tags.map((tag, index) => (
@@ -90,9 +142,9 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({ data }) => {
           </span>
         ))}
       </div>
-      {attachedFile && (
+      {attachedFiles.length > 0 && (
         <div className={styles.attachedFile}>
-          Attached file: {attachedFile.name}
+          Attached files: {attachedFiles.map((file) => file.name).join(', ')}
         </div>
       )}
       <Handle

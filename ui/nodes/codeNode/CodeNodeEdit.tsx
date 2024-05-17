@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
 import { useStore } from '@/app/store/useCanvasStore';
 import styles from './CodeNodeEdit.module.css';
@@ -49,28 +49,20 @@ const CodeNodeEdit: React.FC<CodeNodeEditProps> = ({
 }) => {
   const [isSelected, setIsSelected] = useState(selected);
   const [title, setTitle] = useState(data.title || 'Untitled Code');
-  const [code, setCode] = useState(data.code || '');
-  const [language, setLanguage] = useState(data.language || 'javascript');
   const [backgroundColor, setBackgroundColor] = useState('#f8f8f8');
   const [tags, setTags] = useState<string[]>([]);
-  const [attachedFile, setAttachedFile] = useState<File | null>(null);
-  const [isContainerSelected, setIsContainerSelected] = useState(false);
+  const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
   const [nodeWidth, setNodeWidth] = useState(width);
   const [nodeHeight, setNodeHeight] = useState(height);
 
   const updateNode = useStore((state) => state.updateNode);
 
+  useEffect(() => {
+    updateNode(data.id, { data: { title, tags, attachedFiles } });
+  }, [title, tags, attachedFiles, updateNode, data.id]);
+
   const onChangeTitle = (newTitle: string) => {
     setTitle(newTitle);
-  };
-
-  const onChangeCode = (newCode: string) => {
-    setCode(newCode);
-    updateNode(data.id, { data: { ...data, code: newCode } });
-  };
-
-  const onChangeLanguage = (newLanguage: string) => {
-    setLanguage(newLanguage);
   };
 
   const onChangeColor = (newColor: string) => {
@@ -81,20 +73,24 @@ const CodeNodeEdit: React.FC<CodeNodeEditProps> = ({
     setTags([...tags, newTag]);
   };
 
-  const onAttachFile = (file: File) => {
-    setAttachedFile(file);
+  const onAttachFiles = (files: File[]) => {
+    setAttachedFiles(files);
   };
 
+  useEffect(() => {
+    setNodeWidth(width);
+    setNodeHeight(height);
+  }, [width, height]);
+
   const handleContainerClick = () => {
-    setIsContainerSelected(true);
+    setIsSelected(true);
   };
 
   const handleContainerBlur = () => {
-    setIsContainerSelected(false);
+    setIsSelected(false);
   };
 
   const handleResize = (event, { width, height }) => {
-    console.log(`CodeNodeEdit: Resizing: width = ${width}, height = ${height}`);
     setNodeWidth(width);
     setNodeHeight(height);
     onNodeResizeStop(data.id, { width, height }, position);
@@ -126,11 +122,21 @@ const CodeNodeEdit: React.FC<CodeNodeEditProps> = ({
       </div>
       <textarea
         className={styles.codeContent}
-        value={code}
-        onChange={(e) => onChangeCode(e.target.value)}
+        value={data.code || ''}
+        onChange={(e) =>
+          updateNode(data.id, { data: { ...data, code: e.target.value } })
+        }
       />
       <div className={styles.footer}>
-        <SaveButton onClick={() => handleSave(data.id, () => {})} />
+        <SaveButton
+          onClick={() =>
+            handleSave(data.id, () => {}, {
+              title,
+              tags,
+              attachedFiles
+            })
+          }
+        />
         <DeleteButton onClick={() => handleDelete(data.id, () => {})} />
         <ChangeColorButton
           onClick={() =>
@@ -139,7 +145,7 @@ const CodeNodeEdit: React.FC<CodeNodeEditProps> = ({
         />
         <AddTagButton onClick={() => handleAddTag(data.id, tags, onAddTag)} />
         <AttachFileButton
-          onChange={(e) => handleAttachFile(data.id, onAttachFile)(e)}
+          onChange={(e) => handleAttachFile(data.id, onAttachFiles)(e)}
         />
       </div>
       <div className={styles.tagContainer}>
@@ -149,9 +155,9 @@ const CodeNodeEdit: React.FC<CodeNodeEditProps> = ({
           </span>
         ))}
       </div>
-      {attachedFile && (
+      {attachedFiles.length > 0 && (
         <div className={styles.attachedFile}>
-          Attached file: {attachedFile.name}
+          Attached files: {attachedFiles.map((file) => file.name).join(', ')}
         </div>
       )}
       <Handle

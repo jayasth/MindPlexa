@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { NodeProps, Handle, Position } from 'reactflow';
+import React, { useState, useEffect } from 'react';
+import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
+import { useStore } from '@/app/store/useCanvasStore';
 import styles from './CustomNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 import {
@@ -52,10 +53,15 @@ const CustomNodeEdit: React.FC<CustomNodeEditProps> = ({
   const [customData, setCustomData] = useState(data.data || {});
   const [backgroundColor, setBackgroundColor] = useState('#f8f8f8');
   const [tags, setTags] = useState<string[]>([]);
-  const [attachedFile, setAttachedFile] = useState<File | null>(null);
-  const [isContainerSelected, setIsContainerSelected] = useState(false);
+  const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
   const [nodeWidth, setNodeWidth] = useState(width);
   const [nodeHeight, setNodeHeight] = useState(height);
+
+  const updateNode = useStore((state) => state.updateNode);
+
+  useEffect(() => {
+    updateNode(data.id, { data: { title, customData, tags, attachedFiles } });
+  }, [title, customData, tags, attachedFiles, updateNode, data.id]);
 
   const onChangeTitle = (newTitle: string) => {
     setTitle(newTitle);
@@ -74,17 +80,14 @@ const CustomNodeEdit: React.FC<CustomNodeEditProps> = ({
     setTags([...tags, newTag]);
   };
 
-  const onAttachFile = (file: File) => {
-    setAttachedFile(file);
+  const onAttachFiles = (files: File[]) => {
+    setAttachedFiles(files);
   };
 
-  const handleContainerClick = () => {
-    setIsContainerSelected(true);
-  };
-
-  const handleContainerBlur = () => {
-    setIsContainerSelected(false);
-  };
+  useEffect(() => {
+    setNodeWidth(width);
+    setNodeHeight(height);
+  }, [width, height]);
 
   const handleResize = (event, { width, height }) => {
     setNodeWidth(width);
@@ -96,9 +99,15 @@ const CustomNodeEdit: React.FC<CustomNodeEditProps> = ({
     <div
       className={styles.customNode}
       style={{ width: nodeWidth, height: nodeHeight, backgroundColor }}
-      onClick={handleContainerClick}
-      onBlur={handleContainerBlur}
+      onClick={() => setIsSelected(true)}
+      onBlur={() => setIsSelected(false)}
     >
+      <NodeResizer
+        isVisible={selected}
+        minWidth={200}
+        minHeight={200}
+        onResize={handleResize}
+      />
       <div className={styles.header}>
         <input
           type="text"
@@ -116,7 +125,16 @@ const CustomNodeEdit: React.FC<CustomNodeEditProps> = ({
         onChange={(e) => onChangeCustomData(JSON.parse(e.target.value))}
       />
       <div className={styles.footer}>
-        <SaveButton onClick={() => handleSave(data.id, data.onSave)} />
+        <SaveButton
+          onClick={() =>
+            handleSave(data.id, data.onSave, {
+              title,
+              customData,
+              tags,
+              attachedFiles
+            })
+          }
+        />
         <DeleteButton onClick={() => handleDelete(data.id, () => {})} />
         <ChangeColorButton
           onClick={() =>
@@ -125,7 +143,7 @@ const CustomNodeEdit: React.FC<CustomNodeEditProps> = ({
         />
         <AddTagButton onClick={() => handleAddTag(data.id, tags, onAddTag)} />
         <AttachFileButton
-          onChange={(e) => handleAttachFile(data.id, onAttachFile)(e)}
+          onChange={(e) => handleAttachFile(data.id, onAttachFiles)(e)}
         />
       </div>
       <div className={styles.tagContainer}>
@@ -135,9 +153,9 @@ const CustomNodeEdit: React.FC<CustomNodeEditProps> = ({
           </span>
         ))}
       </div>
-      {attachedFile && (
+      {attachedFiles.length > 0 && (
         <div className={styles.attachedFile}>
-          Attached file: {attachedFile.name}
+          Attached files: {attachedFiles.map((file) => file.name).join(', ')}
         </div>
       )}
       <Handle

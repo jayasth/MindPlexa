@@ -15,7 +15,7 @@
   justify-content: space-between;
   padding: 8px 12px;
   background-color: #f1f1f1;
-  z-index: 1;
+  z-index: 0;
 }
 
 .titleInput {
@@ -27,39 +27,33 @@
   flex-grow: 1;
 }
 
-.saveButton {
+.footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+
+.actionButton {
   background: none;
   border: none;
   cursor: pointer;
   padding: 0;
-  margin-left: 8px;
+  margin-left: 4px;
+}
+
+.fileInput {
+  display: none;
 }
 
 .drawContent {
   flex-grow: 1;
   overflow: auto;
   background-color: transparent;
-}
-
-.footer {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  padding: 8px 12px;
-  background-color: #f1f1f1;
-  z-index: 1;
-}
-
-.iconButton {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  margin-left: 8px;
-}
-
-.fileInput {
-  display: none;
+  border: 1px solid #ccc;
+  outline: none;
+  resize: none;
+  padding: 8px;
+  z-index: 0;
 }
 
 .tagContainer {
