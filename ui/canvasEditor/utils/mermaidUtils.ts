@@ -1,4 +1,5 @@
 import mermaid from 'mermaid';
+import { nanoid } from 'nanoid';
 import { Node, Edge, MarkerType } from 'reactflow';
 import {
   extractTitleAndType,
@@ -51,6 +52,7 @@ const convertToReactFlowElements = (
 
   const nodes: Node[] = [];
   const edges: Edge[] = [];
+  const idMap = new Map<string, string>(); // Map to store the mapping between original IDs and nanoid IDs
 
   mermaidNodes.forEach((node, index) => {
     const elId = node.getAttribute('id') || `n${index}`;
@@ -63,37 +65,46 @@ const convertToReactFlowElements = (
       id = matches[1];
     }
 
-    const nodeTitle = node.querySelector('.nodeTitle')?.textContent;
-    const { title, type } = extractTitleAndType(nodeTitle || '');
+    const nodeLabel = node.querySelector('.nodeLabel')?.textContent;
+    const { title, type } = extractTitleAndType(nodeLabel || '');
 
     const position = {
       x: parseFloat(node.getAttribute('transform')!.split('(')[1]) * 1.2,
       y: parseFloat(node.getAttribute('transform')!.split(',')[1]) * 1.2
     };
 
+    // Use nanoid for node IDs
+    const nodeId = `${type}-${nanoid()}`;
+
     nodes.push({
-      id,
-      type: type || 'note', // Updated to use extracted type or default to 'note'
+      id: nodeId,
+      type,
       position,
-      data: { title: title }
+      data: { title }
     });
+
+    // Store the mapping between the original ID and the nanoid ID
+    idMap.set(id, nodeId);
   });
 
   // Convert edges to React-Flow elements
   mermaidEdges.forEach((edge, index) => {
     const id = edge.getAttribute('id') || `e${index}`;
-    const source = edge
+    const originalSource = edge
       ?.getAttribute('class')
       ?.split(' ')[3]
       .replace('LS-', '');
-    const target = edge
+    const originalTarget = edge
       ?.getAttribute('class')
       ?.split(' ')[4]
       .replace('LE-', '');
 
-    if (!source || !target) {
+    if (!originalSource || !originalTarget) {
       return;
     }
+
+    const source = idMap.get(originalSource) || '';
+    const target = idMap.get(originalTarget) || '';
 
     edges.push({
       id,

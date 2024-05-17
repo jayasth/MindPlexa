@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { nanoid } from 'nanoid';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -8,11 +9,18 @@ export function cn(...inputs: ClassValue[]) {
 export function extractTitleAndType(input: string): {
   title: string;
   type: string;
+  id: string;
 } {
-  return {
-    title: input.trim(),
-    type: 'note'
-  };
+  const regex = /^([^[\]]+)\[(.+)\]$/;
+  const match = input.match(regex);
+
+  if (match) {
+    const id = match[1].trim();
+    const title = match[2].trim();
+    return { title, type: 'note', id };
+  } else {
+    return { title: input.trim(), type: 'note', id: nanoid() };
+  }
 }
 
 export function removeNonAlphanumeric(text: string): string {
@@ -26,7 +34,7 @@ export function removeMarkdowncode(text: string): string {
   if (!text) {
     return '';
   }
-  return text.replace(/```mermaid/g, '').replace(/```/g, '');
+  return text.replace(/\`\`\`mermaid/g, '').replace(/```/g, '');
 }
 
 export function removeDoubleQuoteInsideParentheses(input: string): string {
@@ -48,6 +56,5 @@ export function removeDoubleQuoteInsideBrackets(input: string): string {
 }
 
 export function removeSpecialCharacters(text: string): string {
-  // This will remove the special ¡! characters used in your node labels
   return text.replace(/¡!/g, '');
 }
