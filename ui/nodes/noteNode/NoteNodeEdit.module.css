@@ -75,3 +75,10 @@
   font-size: 12px;
   color: #666;
 }
+
+.colorPicker {
+  position: absolute;
+  bottom: 40px;
+  left: 0;
+  z-index: 10;
+}

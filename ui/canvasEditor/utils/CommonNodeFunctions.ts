@@ -46,14 +46,9 @@ export const handleChangeColor = (
   backgroundColor: string,
   onChangeColor: (color: string) => void
 ) => {
-  const newColor = prompt('Enter new background color (e.g., #FFFFFF)');
-  if (newColor) {
-    onChangeColor(newColor);
-    const { updateNode } = useStore.getState();
-    updateNode(id, { style: { backgroundColor: newColor } });
-    return newColor;
-  }
-  return backgroundColor;
+  onChangeColor(backgroundColor);
+  const { updateNode } = useStore.getState();
+  updateNode(id, { data: { backgroundColor } });
 };
 
 export const handleAddTag = (
@@ -64,12 +59,9 @@ export const handleAddTag = (
   const newTag = prompt('Enter new tag');
   if (newTag) {
     onAddTag(newTag);
-    const updatedTags = [...tags, newTag];
     const { updateNode } = useStore.getState();
-    updateNode(id, { data: { tags: updatedTags } });
-    return updatedTags;
+    updateNode(id, { data: { tags: [...tags, newTag] } });
   }
-  return tags;
 };
 
 export const handleAttachFile = (

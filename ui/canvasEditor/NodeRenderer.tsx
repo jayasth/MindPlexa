@@ -114,7 +114,8 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
           ...node,
           ...node.data,
           width: size.width,
-          height: size.height
+          height: size.height,
+          backgroundColor: node.data.backgroundColor // Pass background color as prop
         }}
         selected={selected}
         onNodeResizeStop={onNodeResizeStop}
