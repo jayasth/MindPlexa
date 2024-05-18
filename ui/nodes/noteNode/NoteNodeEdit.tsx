@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
-import { ChromePicker } from 'react-color';
+import { SketchPicker } from 'react-color';
 import { useStore } from '@/app/store/useCanvasStore';
 import styles from './NoteNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
@@ -54,7 +54,9 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   const [title, setTitle] = useState(data.title || 'Untitled Note');
   const [content, setContent] = useState(data.content || '');
   const [backgroundColor, setBackgroundColor] = useState(
-    data.backgroundColor || '#f8f8f8'
+    data.backgroundColor
+      ? `rgba(${data.backgroundColor}, 1)`
+      : 'rgba(248, 248, 248, 1)'
   );
   const [tags, setTags] = useState<string[]>([]);
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
@@ -93,8 +95,9 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     setBackgroundColor(newColor);
   };
 
-  const handleChangeComplete = (color) => {
-    handleChangeColor(data.id, color.hex, onChangeColor);
+  const handleChangeComplete = (color, event) => {
+    const rgbaColor = `rgba(${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b}, ${color.rgb.a})`;
+    handleChangeColor(data.id, rgbaColor, onChangeColor);
   };
 
   const onAddTag = (newTag: string) => {
@@ -132,19 +135,17 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     const handleClickOutside = (event) => {
       if (
         colorPickerRef.current &&
-        !colorPickerRef.current.contains(event.target) &&
-        isColorPickerVisible
+        !colorPickerRef.current.contains(event.target)
       ) {
         setIsColorPickerVisible(false);
       }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
-
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isColorPickerVisible, colorPickerRef]);
+  }, [colorPickerRef]);
 
   return (
     <div
@@ -215,7 +216,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         />
         {isColorPickerVisible && (
           <div className={`${styles.colorPicker} nodrag`} ref={colorPickerRef}>
-            <ChromePicker
+            <SketchPicker
               color={backgroundColor}
               onChangeComplete={handleChangeComplete}
             />
