@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
-import { ChromePicker } from 'react-color'; // Added import for ChromePicker
+import { ChromePicker } from 'react-color';
 import { useStore } from '@/app/store/useCanvasStore';
 import styles from './NoteNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
@@ -11,7 +11,7 @@ import {
   AddTagButton,
   AttachFileButton,
   CloseButton,
-  DuplicateButton // New import for duplicate button
+  DuplicateButton
 } from '@/ui/nodes/CommonNodeComponents';
 import {
   handleTitleChange,
@@ -21,7 +21,7 @@ import {
   handleChangeColor,
   handleAddTag,
   handleAttachFile,
-  handleDuplicate // New import for duplicate functionality
+  handleDuplicate
 } from '@/ui/canvasEditor/utils/CommonNodeFunctions';
 
 interface NoteNodeEditProps extends NodeProps {
@@ -55,13 +55,14 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   const [content, setContent] = useState(data.content || '');
   const [backgroundColor, setBackgroundColor] = useState(
     data.backgroundColor || '#f8f8f8'
-  ); // State for background color
+  );
   const [tags, setTags] = useState<string[]>([]);
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
   const [isContainerSelected, setIsContainerSelected] = useState(false);
   const [nodeWidth, setNodeWidth] = useState(width);
   const [nodeHeight, setNodeHeight] = useState(height);
-  const [isColorPickerVisible, setIsColorPickerVisible] = useState(false); // State for color picker visibility
+  const [isColorPickerVisible, setIsColorPickerVisible] = useState(false);
+  const [isEditingActive, setIsEditingActive] = useState(false);
 
   const updateNode = useStore((state) => state.updateNode);
   const colorPickerRef = useRef<HTMLDivElement>(null);
@@ -125,29 +126,17 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     onNodeResizeStop(data.id, { width, height }, position);
   };
 
-  const toggleColorPicker = () => {
-    setIsColorPickerVisible(!isColorPickerVisible);
+  const handleFocus = () => {
+    setIsEditingActive(true);
   };
 
-  const handleClickOutside = (event) => {
-    if (
-      colorPickerRef.current &&
-      !colorPickerRef.current.contains(event.target)
-    ) {
-      setIsColorPickerVisible(false);
-    }
+  const handleBlur = () => {
+    setIsEditingActive(false);
   };
 
-  useEffect(() => {
-    if (isColorPickerVisible) {
-      document.addEventListener('mousedown', handleClickOutside);
-    } else {
-      document.removeEventListener('mousedown', handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isColorPickerVisible]);
+  const handleColorPickerClick = (e) => {
+    e.stopPropagation();
+  };
 
   return (
     <div
@@ -155,9 +144,10 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
       style={{ width: nodeWidth, height: nodeHeight, backgroundColor }}
       onClick={handleContainerClick}
       onBlur={handleContainerBlur}
+      draggable={!isEditingActive} // Conditionally set draggable
     >
       <NodeResizer
-        isVisible={selected}
+        isVisible={selected && !isEditingActive} // Only show resizer when not actively editing
         minWidth={200}
         minHeight={200}
         onResize={handleResize}
@@ -168,6 +158,8 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
           value={title}
           onChange={(e) => onChangeTitle(e.target.value)}
           className={styles.titleInput}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
         />
         <CloseButton
           onClick={() => handleClose(data.id, () => {}, title, content)}
@@ -177,27 +169,30 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         className={styles.noteContent}
         value={content}
         onChange={(e) => handleContentChange(e.target.value)}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
       />
       <div className={styles.footer}>
         <SaveButton
           onClick={() =>
-            handleSave(data.id, () => {}, {
-              title,
-              content,
-              tags,
-              attachedFiles
-            })
+            handleSave(data.id, () => {}, { title, content, backgroundColor })
           }
         />
         <DeleteButton onClick={() => handleDelete(data.id, () => {})} />
-        <ChangeColorButton onClick={toggleColorPicker} />
+        <ChangeColorButton
+          onClick={() => setIsColorPickerVisible(!isColorPickerVisible)}
+        />
         <AddTagButton onClick={() => handleAddTag(data.id, tags, onAddTag)} />
         <AttachFileButton
           onChange={(e) => handleAttachFile(data.id, onAttachFiles)(e)}
         />
         <DuplicateButton onClick={() => handleDuplicate(data.id)} />
         {isColorPickerVisible && (
-          <div className={styles.colorPicker} ref={colorPickerRef}>
+          <div
+            className={styles.colorPicker}
+            ref={colorPickerRef}
+            onClick={handleColorPickerClick}
+          >
             <ChromePicker
               color={backgroundColor}
               onChangeComplete={handleChangeComplete}
