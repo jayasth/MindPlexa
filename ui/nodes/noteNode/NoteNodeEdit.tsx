@@ -112,7 +112,6 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   }, [width, height]);
 
   const handleContainerClick = (e) => {
-    e.stopPropagation();
     setIsContainerSelected(true);
   };
 
@@ -168,29 +167,22 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
           type="text"
           value={title}
           onChange={(e) => onChangeTitle(e.target.value)}
-          className={styles.titleInput}
-          onMouseDown={(e) => e.stopPropagation()}
+          className={`${styles.titleInput} nodrag`}
         />
         <CloseButton
           onClick={(e) => {
-            e.stopPropagation();
             handleClose(data.id, () => {}, title, content);
           }}
         />
       </div>
       <textarea
-        className={styles.noteContent}
+        className={`${styles.noteContent} nowheel nodrag`}
         value={content}
-        onChange={(e) => {
-          e.stopPropagation();
-          handleContentChange(e.target.value);
-        }}
-        onMouseDown={(e) => e.stopPropagation()}
+        onChange={(e) => handleContentChange(e.target.value)}
       />
       <div className={styles.footer}>
         <SaveButton
           onClick={(e) => {
-            e.stopPropagation();
             handleSave(data.id, () => {}, {
               title,
               content,
@@ -201,31 +193,26 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         />
         <DeleteButton
           onClick={(e) => {
-            e.stopPropagation();
             handleDelete(data.id, () => {});
           }}
         />
         <ChangeColorButton
           onClick={(e) => {
-            e.stopPropagation();
             toggleColorPicker();
           }}
         />
         <AddTagButton
           onClick={(e) => {
-            e.stopPropagation();
             handleAddTag(data.id, tags, onAddTag);
           }}
         />
         <AttachFileButton
           onChange={(e) => {
-            e.stopPropagation();
             handleAttachFile(data.id, onAttachFiles)(e);
           }}
         />
         <DuplicateButton
           onClick={(e) => {
-            e.stopPropagation();
             handleDuplicate(data.id);
           }}
         />
