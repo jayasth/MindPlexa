@@ -85,4 +85,20 @@
   bottom: 40px;
   left: 0;
   z-index: 10;
+  cursor: default; /* Ensure the cursor is appropriate for the color picker */
+}
+
+.nodrag {
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+.nowheel {
+  overflow: auto;
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+  scrollbar-width: none; /* Firefox */
+}
+
+.nowheel::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
 }

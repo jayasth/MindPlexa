@@ -95,7 +95,6 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
 
   const handleChangeComplete = (color) => {
     handleChangeColor(data.id, color.hex, onChangeColor);
-    setIsColorPickerVisible(false);
   };
 
   const onAddTag = (newTag: string) => {
@@ -129,25 +128,23 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     setIsColorPickerVisible(!isColorPickerVisible);
   };
 
-  const handleClickOutside = (event) => {
-    if (
-      colorPickerRef.current &&
-      !colorPickerRef.current.contains(event.target)
-    ) {
-      setIsColorPickerVisible(false);
-    }
-  };
-
   useEffect(() => {
-    if (isColorPickerVisible) {
-      document.addEventListener('mousedown', handleClickOutside);
-    } else {
-      document.removeEventListener('mousedown', handleClickOutside);
-    }
+    const handleClickOutside = (event) => {
+      if (
+        colorPickerRef.current &&
+        !colorPickerRef.current.contains(event.target) &&
+        isColorPickerVisible
+      ) {
+        setIsColorPickerVisible(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isColorPickerVisible]);
+  }, [isColorPickerVisible, colorPickerRef]);
 
   return (
     <div
@@ -217,7 +214,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
           }}
         />
         {isColorPickerVisible && (
-          <div className={styles.colorPicker} ref={colorPickerRef}>
+          <div className={`${styles.colorPicker} nodrag`} ref={colorPickerRef}>
             <ChromePicker
               color={backgroundColor}
               onChangeComplete={handleChangeComplete}
