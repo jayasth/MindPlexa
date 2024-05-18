@@ -7,6 +7,7 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   height: 100%;
+  cursor: move;
 }
 
 .header {
@@ -16,6 +17,7 @@
   padding: 8px 12px;
   background-color: #f1f1f1;
   z-index: 0;
+  cursor: move;
 }
 
 .titleInput {
@@ -25,6 +27,7 @@
   background-color: transparent;
   outline: none;
   flex-grow: 1;
+  cursor: text;
 }
 
 .footer {
@@ -54,6 +57,7 @@
   resize: none;
   padding: 8px;
   z-index: 0;
+  cursor: text;
 }
 
 .tagContainer {

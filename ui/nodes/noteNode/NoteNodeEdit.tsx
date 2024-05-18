@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
-import { ChromePicker } from 'react-color'; // Added import for ChromePicker
+import { ChromePicker } from 'react-color';
 import { useStore } from '@/app/store/useCanvasStore';
 import styles from './NoteNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
@@ -11,7 +11,7 @@ import {
   AddTagButton,
   AttachFileButton,
   CloseButton,
-  DuplicateButton // New import for duplicate button
+  DuplicateButton
 } from '@/ui/nodes/CommonNodeComponents';
 import {
   handleTitleChange,
@@ -21,7 +21,7 @@ import {
   handleChangeColor,
   handleAddTag,
   handleAttachFile,
-  handleDuplicate // New import for duplicate functionality
+  handleDuplicate
 } from '@/ui/canvasEditor/utils/CommonNodeFunctions';
 
 interface NoteNodeEditProps extends NodeProps {
@@ -55,13 +55,13 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   const [content, setContent] = useState(data.content || '');
   const [backgroundColor, setBackgroundColor] = useState(
     data.backgroundColor || '#f8f8f8'
-  ); // State for background color
+  );
   const [tags, setTags] = useState<string[]>([]);
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
   const [isContainerSelected, setIsContainerSelected] = useState(false);
   const [nodeWidth, setNodeWidth] = useState(width);
   const [nodeHeight, setNodeHeight] = useState(height);
-  const [isColorPickerVisible, setIsColorPickerVisible] = useState(false); // State for color picker visibility
+  const [isColorPickerVisible, setIsColorPickerVisible] = useState(false);
 
   const updateNode = useStore((state) => state.updateNode);
   const colorPickerRef = useRef<HTMLDivElement>(null);
@@ -81,7 +81,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   ]);
 
   const onChangeTitle = (newTitle: string) => {
-    setTitle(newTitle);
+    handleTitleChange(data.id, newTitle, setTitle);
   };
 
   const handleContentChange = (newContent: string) => {
@@ -111,7 +111,8 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     setNodeHeight(height);
   }, [width, height]);
 
-  const handleContainerClick = () => {
+  const handleContainerClick = (e) => {
+    e.stopPropagation();
     setIsContainerSelected(true);
   };
 
@@ -157,7 +158,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
       onBlur={handleContainerBlur}
     >
       <NodeResizer
-        isVisible={selected}
+        isVisible={isContainerSelected}
         minWidth={200}
         minHeight={200}
         onResize={handleResize}
@@ -168,34 +169,66 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
           value={title}
           onChange={(e) => onChangeTitle(e.target.value)}
           className={styles.titleInput}
+          onMouseDown={(e) => e.stopPropagation()}
         />
         <CloseButton
-          onClick={() => handleClose(data.id, () => {}, title, content)}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleClose(data.id, () => {}, title, content);
+          }}
         />
       </div>
       <textarea
         className={styles.noteContent}
         value={content}
-        onChange={(e) => handleContentChange(e.target.value)}
+        onChange={(e) => {
+          e.stopPropagation();
+          handleContentChange(e.target.value);
+        }}
+        onMouseDown={(e) => e.stopPropagation()}
       />
       <div className={styles.footer}>
         <SaveButton
-          onClick={() =>
+          onClick={(e) => {
+            e.stopPropagation();
             handleSave(data.id, () => {}, {
               title,
               content,
               tags,
               attachedFiles
-            })
-          }
+            });
+          }}
         />
-        <DeleteButton onClick={() => handleDelete(data.id, () => {})} />
-        <ChangeColorButton onClick={toggleColorPicker} />
-        <AddTagButton onClick={() => handleAddTag(data.id, tags, onAddTag)} />
+        <DeleteButton
+          onClick={(e) => {
+            e.stopPropagation();
+            handleDelete(data.id, () => {});
+          }}
+        />
+        <ChangeColorButton
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleColorPicker();
+          }}
+        />
+        <AddTagButton
+          onClick={(e) => {
+            e.stopPropagation();
+            handleAddTag(data.id, tags, onAddTag);
+          }}
+        />
         <AttachFileButton
-          onChange={(e) => handleAttachFile(data.id, onAttachFiles)(e)}
+          onChange={(e) => {
+            e.stopPropagation();
+            handleAttachFile(data.id, onAttachFiles)(e);
+          }}
         />
-        <DuplicateButton onClick={() => handleDuplicate(data.id)} />
+        <DuplicateButton
+          onClick={(e) => {
+            e.stopPropagation();
+            handleDuplicate(data.id);
+          }}
+        />
         {isColorPickerVisible && (
           <div className={styles.colorPicker} ref={colorPickerRef}>
             <ChromePicker
