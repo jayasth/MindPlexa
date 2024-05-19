@@ -18,7 +18,7 @@ interface NoteNodeViewProps extends NodeProps {
 }
 
 const NoteNodeView: React.FC<NoteNodeViewProps> = ({ data, width, height }) => {
-  const { title, content, id } = data;
+  const { title, content, id, backgroundColor } = data;
   const toggleEditMode = useStore((state) => state.toggleEditMode);
 
   const getContrastYIQ = (hexcolor) => {
@@ -30,7 +30,7 @@ const NoteNodeView: React.FC<NoteNodeViewProps> = ({ data, width, height }) => {
     return yiq >= 128 ? '#575757' : '#F4F4F4';
   };
 
-  const textColor = data.textColor || getContrastYIQ(data.backgroundColor);
+  const textColor = data.textColor || getContrastYIQ(backgroundColor);
 
   return (
     <div
@@ -38,7 +38,7 @@ const NoteNodeView: React.FC<NoteNodeViewProps> = ({ data, width, height }) => {
       style={{
         width,
         height,
-        backgroundColor: data.backgroundColor,
+        backgroundColor: backgroundColor,
         color: textColor
       }}
     >

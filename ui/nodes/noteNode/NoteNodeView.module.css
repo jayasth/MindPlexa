@@ -21,10 +21,12 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  color: inherit; /* Ensure text color inherits from parent for better contrast */
 }
 
 .editButton {
   cursor: pointer;
+  color: inherit; /* Ensure button color inherits from parent for better visibility */
 }
 
 .editButton:hover {
@@ -41,6 +43,7 @@
   max-height: 100px;
   background-color: transparent; /* Set a transparent background color */
   border: 1px solid #ccc;
+  color: inherit; /* Ensure text color inherits from parent for better contrast */
 }
 
 .noContent {

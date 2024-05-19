@@ -1,5 +1,28 @@
 import { useStore } from '@/app/store/useCanvasStore';
 
+export const getContrastYIQ = (color: string) => {
+  let r, g, b;
+
+  if (color.startsWith('#')) {
+    // Hex color
+    const hex = color.replace('#', '');
+    r = parseInt(hex.substring(0, 2), 16);
+    g = parseInt(hex.substring(2, 4), 16);
+    b = parseInt(hex.substring(4, 6), 16);
+  } else if (color.startsWith('rgb')) {
+    // RGB color
+    const rgb = color.match(/\d+/g);
+    if (rgb) {
+      r = parseInt(rgb[0]);
+      g = parseInt(rgb[1]);
+      b = parseInt(rgb[2]);
+    }
+  }
+
+  const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+  return yiq >= 128 ? '#575757' : '#F4F4F4';
+};
+
 export const handleTitleChange = (
   id: string,
   title: string,
@@ -43,12 +66,13 @@ export const handleDelete = (id: string, onDelete: () => void) => {
 
 export const handleChangeColor = (
   id: string,
-  backgroundColor: string,
+  color: string,
   onChangeColor: (color: string) => void
 ) => {
-  onChangeColor(backgroundColor);
   const { updateNode } = useStore.getState();
-  updateNode(id, { data: { backgroundColor } });
+  const textColor = getContrastYIQ(color);
+  onChangeColor(color);
+  updateNode(id, { data: { backgroundColor: color, textColor } });
 };
 
 export const handleAddTag = (

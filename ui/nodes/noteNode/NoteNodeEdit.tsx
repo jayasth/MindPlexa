@@ -21,7 +21,8 @@ import {
   handleChangeColor,
   handleAddTag,
   handleAttachFile,
-  handleDuplicate
+  handleDuplicate,
+  getContrastYIQ
 } from '@/ui/canvasEditor/utils/CommonNodeFunctions';
 import Quill from 'quill';
 import 'quill/dist/quill.snow.css';
@@ -122,11 +123,16 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
 
   const onChangeColor = (newColor: string) => {
     setBackgroundColor(newColor);
+    const newTextColor = getContrastYIQ(newColor);
+    setTextColor(newTextColor);
+    handleChangeColor(data.id, newColor, setBackgroundColor);
   };
 
   const handleChangeComplete = (color, event) => {
     const rgbaColor = `rgba(${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b}, ${color.rgb.a})`;
-    handleChangeColor(data.id, rgbaColor, onChangeColor);
+    const newTextColor = getContrastYIQ(rgbaColor);
+    setTextColor(newTextColor);
+    handleChangeColor(data.id, rgbaColor, setBackgroundColor);
   };
 
   const onAddTag = (newTag: string) => {
@@ -175,15 +181,6 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [colorPickerRef]);
-
-  const getContrastYIQ = (hexcolor) => {
-    if (!hexcolor) return 'black'; // Default to black if hexcolor is undefined
-    const r = parseInt(hexcolor.substr(1, 2), 16);
-    const g = parseInt(hexcolor.substr(3, 2), 16);
-    const b = parseInt(hexcolor.substr(5, 2), 16);
-    const yiq = (r * 299 + g * 587 + b * 114) / 1000;
-    return yiq >= 128 ? '#575757' : '#F4F4F4';
-  };
 
   return (
     <div

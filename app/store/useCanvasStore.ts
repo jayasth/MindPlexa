@@ -79,17 +79,26 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       return;
     }
     const nodeProps = getNodeSpecificProperties(node.type, false);
+    const textColor =
+      node.data && node.data.backgroundColor
+        ? parseInt(node.data.backgroundColor.replace('#', ''), 16) >
+          0xffffff / 2
+          ? '#575757'
+          : '#F4F4F4'
+        : '#575757';
+    const toolbarColor = textColor === '#575757' ? '#F4F4F4' : '#575757';
     const newNode = {
       ...node,
       ...nodeProps,
       style: {
-        backgroundColor: '#F4F4F4', // Default background color
-        color: '#575757' // Default text color
+        backgroundColor: (node.data && node.data.backgroundColor) || '#F4F4F4', // Default or specified background color
+        color: textColor // Computed text color
       },
       data: {
         ...node.data,
-        backgroundColor: '#F4F4F4', // Default background color
-        textColor: '#575757' // Default text color
+        backgroundColor: (node.data && node.data.backgroundColor) || '#F4F4F4', // Default or specified background color
+        textColor: textColor, // Computed text color
+        toolbarColor: toolbarColor // Computed toolbar color
       }
     };
     console.log('Store: New node with position and dimensions:', newNode);
@@ -105,12 +114,20 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       const existingNodeIndex = state.nodes.findIndex((node) => node.id === id);
       if (existingNodeIndex !== -1) {
         const existingNode = state.nodes[existingNodeIndex];
+        const textColor =
+          data.data && data.data.backgroundColor
+            ? parseInt(data.data.backgroundColor.replace('#', ''), 16) >
+              0xffffff / 2
+              ? '#575757'
+              : '#F4F4F4'
+            : existingNode.data.textColor;
         const updatedNode = {
           ...existingNode,
           ...data,
           data: {
             ...existingNode.data,
-            ...data.data
+            ...data.data,
+            textColor: textColor // Computed text color based on updated background color
           },
           position: data.position || existingNode.position,
           width: data.width !== undefined ? data.width : existingNode.width,
