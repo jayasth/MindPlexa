@@ -13,6 +13,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 4px;
+  background-color: #f1f1f1; /* Set a contrasting background color */
 }
 
 .title {
@@ -34,10 +35,17 @@
 
 .contentPreview {
   flex-grow: 1;
-  overflow: hidden;
+  overflow: auto;
   padding: 4px;
   font-size: 12px;
   white-space: pre-wrap;
   word-wrap: break-word;
   max-height: 100px;
+  background-color: #fff; /* Set a contrasting background color */
+  border: 1px solid #ccc;
+}
+
+.noContent {
+  color: #888;
+  font-style: italic;
 }

@@ -23,6 +23,8 @@ import {
   handleAttachFile,
   handleDuplicate
 } from '@/ui/canvasEditor/utils/CommonNodeFunctions';
+import Quill from 'quill';
+import 'quill/dist/quill.snow.css';
 
 interface NoteNodeEditProps extends NodeProps {
   data: {
@@ -67,6 +69,37 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
 
   const updateNode = useStore((state) => state.updateNode);
   const colorPickerRef = useRef<HTMLDivElement>(null);
+  const quillRef = useRef<HTMLDivElement>(null);
+  const quillInstance = useRef<Quill | null>(null);
+
+  useEffect(() => {
+    if (quillRef.current && !quillInstance.current) {
+      quillInstance.current = new Quill(quillRef.current, {
+        theme: 'snow',
+        modules: {
+          toolbar: [
+            [{ font: [] }, { size: [] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ color: [] }, { background: [] }],
+            [{ script: 'sub' }, { script: 'super' }],
+            [{ header: '1' }, { header: '2' }, 'blockquote', 'code-block'],
+            [{ list: 'ordered' }, { list: 'bullet' }],
+            [{ direction: 'rtl' }],
+            ['link', 'image', 'video'],
+            ['clean']
+          ]
+        }
+      });
+
+      quillInstance.current.on('text-change', () => {
+        setContent(quillInstance.current?.root.innerHTML || '');
+      });
+
+      if (content) {
+        quillInstance.current.root.innerHTML = content;
+      }
+    }
+  }, [content]);
 
   useEffect(() => {
     updateNode(data.id, {
@@ -84,11 +117,6 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
 
   const onChangeTitle = (newTitle: string) => {
     handleTitleChange(data.id, newTitle, setTitle);
-  };
-
-  const handleContentChange = (newContent: string) => {
-    setContent(newContent);
-    updateNode(data.id, { data: { ...data, content: newContent } });
   };
 
   const onChangeColor = (newColor: string) => {
@@ -113,7 +141,13 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     setNodeHeight(height);
   }, [width, height]);
 
-  const handleContainerClick = (e) => {
+  const handleResize = (event, { width, height }) => {
+    setNodeWidth(width);
+    setNodeHeight(height);
+    onNodeResizeStop(data.id, { width, height }, position);
+  };
+
+  const handleContainerClick = () => {
     setIsContainerSelected(true);
   };
 
@@ -121,26 +155,20 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     setIsContainerSelected(false);
   };
 
-  const handleResize = (event, { width, height }) => {
-    setNodeWidth(width);
-    setNodeHeight(height);
-    onNodeResizeStop(data.id, { width, height }, position);
-  };
-
   const toggleColorPicker = () => {
     setIsColorPickerVisible(!isColorPickerVisible);
   };
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        colorPickerRef.current &&
-        !colorPickerRef.current.contains(event.target)
-      ) {
-        setIsColorPickerVisible(false);
-      }
-    };
+  const handleClickOutside = (event) => {
+    if (
+      colorPickerRef.current &&
+      !colorPickerRef.current.contains(event.target)
+    ) {
+      setIsColorPickerVisible(false);
+    }
+  };
 
+  useEffect(() => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
@@ -173,11 +201,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
           }}
         />
       </div>
-      <textarea
-        className={`${styles.noteContent} nowheel nodrag`}
-        value={content}
-        onChange={(e) => handleContentChange(e.target.value)}
-      />
+      <div ref={quillRef} className={`${styles.noteContent} nowheel nodrag`} />
       <div className={styles.footer}>
         <SaveButton
           onClick={(e) => {

@@ -34,6 +34,7 @@
   display: flex;
   justify-content: space-between;
   margin-top: 8px;
+  background-color: #f1f1f1;
 }
 
 .actionButton {
@@ -51,7 +52,7 @@
 .noteContent {
   flex-grow: 1;
   overflow: auto;
-  background-color: transparent;
+  background-color: #f4f4f4;
   border: 1px solid #ccc;
   outline: none;
   resize: none;
