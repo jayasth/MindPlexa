@@ -43,18 +43,22 @@ const NoteNodeView: React.FC<NoteNodeViewProps> = ({ data, width, height }) => {
       }}
     >
       <div className={styles.header}>
-        <span className={styles.title}>{title || 'Untitled Note'}</span>
+        <span className={styles.title} style={{ color: textColor }}>
+          {title || 'Untitled Note'}
+        </span>
         <FaEdit
           className={styles.editButton}
           onClick={() => toggleEditMode(id)}
           style={{ color: textColor }}
         />
       </div>
-      <div className={styles.contentPreview}>
+      <div className={styles.contentPreview} style={{ color: textColor }}>
         {content ? (
           <div dangerouslySetInnerHTML={{ __html: content }} />
         ) : (
-          <span className={styles.noContent}>No content available</span>
+          <span className={styles.noContent} style={{ color: textColor }}>
+            No content available
+          </span>
         )}
       </div>
       <Handle

@@ -212,7 +212,13 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
           onClick={() => handleClose(data.id, () => {}, title, content)}
         />
       </div>
-      <div id={`toolbar-${data.id}`} className={styles.quillToolbar} />
+      <div
+        id={`toolbar-${data.id}`}
+        className={`${styles.quillToolbar} nowheel nodrag`}
+        style={{
+          color: textColor
+        }}
+      />
       <div
         ref={quillRef}
         className={`${styles.noteContent} nowheel nodrag`}

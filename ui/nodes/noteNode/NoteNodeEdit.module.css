@@ -90,28 +90,12 @@
   cursor: pointer;
 }
 
-.quillToolbar {
-  background-color: transparent;
-  border: none;
-  color: inherit;
+.quillToolbar .ql-stroke {
+  stroke: var(--toolbar-color);
 }
 
-.quillToolbar .ql-toolbar {
-  background-color: transparent;
-  border: none;
-  color: inherit;
-}
-
-.quillToolbar .ql-toolbar .ql-stroke {
-  stroke: currentColor;
-}
-
-.quillToolbar .ql-toolbar .ql-fill {
-  fill: currentColor;
-}
-
-.quillToolbar .ql-toolbar .ql-picker {
-  color: inherit;
+.quillToolbar .ql-fill {
+  fill: var(--toolbar-color);
 }
 
 .nodrag {
