@@ -33,24 +33,18 @@ const NoteNodeView: React.FC<NoteNodeViewProps> = ({ data, width, height }) => {
   const textColor = data.textColor || getContrastYIQ(backgroundColor);
 
   return (
-    <div
-      className={styles.noteNode}
-      style={{
-        width,
-        height,
-        backgroundColor: backgroundColor,
-        color: textColor
-      }}
-    >
+    <div className={styles.noteNode} style={{ width, height, backgroundColor }}>
       <div className={styles.header}>
-        <span className={styles.title} style={{ color: textColor }}>
+        <div className={styles.title} style={{ color: textColor }}>
           {title || 'Untitled Note'}
-        </span>
-        <FaEdit
+        </div>
+        <div
           className={styles.editButton}
-          onClick={() => toggleEditMode(id)}
           style={{ color: textColor }}
-        />
+          onClick={() => toggleEditMode(id)}
+        >
+          <FaEdit />
+        </div>
       </div>
       <div className={styles.contentPreview} style={{ color: textColor }}>
         {content ? (

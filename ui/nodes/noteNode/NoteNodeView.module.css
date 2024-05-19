@@ -12,7 +12,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 4px;
-  background-color: transparent; /* Set a transparent background color */
+  background-color: transparent;
 }
 
 .title {
@@ -21,12 +21,12 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: inherit; /* Ensure text color inherits from parent for better contrast */
+  color: inherit;
 }
 
 .editButton {
   cursor: pointer;
-  color: inherit; /* Ensure button color inherits from parent for better visibility */
+  color: inherit;
 }
 
 .editButton:hover {
@@ -41,9 +41,9 @@
   white-space: pre-wrap;
   word-wrap: break-word;
   max-height: 100px;
-  background-color: transparent; /* Set a transparent background color */
+  background-color: transparent;
   border: 1px solid #ccc;
-  color: inherit; /* Ensure text color inherits from parent for better contrast */
+  color: inherit;
 }
 
 .noContent {
