@@ -88,6 +88,30 @@
   cursor: pointer;
 }
 
+.quillToolbar {
+  background-color: transparent;
+  border: none;
+  color: inherit;
+}
+
+.quillToolbar :global(.ql-toolbar) {
+  background-color: transparent;
+  border: none;
+  color: inherit;
+}
+
+.quillToolbar :global(.ql-toolbar .ql-stroke) {
+  stroke: currentColor;
+}
+
+.quillToolbar :global(.ql-toolbar .ql-fill) {
+  fill: currentColor;
+}
+
+.quillToolbar :global(.ql-toolbar .ql-picker) {
+  color: inherit;
+}
+
 .nodrag {
   -webkit-user-drag: none;
   user-select: none;

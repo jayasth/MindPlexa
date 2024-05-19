@@ -213,48 +213,33 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
           style={{ color: textColor }}
         />
         <CloseButton
-          onClick={(e) => {
-            handleClose(data.id, () => {}, title, content);
-          }}
+          onClick={() => handleClose(data.id, () => {}, title, content)}
         />
       </div>
-      <div ref={quillRef} className={`${styles.noteContent} nowheel nodrag`} />
+      <div id={`toolbar-${data.id}`} className={styles.quillToolbar} />
+      <div
+        ref={quillRef}
+        className={`${styles.noteContent} nowheel nodrag`}
+        style={{ color: textColor }}
+      />
       <div className={styles.footer}>
         <SaveButton
-          onClick={(e) => {
+          onClick={() =>
             handleSave(data.id, () => {}, {
               title,
               content,
               tags,
               attachedFiles
-            });
-          }}
+            })
+          }
         />
-        <DeleteButton
-          onClick={(e) => {
-            handleDelete(data.id, () => {});
-          }}
-        />
-        <ChangeColorButton
-          onClick={(e) => {
-            toggleColorPicker();
-          }}
-        />
-        <AddTagButton
-          onClick={(e) => {
-            handleAddTag(data.id, tags, onAddTag);
-          }}
-        />
+        <DeleteButton onClick={() => handleDelete(data.id, () => {})} />
+        <ChangeColorButton onClick={() => toggleColorPicker()} />
+        <AddTagButton onClick={() => handleAddTag(data.id, tags, onAddTag)} />
         <AttachFileButton
-          onChange={(e) => {
-            handleAttachFile(data.id, onAttachFiles)(e);
-          }}
+          onChange={(e) => handleAttachFile(data.id, onAttachFiles)(e)}
         />
-        <DuplicateButton
-          onClick={(e) => {
-            handleDuplicate(data.id);
-          }}
-        />
+        <DuplicateButton onClick={() => handleDuplicate(data.id)} />
         {isColorPickerVisible && (
           <div className={`${styles.colorPicker} nodrag`} ref={colorPickerRef}>
             <SketchPicker
@@ -266,13 +251,13 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
       </div>
       <div className={styles.tagContainer}>
         {tags.map((tag, index) => (
-          <span key={index} className={styles.tag}>
+          <span key={index} className={styles.tag} style={{ color: textColor }}>
             {tag}
           </span>
         ))}
       </div>
       {attachedFiles.length > 0 && (
-        <div className={styles.attachedFile}>
+        <div className={styles.attachedFile} style={{ color: textColor }}>
           Attached files: {attachedFiles.map((file) => file.name).join(', ')}
         </div>
       )}

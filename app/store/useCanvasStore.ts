@@ -81,7 +81,16 @@ export const useStore = createStore<CanvasState>((set, get) => ({
     const nodeProps = getNodeSpecificProperties(node.type, false);
     const newNode = {
       ...node,
-      ...nodeProps
+      ...nodeProps,
+      style: {
+        backgroundColor: '#F4F4F4', // Default background color
+        color: '#575757' // Default text color
+      },
+      data: {
+        ...node.data,
+        backgroundColor: '#F4F4F4', // Default background color
+        textColor: '#575757' // Default text color
+      }
     };
     console.log('Store: New node with position and dimensions:', newNode);
     set((state) => {
@@ -189,7 +198,11 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       id: nanoid(),
       type: type,
       data: { label: 'New Node' },
-      position
+      position,
+      style: {
+        backgroundColor: '#F4F4F4',
+        color: '#575757'
+      }
     };
 
     const newEdge = {
