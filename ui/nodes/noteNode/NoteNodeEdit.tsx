@@ -32,6 +32,7 @@ interface NoteNodeEditProps extends NodeProps {
     content?: string;
     title?: string;
     backgroundColor?: string;
+    textColor?: string;
   };
   width: number;
   height: number;
@@ -56,10 +57,9 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   const [title, setTitle] = useState(data.title || 'Untitled Note');
   const [content, setContent] = useState(data.content || '');
   const [backgroundColor, setBackgroundColor] = useState(
-    data.backgroundColor
-      ? `rgba(${data.backgroundColor}, 1)`
-      : 'rgba(248, 248, 248, 1)'
+    data.backgroundColor || '#F4F4F4'
   );
+  const [textColor, setTextColor] = useState(data.textColor || '#575757');
   const [tags, setTags] = useState<string[]>([]);
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
   const [isContainerSelected, setIsContainerSelected] = useState(false);
@@ -103,7 +103,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
 
   useEffect(() => {
     updateNode(data.id, {
-      data: { title, content, tags, attachedFiles, backgroundColor }
+      data: { title, content, tags, attachedFiles, backgroundColor, textColor }
     });
   }, [
     title,
@@ -111,6 +111,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     tags,
     attachedFiles,
     backgroundColor,
+    textColor,
     updateNode,
     data.id
   ]);
@@ -181,10 +182,8 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     const g = parseInt(hexcolor.substr(3, 2), 16);
     const b = parseInt(hexcolor.substr(5, 2), 16);
     const yiq = (r * 299 + g * 587 + b * 114) / 1000;
-    return yiq >= 128 ? 'black' : 'white';
+    return yiq >= 128 ? '#575757' : '#F4F4F4';
   };
-
-  const textColor = getContrastYIQ(backgroundColor);
 
   return (
     <div

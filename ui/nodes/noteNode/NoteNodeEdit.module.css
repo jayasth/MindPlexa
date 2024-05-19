@@ -94,21 +94,21 @@
   color: inherit;
 }
 
-.quillToolbar :global(.ql-toolbar) {
+.quillToolbar .ql-toolbar {
   background-color: transparent;
   border: none;
   color: inherit;
 }
 
-.quillToolbar :global(.ql-toolbar .ql-stroke) {
+.quillToolbar .ql-toolbar .ql-stroke {
   stroke: currentColor;
 }
 
-.quillToolbar :global(.ql-toolbar .ql-fill) {
+.quillToolbar .ql-toolbar .ql-fill {
   fill: currentColor;
 }
 
-.quillToolbar :global(.ql-toolbar .ql-picker) {
+.quillToolbar .ql-toolbar .ql-picker {
   color: inherit;
 }
 
