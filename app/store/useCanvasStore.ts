@@ -117,7 +117,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
         const updatedBackgroundColor =
           data.data && data.data.backgroundColor
             ? data.data.backgroundColor
-            : existingNode.data.backgroundColor;
+            : existingNode.data.backgroundColor || '#F4F4F4'; // Default color added here
         const textColor =
           parseInt(updatedBackgroundColor.replace('#', ''), 16) > 0xffffff / 2
             ? '#575757'
