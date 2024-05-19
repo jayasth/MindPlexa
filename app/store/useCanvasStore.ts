@@ -114,13 +114,14 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       const existingNodeIndex = state.nodes.findIndex((node) => node.id === id);
       if (existingNodeIndex !== -1) {
         const existingNode = state.nodes[existingNodeIndex];
-        const textColor =
+        const updatedBackgroundColor =
           data.data && data.data.backgroundColor
-            ? parseInt(data.data.backgroundColor.replace('#', ''), 16) >
-              0xffffff / 2
-              ? '#575757'
-              : '#F4F4F4'
-            : existingNode.data.textColor;
+            ? data.data.backgroundColor
+            : existingNode.data.backgroundColor;
+        const textColor =
+          parseInt(updatedBackgroundColor.replace('#', ''), 16) > 0xffffff / 2
+            ? '#575757'
+            : '#F4F4F4';
         const updatedNode = {
           ...existingNode,
           ...data,

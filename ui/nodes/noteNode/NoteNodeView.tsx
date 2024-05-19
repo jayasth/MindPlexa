@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { NodeProps, Handle, Position } from 'reactflow';
 import { useStore } from '@/app/store/useCanvasStore';
 import styles from './NoteNodeView.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 import { FaEdit } from 'react-icons/fa';
+import { getContrastYIQ } from '@/ui/canvasEditor/utils/CommonNodeFunctions';
 
 interface NoteNodeViewProps extends NodeProps {
   data: {
@@ -20,17 +21,20 @@ interface NoteNodeViewProps extends NodeProps {
 const NoteNodeView: React.FC<NoteNodeViewProps> = ({ data, width, height }) => {
   const { title, content, id, backgroundColor } = data;
   const toggleEditMode = useStore((state) => state.toggleEditMode);
+  const updateNode = useStore((state) => state.updateNode);
 
-  const getContrastYIQ = (hexcolor) => {
-    if (!hexcolor) return 'black'; // Default to black if hexcolor is undefined
-    const r = parseInt(hexcolor.substr(1, 2), 16);
-    const g = parseInt(hexcolor.substr(3, 2), 16);
-    const b = parseInt(hexcolor.substr(5, 2), 16);
-    const yiq = (r * 299 + g * 587 + b * 114) / 1000;
-    return yiq >= 128 ? '#575757' : '#F4F4F4';
-  };
+  const [textColor, setTextColor] = useState(
+    data.textColor || getContrastYIQ(backgroundColor || '#F4F4F4')
+  );
 
-  const textColor = data.textColor || getContrastYIQ(backgroundColor);
+  // Ensure text color is updated based on the latest background color
+  useEffect(() => {
+    const newTextColor = getContrastYIQ(backgroundColor || '#F4F4F4');
+    if (textColor !== newTextColor) {
+      setTextColor(newTextColor);
+      updateNode(id, { data: { ...data, textColor: newTextColor } });
+    }
+  }, [backgroundColor, textColor, id, updateNode, data]);
 
   return (
     <div className={styles.noteNode} style={{ width, height, backgroundColor }}>
