@@ -175,10 +175,26 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     };
   }, [colorPickerRef]);
 
+  const getContrastYIQ = (hexcolor) => {
+    if (!hexcolor) return 'black'; // Default to black if hexcolor is undefined
+    const r = parseInt(hexcolor.substr(1, 2), 16);
+    const g = parseInt(hexcolor.substr(3, 2), 16);
+    const b = parseInt(hexcolor.substr(5, 2), 16);
+    const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+    return yiq >= 128 ? 'black' : 'white';
+  };
+
+  const textColor = getContrastYIQ(backgroundColor);
+
   return (
     <div
       className={styles.noteNode}
-      style={{ width: nodeWidth, height: nodeHeight, backgroundColor }}
+      style={{
+        width: nodeWidth,
+        height: nodeHeight,
+        backgroundColor,
+        color: textColor
+      }}
       onClick={handleContainerClick}
       onBlur={handleContainerBlur}
     >
@@ -194,6 +210,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
           value={title}
           onChange={(e) => onChangeTitle(e.target.value)}
           className={`${styles.titleInput} nodrag`}
+          style={{ color: textColor }}
         />
         <CloseButton
           onClick={(e) => {

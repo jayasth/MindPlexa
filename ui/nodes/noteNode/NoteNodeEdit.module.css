@@ -1,7 +1,6 @@
 .noteNode {
   display: flex;
   flex-direction: column;
-  background-color: #f8f8f8;
   border-radius: 4px;
   padding: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -15,7 +14,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 8px 12px;
-  background-color: #f1f1f1;
+  background-color: transparent;
   z-index: 0;
   cursor: move;
 }
@@ -34,7 +33,7 @@
   display: flex;
   justify-content: space-between;
   margin-top: 8px;
-  background-color: #f1f1f1;
+  background-color: transparent;
 }
 
 .actionButton {
@@ -52,7 +51,7 @@
 .noteContent {
   flex-grow: 1;
   overflow: auto;
-  background-color: #f4f4f4;
+  background-color: transparent;
   border: 1px solid #ccc;
   outline: none;
   resize: none;

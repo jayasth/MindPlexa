@@ -1,7 +1,6 @@
 .noteNode {
   display: flex;
   flex-direction: column;
-  background-color: #f8f8f8;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   border-radius: 4px;
   padding: 4px;
@@ -13,7 +12,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 4px;
-  background-color: #f1f1f1; /* Set a contrasting background color */
+  background-color: transparent; /* Set a transparent background color */
 }
 
 .title {
@@ -26,7 +25,6 @@
 
 .editButton {
   cursor: pointer;
-  color: #888;
 }
 
 .editButton:hover {
@@ -41,7 +39,7 @@
   white-space: pre-wrap;
   word-wrap: break-word;
   max-height: 100px;
-  background-color: #fff; /* Set a contrasting background color */
+  background-color: transparent; /* Set a transparent background color */
   border: 1px solid #ccc;
 }
 
