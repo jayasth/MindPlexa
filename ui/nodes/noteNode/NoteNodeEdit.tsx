@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, CSSProperties } from 'react';
 import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
 import { SketchPicker } from 'react-color';
 import { useStore } from '@/app/store/useCanvasStore';
@@ -83,6 +83,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         theme: 'snow',
         modules: {
           toolbar: [
+            [{ container: `#toolbar-${data.id}` }],
             [{ font: [] }, { size: [] }],
             ['bold', 'italic', 'underline', 'strike'],
             [{ color: [] }, { background: [] }],
@@ -104,7 +105,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         quillInstance.current.root.innerHTML = content;
       }
     }
-  }, [content]);
+  }, [content, data.id]);
 
   useEffect(() => {
     updateNode(data.id, {
@@ -130,6 +131,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     const newTextColor = getContrastYIQ(newColor);
     setTextColor(newTextColor);
     handleChangeColor(data.id, newColor, setBackgroundColor);
+    updateQuillToolbarStyles(newColor, newTextColor);
   };
 
   const handleChangeComplete = (color, event) => {
@@ -137,6 +139,42 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     const newTextColor = getContrastYIQ(rgbaColor);
     setTextColor(newTextColor);
     handleChangeColor(data.id, rgbaColor, setBackgroundColor);
+    updateQuillToolbarStyles(rgbaColor, newTextColor);
+  };
+
+  const updateQuillToolbarStyles = (
+    backgroundColor: string,
+    textColor: string
+  ) => {
+    const toolbar = document.querySelector(
+      `#toolbar-${data.id}`
+    ) as HTMLElement;
+    if (toolbar) {
+      toolbar.style.backgroundColor = backgroundColor;
+      toolbar.style.color = textColor;
+      const icons = toolbar.querySelectorAll(
+        '.ql-stroke, .ql-fill, .ql-picker'
+      ) as NodeListOf<HTMLElement>;
+      icons.forEach((icon) => {
+        (icon as HTMLElement).style.stroke = textColor;
+        (icon as HTMLElement).style.fill = textColor;
+        (icon as HTMLElement).style.color = textColor;
+      });
+    }
+
+    const quillToolbar = toolbar.nextElementSibling as HTMLElement;
+    if (quillToolbar) {
+      quillToolbar.style.backgroundColor = backgroundColor;
+      quillToolbar.style.color = textColor;
+      const icons = quillToolbar.querySelectorAll(
+        '.ql-stroke, .ql-fill, .ql-picker'
+      ) as NodeListOf<HTMLElement>;
+      icons.forEach((icon) => {
+        (icon as HTMLElement).style.stroke = textColor;
+        (icon as HTMLElement).style.fill = textColor;
+        (icon as HTMLElement).style.color = textColor;
+      });
+    }
   };
 
   const onAddTag = (newTag: string) => {
@@ -188,6 +226,14 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     }
   }, [colorPickerRef]);
 
+  // Define custom CSS properties
+  const customStyles: CSSProperties = {
+    width: nodeWidth,
+    height: nodeHeight,
+    backgroundColor,
+    color: textColor
+  };
+
   return (
     <div
       className={styles.noteNode}
@@ -199,6 +245,8 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
       }}
       onClick={handleContainerClick}
       onBlur={handleContainerBlur}
+      data-toolbar-background-color={backgroundColor}
+      data-toolbar-text-color={textColor}
     >
       <NodeResizer
         isVisible={isContainerSelected}
@@ -220,7 +268,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
       </div>
       <div
         id={`toolbar-${data.id}`}
-        className={`${styles.qlToolbar} nowheel nodrag`}
+        className={`ql-toolbar nowheel nodrag`}
         style={{
           color: textColor
         }}
