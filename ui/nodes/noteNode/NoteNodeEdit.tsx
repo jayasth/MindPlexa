@@ -122,6 +122,12 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     data.id
   ]);
 
+  useEffect(() => {
+    if (quillInstance.current) {
+      updateQuillToolbarStyles(backgroundColor, textColor);
+    }
+  }, [backgroundColor, textColor]);
+
   const onChangeTitle = (newTitle: string) => {
     handleTitleChange(data.id, newTitle, setTitle);
   };
@@ -237,12 +243,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   return (
     <div
       className={styles.noteNode}
-      style={{
-        width: nodeWidth,
-        height: nodeHeight,
-        backgroundColor,
-        color: textColor
-      }}
+      style={customStyles}
       onClick={handleContainerClick}
       onBlur={handleContainerBlur}
       data-toolbar-background-color={backgroundColor}

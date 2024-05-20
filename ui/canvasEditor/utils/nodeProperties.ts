@@ -6,6 +6,8 @@ interface BaseNodeDimension {
 interface EditableNodeDimension extends BaseNodeDimension {
   editWidth: number;
   editHeight: number;
+  mobileEditWidth: number;
+  mobileEditHeight: number;
 }
 
 type NodeDimensionTypes = {
@@ -15,11 +17,46 @@ type NodeDimensionTypes = {
 };
 
 export const nodeDimensions: NodeDimensionTypes = {
-  note: { width: 150, height: 60, editWidth: 300, editHeight: 450 },
-  task: { width: 150, height: 60, editWidth: 300, editHeight: 450 },
-  custom: { width: 150, height: 60, editWidth: 300, editHeight: 450 },
-  code: { width: 150, height: 60, editWidth: 300, editHeight: 450 },
-  draw: { width: 150, height: 60, editWidth: 300, editHeight: 450 },
+  note: {
+    width: 150,
+    height: 60,
+    editWidth: 600, // Increased width for desktop
+    editHeight: 450,
+    mobileEditWidth: 300, // Specific width for mobile
+    mobileEditHeight: 450
+  },
+  task: {
+    width: 150,
+    height: 60,
+    editWidth: 600, // Increased width for desktop
+    editHeight: 450,
+    mobileEditWidth: 300, // Specific width for mobile
+    mobileEditHeight: 450
+  },
+  custom: {
+    width: 150,
+    height: 60,
+    editWidth: 600, // Increased width for desktop
+    editHeight: 450,
+    mobileEditWidth: 300, // Specific width for mobile
+    mobileEditHeight: 450
+  },
+  code: {
+    width: 150,
+    height: 60,
+    editWidth: 600, // Increased width for desktop
+    editHeight: 450,
+    mobileEditWidth: 300, // Specific width for mobile
+    mobileEditHeight: 450
+  },
+  draw: {
+    width: 150,
+    height: 60,
+    editWidth: 600, // Increased width for desktop
+    editHeight: 450,
+    mobileEditWidth: 300, // Specific width for mobile
+    mobileEditHeight: 450
+  },
   selectionMenu: { width: 200, height: 50 }
 };
 
@@ -39,10 +76,19 @@ export const getNodeSpecificProperties = (
   };
 
   if ('editWidth' in dimensions && 'editHeight' in dimensions) {
+    const isMobile = window.innerWidth <= 768; // Adjust the breakpoint as needed
     return {
       ...baseProperties,
-      width: isEditing ? dimensions.editWidth : dimensions.width,
-      height: isEditing ? dimensions.editHeight : dimensions.height,
+      width: isEditing
+        ? isMobile
+          ? dimensions.mobileEditWidth
+          : dimensions.editWidth
+        : dimensions.width,
+      height: isEditing
+        ? isMobile
+          ? dimensions.mobileEditHeight
+          : dimensions.editHeight
+        : dimensions.height,
       isEditing: isEditing
     };
   } else {
