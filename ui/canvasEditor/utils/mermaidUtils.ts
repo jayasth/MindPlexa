@@ -80,7 +80,11 @@ const convertToReactFlowElements = (
       id: nodeId,
       type,
       position,
-      data: { title }
+      data: { title },
+      style: {
+        backgroundColor: '#F4F4F4', // Default background color
+        color: '#575757' // Default text color
+      }
     });
 
     // Store the mapping between the original ID and the nanoid ID
