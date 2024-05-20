@@ -83,23 +83,16 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         theme: 'snow',
         modules: {
           toolbar: [
-            ['bold', 'italic', 'underline', 'strike'], // toggled buttons
-            ['blockquote', 'code-block'],
-
-            [{ header: 1 }, { header: 2 }], // custom button values
+            [{ container: `#toolbar-${data.id}` }],
+            [{ font: [] }, { size: [] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ color: [] }, { background: [] }],
+            [{ script: 'sub' }, { script: 'super' }],
+            [{ header: '1' }, { header: '2' }, 'blockquote', 'code-block'],
             [{ list: 'ordered' }, { list: 'bullet' }],
-            [{ script: 'sub' }, { script: 'super' }], // superscript/subscript
-            [{ indent: '-1' }, { indent: '+1' }], // outdent/indent
-            [{ direction: 'rtl' }], // text direction
-
-            [{ size: ['small', false, 'large', 'huge'] }], // custom dropdown
-            [{ header: [1, 2, 3, 4, 5, 6, false] }],
-
-            [{ color: [] }, { background: [] }], // dropdown with defaults from theme
-            [{ font: [] }],
-            [{ align: [] }],
-
-            ['clean'] // remove formatting button
+            [{ direction: 'rtl' }],
+            ['link', 'image', 'video'],
+            ['clean']
           ]
         }
       });
@@ -131,22 +124,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
 
   useEffect(() => {
     if (quillInstance.current) {
-      const toolbar = quillRef.current?.previousSibling as HTMLElement;
-      if (toolbar) {
-        toolbar.style.backgroundColor = backgroundColor;
-        toolbar.style.color = textColor;
-        const icons = toolbar.querySelectorAll(
-          '.ql-stroke, .ql-fill, .ql-picker'
-        );
-        icons.forEach((icon) => {
-          if (icon instanceof SVGElement) {
-            icon.style.fill = '';
-            icon.style.stroke = textColor;
-          } else if (icon instanceof HTMLElement) {
-            icon.style.color = textColor;
-          }
-        });
-      }
+      updateQuillToolbarStyles(backgroundColor, textColor);
     }
   }, [backgroundColor, textColor]);
 
@@ -159,6 +137,42 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     const newTextColor = getContrastYIQ(rgbaColor);
     setTextColor(newTextColor);
     handleChangeColor(data.id, rgbaColor, setBackgroundColor);
+    updateQuillToolbarStyles(rgbaColor, newTextColor);
+  };
+
+  const updateQuillToolbarStyles = (
+    backgroundColor: string,
+    textColor: string
+  ) => {
+    const toolbar = document.querySelector(
+      `#toolbar-${data.id}`
+    ) as HTMLElement;
+    if (toolbar) {
+      toolbar.style.backgroundColor = backgroundColor;
+      toolbar.style.color = textColor;
+      const icons = toolbar.querySelectorAll(
+        '.ql-stroke, .ql-fill, .ql-picker'
+      ) as NodeListOf<HTMLElement>;
+      icons.forEach((icon) => {
+        (icon as HTMLElement).style.stroke = textColor;
+        (icon as HTMLElement).style.fill = textColor;
+        (icon as HTMLElement).style.color = textColor;
+      });
+    }
+
+    const quillToolbar = toolbar.nextElementSibling as HTMLElement;
+    if (quillToolbar) {
+      quillToolbar.style.backgroundColor = backgroundColor;
+      quillToolbar.style.color = textColor;
+      const icons = quillToolbar.querySelectorAll(
+        '.ql-stroke, .ql-fill, .ql-picker'
+      ) as NodeListOf<HTMLElement>;
+      icons.forEach((icon) => {
+        (icon as HTMLElement).style.stroke = textColor;
+        (icon as HTMLElement).style.fill = textColor;
+        (icon as HTMLElement).style.color = textColor;
+      });
+    }
   };
 
   const onAddTag = (newTag: string) => {
@@ -245,6 +259,13 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
           onClick={() => handleClose(data.id, () => {}, title, content)}
         />
       </div>
+      <div
+        id={`toolbar-${data.id}`}
+        className={`ql-toolbar nowheel nodrag`}
+        style={{
+          color: textColor
+        }}
+      />
       <div
         ref={quillRef}
         className={`${styles.noteContent} nowheel nodrag`}
