@@ -92,16 +92,19 @@
 
 .ql-toolbar {
   color: inherit;
+  background-color: inherit;
 }
 
 .ql-stroke {
   fill: none;
   stroke: inherit;
 }
+
 .ql-fill {
   fill: inherit;
   stroke: none;
 }
+
 .ql-picker {
   color: inherit;
 }

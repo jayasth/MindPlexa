@@ -132,14 +132,6 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     handleTitleChange(data.id, newTitle, setTitle);
   };
 
-  const onChangeColor = (newColor: string) => {
-    setBackgroundColor(newColor);
-    const newTextColor = getContrastYIQ(newColor);
-    setTextColor(newTextColor);
-    handleChangeColor(data.id, newColor, setBackgroundColor);
-    updateQuillToolbarStyles(newColor, newTextColor);
-  };
-
   const handleChangeComplete = (color, event) => {
     const rgbaColor = `rgba(${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b}, ${color.rgb.a})`;
     const newTextColor = getContrastYIQ(rgbaColor);
