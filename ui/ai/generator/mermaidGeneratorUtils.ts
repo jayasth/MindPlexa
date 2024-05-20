@@ -6,7 +6,7 @@ import {
   removeDoubleQuoteInsideBrackets,
   removeDoubleQuoteInsideParentheses,
   removeMarkdowncode
-} from '@/ui/canvasEditor/utils/aiCanvasUtils';
+} from '@/ui/ai/generator/aiGeneratorCanvasUtils';
 
 export async function parseMermaidCode(
   mermaidCode: string

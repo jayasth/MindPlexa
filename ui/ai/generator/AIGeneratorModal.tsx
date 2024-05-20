@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { useCompletion } from 'ai/react';
-import { parseMermaidCode } from '@/ui/canvasEditor/utils/mermaidUtils';
+import { parseMermaidCode } from '@/ui/ai/generator/mermaidGeneratorUtils';
 import { useStore } from '@/app/store/useCanvasStore';
+import Button from '@/ui/Button/Button';
+import styles from '@/ui/ai/generator/AIGeneratorModal.module.css';
 
 interface AIAssistanceModalProps {
   onClose: () => void;
@@ -51,30 +53,33 @@ const AIAssistanceModal: React.FC<AIAssistanceModalProps> = ({ onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded shadow-lg">
-        <h2 className="text-xl font-bold mb-4">Generate Mindmap</h2>
+    <div className={styles.modalOverlay}>
+      <div className={styles.modalContent}>
+        <h2 className={styles.modalHeader}>Generate Mindmap</h2>
         <form onSubmit={handleGenerateMindmap}>
           <textarea
-            className="w-full h-32 p-2 mb-4 border border-gray-300 rounded"
+            className={styles.textarea}
             placeholder="Enter a topic or idea"
             value={topic}
             onChange={handleTopicChange}
           />
-          <div className="flex justify-end">
-            <button
-              className="px-4 py-2 bg-blue-500 text-white rounded mr-2"
+          <div className={styles.buttonContainer}>
+            <Button
+              className={styles.iconButton}
               type="submit"
               disabled={isLoading}
+              variant="slim"
             >
-              {isLoading ? 'Generating...' : 'Generate'}
-            </button>
-            <button
-              className="px-4 py-2 bg-gray-300 text-gray-700 rounded"
+              {isLoading ? 'Generating' : 'Generate'}
+            </Button>
+            <Button
+              className={styles.iconButton}
+              type="button"
               onClick={onClose}
+              variant="slim"
             >
               Cancel
-            </button>
+            </Button>
           </div>
         </form>
       </div>

@@ -1,0 +1,69 @@
+.toolbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.5rem;
+  border-right: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+  transition: transform 0.3s ease-in-out;
+  background-color: rgba(255, 255, 255, 0.7);
+}
+.toolbar.open {
+  transform: translateX(0);
+}
+
+.toolbar:not(.open) {
+  transform: translateX(-100%);
+}
+
+.toggleButton {
+  background-color: #494949;
+  color: white;
+  border: none;
+  padding: 0.3rem;
+  border-radius: 2px;
+  cursor: pointer;
+  margin-bottom: 0.5rem;
+}
+
+.button {
+  background-color: transparent;
+  color: #575757;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.button:hover {
+  background-color: #e0e0e0;
+}
+
+@media (max-width: 768px) {
+  .toolbar {
+    transform: translateX(-100%);
+  }
+
+  .toolbar.open {
+    transform: translateX(0);
+  }
+}
+
+.showButton {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+  background-color: #494949;
+  color: white;
+  border: none;
+  padding: 0.3rem;
+  border-radius: 4px;
+  cursor: pointer;
+  z-index: 20; /* Ensure the button is above other elements */
+}

@@ -1,5 +1,5 @@
 import OpenAI from 'openai';
-import { promptTemplate } from '@/app/prompts/mermaildPrompt';
+import { promptTemplate } from '@/app/prompts/generatorPrompt';
 
 const openai = new OpenAI({
   apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY

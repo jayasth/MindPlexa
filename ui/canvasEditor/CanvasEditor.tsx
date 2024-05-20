@@ -14,9 +14,8 @@ import ReactFlow, {
   ReactFlowInstance,
   XYPosition
 } from 'reactflow';
-import Toolbar from './toolbar';
-import { parseMermaidCode } from '@/ui/canvasEditor/utils/mermaidUtils';
-import AIAssistanceModal from '@/ui/canvasEditor/AiAssistanceModal';
+import Toolbar from '@/ui/toolbar/Toolbar';
+import AIAssistanceModal from '@/ui/ai/generator/AIGeneratorModal';
 import {
   handleDownload,
   handleShare,
@@ -212,7 +211,7 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
   return (
     <div className="flex h-screen">
       <ReactFlowProvider>
-        <div className="w-1/12 bg-gray-100 p-2">
+        <div className="p-2">
           <Toolbar
             onUndo={() => console.log('Undo')}
             onRedo={() => console.log('Redo')}
@@ -223,7 +222,7 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
               addNode(node as any);
               reactFlowInstance.current?.fitView({ padding: 0.2 });
             }}
-            reactFlowInstance={undefined}
+            reactFlowInstance={reactFlowInstance.current}
           />
         </div>
         <div ref={reactFlowWrapper} className="w-11/12">
