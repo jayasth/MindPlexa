@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { NodeProps, Handle, Position } from 'reactflow';
 import { Node as BaseNode } from '@/ui/canvasEditor/nodeTypes';
 import NoteNode from '@/ui/nodes/noteNode/NoteNodeView';
-import NoteNodeEdit from '@/ui/nodes/noteNode/NoteNodeEdit';
+import dynamic from 'next/dynamic';
 import TaskNode from '@/ui/nodes/taskNode/TaskNodeView';
 import TaskNodeEdit from '@/ui/nodes/taskNode/TaskNodeEdit';
 import CustomNode from '@/ui/nodes/customNode/CustomNodeView';
@@ -13,6 +13,10 @@ import DrawNode from '@/ui/nodes/drawNode/DrawNodeView';
 import DrawNodeEdit from '@/ui/nodes/drawNode/DrawNodeEdit';
 import { useStore } from '@/app/store/useCanvasStore';
 import { getNodeSpecificProperties } from '@/ui/canvasEditor/utils/nodeProperties';
+
+const NoteNodeEdit = dynamic(() => import('@/ui/nodes/noteNode/NoteNodeEdit'), {
+  ssr: false
+});
 
 interface NodeRendererProps extends NodeProps {
   onNodeResizeStop: (

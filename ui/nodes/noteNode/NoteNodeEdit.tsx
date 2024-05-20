@@ -74,7 +74,11 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   const quillInstance = useRef<Quill | null>(null);
 
   useEffect(() => {
-    if (quillRef.current && !quillInstance.current) {
+    if (
+      typeof document !== 'undefined' &&
+      quillRef.current &&
+      !quillInstance.current
+    ) {
       quillInstance.current = new Quill(quillRef.current, {
         theme: 'snow',
         modules: {
@@ -176,10 +180,12 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   };
 
   useEffect(() => {
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    if (typeof document !== 'undefined') {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
   }, [colorPickerRef]);
 
   return (
@@ -214,7 +220,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
       </div>
       <div
         id={`toolbar-${data.id}`}
-        className={`${styles.quillToolbar} nowheel nodrag`}
+        className={`${styles.qlToolbar} nowheel nodrag`}
         style={{
           color: textColor
         }}

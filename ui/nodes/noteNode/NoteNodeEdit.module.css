@@ -90,12 +90,8 @@
   cursor: pointer;
 }
 
-.quillToolbar .ql-stroke {
-  stroke: var(--toolbar-color);
-}
-
-.quillToolbar .ql-fill {
-  fill: var(--toolbar-color);
+.qlToolbar {
+  background-color: var(--toolbar-color);
 }
 
 .nodrag {
