@@ -46,6 +46,7 @@
     "classnames": "^2.5.1",
     "clsx": "^2.1.0",
     "cors": "^2.8.5",
+    "dagre": "^0.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "framer-motion": "^11.0.27",

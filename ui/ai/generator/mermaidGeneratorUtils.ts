@@ -1,12 +1,52 @@
 import mermaid from 'mermaid';
 import { nanoid } from 'nanoid';
 import { Node, Edge, MarkerType } from 'reactflow';
+import dagre from 'dagre';
 import {
   extractTitleAndType,
   removeDoubleQuoteInsideBrackets,
   removeDoubleQuoteInsideParentheses,
   removeMarkdowncode
 } from '@/ui/ai/generator/aiGeneratorCanvasUtils';
+import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
+
+const applyDagreLayout = (
+  nodes: Node[],
+  edges: Edge[]
+): { nodes: Node[]; edges: Edge[] } => {
+  console.log('Nodes before layout:', nodes);
+  console.log('Edges before layout:', edges);
+
+  const g = new dagre.graphlib.Graph();
+  g.setGraph({
+    rankdir: 'TB', // Top to Bottom layout
+    align: 'UL', // Upper Left alignment
+    nodesep: 50, // Separation between nodes
+    ranksep: 100 // Separation between ranks
+  });
+  g.setDefaultEdgeLabel(() => ({}));
+
+  nodes.forEach((node) => {
+    g.setNode(node.id, { width: node.width || 100, height: node.height || 50 });
+  });
+
+  edges.forEach((edge) => {
+    g.setEdge(edge.source, edge.target);
+  });
+
+  dagre.layout(g);
+
+  const newNodes = nodes.map((node) => {
+    const dagreNode = g.node(node.id);
+    return {
+      ...node,
+      position: { x: dagreNode.x, y: dagreNode.y }
+    };
+  });
+
+  console.log('Nodes after layout:', newNodes);
+  return { nodes: newNodes, edges };
+};
 
 export async function parseMermaidCode(
   mermaidCode: string
@@ -34,7 +74,12 @@ export async function parseMermaidCode(
     };
   }
 
-  return convertToReactFlowElements(svgCode.svg);
+  const { nodes, edges } = convertToReactFlowElements(svgCode.svg);
+
+  // Apply layout
+  const layoutedElements = applyDagreLayout(nodes, edges);
+
+  return layoutedElements;
 }
 
 const convertToReactFlowElements = (
@@ -76,15 +121,20 @@ const convertToReactFlowElements = (
     // Use nanoid for node IDs
     const nodeId = `${type}-${nanoid()}`;
 
+    // Get default dimensions for note nodes
+    const { width, height } = nodeDimensions.note;
+
     nodes.push({
       id: nodeId,
-      type,
+      type: 'note',
       position,
       data: { title },
       style: {
         backgroundColor: '#F4F4F4', // Default background color
         color: '#575757' // Default text color
-      }
+      },
+      width,
+      height
     });
 
     // Store the mapping between the original ID and the nanoid ID

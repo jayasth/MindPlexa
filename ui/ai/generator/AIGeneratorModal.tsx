@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
+import { Edge, Node } from 'reactflow';
 import { useCompletion } from 'ai/react';
 import { parseMermaidCode } from '@/ui/ai/generator/mermaidGeneratorUtils';
 import { useStore } from '@/app/store/useCanvasStore';
 import Button from '@/ui/Button/Button';
+import ConfirmIntegrationModal from '@/ui/ai/generator/ConfirmIntegrationModal';
+import { findEmptySpace } from '@/ui/canvasEditor/utils/findEmptySpace';
 import styles from '@/ui/ai/generator/AIGeneratorModal.module.css';
 
 interface AIAssistanceModalProps {
@@ -11,12 +14,16 @@ interface AIAssistanceModalProps {
 
 const AIAssistanceModal: React.FC<AIAssistanceModalProps> = ({ onClose }) => {
   const [topic, setTopic] = useState('');
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [generatedNodes, setGeneratedNodes] = useState<Node[]>([]);
+  const [generatedEdges, setGeneratedEdges] = useState<Edge[]>([]);
   const { completion, input, handleInputChange, handleSubmit, isLoading } =
     useCompletion();
 
-  const { setNodes, setEdges } = useStore((state) => ({
+  const { setNodes, setEdges, nodes } = useStore((state) => ({
     setNodes: state.setNodes,
-    setEdges: state.setEdges
+    setEdges: state.setEdges,
+    nodes: state.nodes
   }));
 
   const handleTopicChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -43,46 +50,76 @@ const AIAssistanceModal: React.FC<AIAssistanceModalProps> = ({ onClose }) => {
       const data = await response.json();
       console.log('Response data:', data);
       const { nodes, edges } = await parseMermaidCode(data.mermaidCode);
-      setNodes((currentNodes) => [...currentNodes, ...nodes]);
-      setEdges((currentEdges) => [...currentEdges, ...edges]);
-      onClose();
+      setGeneratedNodes(nodes);
+      setGeneratedEdges(edges);
+      setShowConfirmModal(true);
     } catch (error) {
       console.error('Error generating mindmap:', error);
       // Handle error state
     }
   };
 
+  const handleConfirmIntegration = () => {
+    const canvasSize = { width: window.innerWidth, height: window.innerHeight };
+    const emptySpace = findEmptySpace(nodes, canvasSize);
+
+    const offsetNodes = generatedNodes.map((node) => ({
+      ...node,
+      position: {
+        x: node.position.x + emptySpace.x,
+        y: node.position.y + emptySpace.y
+      }
+    }));
+
+    setNodes((currentNodes) => [...currentNodes, ...offsetNodes]);
+    setEdges((currentEdges) => [...currentEdges, ...generatedEdges]);
+    setShowConfirmModal(false);
+    onClose();
+  };
+
+  const handleCancelIntegration = () => {
+    setShowConfirmModal(false);
+  };
+
   return (
     <div className={styles.modalOverlay}>
-      <div className={styles.modalContent}>
-        <h2 className={styles.modalHeader}>Generate Mindmap</h2>
-        <form onSubmit={handleGenerateMindmap}>
-          <textarea
-            className={styles.textarea}
-            placeholder="Enter a topic or idea"
-            value={topic}
-            onChange={handleTopicChange}
-          />
-          <div className={styles.buttonContainer}>
-            <Button
-              className={styles.iconButton}
-              type="submit"
-              disabled={isLoading}
-              variant="slim"
-            >
-              {isLoading ? 'Generating' : 'Generate'}
-            </Button>
-            <Button
-              className={styles.iconButton}
-              type="button"
-              onClick={onClose}
-              variant="slim"
-            >
-              Cancel
-            </Button>
-          </div>
-        </form>
-      </div>
+      {!showConfirmModal && (
+        <div className={styles.modalContent}>
+          <h2 className={styles.modalHeader}>Generate Mindmap</h2>
+          <form onSubmit={handleGenerateMindmap}>
+            <textarea
+              className={styles.textarea}
+              placeholder="Enter a topic or idea"
+              value={topic}
+              onChange={handleTopicChange}
+            />
+            <div className={styles.buttonContainer}>
+              <Button
+                className={styles.iconButton}
+                type="submit"
+                disabled={isLoading}
+                variant="slim"
+              >
+                {isLoading ? 'Generating' : 'Generate'}
+              </Button>
+              <Button
+                className={styles.iconButton}
+                type="button"
+                onClick={onClose}
+                variant="slim"
+              >
+                Cancel
+              </Button>
+            </div>
+          </form>
+        </div>
+      )}
+      {showConfirmModal && (
+        <ConfirmIntegrationModal
+          onConfirm={handleConfirmIntegration}
+          onCancel={handleCancelIntegration}
+        />
+      )}
     </div>
   );
 };
