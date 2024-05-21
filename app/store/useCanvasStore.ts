@@ -67,7 +67,20 @@ export const useStore = createStore<CanvasState>((set, get) => ({
   menuPosition: null,
   setNodes: (updater) => {
     console.log('Store: Setting nodes with updater:', updater);
-    set((state) => ({ nodes: updater(state.nodes) }));
+    set((state) => {
+      const updatedNodes = updater(state.nodes);
+      state.nodeInternals.clear();
+      updatedNodes.forEach((node) => {
+        state.nodeInternals.set(node.id, node);
+        if (node.position) {
+          console.log(
+            `Store: Node ${node.id} position updated to`,
+            node.position
+          );
+        }
+      });
+      return { nodes: updatedNodes };
+    });
   },
   setEdges: (updater) => {
     console.log('Store: Setting edges with updater:', updater);

@@ -3,5 +3,5 @@ export const promptTemplate = (userInput: string) => {
 Use the following format for each node: "NodeID[NodeTitle]". 
 Ensure the output is valid Mermaid syntax and does not include any special characters or double quotes within the node titles.
 All nodes should have the default type "note".
-Ensure the diagram is well-structured and balanced.`;
+Ensure the diagram is well-structured, well branched depending on the input topic and well balanced.`;
 };

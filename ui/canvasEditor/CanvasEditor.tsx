@@ -39,6 +39,10 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const reactFlowInstance = useRef<ReactFlowInstance | null>(null);
   const [showAIAssistanceModal, setShowAIAssistanceModal] = useState(false);
+  const [canvasSize, setCanvasSize] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight
+  });
 
   const { onConnectStart, onConnectEnd, parentNode, childNodePosition } =
     useEdgeConnection();
@@ -78,12 +82,38 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
     }
   }, [initialCanvas, setNodes, setEdges]);
 
+  useEffect(() => {
+    const updateCanvasSize = () => {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      setCanvasSize({ width, height });
+    };
+
+    window.addEventListener('resize', updateCanvasSize);
+    updateCanvasSize();
+
+    return () => window.removeEventListener('resize', updateCanvasSize);
+  }, []);
+
   const handleOpenAIAssistanceModal = () => {
     setShowAIAssistanceModal(true);
   };
 
   const handleCloseAIAssistanceModal = () => {
     setShowAIAssistanceModal(false);
+  };
+
+  const handleAddNode = (node) => {
+    addNode(node);
+    setTimeout(() => {
+      reactFlowInstance.current?.fitView({
+        padding: 0.2,
+        includeHiddenNodes: false
+      });
+      reactFlowInstance.current?.setCenter(node.position.x, node.position.y, {
+        duration: 500
+      });
+    }, 100);
   };
 
   const edgeTypes = useMemo(
@@ -218,14 +248,15 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
             onShare={() => handleShare({ nodes, edges })}
             onDownload={() => handleDownload({ nodes, edges })}
             onGenerateMindmap={handleOpenAIAssistanceModal}
-            addNode={(node: Node) => {
-              addNode(node as any);
-              reactFlowInstance.current?.fitView({ padding: 0.2 });
-            }}
+            addNode={handleAddNode}
             reactFlowInstance={reactFlowInstance.current}
           />
         </div>
-        <div ref={reactFlowWrapper} className="w-11/12">
+        <div
+          ref={reactFlowWrapper}
+          className="w-11/12"
+          style={{ width: canvasSize.width, height: canvasSize.height }}
+        >
           <ReactFlow
             nodes={nodes}
             edges={edges}
