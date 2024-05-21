@@ -20,6 +20,8 @@ import { PiNotepad } from 'react-icons/pi';
 import Link from 'next/link';
 import { useStore } from '@/app/store/useCanvasStore';
 import { createNode } from '@/ui/canvasEditor/utils/nodeCreation';
+import { findOptimalPosition } from '@/ui/canvasEditor/utils/positioningUtils';
+import { getNodeSpecificProperties } from '@/ui/canvasEditor/utils/nodeProperties';
 import styles from './Toolbar.module.css';
 
 interface ToolbarProps {
@@ -53,13 +55,8 @@ const Toolbar: React.FC<ToolbarProps> = ({
         height: window.innerHeight
       };
 
-      const position = {
-        x: canvasSize.width / 2 - 50,
-        y: canvasSize.height / 2 - 75
-      };
-
-      const temporaryNodeId =
-        type === 'selectionMenu' ? `selectionMenu-${nanoid()}` : undefined;
+      const position = findOptimalPosition(nodes, canvasSize);
+      const nodeProps = getNodeSpecificProperties(type, false);
 
       createNode(
         type,
@@ -67,16 +64,14 @@ const Toolbar: React.FC<ToolbarProps> = ({
         nodes,
         (node) => {
           addNode(node);
-          if (reactFlowInstance) {
-            const { x, y, zoom } = reactFlowInstance.getViewport();
-            reactFlowInstance.setViewport({
-              x: node.position.x - x,
-              y: node.position.y - y,
-              zoom
+          if (reactFlowInstance && nodes.length === 0) {
+            // Only center if it's the first node
+            reactFlowInstance.setCenter(node.position.x, node.position.y, {
+              zoom: 1
             });
           }
         },
-        canvasSize
+        nodeProps
       );
     } catch (error) {
       console.error(`Failed to add node of type ${type}:`, error);

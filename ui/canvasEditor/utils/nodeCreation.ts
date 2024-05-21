@@ -1,6 +1,7 @@
 import { Node, XYPosition } from 'reactflow';
 import { getNodeSpecificProperties, nodeDimensions } from './nodeProperties';
 import { nanoid } from 'nanoid';
+import { findOptimalPosition } from './positioningUtils';
 
 const setPosition = (x: number, y: number): XYPosition => {
   return { x, y };
@@ -10,24 +11,7 @@ function findNewPosition(
   nodes: Node<any>[],
   canvasSize: { width: number; height: number }
 ): XYPosition {
-  if (nodes.length === 0) {
-    return { x: canvasSize.width / 2, y: canvasSize.height / 2 };
-  }
-
-  const lastNode = nodes[nodes.length - 1];
-  const newPosition = {
-    x: lastNode.position.x + 50,
-    y: lastNode.position.y + 50
-  };
-
-  if (newPosition.x + 100 > canvasSize.width) {
-    newPosition.x = 50;
-  }
-  if (newPosition.y + 100 > canvasSize.height) {
-    newPosition.y = 50;
-  }
-
-  return newPosition;
+  return findOptimalPosition(nodes, canvasSize);
 }
 
 export const createNode = (

@@ -5,7 +5,7 @@ import { parseMermaidCode } from '@/ui/ai/generator/mermaidGeneratorUtils';
 import { useStore } from '@/app/store/useCanvasStore';
 import Button from '@/ui/Button/Button';
 import ConfirmIntegrationModal from '@/ui/ai/generator/ConfirmIntegrationModal';
-import { findEmptySpace } from '@/ui/canvasEditor/utils/findEmptySpace';
+import { findOptimalPosition } from '@/ui/canvasEditor/utils/positioningUtils'; // Updated import
 import styles from '@/ui/ai/generator/AIGeneratorModal.module.css';
 
 interface AIAssistanceModalProps {
@@ -20,10 +20,9 @@ const AIAssistanceModal: React.FC<AIAssistanceModalProps> = ({ onClose }) => {
   const { completion, input, handleInputChange, handleSubmit, isLoading } =
     useCompletion();
 
-  const { setNodes, setEdges, nodes } = useStore((state) => ({
+  const { setNodes, setEdges } = useStore((state) => ({
     setNodes: state.setNodes,
-    setEdges: state.setEdges,
-    nodes: state.nodes
+    setEdges: state.setEdges
   }));
 
   const handleTopicChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -49,30 +48,44 @@ const AIAssistanceModal: React.FC<AIAssistanceModalProps> = ({ onClose }) => {
 
       const data = await response.json();
       console.log('Response data:', data);
-      const { nodes, edges } = await parseMermaidCode(data.mermaidCode);
-      setGeneratedNodes(nodes);
-      setGeneratedEdges(edges);
-      setShowConfirmModal(true);
+      const { nodes: newNodes, edges: newEdges } = await parseMermaidCode(
+        data.mermaidCode
+      );
+
+      // Check if there are existing nodes on the canvas before setting new nodes
+      const existingNodes = useStore.getState().nodes;
+
+      if (existingNodes.length > 0) {
+        setGeneratedNodes(newNodes);
+        setGeneratedEdges(newEdges);
+        setShowConfirmModal(true);
+      } else {
+        // Directly integrate the generated nodes and edges if the canvas is empty
+        handleConfirmIntegration(newNodes, newEdges);
+      }
     } catch (error) {
       console.error('Error generating mindmap:', error);
       // Handle error state
     }
   };
 
-  const handleConfirmIntegration = () => {
+  const handleConfirmIntegration = (newNodes, newEdges) => {
     const canvasSize = { width: window.innerWidth, height: window.innerHeight };
-    const emptySpace = findEmptySpace(nodes, canvasSize);
+    const optimalPosition = findOptimalPosition(
+      useStore.getState().nodes,
+      canvasSize
+    ); // Updated function call
 
-    const offsetNodes = generatedNodes.map((node) => ({
+    const offsetNodes = newNodes.map((node) => ({
       ...node,
       position: {
-        x: node.position.x + emptySpace.x,
-        y: node.position.y + emptySpace.y
+        x: node.position.x + optimalPosition.x,
+        y: node.position.y + optimalPosition.y
       }
     }));
 
     setNodes((currentNodes) => [...currentNodes, ...offsetNodes]);
-    setEdges((currentEdges) => [...currentEdges, ...generatedEdges]);
+    setEdges((currentEdges) => [...currentEdges, ...newEdges]);
     setShowConfirmModal(false);
     onClose();
   };
@@ -116,7 +129,9 @@ const AIAssistanceModal: React.FC<AIAssistanceModalProps> = ({ onClose }) => {
       )}
       {showConfirmModal && (
         <ConfirmIntegrationModal
-          onConfirm={handleConfirmIntegration}
+          onConfirm={() =>
+            handleConfirmIntegration(generatedNodes, generatedEdges)
+          }
           onCancel={handleCancelIntegration}
         />
       )}

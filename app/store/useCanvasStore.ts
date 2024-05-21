@@ -6,6 +6,7 @@ import {
 } from '@/ui/canvasEditor/utils/canvasUtils';
 import { createNode } from '@/ui/canvasEditor/utils/nodeCreation';
 import { getChildNodePosition } from '@/ui/canvasEditor/utils/getChildNodePosition';
+import { findOptimalPosition } from '@/ui/canvasEditor/utils/positioningUtils';
 import { nanoid } from 'nanoid';
 import type { Node, Edge, XYPosition } from 'reactflow';
 import {
@@ -103,6 +104,11 @@ export const useStore = createStore<CanvasState>((set, get) => ({
     };
     console.log('Store: New node with position and dimensions:', newNode);
     set((state) => {
+      const canvasSize = {
+        width: state.domNode?.clientWidth || 1000,
+        height: state.domNode?.clientHeight || 800
+      };
+      newNode.position = findOptimalPosition(state.nodes, canvasSize);
       state.nodeInternals.set(newNode.id, newNode);
       return { nodes: [...state.nodes, newNode] };
     });
