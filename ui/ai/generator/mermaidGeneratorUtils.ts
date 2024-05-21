@@ -91,13 +91,12 @@ const convertToReactFlowElements = (
   const dummyDiv = document.createElement('div');
   dummyDiv.innerHTML = svgCode;
 
-  // Select nodes and edges from the SVG
   const mermaidNodes = Array.from(dummyDiv.querySelectorAll('.node'));
   const mermaidEdges = Array.from(dummyDiv.querySelectorAll('.edgePaths path'));
 
   const nodes: Node[] = [];
   const edges: Edge[] = [];
-  const idMap = new Map<string, string>(); // Map to store the mapping between original IDs and nanoid IDs
+  const idMap = new Map<string, string>();
 
   mermaidNodes.forEach((node, index) => {
     const elId = node.getAttribute('id') || `n${index}`;
@@ -118,30 +117,25 @@ const convertToReactFlowElements = (
       y: parseFloat(node.getAttribute('transform')!.split(',')[1]) * 1.2
     };
 
-    // Use nanoid for node IDs
     const nodeId = `${type}-${nanoid()}`;
-
-    // Get default dimensions for note nodes
     const { width, height } = nodeDimensions.note;
 
     nodes.push({
       id: nodeId,
       type: 'note',
       position,
-      data: { title },
+      data: { title, content: 'Generated description here' }, // Placeholder for description
       style: {
-        backgroundColor: '#F4F4F4', // Default background color
-        color: '#575757' // Default text color
+        backgroundColor: '#F4F4F4',
+        color: '#575757'
       },
       width,
       height
     });
 
-    // Store the mapping between the original ID and the nanoid ID
     idMap.set(id, nodeId);
   });
 
-  // Convert edges to React-Flow elements
   mermaidEdges.forEach((edge, index) => {
     const id = edge.getAttribute('id') || `e${index}`;
     const originalSource = edge

@@ -10,16 +10,18 @@ export async function POST(req: Request) {
   console.log('Prompt sent to OpenAI:', prompt);
 
   try {
-    const response = await openai.completions.create({
-      model: 'gpt-3.5-turbo-instruct',
+    const response = await openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
       temperature: 0.1,
-      max_tokens: 4000,
-      prompt: promptTemplate(prompt)
+      messages: [{ role: 'user', content: promptTemplate(prompt) }]
     });
 
-    console.log('Complete response from OpenAI:', response.choices[0].text);
+    console.log(
+      'Complete response from OpenAI:',
+      response.choices[0].message.content
+    );
     return new Response(
-      JSON.stringify({ mermaidCode: response.choices[0].text }),
+      JSON.stringify({ mermaidCode: response.choices[0].message.content }),
       {
         headers: { 'Content-Type': 'application/json' }
       }
