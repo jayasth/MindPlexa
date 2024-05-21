@@ -185,7 +185,7 @@ export const handleDuplicate = (id: string) => {
 
     const newNode = {
       ...nodeToDuplicate,
-      id: nanoid(),
+      id: `${nodeToDuplicate.type}-${nanoid()}`,
       position: newPosition
     };
     addNode(newNode);

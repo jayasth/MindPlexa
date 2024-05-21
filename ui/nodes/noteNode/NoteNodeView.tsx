@@ -45,7 +45,7 @@ const NoteNodeView: React.FC<NoteNodeViewProps> = ({ data, width, height }) => {
         <div
           className={styles.editButton}
           style={{ color: textColor }}
-          onClick={() => toggleEditMode(id)}
+          onClick={() => toggleEditMode(data.id)}
         >
           <FaEdit />
         </div>
