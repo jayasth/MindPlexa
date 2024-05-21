@@ -183,10 +183,16 @@ export const handleDuplicate = (id: string) => {
       return;
     }
 
+    // Deep clone the data object and update the id
+    const newData = JSON.parse(JSON.stringify(nodeToDuplicate.data));
+    const newId = `${nodeToDuplicate.type}-${nanoid()}`;
+    newData.id = newId;
+
     const newNode = {
       ...nodeToDuplicate,
-      id: `${nodeToDuplicate.type}-${nanoid()}`,
-      position: newPosition
+      id: newId,
+      position: newPosition,
+      data: newData
     };
     addNode(newNode);
     setNodes((prevNodes) => [...prevNodes, newNode]);
