@@ -1,4 +1,6 @@
 import { useStore } from '@/app/store/useCanvasStore';
+import { nanoid } from 'nanoid';
+import { nodeDimensions, getNodeSpecificProperties } from './nodeProperties';
 
 export const getContrastYIQ = (color: string) => {
   let r, g, b;
@@ -129,18 +131,65 @@ export const handleAttachFile = (
 };
 
 export const handleDuplicate = (id: string) => {
-  // New duplicate functionality
-  const { nodes, addNode } = useStore.getState();
+  const { nodes, addNode, setNodes, setSelectedNodes } = useStore.getState();
   const nodeToDuplicate = nodes.find((node) => node.id === id);
   if (nodeToDuplicate) {
+    const nodeDimension =
+      nodeDimensions[nodeToDuplicate.type as keyof typeof nodeDimensions];
+    const isEditing = nodeToDuplicate.data.isEditing;
+    const nodeWidth =
+      isEditing && 'editWidth' in nodeDimension
+        ? nodeDimension.editWidth
+        : nodeToDuplicate.width;
+    const nodeHeight =
+      isEditing && 'editHeight' in nodeDimension
+        ? nodeDimension.editHeight
+        : nodeToDuplicate.height;
+
+    // Calculate a new position near the original node
+    let newPosition = {
+      x: nodeToDuplicate.position.x + (nodeWidth || 0) / 2 - 50,
+      y: nodeToDuplicate.position.y + (nodeHeight || 0) + 50
+    };
+
+    // Ensure the new position does not overlap with existing nodes
+    let attempts = 0;
+    const maxAttempts = 100;
+    const padding = 20; // Additional padding to avoid overlap
+
+    while (
+      nodes.some((node) => {
+        const nodeSize =
+          nodeDimensions[node.type as keyof typeof nodeDimensions];
+        return (
+          Math.abs(node.position.x - newPosition.x) <
+            nodeSize.width + padding &&
+          Math.abs(node.position.y - newPosition.y) < nodeSize.height + padding
+        );
+      }) &&
+      attempts < maxAttempts
+    ) {
+      newPosition = {
+        x: newPosition.x + padding,
+        y: newPosition.y + padding
+      };
+      attempts++;
+    }
+
+    if (attempts >= maxAttempts) {
+      console.error(
+        'Failed to find optimal position for duplicate node: Canvas might be too crowded.'
+      );
+      return;
+    }
+
     const newNode = {
       ...nodeToDuplicate,
-      id: `${id}-copy`,
-      position: {
-        x: nodeToDuplicate.position.x + 20,
-        y: nodeToDuplicate.position.y + 20
-      }
+      id: nanoid(),
+      position: newPosition
     };
     addNode(newNode);
+    setNodes((prevNodes) => [...prevNodes, newNode]);
+    setSelectedNodes([newNode.id]);
   }
 };
