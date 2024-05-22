@@ -46,7 +46,7 @@ export const handleClose = (
   nodeId: string,
   onClose: () => void,
   title: string,
-  content: string
+  content: any
 ) => {
   const { updateNode, toggleEditMode } = useStore.getState();
   updateNode(nodeId, { data: { title, content } });

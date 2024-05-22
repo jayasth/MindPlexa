@@ -1,7 +1,6 @@
 .taskNode {
   display: flex;
   flex-direction: column;
-  background-color: #f8f8f8;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   border-radius: 4px;
   padding: 4px;
@@ -13,6 +12,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 4px;
+  background-color: transparent;
 }
 
 .title {
@@ -21,33 +21,42 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  color: inherit;
 }
 
 .editButton {
   cursor: pointer;
-  color: #888;
+  color: inherit;
 }
 
 .editButton:hover {
   color: #333;
 }
 
-.contentPreview {
+.taskList {
   flex-grow: 1;
-  overflow: hidden;
+  overflow: auto;
   padding: 4px;
   font-size: 12px;
   white-space: pre-wrap;
   word-wrap: break-word;
   max-height: 100px;
+  background-color: transparent;
+  border: 1px solid #ccc;
+  color: inherit;
 }
 
 .taskItem {
   display: flex;
   align-items: center;
+  padding: 2px 0;
 }
 
-.completedTask {
-  text-decoration: line-through;
+.taskItem input {
+  margin-right: 8px;
+}
+
+.noTasks {
   color: #888;
+  font-style: italic;
 }
