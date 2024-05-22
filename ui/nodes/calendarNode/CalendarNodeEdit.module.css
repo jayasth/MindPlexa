@@ -7,6 +7,8 @@
   overflow: hidden;
   height: 100%;
   cursor: move;
+  background-color: var(--background-color, #f4f4f4);
+  color: var(--text-color, #575757);
 }
 
 .header {
@@ -20,7 +22,7 @@
 }
 
 .titleInput {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: bold;
   border: none;
   background-color: transparent;
