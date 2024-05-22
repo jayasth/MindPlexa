@@ -24,6 +24,8 @@ import {
   handleDuplicate,
   getContrastYIQ
 } from '@/ui/canvasEditor/utils/CommonNodeFunctions';
+import DrawingToolbar from './DrawingToolbar';
+import { startDrawing, draw, stopDrawing } from './drawFunctions';
 
 interface DrawNodeEditProps extends NodeProps {
   data: {
@@ -145,41 +147,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     }
   }, [colorPickerRef]);
 
-  const startDrawing = (e) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    ctx.beginPath();
-    ctx.moveTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
-    setContent([
-      ...content,
-      { type: 'start', x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY }
-    ]);
-  };
-
-  const draw = (e) => {
-    if (e.buttons !== 1) return;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    ctx.lineTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
-    ctx.stroke();
-    setContent([
-      ...content,
-      { type: 'draw', x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY }
-    ]);
-  };
-
-  const stopDrawing = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    ctx.closePath();
-  };
-
   // Define custom CSS properties
   const customStyles: CSSProperties = {
     width: nodeWidth,
@@ -213,14 +180,20 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
           onClick={() => handleClose(data.id, () => {}, title, content)}
         />
       </div>
+      <DrawingToolbar
+        onPencilClick={() => console.log('Pencil clicked')}
+        onEraserClick={() => console.log('Eraser clicked')}
+        onUndoClick={() => console.log('Undo clicked')}
+        onRedoClick={() => console.log('Redo clicked')}
+      />
       <div className={styles.canvasContainer}>
         <canvas
           ref={canvasRef}
           width={nodeWidth}
           height={nodeHeight - 100}
-          onMouseDown={startDrawing}
-          onMouseMove={draw}
-          onMouseUp={stopDrawing}
+          onMouseDown={(e) => startDrawing(e, canvasRef, setContent)}
+          onMouseMove={(e) => draw(e, canvasRef, setContent)}
+          onMouseUp={() => stopDrawing(canvasRef)}
           className="nodrag nowheel"
         />
       </div>
