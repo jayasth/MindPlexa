@@ -1,6 +1,6 @@
 import { useStore } from '@/app/store/useCanvasStore';
 import { nanoid } from 'nanoid';
-import { nodeDimensions, getNodeSpecificProperties } from './nodeProperties';
+import { nodeDimensions } from './nodeProperties';
 
 export const getContrastYIQ = (color: string) => {
   let r, g, b;
@@ -131,7 +131,7 @@ export const handleAttachFile = (
 };
 
 export const handleDuplicate = (id: string) => {
-  const { nodes, addNode, setNodes, setSelectedNodes } = useStore.getState();
+  const { nodes, addNode, setSelectedNodes } = useStore.getState();
   const nodeToDuplicate = nodes.find((node) => node.id === id);
   if (nodeToDuplicate) {
     const nodeDimension =
@@ -183,8 +183,8 @@ export const handleDuplicate = (id: string) => {
       return;
     }
 
-    // Deep clone the data object and update the id
     const newData = JSON.parse(JSON.stringify(nodeToDuplicate.data));
+
     const newId = `${nodeToDuplicate.type}-${nanoid()}`;
     newData.id = newId;
 
@@ -195,7 +195,6 @@ export const handleDuplicate = (id: string) => {
       data: newData
     };
     addNode(newNode);
-    setNodes((prevNodes) => [...prevNodes, newNode]);
     setSelectedNodes([newNode.id]);
   }
 };
