@@ -25,13 +25,13 @@ export interface TaskNode extends Node {
   completed: boolean | null;
 }
 
-export interface CustomNode extends Node {
+export interface TableNode extends Node {
   title: string;
   data: Json | null;
 }
 
-export interface CodeNode extends Node {
-  code: string | null;
+export interface CalendarNode extends Node {
+  date: string | null;
   language: string | null;
 }
 

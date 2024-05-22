@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { NodeProps, Handle, Position } from 'reactflow';
 import { useStore } from '@/app/store/useCanvasStore';
-import styles from './DrawNodeView.module.css';
+import styles from './CalendarNodeView.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 import { FaEdit } from 'react-icons/fa';
 import { getContrastYIQ } from '@/ui/canvasEditor/utils/CommonNodeFunctions';
 
-interface DrawNodeViewProps extends NodeProps {
+interface CalendarNodeViewProps extends NodeProps {
   data: {
     id: string;
     title?: string;
-    content?: string;
+    events?: any[];
     backgroundColor?: string;
     textColor?: string;
   };
@@ -18,8 +18,12 @@ interface DrawNodeViewProps extends NodeProps {
   height: number;
 }
 
-const DrawNodeView: React.FC<DrawNodeViewProps> = ({ data, width, height }) => {
-  const { title, content, id, backgroundColor } = data;
+const CalendarNodeView: React.FC<CalendarNodeViewProps> = ({
+  data,
+  width,
+  height
+}) => {
+  const { title, events, id, backgroundColor } = data;
   const toggleEditMode = useStore((state) => state.toggleEditMode);
   const updateNode = useStore((state) => state.updateNode);
 
@@ -37,10 +41,13 @@ const DrawNodeView: React.FC<DrawNodeViewProps> = ({ data, width, height }) => {
   }, [backgroundColor, textColor, id, updateNode, data]);
 
   return (
-    <div className={styles.drawNode} style={{ width, height, backgroundColor }}>
+    <div
+      className={styles.calendarNode}
+      style={{ width, height, backgroundColor }}
+    >
       <div className={styles.header}>
         <div className={styles.title} style={{ color: textColor }}>
-          {title || 'Untitled Draw'}
+          {title || 'Untitled Calendar'}
         </div>
         <div
           className={styles.editButton}
@@ -51,11 +58,15 @@ const DrawNodeView: React.FC<DrawNodeViewProps> = ({ data, width, height }) => {
         </div>
       </div>
       <div className={styles.contentPreview} style={{ color: textColor }}>
-        {content ? (
-          <img src={content} alt="Drawing" className={styles.previewImage} />
+        {events && events.length > 0 ? (
+          <ul>
+            {events.map((event, index) => (
+              <li key={index}>{event.title}</li>
+            ))}
+          </ul>
         ) : (
           <span className={styles.noContent} style={{ color: textColor }}>
-            No content available
+            No events available
           </span>
         )}
       </div>
@@ -73,4 +84,4 @@ const DrawNodeView: React.FC<DrawNodeViewProps> = ({ data, width, height }) => {
   );
 };
 
-export default DrawNodeView;
+export default CalendarNodeView;

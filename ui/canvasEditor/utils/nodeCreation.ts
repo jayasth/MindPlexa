@@ -15,7 +15,7 @@ function findNewPosition(
 }
 
 export const createNode = (
-  nodeType: 'note' | 'task' | 'custom' | 'code' | 'draw' | 'selectionMenu',
+  nodeType: 'note' | 'task' | 'table' | 'calendar' | 'draw' | 'selectionMenu',
   position: XYPosition,
   nodes: Node<any>[],
   callback: (newNode: Node<any>) => void,

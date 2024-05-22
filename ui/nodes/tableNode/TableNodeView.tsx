@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { NodeProps, Handle, Position } from 'reactflow';
 import { useStore } from '@/app/store/useCanvasStore';
-import styles from './DrawNodeView.module.css';
+import styles from './TableNodeView.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 import { FaEdit } from 'react-icons/fa';
 import { getContrastYIQ } from '@/ui/canvasEditor/utils/CommonNodeFunctions';
 
-interface DrawNodeViewProps extends NodeProps {
+interface TableNodeViewProps extends NodeProps {
   data: {
     id: string;
     title?: string;
-    content?: string;
+    content?: any;
     backgroundColor?: string;
     textColor?: string;
   };
@@ -18,7 +18,11 @@ interface DrawNodeViewProps extends NodeProps {
   height: number;
 }
 
-const DrawNodeView: React.FC<DrawNodeViewProps> = ({ data, width, height }) => {
+const TableNodeView: React.FC<TableNodeViewProps> = ({
+  data,
+  width,
+  height
+}) => {
   const { title, content, id, backgroundColor } = data;
   const toggleEditMode = useStore((state) => state.toggleEditMode);
   const updateNode = useStore((state) => state.updateNode);
@@ -27,7 +31,6 @@ const DrawNodeView: React.FC<DrawNodeViewProps> = ({ data, width, height }) => {
     data.textColor || getContrastYIQ(backgroundColor || '#F4F4F4')
   );
 
-  // Ensure text color is updated based on the latest background color
   useEffect(() => {
     const newTextColor = getContrastYIQ(backgroundColor || '#F4F4F4');
     if (textColor !== newTextColor) {
@@ -37,10 +40,13 @@ const DrawNodeView: React.FC<DrawNodeViewProps> = ({ data, width, height }) => {
   }, [backgroundColor, textColor, id, updateNode, data]);
 
   return (
-    <div className={styles.drawNode} style={{ width, height, backgroundColor }}>
+    <div
+      className={styles.tableNode}
+      style={{ width, height, backgroundColor }}
+    >
       <div className={styles.header}>
         <div className={styles.title} style={{ color: textColor }}>
-          {title || 'Untitled Draw'}
+          {title || 'Untitled Table'}
         </div>
         <div
           className={styles.editButton}
@@ -51,8 +57,26 @@ const DrawNodeView: React.FC<DrawNodeViewProps> = ({ data, width, height }) => {
         </div>
       </div>
       <div className={styles.contentPreview} style={{ color: textColor }}>
+        {/* Render a simple table preview */}
         {content ? (
-          <img src={content} alt="Drawing" className={styles.previewImage} />
+          <table>
+            <thead>
+              <tr>
+                {content.columns.map((col, index) => (
+                  <th key={index}>{col.headerName}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {content.rows.map((row, rowIndex) => (
+                <tr key={rowIndex}>
+                  {content.columns.map((col, colIndex) => (
+                    <td key={colIndex}>{row[col.field]}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
         ) : (
           <span className={styles.noContent} style={{ color: textColor }}>
             No content available
@@ -73,4 +97,4 @@ const DrawNodeView: React.FC<DrawNodeViewProps> = ({ data, width, height }) => {
   );
 };
 
-export default DrawNodeView;
+export default TableNodeView;

@@ -11,7 +11,7 @@ interface EditableNodeDimension extends BaseNodeDimension {
 }
 
 type NodeDimensionTypes = {
-  [K in 'note' | 'task' | 'custom' | 'code' | 'draw']: EditableNodeDimension;
+  [K in 'note' | 'task' | 'table' | 'calendar' | 'draw']: EditableNodeDimension;
 } & {
   [K in 'selectionMenu']: BaseNodeDimension;
 };
@@ -33,7 +33,7 @@ export const nodeDimensions: NodeDimensionTypes = {
     mobileEditWidth: 300, // Specific width for mobile
     mobileEditHeight: 450
   },
-  custom: {
+  table: {
     width: 150,
     height: 60,
     editWidth: 600, // Increased width for desktop
@@ -41,7 +41,7 @@ export const nodeDimensions: NodeDimensionTypes = {
     mobileEditWidth: 300, // Specific width for mobile
     mobileEditHeight: 450
   },
-  code: {
+  calendar: {
     width: 150,
     height: 60,
     editWidth: 600, // Increased width for desktop

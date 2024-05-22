@@ -1,4 +1,4 @@
-.drawNode {
+.tableNode {
   display: flex;
   flex-direction: column;
   border-radius: 4px;
@@ -50,7 +50,7 @@
   display: none;
 }
 
-.drawContent {
+.tableContent {
   flex-grow: 1;
   overflow: auto;
   background-color: transparent;
@@ -58,7 +58,7 @@
   outline: none;
   padding: 8px;
   z-index: 0;
-  cursor: crosshair;
+  cursor: text;
 }
 
 .tagContainer {
@@ -87,25 +87,6 @@
   left: 0;
   z-index: 10;
   cursor: pointer;
-}
-
-.ql-toolbar {
-  color: inherit;
-  background-color: inherit;
-}
-
-.ql-stroke {
-  fill: none;
-  stroke: inherit;
-}
-
-.ql-fill {
-  fill: inherit;
-  stroke: none;
-}
-
-.ql-picker {
-  color: inherit;
 }
 
 .nodrag {

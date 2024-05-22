@@ -1,12 +1,12 @@
-.customNode {
+.calendarNode {
   display: flex;
   flex-direction: column;
-  background-color: #f8f8f8;
   border-radius: 4px;
   padding: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   height: 100%;
+  cursor: move;
 }
 
 .header {
@@ -14,8 +14,9 @@
   align-items: center;
   justify-content: space-between;
   padding: 8px 12px;
-  background-color: #f1f1f1;
+  background-color: transparent;
   z-index: 0;
+  cursor: move;
 }
 
 .titleInput {
@@ -25,36 +26,15 @@
   background-color: transparent;
   outline: none;
   flex-grow: 1;
-}
-
-.formBuilder {
-  flex-grow: 1;
-  overflow: auto;
-  background-color: transparent;
-  border: 1px solid #ccc;
-  outline: none;
-  padding: 8px;
-  z-index: 0;
-}
-
-.formField {
-  display: flex;
-  align-items: center;
-  margin-bottom: 4px;
-}
-
-.addFormFieldButton {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #007bff;
-  margin-top: 8px;
+  cursor: text;
+  color: inherit;
 }
 
 .footer {
   display: flex;
   justify-content: space-between;
   margin-top: 8px;
+  background-color: transparent;
 }
 
 .actionButton {
@@ -63,10 +43,23 @@
   cursor: pointer;
   padding: 0;
   margin-left: 4px;
+  color: inherit;
 }
 
 .fileInput {
   display: none;
+}
+
+.calendarContent {
+  flex-grow: 1;
+  overflow: auto;
+  background-color: transparent;
+  border: 1px solid #ccc;
+  outline: none;
+  resize: none;
+  padding: 8px;
+  z-index: 0;
+  cursor: text;
 }
 
 .tagContainer {
@@ -87,4 +80,27 @@
   margin-top: 8px;
   font-size: 12px;
   color: #666;
+}
+
+.colorPicker {
+  position: absolute;
+  bottom: 40px;
+  left: 0;
+  z-index: 10;
+  cursor: pointer;
+}
+
+.nodrag {
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+.nowheel {
+  overflow: auto;
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+  scrollbar-width: none; /* Firefox */
+}
+
+.nowheel::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
 }

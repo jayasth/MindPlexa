@@ -148,10 +148,10 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
       task: (props) => (
         <NodeRenderer {...props} onNodeResizeStop={onNodeResizeStop} />
       ),
-      custom: (props) => (
+      table: (props) => (
         <NodeRenderer {...props} onNodeResizeStop={onNodeResizeStop} />
       ),
-      code: (props) => (
+      calendar: (props) => (
         <NodeRenderer {...props} onNodeResizeStop={onNodeResizeStop} />
       ),
       draw: (props) => (

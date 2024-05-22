@@ -1,11 +1,6 @@
 import React, { useRef } from 'react';
 import { NodeProps, Handle, Position } from 'reactflow';
-import {
-  FaTasks,
-  FaCode,
-  FaPaintBrush,
-  FaRegAddressBook
-} from 'react-icons/fa';
+import { FaTasks, FaCalendarAlt, FaPaintBrush, FaTable } from 'react-icons/fa';
 import { PiNotepad } from 'react-icons/pi';
 import { useStore } from '@/app/store/useCanvasStore';
 import styles from './NodeSelectionMenu.module.css';
@@ -60,17 +55,17 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
 
   const nodeRef = useRef<HTMLDivElement>(null);
 
-  const nodeTypes = ['note', 'task', 'custom', 'code', 'draw'];
+  const nodeTypes = ['note', 'task', 'table', 'calendar', 'draw'];
   const icons = {
     note: <PiNotepad />,
     task: <FaTasks />,
-    custom: <FaRegAddressBook />,
-    code: <FaCode />,
+    table: <FaTable />,
+    calendar: <FaCalendarAlt />,
     draw: <FaPaintBrush />
   };
 
   const replaceNodeWithType = (
-    nodeType: 'note' | 'task' | 'custom' | 'code' | 'draw'
+    nodeType: 'note' | 'task' | 'table' | 'calendar' | 'draw'
   ) => {
     console.log('NodeSelectionMenu: Replacing node with type: ', nodeType);
     const tempNode = nodes.find((n) => n.id === id);
@@ -129,7 +124,7 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
             className={`${styles.nodeButton} node-type-button`}
             onClick={() =>
               replaceNodeWithType(
-                type as 'note' | 'task' | 'custom' | 'code' | 'draw'
+                type as 'note' | 'task' | 'table' | 'calendar' | 'draw'
               )
             }
             title={type.charAt(0).toUpperCase() + type.slice(1)}

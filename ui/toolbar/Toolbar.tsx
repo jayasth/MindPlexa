@@ -5,13 +5,14 @@ import {
   FaBrain,
   FaTasks,
   FaRegAddressBook,
-  FaCode,
+  FaCalendarAlt,
   FaPaintBrush,
   FaUndo,
   FaRedo,
   FaShare,
   FaDownload,
-  FaHome
+  FaHome,
+  FaTable
 } from 'react-icons/fa';
 import { MdFormatListBulletedAdd } from 'react-icons/md';
 import { nanoid } from 'nanoid';
@@ -47,7 +48,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
   const nodes = useStore((state) => state.nodes);
 
   const handleAddNode = (
-    type: 'note' | 'task' | 'custom' | 'code' | 'draw' | 'selectionMenu'
+    type: 'note' | 'task' | 'table' | 'calendar' | 'draw' | 'selectionMenu'
   ) => {
     try {
       const canvasSize = {
@@ -132,18 +133,18 @@ const Toolbar: React.FC<ToolbarProps> = ({
               <FaTasks />
             </button>
             <button
-              onClick={() => handleAddNode('custom')}
+              onClick={() => handleAddNode('table')}
               className={buttonClass}
-              title="Add Custom"
+              title="Add Table"
             >
-              <FaRegAddressBook />
+              <FaTable />
             </button>
             <button
-              onClick={() => handleAddNode('code')}
+              onClick={() => handleAddNode('calendar')}
               className={buttonClass}
-              title="Add Code"
+              title="Add Calendar"
             >
-              <FaCode />
+              <FaCalendarAlt />
             </button>
             <button
               onClick={() => handleAddNode('draw')}

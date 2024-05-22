@@ -5,10 +5,10 @@ import NoteNode from '@/ui/nodes/noteNode/NoteNodeView';
 import dynamic from 'next/dynamic';
 import TaskNode from '@/ui/nodes/taskNode/TaskNodeView';
 import TaskNodeEdit from '@/ui/nodes/taskNode/TaskNodeEdit';
-import CustomNode from '@/ui/nodes/customNode/CustomNodeView';
-import CustomNodeEdit from '@/ui/nodes/customNode/CustomNodeEdit';
-import CodeNode from '@/ui/nodes/codeNode/CodeNodeView';
-import CodeNodeEdit from '@/ui/nodes/codeNode/CodeNodeEdit';
+import TableNode from '@/ui/nodes/tableNode/TableNodeView';
+import TableNodeEdit from '@/ui/nodes/tableNode/TableNodeEdit';
+import CalendarNode from '@/ui/nodes/calendarNode/CalendarNodeView';
+import CalendarNodeEdit from '@/ui/nodes/calendarNode/CalendarNodeEdit';
 import DrawNode from '@/ui/nodes/drawNode/DrawNodeView';
 import DrawNodeEdit from '@/ui/nodes/drawNode/DrawNodeEdit';
 import { useStore } from '@/app/store/useCanvasStore';
@@ -101,8 +101,8 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
   const nodeComponents = {
     note: { view: NoteNode, edit: NoteNodeEdit },
     task: { view: TaskNode, edit: TaskNodeEdit },
-    custom: { view: CustomNode, edit: CustomNodeEdit },
-    code: { view: CodeNode, edit: CodeNodeEdit },
+    table: { view: TableNode, edit: TableNodeEdit },
+    calendar: { view: CalendarNode, edit: CalendarNodeEdit },
     draw: { view: DrawNode, edit: DrawNodeEdit }
   };
 

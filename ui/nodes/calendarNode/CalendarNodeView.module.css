@@ -1,7 +1,6 @@
-.customNode {
+.calendarNode {
   display: flex;
   flex-direction: column;
-  background-color: #f8f8f8;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   border-radius: 4px;
   padding: 4px;
@@ -13,6 +12,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 4px;
+  background-color: transparent;
 }
 
 .title {
@@ -21,11 +21,12 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  color: inherit;
 }
 
 .editButton {
   cursor: pointer;
-  color: #888;
+  color: inherit;
 }
 
 .editButton:hover {
@@ -34,24 +35,18 @@
 
 .contentPreview {
   flex-grow: 1;
-  overflow: hidden;
+  overflow: auto;
   padding: 4px;
   font-size: 12px;
   white-space: pre-wrap;
   word-wrap: break-word;
   max-height: 100px;
+  background-color: transparent;
+  border: 1px solid #ccc;
+  color: inherit;
 }
 
-.formField {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 4px;
-}
-
-.fieldLabel {
-  font-weight: bold;
-}
-
-.fieldValue {
-  margin-left: 8px;
+.noContent {
+  color: #888;
+  font-style: italic;
 }
