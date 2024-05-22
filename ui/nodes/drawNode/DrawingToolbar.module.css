@@ -40,3 +40,15 @@
 .circle {
   cursor: crosshair;
 }
+
+.line {
+  cursor: crosshair;
+}
+
+.arrow {
+  cursor: crosshair;
+}
+
+.text {
+  cursor: text;
+}

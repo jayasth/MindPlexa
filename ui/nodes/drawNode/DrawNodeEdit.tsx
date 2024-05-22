@@ -76,6 +76,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const [isColorPickerVisible, setIsColorPickerVisible] = useState(false);
   const [tool, setTool] = useState('pencil');
   const [currentColor, setCurrentColor] = useState({ r: 0, g: 0, b: 0, a: 1 });
+  const [thickness, setThickness] = useState(2);
   const [shape, setShape] = useState<string | null>(null);
 
   const updateNode = useStore((state) => state.updateNode);
@@ -186,7 +187,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   };
 
   const handleMouseMove = (e) => {
-    draw(e, canvasRef, setContent, tool, currentColor);
+    draw(e, canvasRef, setContent, tool, currentColor, thickness);
   };
 
   const handleMouseUp = () => {
@@ -233,6 +234,9 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         onShapeClick={handleShapeClick}
         onUndoClick={() => undo(canvasRef)}
         onRedoClick={() => redo(canvasRef)}
+        onLineClick={() => setTool('line')}
+        onArrowClick={() => setTool('arrow')}
+        onTextClick={() => setTool('text')}
       />
       <div className={styles.canvasContainer}>
         <canvas

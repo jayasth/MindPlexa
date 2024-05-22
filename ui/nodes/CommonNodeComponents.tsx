@@ -30,7 +30,7 @@ export const ChangeColorButton = ({ onClick }) => (
   <button
     className={styles.actionButton}
     onClick={onClick}
-    title="Change Color"
+    title="Change Background Color"
   >
     <FaPalette size={16} />
   </button>

@@ -31,7 +31,8 @@ export const draw = (
   canvasRef: React.RefObject<HTMLCanvasElement>,
   setContent: React.Dispatch<React.SetStateAction<any[]>>,
   tool: string,
-  currentColor: { r: number; g: number; b: number; a: number }
+  currentColor: { r: number; g: number; b: number; a: number },
+  thickness: number
 ) => {
   if (!isDrawing) return;
   const canvas = canvasRef.current;
@@ -41,14 +42,14 @@ export const draw = (
 
   if (tool === 'eraser') {
     ctx.globalCompositeOperation = 'destination-out';
-    ctx.lineWidth = 10;
+    ctx.lineWidth = thickness;
   } else if (tool === 'marker') {
-    ctx.globalCompositeOperation = 'multiply';
-    ctx.lineWidth = 5;
-    ctx.strokeStyle = `rgba(${currentColor.r}, ${currentColor.g}, ${currentColor.b}, 0.5)`;
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.lineWidth = thickness;
+    ctx.strokeStyle = `rgba(${currentColor.r}, ${currentColor.g}, ${currentColor.b}, ${currentColor.a})`;
   } else {
     ctx.globalCompositeOperation = 'source-over';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = thickness;
     ctx.strokeStyle = `rgba(${currentColor.r}, ${currentColor.g}, ${currentColor.b}, ${currentColor.a})`;
   }
 
@@ -107,28 +108,53 @@ export const drawShape = (
   endPosition: { x: number; y: number },
   ctx: CanvasRenderingContext2D
 ) => {
+  ctx.beginPath();
   switch (shapeType) {
     case 'rectangle':
-      ctx.beginPath();
       ctx.rect(
         startPosition.x,
         startPosition.y,
         endPosition.x - startPosition.x,
         endPosition.y - startPosition.y
       );
-      ctx.fill();
-      ctx.closePath();
       break;
     case 'circle':
-      let radius = Math.sqrt(
+      const radius = Math.sqrt(
         Math.pow(endPosition.x - startPosition.x, 2) +
           Math.pow(endPosition.y - startPosition.y, 2)
       );
-      ctx.beginPath();
       ctx.arc(startPosition.x, startPosition.y, radius, 0, 2 * Math.PI);
-      ctx.fill();
-      ctx.closePath();
       break;
-    // Add more shapes as needed
+    case 'line':
+      ctx.moveTo(startPosition.x, startPosition.y);
+      ctx.lineTo(endPosition.x, endPosition.y);
+      break;
+    case 'arrow':
+      // Draw line part of the arrow
+      ctx.moveTo(startPosition.x, startPosition.y);
+      ctx.lineTo(endPosition.x, endPosition.y);
+      // Draw arrowhead
+      const headLength = 10; // length of head in pixels
+      const angle = Math.atan2(
+        endPosition.y - startPosition.y,
+        endPosition.x - startPosition.x
+      );
+      ctx.lineTo(
+        endPosition.x - headLength * Math.cos(angle - Math.PI / 6),
+        endPosition.y - headLength * Math.sin(angle - Math.PI / 6)
+      );
+      ctx.moveTo(endPosition.x, endPosition.y);
+      ctx.lineTo(
+        endPosition.x - headLength * Math.cos(angle + Math.PI / 6),
+        endPosition.y - headLength * Math.sin(angle + Math.PI / 6)
+      );
+      break;
+    case 'text':
+      // Text drawing will be handled separately
+      break;
+    default:
+      break;
   }
+  ctx.stroke();
+  ctx.closePath();
 };
