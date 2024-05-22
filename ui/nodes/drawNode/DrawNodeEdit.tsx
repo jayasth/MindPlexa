@@ -25,7 +25,14 @@ import {
   getContrastYIQ
 } from '@/ui/canvasEditor/utils/CommonNodeFunctions';
 import DrawingToolbar from './DrawingToolbar';
-import { startDrawing, draw, stopDrawing } from './drawFunctions';
+import {
+  startDrawing,
+  draw,
+  stopDrawing,
+  undo,
+  redo,
+  drawShape
+} from './drawFunctions';
 
 interface DrawNodeEditProps extends NodeProps {
   data: {
@@ -67,6 +74,9 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const [nodeWidth, setNodeWidth] = useState(width);
   const [nodeHeight, setNodeHeight] = useState(height);
   const [isColorPickerVisible, setIsColorPickerVisible] = useState(false);
+  const [tool, setTool] = useState('pencil');
+  const [currentColor, setCurrentColor] = useState({ r: 0, g: 0, b: 0, a: 1 });
+  const [shape, setShape] = useState<string | null>(null);
 
   const updateNode = useStore((state) => state.updateNode);
   const colorPickerRef = useRef<HTMLDivElement>(null);
@@ -91,10 +101,11 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     handleTitleChange(data.id, newTitle, setTitle);
   };
 
-  const handleChangeComplete = (color, event) => {
+  const handleChangeComplete = (color) => {
     const rgbaColor = `rgba(${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b}, ${color.rgb.a})`;
     const newTextColor = getContrastYIQ(rgbaColor);
     setTextColor(newTextColor);
+    setCurrentColor(color.rgb);
     handleChangeColor(data.id, rgbaColor, setBackgroundColor);
   };
 
@@ -147,6 +158,41 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     }
   }, [colorPickerRef]);
 
+  const handleShapeClick = (shapeType: string) => {
+    setShape(shapeType);
+  };
+
+  const handleMouseDown = (e) => {
+    if (shape) {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      startDrawing(e, canvasRef, setContent);
+      const startPosition = {
+        x: e.nativeEvent.offsetX,
+        y: e.nativeEvent.offsetY
+      };
+      drawShape(
+        shape,
+        startPosition,
+        { x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY },
+        ctx
+      );
+      setShape(null);
+    } else {
+      startDrawing(e, canvasRef, setContent);
+    }
+  };
+
+  const handleMouseMove = (e) => {
+    draw(e, canvasRef, setContent, tool, currentColor);
+  };
+
+  const handleMouseUp = () => {
+    stopDrawing(canvasRef);
+  };
+
   // Define custom CSS properties
   const customStyles: CSSProperties = {
     width: nodeWidth,
@@ -181,20 +227,22 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         />
       </div>
       <DrawingToolbar
-        onPencilClick={() => console.log('Pencil clicked')}
-        onEraserClick={() => console.log('Eraser clicked')}
-        onUndoClick={() => console.log('Undo clicked')}
-        onRedoClick={() => console.log('Redo clicked')}
+        onPencilClick={() => setTool('pencil')}
+        onEraserClick={() => setTool('eraser')}
+        onMarkerClick={() => setTool('marker')}
+        onShapeClick={handleShapeClick}
+        onUndoClick={() => undo(canvasRef)}
+        onRedoClick={() => redo(canvasRef)}
       />
       <div className={styles.canvasContainer}>
         <canvas
           ref={canvasRef}
           width={nodeWidth}
           height={nodeHeight - 100}
-          onMouseDown={(e) => startDrawing(e, canvasRef, setContent)}
-          onMouseMove={(e) => draw(e, canvasRef, setContent)}
-          onMouseUp={() => stopDrawing(canvasRef)}
-          className="nodrag nowheel"
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          className={`nodrag nowheel ${styles[tool]}`}
         />
       </div>
       <div className={styles.footer}>

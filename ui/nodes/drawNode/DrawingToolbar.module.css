@@ -2,7 +2,7 @@
   display: flex;
   justify-content: space-around;
   padding: 8px;
-  background-color: #f4f4f4;
+  border-top: 1px solid #ccc;
   border-bottom: 1px solid #ccc;
 }
 
@@ -17,4 +17,26 @@
 .toolbarButton:hover {
   background-color: #e0e0e0;
   border-radius: 4px;
+}
+
+.pencil {
+  cursor: crosshair;
+}
+
+.marker {
+  cursor: crosshair;
+}
+
+.eraser {
+  cursor:
+    url('../../icons/eraser-cursor.svg') 16 16,
+    auto !important;
+}
+
+.rectangle {
+  cursor: crosshair;
+}
+
+.circle {
+  cursor: crosshair;
 }
