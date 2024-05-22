@@ -40,6 +40,7 @@ import {
 import { SortableItem } from './SortableItem';
 import { SketchPicker } from 'react-color';
 import Button from '@/ui/Button/Button';
+import { getNodeSpecificProperties } from '@/ui/canvasEditor/utils/nodeProperties';
 
 interface TaskNodeEditProps extends NodeProps {
   data: {
@@ -84,6 +85,12 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
 
   const updateNode = useStore((state) => state.updateNode);
   const colorPickerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const nodeProperties = getNodeSpecificProperties('task', true);
+    setNodeWidth(nodeProperties.width);
+    setNodeHeight(nodeProperties.height);
+  }, []);
 
   useEffect(() => {
     updateNode(data.id, {
