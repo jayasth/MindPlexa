@@ -30,6 +30,14 @@
   color: inherit;
 }
 
+.toolbar {
+  display: flex;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 8px 12px;
+  background-color: transparent;
+}
+
 .footer {
   display: flex;
   justify-content: space-between;
@@ -44,6 +52,9 @@
   padding: 0;
   margin-left: 4px;
   color: inherit;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .fileInput {

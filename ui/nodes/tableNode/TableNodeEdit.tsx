@@ -14,20 +14,34 @@ import {
   DuplicateButton
 } from '@/ui/nodes/CommonNodeComponents';
 import {
-  handleTitleChange,
-  handleSave,
-  handleClose,
-  handleDelete,
-  handleChangeColor,
-  handleAddTag,
-  handleAttachFile,
-  handleDuplicate,
-  getContrastYIQ
-} from '@/ui/canvasEditor/utils/CommonNodeFunctions';
+  AddColumnButton,
+  AddRowButton,
+  ExportButton,
+  ImportButton
+} from '@/ui/nodes/tableNode/TableNodeComponents';
 import { SketchPicker } from 'react-color';
 
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
+
+import {
+  handleTitleChange,
+  handleChangeColor,
+  addColumn,
+  addRow,
+  importTableData,
+  exportTableData
+} from '@/ui/nodes/tableNode/TableFunctions';
+
+import {
+  handleSave,
+  handleDelete,
+  handleAddTag,
+  handleAttachFile,
+  handleClose,
+  handleDuplicate,
+  getContrastYIQ
+} from '@/ui/canvasEditor/utils/CommonNodeFunctions';
 
 interface TableNodeEditProps extends NodeProps {
   data: {
@@ -183,16 +197,30 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           onClick={() => handleClose(data.id, () => {}, title, content)}
         />
       </div>
+      <div className={styles.toolbar}>
+        <AddColumnButton onClick={() => addColumn(content, setContent)} />
+        <AddRowButton onClick={() => addRow(content, setContent)} />
+        <ExportButton onClick={() => exportTableData(content)} />
+        <ImportButton onChange={(e) => importTableData(e, setContent)} />
+      </div>
       <div className={`${styles.tableContent} nowheel nodrag`}>
         <div
           className="ag-theme-alpine"
           style={{ height: '100%', width: '100%' }}
         >
           <AgGridReact
-            columnDefs={content.columns}
+            columnDefs={content.columns.map((col) => ({
+              ...col,
+              editable: true,
+              cellStyle: { borderRight: '1px solid #ccc' }
+            }))}
             rowData={content.rows}
             onGridReady={(params) => params.api.sizeColumnsToFit()}
             domLayout="autoHeight"
+            defaultColDef={{
+              editable: true,
+              resizable: true
+            }}
           />
         </div>
       </div>
