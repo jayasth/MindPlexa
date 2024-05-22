@@ -30,35 +30,22 @@
   color: inherit;
 }
 
-.footer {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 8px;
-  background-color: transparent;
-}
-
-.actionButton {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  margin-left: 4px;
-  color: inherit;
-}
-
-.fileInput {
-  display: none;
-}
-
-.drawContent {
+.canvasContainer {
   flex-grow: 1;
   overflow: auto;
-  background-color: transparent;
+  background-color: white;
   border: 1px solid #ccc;
   outline: none;
   padding: 8px;
   z-index: 0;
   cursor: crosshair;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  background-color: transparent;
 }
 
 .tagContainer {
@@ -87,25 +74,6 @@
   left: 0;
   z-index: 10;
   cursor: pointer;
-}
-
-.ql-toolbar {
-  color: inherit;
-  background-color: inherit;
-}
-
-.ql-stroke {
-  fill: none;
-  stroke: inherit;
-}
-
-.ql-fill {
-  fill: inherit;
-  stroke: none;
-}
-
-.ql-picker {
-  color: inherit;
 }
 
 .nodrag {

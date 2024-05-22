@@ -1,31 +1,37 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, CSSProperties } from 'react';
 import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
 import { useStore } from '@/app/store/useCanvasStore';
 import styles from './DrawNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
+import { SketchPicker } from 'react-color';
 import {
   SaveButton,
   DeleteButton,
   ChangeColorButton,
   AddTagButton,
   AttachFileButton,
-  CloseButton
+  CloseButton,
+  DuplicateButton
 } from '@/ui/nodes/CommonNodeComponents';
 import {
   handleTitleChange,
-  handleSave,
-  handleClose,
-  handleDelete,
   handleChangeColor,
+  handleSave,
+  handleDelete,
   handleAddTag,
-  handleAttachFile
+  handleAttachFile,
+  handleClose,
+  handleDuplicate,
+  getContrastYIQ
 } from '@/ui/canvasEditor/utils/CommonNodeFunctions';
 
 interface DrawNodeEditProps extends NodeProps {
   data: {
     id: string;
-    drawing?: string;
+    content?: any;
     title?: string;
+    backgroundColor?: string;
+    textColor?: string;
   };
   width: number;
   height: number;
@@ -48,26 +54,46 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
 }) => {
   const [isSelected, setIsSelected] = useState(selected);
   const [title, setTitle] = useState(data.title || 'Untitled Drawing');
-  const [backgroundColor, setBackgroundColor] = useState('#f8f8f8');
+  const [content, setContent] = useState(data.content || []);
+  const [backgroundColor, setBackgroundColor] = useState(
+    data.backgroundColor || '#F4F4F4'
+  );
+  const [textColor, setTextColor] = useState(data.textColor || '#575757');
   const [tags, setTags] = useState<string[]>([]);
   const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
   const [isContainerSelected, setIsContainerSelected] = useState(false);
   const [nodeWidth, setNodeWidth] = useState(width);
   const [nodeHeight, setNodeHeight] = useState(height);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [isColorPickerVisible, setIsColorPickerVisible] = useState(false);
 
   const updateNode = useStore((state) => state.updateNode);
+  const colorPickerRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    updateNode(data.id, { data: { title, tags, attachedFiles } });
-  }, [title, tags, attachedFiles, updateNode, data.id]);
+    updateNode(data.id, {
+      data: { title, content, tags, attachedFiles, backgroundColor, textColor }
+    });
+  }, [
+    title,
+    content,
+    tags,
+    attachedFiles,
+    backgroundColor,
+    textColor,
+    updateNode,
+    data.id
+  ]);
 
   const onChangeTitle = (newTitle: string) => {
-    setTitle(newTitle);
+    handleTitleChange(data.id, newTitle, setTitle);
   };
 
-  const onChangeColor = (newColor: string) => {
-    setBackgroundColor(newColor);
+  const handleChangeComplete = (color, event) => {
+    const rgbaColor = `rgba(${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b}, ${color.rgb.a})`;
+    const newTextColor = getContrastYIQ(rgbaColor);
+    setTextColor(newTextColor);
+    handleChangeColor(data.id, rgbaColor, setBackgroundColor);
   };
 
   const onAddTag = (newTag: string) => {
@@ -83,6 +109,12 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     setNodeHeight(height);
   }, [width, height]);
 
+  const handleResize = (event, { width, height }) => {
+    setNodeWidth(width);
+    setNodeHeight(height);
+    onNodeResizeStop(data.id, { width, height }, position);
+  };
+
   const handleContainerClick = () => {
     setIsContainerSelected(true);
   };
@@ -91,31 +123,80 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     setIsContainerSelected(false);
   };
 
-  const handleResize = (event, { width, height }) => {
-    setNodeWidth(width);
-    setNodeHeight(height);
-    onNodeResizeStop(data.id, { width, height }, position);
+  const toggleColorPicker = () => {
+    setIsColorPickerVisible(!isColorPickerVisible);
   };
 
-  const handleDrawing = () => {
-    const canvas = canvasRef.current;
-    if (canvas) {
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        // Drawing logic here
-      }
+  const handleClickOutside = (event) => {
+    if (
+      colorPickerRef.current &&
+      !colorPickerRef.current.contains(event.target)
+    ) {
+      setIsColorPickerVisible(false);
     }
+  };
+
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [colorPickerRef]);
+
+  const startDrawing = (e) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    ctx.beginPath();
+    ctx.moveTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
+    setContent([
+      ...content,
+      { type: 'start', x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY }
+    ]);
+  };
+
+  const draw = (e) => {
+    if (e.buttons !== 1) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    ctx.lineTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
+    ctx.stroke();
+    setContent([
+      ...content,
+      { type: 'draw', x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY }
+    ]);
+  };
+
+  const stopDrawing = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    ctx.closePath();
+  };
+
+  // Define custom CSS properties
+  const customStyles: CSSProperties = {
+    width: nodeWidth,
+    height: nodeHeight,
+    backgroundColor,
+    color: textColor
   };
 
   return (
     <div
       className={styles.drawNode}
-      style={{ width: nodeWidth, height: nodeHeight, backgroundColor }}
+      style={customStyles}
       onClick={handleContainerClick}
       onBlur={handleContainerBlur}
     >
       <NodeResizer
-        isVisible={selected}
+        isVisible={isContainerSelected}
         minWidth={200}
         minHeight={200}
         onResize={handleResize}
@@ -125,49 +206,60 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
           type="text"
           value={title}
           onChange={(e) => onChangeTitle(e.target.value)}
-          className={styles.titleInput}
+          className={`${styles.titleInput} nodrag`}
+          style={{ color: textColor }}
         />
         <CloseButton
-          onClick={() => handleClose(data.id, () => {}, title, '')}
+          onClick={() => handleClose(data.id, () => {}, title, content)}
         />
       </div>
-      <canvas
-        ref={canvasRef}
-        className={styles.canvas}
-        width={nodeWidth - 16}
-        height={nodeHeight - 100}
-        onMouseDown={handleDrawing}
-      />
+      <div className={styles.canvasContainer}>
+        <canvas
+          ref={canvasRef}
+          width={nodeWidth}
+          height={nodeHeight - 100}
+          onMouseDown={startDrawing}
+          onMouseMove={draw}
+          onMouseUp={stopDrawing}
+          className="nodrag nowheel"
+        />
+      </div>
       <div className={styles.footer}>
         <SaveButton
           onClick={() =>
             handleSave(data.id, () => {}, {
               title,
+              content,
               tags,
               attachedFiles
             })
           }
         />
         <DeleteButton onClick={() => handleDelete(data.id, () => {})} />
-        <ChangeColorButton
-          onClick={() =>
-            handleChangeColor(data.id, backgroundColor, onChangeColor)
-          }
-        />
+        <ChangeColorButton onClick={() => toggleColorPicker()} />
         <AddTagButton onClick={() => handleAddTag(data.id, tags, onAddTag)} />
         <AttachFileButton
           onChange={(e) => handleAttachFile(data.id, onAttachFiles)(e)}
         />
+        <DuplicateButton onClick={() => handleDuplicate(data.id)} />
+        {isColorPickerVisible && (
+          <div className={`${styles.colorPicker} nodrag`} ref={colorPickerRef}>
+            <SketchPicker
+              color={backgroundColor}
+              onChangeComplete={handleChangeComplete}
+            />
+          </div>
+        )}
       </div>
       <div className={styles.tagContainer}>
         {tags.map((tag, index) => (
-          <span key={index} className={styles.tag}>
+          <span key={index} className={styles.tag} style={{ color: textColor }}>
             {tag}
           </span>
         ))}
       </div>
       {attachedFiles.length > 0 && (
-        <div className={styles.attachedFile}>
+        <div className={styles.attachedFile} style={{ color: textColor }}>
           Attached files: {attachedFiles.map((file) => file.name).join(', ')}
         </div>
       )}
