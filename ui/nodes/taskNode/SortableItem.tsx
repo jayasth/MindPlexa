@@ -31,7 +31,8 @@ export function SortableItem({
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    color: textColor
+    color: textColor,
+    cursor: 'grab'
   };
 
   return (
@@ -39,7 +40,13 @@ export function SortableItem({
       ref={setNodeRef}
       style={style}
       {...attributes}
+      {...listeners}
       className={styles.taskItem}
+      onClick={(e) => {
+        if (e.target !== e.currentTarget) {
+          e.stopPropagation();
+        }
+      }}
     >
       <input
         type="checkbox"
@@ -60,7 +67,6 @@ export function SortableItem({
       >
         <FaTimes />
       </button>
-      <div {...listeners} className={styles.dragHandle} />
     </div>
   );
 }

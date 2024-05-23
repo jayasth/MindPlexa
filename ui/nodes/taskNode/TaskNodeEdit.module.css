@@ -72,6 +72,13 @@
 .taskItem {
   display: flex;
   align-items: center;
+  padding: 4px; /* Adjust padding as needed */
+  border: 1px solid transparent; /* Add border for visual feedback */
+  cursor: grab; /* Ensure the cursor changes to grab */
+}
+
+.taskItem:hover {
+  border: 1px solid #ccc; /* Change border color on hover for visual feedback */
 }
 
 .taskCheckbox {
@@ -100,6 +107,11 @@
   cursor: pointer;
   color: inherit;
   margin-left: 8px;
+  padding: 4px; /* Add padding for better click area */
+}
+
+.deleteTaskButton:hover {
+  color: red; /* Change color on hover for visual feedback */
 }
 
 .dragHandle {
