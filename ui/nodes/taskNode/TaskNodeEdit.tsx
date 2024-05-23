@@ -82,6 +82,7 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
   const [nodeWidth, setNodeWidth] = useState(width);
   const [nodeHeight, setNodeHeight] = useState(height);
   const [isColorPickerVisible, setIsColorPickerVisible] = useState(false);
+  const [newTaskText, setNewTaskText] = useState('');
 
   const updateNode = useStore((state) => state.updateNode);
   const colorPickerRef = useRef<HTMLDivElement>(null);
@@ -168,12 +169,15 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
   };
 
   const addTask = () => {
-    const newTask = {
-      id: Date.now().toString(),
-      text: '',
-      completed: false
-    };
-    setTasks([...tasks, newTask]);
+    if (newTaskText.trim()) {
+      const newTask = {
+        id: Date.now().toString(),
+        text: newTaskText.trim(),
+        completed: false
+      };
+      setTasks([...tasks, newTask]);
+      setNewTaskText('');
+    }
   };
 
   const updateTaskText = (taskId: string, text: string) => {
@@ -206,6 +210,12 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
     setNodeWidth(width);
     setNodeHeight(height);
     onNodeResizeStop(data.id, { width, height }, position);
+  };
+
+  const handleNewTaskKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      addTask();
+    }
   };
 
   const customStyles: CSSProperties = {
@@ -260,13 +270,15 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
             ))}
           </SortableContext>
         </DndContext>
-        <Button
-          onClick={addTask}
-          className={styles.addTaskButton}
-          variant="slim"
-        >
-          Add Task
-        </Button>
+        <input
+          type="text"
+          value={newTaskText}
+          onChange={(e) => setNewTaskText(e.target.value)}
+          onKeyDown={handleNewTaskKeyDown}
+          placeholder="Add a new task..."
+          className={styles.newTaskInput}
+          style={{ color: textColor }}
+        />
       </div>
       <div className={styles.footer}>
         <SaveButton
