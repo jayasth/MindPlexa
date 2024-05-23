@@ -117,9 +117,26 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   const colorPickerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    updateNode(data.id, {
-      data: { title, content, tags, attachedFiles, backgroundColor, textColor }
-    });
+    console.log('TableNodeEdit: Content updated', content);
+    if (
+      title !== data.title ||
+      content !== data.content ||
+      tags.length > 0 ||
+      attachedFiles.length > 0 ||
+      backgroundColor !== data.backgroundColor ||
+      textColor !== data.textColor
+    ) {
+      updateNode(data.id, {
+        data: {
+          title,
+          content,
+          tags,
+          attachedFiles,
+          backgroundColor,
+          textColor
+        }
+      });
+    }
   }, [
     title,
     content,
@@ -151,6 +168,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   };
 
   useEffect(() => {
+    console.log('TableNodeEdit: Node dimensions updated', { width, height });
     setNodeWidth(width);
     setNodeHeight(height);
   }, [width, height]);
@@ -186,6 +204,9 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   };
 
   useEffect(() => {
+    console.log(
+      'TableNodeEdit: Document event listeners for color picker added'
+    );
     if (typeof document !== 'undefined') {
       document.addEventListener('mousedown', handleClickOutside);
       return () => {

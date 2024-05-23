@@ -12,6 +12,7 @@ export const handleTitleChange = (
 };
 
 export const addColumn = (content: any, setContent: (content: any) => void) => {
+  console.log('TableFunctions: Adding column');
   setContent((prevContent: any) => {
     const newColumn = {
       headerName: 'New Column',
@@ -25,6 +26,7 @@ export const addColumn = (content: any, setContent: (content: any) => void) => {
 };
 
 export const addRow = (content: any, setContent: (content: any) => void) => {
+  console.log('TableFunctions: Adding row');
   setContent((prevContent: any) => {
     const newRow = prevContent.columns.reduce((row: any, col: any) => {
       row[col.field] = '';
