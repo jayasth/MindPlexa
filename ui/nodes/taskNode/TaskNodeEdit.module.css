@@ -20,7 +20,7 @@
 }
 
 .titleInput {
-  font-size: 12px;
+  font-size: 16px;
   font-weight: bold;
   border: none;
   background-color: transparent;
@@ -28,6 +28,13 @@
   flex-grow: 1;
   cursor: text;
   color: inherit;
+  box-shadow: none !important;
+}
+
+.titleInput:focus,
+.titleInput:active {
+  border-bottom: 2px solid #989ff0;
+  transition: border-bottom 0.3s ease-in-out;
 }
 
 .footer {
@@ -65,8 +72,6 @@
 .taskItem {
   display: flex;
   align-items: center;
-  padding: 8px;
-  border-bottom: 1px solid #ccc;
 }
 
 .taskCheckbox {
@@ -74,11 +79,20 @@
 }
 
 .taskInput {
-  flex-grow: 1;
+  font-size: 12px;
   border: none;
+
   background-color: transparent;
-  outline: none;
+  flex-grow: 1;
+  cursor: text;
   color: inherit;
+  box-shadow: none !important;
+}
+
+.taskInput:focus,
+.taskInput:active {
+  border-bottom: 1px solid #989ff0;
+  transition: border-bottom 0.3s ease-in-out;
 }
 
 .deleteTaskButton {

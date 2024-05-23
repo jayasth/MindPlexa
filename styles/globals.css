@@ -44,8 +44,12 @@
   box-sizing: inherit;
 }
 
-*:focus:not(ol) {
+input:focus,
+textarea:focus,
+select:focus {
   @apply outline-none;
+  @apply ring-0;
+  @apply shadow-none;
 }
 
 html {

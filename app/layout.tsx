@@ -5,16 +5,14 @@ import 'styles/globals.css';
 export const metadata = generateMetadata();
 
 export default function RootLayout({
-  children,
-  documentTitle
+  children
 }: {
   children: React.ReactNode;
-  documentTitle: string;
 }) {
   return (
     <html lang="en">
       <head>
-        <title>{documentTitle}</title>
+        <title>{metadata.title}</title>
         <meta name="description" content={metadata.description} />
         <link rel="icon" href={metadata.favicon} />
         <meta property="og:url" content={metadata.url} />
