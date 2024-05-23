@@ -19,7 +19,7 @@ type NodeDimensionTypes = {
 export const nodeDimensions: NodeDimensionTypes = {
   note: {
     width: 150,
-    height: 100,
+    height: 80,
     editWidth: 600, // Increased width for desktop
     editHeight: 450,
     mobileEditWidth: 300, // Specific width for mobile
@@ -27,7 +27,7 @@ export const nodeDimensions: NodeDimensionTypes = {
   },
   task: {
     width: 150,
-    height: 100,
+    height: 80,
     editWidth: 600, // Increased width for desktop
     editHeight: 450,
     mobileEditWidth: 300, // Specific width for mobile
@@ -35,7 +35,7 @@ export const nodeDimensions: NodeDimensionTypes = {
   },
   table: {
     width: 150,
-    height: 60,
+    height: 80,
     editWidth: 600, // Increased width for desktop
     editHeight: 450,
     mobileEditWidth: 300, // Specific width for mobile
@@ -43,7 +43,7 @@ export const nodeDimensions: NodeDimensionTypes = {
   },
   calendar: {
     width: 150,
-    height: 60,
+    height: 80,
     editWidth: 600, // Increased width for desktop
     editHeight: 450,
     mobileEditWidth: 300, // Specific width for mobile
@@ -51,7 +51,7 @@ export const nodeDimensions: NodeDimensionTypes = {
   },
   draw: {
     width: 150,
-    height: 60,
+    height: 80,
     editWidth: 600, // Increased width for desktop
     editHeight: 450,
     mobileEditWidth: 300, // Specific width for mobile

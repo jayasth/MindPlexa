@@ -39,6 +39,7 @@ import {
 } from '@dnd-kit/sortable';
 import { SortableItem } from './SortableItem';
 import { SketchPicker } from 'react-color';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import Button from '@/ui/Button/Button';
 import { getNodeSpecificProperties } from '@/ui/canvasEditor/utils/nodeProperties';
 
@@ -83,6 +84,7 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
   const [nodeHeight, setNodeHeight] = useState(height);
   const [isColorPickerVisible, setIsColorPickerVisible] = useState(false);
   const [newTaskText, setNewTaskText] = useState('');
+  const [showCompletedTasks, setShowCompletedTasks] = useState(true);
 
   const updateNode = useStore((state) => state.updateNode);
   const colorPickerRef = useRef<HTMLDivElement>(null);
@@ -218,6 +220,10 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
     }
   };
 
+  const toggleShowCompletedTasks = () => {
+    setShowCompletedTasks(!showCompletedTasks);
+  };
+
   const customStyles: CSSProperties = {
     width: nodeWidth,
     height: nodeHeight,
@@ -257,17 +263,19 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
           onDragEnd={handleDragEnd}
         >
           <SortableContext items={tasks} strategy={verticalListSortingStrategy}>
-            {tasks.map((task) => (
-              <SortableItem
-                key={task.id}
-                id={task.id}
-                task={task}
-                updateTaskText={updateTaskText}
-                toggleTaskCompletion={toggleTaskCompletion}
-                deleteTask={deleteTask}
-                textColor={textColor}
-              />
-            ))}
+            {tasks
+              .filter((task) => showCompletedTasks || !task.completed)
+              .map((task) => (
+                <SortableItem
+                  key={task.id}
+                  id={task.id}
+                  task={task}
+                  updateTaskText={updateTaskText}
+                  toggleTaskCompletion={toggleTaskCompletion}
+                  deleteTask={deleteTask}
+                  textColor={textColor}
+                />
+              ))}
           </SortableContext>
         </DndContext>
         <input
@@ -308,6 +316,15 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
             />
           </div>
         )}
+        <button
+          onClick={toggleShowCompletedTasks}
+          className={styles.iconButton}
+          title={
+            showCompletedTasks ? 'Hide completed tasks' : 'Show completed tasks'
+          }
+        >
+          {showCompletedTasks ? <FaEyeSlash /> : <FaEye />}
+        </button>
       </div>
       <div className={styles.tagContainer}>
         {tags.map((tag, index) => (

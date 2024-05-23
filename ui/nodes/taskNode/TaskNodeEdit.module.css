@@ -111,7 +111,7 @@
 }
 
 .deleteTaskButton:hover {
-  color: red; /* Change color on hover for visual feedback */
+  color: #f28b82; /* Change color on hover for visual feedback */
 }
 
 .dragHandle {
