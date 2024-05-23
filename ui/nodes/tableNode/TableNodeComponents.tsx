@@ -4,7 +4,15 @@ import {
   FaFileImport,
   FaFileExport,
   FaTable,
-  FaThList
+  FaThList,
+  FaBold,
+  FaItalic,
+  FaUnderline,
+  FaAlignLeft,
+  FaAlignCenter,
+  FaAlignRight,
+  FaSort,
+  FaFilter
 } from 'react-icons/fa';
 import styles from './TableNodeComponents.module.css';
 
@@ -35,4 +43,56 @@ export const ImportButton = ({ onChange }) => (
     <FaFileImport size={16} />
     <input type="file" className={styles.fileInput} onChange={onChange} />
   </label>
+);
+
+export const BoldButton = ({ onClick }) => (
+  <button className={styles.actionButton} onClick={onClick} title="Bold">
+    <FaBold size={16} />
+  </button>
+);
+
+export const ItalicButton = ({ onClick }) => (
+  <button className={styles.actionButton} onClick={onClick} title="Italic">
+    <FaItalic size={16} />
+  </button>
+);
+
+export const UnderlineButton = ({ onClick }) => (
+  <button className={styles.actionButton} onClick={onClick} title="Underline">
+    <FaUnderline size={16} />
+  </button>
+);
+
+export const AlignLeftButton = ({ onClick }) => (
+  <button className={styles.actionButton} onClick={onClick} title="Align Left">
+    <FaAlignLeft size={16} />
+  </button>
+);
+
+export const AlignCenterButton = ({ onClick }) => (
+  <button
+    className={styles.actionButton}
+    onClick={onClick}
+    title="Align Center"
+  >
+    <FaAlignCenter size={16} />
+  </button>
+);
+
+export const AlignRightButton = ({ onClick }) => (
+  <button className={styles.actionButton} onClick={onClick} title="Align Right">
+    <FaAlignRight size={16} />
+  </button>
+);
+
+export const SortButton = ({ onClick }) => (
+  <button className={styles.actionButton} onClick={onClick} title="Sort">
+    <FaSort size={16} />
+  </button>
+);
+
+export const FilterButton = ({ onClick }) => (
+  <button className={styles.actionButton} onClick={onClick} title="Filter">
+    <FaFilter size={16} />
+  </button>
 );

@@ -1,5 +1,5 @@
 import { useStore } from '@/app/store/useCanvasStore';
-import { getContrastYIQ } from '@/ui/canvasEditor/utils/CommonNodeFunctions';
+import Papa from 'papaparse';
 
 export const handleTitleChange = (
   id: string,
@@ -11,36 +11,29 @@ export const handleTitleChange = (
   updateNode(id, { data: { title } });
 };
 
-export const handleChangeColor = (
-  id: string,
-  color: string,
-  onChangeColor: (color: string) => void
-) => {
-  const { updateNode } = useStore.getState();
-  const textColor = getContrastYIQ(color);
-  onChangeColor(color);
-  updateNode(id, { data: { backgroundColor: color, textColor } });
-};
-
 export const addColumn = (content: any, setContent: (content: any) => void) => {
-  const newColumn = {
-    headerName: 'New Column',
-    field: `col${content.columns.length + 1}`
-  };
-  setContent({
-    ...content,
-    columns: [...content.columns, newColumn]
+  setContent((prevContent: any) => {
+    const newColumn = {
+      headerName: 'New Column',
+      field: `col${prevContent.columns.length + 1}`
+    };
+    return {
+      ...prevContent,
+      columns: [...prevContent.columns, newColumn]
+    };
   });
 };
 
 export const addRow = (content: any, setContent: (content: any) => void) => {
-  const newRow = content.columns.reduce((row: any, col: any) => {
-    row[col.field] = '';
-    return row;
-  }, {});
-  setContent({
-    ...content,
-    rows: [...content.rows, newRow]
+  setContent((prevContent: any) => {
+    const newRow = prevContent.columns.reduce((row: any, col: any) => {
+      row[col.field] = '';
+      return row;
+    }, {});
+    return {
+      ...prevContent,
+      rows: [...prevContent.rows, newRow]
+    };
   });
 };
 
@@ -51,8 +44,16 @@ export const importTableData = (
   const fileReader = new FileReader();
   fileReader.onload = (e) => {
     if (e.target !== null) {
-      const importedData = JSON.parse(e.target.result as string);
-      setContent(importedData);
+      const importedData = Papa.parse(e.target.result as string, {
+        header: true,
+        dynamicTyping: true,
+        skipEmptyLines: true
+      }).data;
+      const columns = Object.keys(importedData[0]).map((key) => ({
+        headerName: key,
+        field: key
+      }));
+      setContent({ columns, rows: importedData });
     }
   };
   if (event.target.files[0]) {
@@ -61,10 +62,9 @@ export const importTableData = (
 };
 
 export const exportTableData = (content: any) => {
-  const dataStr = JSON.stringify(content);
-  const dataUri =
-    'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
-  const exportFileDefaultName = 'tableData.json';
+  const dataStr = Papa.unparse(content.rows);
+  const dataUri = 'data:text/csv;charset=utf-8,' + encodeURIComponent(dataStr);
+  const exportFileDefaultName = 'tableData.csv';
   const linkElement = document.createElement('a');
   linkElement.setAttribute('href', dataUri);
   linkElement.setAttribute('download', exportFileDefaultName);
