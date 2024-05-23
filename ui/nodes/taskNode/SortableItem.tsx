@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { FaTimes } from 'react-icons/fa';
+import { FaTimes, FaGripLines } from 'react-icons/fa'; // Import FaGripLines icon
 import styles from './TaskNodeEdit.module.css';
 
 interface SortableItemProps {
@@ -31,8 +31,7 @@ export function SortableItem({
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    color: textColor,
-    cursor: 'grab'
+    color: textColor
   };
 
   return (
@@ -40,13 +39,7 @@ export function SortableItem({
       ref={setNodeRef}
       style={style}
       {...attributes}
-      {...listeners}
       className={styles.taskItem}
-      onClick={(e) => {
-        if (e.target !== e.currentTarget) {
-          e.stopPropagation();
-        }
-      }}
     >
       <input
         type="checkbox"
@@ -67,6 +60,9 @@ export function SortableItem({
       >
         <FaTimes />
       </button>
+      <div {...listeners} className={styles.dragHandle}>
+        <FaGripLines /> {/* Add the drag icon */}
+      </div>
     </div>
   );
 }
