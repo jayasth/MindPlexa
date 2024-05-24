@@ -1,8 +1,6 @@
 import React from 'react';
 import {
   FaPlus,
-  FaFileImport,
-  FaFileExport,
   FaTable,
   FaThList,
   FaBold,
@@ -12,7 +10,9 @@ import {
   FaAlignCenter,
   FaAlignRight,
   FaSort,
-  FaFilter
+  FaFilter,
+  FaFileImport,
+  FaFileExport
 } from 'react-icons/fa';
 import styles from '@/ui/nodes/tableNode/TableNodeToolbar.module.css';
 
@@ -28,23 +28,6 @@ export const AddRowButton = ({ onClick }) => (
   <button className={styles.actionButton} onClick={onClick} title="Add Row">
     <FaThList size={iconSize} />
   </button>
-);
-
-export const ExportButton = ({ onClick }) => (
-  <button
-    className={styles.actionButton}
-    onClick={onClick}
-    title="Export Table"
-  >
-    <FaFileExport size={iconSize} />
-  </button>
-);
-
-export const ImportButton = ({ onChange }) => (
-  <label className={styles.actionButton} title="Import Table">
-    <FaFileImport size={iconSize} />
-    <input type="file" className={styles.fileInput} onChange={onChange} />
-  </label>
 );
 
 export const BoldButton = ({ onClick }) => (
@@ -97,4 +80,21 @@ export const FilterButton = ({ onClick }) => (
   <button className={styles.actionButton} onClick={onClick} title="Filter">
     <FaFilter size={iconSize} />
   </button>
+);
+
+export const ExportButton = ({ onClick }) => (
+  <button
+    className={styles.actionButton}
+    onClick={onClick}
+    title="Export Table"
+  >
+    <FaFileExport size={iconSize} />
+  </button>
+);
+
+export const ImportButton = ({ onChange }) => (
+  <label className={styles.actionButton} title="Import Table">
+    <FaFileImport size={iconSize} />
+    <input type="file" className={styles.fileInput} onChange={onChange} />
+  </label>
 );

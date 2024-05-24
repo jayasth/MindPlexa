@@ -72,3 +72,98 @@ export const exportTableData = (content: any) => {
   linkElement.setAttribute('download', exportFileDefaultName);
   linkElement.click();
 };
+
+export const toggleBold = (
+  content: any,
+  setContent: (content: any) => void
+) => {
+  console.log('TableFunctions: Toggling bold');
+  setContent((prevContent: any) => ({
+    ...prevContent,
+    isBold: !prevContent.isBold
+  }));
+};
+
+export const toggleItalic = (
+  content: any,
+  setContent: (content: any) => void
+) => {
+  console.log('TableFunctions: Toggling italic');
+  setContent((prevContent: any) => ({
+    ...prevContent,
+    isItalic: !prevContent.isItalic
+  }));
+};
+
+export const toggleUnderline = (
+  content: any,
+  setContent: (content: any) => void
+) => {
+  console.log('TableFunctions: Toggling underline');
+  setContent((prevContent: any) => ({
+    ...prevContent,
+    isUnderline: !prevContent.isUnderline
+  }));
+};
+
+export const alignLeft = (content: any, setContent: (content: any) => void) => {
+  console.log('TableFunctions: Aligning left');
+  setContent((prevContent: any) => ({
+    ...prevContent,
+    alignment: 'left'
+  }));
+};
+
+export const alignCenter = (
+  content: any,
+  setContent: (content: any) => void
+) => {
+  console.log('TableFunctions: Aligning center');
+  setContent((prevContent: any) => ({
+    ...prevContent,
+    alignment: 'center'
+  }));
+};
+
+export const alignRight = (
+  content: any,
+  setContent: (content: any) => void
+) => {
+  console.log('TableFunctions: Aligning right');
+  setContent((prevContent: any) => ({
+    ...prevContent,
+    alignment: 'right'
+  }));
+};
+
+export const sortTable = (content: any, setContent: (content: any) => void) => {
+  console.log('TableFunctions: Sorting table');
+  setContent((prevContent: any) => {
+    const sortedRows = [...prevContent.rows].sort((a, b) => {
+      // Assuming sorting by the first column for simplicity
+      const firstColumn = prevContent.columns[0].field;
+      if (a[firstColumn] < b[firstColumn]) return -1;
+      if (a[firstColumn] > b[firstColumn]) return 1;
+      return 0;
+    });
+    return {
+      ...prevContent,
+      rows: sortedRows
+    };
+  });
+};
+
+export const filterTable = (
+  content: any,
+  setContent: (content: any) => void,
+  filterFn: (row: any) => boolean
+) => {
+  console.log('TableFunctions: Filtering table');
+  setContent((prevContent: any) => {
+    const filteredRows = prevContent.rows.filter(filterFn);
+    return {
+      ...prevContent,
+      rows: filteredRows
+    };
+  });
+};

@@ -22,6 +22,11 @@ import {
 import {
   AddColumnButton,
   AddRowButton,
+  AlignLeftButton,
+  AlignCenterButton,
+  AlignRightButton,
+  SortButton,
+  FilterButton,
   ExportButton,
   ImportButton
 } from '@/ui/nodes/tableNode/TableNodeToolbar';
@@ -34,7 +39,12 @@ import {
   addColumn,
   addRow,
   importTableData,
-  exportTableData
+  exportTableData,
+  alignLeft,
+  alignCenter,
+  alignRight,
+  sortTable,
+  filterTable
 } from '@/ui/nodes/tableNode/TableFunctions';
 
 import {
@@ -237,6 +247,13 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
       <div className={styles.toolbar}>
         <AddColumnButton onClick={() => addColumn(content, setContent)} />
         <AddRowButton onClick={() => addRow(content, setContent)} />
+        <AlignLeftButton onClick={() => alignLeft(content, setContent)} />
+        <AlignCenterButton onClick={() => alignCenter(content, setContent)} />
+        <AlignRightButton onClick={() => alignRight(content, setContent)} />
+        <SortButton onClick={() => sortTable(content, setContent)} />
+        <FilterButton
+          onClick={() => filterTable(content, setContent, (row) => true)}
+        />
         <ExportButton onClick={() => exportTableData(content)} />
         <ImportButton onChange={(e) => importTableData(e, setContent)} />
       </div>
