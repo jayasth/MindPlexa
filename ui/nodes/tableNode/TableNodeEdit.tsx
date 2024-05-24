@@ -243,6 +243,13 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           minWidth={200}
           minHeight={200}
           onResize={handleResize}
+          onResizeEnd={() => {
+            onNodeResizeStop(
+              data.id,
+              { width: nodeWidth, height: nodeHeight },
+              position
+            );
+          }}
         />
         <div className={styles.header}>
           <input

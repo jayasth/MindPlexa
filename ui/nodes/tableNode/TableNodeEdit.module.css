@@ -44,6 +44,14 @@
   background-color: transparent;
 }
 
+.toolbar {
+  display: flex;
+  justify-content: space-between; /* Distribute buttons equally */
+  align-items: center;
+  padding: 8px;
+  background-color: transparent;
+}
+
 .tableContent {
   flex-grow: 1;
   overflow: auto;
