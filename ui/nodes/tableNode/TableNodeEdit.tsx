@@ -186,10 +186,13 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     setNodeHeight(height);
   }, [width, height]);
 
-  const handleResize = useCallback(
+  const handleResize = useCallback((event, { width, height }) => {
+    setNodeWidth(width);
+    setNodeHeight(height);
+  }, []);
+
+  const handleResizeEnd = useCallback(
     (event, { width, height }) => {
-      setNodeWidth(width);
-      setNodeHeight(height);
       onNodeResizeStop(data.id, { width, height }, position);
     },
     [data.id, onNodeResizeStop, position]
@@ -248,13 +251,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
         minWidth={200}
         minHeight={200}
         onResize={handleResize}
-        onResizeEnd={() => {
-          onNodeResizeStop(
-            data.id,
-            { width: nodeWidth, height: nodeHeight },
-            position
-          );
-        }}
+        onResizeEnd={handleResizeEnd}
       />
       <div className={styles.header}>
         <input
