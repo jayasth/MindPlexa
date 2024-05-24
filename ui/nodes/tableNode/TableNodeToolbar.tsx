@@ -14,7 +14,7 @@ import {
   FaSort,
   FaFilter
 } from 'react-icons/fa';
-import styles from './TableNodeComponents.module.css';
+import styles from '@/ui/nodes/tableNode/TableNodeToolbar.module.css';
 
 export const AddColumnButton = ({ onClick }) => (
   <button className={styles.actionButton} onClick={onClick} title="Add Column">

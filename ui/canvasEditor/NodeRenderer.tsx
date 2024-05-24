@@ -1,20 +1,51 @@
 import React, { useState, useEffect } from 'react';
 import { NodeProps, Handle, Position } from 'reactflow';
 import { Node as BaseNode } from '@/ui/canvasEditor/nodeTypes';
-import NoteNode from '@/ui/nodes/noteNode/NoteNodeView';
 import dynamic from 'next/dynamic';
-import TaskNode from '@/ui/nodes/taskNode/TaskNodeView';
-import TaskNodeEdit from '@/ui/nodes/taskNode/TaskNodeEdit';
-import TableNode from '@/ui/nodes/tableNode/TableNodeView';
-import TableNodeEdit from '@/ui/nodes/tableNode/TableNodeEdit';
-import CalendarNode from '@/ui/nodes/calendarNode/CalendarNodeView';
-import CalendarNodeEdit from '@/ui/nodes/calendarNode/CalendarNodeEdit';
-import DrawNode from '@/ui/nodes/drawNode/DrawNodeView';
-import DrawNodeEdit from '@/ui/nodes/drawNode/DrawNodeEdit';
 import { useStore } from '@/app/store/useCanvasStore';
 import { getNodeSpecificProperties } from '@/ui/canvasEditor/utils/nodeProperties';
 
 const NoteNodeEdit = dynamic(() => import('@/ui/nodes/noteNode/NoteNodeEdit'), {
+  ssr: false
+});
+const TaskNodeEdit = dynamic(() => import('@/ui/nodes/taskNode/TaskNodeEdit'), {
+  ssr: false
+});
+const TableNodeEdit = dynamic(
+  () => import('@/ui/nodes/tableNode/TableNodeEdit'),
+  {
+    ssr: false
+  }
+);
+const CalendarNodeEdit = dynamic(
+  () => import('@/ui/nodes/calendarNode/CalendarNodeEdit'),
+  {
+    ssr: false
+  }
+);
+const DrawNodeEdit = dynamic(() => import('@/ui/nodes/drawNode/DrawNodeEdit'), {
+  ssr: false
+});
+
+const NoteNodeView = dynamic(() => import('@/ui/nodes/noteNode/NoteNodeView'), {
+  ssr: false
+});
+const TaskNodeView = dynamic(() => import('@/ui/nodes/taskNode/TaskNodeView'), {
+  ssr: false
+});
+const TableNodeView = dynamic(
+  () => import('@/ui/nodes/tableNode/TableNodeView'),
+  {
+    ssr: false
+  }
+);
+const CalendarNodeView = dynamic(
+  () => import('@/ui/nodes/calendarNode/CalendarNodeView'),
+  {
+    ssr: false
+  }
+);
+const DrawNodeView = dynamic(() => import('@/ui/nodes/drawNode/DrawNodeView'), {
   ssr: false
 });
 
@@ -99,11 +130,11 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
   };
 
   const nodeComponents = {
-    note: { view: NoteNode, edit: NoteNodeEdit },
-    task: { view: TaskNode, edit: TaskNodeEdit },
-    table: { view: TableNode, edit: TableNodeEdit },
-    calendar: { view: CalendarNode, edit: CalendarNodeEdit },
-    draw: { view: DrawNode, edit: DrawNodeEdit }
+    note: { view: NoteNodeView, edit: NoteNodeEdit },
+    task: { view: TaskNodeView, edit: TaskNodeEdit },
+    table: { view: TableNodeView, edit: TableNodeEdit },
+    calendar: { view: CalendarNodeView, edit: CalendarNodeEdit },
+    draw: { view: DrawNodeView, edit: DrawNodeEdit }
   };
 
   if (node.type in nodeComponents) {
