@@ -2,13 +2,12 @@
   display: flex;
   flex-direction: column;
   border-radius: 8px;
-  padding: 16px;
+  padding: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   height: 100%;
   cursor: move;
   border: 1px solid #ddd;
-  background-color: #fff;
 }
 
 .header {
@@ -16,8 +15,10 @@
   align-items: center;
   justify-content: space-between;
   padding: 8px 12px;
-  background-color: #f7f7f7;
-  border-bottom: 1px solid #ddd;
+  background-color: transparent;
+  z-index: 0;
+  cursor: move;
+  border-bottom: 1px solid #ccc;
 }
 
 .titleInput {
@@ -29,11 +30,12 @@
   flex-grow: 1;
   cursor: text;
   color: inherit;
+  box-shadow: none !important;
 }
 
 .titleInput:focus,
 .titleInput:active {
-  border-bottom: 2px solid #007bff;
+  border-bottom: 2px solid #989ff0;
   transition: border-bottom 0.3s ease-in-out;
 }
 
@@ -41,8 +43,7 @@
   display: flex;
   justify-content: space-between;
   margin-top: 8px;
-  background-color: #f7f7f7;
-  border-top: 1px solid #ddd;
+  background-color: transparent;
   padding: 8px 12px;
 }
 
@@ -51,25 +52,30 @@
   justify-content: space-between;
   align-items: center;
   padding: 8px;
-  background-color: #f7f7f7;
+  background-color: transparent;
   border-bottom: 1px solid #ddd;
 }
 
 .tableContent {
   flex-grow: 1;
   overflow: auto;
-  background-color: #fff;
+  background-color: transparent;
+  outline: none;
+  resize: none;
   padding: 8px;
-  border: 1px solid #ddd;
+  z-index: 0;
+  cursor: text;
+  border: 1px solid #ccc;
+  border-collapse: collapse;
 }
 
 .tableContent .ag-header-cell,
 .tableContent .ag-cell {
-  border-right: 1px solid #ddd;
+  border-right: 1px solid #ccc;
 }
 
 .tableContent .ag-row {
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid #ccc;
 }
 
 .tableContent .ag-cell {
