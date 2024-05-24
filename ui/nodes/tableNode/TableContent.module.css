@@ -1,0 +1,18 @@
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tableCell {
+  border: 1px solid #ccc;
+  padding: 4px;
+}
+
+.cellInput {
+  width: 100%;
+  border: none;
+  background-color: transparent;
+  outline: none;
+  padding: 4px;
+  box-sizing: border-box;
+}

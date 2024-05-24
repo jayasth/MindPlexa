@@ -28,13 +28,14 @@
   flex-grow: 1;
   cursor: text;
   color: inherit;
-  box-shadow: none !important;
 }
 
-.titleInput:focus,
-.titleInput:active {
-  border-bottom: 2px solid #989ff0;
-  transition: border-bottom 0.3s ease-in-out;
+.toolbar {
+  display: flex;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 8px 12px;
+  background-color: transparent;
 }
 
 .footer {
@@ -44,16 +45,51 @@
   background-color: transparent;
 }
 
+.actionButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 4px;
+  color: inherit;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.fileInput {
+  display: none;
+}
+
 .tableContent {
   flex-grow: 1;
   overflow: auto;
   background-color: transparent;
+  border: 1px solid #ccc;
   outline: none;
-  resize: none;
   padding: 8px;
   z-index: 0;
   cursor: text;
-  border: 1px solid #ccc;
+}
+
+.tagContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.tag {
+  background-color: #e0e0e0;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.attachedFile {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #666;
 }
 
 .colorPicker {

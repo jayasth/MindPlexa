@@ -24,7 +24,7 @@ import {
   AddRowButton,
   ExportButton,
   ImportButton
-} from '@/ui/nodes/tableNode/TableNodeToolbar';
+} from '@/ui/nodes/tableNode/TableNodeComponents';
 import { SketchPicker } from 'react-color';
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -33,6 +33,7 @@ import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 
 import {
+  handleTitleChange,
   addColumn,
   addRow,
   importTableData,
@@ -40,7 +41,6 @@ import {
 } from '@/ui/nodes/tableNode/TableFunctions';
 
 import {
-  handleTitleChange,
   handleSave,
   handleDelete,
   handleAddTag,
