@@ -7,7 +7,8 @@
   overflow: hidden;
   height: 100%;
   cursor: move;
-  border: 1px solid #ccc; /* Add border to the table */
+  border: 1px solid #ccc;
+  border-collapse: collapse;
 }
 
 .header {
@@ -18,7 +19,7 @@
   background-color: transparent;
   z-index: 0;
   cursor: move;
-  border-bottom: 1px solid #ccc; /* Add border to the header */
+  border-bottom: 1px solid #ccc;
 }
 
 .titleInput {
@@ -44,16 +45,16 @@
   justify-content: space-between;
   margin-top: 8px;
   background-color: transparent;
-  border-top: 1px solid #ccc; /* Add border to the footer */
+  border-top: 1px solid #ccc;
 }
 
 .toolbar {
   display: flex;
-  justify-content: space-between; /* Distribute buttons equally */
+  justify-content: space-between;
   align-items: center;
   padding: 8px;
   background-color: transparent;
-  border-bottom: 1px solid #ccc; /* Add border to the toolbar */
+  border-bottom: 1px solid #ccc;
 }
 
 .tableContent {
@@ -66,6 +67,20 @@
   z-index: 0;
   cursor: text;
   border: 1px solid #ccc;
+  border-collapse: collapse;
+}
+
+.tableContent .ag-header-cell,
+.tableContent .ag-cell {
+  border-right: 1px solid #ccc;
+}
+
+.tableContent .ag-row {
+  border-bottom: 1px solid #ccc;
+}
+
+.tableContent .ag-cell {
+  padding: 4px;
 }
 
 .colorPicker {
@@ -83,10 +98,10 @@
 
 .nowheel {
   overflow: auto;
-  -ms-overflow-style: none; /* Internet Explorer 10+ */
-  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 .nowheel::-webkit-scrollbar {
-  display: none; /* Safari and Chrome */
+  display: none;
 }

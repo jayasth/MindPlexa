@@ -78,6 +78,30 @@ interface TableNodeEditProps extends NodeProps {
   position: { x: number; y: number };
 }
 
+const CustomHeader = (props) => {
+  const [headerName, setHeaderName] = useState(props.displayName);
+
+  const onHeaderNameChange = (e) => {
+    setHeaderName(e.target.value);
+    const newColumns = props.content.columns.map((col) => {
+      if (col.field === props.column.colId) {
+        return { ...col, headerName: e.target.value };
+      }
+      return col;
+    });
+    props.setContent({ ...props.content, columns: newColumns });
+  };
+
+  return (
+    <input
+      type="text"
+      value={headerName}
+      onChange={onHeaderNameChange}
+      style={{ width: '100%', border: 'none', background: 'transparent' }}
+    />
+  );
+};
+
 const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   data,
   width,
@@ -263,9 +287,43 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           style={{ height: '100%', width: '100%' }}
         >
           <AgGridReact
-            columnDefs={content.columns}
+            columnDefs={content.columns.map((col) => ({
+              ...col,
+              headerComponentFramework: (props) => (
+                <CustomHeader
+                  {...props}
+                  content={content}
+                  setContent={setContent}
+                />
+              )
+            }))}
             rowData={content.rows}
             domLayout="autoHeight"
+            rowHeight={30} // Adjust the value as needed
+            defaultColDef={{
+              resizable: true,
+              editable: true,
+              sortable: true,
+              filter: true
+            }}
+            onGridReady={(params) => {
+              params.api.sizeColumnsToFit();
+            }}
+            onCellValueChanged={(event) => {
+              setContent((prevContent) => {
+                const rowIndex: number | null = event.rowIndex;
+                const colId = event.colDef.field; // Use colDef.field instead of event.column.colId
+                if (colId !== undefined && rowIndex !== null) {
+                  const newRows = [...prevContent.rows];
+                  newRows[rowIndex][colId] = event.newValue;
+                  return {
+                    ...prevContent,
+                    rows: newRows
+                  };
+                }
+                return prevContent;
+              });
+            }}
           />
         </div>
       </div>

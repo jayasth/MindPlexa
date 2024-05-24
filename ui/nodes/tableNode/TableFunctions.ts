@@ -16,11 +16,17 @@ export const addColumn = (content: any, setContent: (content: any) => void) => {
   setContent((prevContent: any) => {
     const newColumn = {
       headerName: 'New Column',
-      field: `col${prevContent.columns.length + 1}`
+      field: `col${prevContent.columns.length + 1}`,
+      editable: true
     };
+    const newRows = prevContent.rows.map((row: any) => ({
+      ...row,
+      [newColumn.field]: ''
+    }));
     return {
       ...prevContent,
-      columns: [...prevContent.columns, newColumn]
+      columns: [...prevContent.columns, newColumn],
+      rows: newRows
     };
   });
 };
@@ -53,7 +59,8 @@ export const importTableData = (
       }).data;
       const columns = Object.keys(importedData[0]).map((key) => ({
         headerName: key,
-        field: key
+        field: key,
+        editable: true
       }));
       setContent({ columns, rows: importedData });
     }
@@ -110,7 +117,10 @@ export const alignLeft = (content: any, setContent: (content: any) => void) => {
   console.log('TableFunctions: Aligning left');
   setContent((prevContent: any) => ({
     ...prevContent,
-    alignment: 'left'
+    columns: prevContent.columns.map((col: any) => ({
+      ...col,
+      cellStyle: { textAlign: 'left' }
+    }))
   }));
 };
 
@@ -121,7 +131,10 @@ export const alignCenter = (
   console.log('TableFunctions: Aligning center');
   setContent((prevContent: any) => ({
     ...prevContent,
-    alignment: 'center'
+    columns: prevContent.columns.map((col: any) => ({
+      ...col,
+      cellStyle: { textAlign: 'center' }
+    }))
   }));
 };
 
@@ -132,7 +145,10 @@ export const alignRight = (
   console.log('TableFunctions: Aligning right');
   setContent((prevContent: any) => ({
     ...prevContent,
-    alignment: 'right'
+    columns: prevContent.columns.map((col: any) => ({
+      ...col,
+      cellStyle: { textAlign: 'right' }
+    }))
   }));
 };
 
@@ -140,7 +156,6 @@ export const sortTable = (content: any, setContent: (content: any) => void) => {
   console.log('TableFunctions: Sorting table');
   setContent((prevContent: any) => {
     const sortedRows = [...prevContent.rows].sort((a, b) => {
-      // Assuming sorting by the first column for simplicity
       const firstColumn = prevContent.columns[0].field;
       if (a[firstColumn] < b[firstColumn]) return -1;
       if (a[firstColumn] > b[firstColumn]) return 1;
