@@ -1,32 +1,34 @@
 import React from 'react';
+import { FaBold, FaItalic, FaUnderline, FaSort } from 'react-icons/fa';
+import { MdOutlineViewColumn, MdOutlineViewAgenda } from 'react-icons/md';
 import {
-  FaPlus,
-  FaTable,
-  FaThList,
-  FaBold,
-  FaItalic,
-  FaUnderline,
-  FaAlignLeft,
-  FaAlignCenter,
-  FaAlignRight,
-  FaSort,
-  FaFilter,
-  FaFileImport,
-  FaFileExport
-} from 'react-icons/fa';
+  CiImport,
+  CiExport,
+  CiViewTable,
+  CiFilter,
+  CiTextAlignCenter,
+  CiTextAlignLeft,
+  CiTextAlignRight
+} from 'react-icons/ci';
 import styles from '@/ui/nodes/tableNode/TableNodeToolbar.module.css';
 
 const iconSize = 16;
 
+export const AddTableButton = ({ onClick }) => (
+  <button className={styles.actionButton} onClick={onClick} title="Add Table">
+    <CiViewTable size={iconSize} />
+  </button>
+);
+
 export const AddColumnButton = ({ onClick }) => (
   <button className={styles.actionButton} onClick={onClick} title="Add Column">
-    <FaTable size={iconSize} />
+    <MdOutlineViewColumn size={iconSize} />
   </button>
 );
 
 export const AddRowButton = ({ onClick }) => (
   <button className={styles.actionButton} onClick={onClick} title="Add Row">
-    <FaThList size={iconSize} />
+    <MdOutlineViewAgenda size={iconSize} />
   </button>
 );
 
@@ -50,7 +52,7 @@ export const UnderlineButton = ({ onClick }) => (
 
 export const AlignLeftButton = ({ onClick }) => (
   <button className={styles.actionButton} onClick={onClick} title="Align Left">
-    <FaAlignLeft size={iconSize} />
+    <CiTextAlignLeft size={iconSize} />
   </button>
 );
 
@@ -60,13 +62,13 @@ export const AlignCenterButton = ({ onClick }) => (
     onClick={onClick}
     title="Align Center"
   >
-    <FaAlignCenter size={iconSize} />
+    <CiTextAlignCenter size={iconSize} />
   </button>
 );
 
 export const AlignRightButton = ({ onClick }) => (
   <button className={styles.actionButton} onClick={onClick} title="Align Right">
-    <FaAlignRight size={iconSize} />
+    <CiTextAlignRight size={iconSize} />
   </button>
 );
 
@@ -78,7 +80,7 @@ export const SortButton = ({ onClick }) => (
 
 export const FilterButton = ({ onClick }) => (
   <button className={styles.actionButton} onClick={onClick} title="Filter">
-    <FaFilter size={iconSize} />
+    <CiFilter size={iconSize} />
   </button>
 );
 
@@ -88,13 +90,13 @@ export const ExportButton = ({ onClick }) => (
     onClick={onClick}
     title="Export Table"
   >
-    <FaFileExport size={iconSize} />
+    <CiExport size={iconSize} />
   </button>
 );
 
 export const ImportButton = ({ onChange }) => (
   <label className={styles.actionButton} title="Import Table">
-    <FaFileImport size={iconSize} />
+    <CiImport size={iconSize} />
     <input type="file" className={styles.fileInput} onChange={onChange} />
   </label>
 );

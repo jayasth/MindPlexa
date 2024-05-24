@@ -20,6 +20,7 @@ import {
   DuplicateButton
 } from '@/ui/nodes/CommonNodeComponents';
 import {
+  AddTableButton,
   AddColumnButton,
   AddRowButton,
   AlignLeftButton,
@@ -31,6 +32,7 @@ import {
   ImportButton
 } from '@/ui/nodes/tableNode/TableNodeToolbar';
 import { SketchPicker } from 'react-color';
+import AddTableModal from '@/ui/nodes/tableNode/AddTableModal'; // Import the modal
 
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
@@ -80,6 +82,11 @@ interface TableNodeEditProps extends NodeProps {
 
 const CustomHeader = (props) => {
   const [headerName, setHeaderName] = useState(props.displayName);
+  const [isContextMenuVisible, setIsContextMenuVisible] = useState(false);
+  const [contextMenuPosition, setContextMenuPosition] = useState({
+    x: 0,
+    y: 0
+  });
 
   const onHeaderNameChange = (e) => {
     setHeaderName(e.target.value);
@@ -92,13 +99,87 @@ const CustomHeader = (props) => {
     props.setContent({ ...props.content, columns: newColumns });
   };
 
+  const handleRightClick = (e) => {
+    e.preventDefault();
+    setContextMenuPosition({ x: e.clientX, y: e.clientY });
+    setIsContextMenuVisible(true);
+  };
+
+  const handleRename = () => {
+    const newHeaderName = prompt('Enter new header name:', headerName);
+    if (newHeaderName !== null) {
+      setHeaderName(newHeaderName);
+      const newColumns = props.content.columns.map((col) => {
+        if (col.field === props.column.colId) {
+          return { ...col, headerName: newHeaderName };
+        }
+        return col;
+      });
+      props.setContent({ ...props.content, columns: newColumns });
+    }
+    setIsContextMenuVisible(false);
+  };
+
+  const handleChangeType = (newType) => {
+    const newColumns = props.content.columns.map((col) => {
+      if (col.field === props.column.colId) {
+        return { ...col, type: newType };
+      }
+      return col;
+    });
+    props.setContent({ ...props.content, columns: newColumns });
+    setIsContextMenuVisible(false);
+  };
+
   return (
-    <input
-      type="text"
-      value={headerName}
-      onChange={onHeaderNameChange}
-      style={{ width: '100%', border: 'none', background: 'transparent' }}
-    />
+    <div onContextMenu={handleRightClick} style={{ position: 'relative' }}>
+      <input
+        type="text"
+        value={headerName}
+        onChange={onHeaderNameChange}
+        style={{ width: '100%', border: 'none', background: 'transparent' }}
+      />
+      {isContextMenuVisible && (
+        <ul
+          style={{
+            position: 'absolute',
+            top: contextMenuPosition.y,
+            left: contextMenuPosition.x,
+            backgroundColor: 'white',
+            border: '1px solid #ccc',
+            listStyle: 'none',
+            padding: '5px',
+            zIndex: 1000
+          }}
+          onMouseLeave={() => setIsContextMenuVisible(false)}
+        >
+          <li
+            onClick={handleRename}
+            style={{ padding: '5px', cursor: 'pointer' }}
+          >
+            Rename
+          </li>
+          <li
+            onClick={() => handleChangeType('text')}
+            style={{ padding: '5px', cursor: 'pointer' }}
+          >
+            Change to Text
+          </li>
+          <li
+            onClick={() => handleChangeType('number')}
+            style={{ padding: '5px', cursor: 'pointer' }}
+          >
+            Change to Number
+          </li>
+          <li
+            onClick={() => handleChangeType('date')}
+            style={{ padding: '5px', cursor: 'pointer' }}
+          >
+            Change to Date
+          </li>
+        </ul>
+      )}
+    </div>
   );
 };
 
@@ -125,6 +206,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   const [nodeWidth, setNodeWidth] = useState(width);
   const [nodeHeight, setNodeHeight] = useState(height);
   const [isColorPickerVisible, setIsColorPickerVisible] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false); // State for modal
 
   const updateNode = useStore((state) => state.updateNode);
   const colorPickerRef = useRef<HTMLDivElement>(null);
@@ -231,6 +313,22 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     }
   }, []);
 
+  const handleAddTable = (columns, rows) => {
+    const newColumns = columns.map((col, index) => ({
+      headerName: col.name || `Column ${index + 1}`,
+      field: `col${index + 1}`,
+      editable: true,
+      type: col.type
+    }));
+    const newRows = Array.from({ length: rows }, () =>
+      newColumns.reduce((acc, col) => {
+        acc[col.field] = '';
+        return acc;
+      }, {})
+    );
+    setContent({ columns: newColumns, rows: newRows });
+  };
+
   // Define custom CSS properties
   const customStyles: CSSProperties = {
     width: nodeWidth,
@@ -266,6 +364,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
         />
       </div>
       <div className={styles.toolbar}>
+        <AddTableButton onClick={() => setIsModalOpen(true)} />{' '}
         <AddColumnButton onClick={() => addColumn(content, setContent)} />
         <AddRowButton onClick={() => addRow(content, setContent)} />
         <AlignLeftButton onClick={() => alignLeft(content, setContent)} />
@@ -373,6 +472,12 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
         position={Position.Bottom}
         className={`${edgeStyles.reactFlowHandle} ${edgeStyles.reactFlowHandleBottom}`}
       />
+      {isModalOpen && (
+        <AddTableModal
+          onClose={() => setIsModalOpen(false)}
+          onAddTable={handleAddTable}
+        />
+      )}
     </div>
   );
 };
