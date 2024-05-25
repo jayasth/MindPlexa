@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import Button from '@/ui/Button/Button';
+import Input from '@/ui/Input/Input';
 import styles from './AddTableModal.module.css';
 
 const AddTableModal = ({ onClose, onAddTable }) => {
@@ -20,30 +22,23 @@ const AddTableModal = ({ onClose, onAddTable }) => {
     onClose();
   };
 
+  const handleRowsChange = (value) => {
+    setRows(parseInt(value, 10));
+  };
+
   return (
     <div className={styles.modal}>
       <div className={styles.modalContent}>
         <h2>Add Table</h2>
         <div className={styles.formGroup}>
-          <label>Number of Rows:</label>
-          <input
-            type="number"
-            value={rows}
-            onChange={(e) => setRows(parseInt(e.target.value, 10))}
-            min="1"
-          />
-        </div>
-        <div className={styles.formGroup}>
           <label>Columns:</label>
           {columns.map((col, index) => (
             <div key={index} className={styles.columnConfig}>
-              <input
+              <Input
                 type="text"
                 placeholder="Column Name"
                 value={col.name}
-                onChange={(e) =>
-                  handleColumnChange(index, 'name', e.target.value)
-                }
+                onChange={(value) => handleColumnChange(index, 'name', value)}
               />
               <select
                 value={col.type}
@@ -57,11 +52,26 @@ const AddTableModal = ({ onClose, onAddTable }) => {
               </select>
             </div>
           ))}
-          <button onClick={handleAddColumn}>Add Column</button>
+          <Button variant="slim" onClick={handleAddColumn}>
+            Add Column
+          </Button>
+        </div>
+        <div className={styles.formGroup}>
+          <label>Number of Rows:</label>
+          <Input
+            type="number"
+            value={rows}
+            onChange={handleRowsChange}
+            min="1"
+          />
         </div>
         <div className={styles.actions}>
-          <button onClick={handleAddTable}>Add Table</button>
-          <button onClick={onClose}>Cancel</button>
+          <Button variant="rounded" onClick={handleAddTable}>
+            Add Table
+          </Button>
+          <Button variant="rounded" onClick={onClose}>
+            Cancel
+          </Button>
         </div>
       </div>
     </div>
