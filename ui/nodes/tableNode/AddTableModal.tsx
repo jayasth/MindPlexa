@@ -6,6 +6,7 @@ import styles from './AddTableModal.module.css';
 const AddTableModal = ({ onClose, onAddTable }) => {
   const [columns, setColumns] = useState([{ name: '', type: 'text' }]);
   const [rows, setRows] = useState(1);
+  const validTypes = ['text', 'number', 'date', 'boolean', 'currency'];
 
   const handleAddColumn = () => {
     setColumns([...columns, { name: '', type: 'text' }]);
@@ -13,11 +14,20 @@ const AddTableModal = ({ onClose, onAddTable }) => {
 
   const handleColumnChange = (index, field, value) => {
     const newColumns = [...columns];
+    if (field === 'type' && !validTypes.includes(value)) {
+      alert('Invalid type selected.');
+      return;
+    }
     newColumns[index][field] = value;
     setColumns(newColumns);
   };
 
   const handleAddTable = () => {
+    if (columns.length > 0 || rows > 0) {
+      if (!window.confirm('This will override existing data. Continue?')) {
+        return;
+      }
+    }
     onAddTable(columns, rows);
     onClose();
   };
@@ -46,9 +56,11 @@ const AddTableModal = ({ onClose, onAddTable }) => {
                   handleColumnChange(index, 'type', e.target.value)
                 }
               >
-                <option value="text">Text</option>
-                <option value="number">Number</option>
-                <option value="date">Date</option>
+                {validTypes.map((type) => (
+                  <option key={type} value={type}>
+                    {type.charAt(0).toUpperCase() + type.slice(1)}
+                  </option>
+                ))}
               </select>
             </div>
           ))}

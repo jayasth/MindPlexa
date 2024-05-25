@@ -16,6 +16,8 @@
   border-radius: 8px;
   width: 400px;
   max-width: 90%;
+  max-height: 80%; /* Set a maximum height for the modal */
+  overflow-y: auto; /* Enable vertical scrolling */
 }
 
 .formGroup {

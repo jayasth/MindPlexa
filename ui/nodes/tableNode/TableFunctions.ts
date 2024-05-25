@@ -1,14 +1,46 @@
 import { useStore } from '@/app/store/useCanvasStore';
 import Papa from 'papaparse';
 
-export const handleTitleChange = (
-  id: string,
-  title: string,
-  onChangeTitle: (title: string) => void
-) => {
-  const { updateNode } = useStore.getState();
-  onChangeTitle(title);
-  updateNode(id, { data: { title } });
+export const validateCellValue = (value: any, type: string): boolean => {
+  switch (type) {
+    case 'text':
+      return typeof value === 'string';
+    case 'number':
+      return !isNaN(value);
+    case 'date':
+      return !isNaN(Date.parse(value));
+    case 'boolean':
+      return value === 'true' || value === 'false';
+    case 'currency':
+      return !isNaN(parseFloat(value)) && isFinite(value);
+    default:
+      return true;
+  }
+};
+
+const onCellValueChanged = (event, setContent) => {
+  const { colDef, newValue, oldValue, data } = event;
+  const columnType = colDef.type;
+
+  if (!validateCellValue(newValue, columnType)) {
+    alert(`Invalid value for column type ${columnType}`);
+    event.node.setDataValue(colDef.field, oldValue);
+    return;
+  }
+
+  setContent((prevContent) => {
+    const rowIndex = event.rowIndex;
+    const colId = colDef.field;
+    if (colId !== undefined && rowIndex !== null) {
+      const newRows = [...prevContent.rows];
+      newRows[rowIndex][colId] = newValue;
+      return {
+        ...prevContent,
+        rows: newRows
+      };
+    }
+    return prevContent;
+  });
 };
 
 export const addColumn = (content: any, setContent: (content: any) => void) => {
@@ -46,12 +78,12 @@ export const addRow = (content: any, setContent: (content: any) => void) => {
 };
 
 export const importTableData = (
-  event: any,
+  event: React.ChangeEvent<HTMLInputElement>,
   setContent: (content: any) => void
 ) => {
   const fileReader = new FileReader();
-  fileReader.onload = (e) => {
-    if (e.target !== null) {
+  fileReader.onload = (e: ProgressEvent<FileReader>) => {
+    if (e.target && e.target.result) {
       const importedData = Papa.parse(e.target.result as string, {
         header: true,
         dynamicTyping: true,
@@ -65,7 +97,7 @@ export const importTableData = (
       setContent({ columns, rows: importedData });
     }
   };
-  if (event.target.files[0]) {
+  if (event.target.files && event.target.files[0]) {
     fileReader.readAsText(event.target.files[0]);
   }
 };

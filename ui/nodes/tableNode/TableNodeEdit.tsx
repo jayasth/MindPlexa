@@ -235,6 +235,22 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     color: textColor
   };
 
+  const onCellValueChanged = (event) => {
+    setContent((prevContent) => {
+      const rowIndex: number | null = event.rowIndex;
+      const colId = event.colDef.field; // Use colDef.field instead of event.column.colId
+      if (colId !== undefined && rowIndex !== null) {
+        const newRows = [...prevContent.rows];
+        newRows[rowIndex][colId] = event.newValue;
+        return {
+          ...prevContent,
+          rows: newRows
+        };
+      }
+      return prevContent;
+    });
+  };
+
   return (
     <div
       className={styles.tableNode}
@@ -289,7 +305,8 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
                   content={content}
                   setContent={setContent}
                 />
-              )
+              ),
+              headerName: `${col.headerName} (${col.type})`
             }))}
             rowData={content.rows}
             domLayout="autoHeight"
@@ -303,21 +320,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
             onGridReady={(params) => {
               params.api.sizeColumnsToFit();
             }}
-            onCellValueChanged={(event) => {
-              setContent((prevContent) => {
-                const rowIndex: number | null = event.rowIndex;
-                const colId = event.colDef.field; // Use colDef.field instead of event.column.colId
-                if (colId !== undefined && rowIndex !== null) {
-                  const newRows = [...prevContent.rows];
-                  newRows[rowIndex][colId] = event.newValue;
-                  return {
-                    ...prevContent,
-                    rows: newRows
-                  };
-                }
-                return prevContent;
-              });
-            }}
+            onCellValueChanged={onCellValueChanged}
           />
         </div>
       </div>
