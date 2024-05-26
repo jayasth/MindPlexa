@@ -52,12 +52,14 @@ const CustomHeader = (props) => {
     setIsContextMenuVisible(false);
   };
 
-  const handleSort = () => {
+  const handleSort = (e) => {
+    e.stopPropagation();
     // Implement sorting logic here
     setIsContextMenuVisible(false);
   };
 
-  const handleFilter = () => {
+  const handleFilter = (e) => {
+    e.stopPropagation();
     // Implement filtering logic here
     setIsContextMenuVisible(false);
   };

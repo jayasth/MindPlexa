@@ -5,41 +5,46 @@
 }
 
 .headerInput {
-  width: 100%;
+  flex-grow: 1;
   border: none;
   background: transparent;
+  font-size: 14px;
+  padding: 4px;
 }
 
 .iconsContainer {
   display: flex;
   align-items: center;
-  visibility: hidden; /* Initially hidden */
+  visibility: hidden;
+  position: absolute;
+  right: 0;
 }
 
 .headerContainer:hover .iconsContainer {
-  visibility: visible; /* Show on hover */
+  visibility: visible;
 }
 
 .filterIcon,
 .sortIcon {
   cursor: pointer;
-  margin-left: 5px;
+  margin-left: 8px;
 }
 
 .contextMenu {
   position: absolute;
-  background-color: white;
+  background: white;
   border: 1px solid #ccc;
   list-style: none;
-  padding: 5px;
+  padding: 0;
+  margin: 0;
   z-index: 1000;
 }
 
 .contextMenu li {
-  padding: 5px;
+  padding: 8px 12px;
   cursor: pointer;
 }
 
 .contextMenu li:hover {
-  background-color: #f0f0f0;
+  background: #eee;
 }
