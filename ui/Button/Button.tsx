@@ -9,7 +9,7 @@ import LoadingDots from '@/ui/LoadingDots';
 import styles from './Button.module.css';
 
 interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'slim' | 'flat' | 'rounded' | 'outline' | 'sleek';
+  variant?: 'slim' | 'outline' | 'sleek' | 'submit' | 'cancel';
   active?: boolean;
   width?: number;
   loading?: boolean;
@@ -19,7 +19,7 @@ interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
 const Button = forwardRef<HTMLButtonElement, Props>((props, buttonRef) => {
   const {
     className,
-    variant = 'flat',
+    variant = 'sleek',
     children,
     active,
     width,
@@ -34,10 +34,10 @@ const Button = forwardRef<HTMLButtonElement, Props>((props, buttonRef) => {
     styles.root,
     {
       [styles.slim]: variant === 'slim',
-      [styles.flat]: variant === 'flat',
-      [styles.rounded]: variant === 'rounded',
       [styles.outline]: variant === 'outline',
       [styles.sleek]: variant === 'sleek',
+      [styles.submit]: variant === 'submit',
+      [styles.cancel]: variant === 'cancel',
       [styles.loading]: loading,
       [styles.disabled]: disabled
     },

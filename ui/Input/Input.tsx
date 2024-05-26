@@ -5,12 +5,22 @@ import s from './Input.module.css';
 
 interface Props extends Omit<InputHTMLAttributes<any>, 'onChange'> {
   className?: string;
+  variant?: 'slim' | 'outline' | 'sleek' | 'gradient';
   onChange: (value: string) => void;
 }
 const Input = (props: Props) => {
-  const { className, children, onChange, ...rest } = props;
+  const { className, variant = 'sleek', onChange, ...rest } = props;
 
-  const rootClassName = cn(s.root, {}, className);
+  const rootClassName = cn(
+    s.root,
+    {
+      [s.slim]: variant === 'slim',
+      [s.outline]: variant === 'outline',
+      [s.sleek]: variant === 'sleek',
+      [s.gradient]: variant === 'gradient'
+    },
+    className
+  );
 
   const handleOnChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (onChange) {

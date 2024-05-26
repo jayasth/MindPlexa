@@ -1,6 +1,6 @@
 /* Button Base Style */
 .root {
-  @apply bg-myGray-100 text-myGray-800 cursor-pointer inline-flex px-10 rounded-sm leading-6  transition ease-in-out duration-150 shadow-sm font-semibold text-center justify-center uppercase py-4 border border-transparent items-center;
+  @apply bg-myGray-100 text-myGray-800 cursor-pointer inline-flex px-2 py-1 rounded-md leading-4 transition ease-in-out duration-150 shadow-sm font-semibold text-center justify-center uppercase border border-transparent items-center text-xs;
 }
 
 /* Hover State */
@@ -25,15 +25,11 @@
 
 /* Slim Modifier for a thinner appearance */
 .slim {
-  @apply py-1 px-2 text-sm bg-myGray-400 text-light-background border border-light-primary rounded-md shadow-sm transition duration-300 ease-in-out;
+  @apply py-0.5 px-1 text-xs bg-myGray-300 text-light-background border border-light-primary rounded-md shadow-sm transition duration-300 ease-in-out;
 }
 
 .slim:hover {
   @apply shadow-lg shadow-light-primary/50;
-}
-
-.rounded {
-  @apply rounded-full;
 }
 
 .outline {
@@ -51,6 +47,24 @@
 
 .sleek:hover {
   @apply shadow-lg shadow-light-primary/50;
+}
+
+/* Submit variant styles */
+.submit {
+  @apply bg-gradient-to-r from-blue-300 to-purple-300 text-white border border-transparent rounded-md shadow-sm transition duration-300 ease-in-out;
+}
+
+.submit:hover {
+  @apply shadow-lg shadow-blue-300/50;
+}
+
+/* Cancel variant styles */
+.cancel {
+  @apply bg-gradient-to-r from-red-300 to-pink-300 text-white border border-transparent rounded-md shadow-sm transition duration-300 ease-in-out;
+}
+
+.cancel:hover {
+  @apply shadow-lg shadow-red-300/50;
 }
 
 /* Disabled State */

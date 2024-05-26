@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Button from '@/ui/Button/Button';
 import Input from '@/ui/Input/Input';
+import Dropdown from '@/ui/dropdown/Dropdown';
 import styles from './AddTableModal.module.css';
 
 const AddTableModal = ({ onClose, onAddTable }) => {
@@ -49,19 +50,21 @@ const AddTableModal = ({ onClose, onAddTable }) => {
                 placeholder="Column Name"
                 value={col.name}
                 onChange={(value) => handleColumnChange(index, 'name', value)}
+                variant="slim"
+                className={styles.inputWide}
               />
-              <select
+              <Dropdown
                 value={col.type}
-                onChange={(e) =>
-                  handleColumnChange(index, 'type', e.target.value)
-                }
+                onChange={(value) => handleColumnChange(index, 'type', value)}
+                variant="slim"
+                className={styles.dropdownWide}
               >
                 {validTypes.map((type) => (
                   <option key={type} value={type}>
                     {type.charAt(0).toUpperCase() + type.slice(1)}
                   </option>
                 ))}
-              </select>
+              </Dropdown>
             </div>
           ))}
           <Button variant="slim" onClick={handleAddColumn}>
@@ -75,13 +78,15 @@ const AddTableModal = ({ onClose, onAddTable }) => {
             value={rows}
             onChange={handleRowsChange}
             min="1"
+            variant="slim"
+            className={styles.inputNarrow}
           />
         </div>
         <div className={styles.actions}>
-          <Button variant="rounded" onClick={handleAddTable}>
+          <Button variant="submit" onClick={handleAddTable}>
             Add Table
           </Button>
-          <Button variant="rounded" onClick={onClose}>
+          <Button variant="cancel" onClick={onClose}>
             Cancel
           </Button>
         </div>

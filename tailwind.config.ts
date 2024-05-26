@@ -55,6 +55,18 @@ export default {
           800: '#6E69D8',
           900: '#5F56CF'
         },
+        blue: {
+          400: '#60A5FA'
+        },
+        purple: {
+          500: '#A78BFA'
+        },
+        red: {
+          400: '#F87171'
+        },
+        pink: {
+          500: '#F472B6'
+        },
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
