@@ -6,7 +6,6 @@ import React, {
   useCallback
 } from 'react';
 import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
-import { AgGridReact } from 'ag-grid-react';
 import { useStore } from '@/app/store/useCanvasStore';
 import styles from './TableNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
@@ -30,8 +29,8 @@ import { SketchPicker } from 'react-color';
 import AddTableModal from '@/ui/nodes/tableNode/AddTableModal';
 import CustomHeader from '@/ui/nodes/tableNode/CustomHeader';
 
-import 'ag-grid-community/styles/ag-grid.css';
-import 'ag-grid-community/styles/ag-theme-alpine.css';
+import 'react-data-grid/lib/styles.css';
+import DataGrid from 'react-data-grid';
 
 import {
   addColumn,
@@ -199,14 +198,15 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
 
   const handleAddTable = (columns, rows) => {
     const newColumns = columns.map((col, index) => ({
-      headerName: col.name || `Column ${index + 1}`,
-      field: `col${index + 1}`,
-      editable: true,
-      type: col.type
+      key: `col${index + 1}`,
+      name: col.name || `Column ${index + 1}`,
+      resizable: true,
+      width: 150,
+      headerRenderer: (props) => <CustomHeader {...props} />
     }));
     const newRows = Array.from({ length: rows }, () =>
       newColumns.reduce((acc, col) => {
-        acc[col.field] = '';
+        acc[col.key] = '';
         return acc;
       }, {})
     );
@@ -256,38 +256,26 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
         <ImportButton onChange={(e) => importTableData(e, setContent)} />
       </div>
       <div className={`${styles.tableContent} nowheel nodrag`}>
-        <div
-          className="ag-theme-alpine"
-          style={{ height: '100%', width: '100%' }}
-        >
-          <AgGridReact
-            columnDefs={content.columns.map((col) => ({
-              ...col,
-              headerComponent: CustomHeader,
-              headerComponentParams: {
-                content,
-                setContent,
-                updateNode
-              },
-              headerName: `${col.headerName} (${col.type})`,
-              sortable: false,
-              filter: false
-            }))}
-            rowData={content.rows}
-            domLayout="autoHeight"
-            rowHeight={30}
-            defaultColDef={{
-              resizable: true,
-              editable: true
-            }}
-            onGridReady={(params) => {
-              params.api.sizeColumnsToFit();
-            }}
-            onCellValueChanged={(event) =>
-              onCellValueChanged(event, setContent)
-            }
-          />
-        </div>
+        <DataGrid
+          columns={content.columns.map((col) => ({
+            ...col,
+            headerRenderer: CustomHeader,
+            headerRendererParams: {
+              content,
+              setContent,
+              updateNode
+            },
+            headerName: `${col.headerName} (${col.type})`,
+            sortable: false,
+            filter: false
+          }))}
+          rows={content.rows}
+          rowHeight={30}
+          defaultColumnOptions={{
+            resizable: true
+          }}
+          onRowsChange={(newRows) => setContent({ ...content, rows: newRows })}
+        />
       </div>
       <div className={styles.footer}>
         <SaveButton
