@@ -46,6 +46,7 @@ export const handleTableActions = (
   setTableColumns(newColumns);
   updateNode(nodeId, { data: { tableColumns: newColumns } });
 };
+
 export const addRow = (content, setContent) => {
   const newRow = content.columns.reduce((row, col) => {
     row[col.field] = col.type === 'number' ? 0 : '';

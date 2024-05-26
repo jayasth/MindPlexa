@@ -67,6 +67,11 @@
   cursor: text;
   border: 1px solid #ccc;
   border-collapse: collapse;
+  margin-bottom: 4px;
+}
+
+.tableNode .MuiDataGrid-footerContainer {
+  justify-content: center;
 }
 
 .colorPicker {
@@ -90,4 +95,21 @@
 
 .nowheel::-webkit-scrollbar {
   display: none;
+}
+
+.tagContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.tag {
+  background-color: #e0e0e0;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.attachedFile {
+  margin-top: 8px;
 }

@@ -18,13 +18,6 @@ import {
   CloseButton,
   DuplicateButton
 } from '@/ui/nodes/CommonNodeComponents';
-import {
-  AddTableButton,
-  AddColumnButton,
-  AddRowButton,
-  ExportButton,
-  ImportButton
-} from '@/ui/nodes/tableNode/TableNodeToolbar';
 import { SketchPicker } from 'react-color';
 import AddTableModal from '@/ui/nodes/tableNode/AddTableModal';
 import {
@@ -32,8 +25,12 @@ import {
   GridColDef,
   GridRowsProp,
   GridValidRowModel,
-  GridCellParams,
-  GridColumnHeaderParams
+  GridToolbarContainer,
+  GridToolbarExport,
+  GridToolbarColumnsButton,
+  GridToolbarFilterButton,
+  GridToolbarDensitySelector,
+  GridToolbarQuickFilter
 } from '@mui/x-data-grid';
 
 import {
@@ -252,14 +249,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           onClick={() => handleClose(data.id, () => {}, title, content)}
         />
       </div>
-      <div className={styles.toolbar}>
-        <AddTableButton onClick={() => setIsModalOpen(true)} />{' '}
-        <AddColumnButton onClick={() => addColumn(content, setContent)} />
-        <AddRowButton onClick={() => addRow(content, setContent)} />
-        <ExportButton onClick={() => exportTableData(content)} />
-        <ImportButton onChange={(e) => importTableData(e, setContent)} />
-      </div>
-      <div className={`${styles.tableContent} nowheel nodrag`}>
+      <div className={styles.tableContent}>
         <DataGrid
           rows={content.rows as GridRowsProp<GridValidRowModel>}
           columns={content.columns as GridColDef[]}
@@ -280,6 +270,17 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           onColumnHeaderClick={(params) =>
             handleTableActions(data.id, params, setContent)
           }
+          slots={{
+            toolbar: () => (
+              <GridToolbarContainer>
+                <GridToolbarColumnsButton />
+                <GridToolbarFilterButton />
+                <GridToolbarDensitySelector />
+                <GridToolbarExport />
+                <GridToolbarQuickFilter />
+              </GridToolbarContainer>
+            )
+          }}
           style={{ color: textColor }}
         />
       </div>
