@@ -202,7 +202,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
       name: col.name || `Column ${index + 1}`,
       resizable: true,
       width: 150,
-      headerRenderer: (props) => <CustomHeader {...props} />
+      editable: true
     }));
     const newRows = Array.from({ length: rows }, () =>
       newColumns.reduce((acc, col) => {
@@ -248,10 +248,8 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
       </div>
       <div className={styles.toolbar}>
         <AddTableButton onClick={() => setIsModalOpen(true)} />{' '}
-        <AddColumnButton
-          onClick={() => addColumn(content, setContent, updateNode)}
-        />
-        <AddRowButton onClick={() => addRow(content, setContent, updateNode)} />
+        <AddColumnButton onClick={() => addColumn(content, setContent)} />
+        <AddRowButton onClick={() => addRow(content, setContent)} />
         <ExportButton onClick={() => exportTableData(content)} />
         <ImportButton onChange={(e) => importTableData(e, setContent)} />
       </div>
@@ -259,15 +257,23 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
         <DataGrid
           columns={content.columns.map((col) => ({
             ...col,
-            headerRenderer: CustomHeader,
-            headerRendererParams: {
-              content,
-              setContent,
-              updateNode
-            },
-            headerName: `${col.headerName} (${col.type})`,
-            sortable: false,
-            filter: false
+            headerRenderer: (props) => (
+              <CustomHeader
+                {...props}
+                column={{
+                  name: col.name,
+                  type: col.type,
+                  setColumn: (updatedCol) => {
+                    const updatedColumns = content.columns.map((column) =>
+                      column.key === col.key
+                        ? { ...column, ...updatedCol }
+                        : column
+                    );
+                    setContent({ ...content, columns: updatedColumns });
+                  }
+                }}
+              />
+            )
           }))}
           rows={content.rows}
           rowHeight={30}

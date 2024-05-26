@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import styles from './CustomHeader.module.css';
 
 interface CustomHeaderProps {
@@ -17,21 +17,36 @@ const CustomHeader: React.FC<CustomHeaderProps> = ({ column }) => {
     y: 0
   });
 
-  const handleHeaderNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setHeaderName(e.target.value);
-    column.setColumn({ name: e.target.value });
-  };
+  const handleHeaderNameChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const newName = e.target.value;
+      setHeaderName(newName);
+      column.setColumn({ name: newName });
+    },
+    [column]
+  );
 
-  const handleContextMenu = (e: React.MouseEvent) => {
+  const handleContextMenu = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     setContextMenuPosition({ x: e.clientX, y: e.clientY });
     setIsContextMenuVisible(true);
-  };
+  }, []);
 
-  const handleChangeType = (newType: string) => {
-    column.setColumn({ type: newType });
-    setIsContextMenuVisible(false);
-  };
+  const handleChangeType = useCallback(
+    (newType: string) => {
+      column.setColumn({ type: newType });
+      setIsContextMenuVisible(false);
+    },
+    [column]
+  );
+
+  const contextMenuOptions = [
+    { label: 'Change to Text', type: 'text' },
+    { label: 'Change to Number', type: 'number' },
+    { label: 'Change to Date', type: 'date' },
+    { label: 'Change to Boolean', type: 'boolean' },
+    { label: 'Change to Currency', type: 'currency' }
+  ];
 
   return (
     <div className={styles.headerContainer} onContextMenu={handleContextMenu}>
@@ -47,13 +62,11 @@ const CustomHeader: React.FC<CustomHeaderProps> = ({ column }) => {
           style={{ top: contextMenuPosition.y, left: contextMenuPosition.x }}
           onMouseLeave={() => setIsContextMenuVisible(false)}
         >
-          <li onClick={() => handleChangeType('text')}>Change to Text</li>
-          <li onClick={() => handleChangeType('number')}>Change to Number</li>
-          <li onClick={() => handleChangeType('date')}>Change to Date</li>
-          <li onClick={() => handleChangeType('boolean')}>Change to Boolean</li>
-          <li onClick={() => handleChangeType('currency')}>
-            Change to Currency
-          </li>
+          {contextMenuOptions.map((option) => (
+            <li key={option.type} onClick={() => handleChangeType(option.type)}>
+              {option.label}
+            </li>
+          ))}
         </ul>
       )}
     </div>

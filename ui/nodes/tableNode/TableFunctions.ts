@@ -6,15 +6,17 @@ export const validateCellValue = (value: any, type: string): boolean => {
     case 'text':
       return typeof value === 'string';
     case 'number':
-      return !isNaN(value);
+      return typeof value === 'number' && !isNaN(value);
     case 'date':
       return !isNaN(Date.parse(value));
     case 'boolean':
-      return value === 'true' || value === 'false';
+      return (
+        typeof value === 'boolean' || value === 'true' || value === 'false'
+      );
     case 'currency':
       return !isNaN(parseFloat(value)) && isFinite(value);
     default:
-      return true;
+      return false; // Default to false to prevent accepting unknown types
   }
 };
 
@@ -43,59 +45,47 @@ export const onCellValueChanged = (event, setContent) => {
   });
 };
 
-export const addColumn = (
-  content: any,
-  setContent: (content: any) => void,
-  api
-) => {
-  console.log('TableFunctions: Adding column');
+export const addColumn = (content, setContent) => {
   const newColumn = {
-    headerName: 'New Column',
-    field: `col${content.columns.length + 1}`,
+    key: `col${content.columns.length + 1}`,
+    name: `Column ${content.columns.length + 1}`,
+    resizable: true,
+    width: 150,
     editable: true,
-    type: 'text' // Default type
+    type: 'text' // Default type for new columns
   };
   setContent({
     ...content,
     columns: [...content.columns, newColumn]
   });
-  api.refreshCells && api.refreshCells({ force: true }); // Refresh cells to reflect new column
 };
 
-export const addRow = (
-  content: any,
-  setContent: (content: any) => void,
-  api
-) => {
-  console.log('TableFunctions: Adding row');
-  const newRow = content.columns.reduce((row: any, col: any) => {
-    row[col.field] = '';
+export const addRow = (content, setContent) => {
+  const newRow = content.columns.reduce((row, col) => {
+    row[col.key] = col.type === 'number' ? 0 : ''; // Default values based on type
     return row;
   }, {});
   setContent({
     ...content,
     rows: [...content.rows, newRow]
   });
-  api.refreshCells && api.refreshCells({ force: true }); // Refresh cells to reflect new row
 };
 
-export const importTableData = (
-  event: React.ChangeEvent<HTMLInputElement>,
-  setContent: (content: any) => void
-) => {
+export const importTableData = (event, setContent) => {
   const fileReader = new FileReader();
-  fileReader.onload = (e: ProgressEvent<FileReader>) => {
+  fileReader.onload = (e) => {
     if (e.target && e.target.result) {
-      const importedData = Papa.parse(e.target.result as string, {
+      const importedData = Papa.parse(e.target.result, {
         header: true,
         dynamicTyping: true,
         skipEmptyLines: true
       }).data;
       const columns = Object.keys(importedData[0]).map((key) => ({
-        headerName: key,
-        field: key,
+        key,
+        name: key,
+        resizable: true,
         editable: true,
-        type: 'text' // Default type
+        type: typeof importedData[0][key] // Infer type from first row data
       }));
       setContent({ columns, rows: importedData });
     }
@@ -105,7 +95,7 @@ export const importTableData = (
   }
 };
 
-export const exportTableData = (content: any) => {
+export const exportTableData = (content) => {
   const dataStr = Papa.unparse(content.rows);
   const dataUri = 'data:text/csv;charset=utf-8,' + encodeURIComponent(dataStr);
   const exportFileDefaultName = 'tableData.csv';

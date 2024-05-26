@@ -16,17 +16,17 @@
   border-radius: 8px;
   width: 400px;
   max-width: 90%;
-  max-height: 90%; /* Set a maximum height for the modal */
-  overflow-y: auto; /* Enable vertical scrolling */
+  max-height: 90%;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 15px; /* Add gap between items */
+  gap: 15px;
 }
 
 .formGroup {
   display: flex;
   flex-direction: column;
-  gap: 10px; /* Add gap between form elements */
+  gap: 10px;
 }
 
 .columnConfig {
@@ -44,12 +44,10 @@
   width: 120px;
 }
 
-/* Custom width for Input */
 .inputNarrow {
   width: 60px;
 }
 
-/* Custom width for Input */
 .inputWide {
   width: 220px;
 }

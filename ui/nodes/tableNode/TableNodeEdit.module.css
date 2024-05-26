@@ -69,17 +69,16 @@
   border-collapse: collapse;
 }
 
-.tableContent .ag-header-cell,
-.tableContent .ag-cell {
+.tableContent .rdg {
+  border: 1px solid #ccc;
+}
+
+.tableContent .rdg-cell {
   border-right: 1px solid #ccc;
 }
 
-.tableContent .ag-row {
+.tableContent .rdg-row {
   border-bottom: 1px solid #ccc;
-}
-
-.tableContent .ag-cell {
-  padding: 4px;
 }
 
 .colorPicker {
