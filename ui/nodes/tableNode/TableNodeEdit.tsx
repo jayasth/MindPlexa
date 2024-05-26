@@ -27,19 +27,22 @@ import {
 } from '@/ui/nodes/tableNode/TableNodeToolbar';
 import { SketchPicker } from 'react-color';
 import AddTableModal from '@/ui/nodes/tableNode/AddTableModal';
-import CustomHeader from '@/ui/nodes/tableNode/CustomHeader';
-import { TextEditor, BooleanEditor } from '@/ui/nodes/tableNode/CellEditors';
-
-import 'react-data-grid/lib/styles.css';
-import DataGrid from 'react-data-grid';
+import {
+  DataGrid,
+  GridColDef,
+  GridRowsProp,
+  GridValidRowModel,
+  GridCellParams,
+  GridColumnHeaderParams
+} from '@mui/x-data-grid';
 
 import {
   addColumn,
   addRow,
   importTableData,
   exportTableData,
-  onCellValueChanged,
-  handleKeyDown
+  handleTableDataChange,
+  handleTableActions
 } from '@/ui/nodes/tableNode/TableFunctions';
 
 import {
@@ -200,18 +203,18 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
 
   const handleAddTable = (columns, rows) => {
     const newColumns = columns.map((col, index) => ({
-      key: `col${index + 1}`,
-      name: col.name || `Column ${index + 1}`,
-      resizable: true,
+      field: `col${index + 1}`,
+      headerName: col.name || `Column ${index + 1}`,
       width: 150,
       editable: true
     }));
-    const newRows = Array.from({ length: rows }, () =>
-      newColumns.reduce((acc, col) => {
-        acc[col.key] = '';
+    const newRows = Array.from({ length: rows }, (_, rowIndex) => ({
+      id: rowIndex,
+      ...newColumns.reduce((acc, col) => {
+        acc[col.field] = '';
         return acc;
       }, {})
-    );
+    }));
     setContent({ columns: newColumns, rows: newRows });
   };
 
@@ -224,11 +227,10 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
 
   return (
     <div
-      className={styles.tableNode}
+      className={`${styles.tableNode} ${isSelected ? styles.selected : ''}`}
       style={customStyles}
       onClick={handleContainerClick}
       onBlur={handleContainerBlur}
-      onKeyDown={handleKeyDown}
       tabIndex={0} // Make the div focusable to enable keyboard events
     >
       <NodeResizer
@@ -259,38 +261,26 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
       </div>
       <div className={`${styles.tableContent} nowheel nodrag`}>
         <DataGrid
-          columns={content.columns.map((col) => ({
-            ...col,
-            resizable: true,
-            editor: col.type === 'boolean' ? BooleanEditor : TextEditor,
-            editorOptions: {
-              editOnClick: true
-            },
-            headerRenderer: (props) => (
-              <CustomHeader
-                {...props}
-                column={{
-                  name: col.name,
-                  type: col.type,
-                  setColumn: (updatedCol) => {
-                    const updatedColumns = content.columns.map((column) =>
-                      column.key === col.key
-                        ? { ...column, ...updatedCol }
-                        : column
-                    );
-                    setContent({ ...content, columns: updatedColumns });
-                  }
-                }}
-              />
-            )
-          }))}
-          rows={content.rows}
-          rowHeight={30}
-          defaultColumnOptions={{
-            resizable: true,
-            sortable: true
+          rows={content.rows as GridRowsProp<GridValidRowModel>}
+          columns={content.columns as GridColDef[]}
+          autoHeight
+          disableColumnMenu
+          disableColumnFilter
+          disableColumnSelector
+          disableDensitySelector
+          disableRowSelectionOnClick
+          processRowUpdate={(newRow, oldRow) => {
+            handleTableDataChange(
+              data.id,
+              { ...oldRow, ...newRow },
+              setContent
+            );
+            return newRow;
           }}
-          onRowsChange={(newRows) => setContent({ ...content, rows: newRows })}
+          onColumnHeaderClick={(params) =>
+            handleTableActions(data.id, params, setContent)
+          }
+          style={{ color: textColor }}
         />
       </div>
       <div className={styles.footer}>

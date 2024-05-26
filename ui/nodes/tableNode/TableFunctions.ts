@@ -1,61 +1,22 @@
+import {
+  GridColDef,
+  GridRowsProp,
+  GridCellParams,
+  GridColumnHeaderParams
+} from '@mui/x-data-grid';
 import { useStore } from '@/app/store/useCanvasStore';
 import Papa from 'papaparse';
 
-export const validateCellValue = (value: any, type: string): boolean => {
-  switch (type) {
-    case 'text':
-      return typeof value === 'string';
-    case 'number':
-      return typeof value === 'number' && !isNaN(value);
-    case 'date':
-      return !isNaN(Date.parse(value));
-    case 'boolean':
-      return (
-        typeof value === 'boolean' || value === 'true' || value === 'false'
-      );
-    case 'currency':
-      return !isNaN(parseFloat(value)) && isFinite(value);
-    default:
-      return false; // Default to false to prevent accepting unknown types
-  }
-};
-
-export const onCellValueChanged = (rowIdx, column, newValue, setContent) => {
-  const columnType = column.type;
-
-  if (!validateCellValue(newValue, columnType)) {
-    alert(`Invalid value for column type ${columnType}`);
-    return;
-  }
-
-  setContent((prevContent) => {
-    const newRows = prevContent.rows.map((row, index) => {
-      if (index === rowIdx) {
-        return {
-          ...row,
-          [column.key]: newValue
-        };
-      }
-      return row;
-    });
-
-    return {
-      ...prevContent,
-      rows: newRows
-    };
-  });
-};
-
 export const addColumn = (content, setContent) => {
-  const newColumn = {
-    key: `col${content.columns.length + 1}`,
-    name: `Column ${content.columns.length + 1}`,
+  const newColumn: GridColDef = {
+    field: `col${content.columns.length + 1}`,
+    headerName: `Column ${content.columns.length + 1}`,
     resizable: true,
     width: 150,
     editable: true,
-    type: 'text', // Default type for new columns
-    sortable: true, // Make columns sortable
-    filterable: true // Make columns filterable
+    type: 'string',
+    sortable: true,
+    filterable: true
   };
   setContent({
     ...content,
@@ -63,9 +24,31 @@ export const addColumn = (content, setContent) => {
   });
 };
 
+export const handleTableDataChange = (
+  nodeId: string,
+  params: GridCellParams,
+  setTableData: (data: GridRowsProp) => void
+) => {
+  const { updateNode } = useStore.getState();
+  const newData = [...params.row];
+  setTableData(newData);
+  updateNode(nodeId, { data: { tableData: newData } });
+};
+
+export const handleTableActions = (
+  nodeId: string,
+  params: GridColDef,
+  setTableColumns: (columns: GridColDef[]) => void
+) => {
+  const { updateNode } = useStore.getState();
+  // Handle column actions here, e.g., sorting, filtering, etc.
+  const newColumns = [params];
+  setTableColumns(newColumns);
+  updateNode(nodeId, { data: { tableColumns: newColumns } });
+};
 export const addRow = (content, setContent) => {
   const newRow = content.columns.reduce((row, col) => {
-    row[col.key] = col.type === 'number' ? 0 : ''; // Default values based on type
+    row[col.field] = col.type === 'number' ? 0 : '';
     return row;
   }, {});
   setContent({
@@ -84,13 +67,13 @@ export const importTableData = (event, setContent) => {
         skipEmptyLines: true
       }).data;
       const columns = Object.keys(importedData[0]).map((key) => ({
-        key,
-        name: key,
+        field: key,
+        headerName: key,
         resizable: true,
         editable: true,
-        type: typeof importedData[0][key], // Infer type from first row data
-        sortable: true, // Make columns sortable
-        filterable: true // Make columns filterable
+        type: typeof importedData[0][key],
+        sortable: true,
+        filterable: true
       }));
       setContent({ columns, rows: importedData });
     }

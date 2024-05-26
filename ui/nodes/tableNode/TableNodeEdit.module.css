@@ -69,18 +69,6 @@
   border-collapse: collapse;
 }
 
-.tableContent .rdg {
-  border: 1px solid #ccc;
-}
-
-.tableContent .rdg-cell {
-  border-right: 1px solid #ccc;
-}
-
-.tableContent .rdg-row {
-  border-bottom: 1px solid #ccc;
-}
-
 .colorPicker {
   position: absolute;
   bottom: 40px;
