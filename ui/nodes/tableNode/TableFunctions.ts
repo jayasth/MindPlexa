@@ -20,28 +20,21 @@ export const validateCellValue = (value: any, type: string): boolean => {
   }
 };
 
-export const onCellValueChanged = (event, setContent) => {
-  const { colDef, newValue, oldValue, data, api } = event;
-  const columnType = colDef.type;
+export const onCellValueChanged = (rowIdx, column, newValue, setContent) => {
+  const columnType = column.type;
 
   if (!validateCellValue(newValue, columnType)) {
     alert(`Invalid value for column type ${columnType}`);
-    api.undoCellEditing(); // Using AG Grid API to revert changes
     return;
   }
 
   setContent((prevContent) => {
-    const rowIndex = event.rowIndex;
-    const colId = colDef.field;
-    if (colId !== undefined && rowIndex !== null) {
-      const newRows = [...prevContent.rows];
-      newRows[rowIndex][colId] = newValue;
-      return {
-        ...prevContent,
-        rows: newRows
-      };
-    }
-    return prevContent;
+    const newRows = [...prevContent.rows];
+    newRows[rowIdx][column.key] = newValue;
+    return {
+      ...prevContent,
+      rows: newRows
+    };
   });
 };
 
@@ -103,4 +96,17 @@ export const exportTableData = (content) => {
   linkElement.setAttribute('href', dataUri);
   linkElement.setAttribute('download', exportFileDefaultName);
   linkElement.click();
+};
+
+export const handleKeyDown = (e) => {
+  if (e.key === 'Enter') {
+    const { rowIdx, idx } = e.target.dataset;
+    const nextRowIdx = parseInt(rowIdx, 10) + 1;
+    const cell = document.querySelector(
+      `[data-row-idx="${nextRowIdx}"][data-idx="${idx}"]`
+    );
+    if (cell instanceof HTMLElement) {
+      cell.focus();
+    }
+  }
 };

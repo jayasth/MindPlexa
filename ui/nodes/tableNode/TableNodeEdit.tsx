@@ -28,6 +28,7 @@ import {
 import { SketchPicker } from 'react-color';
 import AddTableModal from '@/ui/nodes/tableNode/AddTableModal';
 import CustomHeader from '@/ui/nodes/tableNode/CustomHeader';
+import { TextEditor, BooleanEditor } from '@/ui/nodes/tableNode/CellEditors';
 
 import 'react-data-grid/lib/styles.css';
 import DataGrid from 'react-data-grid';
@@ -37,7 +38,8 @@ import {
   addRow,
   importTableData,
   exportTableData,
-  onCellValueChanged
+  onCellValueChanged,
+  handleKeyDown
 } from '@/ui/nodes/tableNode/TableFunctions';
 
 import {
@@ -226,6 +228,8 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
       style={customStyles}
       onClick={handleContainerClick}
       onBlur={handleContainerBlur}
+      onKeyDown={handleKeyDown}
+      tabIndex={0} // Make the div focusable to enable keyboard events
     >
       <NodeResizer
         isVisible={isContainerSelected}
@@ -257,6 +261,11 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
         <DataGrid
           columns={content.columns.map((col) => ({
             ...col,
+            resizable: true,
+            editor: col.type === 'boolean' ? BooleanEditor : TextEditor,
+            editorOptions: {
+              editOnClick: true
+            },
             headerRenderer: (props) => (
               <CustomHeader
                 {...props}

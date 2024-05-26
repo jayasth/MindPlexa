@@ -17,14 +17,11 @@ const CustomHeader: React.FC<CustomHeaderProps> = ({ column }) => {
     y: 0
   });
 
-  const handleHeaderNameChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const newName = e.target.value;
-      setHeaderName(newName);
-      column.setColumn({ name: newName });
-    },
-    [column]
-  );
+  const handleHeaderNameChange = (e) => {
+    const newName = e.target.value;
+    setHeaderName(newName);
+    column.setColumn({ name: newName });
+  };
 
   const handleContextMenu = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
