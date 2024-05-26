@@ -23,11 +23,6 @@ import {
   AddTableButton,
   AddColumnButton,
   AddRowButton,
-  AlignLeftButton,
-  AlignCenterButton,
-  AlignRightButton,
-  SortButton,
-  FilterButton,
   ExportButton,
   ImportButton
 } from '@/ui/nodes/tableNode/TableNodeToolbar';
@@ -43,11 +38,6 @@ import {
   addRow,
   importTableData,
   exportTableData,
-  alignLeft,
-  alignCenter,
-  alignRight,
-  sortTable,
-  filterTable,
   onCellValueChanged
 } from '@/ui/nodes/tableNode/TableFunctions';
 
@@ -258,15 +248,10 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
       </div>
       <div className={styles.toolbar}>
         <AddTableButton onClick={() => setIsModalOpen(true)} />{' '}
-        <AddColumnButton onClick={() => addColumn(content, setContent)} />
-        <AddRowButton onClick={() => addRow(content, setContent)} />
-        <AlignLeftButton onClick={() => alignLeft(content, setContent)} />
-        <AlignCenterButton onClick={() => alignCenter(content, setContent)} />
-        <AlignRightButton onClick={() => alignRight(content, setContent)} />
-        <SortButton onClick={() => sortTable(content, setContent)} />
-        <FilterButton
-          onClick={() => filterTable(content, setContent, (row) => true)}
+        <AddColumnButton
+          onClick={() => addColumn(content, setContent, updateNode)}
         />
+        <AddRowButton onClick={() => addRow(content, setContent, updateNode)} />
         <ExportButton onClick={() => exportTableData(content)} />
         <ImportButton onChange={(e) => importTableData(e, setContent)} />
       </div>
@@ -283,18 +268,19 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
                   {...props}
                   content={content}
                   setContent={setContent}
+                  updateNode={updateNode}
                 />
               ),
-              headerName: `${col.headerName} (${col.type})`
+              headerName: `${col.headerName} (${col.type})`,
+              sortable: false,
+              filter: false
             }))}
             rowData={content.rows}
             domLayout="autoHeight"
             rowHeight={30}
             defaultColDef={{
               resizable: true,
-              editable: true,
-              sortable: true,
-              filter: true
+              editable: true
             }}
             onGridReady={(params) => {
               params.api.sizeColumnsToFit();
