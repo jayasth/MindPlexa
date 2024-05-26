@@ -287,7 +287,8 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           rows={content.rows}
           rowHeight={30}
           defaultColumnOptions={{
-            resizable: true
+            resizable: true,
+            sortable: true
           }}
           onRowsChange={(newRows) => setContent({ ...content, rows: newRows })}
         />

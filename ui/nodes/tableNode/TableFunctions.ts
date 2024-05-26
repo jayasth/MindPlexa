@@ -29,8 +29,16 @@ export const onCellValueChanged = (rowIdx, column, newValue, setContent) => {
   }
 
   setContent((prevContent) => {
-    const newRows = [...prevContent.rows];
-    newRows[rowIdx][column.key] = newValue;
+    const newRows = prevContent.rows.map((row, index) => {
+      if (index === rowIdx) {
+        return {
+          ...row,
+          [column.key]: newValue
+        };
+      }
+      return row;
+    });
+
     return {
       ...prevContent,
       rows: newRows
@@ -45,7 +53,9 @@ export const addColumn = (content, setContent) => {
     resizable: true,
     width: 150,
     editable: true,
-    type: 'text' // Default type for new columns
+    type: 'text', // Default type for new columns
+    sortable: true, // Make columns sortable
+    filterable: true // Make columns filterable
   };
   setContent({
     ...content,
@@ -78,7 +88,9 @@ export const importTableData = (event, setContent) => {
         name: key,
         resizable: true,
         editable: true,
-        type: typeof importedData[0][key] // Infer type from first row data
+        type: typeof importedData[0][key], // Infer type from first row data
+        sortable: true, // Make columns sortable
+        filterable: true // Make columns filterable
       }));
       setContent({ columns, rows: importedData });
     }
