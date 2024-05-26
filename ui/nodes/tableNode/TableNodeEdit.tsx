@@ -263,14 +263,12 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           <AgGridReact
             columnDefs={content.columns.map((col) => ({
               ...col,
-              headerComponentFramework: (props) => (
-                <CustomHeader
-                  {...props}
-                  content={content}
-                  setContent={setContent}
-                  updateNode={updateNode}
-                />
-              ),
+              headerComponent: CustomHeader,
+              headerComponentParams: {
+                content,
+                setContent,
+                updateNode
+              },
               headerName: `${col.headerName} (${col.type})`,
               sortable: false,
               filter: false

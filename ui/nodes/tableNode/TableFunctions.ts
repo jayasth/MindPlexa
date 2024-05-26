@@ -59,7 +59,7 @@ export const addColumn = (
     ...content,
     columns: [...content.columns, newColumn]
   });
-  api.refreshCells({ force: true }); // Refresh cells to reflect new column
+  api.refreshCells && api.refreshCells({ force: true }); // Refresh cells to reflect new column
 };
 
 export const addRow = (
@@ -76,7 +76,7 @@ export const addRow = (
     ...content,
     rows: [...content.rows, newRow]
   });
-  api.refreshCells({ force: true }); // Refresh cells to reflect new row
+  api.refreshCells && api.refreshCells({ force: true }); // Refresh cells to reflect new row
 };
 
 export const importTableData = (
