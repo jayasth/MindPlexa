@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import styles from './CustomHeader.module.css';
 
 const CustomHeader = (props) => {
   const [headerName, setHeaderName] = useState(props.displayName);
@@ -19,7 +20,7 @@ const CustomHeader = (props) => {
     props.setContent({ ...props.content, columns: newColumns });
   };
 
-  const handleRightClick = (e) => {
+  const handleDropdownClick = (e) => {
     e.preventDefault();
     setContextMenuPosition({ x: e.clientX, y: e.clientY });
     setIsContextMenuVisible(true);
@@ -51,51 +52,54 @@ const CustomHeader = (props) => {
     setIsContextMenuVisible(false);
   };
 
+  const handleSort = () => {
+    // Implement sorting logic here
+    setIsContextMenuVisible(false);
+  };
+
+  const handleFilter = () => {
+    // Implement filtering logic here
+    setIsContextMenuVisible(false);
+  };
+
+  const handleRightClick = (e) => {
+    e.preventDefault();
+    setContextMenuPosition({ x: e.clientX, y: e.clientY });
+    setIsContextMenuVisible(true);
+  };
+
   return (
-    <div onContextMenu={handleRightClick} style={{ position: 'relative' }}>
+    <div className={styles.headerContainer} onContextMenu={handleRightClick}>
       <input
         type="text"
         value={headerName}
         onChange={onHeaderNameChange}
-        style={{ width: '100%', border: 'none', background: 'transparent' }}
+        className={styles.headerInput}
       />
+      <div className={styles.iconsContainer}>
+        <div className={styles.filterIcon} onClick={handleFilter}>
+          🔍
+        </div>
+        <div className={styles.sortIcon} onClick={handleSort}>
+          ▼
+        </div>
+      </div>
       {isContextMenuVisible && (
         <ul
+          className={styles.contextMenu}
           style={{
-            position: 'absolute',
             top: contextMenuPosition.y,
-            left: contextMenuPosition.x,
-            backgroundColor: 'white',
-            border: '1px solid #ccc',
-            listStyle: 'none',
-            padding: '5px',
-            zIndex: 1000
+            left: contextMenuPosition.x
           }}
           onMouseLeave={() => setIsContextMenuVisible(false)}
         >
-          <li
-            onClick={handleRename}
-            style={{ padding: '5px', cursor: 'pointer' }}
-          >
-            Rename
-          </li>
-          <li
-            onClick={() => handleChangeType('text')}
-            style={{ padding: '5px', cursor: 'pointer' }}
-          >
-            Change to Text
-          </li>
-          <li
-            onClick={() => handleChangeType('number')}
-            style={{ padding: '5px', cursor: 'pointer' }}
-          >
-            Change to Number
-          </li>
-          <li
-            onClick={() => handleChangeType('date')}
-            style={{ padding: '5px', cursor: 'pointer' }}
-          >
-            Change to Date
+          <li onClick={handleRename}>Rename</li>
+          <li onClick={() => handleChangeType('text')}>Change to Text</li>
+          <li onClick={() => handleChangeType('number')}>Change to Number</li>
+          <li onClick={() => handleChangeType('date')}>Change to Date</li>
+          <li onClick={() => handleChangeType('boolean')}>Change to Boolean</li>
+          <li onClick={() => handleChangeType('currency')}>
+            Change to Currency
           </li>
         </ul>
       )}

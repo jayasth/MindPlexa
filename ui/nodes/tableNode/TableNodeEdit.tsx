@@ -33,7 +33,7 @@ import {
 } from '@/ui/nodes/tableNode/TableNodeToolbar';
 import { SketchPicker } from 'react-color';
 import AddTableModal from '@/ui/nodes/tableNode/AddTableModal'; // Import the modal
-import CustomHeader from '@/ui/nodes/tableNode/CustomHeader'; // Import CustomHeader
+import CustomHeader from '@/ui/nodes/tableNode/CustomHeader'; // Ensure this import is present
 
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
@@ -47,7 +47,8 @@ import {
   alignCenter,
   alignRight,
   sortTable,
-  filterTable
+  filterTable,
+  onCellValueChanged // Import the new onCellValueChanged function
 } from '@/ui/nodes/tableNode/TableFunctions';
 
 import {
@@ -235,22 +236,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     color: textColor
   };
 
-  const onCellValueChanged = (event) => {
-    setContent((prevContent) => {
-      const rowIndex: number | null = event.rowIndex;
-      const colId = event.colDef.field; // Use colDef.field instead of event.column.colId
-      if (colId !== undefined && rowIndex !== null) {
-        const newRows = [...prevContent.rows];
-        newRows[rowIndex][colId] = event.newValue;
-        return {
-          ...prevContent,
-          rows: newRows
-        };
-      }
-      return prevContent;
-    });
-  };
-
   return (
     <div
       className={styles.tableNode}
@@ -320,7 +305,9 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
             onGridReady={(params) => {
               params.api.sizeColumnsToFit();
             }}
-            onCellValueChanged={onCellValueChanged}
+            onCellValueChanged={(event) =>
+              onCellValueChanged(event, setContent)
+            } // Use the new onCellValueChanged function
           />
         </div>
       </div>

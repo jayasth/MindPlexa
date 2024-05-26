@@ -18,7 +18,7 @@ export const validateCellValue = (value: any, type: string): boolean => {
   }
 };
 
-const onCellValueChanged = (event, setContent) => {
+export const onCellValueChanged = (event, setContent) => {
   const { colDef, newValue, oldValue, data } = event;
   const columnType = colDef.type;
 
@@ -49,7 +49,8 @@ export const addColumn = (content: any, setContent: (content: any) => void) => {
     const newColumn = {
       headerName: 'New Column',
       field: `col${prevContent.columns.length + 1}`,
-      editable: true
+      editable: true,
+      type: 'text' // Default type
     };
     const newRows = prevContent.rows.map((row: any) => ({
       ...row,
@@ -92,7 +93,8 @@ export const importTableData = (
       const columns = Object.keys(importedData[0]).map((key) => ({
         headerName: key,
         field: key,
-        editable: true
+        editable: true,
+        type: 'text' // Default type
       }));
       setContent({ columns, rows: importedData });
     }
@@ -104,7 +106,8 @@ export const importTableData = (
 
 export const exportTableData = (content: any) => {
   const dataStr = Papa.unparse(content.rows);
-  const dataUri = 'data:text/csv;charset=utf-8,' + encodeURIComponent(dataStr);
+  const dataUri =
+    'data:text/csv;charset=utf  -8,' + encodeURIComponent(dataStr);
   const exportFileDefaultName = 'tableData.csv';
   const linkElement = document.createElement('a');
   linkElement.setAttribute('href', dataUri);

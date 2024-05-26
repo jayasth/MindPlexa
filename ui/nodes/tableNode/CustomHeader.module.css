@@ -1,0 +1,45 @@
+.headerContainer {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.headerInput {
+  width: 100%;
+  border: none;
+  background: transparent;
+}
+
+.iconsContainer {
+  display: flex;
+  align-items: center;
+  visibility: hidden; /* Initially hidden */
+}
+
+.headerContainer:hover .iconsContainer {
+  visibility: visible; /* Show on hover */
+}
+
+.filterIcon,
+.sortIcon {
+  cursor: pointer;
+  margin-left: 5px;
+}
+
+.contextMenu {
+  position: absolute;
+  background-color: white;
+  border: 1px solid #ccc;
+  list-style: none;
+  padding: 5px;
+  z-index: 1000;
+}
+
+.contextMenu li {
+  padding: 5px;
+  cursor: pointer;
+}
+
+.contextMenu li:hover {
+  background-color: #f0f0f0;
+}
