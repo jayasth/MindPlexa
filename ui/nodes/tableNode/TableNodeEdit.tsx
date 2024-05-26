@@ -32,8 +32,8 @@ import {
   ImportButton
 } from '@/ui/nodes/tableNode/TableNodeToolbar';
 import { SketchPicker } from 'react-color';
-import AddTableModal from '@/ui/nodes/tableNode/AddTableModal'; // Import the modal
-import CustomHeader from '@/ui/nodes/tableNode/CustomHeader'; // Ensure this import is present
+import AddTableModal from '@/ui/nodes/tableNode/AddTableModal';
+import CustomHeader from '@/ui/nodes/tableNode/CustomHeader';
 
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
@@ -48,7 +48,7 @@ import {
   alignRight,
   sortTable,
   filterTable,
-  onCellValueChanged // Import the new onCellValueChanged function
+  onCellValueChanged
 } from '@/ui/nodes/tableNode/TableFunctions';
 
 import {
@@ -105,13 +105,12 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   const [nodeWidth, setNodeWidth] = useState(width);
   const [nodeHeight, setNodeHeight] = useState(height);
   const [isColorPickerVisible, setIsColorPickerVisible] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false); // State for modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const updateNode = useStore((state) => state.updateNode);
   const colorPickerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    console.log('TableNodeEdit: Content updated', content);
     if (
       title !== data.title ||
       content !== data.content ||
@@ -162,7 +161,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   };
 
   useEffect(() => {
-    console.log('TableNodeEdit: Node dimensions updated', { width, height });
     setNodeWidth(width);
     setNodeHeight(height);
   }, [width, height]);
@@ -201,9 +199,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   };
 
   useEffect(() => {
-    console.log(
-      'TableNodeEdit: Document event listeners for color picker added'
-    );
     if (typeof document !== 'undefined') {
       document.addEventListener('mousedown', handleClickOutside);
       return () => {
@@ -228,7 +223,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     setContent({ columns: newColumns, rows: newRows });
   };
 
-  // Define custom CSS properties
   const customStyles: CSSProperties = {
     width: nodeWidth,
     height: nodeHeight,
@@ -295,7 +289,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
             }))}
             rowData={content.rows}
             domLayout="autoHeight"
-            rowHeight={30} // Adjust the value as needed
+            rowHeight={30}
             defaultColDef={{
               resizable: true,
               editable: true,
@@ -307,7 +301,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
             }}
             onCellValueChanged={(event) =>
               onCellValueChanged(event, setContent)
-            } // Use the new onCellValueChanged function
+            }
           />
         </div>
       </div>
