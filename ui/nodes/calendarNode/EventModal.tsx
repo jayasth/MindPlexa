@@ -1,47 +1,85 @@
 import React, { useState } from 'react';
 import styles from './EventModal.module.css';
+import Button from '@/ui/Button/Button';
+import Input from '@/ui/Input/Input';
 
-const EventModal = ({ event, onClose, onSave, onDelete }) => {
+interface EventModalProps {
+  event: any;
+  onClose: () => void;
+  onSave: (updatedEvent: any) => void;
+  onDelete: (eventToDelete: any) => void;
+}
+
+const EventModal: React.FC<EventModalProps> = ({
+  event,
+  onClose,
+  onSave,
+  onDelete
+}) => {
   const [title, setTitle] = useState(event.title);
-  const [start, setStart] = useState(event.start);
-  const [end, setEnd] = useState(event.end);
+  const [start, setStart] = useState(event.start.toISOString().slice(0, 16));
+  const [end, setEnd] = useState(event.end.toISOString().slice(0, 16));
 
   const handleSave = () => {
-    onSave({ ...event, title, start, end });
+    const updatedEvent = {
+      ...event,
+      title,
+      start: new Date(start),
+      end: new Date(end)
+    };
+    onSave(updatedEvent);
   };
 
   return (
     <div className={styles.modal}>
       <div className={styles.modalContent}>
-        <h2>Edit Event</h2>
-        <label>
-          Title:
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-        </label>
-        <label>
-          Start:
-          <input
-            type="datetime-local"
-            value={start}
-            onChange={(e) => setStart(e.target.value)}
-          />
-        </label>
-        <label>
-          End:
-          <input
-            type="datetime-local"
-            value={end}
-            onChange={(e) => setEnd(e.target.value)}
-          />
-        </label>
+        <h2 className={styles.modalTitle}>Edit Event</h2>
+        <div className={styles.inputGroup}>
+          <label className={styles.label}>
+            Title:
+            <Input
+              type="text"
+              value={title}
+              onChange={(value) => setTitle(value)}
+              variant="slim"
+              className={styles.input}
+            />
+          </label>
+        </div>
+        <div className={styles.inputGroup}>
+          <label className={styles.label}>
+            Start:
+            <Input
+              type="datetime-local"
+              value={start}
+              onChange={(value) => setStart(value)}
+              variant="slim"
+              className={styles.input}
+            />
+          </label>
+        </div>
+        <div className={styles.inputGroup}>
+          <label className={styles.label}>
+            End:
+            <Input
+              type="datetime-local"
+              value={end}
+              onChange={(value) => setEnd(value)}
+              variant="slim"
+              className={styles.input}
+            />
+          </label>
+        </div>
         <div className={styles.buttons}>
-          <button onClick={handleSave}>Save</button>
-          <button onClick={() => onDelete(event)}>Delete</button>
-          <button onClick={onClose}>Close</button>
+          <Button variant="submit" onClick={handleSave}>
+            Save
+          </Button>
+          <Button variant="cancel" onClick={() => onDelete(event)}>
+            Delete
+          </Button>
+          <Button variant="outline" onClick={onClose}>
+            Close
+          </Button>
         </div>
       </div>
     </div>

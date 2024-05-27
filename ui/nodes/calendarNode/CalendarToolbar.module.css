@@ -1,0 +1,26 @@
+.toolbar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px;
+  background-color: #f0f0f0;
+  border-bottom: 1px solid #ccc;
+}
+
+.viewButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  margin-left: 8px;
+  padding: 4px;
+  border-radius: 4px;
+  color: inherit;
+}
+
+.viewButton:hover {
+  background-color: #e0e0e0;
+}
+
+.viewButton.active {
+  background-color: #d0d0d0;
+}

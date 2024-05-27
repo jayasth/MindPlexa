@@ -1,7 +1,13 @@
 import React, { useState, useEffect, useRef, CSSProperties } from 'react';
 import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
-import { Calendar, momentLocalizer } from 'react-big-calendar';
+import {
+  Calendar,
+  momentLocalizer,
+  Views,
+  DateLocalizer
+} from 'react-big-calendar';
 import moment from 'moment';
+import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { useStore } from '@/app/store/useCanvasStore';
 import styles from './CalendarNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
@@ -26,8 +32,8 @@ import {
   getContrastYIQ
 } from '@/ui/canvasEditor/utils/CommonNodeFunctions';
 import { SketchPicker } from 'react-color';
-import 'react-big-calendar/lib/css/react-big-calendar.css';
 import EventModal from '@/ui/nodes/calendarNode/EventModal';
+import CalendarToolbar from '@/ui/nodes/calendarNode/CalendarToolbar';
 
 const localizer = momentLocalizer(moment);
 
@@ -38,6 +44,7 @@ interface CalendarNodeEditProps extends NodeProps {
     title?: string;
     backgroundColor?: string;
     textColor?: string;
+    view?: string; // New prop for calendar view
   };
   width: number;
   height: number;
@@ -73,6 +80,7 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
   const [isColorPickerVisible, setIsColorPickerVisible] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
+  const [view, setView] = useState(data.view || 'month'); // New state for calendar view
 
   const updateNode = useStore((state) => state.updateNode);
   const colorPickerRef = useRef<HTMLDivElement>(null);
@@ -177,6 +185,22 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
     setIsModalOpen(false);
   };
 
+  const handleViewChange = (newView: string) => {
+    setView(newView);
+  };
+
+  const handleEventResize = (data) => {
+    const { start, end, event } = data;
+    const updatedEvent = { ...event, start, end };
+    setEvents(events.map((ev) => (ev === event ? updatedEvent : ev)));
+  };
+
+  const handleEventDrop = (data) => {
+    const { start, end, event } = data;
+    const updatedEvent = { ...event, start, end };
+    setEvents(events.map((ev) => (ev === event ? updatedEvent : ev)));
+  };
+
   const customStyles: CSSProperties = {
     width: nodeWidth,
     height: nodeHeight,
@@ -212,15 +236,26 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
         />
       </div>
       <div className={`${styles.calendarContent} nowheel nodrag`}>
+        <CalendarToolbar
+          view={view}
+          onViewChange={handleViewChange}
+          textColor={textColor}
+        />
         <Calendar
           localizer={localizer}
           events={events}
           startAccessor="start"
           endAccessor="end"
-          style={{ height: '100%', width: '100%' }}
+          style={{ height: 'calc(100% - 40px)', width: '100%' }}
           selectable
           onSelectEvent={handleSelectEvent}
           onSelectSlot={handleAddEvent}
+          view={view as Views}
+          onEventResize={handleEventResize}
+          onEventDrop={handleEventDrop}
+          components={{
+            toolbar: null // Disable default toolbar
+          }}
         />
       </div>
       <div className={styles.footer}>
