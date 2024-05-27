@@ -31,7 +31,11 @@ import {
   stopDrawing,
   undo,
   redo,
-  drawShape
+  drawShape,
+  setStrokeColor,
+  setFillColor,
+  setStrokeWidth,
+  addText
 } from './drawFunctions';
 
 interface DrawNodeEditProps extends NodeProps {
@@ -78,10 +82,19 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const [currentColor, setCurrentColor] = useState({ r: 0, g: 0, b: 0, a: 1 });
   const [thickness, setThickness] = useState(2);
   const [shape, setShape] = useState<string | null>(null);
+  const [strokeColor, setStrokeColor] = useState('#000000');
+  const [fillColor, setFillColor] = useState('#000000');
+  const [strokeWidth, setStrokeWidth] = useState(2);
+  const [isStrokeColorPickerVisible, setIsStrokeColorPickerVisible] =
+    useState(false);
+  const [isFillColorPickerVisible, setIsFillColorPickerVisible] =
+    useState(false);
 
   const updateNode = useStore((state) => state.updateNode);
   const colorPickerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const strokeColorPickerRef = useRef<HTMLDivElement>(null);
+  const fillColorPickerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     updateNode(data.id, {
@@ -148,6 +161,18 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     ) {
       setIsColorPickerVisible(false);
     }
+    if (
+      strokeColorPickerRef.current &&
+      !strokeColorPickerRef.current.contains(event.target)
+    ) {
+      setIsStrokeColorPickerVisible(false);
+    }
+    if (
+      fillColorPickerRef.current &&
+      !fillColorPickerRef.current.contains(event.target)
+    ) {
+      setIsFillColorPickerVisible(false);
+    }
   };
 
   useEffect(() => {
@@ -157,7 +182,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         document.removeEventListener('mousedown', handleClickOutside);
       };
     }
-  }, [colorPickerRef]);
+  }, [colorPickerRef, strokeColorPickerRef, fillColorPickerRef]);
 
   const handleShapeClick = (shapeType: string) => {
     setShape(shapeType);
@@ -192,6 +217,36 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
 
   const handleMouseUp = () => {
     stopDrawing(canvasRef);
+  };
+
+  const handleStrokeColorChange = (color) => {
+    setStrokeColor(color.hex);
+    setStrokeColor(color.hex);
+  };
+
+  const handleFillColorChange = (color) => {
+    setFillColor(color.hex);
+    setFillColor(color.hex);
+  };
+
+  const toggleStrokeColorPicker = () => {
+    setIsStrokeColorPickerVisible(!isStrokeColorPickerVisible);
+  };
+
+  const toggleFillColorPicker = () => {
+    setIsFillColorPickerVisible(!isFillColorPickerVisible);
+  };
+
+  const handleStrokeWidthChange = (event) => {
+    setStrokeWidth(parseInt(event.target.value, 10));
+    setStrokeWidth(parseInt(event.target.value, 10));
+  };
+
+  const handleAddText = () => {
+    const text = prompt('Enter text:');
+    if (text) {
+      addText(canvasRef, text, strokeColor, fillColor);
+    }
   };
 
   // Define custom CSS properties
@@ -232,6 +287,11 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         onEraserClick={() => setTool('eraser')}
         onMarkerClick={() => setTool('marker')}
         onShapeClick={handleShapeClick}
+        onStrokeColorClick={toggleStrokeColorPicker}
+        onFillColorClick={toggleFillColorPicker}
+        onStrokeWidthChange={handleStrokeWidthChange}
+        onAddTextClick={handleAddText}
+        strokeWidth={strokeWidth}
         onUndoClick={() => undo(canvasRef)}
         onRedoClick={() => redo(canvasRef)}
         onLineClick={() => setTool('line')}

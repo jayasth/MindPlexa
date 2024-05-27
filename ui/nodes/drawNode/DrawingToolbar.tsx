@@ -9,7 +9,10 @@ import {
   FaCircle,
   FaSlash,
   FaArrowRight,
-  FaTextHeight
+  FaTextHeight,
+  FaPalette,
+  FaFillDrip,
+  FaFont
 } from 'react-icons/fa';
 import styles from './DrawingToolbar.module.css';
 
@@ -23,6 +26,11 @@ interface DrawingToolbarProps {
   onLineClick: () => void;
   onArrowClick: () => void;
   onTextClick: () => void;
+  onStrokeColorClick: () => void;
+  onFillColorClick: () => void;
+  onStrokeWidthChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onAddTextClick: () => void;
+  strokeWidth: number;
 }
 
 const DrawingToolbar: React.FC<DrawingToolbarProps> = ({
@@ -34,7 +42,12 @@ const DrawingToolbar: React.FC<DrawingToolbarProps> = ({
   onShapeClick,
   onLineClick,
   onArrowClick,
-  onTextClick
+  onTextClick,
+  onStrokeColorClick,
+  onFillColorClick,
+  onStrokeWidthChange,
+  onAddTextClick,
+  strokeWidth
 }) => {
   return (
     <div className={styles.toolbar}>
@@ -107,6 +120,35 @@ const DrawingToolbar: React.FC<DrawingToolbarProps> = ({
         title="Redo"
       >
         <FaRedo />
+      </button>
+      <button
+        onClick={onStrokeColorClick}
+        className={styles.toolbarButton}
+        title="Stroke Color"
+      >
+        <FaPalette />
+      </button>
+      <button
+        onClick={onFillColorClick}
+        className={styles.toolbarButton}
+        title="Fill Color"
+      >
+        <FaFillDrip />
+      </button>
+      <input
+        type="number"
+        min="1"
+        max="100"
+        value={strokeWidth}
+        onChange={onStrokeWidthChange}
+        className={styles.strokeWidthInput}
+      />
+      <button
+        onClick={onAddTextClick}
+        className={styles.toolbarButton}
+        title="Add Text"
+      >
+        <FaFont />
       </button>
     </div>
   );

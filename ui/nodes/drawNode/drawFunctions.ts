@@ -158,3 +158,54 @@ export const drawShape = (
   ctx.stroke();
   ctx.closePath();
 };
+
+export const setStrokeColor = (
+  canvasRef: React.RefObject<HTMLCanvasElement>,
+  color: string
+) => {
+  const canvas = canvasRef.current;
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+  ctx.strokeStyle = color;
+};
+
+export const setFillColor = (
+  canvasRef: React.RefObject<HTMLCanvasElement>,
+  color: string
+) => {
+  const canvas = canvasRef.current;
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+  ctx.fillStyle = color;
+};
+
+export const setStrokeWidth = (
+  canvasRef: React.RefObject<HTMLCanvasElement>,
+  width: number
+) => {
+  const canvas = canvasRef.current;
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+  ctx.lineWidth = width;
+};
+
+export const addText = (
+  canvasRef: React.RefObject<HTMLCanvasElement>,
+  text: string,
+  strokeColor: string,
+  fillColor: string
+) => {
+  const canvas = canvasRef.current;
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+  ctx.font = '20px Arial';
+  ctx.strokeStyle = strokeColor;
+  ctx.fillStyle = fillColor;
+  ctx.textBaseline = 'top';
+  ctx.fillText(text, 50, 50);
+  ctx.strokeText(text, 50, 50);
+};

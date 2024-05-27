@@ -76,6 +76,15 @@
   cursor: pointer;
 }
 
+.strokeColorPicker,
+.fillColorPicker {
+  position: absolute;
+  bottom: 40px;
+  left: 0;
+  z-index: 10;
+  cursor: pointer;
+}
+
 .nodrag {
   -webkit-user-drag: none;
   user-select: none;
