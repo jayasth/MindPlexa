@@ -12,7 +12,8 @@ import {
   FaTextHeight,
   FaPalette,
   FaFillDrip,
-  FaFont
+  FaFont,
+  FaTint
 } from 'react-icons/fa';
 import styles from './DrawingToolbar.module.css';
 
@@ -126,7 +127,7 @@ const DrawingToolbar: React.FC<DrawingToolbarProps> = ({
         className={styles.toolbarButton}
         title="Stroke Color"
       >
-        <FaPalette />
+        <FaTint />
       </button>
       <button
         onClick={onFillColorClick}

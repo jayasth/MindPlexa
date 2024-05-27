@@ -331,7 +331,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
           <div className={`${styles.colorPicker} nodrag`} ref={colorPickerRef}>
             <SketchPicker
               color={backgroundColor}
-              onBackgroundColorChange={handleBackgroundColorChange}
+              onChange={handleBackgroundColorChange}
             />
           </div>
         )}
