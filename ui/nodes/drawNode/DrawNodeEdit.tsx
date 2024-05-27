@@ -102,7 +102,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     handleTitleChange(data.id, newTitle, setTitle);
   };
 
-  const handleChangeComplete = (color) => {
+  const handleBackgroundColorChange = (color) => {
     const rgbaColor = `rgba(${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b}, ${color.rgb.a})`;
     const newTextColor = getContrastYIQ(rgbaColor);
     setTextColor(newTextColor);
@@ -271,7 +271,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
           <div className={`${styles.colorPicker} nodrag`} ref={colorPickerRef}>
             <SketchPicker
               color={backgroundColor}
-              onChangeComplete={handleChangeComplete}
+              onBackgroundColorChange={handleBackgroundColorChange}
             />
           </div>
         )}

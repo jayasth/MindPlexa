@@ -81,6 +81,9 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [view, setView] = useState(data.view || 'month'); // New state for calendar view
+  const [newEvent, setNewEvent] = useState<{ start: Date; end: Date } | null>(
+    null
+  ); // New state for new event
 
   const updateNode = useStore((state) => state.updateNode);
   const colorPickerRef = useRef<HTMLDivElement>(null);
@@ -166,11 +169,8 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
   };
 
   const handleAddEvent = ({ start, end }) => {
-    const title = window.prompt('New Event name');
-    if (title) {
-      const newEvent = { start, end, title };
-      setEvents([...events, newEvent]);
-    }
+    setNewEvent({ start, end });
+    setIsModalOpen(true);
   };
 
   const handleEventDelete = (eventToDelete) => {
@@ -179,9 +179,14 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
   };
 
   const handleEventSave = (updatedEvent) => {
-    setEvents(
-      events.map((event) => (event === selectedEvent ? updatedEvent : event))
-    );
+    if (newEvent) {
+      setEvents([...events, updatedEvent]);
+      setNewEvent(null);
+    } else {
+      setEvents(
+        events.map((event) => (event === selectedEvent ? updatedEvent : event))
+      );
+    }
     setIsModalOpen(false);
   };
 
@@ -307,10 +312,13 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
         position={Position.Bottom}
         className={`${edgeStyles.reactFlowHandle} ${edgeStyles.reactFlowHandleBottom}`}
       />
-      {isModalOpen && selectedEvent && (
+      {isModalOpen && (
         <EventModal
-          event={selectedEvent}
-          onClose={() => setIsModalOpen(false)}
+          event={selectedEvent || newEvent}
+          onClose={() => {
+            setIsModalOpen(false);
+            setNewEvent(null);
+          }}
           onSave={handleEventSave}
           onDelete={handleEventDelete}
         />

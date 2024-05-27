@@ -154,7 +154,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     handleTitleChange(data.id, newTitle, setTitle);
   };
 
-  const handleChangeComplete = (color, event) => {
+  const handleBackgroundColorChange = (color, event) => {
     const rgbaColor = `rgba(${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b}, ${color.rgb.a})`;
     const newTextColor = getContrastYIQ(rgbaColor);
     setTextColor(newTextColor);
@@ -272,7 +272,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
           <div className={`${styles.colorPicker} nodrag`} ref={colorPickerRef}>
             <SketchPicker
               color={backgroundColor}
-              onChangeComplete={handleChangeComplete}
+              onBackgroundColorChange={handleBackgroundColorChange}
             />
           </div>
         )}

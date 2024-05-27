@@ -145,7 +145,7 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
     setIsColorPickerVisible(!isColorPickerVisible);
   };
 
-  const handleChangeComplete = (color: any) => {
+  const handleBackgroundColorChange = (color: any) => {
     const newColor = color.hex;
     setBackgroundColor(newColor);
     setTextColor(getContrastYIQ(newColor));
@@ -312,7 +312,7 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
           <div className={`${styles.colorPicker} nodrag`} ref={colorPickerRef}>
             <SketchPicker
               color={backgroundColor}
-              onChangeComplete={handleChangeComplete}
+              onBackgroundColorChange={handleBackgroundColorChange}
             />
           </div>
         )}
