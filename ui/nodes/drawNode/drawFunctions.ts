@@ -40,21 +40,35 @@ export const draw = (
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
 
-  if (tool === 'eraser') {
-    ctx.globalCompositeOperation = 'destination-out';
-    ctx.lineWidth = thickness;
-  } else if (tool === 'marker') {
-    ctx.globalCompositeOperation = 'source-over';
-    ctx.lineWidth = thickness;
-    ctx.strokeStyle = `rgba(${currentColor.r}, ${currentColor.g}, ${currentColor.b}, ${currentColor.a})`;
-  } else {
-    ctx.globalCompositeOperation = 'source-over';
-    ctx.lineWidth = thickness;
-    ctx.strokeStyle = `rgba(${currentColor.r}, ${currentColor.g}, ${currentColor.b}, ${currentColor.a})`;
+  switch (tool) {
+    case 'eraser':
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.lineWidth = thickness;
+      ctx.lineTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
+      ctx.stroke();
+      break;
+    case 'marker':
+    case 'pencil':
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.lineWidth = thickness;
+      ctx.strokeStyle = `rgba(${currentColor.r}, ${currentColor.g}, ${currentColor.b}, ${currentColor.a})`;
+      ctx.lineTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
+      ctx.stroke();
+      break;
+    case 'rectangle':
+    case 'circle':
+    case 'line':
+    case 'arrow':
+      const endPosition = {
+        x: e.nativeEvent.offsetX,
+        y: e.nativeEvent.offsetY
+      };
+      drawShape(tool, startPosition, endPosition, ctx);
+      break;
+    default:
+      break;
   }
 
-  ctx.lineTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
-  ctx.stroke();
   setContent((prevContent) => [
     ...prevContent,
     { type: tool, x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY }
