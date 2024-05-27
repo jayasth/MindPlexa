@@ -1,0 +1,24 @@
+/* Modal Base Style */
+.root {
+  @apply inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl;
+}
+
+/* Info Variant */
+.info {
+  @apply bg-blue-100 text-blue-900;
+}
+
+/* Warning Variant */
+.warning {
+  @apply bg-yellow-100 text-yellow-900;
+}
+
+/* Success Variant */
+.success {
+  @apply bg-green-100 text-green-900;
+}
+
+/* Danger Variant */
+.danger {
+  @apply bg-red-100 text-red-900;
+}

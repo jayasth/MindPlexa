@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/supabaseClient';
 import type { Tables } from 'types_db';
-import Modal from '@/ui/Modal/Modal';
+import Modal from '@/ui/Modal/Modal1';
 
 type Canvas = Tables<'canvases'>;
 

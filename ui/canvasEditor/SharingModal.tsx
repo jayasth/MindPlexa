@@ -1,6 +1,6 @@
 // ui/canvasEditor/SharingModal.tsx
 import React, { useState } from 'react';
-import Modal from '@/ui/Modal/Modal';
+import Modal from '@/ui/Modal/Modal1';
 
 interface SharingModalProps {
   isOpen: boolean;
