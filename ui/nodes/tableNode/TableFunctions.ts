@@ -13,6 +13,10 @@ export const validateCellValue = (value: any, type: string): boolean => {
       return value === 'true' || value === 'false';
     case 'currency':
       return !isNaN(parseFloat(value)) && isFinite(value);
+    case 'dropdown':
+      return (
+        Array.isArray(value) && value.every((item) => typeof item === 'string')
+      );
     default:
       return true;
   }

@@ -5,12 +5,21 @@ import Dropdown from '@/ui/dropdown/Dropdown';
 import styles from './AddTableModal.module.css';
 
 const AddTableModal = ({ onClose, onAddTable }) => {
-  const [columns, setColumns] = useState([{ name: '', type: 'text' }]);
+  const [columns, setColumns] = useState([
+    { name: '', type: 'text', defaultValue: '' }
+  ]);
   const [rows, setRows] = useState(1);
-  const validTypes = ['text', 'number', 'date', 'boolean', 'currency'];
+  const validTypes = [
+    'text',
+    'number',
+    'date',
+    'boolean',
+    'currency',
+    'dropdown'
+  ];
 
   const handleAddColumn = () => {
-    setColumns([...columns, { name: '', type: 'text' }]);
+    setColumns([...columns, { name: '', type: 'text', defaultValue: '' }]);
   };
 
   const handleColumnChange = (index, field, value) => {
@@ -65,6 +74,16 @@ const AddTableModal = ({ onClose, onAddTable }) => {
                   </option>
                 ))}
               </Dropdown>
+              <Input
+                type="text"
+                placeholder="Default Value"
+                value={col.defaultValue}
+                onChange={(value) =>
+                  handleColumnChange(index, 'defaultValue', value)
+                }
+                variant="slim"
+                className={styles.inputWide}
+              />
             </div>
           ))}
           <Button variant="slim" onClick={handleAddColumn}>

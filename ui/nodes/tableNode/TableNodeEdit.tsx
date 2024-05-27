@@ -202,14 +202,17 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
       headerName: col.name || `Column ${index + 1}`,
       field: `col${index + 1}`,
       editable: true,
-      type: col.type
+      type: col.type,
+      defaultValue: col.defaultValue
     }));
+
     const newRows = Array.from({ length: rows }, () =>
       newColumns.reduce((acc, col) => {
-        acc[col.field] = '';
+        acc[col.field] = col.defaultValue || '';
         return acc;
       }, {})
     );
+
     setContent({ columns: newColumns, rows: newRows });
   };
 
