@@ -24,19 +24,9 @@ import {
   handleDuplicate,
   getContrastYIQ
 } from '@/ui/canvasEditor/utils/CommonNodeFunctions';
-import DrawingToolbar from './DrawingToolbar';
-import {
-  startDrawing,
-  draw,
-  stopDrawing,
-  undo,
-  redo,
-  drawShape,
-  setStrokeColor,
-  setFillColor,
-  setStrokeWidth,
-  addText
-} from './drawFunctions';
+import DrawingToolbar from '@/ui/nodes/drawNode/DrawingToolbar';
+import { Stage, Layer, Line, Rect, Circle, Text } from 'react-konva';
+import { undo, redo } from '@/ui/nodes/drawNode/drawFunctions';
 
 interface DrawNodeEditProps extends NodeProps {
   data: {
@@ -89,10 +79,11 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     useState(false);
   const [isFillColorPickerVisible, setIsFillColorPickerVisible] =
     useState(false);
+  const [isDrawing, setIsDrawing] = useState(false); // Added state for isDrawing
 
   const updateNode = useStore((state) => state.updateNode);
   const colorPickerRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const stageRef = useRef<any>(null);
   const strokeColorPickerRef = useRef<HTMLDivElement>(null);
   const fillColorPickerRef = useRef<HTMLDivElement>(null);
 
@@ -189,43 +180,50 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   };
 
   const handleMouseDown = (e) => {
-    if (shape) {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
-      startDrawing(e, canvasRef, setContent);
-      const startPosition = {
-        x: e.nativeEvent.offsetX,
-        y: e.nativeEvent.offsetY
-      };
-      drawShape(
-        shape,
-        startPosition,
-        { x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY },
-        ctx
-      );
-      setShape(null);
-    } else {
-      startDrawing(e, canvasRef, setContent);
-    }
+    // Handle drawing start
+    const stage = stageRef.current;
+    if (!stage) return;
+    const pos = stage.getPointerPosition();
+    if (!pos) return;
+
+    const newShape = {
+      tool,
+      points: [pos.x, pos.y],
+      stroke: `rgba(${currentColor.r}, ${currentColor.g}, ${currentColor.b}, ${currentColor.a})`,
+      strokeWidth: thickness,
+      fill:
+        shape === 'rectangle' || shape === 'circle' ? fillColor : 'transparent'
+    };
+
+    setContent([...content, newShape]);
+    setIsDrawing(true); // Set isDrawing to true when drawing starts
   };
 
   const handleMouseMove = (e) => {
-    draw(e, canvasRef, setContent, tool, currentColor, thickness);
+    if (!isDrawing) return;
+    const stage = stageRef.current;
+    if (!stage) return;
+    const pos = stage.getPointerPosition();
+    if (!pos) return;
+
+    const lastShape = content[content.length - 1];
+    if (!lastShape) return;
+
+    const newPoints = [...lastShape.points, pos.x, pos.y];
+    const updatedShape = { ...lastShape, points: newPoints };
+
+    setContent([...content.slice(0, -1), updatedShape]);
   };
 
   const handleMouseUp = () => {
-    stopDrawing(canvasRef);
+    setIsDrawing(false); // Set isDrawing to false when drawing ends
   };
 
   const handleStrokeColorChange = (color) => {
     setStrokeColor(color.hex);
-    setStrokeColor(color.hex);
   };
 
   const handleFillColorChange = (color) => {
-    setFillColor(color.hex);
     setFillColor(color.hex);
   };
 
@@ -239,13 +237,27 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
 
   const handleStrokeWidthChange = (event) => {
     setStrokeWidth(parseInt(event.target.value, 10));
-    setStrokeWidth(parseInt(event.target.value, 10));
   };
 
   const handleAddText = () => {
     const text = prompt('Enter text:');
     if (text) {
-      addText(canvasRef, text, strokeColor, fillColor);
+      const stage = stageRef.current;
+      if (!stage) return;
+      const pos = stage.getPointerPosition();
+      if (!pos) return;
+
+      const newText = {
+        tool: 'text',
+        text,
+        x: pos.x,
+        y: pos.y,
+        fontSize: 20,
+        fontFamily: 'Arial',
+        fill: strokeColor
+      };
+
+      setContent([...content, newText]);
     }
   };
 
@@ -283,6 +295,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         />
       </div>
       <DrawingToolbar
+        stageRef={stageRef}
         onPencilClick={() => setTool('pencil')}
         onEraserClick={() => setTool('eraser')}
         onMarkerClick={() => setTool('marker')}
@@ -292,22 +305,88 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         onStrokeWidthChange={handleStrokeWidthChange}
         onAddTextClick={handleAddText}
         strokeWidth={strokeWidth}
-        onUndoClick={() => undo(canvasRef)}
-        onRedoClick={() => redo(canvasRef)}
+        onUndoClick={() => undo(stageRef)}
+        onRedoClick={() => redo(stageRef)}
         onLineClick={() => setTool('line')}
         onArrowClick={() => setTool('arrow')}
         onTextClick={() => setTool('text')}
       />
       <div className={styles.canvasContainer}>
-        <canvas
-          ref={canvasRef}
+        <Stage
           width={nodeWidth}
           height={nodeHeight - 100}
+          ref={stageRef}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
           className={`nodrag nowheel ${styles[tool]}`}
-        />
+        >
+          <Layer>
+            {content.map((shape, i) => {
+              switch (shape.tool) {
+                case 'pencil':
+                case 'marker':
+                case 'eraser':
+                  return (
+                    <Line
+                      key={i}
+                      points={shape.points}
+                      stroke={shape.stroke}
+                      strokeWidth={shape.strokeWidth}
+                      globalCompositeOperation={
+                        shape.tool === 'eraser'
+                          ? 'destination-out'
+                          : 'source-over'
+                      }
+                    />
+                  );
+                case 'rectangle':
+                  return (
+                    <Rect
+                      key={i}
+                      x={shape.points[0]}
+                      y={shape.points[1]}
+                      width={shape.points[2] - shape.points[0]}
+                      height={shape.points[3] - shape.points[1]}
+                      stroke={shape.stroke}
+                      strokeWidth={shape.strokeWidth}
+                      fill={shape.fill}
+                    />
+                  );
+                case 'circle':
+                  const radius = Math.sqrt(
+                    Math.pow(shape.points[2] - shape.points[0], 2) +
+                      Math.pow(shape.points[3] - shape.points[1], 2)
+                  );
+                  return (
+                    <Circle
+                      key={i}
+                      x={shape.points[0]}
+                      y={shape.points[1]}
+                      radius={radius}
+                      stroke={shape.stroke}
+                      strokeWidth={shape.strokeWidth}
+                      fill={shape.fill}
+                    />
+                  );
+                case 'text':
+                  return (
+                    <Text
+                      key={i}
+                      text={shape.text}
+                      x={shape.x}
+                      y={shape.y}
+                      fontSize={shape.fontSize}
+                      fontFamily={shape.fontFamily}
+                      fill={shape.fill}
+                    />
+                  );
+                default:
+                  return null;
+              }
+            })}
+          </Layer>
+        </Stage>
       </div>
       <div className={styles.footer}>
         <SaveButton

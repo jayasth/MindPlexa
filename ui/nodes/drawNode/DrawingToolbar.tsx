@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   FaPencilAlt,
   FaEraser,
@@ -16,6 +16,13 @@ import {
   FaTint
 } from 'react-icons/fa';
 import styles from './DrawingToolbar.module.css';
+import {
+  undo,
+  redo,
+  setStrokeColor,
+  setFillColor,
+  setStrokeWidth
+} from './drawFunctions';
 
 interface DrawingToolbarProps {
   onPencilClick: () => void;
@@ -32,6 +39,7 @@ interface DrawingToolbarProps {
   onStrokeWidthChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onAddTextClick: () => void;
   strokeWidth: number;
+  stageRef: React.RefObject<any>;
 }
 
 const DrawingToolbar: React.FC<DrawingToolbarProps> = ({
@@ -48,8 +56,12 @@ const DrawingToolbar: React.FC<DrawingToolbarProps> = ({
   onFillColorClick,
   onStrokeWidthChange,
   onAddTextClick,
-  strokeWidth
+  strokeWidth,
+  stageRef
 }) => {
+  const [strokeColor, setStrokeColor] = useState('#000000');
+  const [fillColor, setFillColor] = useState('#000000');
+
   return (
     <div className={styles.toolbar}>
       <button

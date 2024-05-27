@@ -13,6 +13,13 @@ const nextConfig = {
 
   webpack: (config) => {
     config.resolve.alias['@'] = resolve(__dirname, '.');
+
+    // Add the following lines to configure file-loader for .node files
+    config.module.rules.push({
+      test: /\.node$/,
+      use: 'file-loader'
+    });
+
     return config;
   },
 
