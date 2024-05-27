@@ -6,6 +6,7 @@ import {
   Views,
   DateLocalizer
 } from 'react-big-calendar';
+import { navigate } from 'react-big-calendar/lib/utils/dates';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { useStore } from '@/app/store/useCanvasStore';
@@ -44,7 +45,7 @@ interface CalendarNodeEditProps extends NodeProps {
     title?: string;
     backgroundColor?: string;
     textColor?: string;
-    view?: string; // New prop for calendar view
+    view?: string;
   };
   width: number;
   height: number;
@@ -84,6 +85,7 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
   const [newEvent, setNewEvent] = useState<{ start: Date; end: Date } | null>(
     null
   ); // New state for new event
+  const [currentDate, setCurrentDate] = useState(new Date()); // New state for current date
 
   const updateNode = useStore((state) => state.updateNode);
   const colorPickerRef = useRef<HTMLDivElement>(null);
@@ -258,9 +260,10 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
           view={view as Views}
           onEventResize={handleEventResize}
           onEventDrop={handleEventDrop}
-          components={{
-            toolbar: null // Disable default toolbar
-          }}
+          onView={(newView) => handleViewChange(newView)} // Fix for toolbar buttons
+          date={currentDate}
+          onNavigate={(date) => setCurrentDate(date)}
+          toolbar={true}
         />
       </div>
       <div className={styles.footer}>
