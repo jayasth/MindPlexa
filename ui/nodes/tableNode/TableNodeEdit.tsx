@@ -272,7 +272,8 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
                 setContent,
                 updateNode
               },
-              headerName: `${col.headerName} (${col.type})`,
+              headerName: col.headerName,
+              type: col.type,
               sortable: false,
               filter: false
             }))}

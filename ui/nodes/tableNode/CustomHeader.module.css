@@ -1,50 +1,28 @@
 .headerContainer {
   display: flex;
   align-items: center;
-  position: relative;
+  justify-content: space-between;
+  width: 100%;
+  padding: 4px 8px;
+  background-color: #f9f9f9;
 }
 
 .headerInput {
   flex-grow: 1;
-  border: none;
-  background: transparent;
-  font-size: 14px;
+  margin-right: 8px;
+  box-sizing: border-box;
+  font-size: 12px;
   padding: 4px;
+  height: 28px;
 }
 
-.iconsContainer {
-  display: flex;
-  align-items: center;
-  visibility: hidden;
-  position: absolute;
-  right: 0;
-}
-
-.headerContainer:hover .iconsContainer {
-  visibility: visible;
-}
-
-.filterIcon,
-.sortIcon {
-  cursor: pointer;
-  margin-left: 8px;
-}
-
-.contextMenu {
-  position: absolute;
-  background: white;
-  border: 1px solid #ccc;
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  z-index: 1000;
-}
-
-.contextMenu li {
-  padding: 8px 12px;
-  cursor: pointer;
-}
-
-.contextMenu li:hover {
-  background: #eee;
+.typeDropdown {
+  width: 60px;
+  background-color: #eee;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  height: 28px;
 }
