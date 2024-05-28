@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   FaPencilAlt,
   FaEraser,
@@ -10,139 +10,103 @@ import {
   FaSlash,
   FaArrowRight,
   FaTextHeight,
-  FaPalette,
-  FaFillDrip,
-  FaFont,
-  FaTint
+  FaTint,
+  FaFillDrip
 } from 'react-icons/fa';
 import styles from './DrawingToolbar.module.css';
-import {
-  undo,
-  redo,
-  setStrokeColor,
-  setFillColor,
-  setStrokeWidth
-} from './drawFunctions';
 
 interface DrawingToolbarProps {
-  onPencilClick: () => void;
-  onEraserClick: () => void;
-  onUndoClick: () => void;
-  onRedoClick: () => void;
-  onMarkerClick: () => void;
-  onShapeClick: (shape: string) => void;
-  onLineClick: () => void;
-  onArrowClick: () => void;
-  onTextClick: () => void;
-  onStrokeColorClick: () => void;
-  onFillColorClick: () => void;
+  onToolSelect: (tool: string) => void;
+  onUndo: () => void;
+  onRedo: () => void;
+  onStrokeColorChange: () => void;
+  onFillColorChange: () => void;
   onStrokeWidthChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  onAddTextClick: () => void;
   strokeWidth: number;
-  stageRef: React.RefObject<any>;
 }
 
 const DrawingToolbar: React.FC<DrawingToolbarProps> = ({
-  onPencilClick,
-  onEraserClick,
-  onUndoClick,
-  onRedoClick,
-  onMarkerClick,
-  onShapeClick,
-  onLineClick,
-  onArrowClick,
-  onTextClick,
-  onStrokeColorClick,
-  onFillColorClick,
+  onToolSelect,
+  onUndo,
+  onRedo,
+  onStrokeColorChange,
+  onFillColorChange,
   onStrokeWidthChange,
-  onAddTextClick,
-  strokeWidth,
-  stageRef
+  strokeWidth
 }) => {
-  const [strokeColor, setStrokeColor] = useState('#000000');
-  const [fillColor, setFillColor] = useState('#000000');
-
   return (
     <div className={styles.toolbar}>
       <button
-        onClick={onPencilClick}
+        onClick={() => onToolSelect('pencil')}
         className={styles.toolbarButton}
         title="Pencil"
       >
         <FaPencilAlt />
       </button>
       <button
-        onClick={onEraserClick}
+        onClick={() => onToolSelect('eraser')}
         className={styles.toolbarButton}
         title="Eraser"
       >
         <FaEraser />
       </button>
       <button
-        onClick={onMarkerClick}
+        onClick={() => onToolSelect('marker')}
         className={styles.toolbarButton}
         title="Marker"
       >
         <FaHighlighter />
       </button>
       <button
-        onClick={() => onShapeClick('rectangle')}
+        onClick={() => onToolSelect('rectangle')}
         className={styles.toolbarButton}
         title="Rectangle"
       >
         <FaSquare />
       </button>
       <button
-        onClick={() => onShapeClick('circle')}
+        onClick={() => onToolSelect('circle')}
         className={styles.toolbarButton}
         title="Circle"
       >
         <FaCircle />
       </button>
       <button
-        onClick={onLineClick}
+        onClick={() => onToolSelect('line')}
         className={styles.toolbarButton}
         title="Line"
       >
         <FaSlash />
       </button>
       <button
-        onClick={onArrowClick}
+        onClick={() => onToolSelect('arrow')}
         className={styles.toolbarButton}
         title="Arrow"
       >
         <FaArrowRight />
       </button>
       <button
-        onClick={onTextClick}
+        onClick={() => onToolSelect('text')}
         className={styles.toolbarButton}
         title="Text"
       >
         <FaTextHeight />
       </button>
-      <button
-        onClick={onUndoClick}
-        className={styles.toolbarButton}
-        title="Undo"
-      >
+      <button onClick={onUndo} className={styles.toolbarButton} title="Undo">
         <FaUndo />
       </button>
-      <button
-        onClick={onRedoClick}
-        className={styles.toolbarButton}
-        title="Redo"
-      >
+      <button onClick={onRedo} className={styles.toolbarButton} title="Redo">
         <FaRedo />
       </button>
       <button
-        onClick={onStrokeColorClick}
+        onClick={onStrokeColorChange}
         className={styles.toolbarButton}
         title="Stroke Color"
       >
         <FaTint />
       </button>
       <button
-        onClick={onFillColorClick}
+        onClick={onFillColorChange}
         className={styles.toolbarButton}
         title="Fill Color"
       >
@@ -156,13 +120,6 @@ const DrawingToolbar: React.FC<DrawingToolbarProps> = ({
         onChange={onStrokeWidthChange}
         className={styles.strokeWidthInput}
       />
-      <button
-        onClick={onAddTextClick}
-        className={styles.toolbarButton}
-        title="Add Text"
-      >
-        <FaFont />
-      </button>
     </div>
   );
 };
