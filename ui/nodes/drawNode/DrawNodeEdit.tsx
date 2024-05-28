@@ -15,18 +15,28 @@ import {
 } from '@/ui/nodes/CommonNodeComponents';
 import {
   handleTitleChange,
-  handleChangeColor,
   handleSave,
   handleDelete,
   handleAddTag,
   handleAttachFile,
   handleClose,
-  handleDuplicate,
-  getContrastYIQ
+  handleDuplicate
 } from '@/ui/canvasEditor/utils/CommonNodeFunctions';
 import DrawingToolbar from '@/ui/nodes/drawNode/DrawingToolbar';
-import { Stage, Layer, Line, Rect, Circle, Text } from 'react-konva';
-import { undo, redo } from '@/ui/nodes/drawNode/drawFunctions';
+import DrawingCanvas from '@/ui/nodes/drawNode/DrawingCanvas';
+import {
+  handleBackgroundColorChange,
+  handleStrokeColorChange,
+  handleStrokeWidthChange,
+  undo,
+  redo,
+  validateCellValue,
+  onCellValueChanged,
+  addColumn,
+  addRow,
+  importTableData,
+  exportTableData
+} from '@/ui/nodes/drawNode/drawUtils';
 
 interface DrawNodeEditProps extends NodeProps {
   data: {
@@ -72,19 +82,12 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const [isStrokeColorPickerVisible, setIsStrokeColorPickerVisible] =
     useState(false);
   const [tool, setTool] = useState('marker');
-  const [currentColor, setCurrentColor] = useState({
-    r: 0,
-    g: 0,
-    b: 0,
-    a: 1
-  });
-  const [thickness, setThickness] = useState(1);
-  const [isDrawing, setIsDrawing] = useState(false);
+  const [currentColor, setCurrentColor] = useState({ r: 0, g: 0, b: 0, a: 1 });
 
   const updateNode = useStore((state) => state.updateNode);
   const backgroundColorPickerRef = useRef<HTMLDivElement>(null);
   const strokeColorPickerRef = useRef<HTMLDivElement>(null);
-  const stageRef = useRef<any>(null);
+  const stageRef = useRef(null);
 
   useEffect(() => {
     updateNode(data.id, {
@@ -103,13 +106,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
 
   const onChangeTitle = (newTitle: string) => {
     handleTitleChange(data.id, newTitle, setTitle);
-  };
-
-  const handleBackgroundColorChange = (color) => {
-    const rgbaColor = `rgba(${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b}, ${color.rgb.a})`;
-    const newTextColor = getContrastYIQ(rgbaColor);
-    setTextColor(newTextColor);
-    handleChangeColor(data.id, rgbaColor, setBackgroundColor);
   };
 
   const onAddTag = (newTag: string) => {
@@ -171,79 +167,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     }
   }, [backgroundColorPickerRef, strokeColorPickerRef]);
 
-  const handleMouseDown = (e) => {
-    const stage = stageRef.current;
-    if (!stage) return;
-    const pos = stage.getPointerPosition();
-    if (!pos) return;
-
-    if (tool === 'select') {
-      // Handle selection tool logic here
-      return;
-    }
-
-    const newShape = {
-      tool,
-      points: [pos.x, pos.y],
-      stroke: `rgba(${currentColor.r}, ${currentColor.g}, ${currentColor.b}, ${currentColor.a})`,
-      strokeWidth: thickness,
-      fill: 'transparent'
-    };
-
-    setContent([...content, newShape]);
-    setIsDrawing(true);
-  };
-
-  const handleMouseMove = (e) => {
-    if (!isDrawing) return;
-    const stage = stageRef.current;
-    if (!stage) return;
-    const pos = stage.getPointerPosition();
-    if (!pos) return;
-
-    const lastShape = content[content.length - 1];
-    if (!lastShape) return;
-
-    const newPoints = [...lastShape.points, pos.x, pos.y];
-    const updatedShape = { ...lastShape, points: newPoints };
-
-    setContent([...content.slice(0, -1), updatedShape]);
-  };
-
-  const handleMouseUp = () => {
-    setIsDrawing(false);
-  };
-
-  const handleStrokeColorChange = (color) => {
-    setCurrentColor(color.rgb);
-  };
-
-  const handleStrokeWidthChange = (event) => {
-    setThickness(parseInt(event.target.value, 10));
-  };
-
-  const handleAddText = () => {
-    const text = prompt('Enter text:');
-    if (text) {
-      const stage = stageRef.current;
-      if (!stage) return;
-      const pos = stage.getPointerPosition();
-      if (!pos) return;
-
-      const newText = {
-        tool: 'text',
-        text,
-        x: pos.x,
-        y: pos.y,
-        fontSize: 20,
-        fontFamily: 'Arial',
-        fill: `rgba(${currentColor.r}, ${currentColor.g}, ${currentColor.b}, ${currentColor.a})`
-      };
-
-      setContent([...content, newText]);
-    }
-  };
-
   const customStyles: CSSProperties = {
     width: nodeWidth,
     height: nodeHeight,
@@ -254,7 +177,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
 
   return (
     <div
-      className={`${styles.drawNode} ${styles[tool]}`}
+      className={`${styles.drawNode}`}
       style={customStyles}
       onClick={handleContainerClick}
       onBlur={handleContainerBlur}
@@ -285,82 +208,11 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         onRedo={() => redo(stageRef)}
         onStrokeColorChange={toggleStrokeColorPicker}
       />
-      <div className={styles.canvasContainer}>
-        <Stage
-          width={nodeWidth}
-          height={nodeHeight - 100}
-          ref={stageRef}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          className={`nodrag nowheel ${styles[tool]}`}
-        >
-          <Layer>
-            {content.map((shape, i) => {
-              switch (shape.tool) {
-                case 'marker':
-                case 'eraser':
-                  return (
-                    <Line
-                      key={i}
-                      points={shape.points}
-                      stroke={shape.stroke}
-                      strokeWidth={shape.strokeWidth}
-                      globalCompositeOperation={
-                        shape.tool === 'eraser'
-                          ? 'destination-out'
-                          : 'source-over'
-                      }
-                    />
-                  );
-                case 'rectangle':
-                  return (
-                    <Rect
-                      key={i}
-                      x={shape.points[0]}
-                      y={shape.points[1]}
-                      width={shape.points[2] - shape.points[0]}
-                      height={shape.points[3] - shape.points[1]}
-                      stroke={shape.stroke}
-                      strokeWidth={shape.strokeWidth}
-                      fill={shape.fill}
-                    />
-                  );
-                case 'circle':
-                  const radius = Math.sqrt(
-                    Math.pow(shape.points[2] - shape.points[0], 2) +
-                      Math.pow(shape.points[3] - shape.points[1], 2)
-                  );
-                  return (
-                    <Circle
-                      key={i}
-                      x={shape.points[0]}
-                      y={shape.points[1]}
-                      radius={radius}
-                      stroke={shape.stroke}
-                      strokeWidth={shape.strokeWidth}
-                      fill={shape.fill}
-                    />
-                  );
-                case 'text':
-                  return (
-                    <Text
-                      key={i}
-                      text={shape.text}
-                      x={shape.x}
-                      y={shape.y}
-                      fontSize={shape.fontSize}
-                      fontFamily={shape.fontFamily}
-                      fill={shape.fill}
-                    />
-                  );
-                default:
-                  return null;
-              }
-            })}
-          </Layer>
-        </Stage>
-      </div>
+      <DrawingCanvas
+        width={nodeWidth}
+        height={nodeHeight - 100}
+        initialContent={content}
+      />
       <div className={styles.footer}>
         <SaveButton
           onClick={() =>
@@ -386,7 +238,14 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
           >
             <SketchPicker
               color={backgroundColor}
-              onChange={handleBackgroundColorChange}
+              onChange={(color) =>
+                handleBackgroundColorChange(
+                  color,
+                  setTextColor,
+                  setBackgroundColor,
+                  data.id
+                )
+              }
             />
           </div>
         )}
@@ -397,7 +256,9 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
           >
             <SketchPicker
               color={currentColor}
-              onChange={handleStrokeColorChange}
+              onChange={(color) =>
+                handleStrokeColorChange(color, setCurrentColor)
+              }
             />
           </div>
         )}
