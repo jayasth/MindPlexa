@@ -96,6 +96,7 @@ const AddTableModal = ({ onClose, onAddTable }) => {
             type="number"
             value={rows}
             onChange={handleRowsChange}
+            onWheel={(e) => e.preventDefault()}
             min="1"
             variant="slim"
             className={styles.inputNarrow}

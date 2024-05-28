@@ -26,7 +26,7 @@ import {
   ExportButton,
   ImportButton
 } from '@/ui/nodes/tableNode/TableNodeToolbar';
-import { SketchPicker } from 'react-color';
+import { TwitterPicker } from 'react-color';
 import AddTableModal from '@/ui/nodes/tableNode/AddTableModal';
 import CustomHeader from '@/ui/nodes/tableNode/CustomHeader';
 
@@ -223,6 +223,21 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     color: textColor
   };
 
+  const customColors = [
+    '#FF6900',
+    '#FCB900',
+    '#7BDCB5',
+    '#00D084',
+    '#8ED1FC',
+    '#0693E3',
+    '#ABB8C3',
+    '#EB144C',
+    '#F78DA7',
+    '#9900EF',
+    '#F4F4F4',
+    '#575757'
+  ];
+
   return (
     <div
       className={styles.tableNode}
@@ -313,9 +328,23 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
         <DuplicateButton onClick={() => handleDuplicate(data.id)} />
         {isColorPickerVisible && (
           <div className={`${styles.colorPicker} nodrag`} ref={colorPickerRef}>
-            <SketchPicker
+            <TwitterPicker
               color={backgroundColor}
-              onBackgroundColorChange={handleBackgroundColorChange}
+              onChange={handleBackgroundColorChange}
+              colors={customColors}
+              styles={{
+                default: {
+                  input: {
+                    height: '16px',
+                    fontSize: '12px'
+                  },
+                  swatch: {
+                    width: '20px',
+                    height: '20px'
+                  }
+                }
+              }}
+              width="180px"
             />
           </div>
         )}
