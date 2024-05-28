@@ -72,8 +72,13 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const [isStrokeColorPickerVisible, setIsStrokeColorPickerVisible] =
     useState(false);
   const [tool, setTool] = useState('pencil');
-  const [currentColor, setCurrentColor] = useState({ r: 0, g: 0, b: 0, a: 1 });
-  const [thickness, setThickness] = useState(2);
+  const [currentColor, setCurrentColor] = useState({
+    r: 255,
+    g: 0,
+    b: 0,
+    a: 1
+  });
+  const [thickness, setThickness] = useState(5);
   const [isDrawing, setIsDrawing] = useState(false);
 
   const updateNode = useStore((state) => state.updateNode);
@@ -238,12 +243,13 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     width: nodeWidth,
     height: nodeHeight,
     backgroundColor,
-    color: textColor
+    color: textColor,
+    cursor: 'default'
   };
 
   return (
     <div
-      className={styles.drawNode}
+      className={`${styles.drawNode} ${styles[tool]}`}
       style={customStyles}
       onClick={handleContainerClick}
       onBlur={handleContainerBlur}
@@ -267,7 +273,9 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         />
       </div>
       <DrawingToolbar
-        onToolSelect={setTool}
+        onToolSelect={(selectedTool) => {
+          setTool(selectedTool);
+        }}
         onUndo={() => undo(stageRef)}
         onRedo={() => redo(stageRef)}
         onStrokeColorChange={toggleStrokeColorPicker}

@@ -19,34 +19,17 @@
   border-radius: 4px;
 }
 
-.pencil {
-  cursor: crosshair;
-}
-
-.marker {
-  cursor: crosshair;
+.pencil,
+.marker,
+.rectangle,
+.circle,
+.line,
+.arrow {
+  cursor: default; /* Use default cursor as react-konva will handle the cursor */
 }
 
 .eraser {
-  cursor:
-    url('../../icons/eraser-cursor.svg') 16 16,
-    auto !important;
-}
-
-.rectangle {
-  cursor: crosshair;
-}
-
-.circle {
-  cursor: crosshair;
-}
-
-.line {
-  cursor: crosshair;
-}
-
-.arrow {
-  cursor: crosshair;
+  cursor: default;
 }
 
 .text {
