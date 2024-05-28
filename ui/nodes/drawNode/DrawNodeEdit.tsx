@@ -71,14 +71,14 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     useState(false);
   const [isStrokeColorPickerVisible, setIsStrokeColorPickerVisible] =
     useState(false);
-  const [tool, setTool] = useState('pencil');
+  const [tool, setTool] = useState('marker');
   const [currentColor, setCurrentColor] = useState({
-    r: 255,
+    r: 0,
     g: 0,
     b: 0,
     a: 1
   });
-  const [thickness, setThickness] = useState(5);
+  const [thickness, setThickness] = useState(1);
   const [isDrawing, setIsDrawing] = useState(false);
 
   const updateNode = useStore((state) => state.updateNode);
@@ -176,6 +176,11 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     if (!stage) return;
     const pos = stage.getPointerPosition();
     if (!pos) return;
+
+    if (tool === 'select') {
+      // Handle selection tool logic here
+      return;
+    }
 
     const newShape = {
       tool,
@@ -279,9 +284,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         onUndo={() => undo(stageRef)}
         onRedo={() => redo(stageRef)}
         onStrokeColorChange={toggleStrokeColorPicker}
-        onFillColorChange={toggleStrokeColorPicker}
-        onStrokeWidthChange={handleStrokeWidthChange}
-        strokeWidth={thickness}
       />
       <div className={styles.canvasContainer}>
         <Stage
@@ -296,7 +298,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
           <Layer>
             {content.map((shape, i) => {
               switch (shape.tool) {
-                case 'pencil':
                 case 'marker':
                 case 'eraser':
                   return (

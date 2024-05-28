@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  FaPencilAlt,
   FaEraser,
   FaUndo,
   FaRedo,
@@ -11,7 +10,7 @@ import {
   FaArrowRight,
   FaTextHeight,
   FaTint,
-  FaFillDrip
+  FaMousePointer
 } from 'react-icons/fa';
 import styles from './DrawingToolbar.module.css';
 
@@ -20,35 +19,22 @@ interface DrawingToolbarProps {
   onUndo: () => void;
   onRedo: () => void;
   onStrokeColorChange: () => void;
-  onFillColorChange: () => void;
-  onStrokeWidthChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  strokeWidth: number;
 }
 
 const DrawingToolbar: React.FC<DrawingToolbarProps> = ({
   onToolSelect,
   onUndo,
   onRedo,
-  onStrokeColorChange,
-  onFillColorChange,
-  onStrokeWidthChange,
-  strokeWidth
+  onStrokeColorChange
 }) => {
   return (
     <div className={styles.toolbar}>
       <button
-        onClick={() => onToolSelect('pencil')}
+        onClick={() => onToolSelect('select')}
         className={styles.toolbarButton}
-        title="Pencil"
+        title="Select"
       >
-        <FaPencilAlt />
-      </button>
-      <button
-        onClick={() => onToolSelect('eraser')}
-        className={styles.toolbarButton}
-        title="Eraser"
-      >
-        <FaEraser />
+        <FaMousePointer />
       </button>
       <button
         onClick={() => onToolSelect('marker')}
@@ -105,21 +91,6 @@ const DrawingToolbar: React.FC<DrawingToolbarProps> = ({
       >
         <FaTint />
       </button>
-      <button
-        onClick={onFillColorChange}
-        className={styles.toolbarButton}
-        title="Fill Color"
-      >
-        <FaFillDrip />
-      </button>
-      <input
-        type="number"
-        min="1"
-        max="100"
-        value={strokeWidth}
-        onChange={onStrokeWidthChange}
-        className={styles.strokeWidthInput}
-      />
     </div>
   );
 };
