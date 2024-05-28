@@ -4,19 +4,41 @@
   left: 0;
   background-color: white;
   border: 1px solid #ccc;
-  padding: 8px;
+  padding: 4px;
   z-index: 10;
+  width: 150px;
+  font-size: 12px;
+}
+
+.iconContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.icon {
+  cursor: pointer;
+  font-size: 16px;
 }
 
 .colorPicker {
-  margin-bottom: 8px;
+  position: absolute;
+  top: 40px;
+  left: 0;
+  z-index: 10;
 }
 
-.strokeWidthSlider {
+.strokeWidthContainer {
   display: flex;
   align-items: center;
+  justify-content: space-between;
 }
 
-.strokeWidthSlider input {
-  width: 100px;
+.strokeWidthInput {
+  width: 40px;
+  padding: 2px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 12px;
 }

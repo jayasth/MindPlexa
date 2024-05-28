@@ -9,7 +9,6 @@ import {
   FaSlash,
   FaArrowRight,
   FaTextHeight,
-  FaTint,
   FaMousePointer
 } from 'react-icons/fa';
 import styles from './DrawingToolbar.module.css';
@@ -37,7 +36,7 @@ const DrawingToolbar: React.FC<DrawingToolbarProps> = ({
   setCurrentStrokeWidth
 }) => {
   return (
-    <div className={styles.toolbar}>
+    <div className={`${styles.toolbar} nodrag`}>
       <button
         onClick={() => onToolSelect('select')}
         className={styles.toolbarButton}

@@ -2,6 +2,7 @@ import React from 'react';
 import { Stage, Layer, Line, Rect, Circle, Text } from 'react-konva';
 import { useDrawing } from './drawLogic';
 import styles from './DrawingCanvas.module.css';
+import Konva from 'konva';
 
 interface Shape {
   tool: string;
@@ -20,14 +21,22 @@ interface DrawingCanvasProps {
   width: number;
   height: number;
   initialContent: Shape[];
+  onMouseDown: (e: any) => void;
+  onMouseMove: (e: any) => void;
+  onMouseUp: () => void;
+  stageRef: React.RefObject<Konva.Stage>;
 }
 
 const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
   width,
   height,
-  initialContent
+  initialContent,
+  onMouseDown,
+  onMouseMove,
+  onMouseUp,
+  stageRef
 }) => {
-  const { content, stageRef, handleMouseDown, handleMouseMove, handleMouseUp } =
+  const { content, handleMouseDown, handleMouseMove, handleMouseUp } =
     useDrawing(initialContent);
 
   return (

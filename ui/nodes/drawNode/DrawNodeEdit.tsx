@@ -31,6 +31,7 @@ import {
   undo,
   redo
 } from '@/ui/nodes/drawNode/drawUtils';
+import { useDrawing } from '@/ui/nodes/drawNode/drawLogic';
 
 interface DrawNodeEditProps extends NodeProps {
   data: {
@@ -61,7 +62,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
 }) => {
   const [isSelected, setIsSelected] = useState(selected);
   const [title, setTitle] = useState(data.title || 'Untitled Drawing');
-  const [content, setContent] = useState(data.content || []);
   const [backgroundColor, setBackgroundColor] = useState(
     data.backgroundColor || '#F4F4F4'
   );
@@ -75,15 +75,27 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     useState(false);
   const [isStrokeColorPickerVisible, setIsStrokeColorPickerVisible] =
     useState(false);
-  const [tool, setTool] = useState('select');
-  const [currentColor, setCurrentColor] = useState({ r: 0, g: 0, b: 0, a: 1 });
-  const [currentStroke, setCurrentStroke] = useState('#000000');
-  const [currentStrokeWidth, setCurrentStrokeWidth] = useState(5);
+
+  const {
+    content,
+    setContent,
+    tool,
+    setTool,
+    currentColor,
+    setCurrentColor,
+    thickness: currentStrokeWidth,
+    setThickness: setCurrentStrokeWidth,
+    currentStroke,
+    setCurrentStroke,
+    stageRef,
+    handleMouseDown,
+    handleMouseMove,
+    handleMouseUp
+  } = useDrawing(data.content || []);
 
   const updateNode = useStore((state) => state.updateNode);
   const backgroundColorPickerRef = useRef<HTMLDivElement>(null);
   const strokeColorPickerRef = useRef<HTMLDivElement>(null);
-  const stageRef = useRef(null);
 
   useEffect(() => {
     updateNode(data.id, {
@@ -212,6 +224,10 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         width={nodeWidth}
         height={nodeHeight - 100}
         initialContent={content}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        stageRef={stageRef}
       />
       <div className={styles.footer}>
         <SaveButton

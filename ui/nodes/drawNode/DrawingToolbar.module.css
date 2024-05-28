@@ -4,6 +4,7 @@
   padding: 8px;
   border-top: 1px solid #ccc;
   border-bottom: 1px solid #ccc;
+  position: relative;
 }
 
 .toolbarButton {
