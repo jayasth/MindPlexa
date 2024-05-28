@@ -13,19 +13,28 @@ import {
   FaMousePointer
 } from 'react-icons/fa';
 import styles from './DrawingToolbar.module.css';
+import MarkerOptions from './MarkerOptions';
 
 interface DrawingToolbarProps {
   onToolSelect: (tool: string) => void;
   onUndo: () => void;
   onRedo: () => void;
-  onStrokeColorChange: () => void;
+  currentTool: string;
+  currentStroke: string;
+  setCurrentStroke: (color: string) => void;
+  currentStrokeWidth: number;
+  setCurrentStrokeWidth: (width: number) => void;
 }
 
 const DrawingToolbar: React.FC<DrawingToolbarProps> = ({
   onToolSelect,
   onUndo,
   onRedo,
-  onStrokeColorChange
+  currentTool,
+  currentStroke,
+  setCurrentStroke,
+  currentStrokeWidth,
+  setCurrentStrokeWidth
 }) => {
   return (
     <div className={styles.toolbar}>
@@ -42,6 +51,13 @@ const DrawingToolbar: React.FC<DrawingToolbarProps> = ({
         title="Marker"
       >
         <FaHighlighter />
+      </button>
+      <button
+        onClick={() => onToolSelect('eraser')}
+        className={styles.toolbarButton}
+        title="Eraser"
+      >
+        <FaEraser />
       </button>
       <button
         onClick={() => onToolSelect('rectangle')}
@@ -84,13 +100,14 @@ const DrawingToolbar: React.FC<DrawingToolbarProps> = ({
       <button onClick={onRedo} className={styles.toolbarButton} title="Redo">
         <FaRedo />
       </button>
-      <button
-        onClick={onStrokeColorChange}
-        className={styles.toolbarButton}
-        title="Stroke Color"
-      >
-        <FaTint />
-      </button>
+      {currentTool === 'marker' && (
+        <MarkerOptions
+          currentStroke={currentStroke}
+          setCurrentStroke={setCurrentStroke}
+          currentStrokeWidth={currentStrokeWidth}
+          setCurrentStrokeWidth={setCurrentStrokeWidth}
+        />
+      )}
     </div>
   );
 };

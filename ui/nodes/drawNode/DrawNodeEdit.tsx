@@ -29,13 +29,7 @@ import {
   handleStrokeColorChange,
   handleStrokeWidthChange,
   undo,
-  redo,
-  validateCellValue,
-  onCellValueChanged,
-  addColumn,
-  addRow,
-  importTableData,
-  exportTableData
+  redo
 } from '@/ui/nodes/drawNode/drawUtils';
 
 interface DrawNodeEditProps extends NodeProps {
@@ -83,6 +77,8 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     useState(false);
   const [tool, setTool] = useState('marker');
   const [currentColor, setCurrentColor] = useState({ r: 0, g: 0, b: 0, a: 1 });
+  const [currentStroke, setCurrentStroke] = useState('#000000');
+  const [currentStrokeWidth, setCurrentStrokeWidth] = useState(5);
 
   const updateNode = useStore((state) => state.updateNode);
   const backgroundColorPickerRef = useRef<HTMLDivElement>(null);
@@ -206,7 +202,11 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         }}
         onUndo={() => undo(stageRef)}
         onRedo={() => redo(stageRef)}
-        onStrokeColorChange={toggleStrokeColorPicker}
+        currentTool={tool}
+        currentStroke={currentStroke}
+        setCurrentStroke={setCurrentStroke}
+        currentStrokeWidth={currentStrokeWidth}
+        setCurrentStrokeWidth={setCurrentStrokeWidth}
       />
       <DrawingCanvas
         width={nodeWidth}

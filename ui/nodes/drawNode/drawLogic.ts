@@ -33,13 +33,42 @@ export const useDrawing = (initialContent: Shape[] = []) => {
       return;
     }
 
-    const newShape: Shape = {
-      tool,
-      points: [pos.x, pos.y],
-      stroke: `rgba(${currentColor.r}, ${currentColor.g}, ${currentColor.b}, ${currentColor.a})`,
-      strokeWidth: thickness,
-      fill: 'transparent'
-    };
+    let newShape: Shape;
+
+    switch (tool) {
+      case 'rectangle':
+      case 'circle':
+        newShape = {
+          tool,
+          points: [pos.x, pos.y, pos.x, pos.y],
+          stroke: `rgba(${currentColor.r}, ${currentColor.g}, ${currentColor.b}, ${currentColor.a})`,
+          strokeWidth: thickness,
+          fill: 'transparent'
+        };
+        break;
+      case 'text':
+        newShape = {
+          tool,
+          points: [pos.x, pos.y],
+          stroke: 'transparent',
+          strokeWidth: 0,
+          fill: `rgba(${currentColor.r}, ${currentColor.g}, ${currentColor.b}, ${currentColor.a})`,
+          text: 'Sample Text',
+          x: pos.x,
+          y: pos.y,
+          fontSize: 20,
+          fontFamily: 'Arial'
+        };
+        break;
+      default:
+        newShape = {
+          tool,
+          points: [pos.x, pos.y],
+          stroke: `rgba(${currentColor.r}, ${currentColor.g}, ${currentColor.b}, ${currentColor.a})`,
+          strokeWidth: thickness,
+          fill: 'transparent'
+        };
+    }
 
     setContent([...content, newShape]);
     setIsDrawing(true);
@@ -55,8 +84,20 @@ export const useDrawing = (initialContent: Shape[] = []) => {
     const lastShape = content[content.length - 1];
     if (!lastShape) return;
 
-    const newPoints = [...lastShape.points, pos.x, pos.y];
-    const updatedShape = { ...lastShape, points: newPoints };
+    let updatedShape: Shape;
+
+    switch (tool) {
+      case 'rectangle':
+      case 'circle':
+        updatedShape = {
+          ...lastShape,
+          points: [lastShape.points[0], lastShape.points[1], pos.x, pos.y]
+        };
+        break;
+      default:
+        const newPoints = [...lastShape.points, pos.x, pos.y];
+        updatedShape = { ...lastShape, points: newPoints };
+    }
 
     setContent([...content.slice(0, -1), updatedShape]);
   };

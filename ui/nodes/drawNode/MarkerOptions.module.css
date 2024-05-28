@@ -1,0 +1,22 @@
+.markerOptions {
+  position: absolute;
+  top: 40px;
+  left: 0;
+  background-color: white;
+  border: 1px solid #ccc;
+  padding: 8px;
+  z-index: 10;
+}
+
+.colorPicker {
+  margin-bottom: 8px;
+}
+
+.strokeWidthSlider {
+  display: flex;
+  align-items: center;
+}
+
+.strokeWidthSlider input {
+  width: 100px;
+}
