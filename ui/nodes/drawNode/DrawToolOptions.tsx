@@ -1,6 +1,6 @@
 import React from 'react';
 import { SketchPicker } from 'react-color';
-import styles from './MarkerOptions.module.css';
+import styles from '@/ui/nodes/drawNode/DrawToolOptions.module.css';
 
 interface MarkerOptionsProps {
   currentStroke: string;

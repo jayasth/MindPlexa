@@ -13,7 +13,7 @@ import {
   FaMousePointer
 } from 'react-icons/fa';
 import styles from './DrawingToolbar.module.css';
-import MarkerOptions from './MarkerOptions';
+import MarkerOptions from '@/ui/nodes/drawNode/DrawToolOptions';
 
 interface DrawingToolbarProps {
   onToolSelect: (tool: string) => void;

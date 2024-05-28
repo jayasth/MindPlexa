@@ -75,7 +75,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     useState(false);
   const [isStrokeColorPickerVisible, setIsStrokeColorPickerVisible] =
     useState(false);
-  const [tool, setTool] = useState('marker');
+  const [tool, setTool] = useState('select');
   const [currentColor, setCurrentColor] = useState({ r: 0, g: 0, b: 0, a: 1 });
   const [currentStroke, setCurrentStroke] = useState('#000000');
   const [currentStrokeWidth, setCurrentStrokeWidth] = useState(5);
