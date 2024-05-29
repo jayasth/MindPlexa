@@ -74,23 +74,22 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     useState(false);
   const [isStrokeColorPickerVisible, setIsStrokeColorPickerVisible] =
     useState(false);
+  const [currentColor, setCurrentColor] = useState({ r: 0, g: 0, b: 0, a: 1 });
 
   const {
     content,
     setContent,
     tool,
     setTool,
-    currentColor,
-    setCurrentColor,
     thickness: currentStrokeWidth,
-    setThickness: setCurrentStrokeWidth,
+    setThickness,
     currentStroke,
     setCurrentStroke,
     stageRef,
     handleMouseDown,
     handleMouseMove,
     handleMouseUp
-  } = useDrawing(data.content || []);
+  } = useDrawing(data.content || [], currentColor);
 
   const updateNode = useStore((state) => state.updateNode);
   const backgroundColorPickerRef = useRef<HTMLDivElement>(null);
@@ -217,7 +216,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         currentStroke={currentStroke}
         setCurrentStroke={setCurrentStroke}
         currentStrokeWidth={currentStrokeWidth}
-        setCurrentStrokeWidth={setCurrentStrokeWidth}
+        setCurrentStrokeWidth={(width) => setThickness(width.toString())}
       />
       <DrawingCanvas
         width={nodeWidth}
@@ -275,7 +274,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
             <SketchPicker
               color={currentColor}
               onChange={(color) =>
-                handleStrokeColorChange(color, setCurrentColor)
+                handleStrokeColorChange(color.rgb, setCurrentStroke)
               }
             />
           </div>

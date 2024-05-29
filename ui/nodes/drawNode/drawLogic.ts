@@ -32,10 +32,10 @@ export const handleBackgroundColorChange = (
 };
 
 export const handleStrokeColorChange = (
-  color: any,
+  color: { r: number; g: number; b: number; a: number },
   setCurrentStroke: (color: string) => void
 ) => {
-  const rgbaColor = `rgba(${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b}, ${color.rgb.a})`;
+  const rgbaColor = `rgba(${color.r}, ${color.g}, ${color.b}, ${color.a})`;
   setCurrentStroke(rgbaColor);
 };
 
@@ -89,7 +89,7 @@ export const redo = (stageRef: React.RefObject<Konva.Stage>) => {
 export const handleMouseDown = (
   e: any,
   tool: string,
-  currentColor: any,
+  currentColor: { r: number; g: number; b: number; a: number },
   currentStrokeWidth: number
 ) => {
   const stage = e.target.getStage();
@@ -181,11 +181,13 @@ export const handleMouseUp = (e: any) => {
   }
 };
 
-export const useDrawing = (initialContent: Shape[] = []) => {
+export const useDrawing = (
+  initialContent: Shape[] = [],
+  currentColor: { r: number; g: number; b: number; a: number }
+) => {
   const [content, setContent] = useState<Shape[]>(initialContent);
   const [isDrawing, setIsDrawing] = useState(false);
   const [tool, setTool] = useState('marker');
-  const [currentColor, setCurrentColor] = useState({ r: 0, g: 0, b: 0, a: 1 });
   const [thickness, setThickness] = useState(1);
   const [currentStroke, setCurrentStroke] = useState('#000000');
   const stageRef = useRef<Konva.Stage | null>(null);
@@ -197,9 +199,6 @@ export const useDrawing = (initialContent: Shape[] = []) => {
     setIsDrawing,
     tool,
     setTool,
-    currentColor,
-    setCurrentColor: (color: any) =>
-      handleStrokeColorChange(color, setCurrentStroke),
     thickness,
     setThickness: (value: string) =>
       handleStrokeWidthChange(value, setThickness),
@@ -207,7 +206,7 @@ export const useDrawing = (initialContent: Shape[] = []) => {
     setCurrentStroke,
     stageRef,
     handleMouseDown: (e: any) =>
-      handleMouseDown(e, tool, currentColor, thickness),
+      handleMouseDown(e, tool, currentColor, thickness), // Pass currentColor
     handleMouseMove: (e: any) => handleMouseMove(e),
     handleMouseUp: (e: any) => handleMouseUp(e),
     undo: () => undo(stageRef),

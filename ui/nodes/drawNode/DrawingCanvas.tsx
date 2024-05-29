@@ -49,7 +49,7 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
   onMouseUp
 }) => {
   const [content, setContent] = useState<Shape[]>(initialContent);
-  const { setTool } = useDrawing(content);
+  const { setTool } = useDrawing(content, { r: 0, g: 0, b: 0, a: 1 });
 
   const storeContent = useStore(
     (state) =>
