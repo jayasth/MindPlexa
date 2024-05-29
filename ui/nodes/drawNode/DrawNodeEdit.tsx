@@ -24,9 +24,34 @@ import {
   getContrastYIQ
 } from '@/ui/canvasEditor/utils/CommonNodeFunctions';
 import { SketchPicker } from 'react-color';
-import { FaEye, FaEyeSlash } from 'react-icons/fa';
-
+import {
+  FaPencilAlt,
+  FaPaintBrush,
+  FaMarker,
+  FaEraser,
+  FaSprayCan,
+  FaDownload,
+  FaTrash,
+  FaUndo,
+  FaRedo
+} from 'react-icons/fa';
+import { IoMdWater } from 'react-icons/io';
+import {
+  useBrush,
+  useMarker,
+  useAirbrush,
+  Artboard,
+  ArtboardRef,
+  useShadingBrush,
+  useEraser,
+  useWatercolor,
+  ToolHandlers
+} from './index';
+import { useHistory } from './history';
+import Slider from '@/ui/nodes/drawNode/components/Slider';
+import Modal from '@/ui/nodes/drawNode/components/Modal';
 import { getNodeSpecificProperties } from '@/ui/canvasEditor/utils/nodeProperties';
+import type { IconType } from 'react-icons/lib';
 
 interface DrawNodeEditProps extends NodeProps {
   data: {
@@ -34,7 +59,7 @@ interface DrawNodeEditProps extends NodeProps {
     title?: string;
     backgroundColor?: string;
     textColor?: string;
-    drawingData?: string; // This will store the drawing data as a string
+    drawingData?: string;
   };
   width: number;
   height: number;
@@ -68,10 +93,35 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const [nodeHeight, setNodeHeight] = useState(height);
   const [isColorPickerVisible, setIsColorPickerVisible] = useState(false);
   const [drawingData, setDrawingData] = useState(data.drawingData || '');
+  const [color, setColor] = useState('#531B93');
+  const [strokeWidth, setStrokeWidth] = useState(40);
+  const [colorOpen, setColorOpen] = useState(false);
+  const [sizeOpen, setSizeOpen] = useState(false);
+  const [artboardRef, setArtboardRef] = useState<ArtboardRef | null>(null);
+  const brush = useBrush({ color, strokeWidth });
+  const marker = useMarker({ color, strokeWidth });
+  const watercolor = useWatercolor({ color, strokeWidth });
+  const airbrush = useAirbrush({ color, strokeWidth });
+  const eraser = useEraser({ strokeWidth });
+  const shading = useShadingBrush({
+    color,
+    spreadFactor: (1 / 45) * strokeWidth,
+    distanceThreshold: 100
+  });
+  const tools: Array<[ToolHandlers, IconType]> = [
+    [shading, FaPencilAlt],
+    [watercolor, IoMdWater],
+    [brush, FaPaintBrush],
+    [marker, FaMarker],
+    [airbrush, FaSprayCan],
+    [eraser, FaEraser]
+  ];
+  const [currentTool, setCurrentTool] = useState(0);
+
+  const { undo, redo, history, canUndo, canRedo } = useHistory();
 
   const updateNode = useStore((state) => state.updateNode);
   const colorPickerRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     const nodeProperties = getNodeSpecificProperties('draw', true);
@@ -164,37 +214,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     color: textColor
   };
 
-  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    ctx.beginPath();
-    ctx.moveTo(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
-    canvas.addEventListener('mousemove', draw);
-  };
-
-  const draw = (e: MouseEvent) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    ctx.lineTo(e.offsetX, e.offsetY);
-    ctx.stroke();
-  };
-
-  const stopDrawing = () => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    canvas.removeEventListener('mousemove', draw);
-
-    // Save the drawing data
-    const drawingDataURL = canvas.toDataURL();
-    setDrawingData(drawingDataURL);
-  };
-
   return (
     <div
       className={`${styles.drawNode} ${isSelected ? styles.selected : ''}`}
@@ -221,15 +240,102 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         />
       </div>
       <div className={`${styles.drawContent} nowheel nodrag`}>
-        <canvas
-          ref={canvasRef}
-          width={nodeWidth}
-          height={nodeHeight}
-          onMouseDown={startDrawing}
-          onMouseUp={stopDrawing}
-          onMouseLeave={stopDrawing}
-          className={styles.canvas}
-        />
+        <div className={styles.toolbarSection}>
+          {tools.map(([tool, Icon], index) => (
+            <button
+              aria-label={tool.name}
+              key={tool.name}
+              title={tool.name}
+              style={{
+                backgroundColor: currentTool === index ? '#aaaaff' : '#eeeeee'
+              }}
+              onClick={() => setCurrentTool(index)}
+            >
+              {<Icon size={14} title={tool.name} />}
+            </button>
+          ))}
+          <label>
+            Color:
+            <button
+              onClick={() => setColorOpen(true)}
+              style={{
+                backgroundColor: color,
+                width: 50,
+                border: '2px gray solid',
+                color: 'transparent'
+              }}
+            >
+              Color
+            </button>
+            <Modal open={colorOpen} onClose={() => setColorOpen(false)}>
+              <div style={{ padding: 30 }}>
+                <SketchPicker color={color} onChange={setColor} />
+              </div>
+            </Modal>
+          </label>
+          <label>
+            Size:
+            <button onClick={() => setSizeOpen(true)}>{strokeWidth}</button>
+            <Modal open={sizeOpen} onClose={() => setSizeOpen(false)}>
+              <div
+                style={{
+                  width: 150,
+                  padding: '30px 20px 10px 20px',
+                  display: 'flex',
+                  flexDirection: 'column'
+                }}
+              >
+                <Slider
+                  min={5}
+                  max={100}
+                  value={strokeWidth}
+                  onChange={setStrokeWidth}
+                />
+                <div
+                  style={{
+                    flex: 1,
+                    minHeight: 150,
+                    justifyContent: 'center',
+                    flexDirection: 'column',
+                    display: 'flex',
+                    placeItems: 'center'
+                  }}
+                >
+                  <div
+                    style={{
+                      width: strokeWidth,
+                      height: strokeWidth,
+                      backgroundColor: color,
+                      borderRadius: strokeWidth
+                    }}
+                  ></div>
+                </div>
+              </div>
+            </Modal>
+          </label>
+        </div>
+        <div id="controls" className={styles.toolbarSection}>
+          <button onClick={undo} disabled={!canUndo}>
+            <FaUndo size={12} title="Undo" />
+          </button>
+          <button onClick={redo} disabled={!canRedo}>
+            <FaRedo title="Redo" />
+          </button>
+          <button onClick={() => artboardRef?.download()}>
+            <FaDownload title="Download" />
+          </button>
+          <button onClick={() => artboardRef?.clear()}>
+            <FaTrash title="Clear" />
+          </button>
+        </div>
+        <div id="artboard" className={styles.artboard}>
+          <Artboard
+            tool={tools[currentTool][0]}
+            ref={setArtboardRef}
+            history={history}
+            style={{ border: '1px gray solid' }}
+          />
+        </div>
       </div>
       <div className={styles.footer}>
         <SaveButton
