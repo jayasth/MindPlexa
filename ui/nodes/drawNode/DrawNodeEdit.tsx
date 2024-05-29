@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useRef, CSSProperties } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  CSSProperties,
+  useCallback
+} from 'react';
 import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
 import { useStore } from '@/app/store/useCanvasStore';
 import styles from './DrawNodeEdit.module.css';
@@ -75,7 +81,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const [isStrokeColorPickerVisible, setIsStrokeColorPickerVisible] =
     useState(false);
   const [currentColor, setCurrentColor] = useState({ r: 0, g: 0, b: 0, a: 1 });
-  const [content, setContent] = useState(data.content || {});
+  const [content, setContent] = useState(data.content || []);
 
   const {
     tool,
@@ -126,11 +132,17 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     setNodeHeight(height);
   }, [width, height]);
 
-  const handleResize = (event, { width, height }) => {
+  const handleResize = useCallback((event, { width, height }) => {
     setNodeWidth(width);
     setNodeHeight(height);
-    onNodeResizeStop(data.id, { width, height }, position);
-  };
+  }, []);
+
+  const handleResizeEnd = useCallback(
+    (event, { width, height }) => {
+      onNodeResizeStop(data.id, { width, height }, position);
+    },
+    [data.id, onNodeResizeStop, position]
+  );
 
   const handleContainerClick = () => {
     setIsContainerSelected(true);
@@ -196,6 +208,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         minWidth={200}
         minHeight={200}
         onResize={handleResize}
+        onResizeEnd={handleResizeEnd}
       />
       <div className={styles.header}>
         <input
@@ -229,7 +242,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         stageRef={stageRef}
-        tool={tool} // Pass the selected tool to DrawingCanvas
+        tool={tool}
         currentColor={`rgba(${currentColor.r}, ${currentColor.g}, ${currentColor.b}, ${currentColor.a})`}
         currentStrokeWidth={currentStrokeWidth}
         onDrawingUpdate={handleDrawingUpdate}
