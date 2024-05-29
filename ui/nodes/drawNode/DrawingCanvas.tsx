@@ -21,7 +21,7 @@ interface Shape {
 interface DrawingCanvasProps {
   width: number;
   height: number;
-  initialContent: Shape[];
+  initialContent: Shape[] | Shape;
   stageRef: React.RefObject<Konva.Stage>;
   tool: string;
   currentColor: string;
@@ -34,6 +34,7 @@ interface DrawingCanvasProps {
   ) => void;
   onMouseMove: (e: any) => void;
   onMouseUp: (e: any) => void;
+  onDrawingUpdate: (updatedContent: any) => void;
 }
 
 const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
@@ -46,9 +47,12 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
   currentStrokeWidth,
   onMouseDown,
   onMouseMove,
-  onMouseUp
+  onMouseUp,
+  onDrawingUpdate
 }) => {
-  const [content, setContent] = useState<Shape[]>(initialContent);
+  const [content, setContent] = useState(
+    Array.isArray(initialContent) ? initialContent : [initialContent]
+  );
   const { setTool } = useDrawing(content, { r: 0, g: 0, b: 0, a: 1 });
 
   const storeContent = useStore(
@@ -67,6 +71,10 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
   useEffect(() => {
     setTool(tool);
   }, [tool, setTool]);
+
+  useEffect(() => {
+    onDrawingUpdate(content);
+  }, [content, onDrawingUpdate]);
 
   return (
     <div className={styles.canvasContainer}>

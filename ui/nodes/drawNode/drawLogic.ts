@@ -113,7 +113,7 @@ export const handleMouseDown = (
     .getState()
     .nodes.find((node: any) => node.id === nodeId);
 
-  if (node) {
+  if (node && node.data.content) {
     console.log('handleMouseDown: Initial content:', node.data.content);
     history.push([...node.data.content]);
     const newContent = [...node.data.content, newShape];
@@ -121,6 +121,8 @@ export const handleMouseDown = (
     useStore.getState().updateNode(nodeId, {
       data: { content: newContent }
     });
+  } else {
+    console.log('handleMouseDown: No node or empty content');
   }
 };
 

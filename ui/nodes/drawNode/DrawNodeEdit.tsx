@@ -75,10 +75,9 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const [isStrokeColorPickerVisible, setIsStrokeColorPickerVisible] =
     useState(false);
   const [currentColor, setCurrentColor] = useState({ r: 0, g: 0, b: 0, a: 1 });
+  const [content, setContent] = useState(data.content || {});
 
   const {
-    content,
-    setContent,
     tool,
     setTool,
     thickness: currentStrokeWidth,
@@ -89,7 +88,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     handleMouseDown,
     handleMouseMove,
     handleMouseUp
-  } = useDrawing(data.content || [], currentColor);
+  } = useDrawing(content, currentColor);
 
   const updateNode = useStore((state) => state.updateNode);
   const backgroundColorPickerRef = useRef<HTMLDivElement>(null);
@@ -181,6 +180,10 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     cursor: 'default'
   };
 
+  const handleDrawingUpdate = (updatedContent) => {
+    setContent(updatedContent);
+  };
+
   return (
     <div
       className={`${styles.drawNode}`}
@@ -229,6 +232,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         tool={tool} // Pass the selected tool to DrawingCanvas
         currentColor={`rgba(${currentColor.r}, ${currentColor.g}, ${currentColor.b}, ${currentColor.a})`}
         currentStrokeWidth={currentStrokeWidth}
+        onDrawingUpdate={handleDrawingUpdate}
       />
       <div className={styles.footer}>
         <SaveButton
