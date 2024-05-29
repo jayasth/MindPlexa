@@ -52,7 +52,11 @@ const MarkerOptions: React.FC<MarkerOptionsProps> = ({
             <div className={styles.colorPicker} ref={colorPickerRef}>
               <SketchPicker
                 color={currentStroke}
-                onChange={(color) => setCurrentStroke(color.hex)}
+                onChange={(color) =>
+                  setCurrentStroke(
+                    `rgba(${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b}, ${color.rgb.a})`
+                  )
+                }
               />
             </div>
           )}

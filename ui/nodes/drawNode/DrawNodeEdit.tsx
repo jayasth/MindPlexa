@@ -25,12 +25,12 @@ import {
 import DrawingToolbar from '@/ui/nodes/drawNode/DrawingToolbar';
 import DrawingCanvas from '@/ui/nodes/drawNode/DrawingCanvas';
 import {
+  useDrawing,
   handleBackgroundColorChange,
   handleStrokeColorChange,
   undo,
   redo
-} from '@/ui/nodes/drawNode/drawUtils';
-import { useDrawing } from '@/ui/nodes/drawNode/drawLogic';
+} from '@/ui/nodes/drawNode/drawLogic';
 
 interface DrawNodeEditProps extends NodeProps {
   data: {

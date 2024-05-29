@@ -21,26 +21,26 @@ interface DrawingCanvasProps {
   width: number;
   height: number;
   initialContent: Shape[];
-  onMouseDown: (e: any) => void;
-  onMouseMove: (e: any) => void;
-  onMouseUp: (e: any) => void;
   stageRef: React.RefObject<Konva.Stage>;
   tool: string;
   currentColor: string;
   currentStrokeWidth: number;
+  onMouseDown: (e: any) => void;
+  onMouseMove: (e: any) => void;
+  onMouseUp: (e: any) => void;
 }
 
 const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
   width,
   height,
   initialContent,
-  onMouseDown,
-  onMouseMove,
-  onMouseUp,
   stageRef,
   tool,
   currentColor,
-  currentStrokeWidth
+  currentStrokeWidth,
+  onMouseDown,
+  onMouseMove,
+  onMouseUp
 }) => {
   const { content } = useDrawing(initialContent);
 
