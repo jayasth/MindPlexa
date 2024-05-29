@@ -50,33 +50,39 @@ export const handleEraserSelect = (setCurrentTool: (tool: string) => void) => {
   setCurrentTool('eraser');
 };
 
-export const undo = (stageRef: any) => {
-  const nodeId = stageRef.current?.attrs.id;
-  const node = useStore
-    .getState()
-    .nodes.find((node: any) => node.id === nodeId);
+export const undo = (stageRef: React.RefObject<Konva.Stage>) => {
+  const stage = stageRef.current;
+  if (stage) {
+    const nodeId = stage.attrs.id;
+    const node = useStore
+      .getState()
+      .nodes.find((node: any) => node.id === nodeId);
 
-  if (node && node.data.content.length > 0) {
-    history.push([...node.data.content]);
-    const newContent = node.data.content.slice(0, -1);
-    useStore.getState().updateNode(nodeId, {
-      data: { content: newContent }
-    });
+    if (node && node.data.content.length > 0) {
+      history.push([...node.data.content]);
+      const newContent = node.data.content.slice(0, -1);
+      useStore.getState().updateNode(nodeId, {
+        data: { content: newContent }
+      });
+    }
   }
 };
 
-export const redo = (stageRef: any) => {
-  const nodeId = stageRef.current?.attrs.id;
-  const node = useStore
-    .getState()
-    .nodes.find((node: any) => node.id === nodeId);
+export const redo = (stageRef: React.RefObject<Konva.Stage>) => {
+  const stage = stageRef.current;
+  if (stage) {
+    const nodeId = stage.attrs.id;
+    const node = useStore
+      .getState()
+      .nodes.find((node: any) => node.id === nodeId);
 
-  if (node && history.length > 0) {
-    redoStack.push([...node.data.content]);
-    const newContent = history.pop();
-    useStore.getState().updateNode(nodeId, {
-      data: { content: newContent }
-    });
+    if (node && history.length > 0) {
+      redoStack.push([...node.data.content]);
+      const newContent = history.pop();
+      useStore.getState().updateNode(nodeId, {
+        data: { content: newContent }
+      });
+    }
   }
 };
 
@@ -163,7 +169,7 @@ export const handleMouseUp = (e: any) => {
     .nodes.find((node: any) => node.id === nodeId);
 
   if (node) {
-    redoStack = []; // Clear redo stack on new action
+    redoStack = [];
   }
 };
 

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Stage, Layer, Line, Rect, Circle, Text } from 'react-konva';
 import { useDrawing } from './drawLogic';
 import styles from './DrawingCanvas.module.css';
@@ -26,7 +26,12 @@ interface DrawingCanvasProps {
   tool: string;
   currentColor: string;
   currentStrokeWidth: number;
-  onMouseDown: (e: any) => void;
+  onMouseDown: (
+    e: any,
+    tool: string,
+    color: string,
+    strokeWidth: number
+  ) => void;
   onMouseMove: (e: any) => void;
   onMouseUp: (e: any) => void;
 }
@@ -68,9 +73,11 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
         width={width}
         height={height}
         ref={stageRef}
-        onMouseDown={onMouseDown}
-        onMouseMove={onMouseMove}
-        onMouseUp={onMouseUp}
+        onMouseDown={(e) =>
+          onMouseDown(e, tool, currentColor, currentStrokeWidth)
+        }
+        onMouseMove={(e) => onMouseMove(e)}
+        onMouseUp={(e) => onMouseUp(e)}
         className={`nodrag nowheel ${styles.canvas}`}
       >
         <Layer>
@@ -82,8 +89,8 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
                   <Line
                     key={i}
                     points={shape.points}
-                    stroke={shape.tool === 'eraser' ? 'white' : shape.stroke}
-                    strokeWidth={shape.strokeWidth}
+                    stroke={shape.tool === 'eraser' ? 'white' : currentColor}
+                    strokeWidth={currentStrokeWidth}
                     globalCompositeOperation={
                       shape.tool === 'eraser'
                         ? 'destination-out'
@@ -99,8 +106,8 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
                     y={shape.points[1]}
                     width={shape.points[2] - shape.points[0]}
                     height={shape.points[3] - shape.points[1]}
-                    stroke={shape.stroke}
-                    strokeWidth={shape.strokeWidth}
+                    stroke={currentColor}
+                    strokeWidth={currentStrokeWidth}
                     fill={shape.fill}
                   />
                 );
@@ -115,8 +122,8 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
                     x={shape.points[0]}
                     y={shape.points[1]}
                     radius={radius}
-                    stroke={shape.stroke}
-                    strokeWidth={shape.strokeWidth}
+                    stroke={currentColor}
+                    strokeWidth={currentStrokeWidth}
                     fill={shape.fill}
                   />
                 );
