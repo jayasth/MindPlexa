@@ -40,10 +40,10 @@ export const handleStrokeColorChange = (
 };
 
 export const handleStrokeWidthChange = (
-  event: any,
+  value: string,
   setThickness: (thickness: number) => void
 ) => {
-  setThickness(parseInt(event.target.value, 10));
+  setThickness(parseInt(value, 10));
 };
 
 export const handleEraserSelect = (setCurrentTool: (tool: string) => void) => {
@@ -187,7 +187,8 @@ export const useDrawing = (initialContent: Shape[] = []) => {
     setCurrentColor: (color: any) =>
       handleStrokeColorChange(color, setCurrentStroke),
     thickness,
-    setThickness: (event: any) => handleStrokeWidthChange(event, setThickness),
+    setThickness: (value: string) =>
+      handleStrokeWidthChange(value, setThickness),
     currentStroke,
     setCurrentStroke,
     stageRef,
