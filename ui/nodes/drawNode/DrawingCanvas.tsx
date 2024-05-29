@@ -59,6 +59,7 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
 
   useEffect(() => {
     if (storeContent) {
+      console.log('DrawingCanvas: Received content from store:', storeContent);
       setContent(storeContent);
     }
   }, [storeContent]);
@@ -82,6 +83,7 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
       >
         <Layer>
           {content.map((shape, i) => {
+            console.log('DrawingCanvas: Rendering shape:', shape);
             switch (shape.tool) {
               case 'marker':
               case 'eraser':

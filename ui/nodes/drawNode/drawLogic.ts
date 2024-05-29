@@ -114,8 +114,10 @@ export const handleMouseDown = (
     .nodes.find((node: any) => node.id === nodeId);
 
   if (node) {
+    console.log('handleMouseDown: Initial content:', node.data.content);
     history.push([...node.data.content]);
     const newContent = [...node.data.content, newShape];
+    console.log('handleMouseDown: New content:', newContent);
     useStore.getState().updateNode(nodeId, {
       data: { content: newContent }
     });
@@ -130,9 +132,13 @@ export const handleMouseMove = (e: any) => {
     .getState()
     .nodes.find((node: any) => node.id === nodeId);
 
-  if (!node || node.data.content.length === 0) return;
+  if (!node || node.data.content.length === 0) {
+    console.log('handleMouseMove: No node or empty content');
+    return;
+  }
 
   const content = node.data.content;
+  console.log('handleMouseMove: Current content:', content);
   const shape = content[content.length - 1];
 
   switch (shape.tool) {
@@ -156,6 +162,7 @@ export const handleMouseMove = (e: any) => {
   }
 
   const newContent = [...content.slice(0, -1), shape];
+  console.log('handleMouseMove: New content:', newContent);
   useStore.getState().updateNode(nodeId, {
     data: { content: newContent }
   });
@@ -169,6 +176,7 @@ export const handleMouseUp = (e: any) => {
     .nodes.find((node: any) => node.id === nodeId);
 
   if (node) {
+    console.log('handleMouseUp: Final content:', node.data.content);
     redoStack = [];
   }
 };

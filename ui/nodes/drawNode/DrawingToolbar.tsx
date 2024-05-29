@@ -38,56 +38,80 @@ const DrawingToolbar: React.FC<DrawingToolbarProps> = ({
   return (
     <div className={`${styles.toolbar} nodrag`}>
       <button
-        onClick={() => onToolSelect('select')}
+        onClick={() => {
+          console.log('DrawingToolbar: Selecting "select" tool');
+          onToolSelect('select');
+        }}
         className={styles.toolbarButton}
         title="Select"
       >
         <FaMousePointer />
       </button>
       <button
-        onClick={() => onToolSelect('marker')}
+        onClick={() => {
+          console.log('DrawingToolbar: Selecting "marker" tool');
+          onToolSelect('marker');
+        }}
         className={styles.toolbarButton}
         title="Marker"
       >
         <FaHighlighter />
       </button>
       <button
-        onClick={() => onToolSelect('eraser')}
+        onClick={() => {
+          console.log('DrawingToolbar: Selecting "eraser" tool');
+          onToolSelect('eraser');
+        }}
         className={styles.toolbarButton}
         title="Eraser"
       >
         <FaEraser />
       </button>
       <button
-        onClick={() => onToolSelect('rectangle')}
+        onClick={() => {
+          console.log('DrawingToolbar: Selecting "rectangle" tool');
+          onToolSelect('rectangle');
+        }}
         className={styles.toolbarButton}
         title="Rectangle"
       >
         <FaSquare />
       </button>
       <button
-        onClick={() => onToolSelect('circle')}
+        onClick={() => {
+          console.log('DrawingToolbar: Selecting "circle" tool');
+          onToolSelect('circle');
+        }}
         className={styles.toolbarButton}
         title="Circle"
       >
         <FaCircle />
       </button>
       <button
-        onClick={() => onToolSelect('line')}
+        onClick={() => {
+          console.log('DrawingToolbar: Selecting "line" tool');
+          onToolSelect('line');
+        }}
         className={styles.toolbarButton}
         title="Line"
       >
         <FaSlash />
       </button>
       <button
-        onClick={() => onToolSelect('arrow')}
+        onClick={() => {
+          console.log('DrawingToolbar: Selecting "arrow" tool');
+          onToolSelect('arrow');
+        }}
         className={styles.toolbarButton}
         title="Arrow"
       >
         <FaArrowRight />
       </button>
       <button
-        onClick={() => onToolSelect('text')}
+        onClick={() => {
+          console.log('DrawingToolbar: Selecting "text" tool');
+          onToolSelect('text');
+        }}
         className={styles.toolbarButton}
         title="Text"
       >
