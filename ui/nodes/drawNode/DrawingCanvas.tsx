@@ -3,6 +3,7 @@ import { Stage, Layer, Line, Rect, Circle, Text } from 'react-konva';
 import { useDrawing } from './drawLogic';
 import styles from './DrawingCanvas.module.css';
 import Konva from 'konva';
+import { useStore } from '@/app/store/useCanvasStore';
 
 interface Shape {
   tool: string;
@@ -42,7 +43,20 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
   onMouseMove,
   onMouseUp
 }) => {
-  const { content, setTool } = useDrawing(initialContent);
+  const [content, setContent] = useState<Shape[]>(initialContent);
+  const { setTool } = useDrawing(content);
+
+  const storeContent = useStore(
+    (state) =>
+      state.nodes.find((node) => node.id === stageRef.current?.attrs.id)?.data
+        .content
+  );
+
+  useEffect(() => {
+    if (storeContent) {
+      setContent(storeContent);
+    }
+  }, [storeContent]);
 
   useEffect(() => {
     setTool(tool);
