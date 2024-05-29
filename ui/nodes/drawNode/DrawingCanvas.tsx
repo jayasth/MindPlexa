@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Stage, Layer, Line, Rect, Circle, Text } from 'react-konva';
 import { useDrawing } from './drawLogic';
 import styles from './DrawingCanvas.module.css';
@@ -42,7 +42,11 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
   onMouseMove,
   onMouseUp
 }) => {
-  const { content } = useDrawing(initialContent);
+  const { content, setTool } = useDrawing(initialContent);
+
+  useEffect(() => {
+    setTool(tool);
+  }, [tool, setTool]);
 
   return (
     <div className={styles.canvasContainer}>
