@@ -228,6 +228,9 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         stageRef={stageRef}
+        tool={tool} // Pass the selected tool to DrawingCanvas
+        currentColor={`rgba(${currentColor.r}, ${currentColor.g}, ${currentColor.b}, ${currentColor.a})`} // Convert the current color to a string
+        currentStrokeWidth={currentStrokeWidth} // Pass the current stroke width to DrawingCanvas
       />
       <div className={styles.footer}>
         <SaveButton

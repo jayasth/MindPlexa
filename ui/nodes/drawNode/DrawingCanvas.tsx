@@ -25,6 +25,9 @@ interface DrawingCanvasProps {
   onMouseMove: (e: any) => void;
   onMouseUp: () => void;
   stageRef: React.RefObject<Konva.Stage>;
+  tool: string;
+  currentColor: string;
+  currentStrokeWidth: number;
 }
 
 const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
@@ -34,7 +37,10 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
   onMouseDown,
   onMouseMove,
   onMouseUp,
-  stageRef
+  stageRef,
+  tool,
+  currentColor,
+  currentStrokeWidth
 }) => {
   const { content, handleMouseDown, handleMouseMove, handleMouseUp } =
     useDrawing(initialContent);
@@ -59,7 +65,7 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
                   <Line
                     key={i}
                     points={shape.points}
-                    stroke={shape.stroke}
+                    stroke={shape.tool === 'eraser' ? 'white' : currentColor}
                     strokeWidth={shape.strokeWidth}
                     globalCompositeOperation={
                       shape.tool === 'eraser'
@@ -76,7 +82,7 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
                     y={shape.points[1]}
                     width={shape.points[2] - shape.points[0]}
                     height={shape.points[3] - shape.points[1]}
-                    stroke={shape.stroke}
+                    stroke={currentColor}
                     strokeWidth={shape.strokeWidth}
                     fill={shape.fill}
                   />
@@ -92,7 +98,7 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
                     x={shape.points[0]}
                     y={shape.points[1]}
                     radius={radius}
-                    stroke={shape.stroke}
+                    stroke={currentColor}
                     strokeWidth={shape.strokeWidth}
                     fill={shape.fill}
                   />

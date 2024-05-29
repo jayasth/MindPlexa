@@ -26,18 +26,14 @@ export const handleEraserSelect = (setCurrentTool) => {
 };
 
 export const undo = (stageRef) => {
-  const { content, setContent } = useStore((state) => ({
-    content: state.nodes.find((node) => node.id === stageRef.current.attrs.id)
-      ?.data.content,
-    setContent: (newContent) =>
-      state.updateNode(stageRef.current.attrs.id, {
-        data: { content: newContent }
-      })
-  }));
+  const nodeId = stageRef.current.attrs.id;
+  const node = useStore.getState().nodes.find((node) => node.id === nodeId);
 
-  if (content.length > 0) {
-    const newContent = content.slice(0, -1);
-    setContent(newContent);
+  if (node && node.data.content.length > 0) {
+    const newContent = node.data.content.slice(0, -1);
+    useStore.getState().updateNode(nodeId, {
+      data: { content: newContent }
+    });
   }
 };
 
@@ -45,4 +41,73 @@ export const redo = (stageRef) => {
   // Redo functionality would require tracking the history of undos, which is not implemented in the current context.
   // This function is a placeholder to illustrate where redo logic would be implemented.
   console.warn('Redo functionality is not implemented yet.');
+};
+
+export const handleMouseDown = (e, tool, currentColor, currentStrokeWidth) => {
+  const stage = e.target.getStage();
+  const point = stage.getPointerPosition();
+  const newShape = {
+    type: tool,
+    points: [point.x, point.y],
+    stroke: currentColor,
+    strokeWidth: currentStrokeWidth,
+    ...(tool === 'rectangle' && { width: 0, height: 0 }),
+    ...(tool === 'circle' && { radius: 0 }),
+    ...(tool === 'text' && {
+      text: 'Sample Text',
+      fontSize: 20,
+      fill: currentColor
+    })
+  };
+
+  const nodeId = stage.attrs.id;
+  const node = useStore.getState().nodes.find((node) => node.id === nodeId);
+
+  if (node) {
+    const newContent = [...node.data.content, newShape];
+    useStore.getState().updateNode(nodeId, {
+      data: { content: newContent }
+    });
+  }
+};
+
+export const handleMouseMove = (e, tool, currentColor, currentStrokeWidth) => {
+  const stage = e.target.getStage();
+  const point = stage.getPointerPosition();
+  const nodeId = stage.attrs.id;
+  const node = useStore.getState().nodes.find((node) => node.id === nodeId);
+
+  if (!node || node.data.content.length === 0) return;
+
+  const content = node.data.content;
+  const shape = content[content.length - 1];
+
+  switch (tool) {
+    case 'rectangle':
+      shape.width = point.x - shape.points[0];
+      shape.height = point.y - shape.points[1];
+      break;
+    case 'circle':
+      shape.radius = Math.sqrt(
+        Math.pow(point.x - shape.points[0], 2) +
+          Math.pow(point.y - shape.points[1], 2)
+      );
+      break;
+    case 'line':
+    case 'arrow':
+      shape.points = [shape.points[0], shape.points[1], point.x, point.y];
+      break;
+    default:
+      shape.points = shape.points.concat([point.x, point.y]);
+      break;
+  }
+
+  const newContent = [...content.slice(0, -1), shape];
+  useStore.getState().updateNode(nodeId, {
+    data: { content: newContent }
+  });
+};
+
+export const handleMouseUp = (e, tool, currentColor, currentStrokeWidth) => {
+  // Finalize the shape
 };
