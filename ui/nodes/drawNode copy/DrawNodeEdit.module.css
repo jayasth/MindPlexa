@@ -20,7 +20,7 @@
 }
 
 .titleInput {
-  font-size: 16px;
+  font-size: 12px;
   font-weight: bold;
   border: none;
   background-color: transparent;
@@ -28,13 +28,17 @@
   flex-grow: 1;
   cursor: text;
   color: inherit;
-  box-shadow: none !important;
 }
 
-.titleInput:focus,
-.titleInput:active {
-  border-bottom: 2px solid #989ff0;
-  transition: border-bottom 0.3s ease-in-out;
+.canvasContainer {
+  flex-grow: 1;
+  overflow: auto;
+  background-color: white;
+  border: 1px solid #ccc;
+  outline: none;
+  padding: 8px;
+  z-index: 0;
+  cursor: crosshair;
 }
 
 .footer {
@@ -44,39 +48,36 @@
   background-color: transparent;
 }
 
-.actionButton {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  margin-left: 4px;
-  color: inherit;
+.tagContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
 }
 
-.fileInput {
-  display: none;
+.tag {
+  background-color: #e0e0e0;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
 }
 
-.drawContent {
-  flex-grow: 1;
-  overflow: auto;
-  background-color: transparent;
-  outline: none;
-  resize: none;
-  padding: 8px;
-  z-index: 0;
-  cursor: text;
-  border: 1px solid #ccc;
-}
-
-.canvas {
-  width: 100%;
-  height: 100%;
-  border: 1px solid #ccc;
-  cursor: crosshair;
+.attachedFile {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #666;
 }
 
 .colorPicker {
+  position: absolute;
+  bottom: 40px;
+  left: 0;
+  z-index: 10;
+  cursor: pointer;
+}
+
+.strokeColorPicker,
+.fillColorPicker {
   position: absolute;
   bottom: 40px;
   left: 0;
