@@ -53,7 +53,12 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
   const [content, setContent] = useState(
     Array.isArray(initialContent) ? initialContent : [initialContent]
   );
-  const { setTool } = useDrawing(content, { r: 0, g: 0, b: 0, a: 1 });
+  const { setTool, setContent: updateContent } = useDrawing(content, {
+    r: 0,
+    g: 0,
+    b: 0,
+    a: 1
+  });
 
   const storeContent = useStore(
     (state) =>
@@ -75,6 +80,10 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
   useEffect(() => {
     onDrawingUpdate(content);
   }, [content, onDrawingUpdate]);
+
+  useEffect(() => {
+    updateContent(content);
+  }, [content, updateContent]);
 
   return (
     <div className={styles.canvasContainer}>

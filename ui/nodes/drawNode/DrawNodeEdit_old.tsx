@@ -1,10 +1,4 @@
-import React, {
-  useState,
-  useEffect,
-  useRef,
-  CSSProperties,
-  useCallback
-} from 'react';
+import React, { useState, useEffect, useRef, CSSProperties } from 'react';
 import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
 import { useStore } from '@/app/store/useCanvasStore';
 import styles from './DrawNodeEdit.module.css';
@@ -21,22 +15,24 @@ import {
 } from '@/ui/nodes/CommonNodeComponents';
 import {
   handleTitleChange,
+  handleChangeColor,
   handleSave,
   handleDelete,
   handleAddTag,
   handleAttachFile,
   handleClose,
-  handleDuplicate
+  handleDuplicate,
+  getContrastYIQ
 } from '@/ui/canvasEditor/utils/CommonNodeFunctions';
-import DrawingToolbar from '@/ui/nodes/drawNode/DrawingToolbar';
-import DrawingCanvas from '@/ui/nodes/drawNode/DrawingCanvas';
+import DrawingToolbar from './DrawingToolbar';
 import {
-  useDrawing,
-  handleBackgroundColorChange,
-  handleStrokeColorChange,
+  startDrawing,
+  draw,
+  stopDrawing,
   undo,
-  redo
-} from '@/ui/nodes/drawNode/drawLogic';
+  redo,
+  drawShape
+} from './drawFunctions';
 
 interface DrawNodeEditProps extends NodeProps {
   data: {
@@ -67,6 +63,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
 }) => {
   const [isSelected, setIsSelected] = useState(selected);
   const [title, setTitle] = useState(data.title || 'Untitled Drawing');
+  const [content, setContent] = useState(data.content || []);
   const [backgroundColor, setBackgroundColor] = useState(
     data.backgroundColor || '#F4F4F4'
   );
@@ -76,29 +73,15 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const [isContainerSelected, setIsContainerSelected] = useState(false);
   const [nodeWidth, setNodeWidth] = useState(width);
   const [nodeHeight, setNodeHeight] = useState(height);
-  const [isBackgroundColorPickerVisible, setIsBackgroundColorPickerVisible] =
-    useState(false);
-  const [isStrokeColorPickerVisible, setIsStrokeColorPickerVisible] =
-    useState(false);
+  const [isColorPickerVisible, setIsColorPickerVisible] = useState(false);
+  const [tool, setTool] = useState('pencil');
   const [currentColor, setCurrentColor] = useState({ r: 0, g: 0, b: 0, a: 1 });
-  const [content, setContent] = useState(data.content || []);
-
-  const {
-    tool,
-    setTool,
-    thickness: currentStrokeWidth,
-    setThickness,
-    currentStroke,
-    setCurrentStroke,
-    stageRef,
-    handleMouseDown,
-    handleMouseMove,
-    handleMouseUp
-  } = useDrawing(content, currentColor);
+  const [thickness, setThickness] = useState(2);
+  const [shape, setShape] = useState<string | null>(null);
 
   const updateNode = useStore((state) => state.updateNode);
-  const backgroundColorPickerRef = useRef<HTMLDivElement>(null);
-  const strokeColorPickerRef = useRef<HTMLDivElement>(null);
+  const colorPickerRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     updateNode(data.id, {
@@ -119,6 +102,14 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     handleTitleChange(data.id, newTitle, setTitle);
   };
 
+  const handleChangeComplete = (color) => {
+    const rgbaColor = `rgba(${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b}, ${color.rgb.a})`;
+    const newTextColor = getContrastYIQ(rgbaColor);
+    setTextColor(newTextColor);
+    setCurrentColor(color.rgb);
+    handleChangeColor(data.id, rgbaColor, setBackgroundColor);
+  };
+
   const onAddTag = (newTag: string) => {
     setTags([...tags, newTag]);
   };
@@ -132,17 +123,11 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     setNodeHeight(height);
   }, [width, height]);
 
-  const handleResize = useCallback((event, { width, height }) => {
+  const handleResize = (event, { width, height }) => {
     setNodeWidth(width);
     setNodeHeight(height);
-  }, []);
-
-  const handleResizeEnd = useCallback(
-    (event, { width, height }) => {
-      onNodeResizeStop(data.id, { width, height }, position);
-    },
-    [data.id, onNodeResizeStop, position]
-  );
+    onNodeResizeStop(data.id, { width, height }, position);
+  };
 
   const handleContainerClick = () => {
     setIsContainerSelected(true);
@@ -152,26 +137,16 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     setIsContainerSelected(false);
   };
 
-  const toggleBackgroundColorPicker = () => {
-    setIsBackgroundColorPickerVisible(!isBackgroundColorPickerVisible);
-  };
-
-  const toggleStrokeColorPicker = () => {
-    setIsStrokeColorPickerVisible(!isStrokeColorPickerVisible);
+  const toggleColorPicker = () => {
+    setIsColorPickerVisible(!isColorPickerVisible);
   };
 
   const handleClickOutside = (event) => {
     if (
-      backgroundColorPickerRef.current &&
-      !backgroundColorPickerRef.current.contains(event.target)
+      colorPickerRef.current &&
+      !colorPickerRef.current.contains(event.target)
     ) {
-      setIsBackgroundColorPickerVisible(false);
-    }
-    if (
-      strokeColorPickerRef.current &&
-      !strokeColorPickerRef.current.contains(event.target)
-    ) {
-      setIsStrokeColorPickerVisible(false);
+      setIsColorPickerVisible(false);
     }
   };
 
@@ -182,26 +157,54 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         document.removeEventListener('mousedown', handleClickOutside);
       };
     }
-  }, [backgroundColorPickerRef, strokeColorPickerRef]);
+  }, [colorPickerRef]);
 
+  const handleShapeClick = (shapeType: string) => {
+    setShape(shapeType);
+  };
+
+  const handleMouseDown = (e) => {
+    if (shape) {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      startDrawing(e, canvasRef, setContent);
+      const startPosition = {
+        x: e.nativeEvent.offsetX,
+        y: e.nativeEvent.offsetY
+      };
+      drawShape(
+        shape,
+        startPosition,
+        { x: e.nativeEvent.offsetX, y: e.nativeEvent.offsetY },
+        ctx
+      );
+      setShape(null);
+    } else {
+      startDrawing(e, canvasRef, setContent);
+    }
+  };
+
+  const handleMouseMove = (e) => {
+    draw(e, canvasRef, setContent, tool, currentColor, thickness);
+  };
+
+  const handleMouseUp = () => {
+    stopDrawing(canvasRef);
+  };
+
+  // Define custom CSS properties
   const customStyles: CSSProperties = {
     width: nodeWidth,
     height: nodeHeight,
     backgroundColor,
-    color: textColor,
-    cursor: 'default'
-  };
-
-  const handleDrawingUpdate = (updatedContent) => {
-    if (JSON.stringify(content) !== JSON.stringify(updatedContent)) {
-      setContent(updatedContent);
-      updateNode(data.id, { data: { content: updatedContent } });
-    }
+    color: textColor
   };
 
   return (
     <div
-      className={`${styles.drawNode}`}
+      className={styles.drawNode}
       style={customStyles}
       onClick={handleContainerClick}
       onBlur={handleContainerBlur}
@@ -211,7 +214,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         minWidth={200}
         minHeight={200}
         onResize={handleResize}
-        onResizeEnd={handleResizeEnd}
       />
       <div className={styles.header}>
         <input
@@ -226,30 +228,27 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         />
       </div>
       <DrawingToolbar
-        onToolSelect={(selectedTool) => {
-          setTool(selectedTool);
-        }}
-        onUndo={() => undo(stageRef)}
-        onRedo={() => redo(stageRef)}
-        currentTool={tool}
-        currentStroke={currentStroke}
-        setCurrentStroke={setCurrentStroke}
-        currentStrokeWidth={currentStrokeWidth}
-        setCurrentStrokeWidth={(width) => setThickness(width.toString())}
+        onPencilClick={() => setTool('pencil')}
+        onEraserClick={() => setTool('eraser')}
+        onMarkerClick={() => setTool('marker')}
+        onShapeClick={handleShapeClick}
+        onUndoClick={() => undo(canvasRef)}
+        onRedoClick={() => redo(canvasRef)}
+        onLineClick={() => setTool('line')}
+        onArrowClick={() => setTool('arrow')}
+        onTextClick={() => setTool('text')}
       />
-      <DrawingCanvas
-        width={nodeWidth}
-        height={nodeHeight - 100}
-        initialContent={content}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        stageRef={stageRef}
-        tool={tool}
-        currentColor={`rgba(${currentColor.r}, ${currentColor.g}, ${currentColor.b}, ${currentColor.a})`}
-        currentStrokeWidth={currentStrokeWidth}
-        onDrawingUpdate={handleDrawingUpdate}
-      />
+      <div className={styles.canvasContainer}>
+        <canvas
+          ref={canvasRef}
+          width={nodeWidth}
+          height={nodeHeight - 100}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          className={`nodrag nowheel ${styles[tool]}`}
+        />
+      </div>
       <div className={styles.footer}>
         <SaveButton
           onClick={() =>
@@ -262,40 +261,17 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
           }
         />
         <DeleteButton onClick={() => handleDelete(data.id, () => {})} />
-        <ChangeColorButton onClick={() => toggleBackgroundColorPicker()} />
+        <ChangeColorButton onClick={() => toggleColorPicker()} />
         <AddTagButton onClick={() => handleAddTag(data.id, tags, onAddTag)} />
         <AttachFileButton
           onChange={(e) => handleAttachFile(data.id, onAttachFiles)(e)}
         />
         <DuplicateButton onClick={() => handleDuplicate(data.id)} />
-        {isBackgroundColorPickerVisible && (
-          <div
-            className={`${styles.colorPicker} nodrag`}
-            ref={backgroundColorPickerRef}
-          >
+        {isColorPickerVisible && (
+          <div className={`${styles.colorPicker} nodrag`} ref={colorPickerRef}>
             <SketchPicker
               color={backgroundColor}
-              onChange={(color) =>
-                handleBackgroundColorChange(
-                  color,
-                  setTextColor,
-                  setBackgroundColor,
-                  data.id
-                )
-              }
-            />
-          </div>
-        )}
-        {isStrokeColorPickerVisible && (
-          <div
-            className={`${styles.colorPicker} nodrag`}
-            ref={strokeColorPickerRef}
-          >
-            <SketchPicker
-              color={currentColor}
-              onChange={(color) =>
-                handleStrokeColorChange(color.rgb, setCurrentStroke)
-              }
+              onChangeComplete={handleChangeComplete}
             />
           </div>
         )}

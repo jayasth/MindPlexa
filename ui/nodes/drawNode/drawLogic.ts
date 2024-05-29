@@ -113,7 +113,7 @@ export const handleMouseDown = (
     .getState()
     .nodes.find((node: any) => node.id === nodeId);
 
-  if (node && node.data.content) {
+  if (node) {
     console.log('handleMouseDown: Initial content:', node.data.content);
     history.push([...node.data.content]);
     const newContent = [...node.data.content, newShape];
@@ -134,40 +134,39 @@ export const handleMouseMove = (e: any) => {
     .getState()
     .nodes.find((node: any) => node.id === nodeId);
 
-  if (!node || node.data.content.length === 0) {
+  if (node && node.data.content.length > 0) {
+    const content = node.data.content;
+    console.log('handleMouseMove: Current content:', content);
+    const shape = content[content.length - 1];
+
+    switch (shape.tool) {
+      case 'rectangle':
+        shape.width = point.x - shape.points[0];
+        shape.height = point.y - shape.points[1];
+        break;
+      case 'circle':
+        shape.radius = Math.sqrt(
+          Math.pow(point.x - shape.points[0], 2) +
+            Math.pow(point.y - shape.points[1], 2)
+        );
+        break;
+      case 'line':
+      case 'arrow':
+        shape.points = [shape.points[0], shape.points[1], point.x, point.y];
+        break;
+      default:
+        shape.points = shape.points.concat([point.x, point.y]);
+        break;
+    }
+
+    const newContent = [...content.slice(0, -1), shape];
+    console.log('handleMouseMove: New content:', newContent);
+    useStore.getState().updateNode(nodeId, {
+      data: { content: newContent }
+    });
+  } else {
     console.log('handleMouseMove: No node or empty content');
-    return;
   }
-
-  const content = node.data.content;
-  console.log('handleMouseMove: Current content:', content);
-  const shape = content[content.length - 1];
-
-  switch (shape.tool) {
-    case 'rectangle':
-      shape.width = point.x - shape.points[0];
-      shape.height = point.y - shape.points[1];
-      break;
-    case 'circle':
-      shape.radius = Math.sqrt(
-        Math.pow(point.x - shape.points[0], 2) +
-          Math.pow(point.y - shape.points[1], 2)
-      );
-      break;
-    case 'line':
-    case 'arrow':
-      shape.points = [shape.points[0], shape.points[1], point.x, point.y];
-      break;
-    default:
-      shape.points = shape.points.concat([point.x, point.y]);
-      break;
-  }
-
-  const newContent = [...content.slice(0, -1), shape];
-  console.log('handleMouseMove: New content:', newContent);
-  useStore.getState().updateNode(nodeId, {
-    data: { content: newContent }
-  });
 };
 
 export const handleMouseUp = (e: any) => {
@@ -194,9 +193,19 @@ export const useDrawing = (
   const [currentStroke, setCurrentStroke] = useState('#000000');
   const stageRef = useRef<Konva.Stage | null>(null);
 
+  const updateContent = (newContent: Shape[]) => {
+    setContent(newContent);
+    const nodeId = stageRef.current?.attrs.id;
+    if (nodeId) {
+      useStore.getState().updateNode(nodeId, {
+        data: { content: newContent }
+      });
+    }
+  };
+
   return {
     content,
-    setContent,
+    setContent: updateContent,
     isDrawing,
     setIsDrawing,
     tool,
