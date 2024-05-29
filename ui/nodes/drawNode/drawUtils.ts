@@ -1,11 +1,14 @@
 import { getContrastYIQ } from '@/ui/canvasEditor/utils/CommonNodeFunctions';
 import { useStore } from '@/app/store/useCanvasStore';
 
+let history: any[][] = [];
+let redoStack: any[][] = [];
+
 export const handleBackgroundColorChange = (
-  color,
-  setTextColor,
-  setBackgroundColor,
-  dataId
+  color: any,
+  setTextColor: (color: string) => void,
+  setBackgroundColor: (color: string) => void,
+  dataId: string
 ) => {
   const rgbaColor = `rgba(${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b}, ${color.rgb.a})`;
   const newTextColor = getContrastYIQ(rgbaColor);
@@ -13,23 +16,32 @@ export const handleBackgroundColorChange = (
   setBackgroundColor(rgbaColor);
 };
 
-export const handleStrokeColorChange = (color, setCurrentColor) => {
+export const handleStrokeColorChange = (
+  color: any,
+  setCurrentColor: (color: any) => void
+) => {
   setCurrentColor(color.rgb);
 };
 
-export const handleStrokeWidthChange = (event, setThickness) => {
+export const handleStrokeWidthChange = (
+  event: any,
+  setThickness: (thickness: number) => void
+) => {
   setThickness(parseInt(event.target.value, 10));
 };
 
-export const handleEraserSelect = (setCurrentTool) => {
+export const handleEraserSelect = (setCurrentTool: (tool: string) => void) => {
   setCurrentTool('eraser');
 };
 
-export const undo = (stageRef) => {
+export const undo = (stageRef: any) => {
   const nodeId = stageRef.current.attrs.id;
-  const node = useStore.getState().nodes.find((node) => node.id === nodeId);
+  const node = useStore
+    .getState()
+    .nodes.find((node: any) => node.id === nodeId);
 
   if (node && node.data.content.length > 0) {
+    history.push([...node.data.content]);
     const newContent = node.data.content.slice(0, -1);
     useStore.getState().updateNode(nodeId, {
       data: { content: newContent }
@@ -37,13 +49,27 @@ export const undo = (stageRef) => {
   }
 };
 
-export const redo = (stageRef) => {
-  // Redo functionality would require tracking the history of undos, which is not implemented in the current context.
-  // This function is a placeholder to illustrate where redo logic would be implemented.
-  console.warn('Redo functionality is not implemented yet.');
+export const redo = (stageRef: any) => {
+  const nodeId = stageRef.current.attrs.id;
+  const node = useStore
+    .getState()
+    .nodes.find((node: any) => node.id === nodeId);
+
+  if (node && history.length > 0) {
+    redoStack.push([...node.data.content]);
+    const newContent = history.pop();
+    useStore.getState().updateNode(nodeId, {
+      data: { content: newContent }
+    });
+  }
 };
 
-export const handleMouseDown = (e, tool, currentColor, currentStrokeWidth) => {
+export const handleMouseDown = (
+  e: any,
+  tool: string,
+  currentColor: any,
+  currentStrokeWidth: number
+) => {
   const stage = e.target.getStage();
   const point = stage.getPointerPosition();
   const newShape = {
@@ -61,9 +87,12 @@ export const handleMouseDown = (e, tool, currentColor, currentStrokeWidth) => {
   };
 
   const nodeId = stage.attrs.id;
-  const node = useStore.getState().nodes.find((node) => node.id === nodeId);
+  const node = useStore
+    .getState()
+    .nodes.find((node: any) => node.id === nodeId);
 
   if (node) {
+    history.push([...node.data.content]);
     const newContent = [...node.data.content, newShape];
     useStore.getState().updateNode(nodeId, {
       data: { content: newContent }
@@ -71,11 +100,13 @@ export const handleMouseDown = (e, tool, currentColor, currentStrokeWidth) => {
   }
 };
 
-export const handleMouseMove = (e) => {
+export const handleMouseMove = (e: any) => {
   const stage = e.target.getStage();
   const point = stage.getPointerPosition();
   const nodeId = stage.attrs.id;
-  const node = useStore.getState().nodes.find((node) => node.id === nodeId);
+  const node = useStore
+    .getState()
+    .nodes.find((node: any) => node.id === nodeId);
 
   if (!node || node.data.content.length === 0) return;
 
@@ -108,6 +139,14 @@ export const handleMouseMove = (e) => {
   });
 };
 
-export const handleMouseUp = (e) => {
-  // Finalize the shape
+export const handleMouseUp = (e: any) => {
+  const stage = e.target.getStage();
+  const nodeId = stage.attrs.id;
+  const node = useStore
+    .getState()
+    .nodes.find((node: any) => node.id === nodeId);
+
+  if (node) {
+    redoStack = []; // Clear redo stack on new action
+  }
 };

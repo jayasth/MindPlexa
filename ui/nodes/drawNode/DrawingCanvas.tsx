@@ -64,7 +64,7 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
                   <Line
                     key={i}
                     points={shape.points}
-                    stroke={shape.tool === 'eraser' ? 'white' : currentColor}
+                    stroke={shape.tool === 'eraser' ? 'white' : shape.stroke}
                     strokeWidth={shape.strokeWidth}
                     globalCompositeOperation={
                       shape.tool === 'eraser'
@@ -81,7 +81,7 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
                     y={shape.points[1]}
                     width={shape.points[2] - shape.points[0]}
                     height={shape.points[3] - shape.points[1]}
-                    stroke={currentColor}
+                    stroke={shape.stroke}
                     strokeWidth={shape.strokeWidth}
                     fill={shape.fill}
                   />
@@ -97,7 +97,7 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
                     x={shape.points[0]}
                     y={shape.points[1]}
                     radius={radius}
-                    stroke={currentColor}
+                    stroke={shape.stroke}
                     strokeWidth={shape.strokeWidth}
                     fill={shape.fill}
                   />
