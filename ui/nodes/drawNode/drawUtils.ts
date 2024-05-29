@@ -47,16 +47,16 @@ export const handleMouseDown = (e, tool, currentColor, currentStrokeWidth) => {
   const stage = e.target.getStage();
   const point = stage.getPointerPosition();
   const newShape = {
-    type: tool,
+    tool,
     points: [point.x, point.y],
-    stroke: currentColor,
+    stroke: `rgba(${currentColor.r}, ${currentColor.g}, ${currentColor.b}, ${currentColor.a})`,
     strokeWidth: currentStrokeWidth,
     ...(tool === 'rectangle' && { width: 0, height: 0 }),
     ...(tool === 'circle' && { radius: 0 }),
     ...(tool === 'text' && {
       text: 'Sample Text',
       fontSize: 20,
-      fill: currentColor
+      fill: `rgba(${currentColor.r}, ${currentColor.g}, ${currentColor.b}, ${currentColor.a})`
     })
   };
 
@@ -71,7 +71,7 @@ export const handleMouseDown = (e, tool, currentColor, currentStrokeWidth) => {
   }
 };
 
-export const handleMouseMove = (e, tool, currentColor, currentStrokeWidth) => {
+export const handleMouseMove = (e) => {
   const stage = e.target.getStage();
   const point = stage.getPointerPosition();
   const nodeId = stage.attrs.id;
@@ -82,7 +82,7 @@ export const handleMouseMove = (e, tool, currentColor, currentStrokeWidth) => {
   const content = node.data.content;
   const shape = content[content.length - 1];
 
-  switch (tool) {
+  switch (shape.tool) {
     case 'rectangle':
       shape.width = point.x - shape.points[0];
       shape.height = point.y - shape.points[1];
@@ -108,6 +108,6 @@ export const handleMouseMove = (e, tool, currentColor, currentStrokeWidth) => {
   });
 };
 
-export const handleMouseUp = (e, tool, currentColor, currentStrokeWidth) => {
+export const handleMouseUp = (e) => {
   // Finalize the shape
 };

@@ -24,7 +24,7 @@ export const useDrawing = (initialContent: Shape[] = []) => {
   const stageRef = useRef<Konva.Stage | null>(null);
 
   const handleMouseDown = useCallback(
-    (e) => {
+    (e, tool, currentColor, currentStrokeWidth) => {
       setIsDrawing(true);
       const stage = stageRef.current;
       if (!stage) return;
@@ -40,7 +40,7 @@ export const useDrawing = (initialContent: Shape[] = []) => {
             tool,
             points: [pos.x, pos.y, pos.x, pos.y],
             stroke: `rgba(${currentColor.r}, ${currentColor.g}, ${currentColor.b}, ${currentColor.a})`,
-            strokeWidth: thickness,
+            strokeWidth: currentStrokeWidth,
             fill: 'transparent'
           };
           break;
@@ -63,7 +63,7 @@ export const useDrawing = (initialContent: Shape[] = []) => {
             tool,
             points: [pos.x, pos.y],
             stroke: `rgba(${currentColor.r}, ${currentColor.g}, ${currentColor.b}, ${currentColor.a})`,
-            strokeWidth: thickness,
+            strokeWidth: currentStrokeWidth,
             fill: 'transparent'
           };
       }
@@ -74,7 +74,7 @@ export const useDrawing = (initialContent: Shape[] = []) => {
   );
 
   const handleMouseMove = useCallback(
-    (e) => {
+    (e, tool, currentColor, currentStrokeWidth) => {
       if (!isDrawing) return;
       const stage = stageRef.current;
       if (!stage) return;

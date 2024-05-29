@@ -29,7 +29,10 @@ import {
   handleStrokeColorChange,
   handleStrokeWidthChange,
   undo,
-  redo
+  redo,
+  handleMouseDown,
+  handleMouseMove,
+  handleMouseUp
 } from '@/ui/nodes/drawNode/drawUtils';
 import { useDrawing } from '@/ui/nodes/drawNode/drawLogic';
 
@@ -87,10 +90,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     setThickness: setCurrentStrokeWidth,
     currentStroke,
     setCurrentStroke,
-    stageRef,
-    handleMouseDown,
-    handleMouseMove,
-    handleMouseUp
+    stageRef
   } = useDrawing(data.content || []);
 
   const updateNode = useStore((state) => state.updateNode);
@@ -224,9 +224,11 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         width={nodeWidth}
         height={nodeHeight - 100}
         initialContent={content}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
+        onMouseDown={(e) =>
+          handleMouseDown(e, tool, currentColor, currentStrokeWidth)
+        }
+        onMouseMove={(e) => handleMouseMove(e)}
+        onMouseUp={(e) => handleMouseUp(e)}
         stageRef={stageRef}
         tool={tool} // Pass the selected tool to DrawingCanvas
         currentColor={`rgba(${currentColor.r}, ${currentColor.g}, ${currentColor.b}, ${currentColor.a})`} // Convert the current color to a string

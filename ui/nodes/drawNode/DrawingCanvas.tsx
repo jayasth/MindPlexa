@@ -23,7 +23,7 @@ interface DrawingCanvasProps {
   initialContent: Shape[];
   onMouseDown: (e: any) => void;
   onMouseMove: (e: any) => void;
-  onMouseUp: () => void;
+  onMouseUp: (e: any) => void;
   stageRef: React.RefObject<Konva.Stage>;
   tool: string;
   currentColor: string;
@@ -42,8 +42,7 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
   currentColor,
   currentStrokeWidth
 }) => {
-  const { content, handleMouseDown, handleMouseMove, handleMouseUp } =
-    useDrawing(initialContent);
+  const { content } = useDrawing(initialContent);
 
   return (
     <div className={styles.canvasContainer}>
@@ -51,9 +50,9 @@ const DrawingCanvas: React.FC<DrawingCanvasProps> = ({
         width={width}
         height={height}
         ref={stageRef}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
+        onMouseDown={onMouseDown}
+        onMouseMove={onMouseMove}
+        onMouseUp={onMouseUp}
         className={`nodrag nowheel ${styles.canvas}`}
       >
         <Layer>
