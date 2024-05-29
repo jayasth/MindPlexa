@@ -24,6 +24,7 @@ import {
   getContrastYIQ
 } from '@/ui/canvasEditor/utils/CommonNodeFunctions';
 import { SketchPicker } from 'react-color';
+import { HexColorPicker } from 'react-colorful';
 import {
   FaPencilAlt,
   FaPaintBrush,
@@ -269,7 +270,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
             </button>
             <Modal open={colorOpen} onClose={() => setColorOpen(false)}>
               <div style={{ padding: 30 }}>
-                <SketchPicker color={color} onChange={setColor} />
+                <HexColorPicker color={color} onChange={setColor} />
               </div>
             </Modal>
           </label>
