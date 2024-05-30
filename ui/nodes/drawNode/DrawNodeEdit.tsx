@@ -122,7 +122,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const [strokeWidth, setStrokeWidth] = useState(5);
   const [colorOpen, setColorOpen] = useState(false);
   const [sizeOpen, setSizeOpen] = useState(false);
-  const [artboardRef, setArtboardRef] = useState<ArtboardRef | null>(null);
+  const artboardInstance = useRef<ArtboardRef | null>(null);
 
   const brush = useBrush({ color, strokeWidth });
   const marker = useMarker({ color, strokeWidth });
@@ -214,6 +214,14 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     setStrokeWidth(tools[currentTool][2]);
   }, [currentTool]);
 
+  useEffect(() => {
+    const artboardRef = artboardInstance.current;
+    if (artboardRef) {
+      const dataUri = artboardRef.getImageAsDataUri();
+      setContent(dataUri || '');
+    }
+  }, [artboardInstance]);
+
   const onChangeTitle = (value: string) => {
     handleTitleChange(data.id, value, setTitle);
   };
@@ -256,10 +264,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     height: nodeHeight,
     backgroundColor,
     color: textColor
-  };
-
-  const handleDrawingChange = (newContent: string) => {
-    setContent(newContent);
   };
 
   return (
@@ -388,13 +392,13 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
                 <FaRedo title="Redo" />
               </button>
               <button
-                onClick={() => artboardRef?.download()}
+                onClick={() => artboardInstance.current?.download()}
                 className={toolbarStyles.toolbarButton}
               >
                 <FaDownload title="Download" />
               </button>
               <button
-                onClick={() => artboardRef?.clear()}
+                onClick={() => artboardInstance.current?.clear()}
                 className={toolbarStyles.toolbarButton}
               >
                 <FaTrash title="Clear" />
@@ -405,11 +409,10 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         <div id="artboard" className={styles.artboard}>
           <Artboard
             tool={tools[currentTool][0]}
-            ref={setArtboardRef}
+            ref={artboardInstance}
             history={history}
             style={{ border: '1px gray solid' }}
             content={content}
-            onContentChange={setContent}
           />
         </div>
       </div>
