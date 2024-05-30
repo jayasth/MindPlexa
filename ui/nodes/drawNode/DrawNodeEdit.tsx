@@ -50,7 +50,8 @@ import {
 } from '@/ui/nodes/drawNode/DrawNodeTools';
 import { useHistory } from '@/ui/nodes/drawNode/drawNodeHistory';
 import Slider from '@/ui/nodes/drawNode/components/DrawNodeSlider';
-import Modal from '@/ui/nodes/drawNode/components/DrawNodeModal';
+import { Modal } from 'react-responsive-modal';
+import 'react-responsive-modal/styles.css';
 import { getNodeSpecificProperties } from '@/ui/canvasEditor/utils/nodeProperties';
 import type { IconType } from 'react-icons/lib';
 
@@ -297,58 +298,54 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
             >
               Color
             </button>
-            {colorOpen && (
-              <Modal onClose={() => setColorOpen(false)} open={colorOpen}>
-                <div style={{ position: 'absolute', zIndex: 10 }}>
-                  <HexColorPicker color={color} onChange={setColor} />
-                </div>
-              </Modal>
-            )}
+            <Modal open={colorOpen} onClose={() => setColorOpen(false)} center>
+              <div ref={colorPickerRef} style={{ padding: '20px' }}>
+                <HexColorPicker color={color} onChange={setColor} />
+              </div>
+            </Modal>
           </label>
           <label>
             Size:
             <button onClick={() => setSizeOpen(!sizeOpen)}>
               {strokeWidth}
             </button>
-            {sizeOpen && (
-              <Modal onClose={() => setSizeOpen(false)} open={sizeOpen}>
+            <Modal open={sizeOpen} onClose={() => setSizeOpen(false)} center>
+              <div
+                ref={sizePickerRef}
+                style={{
+                  width: 150,
+                  padding: '30px 20px 10px 20px',
+                  display: 'flex',
+                  flexDirection: 'column'
+                }}
+              >
+                <Slider
+                  min={5}
+                  max={100}
+                  value={strokeWidth}
+                  onChange={setStrokeWidth}
+                />
                 <div
-                  ref={sizePickerRef}
                   style={{
-                    width: 150,
-                    padding: '30px 20px 10px 20px',
+                    flex: 1,
+                    minHeight: 150,
+                    justifyContent: 'center',
+                    flexDirection: 'column',
                     display: 'flex',
-                    flexDirection: 'column'
+                    placeItems: 'center'
                   }}
                 >
-                  <Slider
-                    min={5}
-                    max={100}
-                    value={strokeWidth}
-                    onChange={setStrokeWidth}
-                  />
                   <div
                     style={{
-                      flex: 1,
-                      minHeight: 150,
-                      justifyContent: 'center',
-                      flexDirection: 'column',
-                      display: 'flex',
-                      placeItems: 'center'
+                      width: strokeWidth,
+                      height: strokeWidth,
+                      backgroundColor: color,
+                      borderRadius: strokeWidth
                     }}
-                  >
-                    <div
-                      style={{
-                        width: strokeWidth,
-                        height: strokeWidth,
-                        backgroundColor: color,
-                        borderRadius: strokeWidth
-                      }}
-                    ></div>
-                  </div>
+                  ></div>
                 </div>
-              </Modal>
-            )}
+              </div>
+            </Modal>
           </label>
         </div>
         <div id="controls" className={styles.toolbarSection}>
