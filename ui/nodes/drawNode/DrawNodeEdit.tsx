@@ -123,6 +123,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const [colorOpen, setColorOpen] = useState(false);
   const [sizeOpen, setSizeOpen] = useState(false);
   const [artboardRef, setArtboardRef] = useState<ArtboardRef | null>(null);
+
   const brush = useBrush({ color, strokeWidth });
   const marker = useMarker({ color, strokeWidth });
   const watercolor = useWatercolor({ color, strokeWidth });
@@ -133,14 +134,16 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     spreadFactor: (1 / 45) * strokeWidth,
     distanceThreshold: 100
   });
-  const tools: Array<[ToolHandlers, IconType]> = [
-    [shading, FaPencilAlt],
-    [watercolor, IoMdWater],
-    [brush, FaPaintBrush],
-    [marker, FaMarker],
-    [airbrush, FaSprayCan],
-    [eraser, FaEraser]
+
+  const tools: Array<[ToolHandlers, IconType, number]> = [
+    [shading, FaPencilAlt, 5],
+    [watercolor, IoMdWater, 10],
+    [brush, FaPaintBrush, 15],
+    [marker, FaMarker, 20],
+    [airbrush, FaSprayCan, 25],
+    [eraser, FaEraser, 30]
   ];
+
   const [currentTool, setCurrentTool] = useState(0);
 
   const { undo, redo, history, canUndo, canRedo } = useHistory();
@@ -213,6 +216,10 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
       artboardRef.current.height = nodeHeight;
     }
   }, [nodeWidth, nodeHeight]);
+
+  useEffect(() => {
+    setStrokeWidth(tools[currentTool][2]);
+  }, [currentTool]);
 
   const onChangeTitle = (value: string) => {
     handleTitleChange(data.id, value, setTitle);
