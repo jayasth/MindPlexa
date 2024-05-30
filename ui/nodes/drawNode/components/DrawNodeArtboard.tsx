@@ -100,12 +100,12 @@ export const Artboard = forwardRef(function Artboard(
 
   const mouseMove = useCallback(
     (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
-      if (!drawing || !canvas) {
+      if (!drawing) {
         return;
       }
-      continueStroke(getMousePoint(event, canvas, { top: 0, left: 0 }));
+      continueStroke(getMousePoint(event));
     },
-    [continueStroke, drawing, canvas]
+    [continueStroke, drawing]
   );
 
   const touchMove = useCallback(
@@ -113,20 +113,20 @@ export const Artboard = forwardRef(function Artboard(
       if (!drawing) {
         return;
       }
-      continueStroke(getTouchPoint(event, { top: 0, left: 0 }));
+      continueStroke(getTouchPoint(event));
     },
     [continueStroke, drawing]
   );
 
   const mouseDown = useCallback(
     (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
-      if (drawing || !canvas) {
+      if (drawing) {
         return;
       }
       event.preventDefault();
-      startStroke(getMousePoint(event, canvas, { top: 0, left: 0 }));
+      startStroke(getMousePoint(event));
     },
-    [drawing, startStroke, canvas]
+    [drawing, startStroke]
   );
 
   const touchStart = useCallback(
@@ -134,7 +134,7 @@ export const Artboard = forwardRef(function Artboard(
       if (drawing) {
         return;
       }
-      startStroke(getTouchPoint(event, { top: 0, left: 0 }));
+      startStroke(getTouchPoint(event));
     },
     [drawing, startStroke]
   );
@@ -178,27 +178,24 @@ export const Artboard = forwardRef(function Artboard(
 
   const mouseEnter = useCallback(
     (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
-      if (!canvas) {
-        return;
-      }
       if (mouseButtonIsDown(event.buttons)) {
         mouseDown(event);
       } else if (drawing) {
         endStroke();
       }
     },
-    [drawing, mouseDown, endStroke, canvas]
+    [drawing, mouseDown, endStroke]
   );
 
   const mouseLeave = useCallback(
     (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
-      if (!drawing || !canvas) {
+      if (!drawing) {
         return;
       }
-      continueStroke(getMousePoint(event, canvas, { top: 0, left: 0 }));
+      continueStroke(getMousePoint(event));
       endStroke();
     },
-    [continueStroke, drawing, endStroke, canvas]
+    [continueStroke, drawing, endStroke]
   );
 
   useImperativeHandle(
