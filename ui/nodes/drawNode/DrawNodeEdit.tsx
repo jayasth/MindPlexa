@@ -47,7 +47,7 @@ import {
   useEraser,
   useWatercolor,
   ToolHandlers
-} from './index';
+} from '@/ui/nodes/drawNode/DrawNodeTools';
 import { useHistory } from '@/ui/nodes/drawNode/drawNodeHistory';
 import Slider from '@/ui/nodes/drawNode/components/DrawNodeSlider';
 import Modal from '@/ui/nodes/drawNode/components/DrawNodeModal';
