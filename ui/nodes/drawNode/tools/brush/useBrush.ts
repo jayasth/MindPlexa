@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from "react";
 
 import { Bristle, getNewAngle, rotatePoint, varyColour } from "./brushHelpers";
-import { ToolHandlers } from "../../components/Artboard";
+import { ToolHandlers } from "@/ui/nodes/drawNode/components/DrawNodeArtboard";
 import { Point } from "../../utils/pointUtils";
 import { circleCursor } from "../../utils/cursors";
 

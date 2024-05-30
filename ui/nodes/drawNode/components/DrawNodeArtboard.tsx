@@ -6,14 +6,14 @@ import React, {
   useState,
 } from "react";
 
-import { History } from "../history";
+import { History } from "@/ui/nodes/drawNode/drawNodeHistory";
 
 import {
   getMousePoint,
   getTouchPoint,
   mouseButtonIsDown,
   Point,
-} from "../utils/pointUtils";
+} from "@/ui/nodes/drawNode/utils/pointUtils";
 
 export interface ArtboardProps
   extends React.CanvasHTMLAttributes<HTMLCanvasElement> {

@@ -1,5 +1,5 @@
 import React from 'react';
-import styles from './Modal.module.css';
+import styles from '@/ui/nodes/drawNode/components/DrawNodeModal.module.css';
 
 interface ModalProps {
   open: boolean;

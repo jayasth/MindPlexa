@@ -48,9 +48,9 @@ import {
   useWatercolor,
   ToolHandlers
 } from './index';
-import { useHistory } from './history';
-import Slider from '@/ui/nodes/drawNode/components/Slider';
-import Modal from '@/ui/nodes/drawNode/components/Modal';
+import { useHistory } from '@/ui/nodes/drawNode/drawNodeHistory';
+import Slider from '@/ui/nodes/drawNode/components/DrawNodeSlider';
+import Modal from '@/ui/nodes/drawNode/components/DrawNodeModal';
 import { getNodeSpecificProperties } from '@/ui/canvasEditor/utils/nodeProperties';
 import type { IconType } from 'react-icons/lib';
 
@@ -95,7 +95,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const [isColorPickerVisible, setIsColorPickerVisible] = useState(false);
   const [drawingData, setDrawingData] = useState(data.drawingData || '');
   const [color, setColor] = useState('#531B93');
-  const [strokeWidth, setStrokeWidth] = useState(40);
+  const [strokeWidth, setStrokeWidth] = useState(5);
   const [colorOpen, setColorOpen] = useState(false);
   const [sizeOpen, setSizeOpen] = useState(false);
   const [artboardRef, setArtboardRef] = useState<ArtboardRef | null>(null);

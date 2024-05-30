@@ -1,5 +1,5 @@
 import React from 'react';
-import styles from './Slider.module.css';
+import styles from '@/ui/nodes/drawNode/components/DrawNodeSlider.module.css';
 
 interface SliderProps {
   min: number;

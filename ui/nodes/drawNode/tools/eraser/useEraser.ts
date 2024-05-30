@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { ToolHandlers } from "../../components/Artboard";
+import { ToolHandlers } from "@/ui/nodes/drawNode/components/DrawNodeArtboard";
 import { Point } from "../../utils/pointUtils";
 import { circleCursor } from "../../utils/cursors";
 export interface UseEraserProps {

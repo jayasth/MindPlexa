@@ -69,6 +69,13 @@
   border: 1px solid #ccc;
 }
 
+.toolbarSection {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
 .canvas {
   width: 100%;
   height: 100%;
