@@ -22,7 +22,7 @@ export interface ArtboardProps
   onStartStroke?: (point: Point) => void;
   onContinueStroke?: (point: Point) => void;
   onEndStroke?: () => void;
-  content?: string; // Updated line
+  content?: string;
   onContentChange?: (newContent: string) => void;
 }
 
@@ -49,7 +49,7 @@ export const Artboard = forwardRef(function Artboard(
     onStartStroke,
     onContinueStroke,
     onEndStroke,
-    content, // Updated line
+    content,
     onContentChange,
     ...props
   }: ArtboardProps,
@@ -154,8 +154,8 @@ export const Artboard = forwardRef(function Artboard(
       if (!canvasRef) {
         return;
       }
-      canvasRef.width = canvasRef.offsetWidth;
-      canvasRef.height = canvasRef.offsetHeight;
+      canvasRef.width = canvasRef.offsetWidth * 1.5;
+      canvasRef.height = canvasRef.offsetHeight * 1.5;
       const ctx = canvasRef.getContext('2d');
       setCanvas(canvasRef);
       setContext(ctx);
