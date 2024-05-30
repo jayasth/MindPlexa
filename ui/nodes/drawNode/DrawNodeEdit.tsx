@@ -146,7 +146,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const updateNode = useStore((state) => state.updateNode);
   const colorPickerRef = useRef<HTMLDivElement>(null);
   const sizePickerRef = useRef<HTMLDivElement>(null);
-  const hexColorPickerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const nodeProperties = getNodeSpecificProperties('draw', true);
@@ -189,21 +188,15 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         setIsColorPickerVisible(false);
       }
       if (
-        hexColorPickerRef.current &&
-        !hexColorPickerRef.current.contains(event.target as Node)
-      ) {
-        setColorOpen(false);
-      }
-      if (
         sizePickerRef.current &&
         !sizePickerRef.current.contains(event.target as Node)
       ) {
         setSizeOpen(false);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
+    window.addEventListener('click', handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('click', handleClickOutside);
     };
   }, []);
 
@@ -305,12 +298,11 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
               Color
             </button>
             {colorOpen && (
-              <div
-                ref={hexColorPickerRef}
-                style={{ position: 'absolute', zIndex: 10 }}
-              >
-                <HexColorPicker color={color} onChange={setColor} />
-              </div>
+              <Modal onClose={() => setColorOpen(false)} open={colorOpen}>
+                <div style={{ position: 'absolute', zIndex: 10 }}>
+                  <HexColorPicker color={color} onChange={setColor} />
+                </div>
+              </Modal>
             )}
           </label>
           <label>
