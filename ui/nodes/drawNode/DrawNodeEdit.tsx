@@ -211,13 +211,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   }, []);
 
   useEffect(() => {
-    if (artboardRef && artboardRef.current) {
-      artboardRef.current.width = nodeWidth;
-      artboardRef.current.height = nodeHeight;
-    }
-  }, [nodeWidth, nodeHeight]);
-
-  useEffect(() => {
     setStrokeWidth(tools[currentTool][2]);
   }, [currentTool]);
 
@@ -256,11 +249,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     setNodeWidth(width);
     setNodeHeight(height);
     onNodeResizeStop(data.id, { width, height }, position);
-
-    if (artboardRef && artboardRef.current) {
-      artboardRef.current.width = width;
-      artboardRef.current.height = height;
-    }
   };
 
   const customStyles: CSSProperties = {
@@ -415,8 +403,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
             tool={tools[currentTool][0]}
             ref={setArtboardRef}
             history={history}
-            width={nodeWidth}
-            height={nodeHeight}
             style={{ border: '1px gray solid' }}
           />
         </div>
