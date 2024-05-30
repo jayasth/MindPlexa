@@ -3,19 +3,17 @@ import React, {
   forwardRef,
   useCallback,
   useImperativeHandle,
-  useState
-} from 'react';
+  useState,
+} from "react";
 
-import { History } from '@/ui/nodes/drawNode/drawNodeHistory';
+import { History } from "../history";
 
 import {
   getMousePoint,
   getTouchPoint,
   mouseButtonIsDown,
-  Point
-} from '@/ui/nodes/drawNode/utils/pointUtils';
-
-import styles from '@/ui/nodes/drawNode/DrawNodeEdit.module.css';
+  Point,
+} from "../utils/pointUtils";
 
 export interface ArtboardProps
   extends React.CanvasHTMLAttributes<HTMLCanvasElement> {
@@ -24,8 +22,6 @@ export interface ArtboardProps
   onStartStroke?: (point: Point) => void;
   onContinueStroke?: (point: Point) => void;
   onEndStroke?: () => void;
-  width?: number;
-  height?: number;
 }
 
 export interface ArtboardRef {
@@ -33,7 +29,6 @@ export interface ArtboardRef {
   getImageAsDataUri: (type?: string) => string | undefined;
   clear: () => void;
   context?: CanvasRenderingContext2D | null;
-  current?: HTMLCanvasElement | null;
 }
 
 export interface ToolHandlers {
@@ -52,8 +47,6 @@ export const Artboard = forwardRef(function Artboard(
     onStartStroke,
     onContinueStroke,
     onEndStroke,
-    width,
-    height,
     ...props
   }: ArtboardProps,
   ref: ForwardedRef<ArtboardRef>
@@ -100,12 +93,12 @@ export const Artboard = forwardRef(function Artboard(
 
   const mouseMove = useCallback(
     (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
-      if (!drawing || !canvas) {
+      if (!drawing) {
         return;
       }
-      continueStroke(getMousePoint(event, canvas, { top: 0, left: 0 }));
+      continueStroke(getMousePoint(event));
     },
-    [continueStroke, drawing, canvas]
+    [continueStroke, drawing]
   );
 
   const touchMove = useCallback(
@@ -113,20 +106,20 @@ export const Artboard = forwardRef(function Artboard(
       if (!drawing) {
         return;
       }
-      continueStroke(getTouchPoint(event, { top: 0, left: 0 }));
+      continueStroke(getTouchPoint(event));
     },
     [continueStroke, drawing]
   );
 
   const mouseDown = useCallback(
     (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
-      if (drawing || !canvas) {
+      if (drawing) {
         return;
       }
       event.preventDefault();
-      startStroke(getMousePoint(event, canvas, { top: 0, left: 0 }));
+      startStroke(getMousePoint(event));
     },
-    [drawing, startStroke, canvas]
+    [drawing, startStroke]
   );
 
   const touchStart = useCallback(
@@ -134,7 +127,7 @@ export const Artboard = forwardRef(function Artboard(
       if (drawing) {
         return;
       }
-      startStroke(getTouchPoint(event, { top: 0, left: 0 }));
+      startStroke(getTouchPoint(event));
     },
     [drawing, startStroke]
   );
@@ -144,7 +137,7 @@ export const Artboard = forwardRef(function Artboard(
       return;
     }
     context.save();
-    context.fillStyle = '#ffffff';
+    context.fillStyle = "#ffffff";
     context.fillRect(0, 0, canvas.width, canvas.height);
     context.restore();
     if (canvas && history) {
@@ -159,15 +152,15 @@ export const Artboard = forwardRef(function Artboard(
       }
       canvasRef.width = canvasRef.offsetWidth;
       canvasRef.height = canvasRef.offsetHeight;
-      const ctx = canvasRef.getContext('2d');
+      const ctx = canvasRef.getContext("2d");
       setCanvas(canvasRef);
       setContext(ctx);
       if (!ctx) {
         return;
       }
-      ctx.fillStyle = '#ffffff';
+      ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, canvasRef.width, canvasRef.height);
-      ctx.fillStyle = 'transparent';
+      ctx.fillStyle = "transparent";
       if (history) {
         history.setContext(ctx);
         history.pushState(canvasRef);
@@ -178,37 +171,34 @@ export const Artboard = forwardRef(function Artboard(
 
   const mouseEnter = useCallback(
     (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
-      if (!canvas) {
-        return;
-      }
       if (mouseButtonIsDown(event.buttons)) {
         mouseDown(event);
       } else if (drawing) {
         endStroke();
       }
     },
-    [drawing, mouseDown, endStroke, canvas]
+    [drawing, mouseDown, endStroke]
   );
 
   const mouseLeave = useCallback(
     (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
-      if (!drawing || !canvas) {
+      if (!drawing) {
         return;
       }
-      continueStroke(getMousePoint(event, canvas, { top: 0, left: 0 }));
+      continueStroke(getMousePoint(event));
       endStroke();
     },
-    [continueStroke, drawing, endStroke, canvas]
+    [continueStroke, drawing, endStroke]
   );
 
   useImperativeHandle(
     ref,
     () => ({
-      download: (filename = 'image.png', type?: string) => {
+      download: (filename = "image.png", type?: string) => {
         if (!canvas) {
           return;
         }
-        const a = document.createElement('a');
+        const a = document.createElement("a");
         a.href = canvas.toDataURL(type);
         a.download = filename;
         a.click();
@@ -216,15 +206,13 @@ export const Artboard = forwardRef(function Artboard(
       clear,
       getImageAsDataUri: (type?: string) => canvas?.toDataURL(type),
       context,
-      current: canvas
     }),
     [canvas, context, clear]
   );
 
   return (
     <canvas
-      className={styles.artboard}
-      style={{ cursor: tool?.cursor, touchAction: 'none', ...style }}
+      style={{ cursor: tool?.cursor, touchAction: "none", ...style }}
       onTouchStart={touchStart}
       onMouseDown={mouseDown}
       onMouseEnter={mouseEnter}
