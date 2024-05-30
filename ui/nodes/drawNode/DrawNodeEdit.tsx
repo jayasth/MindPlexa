@@ -62,7 +62,7 @@ interface DrawNodeEditProps extends NodeProps {
     title?: string;
     backgroundColor?: string;
     textColor?: string;
-    drawingData?: string;
+    content?: string;
   };
   width: number;
   height: number;
@@ -117,7 +117,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const [nodeWidth, setNodeWidth] = useState(width);
   const [nodeHeight, setNodeHeight] = useState(height);
   const [isColorPickerVisible, setIsColorPickerVisible] = useState(false);
-  const [drawingData, setDrawingData] = useState(data.drawingData || '');
+  const [content, setContent] = useState(data.content || '');
   const [color, setColor] = useState('#531B93');
   const [strokeWidth, setStrokeWidth] = useState(5);
   const [colorOpen, setColorOpen] = useState(false);
@@ -171,7 +171,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         attachedFiles,
         backgroundColor,
         textColor,
-        drawingData
+        content
       }
     });
   }, [
@@ -181,7 +181,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     attachedFiles,
     backgroundColor,
     textColor,
-    drawingData,
+    content,
     updateNode
   ]);
 
@@ -258,6 +258,10 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     color: textColor
   };
 
+  const handleDrawingChange = (newContent: string) => {
+    setContent(newContent);
+  };
+
   return (
     <div
       className={`${styles.drawNode} ${isSelected ? styles.selected : ''}`}
@@ -280,7 +284,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
           style={{ color: textColor }}
         />
         <CloseButton
-          onClick={() => handleClose(data.id, () => {}, title, drawingData)}
+          onClick={() => handleClose(data.id, () => {}, title, content)}
         />
       </div>
       <div className={`${styles.drawContent} nowheel nodrag`}>
@@ -404,6 +408,8 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
             ref={setArtboardRef}
             history={history}
             style={{ border: '1px gray solid' }}
+            content={content}
+            onContentChange={setContent}
           />
         </div>
       </div>
@@ -416,7 +422,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
               attachedFiles,
               backgroundColor,
               textColor,
-              drawingData
+              content
             })
           }
         />

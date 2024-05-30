@@ -15,8 +15,6 @@ import {
   Point
 } from '@/ui/nodes/drawNode/utils/pointUtils';
 
-import styles from '@/ui/nodes/drawNode/DrawNodeEdit.module.css';
-
 export interface ArtboardProps
   extends React.CanvasHTMLAttributes<HTMLCanvasElement> {
   tool: ToolHandlers;
@@ -24,6 +22,8 @@ export interface ArtboardProps
   onStartStroke?: (point: Point) => void;
   onContinueStroke?: (point: Point) => void;
   onEndStroke?: () => void;
+  content?: string; // Updated line
+  onContentChange?: (newContent: string) => void;
 }
 
 export interface ArtboardRef {
@@ -49,6 +49,8 @@ export const Artboard = forwardRef(function Artboard(
     onStartStroke,
     onContinueStroke,
     onEndStroke,
+    content, // Updated line
+    onContentChange,
     ...props
   }: ArtboardProps,
   ref: ForwardedRef<ArtboardRef>
