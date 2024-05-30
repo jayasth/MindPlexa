@@ -9,10 +9,13 @@ export const getTouchPoint = (event: React.TouchEvent): Point => {
   return [touch.clientX - rect.left, touch.clientY - rect.top];
 };
 
-export const getMousePoint = (event: React.MouseEvent): Point => [
-  event.nativeEvent.offsetX,
-  event.nativeEvent.offsetY,
-];
+export function getMousePoint(
+  event: React.MouseEvent<HTMLCanvasElement, MouseEvent>,
+  canvas: HTMLCanvasElement
+): Point {
+  const rect = canvas.getBoundingClientRect();
+  return [event.clientX - rect.left, event.clientY - rect.top];
+}
 
 const BUTTON = 0b01;
 export const mouseButtonIsDown = (buttons: number): boolean =>

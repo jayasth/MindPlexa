@@ -403,6 +403,8 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
             tool={tools[currentTool][0]}
             ref={setArtboardRef}
             history={history}
+            width={nodeWidth}
+            height={nodeHeight}
             style={{ border: '1px gray solid' }}
           />
         </div>

@@ -24,6 +24,8 @@ export interface ArtboardProps
   onStartStroke?: (point: Point) => void;
   onContinueStroke?: (point: Point) => void;
   onEndStroke?: () => void;
+  width?: number;
+  height?: number;
 }
 
 export interface ArtboardRef {
@@ -50,6 +52,8 @@ export const Artboard = forwardRef(function Artboard(
     onStartStroke,
     onContinueStroke,
     onEndStroke,
+    width,
+    height,
     ...props
   }: ArtboardProps,
   ref: ForwardedRef<ArtboardRef>
@@ -96,12 +100,12 @@ export const Artboard = forwardRef(function Artboard(
 
   const mouseMove = useCallback(
     (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
-      if (!drawing) {
+      if (!drawing || !canvas) {
         return;
       }
-      continueStroke(getMousePoint(event));
+      continueStroke(getMousePoint(event, canvas));
     },
-    [continueStroke, drawing]
+    [continueStroke, drawing, canvas]
   );
 
   const touchMove = useCallback(
@@ -116,13 +120,13 @@ export const Artboard = forwardRef(function Artboard(
 
   const mouseDown = useCallback(
     (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
-      if (drawing) {
+      if (drawing || !canvas) {
         return;
       }
       event.preventDefault();
-      startStroke(getMousePoint(event));
+      startStroke(getMousePoint(event, canvas));
     },
-    [drawing, startStroke]
+    [drawing, startStroke, canvas]
   );
 
   const touchStart = useCallback(
@@ -153,8 +157,12 @@ export const Artboard = forwardRef(function Artboard(
       if (!canvasRef) {
         return;
       }
-      canvasRef.width = canvasRef.offsetWidth;
-      canvasRef.height = canvasRef.offsetHeight;
+      const canvasWidth =
+        typeof width === 'number' ? width : canvasRef.offsetWidth;
+      const canvasHeight =
+        typeof height === 'number' ? height : canvasRef.offsetHeight;
+      canvasRef.width = canvasWidth;
+      canvasRef.height = canvasHeight;
       const ctx = canvasRef.getContext('2d');
       setCanvas(canvasRef);
       setContext(ctx);
@@ -162,36 +170,39 @@ export const Artboard = forwardRef(function Artboard(
         return;
       }
       ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, canvasRef.width, canvasRef.height);
+      ctx.fillRect(0, 0, canvasWidth, canvasHeight);
       ctx.fillStyle = 'transparent';
       if (history) {
         history.setContext(ctx);
         history.pushState(canvasRef);
       }
     },
-    [history]
+    [history, width, height]
   );
 
   const mouseEnter = useCallback(
     (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
+      if (!canvas) {
+        return;
+      }
       if (mouseButtonIsDown(event.buttons)) {
         mouseDown(event);
       } else if (drawing) {
         endStroke();
       }
     },
-    [drawing, mouseDown, endStroke]
+    [drawing, mouseDown, endStroke, canvas]
   );
 
   const mouseLeave = useCallback(
     (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
-      if (!drawing) {
+      if (!drawing || !canvas) {
         return;
       }
-      continueStroke(getMousePoint(event));
+      continueStroke(getMousePoint(event, canvas));
       endStroke();
     },
-    [continueStroke, drawing, endStroke]
+    [continueStroke, drawing, endStroke, canvas]
   );
 
   useImperativeHandle(
