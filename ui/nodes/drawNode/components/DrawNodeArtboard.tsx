@@ -24,8 +24,6 @@ export interface ArtboardProps
   onStartStroke?: (point: Point) => void;
   onContinueStroke?: (point: Point) => void;
   onEndStroke?: () => void;
-  width?: number;
-  height?: number;
 }
 
 export interface ArtboardRef {
@@ -33,7 +31,6 @@ export interface ArtboardRef {
   getImageAsDataUri: (type?: string) => string | undefined;
   clear: () => void;
   context?: CanvasRenderingContext2D | null;
-  current?: HTMLCanvasElement | null;
 }
 
 export interface ToolHandlers {
@@ -52,8 +49,6 @@ export const Artboard = forwardRef(function Artboard(
     onStartStroke,
     onContinueStroke,
     onEndStroke,
-    width,
-    height,
     ...props
   }: ArtboardProps,
   ref: ForwardedRef<ArtboardRef>
@@ -212,15 +207,13 @@ export const Artboard = forwardRef(function Artboard(
       },
       clear,
       getImageAsDataUri: (type?: string) => canvas?.toDataURL(type),
-      context,
-      current: canvas
+      context
     }),
     [canvas, context, clear]
   );
 
   return (
     <canvas
-      className={styles.artboard}
       style={{ cursor: tool?.cursor, touchAction: 'none', ...style }}
       onTouchStart={touchStart}
       onMouseDown={mouseDown}
