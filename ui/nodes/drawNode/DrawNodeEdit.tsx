@@ -148,6 +148,11 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const updateNode = useStore((state) => state.updateNode);
   const colorPickerRef = useRef<HTMLDivElement>(null);
   const sizePickerRef = useRef<HTMLDivElement>(null);
+  const backgroundColorPickerRef = useRef<HTMLDivElement>(null);
+
+  useClickOutside(backgroundColorPickerRef, () =>
+    setIsColorPickerVisible(false)
+  );
 
   useEffect(() => {
     const nodeProperties = getNodeSpecificProperties('draw', true);
@@ -430,7 +435,10 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         />
         <DuplicateButton onClick={() => handleDuplicate(data.id)} />
         {isColorPickerVisible && (
-          <div className={`${styles.colorPicker} nodrag`} ref={colorPickerRef}>
+          <div
+            className={`${styles.colorPicker} nodrag`}
+            ref={backgroundColorPickerRef}
+          >
             <SketchPicker
               color={backgroundColor}
               onChange={handleBackgroundColorChange}
