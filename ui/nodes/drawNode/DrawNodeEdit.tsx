@@ -214,14 +214,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     setStrokeWidth(tools[currentTool][2]);
   }, [currentTool]);
 
-  useEffect(() => {
-    const artboardRef = artboardInstance.current;
-    if (artboardRef) {
-      const dataUri = artboardRef.getImageAsDataUri();
-      setContent(dataUri || '');
-    }
-  }, [artboardInstance]);
-
   const onChangeTitle = (value: string) => {
     handleTitleChange(data.id, value, setTitle);
   };
@@ -259,6 +251,31 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     onNodeResizeStop(data.id, { width, height }, position);
   };
 
+  const handleSaveDrawing = () => {
+    const artboardRef = artboardInstance.current;
+    if (artboardRef) {
+      const dataUri = artboardRef.getImageAsDataUri();
+      setContent(dataUri || '');
+      handleSave(data.id, () => {}, {
+        title,
+        tags,
+        attachedFiles,
+        backgroundColor,
+        textColor,
+        content: dataUri
+      });
+    }
+  };
+
+  const handleCloseDrawing = () => {
+    const artboardRef = artboardInstance.current;
+    if (artboardRef) {
+      const dataUri = artboardRef.getImageAsDataUri();
+      setContent(dataUri || '');
+      handleClose(data.id, () => {}, title, dataUri);
+    }
+  };
+
   const customStyles: CSSProperties = {
     width: nodeWidth,
     height: nodeHeight,
@@ -287,9 +304,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
           className={`${styles.titleInput} nodrag`}
           style={{ color: textColor }}
         />
-        <CloseButton
-          onClick={() => handleClose(data.id, () => {}, title, content)}
-        />
+        <CloseButton onClick={handleCloseDrawing} />
       </div>
       <div className={`${styles.drawContent} nowheel nodrag`}>
         <div className={toolbarStyles.toolbar}>
@@ -417,18 +432,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         </div>
       </div>
       <div className={styles.footer}>
-        <SaveButton
-          onClick={() =>
-            handleSave(data.id, () => {}, {
-              title,
-              tags,
-              attachedFiles,
-              backgroundColor,
-              textColor,
-              content
-            })
-          }
-        />
+        <SaveButton onClick={handleSaveDrawing} />
         <DeleteButton onClick={() => handleDelete(data.id, () => {})} />
         <ChangeColorButton onClick={toggleColorPicker} />
         <AddTagButton onClick={() => handleAddTag(data.id, tags, onAddTag)} />
