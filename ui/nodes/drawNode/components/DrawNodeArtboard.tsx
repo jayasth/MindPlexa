@@ -103,7 +103,7 @@ export const Artboard = forwardRef(function Artboard(
       if (!drawing || !canvas) {
         return;
       }
-      continueStroke(getMousePoint(event, canvas));
+      continueStroke(getMousePoint(event, canvas, { top: 0, left: 0 }));
     },
     [continueStroke, drawing, canvas]
   );
@@ -113,7 +113,7 @@ export const Artboard = forwardRef(function Artboard(
       if (!drawing) {
         return;
       }
-      continueStroke(getTouchPoint(event));
+      continueStroke(getTouchPoint(event, { top: 0, left: 0 }));
     },
     [continueStroke, drawing]
   );
@@ -124,7 +124,7 @@ export const Artboard = forwardRef(function Artboard(
         return;
       }
       event.preventDefault();
-      startStroke(getMousePoint(event, canvas));
+      startStroke(getMousePoint(event, canvas, { top: 0, left: 0 }));
     },
     [drawing, startStroke, canvas]
   );
@@ -134,7 +134,7 @@ export const Artboard = forwardRef(function Artboard(
       if (drawing) {
         return;
       }
-      startStroke(getTouchPoint(event));
+      startStroke(getTouchPoint(event, { top: 0, left: 0 }));
     },
     [drawing, startStroke]
   );
@@ -199,7 +199,7 @@ export const Artboard = forwardRef(function Artboard(
       if (!drawing || !canvas) {
         return;
       }
-      continueStroke(getMousePoint(event, canvas));
+      continueStroke(getMousePoint(event, canvas, { top: 0, left: 0 }));
       endStroke();
     },
     [continueStroke, drawing, endStroke, canvas]

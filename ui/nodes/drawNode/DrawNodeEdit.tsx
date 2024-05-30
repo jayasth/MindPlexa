@@ -341,7 +341,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
                   }}
                 >
                   <Slider
-                    min={5}
+                    min={1}
                     max={100}
                     value={strokeWidth}
                     onChange={setStrokeWidth}
