@@ -73,6 +73,28 @@ interface DrawNodeEditProps extends NodeProps {
   position: { x: number; y: number };
 }
 
+const useClickOutside = (
+  ref: React.RefObject<HTMLElement>,
+  handler: () => void
+) => {
+  useEffect(() => {
+    const listener = (event: MouseEvent | TouchEvent) => {
+      if (!ref.current || ref.current.contains(event.target as Node)) {
+        return;
+      }
+      handler();
+    };
+
+    document.addEventListener('mousedown', listener);
+    document.addEventListener('touchstart', listener);
+
+    return () => {
+      document.removeEventListener('mousedown', listener);
+      document.removeEventListener('touchstart', listener);
+    };
+  }, [ref, handler]);
+};
+
 const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   data,
   width,
@@ -123,6 +145,8 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
 
   const updateNode = useStore((state) => state.updateNode);
   const colorPickerRef = useRef<HTMLDivElement>(null);
+  const sizePickerRef = useRef<HTMLDivElement>(null);
+  const hexColorPickerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const nodeProperties = getNodeSpecificProperties('draw', true);
@@ -163,6 +187,18 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         !colorPickerRef.current.contains(event.target as Node)
       ) {
         setIsColorPickerVisible(false);
+      }
+      if (
+        hexColorPickerRef.current &&
+        !hexColorPickerRef.current.contains(event.target as Node)
+      ) {
+        setColorOpen(false);
+      }
+      if (
+        sizePickerRef.current &&
+        !sizePickerRef.current.contains(event.target as Node)
+      ) {
+        setSizeOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -258,7 +294,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
           <label>
             Color:
             <button
-              onClick={() => setColorOpen(true)}
+              onClick={() => setColorOpen(!colorOpen)}
               style={{
                 backgroundColor: color,
                 width: 50,
@@ -268,51 +304,59 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
             >
               Color
             </button>
-            <Modal open={colorOpen} onClose={() => setColorOpen(false)}>
-              <div style={{ padding: 30 }}>
+            {colorOpen && (
+              <div
+                ref={hexColorPickerRef}
+                style={{ position: 'absolute', zIndex: 10 }}
+              >
                 <HexColorPicker color={color} onChange={setColor} />
               </div>
-            </Modal>
+            )}
           </label>
           <label>
             Size:
-            <button onClick={() => setSizeOpen(true)}>{strokeWidth}</button>
-            <Modal open={sizeOpen} onClose={() => setSizeOpen(false)}>
-              <div
-                style={{
-                  width: 150,
-                  padding: '30px 20px 10px 20px',
-                  display: 'flex',
-                  flexDirection: 'column'
-                }}
-              >
-                <Slider
-                  min={5}
-                  max={100}
-                  value={strokeWidth}
-                  onChange={setStrokeWidth}
-                />
+            <button onClick={() => setSizeOpen(!sizeOpen)}>
+              {strokeWidth}
+            </button>
+            {sizeOpen && (
+              <Modal onClose={() => setSizeOpen(false)} open={sizeOpen}>
                 <div
+                  ref={sizePickerRef}
                   style={{
-                    flex: 1,
-                    minHeight: 150,
-                    justifyContent: 'center',
-                    flexDirection: 'column',
+                    width: 150,
+                    padding: '30px 20px 10px 20px',
                     display: 'flex',
-                    placeItems: 'center'
+                    flexDirection: 'column'
                   }}
                 >
+                  <Slider
+                    min={5}
+                    max={100}
+                    value={strokeWidth}
+                    onChange={setStrokeWidth}
+                  />
                   <div
                     style={{
-                      width: strokeWidth,
-                      height: strokeWidth,
-                      backgroundColor: color,
-                      borderRadius: strokeWidth
+                      flex: 1,
+                      minHeight: 150,
+                      justifyContent: 'center',
+                      flexDirection: 'column',
+                      display: 'flex',
+                      placeItems: 'center'
                     }}
-                  ></div>
+                  >
+                    <div
+                      style={{
+                        width: strokeWidth,
+                        height: strokeWidth,
+                        backgroundColor: color,
+                        borderRadius: strokeWidth
+                      }}
+                    ></div>
+                  </div>
                 </div>
-              </div>
-            </Modal>
+              </Modal>
+            )}
           </label>
         </div>
         <div id="controls" className={styles.toolbarSection}>
