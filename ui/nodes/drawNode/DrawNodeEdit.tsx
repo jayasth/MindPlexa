@@ -3,6 +3,7 @@ import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
 import { useStore } from '@/app/store/useCanvasStore';
 import styles from './DrawNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
+import toolbarStyles from './DrawNodeToolbar.module.css';
 import {
   SaveButton,
   DeleteButton,
@@ -201,6 +202,13 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     };
   }, []);
 
+  useEffect(() => {
+    if (artboardRef && artboardRef.current) {
+      artboardRef.current.width = nodeWidth;
+      artboardRef.current.height = nodeHeight;
+    }
+  }, [nodeWidth, nodeHeight]);
+
   const onChangeTitle = (value: string) => {
     handleTitleChange(data.id, value, setTitle);
   };
@@ -236,6 +244,11 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     setNodeWidth(width);
     setNodeHeight(height);
     onNodeResizeStop(data.id, { width, height }, position);
+
+    if (artboardRef && artboardRef.current) {
+      artboardRef.current.width = width;
+      artboardRef.current.height = height;
+    }
   };
 
   const customStyles: CSSProperties = {
@@ -271,96 +284,119 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         />
       </div>
       <div className={`${styles.drawContent} nowheel nodrag`}>
-        <div className={styles.toolbarSection}>
-          {tools.map(([tool, Icon], index) => (
-            <button
-              aria-label={tool.name}
-              key={tool.name}
-              title={tool.name}
-              style={{
-                backgroundColor: currentTool === index ? '#aaaaff' : '#eeeeee'
-              }}
-              onClick={() => setCurrentTool(index)}
-            >
-              {<Icon size={14} title={tool.name} />}
-            </button>
-          ))}
-          <label>
-            Color:
-            <button
-              onClick={() => setColorOpen(!colorOpen)}
-              style={{
-                backgroundColor: color,
-                width: 50,
-                border: '2px gray solid',
-                color: 'transparent'
-              }}
-            >
-              Color
-            </button>
-            <Modal open={colorOpen} onClose={() => setColorOpen(false)} center>
-              <div ref={colorPickerRef} style={{ padding: '20px' }}>
-                <HexColorPicker color={color} onChange={setColor} />
-              </div>
-            </Modal>
-          </label>
-          <label>
-            Size:
-            <button onClick={() => setSizeOpen(!sizeOpen)}>
-              {strokeWidth}
-            </button>
-            <Modal open={sizeOpen} onClose={() => setSizeOpen(false)} center>
-              <div
-                ref={sizePickerRef}
+        <div className={toolbarStyles.toolbar}>
+          <div className={toolbarStyles.toolbarSection}>
+            {tools.map(([tool, Icon], index) => (
+              <button
+                aria-label={tool.name}
+                key={tool.name}
+                title={tool.name}
+                className={toolbarStyles.toolbarButton}
                 style={{
-                  width: 150,
-                  padding: '30px 20px 10px 20px',
-                  display: 'flex',
-                  flexDirection: 'column'
+                  backgroundColor: currentTool === index ? '#aaaaff' : '#eeeeee'
+                }}
+                onClick={() => setCurrentTool(index)}
+              >
+                {<Icon size={14} title={tool.name} />}
+              </button>
+            ))}
+          </div>
+          <div className={toolbarStyles.toolbarSection}>
+            <label className={toolbarStyles.toolbarLabel}>
+              Color:
+              <button
+                onClick={() => setColorOpen(!colorOpen)}
+                style={{
+                  backgroundColor: color,
+                  width: 50,
+                  border: '2px gray solid',
+                  color: 'transparent'
                 }}
               >
-                <Slider
-                  min={5}
-                  max={100}
-                  value={strokeWidth}
-                  onChange={setStrokeWidth}
-                />
+                Color
+              </button>
+              <Modal
+                open={colorOpen}
+                onClose={() => setColorOpen(false)}
+                center
+              >
+                <div ref={colorPickerRef} style={{ padding: '20px' }}>
+                  <HexColorPicker color={color} onChange={setColor} />
+                </div>
+              </Modal>
+            </label>
+            <label className={toolbarStyles.toolbarLabel}>
+              Size:
+              <button onClick={() => setSizeOpen(!sizeOpen)}>
+                {strokeWidth}
+              </button>
+              <Modal open={sizeOpen} onClose={() => setSizeOpen(false)} center>
                 <div
+                  ref={sizePickerRef}
                   style={{
-                    flex: 1,
-                    minHeight: 150,
-                    justifyContent: 'center',
-                    flexDirection: 'column',
+                    width: 150,
+                    padding: '30px 20px 10px 20px',
                     display: 'flex',
-                    placeItems: 'center'
+                    flexDirection: 'column'
                   }}
                 >
+                  <Slider
+                    min={5}
+                    max={100}
+                    value={strokeWidth}
+                    onChange={setStrokeWidth}
+                  />
                   <div
                     style={{
-                      width: strokeWidth,
-                      height: strokeWidth,
-                      backgroundColor: color,
-                      borderRadius: strokeWidth
+                      flex: 1,
+                      minHeight: 150,
+                      justifyContent: 'center',
+                      flexDirection: 'column',
+                      display: 'flex',
+                      placeItems: 'center'
                     }}
-                  ></div>
+                  >
+                    <div
+                      style={{
+                        width: strokeWidth,
+                        height: strokeWidth,
+                        backgroundColor: color,
+                        borderRadius: strokeWidth
+                      }}
+                    ></div>
+                  </div>
                 </div>
-              </div>
-            </Modal>
-          </label>
-        </div>
-        <div id="controls" className={styles.toolbarSection}>
-          <button onClick={undo} disabled={!canUndo}>
-            <FaUndo size={12} title="Undo" />
-          </button>
-          <button onClick={redo} disabled={!canRedo}>
-            <FaRedo title="Redo" />
-          </button>
-          <button onClick={() => artboardRef?.download()}>
-            <FaDownload title="Download" />
-          </button>
-          <button onClick={() => artboardRef?.clear()}>
-            <FaTrash title="Clear" />
-          </button>
+              </Modal>
+            </label>
+            <div className={toolbarStyles.toolbarSection}>
+              <button
+                onClick={undo}
+                disabled={!canUndo}
+                className={toolbarStyles.toolbarButton}
+              >
+                <FaUndo size={12} title="Undo" />
+              </button>
+              <button
+                onClick={redo}
+                disabled={!canRedo}
+                className={toolbarStyles.toolbarButton}
+              >
+                <FaRedo title="Redo" />
+              </button>
+              <button
+                onClick={() => artboardRef?.download()}
+                className={toolbarStyles.toolbarButton}
+              >
+                <FaDownload title="Download" />
+              </button>
+              <button
+                onClick={() => artboardRef?.clear()}
+                className={toolbarStyles.toolbarButton}
+              >
+                <FaTrash title="Clear" />
+              </button>
+            </div>
+          </div>
         </div>
         <div id="artboard" className={styles.artboard}>
           <Artboard

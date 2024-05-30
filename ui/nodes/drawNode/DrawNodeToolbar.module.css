@@ -1,0 +1,32 @@
+.toolbar {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    background-color: transparent;
+  }
+  
+  .toolbarSection {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  
+  .toolbarButton {
+    padding: 4px;
+    display: inline-flex;
+    cursor: pointer;
+    border: none;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    margin: 3px;
+    background-color: #eeeeee;
+    border-radius: 4px;
+  }
+  
+  .toolbarLabel {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
