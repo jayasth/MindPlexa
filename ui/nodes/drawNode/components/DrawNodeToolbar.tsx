@@ -17,7 +17,7 @@ import 'react-responsive-modal/styles.css';
 import Slider from './DrawNodeSlider';
 import toolbarStyles from '@/ui/nodes/drawNode/components/DrawNodeToolbar.module.css';
 
-interface FloatingToolbarProps {
+interface DrawNodeToolbarProps {
   tools: Array<[any, any, number]>;
   currentTool: number;
   setCurrentTool: (index: number) => void;
@@ -33,7 +33,7 @@ interface FloatingToolbarProps {
   clear: () => void;
 }
 
-const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
+const DrawNodeToolbar: React.FC<DrawNodeToolbarProps> = ({
   tools,
   currentTool,
   setCurrentTool,
@@ -159,4 +159,4 @@ const FloatingToolbar: React.FC<FloatingToolbarProps> = ({
   );
 };
 
-export default FloatingToolbar;
+export default DrawNodeToolbar;
