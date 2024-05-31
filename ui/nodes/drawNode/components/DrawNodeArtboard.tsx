@@ -154,8 +154,8 @@ export const Artboard = forwardRef(function Artboard(
       if (!canvasRef) {
         return;
       }
-      canvasRef.width = canvasRef.offsetWidth * 1.5;
-      canvasRef.height = canvasRef.offsetHeight * 1.5;
+      canvasRef.width = canvasRef.offsetWidth;
+      canvasRef.height = canvasRef.offsetHeight;
       const ctx = canvasRef.getContext('2d');
       setCanvas(canvasRef);
       setContext(ctx);
