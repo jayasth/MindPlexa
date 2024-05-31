@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useRef, CSSProperties } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  CSSProperties,
+  useCallback
+} from 'react';
 import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
 import { useStore } from '@/app/store/useCanvasStore';
 import styles from './DrawNodeEdit.module.css';
@@ -145,6 +151,14 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const sizePickerRef = useRef<HTMLDivElement>(null);
   const backgroundColorPickerRef = useRef<HTMLDivElement>(null);
 
+  const handleArtboardResize = useCallback(() => {
+    const artboardRef = artboardInstance.current;
+    if (artboardRef) {
+      const dataUri = artboardRef.getImageAsDataUri();
+      setContent(dataUri || '');
+    }
+  }, []);
+
   useClickOutside(backgroundColorPickerRef, () =>
     setIsColorPickerVisible(false)
   );
@@ -205,6 +219,43 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   useEffect(() => {
     setStrokeWidth(tools[currentTool][2]);
   }, [currentTool]);
+
+  useEffect(() => {
+    handleArtboardResize();
+  }, [nodeWidth, nodeHeight, handleArtboardResize]);
+
+  useEffect(() => {
+    if (content) {
+      const artboardRef = artboardInstance.current;
+      if (artboardRef) {
+        const ctx = artboardRef.context;
+        if (ctx) {
+          const image = new Image();
+          image.onload = async () => {
+            ctx.drawImage(image, 0, 0, artboardRef.width, artboardRef.height);
+            // Update the drawing history when the content changes
+            if (history) {
+              await history.pushState(ctx.canvas);
+            }
+          };
+          image.src = content;
+        }
+      }
+    }
+  }, [content, history]);
+
+  useEffect(() => {
+    const handleContentUpdate = (event) => {
+      const newContent = event.detail.content;
+      setContent(newContent);
+    };
+
+    window.addEventListener('content-updated', handleContentUpdate);
+
+    return () => {
+      window.removeEventListener('content-updated', handleContentUpdate);
+    };
+  }, []);
 
   const onChangeTitle = (value: string) => {
     handleTitleChange(data.id, value, setTitle);
@@ -320,7 +371,10 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
             ref={artboardInstance}
             history={history}
             style={{ border: '1px gray solid' }}
-            content={content}
+            content={content} // Pass content state to Artboard
+            width={nodeWidth / 2}
+            height={nodeHeight / 2}
+            onContentChange={setContent} // Pass setContent function to Artboard
           />
         </div>
       </div>
