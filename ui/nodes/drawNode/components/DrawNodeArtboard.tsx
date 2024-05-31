@@ -96,8 +96,11 @@ export const Artboard = forwardRef(function Artboard(
       if (canvas && history) {
         history.pushState(canvas);
       }
+      if (onContentChange) {
+        onContentChange(canvas?.toDataURL() || '');
+      }
     }
-  }, [tool, context, canvas, history, onEndStroke]);
+  }, [tool, context, canvas, history, onEndStroke, onContentChange]);
 
   const mouseMove = useCallback(
     (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
@@ -151,7 +154,10 @@ export const Artboard = forwardRef(function Artboard(
     if (canvas && history) {
       history.pushState(canvas);
     }
-  }, [context, canvas, history]);
+    if (onContentChange) {
+      onContentChange(canvas?.toDataURL() || '');
+    }
+  }, [context, canvas, history, onContentChange]);
 
   const gotRef = useCallback(
     (canvasRef: HTMLCanvasElement) => {
@@ -232,6 +238,12 @@ export const Artboard = forwardRef(function Artboard(
       props.onResize();
     }
   }, [props.width, props.height, props.onResize]);
+
+  useEffect(() => {
+    if (onContentChange) {
+      onContentChange(canvas?.toDataURL() || '');
+    }
+  }, [canvas, onContentChange]);
 
   return (
     <canvas

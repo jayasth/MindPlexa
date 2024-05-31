@@ -220,6 +220,10 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     setStrokeWidth(tools[currentTool][2]);
   }, [currentTool]);
 
+  useEffect(() => {
+    handleArtboardResize();
+  }, [nodeWidth, nodeHeight, handleArtboardResize]);
+
   const onChangeTitle = (value: string) => {
     handleTitleChange(data.id, value, setTitle);
   };
