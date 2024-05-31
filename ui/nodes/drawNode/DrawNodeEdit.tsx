@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useRef, CSSProperties } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  CSSProperties,
+  useCallback
+} from 'react';
 import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
 import { useStore } from '@/app/store/useCanvasStore';
 import styles from './DrawNodeEdit.module.css';
@@ -321,6 +327,8 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
             history={history}
             style={{ border: '1px gray solid' }}
             content={content}
+            width={nodeWidth / 2}
+            height={nodeHeight / 2}
           />
         </div>
       </div>

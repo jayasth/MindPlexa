@@ -3,7 +3,8 @@ import React, {
   forwardRef,
   useCallback,
   useImperativeHandle,
-  useState
+  useState,
+  useEffect
 } from 'react';
 
 import { History } from '@/ui/nodes/drawNode/drawNodeHistory';
@@ -17,13 +18,16 @@ import {
 
 export interface ArtboardProps
   extends React.CanvasHTMLAttributes<HTMLCanvasElement> {
-  tool: ToolHandlers;
+    tool: ToolHandlers;
   history?: History;
   onStartStroke?: (point: Point) => void;
   onContinueStroke?: (point: Point) => void;
   onEndStroke?: () => void;
   content?: string;
   onContentChange?: (newContent: string) => void;
+  width: number;
+  height: number;
+  onResize?: () => void;
 }
 
 export interface ArtboardRef {
@@ -31,6 +35,8 @@ export interface ArtboardRef {
   getImageAsDataUri: (type?: string) => string | undefined;
   clear: () => void;
   context?: CanvasRenderingContext2D | null;
+  width: number;
+  height: number;
 }
 
 export interface ToolHandlers {
@@ -51,6 +57,9 @@ export const Artboard = forwardRef(function Artboard(
     onEndStroke,
     content,
     onContentChange,
+    width,
+    height,
+    onResize,
     ...props
   }: ArtboardProps,
   ref: ForwardedRef<ArtboardRef>
@@ -92,8 +101,17 @@ export const Artboard = forwardRef(function Artboard(
       if (canvas && history) {
         history.pushState(canvas);
       }
+      if (onContentChange) {
+        const newContent = canvas?.toDataURL() || '';
+        onContentChange(newContent);
+        window.dispatchEvent(
+          new CustomEvent('content-updated', {
+            detail: { content: newContent }
+          })
+        );
+      }
     }
-  }, [tool, context, canvas, history, onEndStroke]);
+  }, [tool, context, canvas, history, onEndStroke, onContentChange]);
 
   const mouseMove = useCallback(
     (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
@@ -147,15 +165,24 @@ export const Artboard = forwardRef(function Artboard(
     if (canvas && history) {
       history.pushState(canvas);
     }
-  }, [context, canvas, history]);
+    if (onContentChange) {
+      const newContent = canvas?.toDataURL() || '';
+      onContentChange(newContent);
+      window.dispatchEvent(
+        new CustomEvent('content-updated', { detail: { content: newContent } })
+      );
+    }
+  }, [context, canvas, history, onContentChange]);
 
   const gotRef = useCallback(
     (canvasRef: HTMLCanvasElement) => {
       if (!canvasRef) {
         return;
       }
-      canvasRef.width = canvasRef.offsetWidth;
-      canvasRef.height = canvasRef.offsetHeight;
+      const aspectRatio = 16 / 9;
+      const canvasSize = Math.min(width, height);
+      canvasRef.width = canvasSize * aspectRatio;
+      canvasRef.height = canvasSize;
       const ctx = canvasRef.getContext('2d');
       setCanvas(canvasRef);
       setContext(ctx);
@@ -165,12 +192,19 @@ export const Artboard = forwardRef(function Artboard(
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, canvasRef.width, canvasRef.height);
       ctx.fillStyle = 'transparent';
+      if (content) {
+        const image = new Image();
+        image.onload = () => {
+          ctx.drawImage(image, 0, 0, canvasRef.width, canvasRef.height);
+        };
+        image.src = content;
+      }
       if (history) {
         history.setContext(ctx);
         history.pushState(canvasRef);
       }
     },
-    [history]
+    [width, height, content, history]
   );
 
   const mouseEnter = useCallback(
@@ -209,10 +243,42 @@ export const Artboard = forwardRef(function Artboard(
       },
       clear,
       getImageAsDataUri: (type?: string) => canvas?.toDataURL(type),
-      context
+      context,
+      width: canvas?.width || 0,
+      height: canvas?.height || 0
     }),
     [canvas, context, clear]
   );
+
+  useEffect(() => {
+    if (onResize) {
+      onResize();
+    }
+    if (canvas && context) {
+      const image = new Image();
+      image.onload = () => {
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.drawImage(
+          image,
+          0,
+          0,
+          image.width,
+          image.height,
+          0,
+          0,
+          canvas.width,
+          canvas.height
+        ); // Draw the image with scaling
+      };
+      image.src = content || '';
+    }
+  }, [width, height, onResize, canvas, context, content]);
+
+  useEffect(() => {
+    if (onContentChange) {
+      onContentChange(canvas?.toDataURL() || '');
+    }
+  }, [canvas, onContentChange]);
 
   return (
     <canvas
@@ -230,3 +296,4 @@ export const Artboard = forwardRef(function Artboard(
     />
   );
 });
+ 
