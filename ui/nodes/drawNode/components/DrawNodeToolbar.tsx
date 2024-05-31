@@ -1,16 +1,5 @@
 import React from 'react';
-import {
-  FaPencilAlt,
-  FaPaintBrush,
-  FaMarker,
-  FaEraser,
-  FaSprayCan,
-  FaUndo,
-  FaRedo,
-  FaDownload,
-  FaTrash
-} from 'react-icons/fa';
-import { IoMdWater } from 'react-icons/io';
+import { FaUndo, FaRedo, FaDownload, FaTrash } from 'react-icons/fa';
 import { HexColorPicker } from 'react-colorful';
 import { Modal } from 'react-responsive-modal';
 import 'react-responsive-modal/styles.css';

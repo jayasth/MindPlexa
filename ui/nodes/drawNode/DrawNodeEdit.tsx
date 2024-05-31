@@ -134,10 +134,10 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
 
   const tools: Array<[ToolHandlers, IconType, number]> = [
     [shading, FaPencilAlt, 5],
-    [watercolor, IoMdWater, 10],
+    [watercolor, IoMdWater, 20],
     [brush, FaPaintBrush, 15],
     [marker, FaMarker, 20],
-    [airbrush, FaSprayCan, 25],
+    [airbrush, FaSprayCan, 10],
     [eraser, FaEraser, 30]
   ];
 
