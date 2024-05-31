@@ -24,17 +24,13 @@ import {
   getContrastYIQ
 } from '@/ui/canvasEditor/utils/CommonNodeFunctions';
 import { SketchPicker } from 'react-color';
-import { HexColorPicker } from 'react-colorful';
+
 import {
   FaPencilAlt,
   FaPaintBrush,
   FaMarker,
   FaEraser,
-  FaSprayCan,
-  FaDownload,
-  FaTrash,
-  FaUndo,
-  FaRedo
+  FaSprayCan
 } from 'react-icons/fa';
 import { IoMdWater } from 'react-icons/io';
 import {
@@ -117,7 +113,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const [content, setContent] = useState(data.content || '');
   const [color, setColor] = useState('#531B93');
   const [strokeWidth, setStrokeWidth] = useState(5);
-  const [colorOpen, setColorOpen] = useState(false);
   const [sizeOpen, setSizeOpen] = useState(false);
   const artboardInstance = useRef<ArtboardRef | null>(null);
 

@@ -43,7 +43,7 @@ const DrawNodeToolbar: React.FC<DrawNodeToolbarProps> = ({
   const sizePickerRef = React.useRef<HTMLDivElement>(null);
 
   return (
-    <div className={toolbarStyles.floatingToolbar}>
+    <div className={toolbarStyles.toolbar}>
       <div className={toolbarStyles.toolbarSection}>
         {tools.map(([tool, Icon], index) => (
           <button
@@ -59,8 +59,6 @@ const DrawNodeToolbar: React.FC<DrawNodeToolbarProps> = ({
             {<Icon size={14} title={tool.name} />}
           </button>
         ))}
-      </div>
-      <div className={toolbarStyles.toolbarSection}>
         <label className={toolbarStyles.toolbarLabel}>
           Color:
           <button
@@ -121,28 +119,26 @@ const DrawNodeToolbar: React.FC<DrawNodeToolbarProps> = ({
             </div>
           </Modal>
         </label>
-        <div className={toolbarStyles.toolbarSection}>
-          <button
-            onClick={undo}
-            disabled={!canUndo}
-            className={toolbarStyles.toolbarButton}
-          >
-            <FaUndo size={12} title="Undo" />
-          </button>
-          <button
-            onClick={redo}
-            disabled={!canRedo}
-            className={toolbarStyles.toolbarButton}
-          >
-            <FaRedo title="Redo" />
-          </button>
-          <button onClick={download} className={toolbarStyles.toolbarButton}>
-            <FaDownload title="Download" />
-          </button>
-          <button onClick={clear} className={toolbarStyles.toolbarButton}>
-            <FaTrash title="Clear" />
-          </button>
-        </div>
+        <button
+          onClick={undo}
+          disabled={!canUndo}
+          className={toolbarStyles.toolbarButton}
+        >
+          <FaUndo size={12} title="Undo" />
+        </button>
+        <button
+          onClick={redo}
+          disabled={!canRedo}
+          className={toolbarStyles.toolbarButton}
+        >
+          <FaRedo title="Redo" />
+        </button>
+        <button onClick={download} className={toolbarStyles.toolbarButton}>
+          <FaDownload title="Download" />
+        </button>
+        <button onClick={clear} className={toolbarStyles.toolbarButton}>
+          <FaTrash title="Clear" />
+        </button>
       </div>
     </div>
   );
