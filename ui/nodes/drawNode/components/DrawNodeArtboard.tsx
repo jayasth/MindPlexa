@@ -4,7 +4,8 @@ import React, {
   useCallback,
   useImperativeHandle,
   useState,
-  useEffect
+  useEffect,
+  useRef
 } from 'react';
 
 import { History } from '@/ui/nodes/drawNode/drawNodeHistory';
@@ -64,6 +65,7 @@ export const Artboard = forwardRef(function Artboard(
   const [context, setContext] = useState<CanvasRenderingContext2D | null>();
   const [canvas, setCanvas] = useState<HTMLCanvasElement>();
   const [drawing, setDrawing] = useState(false);
+  const artboardInstance = useRef<ArtboardRef>(null);
 
   const startStroke = useCallback(
     (point: Point) => {
@@ -248,6 +250,23 @@ export const Artboard = forwardRef(function Artboard(
       onContentChange(canvas?.toDataURL() || '');
     }
   }, [canvas, onContentChange]);
+
+  useEffect(() => {
+    if (content) {
+      const artboardRef = artboardInstance.current;
+      if (artboardRef) {
+        const ctx = artboardRef.context;
+        if (ctx) {
+          const image = new Image();
+          image.onload = () => {
+            ctx.clearRect(0, 0, artboardRef.width, artboardRef.height); // Clear the canvas before drawing
+            ctx.drawImage(image, 0, 0, artboardRef.width, artboardRef.height);
+          };
+          image.src = content;
+        }
+      }
+    }
+  }, [content]);
 
   return (
     <canvas

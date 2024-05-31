@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from 'react';
 
 async function applyImage(context: CanvasRenderingContext2D, blob: Blob) {
   const img = new Image();
@@ -36,7 +36,7 @@ export function useHistory(size?: number): HistoryHook {
     async (canvas: HTMLCanvasElement) => {
       const undoCursor = crs.current;
       if (!context) {
-        console.error("Context not initialised");
+        console.error('Context not initialised');
         return false;
       }
       if (undoCursor !== 0) {
@@ -47,7 +47,17 @@ export function useHistory(size?: number): HistoryHook {
         canvas.toBlob(resolve)
       );
       if (blob) {
-        stack.current.push(blob);
+        // Check if the canvas dimensions have changed
+        if (
+          stack.current.length === 0 ||
+          canvas.width !== context.canvas.width ||
+          canvas.height !== context.canvas.height
+        ) {
+          // If the dimensions have changed, clear the stack and push the new state
+          stack.current = [blob];
+        } else {
+          stack.current.push(blob);
+        }
       }
       if (size && stack.current.length > size) {
         stack.current = stack.current.slice(-size);
@@ -58,15 +68,16 @@ export function useHistory(size?: number): HistoryHook {
     },
     [crs, stack, context]
   );
+
   const undo = useCallback(async () => {
     const undoCursor = crs.current;
 
     if (!context) {
-      console.error("Context not initialised");
+      console.error('Context not initialised');
       return false;
     }
     if (undoCursor + 1 >= stack.current.length) {
-      console.log("nope");
+      console.log('nope');
       return false;
     }
 
@@ -84,7 +95,7 @@ export function useHistory(size?: number): HistoryHook {
     const undoCursor = crs.current;
 
     if (!context) {
-      console.error("Context not initialised");
+      console.error('Context not initialised');
       return false;
     }
     if (undoCursor <= 0) {
@@ -107,7 +118,7 @@ export function useHistory(size?: number): HistoryHook {
       setContext: (context: CanvasRenderingContext2D) => {
         setContext(context);
       },
-      pushState,
+      pushState
     }),
     [setContext, pushState]
   );

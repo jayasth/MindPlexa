@@ -231,14 +231,18 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         const ctx = artboardRef.context;
         if (ctx) {
           const image = new Image();
-          image.onload = () => {
+          image.onload = async () => {
             ctx.drawImage(image, 0, 0, artboardRef.width, artboardRef.height);
+            // Update the drawing history when the content changes
+            if (history) {
+              await history.pushState(ctx.canvas);
+            }
           };
           image.src = content;
         }
       }
     }
-  }, [content]);
+  }, [content, history]);
 
   const onChangeTitle = (value: string) => {
     handleTitleChange(data.id, value, setTitle);
