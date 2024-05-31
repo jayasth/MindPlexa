@@ -66,6 +66,7 @@ export const Artboard = forwardRef(function Artboard(
   const [canvas, setCanvas] = useState<HTMLCanvasElement>();
   const [drawing, setDrawing] = useState(false);
   const artboardInstance = useRef<ArtboardRef>(null);
+  const [prevContent, setPrevContent] = useState<string | undefined>(content);
 
   const startStroke = useCallback(
     (point: Point) => {
@@ -243,7 +244,15 @@ export const Artboard = forwardRef(function Artboard(
     if (props.onResize) {
       props.onResize();
     }
-  }, [props.width, props.height, props.onResize]);
+    if (canvas && context) {
+      const image = new Image();
+      image.onload = () => {
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+      };
+      image.src = prevContent || '';
+    }
+  }, [props.width, props.height, props.onResize, canvas, context, prevContent]);
 
   useEffect(() => {
     if (onContentChange) {
@@ -266,6 +275,7 @@ export const Artboard = forwardRef(function Artboard(
         }
       }
     }
+    setPrevContent(content);
   }, [content]);
 
   return (
