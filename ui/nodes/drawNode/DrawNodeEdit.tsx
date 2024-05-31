@@ -224,6 +224,22 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     handleArtboardResize();
   }, [nodeWidth, nodeHeight, handleArtboardResize]);
 
+  useEffect(() => {
+    if (content) {
+      const artboardRef = artboardInstance.current;
+      if (artboardRef) {
+        const ctx = artboardRef.context;
+        if (ctx) {
+          const image = new Image();
+          image.onload = () => {
+            ctx.drawImage(image, 0, 0, artboardRef.width, artboardRef.height);
+          };
+          image.src = content;
+        }
+      }
+    }
+  }, [content]);
+
   const onChangeTitle = (value: string) => {
     handleTitleChange(data.id, value, setTitle);
   };
@@ -256,7 +272,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   };
 
   const handleResize = (event, { width, height }) => {
-    handleArtboardResize();
     setNodeWidth(width);
     setNodeHeight(height);
     onNodeResizeStop(data.id, { width, height }, position);

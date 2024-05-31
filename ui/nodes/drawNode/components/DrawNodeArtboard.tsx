@@ -35,6 +35,8 @@ export interface ArtboardRef {
   getImageAsDataUri: (type?: string) => string | undefined;
   clear: () => void;
   context?: CanvasRenderingContext2D | null;
+  width: number;
+  height: number;
 }
 
 export interface ToolHandlers {
@@ -228,7 +230,9 @@ export const Artboard = forwardRef(function Artboard(
       },
       clear,
       getImageAsDataUri: (type?: string) => canvas?.toDataURL(type),
-      context
+      context,
+      width: canvas?.width || 0,
+      height: canvas?.height || 0
     }),
     [canvas, context, clear]
   );

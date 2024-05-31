@@ -27,7 +27,6 @@ const DrawNodeView: React.FC<DrawNodeViewProps> = ({ data, width, height }) => {
     data.textColor || getContrastYIQ(backgroundColor || '#F4F4F4')
   );
 
-  // Ensure text color is updated based on the latest background color
   useEffect(() => {
     const newTextColor = getContrastYIQ(backgroundColor || '#F4F4F4');
     if (textColor !== newTextColor) {
