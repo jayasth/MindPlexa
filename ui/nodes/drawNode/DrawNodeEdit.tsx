@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useRef, CSSProperties } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  CSSProperties,
+  useCallback
+} from 'react';
 import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
 import { useStore } from '@/app/store/useCanvasStore';
 import styles from './DrawNodeEdit.module.css';
@@ -145,6 +151,14 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const sizePickerRef = useRef<HTMLDivElement>(null);
   const backgroundColorPickerRef = useRef<HTMLDivElement>(null);
 
+  const handleArtboardResize = useCallback(() => {
+    const artboardRef = artboardInstance.current;
+    if (artboardRef) {
+      const dataUri = artboardRef.getImageAsDataUri();
+      setContent(dataUri || '');
+    }
+  }, []);
+
   useClickOutside(backgroundColorPickerRef, () =>
     setIsColorPickerVisible(false)
   );
@@ -238,6 +252,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   };
 
   const handleResize = (event, { width, height }) => {
+    handleArtboardResize();
     setNodeWidth(width);
     setNodeHeight(height);
     onNodeResizeStop(data.id, { width, height }, position);
@@ -321,6 +336,8 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
             history={history}
             style={{ border: '1px gray solid' }}
             content={content}
+            width={nodeWidth / 2}
+            height={nodeHeight / 2}
           />
         </div>
       </div>

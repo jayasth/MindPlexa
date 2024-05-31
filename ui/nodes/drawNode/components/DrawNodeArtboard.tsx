@@ -3,7 +3,8 @@ import React, {
   forwardRef,
   useCallback,
   useImperativeHandle,
-  useState
+  useState,
+  useEffect
 } from 'react';
 
 import { History } from '@/ui/nodes/drawNode/drawNodeHistory';
@@ -24,6 +25,9 @@ export interface ArtboardProps
   onEndStroke?: () => void;
   content?: string;
   onContentChange?: (newContent: string) => void;
+  width: number;
+  height: number;
+  onResize?: () => void;
 }
 
 export interface ArtboardRef {
@@ -154,8 +158,10 @@ export const Artboard = forwardRef(function Artboard(
       if (!canvasRef) {
         return;
       }
-      canvasRef.width = canvasRef.offsetWidth;
-      canvasRef.height = canvasRef.offsetHeight;
+      const aspectRatio = 16 / 9;
+      const canvasSize = Math.min(props.width, props.height);
+      canvasRef.width = canvasSize * aspectRatio;
+      canvasRef.height = canvasSize;
       const ctx = canvasRef.getContext('2d');
       setCanvas(canvasRef);
       setContext(ctx);
@@ -165,12 +171,19 @@ export const Artboard = forwardRef(function Artboard(
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, canvasRef.width, canvasRef.height);
       ctx.fillStyle = 'transparent';
+      if (content) {
+        const image = new Image();
+        image.onload = () => {
+          ctx.drawImage(image, 0, 0, canvasRef.width, canvasRef.height);
+        };
+        image.src = content;
+      }
       if (history) {
         history.setContext(ctx);
         history.pushState(canvasRef);
       }
     },
-    [history]
+    [props.width, props.height, content, history]
   );
 
   const mouseEnter = useCallback(
@@ -213,6 +226,12 @@ export const Artboard = forwardRef(function Artboard(
     }),
     [canvas, context, clear]
   );
+
+  useEffect(() => {
+    if (props.onResize) {
+      props.onResize();
+    }
+  }, [props.width, props.height, props.onResize]);
 
   return (
     <canvas
