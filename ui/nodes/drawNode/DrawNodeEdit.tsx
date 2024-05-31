@@ -244,6 +244,19 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     }
   }, [content, history]);
 
+  useEffect(() => {
+    const handleContentUpdate = (event) => {
+      const newContent = event.detail.content;
+      setContent(newContent);
+    };
+
+    window.addEventListener('content-updated', handleContentUpdate);
+
+    return () => {
+      window.removeEventListener('content-updated', handleContentUpdate);
+    };
+  }, []);
+
   const onChangeTitle = (value: string) => {
     handleTitleChange(data.id, value, setTitle);
   };
@@ -358,9 +371,10 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
             ref={artboardInstance}
             history={history}
             style={{ border: '1px gray solid' }}
-            content={content}
+            content={content} // Pass content state to Artboard
             width={nodeWidth / 2}
             height={nodeHeight / 2}
+            onContentChange={setContent} // Pass setContent function to Artboard
           />
         </div>
       </div>

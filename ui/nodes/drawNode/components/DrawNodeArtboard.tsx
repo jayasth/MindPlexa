@@ -102,7 +102,13 @@ export const Artboard = forwardRef(function Artboard(
         history.pushState(canvas);
       }
       if (onContentChange) {
-        onContentChange(canvas?.toDataURL() || '');
+        const newContent = canvas?.toDataURL() || '';
+        onContentChange(newContent);
+        window.dispatchEvent(
+          new CustomEvent('content-updated', {
+            detail: { content: newContent }
+          })
+        );
       }
     }
   }, [tool, context, canvas, history, onEndStroke, onContentChange]);
@@ -160,7 +166,11 @@ export const Artboard = forwardRef(function Artboard(
       history.pushState(canvas);
     }
     if (onContentChange) {
-      onContentChange(canvas?.toDataURL() || '');
+      const newContent = canvas?.toDataURL() || '';
+      onContentChange(newContent);
+      window.dispatchEvent(
+        new CustomEvent('content-updated', { detail: { content: newContent } })
+      );
     }
   }, [context, canvas, history, onContentChange]);
 
@@ -248,7 +258,17 @@ export const Artboard = forwardRef(function Artboard(
       const image = new Image();
       image.onload = () => {
         context.clearRect(0, 0, canvas.width, canvas.height);
-        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+        context.drawImage(
+          image,
+          0,
+          0,
+          image.width,
+          image.height,
+          0,
+          0,
+          canvas.width,
+          canvas.height
+        ); // Draw the image with scaling
       };
       image.src = prevContent || '';
     }
@@ -269,7 +289,17 @@ export const Artboard = forwardRef(function Artboard(
           const image = new Image();
           image.onload = () => {
             ctx.clearRect(0, 0, artboardRef.width, artboardRef.height); // Clear the canvas before drawing
-            ctx.drawImage(image, 0, 0, artboardRef.width, artboardRef.height);
+            ctx.drawImage(
+              image,
+              0,
+              0,
+              image.width,
+              image.height,
+              0,
+              0,
+              artboardRef.width,
+              artboardRef.height
+            ); // Draw the image with scaling
           };
           image.src = content;
         }
