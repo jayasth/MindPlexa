@@ -40,105 +40,105 @@ export const getContrastYIQ = (color: string) => {
 };
 
 export const colorCombinations = [
-  { background: '#333A2F', foreground: '#EBEDDF', name: 'Tea green & moss' },
-  { background: '#832B00', foreground: '#F7E5DA', name: 'Clay & beige' },
+  { background: '#333A2F', text: '#EBEDDF', name: 'Tea green & moss' },
+  { background: '#832B00', text: '#F7E5DA', name: 'Clay & beige' },
   {
     background: '#0033E7',
-    foreground: '#E2E2E2',
+    text: '#E2E2E2',
     name: 'Electric blue & dusty gray'
   },
   {
     background: '#330066',
-    foreground: '#7093FF',
+    text: '#7093FF',
     name: 'Royal purple & periwinkle'
   },
-  { background: '#6497D6', foreground: '#F8F2EB', name: 'Stone blue & sand' },
-  { background: '#333333', foreground: '#AEFFDE', name: 'Neons on black' },
-  { background: '#FCE77D', foreground: '#F96167', name: 'Yellow & red' },
-  { background: '#F9D342', foreground: '#292826', name: 'Yellow & black' },
-  { background: '#4831D4', foreground: '#CCF381', name: 'Blue & green' },
-  { background: '#F0A07C', foreground: '#4A274F', name: 'Orange & purple' },
-  { background: '#8BD8BD', foreground: '#243665', name: 'Blue & turquoise' },
-  { background: '#EC8B5E', foreground: '#141A46', name: 'Orange & blue' },
-  { background: '#8AAAE5', foreground: '#FFFFFF', name: 'Blue & white' },
-  { background: '#FFE67C', foreground: '#295F2D', name: 'Yellow & green' },
-  { background: '#F4A950', foreground: '#161B21', name: 'Orange & black' },
-  { background: '#080A52', foreground: '#ED2188', name: 'Blue & pink' },
+  { background: '#6497D6', text: '#F8F2EB', name: 'Stone blue & sand' },
+  { background: '#333333', text: '#AEFFDE', name: 'Neons on black' },
+  { background: '#FCE77D', text: '#F96167', name: 'Yellow & red' },
+  { background: '#F9D342', text: '#292826', name: 'Yellow & black' },
+  { background: '#4831D4', text: '#CCF381', name: 'Blue & green' },
+  { background: '#F0A07C', text: '#4A274F', name: 'Orange & purple' },
+  { background: '#8BD8BD', text: '#243665', name: 'Blue & turquoise' },
+  { background: '#EC8B5E', text: '#141A46', name: 'Orange & blue' },
+  { background: '#8AAAE5', text: '#FFFFFF', name: 'Blue & white' },
+  { background: '#FFE67C', text: '#295F2D', name: 'Yellow & green' },
+  { background: '#F4A950', text: '#161B21', name: 'Orange & black' },
+  { background: '#080A52', text: '#ED2188', name: 'Blue & pink' },
   {
     background: '#262223',
-    foreground: '#DDC6B6',
+    text: '#DDC6B6',
     name: 'Charcoal grey & taupe'
   },
-  { background: '#AA96DA', foreground: '#C5FAD5', name: 'Light purple & mint' },
+  { background: '#AA96DA', text: '#C5FAD5', name: 'Light purple & mint' },
   {
     background: '#234E70',
-    foreground: '#FBF8BE',
+    text: '#FBF8BE',
     name: 'Royal blue & pale yellow'
   },
-  { background: '#B88746', foreground: '#191919', name: 'Gold & black' },
-  { background: '#533549', foreground: '#F6B042', name: 'Eggplant & yellow' },
+  { background: '#B88746', text: '#191919', name: 'Gold & black' },
+  { background: '#533549', text: '#F6B042', name: 'Eggplant & yellow' },
   {
     background: '#99F443',
-    foreground: '#EC449B',
+    text: '#EC449B',
     name: 'Neon green & fuchsia'
   },
   {
     background: '#EE4E34',
-    foreground: '#FCEDDA',
+    text: '#FCEDDA',
     name: 'Peach & burnt orange'
   },
-  { background: '#DBB98F', foreground: '#96351E', name: 'Beige & rust' },
+  { background: '#DBB98F', text: '#96351E', name: 'Beige & rust' },
   {
     background: '#FBF7F4',
-    foreground: '#53A57D',
+    text: '#53A57D',
     name: 'Linen white & jungle green'
   },
   {
     background: '#FF69B4',
-    foreground: '#00FFFF',
+    text: '#00FFFF',
     name: 'Cyan & bubblegum pink'
   },
-  { background: '#635E87', foreground: '#CFCAA8', name: 'Purple & sage' },
+  { background: '#635E87', text: '#CFCAA8', name: 'Purple & sage' },
   {
     background: '#3A6B35',
-    foreground: '#E3B448',
+    text: '#E3B448',
     name: 'Earthy green & mustard'
   },
-  { background: '#FFA781', foreground: '#FB0E2D', name: 'Peach & maroon' },
+  { background: '#FFA781', text: '#FB0E2D', name: 'Peach & maroon' },
   {
     background: '#ADEFD1FF',
-    foreground: '#00203FFF',
+    text: '#00203FFF',
     name: 'Mint & sailor blue'
   },
   {
     background: '#FCF6F5FF',
-    foreground: '#89ABE3FF',
+    text: '#89ABE3FF',
     name: 'Cream & sky blue'
   },
   {
     background: '#FAD0C9FF',
-    foreground: '#6E6E6DFF',
+    text: '#6E6E6DFF',
     name: 'Pink salt & charcoal gray'
   },
   {
     background: '#D7C49EFF',
-    foreground: '#343148FF',
+    text: '#343148FF',
     name: 'Soybean & eclipse'
   },
-  { background: '#3C1A5B', foreground: '#FFF748', name: 'Purple & yellow' },
-  { background: '#0B4251', foreground: '#87BBD7', name: 'Teal & sky blue' },
-  { background: '#050505', foreground: '#616161', name: 'Black & silver' }
+  { background: '#3C1A5B', text: '#FFF748', name: 'Purple & yellow' },
+  { background: '#0B4251', text: '#87BBD7', name: 'Teal & sky blue' },
+  { background: '#050505', text: '#616161', name: 'Black & silver' }
 ];
 
 export const handleChangeColorWithCombination = (
   id: string,
   backgroundColor: string,
-  foregroundColor: string,
+  textColor: string,
   onChangeColor: (color: string) => void
 ) => {
   const { updateNode } = useStore.getState();
   onChangeColor(backgroundColor);
-  updateNode(id, { data: { backgroundColor, textColor: foregroundColor } });
+  updateNode(id, { data: { backgroundColor, textColor: textColor } });
 };
 
 export const handleTitleChange = (

@@ -141,11 +141,11 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
       (combination) => combination.background === color.hex
     );
     if (selectedCombination) {
-      setTextColor(selectedCombination.foreground);
+      setTextColor(selectedCombination.text);
       handleChangeColorWithCombination(
         data.id,
         selectedCombination.background,
-        selectedCombination.foreground,
+        selectedCombination.text,
         setBackgroundColor
       );
     } else {
