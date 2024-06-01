@@ -10,19 +10,21 @@ import {
 } from 'react-icons/fa';
 import styles from './CommonNodeStyles.module.css';
 
+const ICON_SIZE = 16;
+
 export const SaveButton = ({ onClick }) => (
   <button
     className={styles.actionButton}
     onClick={onClick}
     title="Save to Project"
   >
-    <FaSave size={16} />
+    <FaSave size={ICON_SIZE} />
   </button>
 );
 
 export const DeleteButton = ({ onClick }) => (
   <button className={styles.actionButton} onClick={onClick} title="Delete">
-    <FaTrash size={16} />
+    <FaTrash size={ICON_SIZE} />
   </button>
 );
 
@@ -32,26 +34,26 @@ export const ChangeColorButton = ({ onClick }) => (
     onClick={onClick}
     title="Change Background Color"
   >
-    <FaPalette size={16} />
+    <FaPalette size={ICON_SIZE} />
   </button>
 );
 
 export const AddTagButton = ({ onClick }) => (
   <button className={styles.actionButton} onClick={onClick} title="Add Tag">
-    <FaTags size={16} />
+    <FaTags size={ICON_SIZE} />
   </button>
 );
 
 export const AttachFileButton = ({ onChange }) => (
   <label className={styles.actionButton} title="Attach File">
-    <FaPaperclip size={16} />
+    <FaPaperclip size={ICON_SIZE} />
     <input type="file" className={styles.fileInput} onChange={onChange} />
   </label>
 );
 
 export const CloseButton = ({ onClick }) => (
   <button className={styles.actionButton} onClick={onClick} title="Close">
-    <FaArrowRight size={16} />
+    <FaArrowRight size={ICON_SIZE} />
   </button>
 );
 
@@ -59,6 +61,6 @@ export const DuplicateButton = (
   { onClick } // New Duplicate Button
 ) => (
   <button className={styles.actionButton} onClick={onClick} title="Duplicate">
-    <FaCopy size={16} />
+    <FaCopy size={ICON_SIZE} />
   </button>
 );

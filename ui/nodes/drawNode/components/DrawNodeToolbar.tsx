@@ -51,12 +51,7 @@ const DrawNodeToolbar: React.FC<DrawNodeToolbarProps> = ({
             aria-label={tool.name}
             key={tool.name}
             title={tool.name}
-            className={toolbarStyles.toolbarButton}
-            style={{
-              backgroundColor:
-                currentTool === index ? 'transparent' : 'transparent', // Ensure background is transparent
-              color: 'inherit' // Ensure the icon color inherits the text color
-            }}
+            className={`${toolbarStyles.toolbarButton} ${currentTool === index ? toolbarStyles.selected : ''}`}
             onClick={() => setCurrentTool(index)}
           >
             {<Icon size={14} title={tool.name} />}
