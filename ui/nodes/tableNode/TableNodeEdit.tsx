@@ -26,7 +26,7 @@ import {
   ExportButton,
   ImportButton
 } from '@/ui/nodes/tableNode/TableNodeToolbar';
-import { TwitterPicker } from 'react-color';
+import { CompactPicker } from 'react-color';
 import AddTableModal from '@/ui/nodes/tableNode/AddTableModal';
 import CustomHeader from '@/ui/nodes/tableNode/CustomHeader';
 
@@ -47,9 +47,10 @@ import {
   handleDelete,
   handleAddTag,
   handleAttachFile,
-  handleChangeColor,
+  handleChangeColorWithCombination,
   handleClose,
   handleDuplicate,
+  colorCombinations,
   getContrastYIQ
 } from '@/ui/canvasEditor/utils/CommonNodeFunctions';
 
@@ -136,10 +137,27 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   };
 
   const handleBackgroundColorChange = (color, event) => {
-    const rgbaColor = `rgba(${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b}, ${color.rgb.a})`;
-    const newTextColor = getContrastYIQ(rgbaColor);
-    setTextColor(newTextColor);
-    handleChangeColor(data.id, rgbaColor, setBackgroundColor);
+    const selectedCombination = colorCombinations.find(
+      (combination) => combination.background === color.hex
+    );
+    if (selectedCombination) {
+      setTextColor(selectedCombination.foreground);
+      handleChangeColorWithCombination(
+        data.id,
+        selectedCombination.background,
+        selectedCombination.foreground,
+        setBackgroundColor
+      );
+    } else {
+      const calculatedTextColor = getContrastYIQ(color.hex);
+      setTextColor(calculatedTextColor);
+      handleChangeColorWithCombination(
+        data.id,
+        color.hex,
+        calculatedTextColor,
+        setBackgroundColor
+      );
+    }
   };
 
   const onAddTag = (newTag: string) => {
@@ -222,21 +240,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     backgroundColor,
     color: textColor
   };
-
-  const customColors = [
-    '#FF6900',
-    '#FCB900',
-    '#7BDCB5',
-    '#00D084',
-    '#8ED1FC',
-    '#0693E3',
-    '#ABB8C3',
-    '#EB144C',
-    '#F78DA7',
-    '#9900EF',
-    '#F4F4F4',
-    '#575757'
-  ];
 
   return (
     <div
@@ -328,10 +331,12 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
         <DuplicateButton onClick={() => handleDuplicate(data.id)} />
         {isColorPickerVisible && (
           <div className={`${styles.colorPicker} nodrag`} ref={colorPickerRef}>
-            <TwitterPicker
+            <CompactPicker
               color={backgroundColor}
               onChange={handleBackgroundColorChange}
-              colors={customColors}
+              colors={colorCombinations.map(
+                (combination) => combination.background
+              )}
               styles={{
                 default: {
                   input: {
@@ -340,12 +345,22 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
                   },
                   swatch: {
                     width: '20px',
-                    height: '20px'
+                    height: '20px',
+                    position: 'relative'
                   }
                 }
               }}
               width="180px"
+              className="compact-picker"
             />
+            {colorCombinations.map((combination) => (
+              <div
+                key={combination.background}
+                className="compact-picker__swatch"
+                style={{ backgroundColor: combination.background }}
+                data-name={combination.name}
+              />
+            ))}
           </div>
         )}
       </div>
