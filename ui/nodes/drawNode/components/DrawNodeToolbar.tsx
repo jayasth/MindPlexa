@@ -53,7 +53,9 @@ const DrawNodeToolbar: React.FC<DrawNodeToolbarProps> = ({
             title={tool.name}
             className={toolbarStyles.toolbarButton}
             style={{
-              backgroundColor: currentTool === index ? '#aaaaff' : '#eeeeee'
+              backgroundColor:
+                currentTool === index ? 'transparent' : 'transparent', // Ensure background is transparent
+              color: 'inherit' // Ensure the icon color inherits the text color
             }}
             onClick={() => setCurrentTool(index)}
           >

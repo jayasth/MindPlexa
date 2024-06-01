@@ -1,9 +1,11 @@
 import { useStore } from '@/app/store/useCanvasStore';
 import { nanoid } from 'nanoid';
 import { nodeDimensions } from './nodeProperties';
-
 export const getContrastYIQ = (color: string) => {
-  let r, g, b;
+  let r,
+    g,
+    b,
+    a = 1;
 
   if (color.startsWith('#')) {
     // Hex color
@@ -11,20 +13,30 @@ export const getContrastYIQ = (color: string) => {
     r = parseInt(hex.substring(0, 2), 16);
     g = parseInt(hex.substring(2, 4), 16);
     b = parseInt(hex.substring(4, 6), 16);
+    if (hex.length === 8) {
+      a = parseInt(hex.substring(6, 8), 16) / 255;
+    }
   } else if (color.startsWith('rgb')) {
-    // RGB color
-    const rgb = color.match(/\d+/g);
-    if (rgb) {
-      r = parseInt(rgb[0]);
-      g = parseInt(rgb[1]);
-      b = parseInt(rgb[2]);
+    // RGB or RGBA color
+    const rgba = color.match(/\d+(\.\d+)?/g);
+    if (rgba) {
+      r = parseInt(rgba[0]);
+      g = parseInt(rgba[1]);
+      b = parseInt(rgba[2]);
+      if (rgba[3]) {
+        a = parseFloat(rgba[3]);
+      }
     }
   }
+
+  // Apply alpha to the background color
+  r = Math.round(r * a + 255 * (1 - a));
+  g = Math.round(g * a + 255 * (1 - a));
+  b = Math.round(b * a + 255 * (1 - a));
 
   const yiq = (r * 299 + g * 587 + b * 114) / 1000;
   return yiq >= 128 ? '#575757' : '#F4F4F4';
 };
-
 export const handleTitleChange = (
   id: string,
   title: string,
