@@ -144,6 +144,10 @@ export const useStore = createStore<CanvasState>((set, get) => ({
         const updatedNode = {
           ...existingNode,
           ...data,
+          style: {
+            ...existingNode.style,
+            color: textColor // Ensure textColor is updated in style
+          },
           data: {
             ...existingNode.data,
             ...data.data,

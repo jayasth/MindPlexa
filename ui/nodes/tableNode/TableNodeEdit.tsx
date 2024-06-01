@@ -160,6 +160,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
       );
     }
   };
+
   const onAddTag = (newTag: string) => {
     setTags([...tags, newTag]);
   };

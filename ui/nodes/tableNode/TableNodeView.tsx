@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { NodeProps, Handle, Position } from 'reactflow';
 import { useStore } from '@/app/store/useCanvasStore';
 import styles from './TableNodeView.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 import { FaEdit } from 'react-icons/fa';
-import { getContrastYIQ } from '@/ui/canvasEditor/utils/CommonNodeFunctions';
 
 interface TableNodeViewProps extends NodeProps {
   data: {
@@ -23,21 +22,8 @@ const TableNodeView: React.FC<TableNodeViewProps> = ({
   width,
   height
 }) => {
-  const { title, content, id, backgroundColor } = data;
+  const { title, content, id, backgroundColor, textColor } = data;
   const toggleEditMode = useStore((state) => state.toggleEditMode);
-  const updateNode = useStore((state) => state.updateNode);
-
-  const [textColor, setTextColor] = useState(
-    data.textColor || getContrastYIQ(backgroundColor || '#F4F4F4')
-  );
-
-  useEffect(() => {
-    const newTextColor = getContrastYIQ(backgroundColor || '#F4F4F4');
-    if (textColor !== newTextColor) {
-      setTextColor(newTextColor);
-      updateNode(id, { data: { ...data, textColor: newTextColor } });
-    }
-  }, [backgroundColor, textColor, id, updateNode, data]);
 
   return (
     <div
@@ -57,7 +43,6 @@ const TableNodeView: React.FC<TableNodeViewProps> = ({
         </div>
       </div>
       <div className={styles.contentPreview} style={{ color: textColor }}>
-        {/* Render a simple table preview */}
         {content ? (
           <table>
             <thead>
