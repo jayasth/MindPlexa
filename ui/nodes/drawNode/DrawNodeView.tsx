@@ -4,7 +4,6 @@ import { useStore } from '@/app/store/useCanvasStore';
 import styles from './DrawNodeView.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 import { FaEdit } from 'react-icons/fa';
-import { getContrastYIQ } from '@/ui/canvasEditor/utils/CommonNodeFunctions';
 
 interface DrawNodeViewProps extends NodeProps {
   data: {
@@ -19,21 +18,8 @@ interface DrawNodeViewProps extends NodeProps {
 }
 
 const DrawNodeView: React.FC<DrawNodeViewProps> = ({ data, width, height }) => {
-  const { title, content, id, backgroundColor } = data;
+  const { title, content, id, backgroundColor, textColor } = data;
   const toggleEditMode = useStore((state) => state.toggleEditMode);
-  const updateNode = useStore((state) => state.updateNode);
-
-  const [textColor, setTextColor] = useState(
-    data.textColor || getContrastYIQ(backgroundColor || '#F4F4F4')
-  );
-
-  useEffect(() => {
-    const newTextColor = getContrastYIQ(backgroundColor || '#F4F4F4');
-    if (textColor !== newTextColor) {
-      setTextColor(newTextColor);
-      updateNode(id, { data: { ...data, textColor: newTextColor } });
-    }
-  }, [backgroundColor, textColor, id, updateNode, data]);
 
   return (
     <div className={styles.drawNode} style={{ width, height, backgroundColor }}>

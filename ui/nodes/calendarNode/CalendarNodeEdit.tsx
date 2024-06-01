@@ -26,13 +26,14 @@ import {
   handleSave,
   handleClose,
   handleDelete,
-  handleChangeColor,
+  handleChangeColorWithCombination,
   handleAddTag,
   handleAttachFile,
   handleDuplicate,
-  getContrastYIQ
+  getContrastYIQ,
+  colorCombinations
 } from '@/ui/canvasEditor/utils/CommonNodeFunctions';
-import { SketchPicker } from 'react-color';
+import { CompactPicker } from 'react-color';
 import EventModal from '@/ui/nodes/calendarNode/EventModal';
 import CalendarToolbar from '@/ui/nodes/calendarNode/CalendarToolbar';
 
@@ -81,11 +82,11 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
   const [isColorPickerVisible, setIsColorPickerVisible] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
-  const [view, setView] = useState(data.view || 'month'); // New state for calendar view
+  const [view, setView] = useState(data.view || 'month');
   const [newEvent, setNewEvent] = useState<{ start: Date; end: Date } | null>(
     null
-  ); // New state for new event
-  const [currentDate, setCurrentDate] = useState(new Date()); // New state for current date
+  );
+  const [currentDate, setCurrentDate] = useState(new Date());
 
   const updateNode = useStore((state) => state.updateNode);
   const colorPickerRef = useRef<HTMLDivElement>(null);
@@ -109,11 +110,29 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
     handleTitleChange(data.id, newTitle, setTitle);
   };
 
-  const handleChangeComplete = (color, event) => {
-    const rgbaColor = `rgba(${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b}, ${color.rgb.a})`;
-    const newTextColor = getContrastYIQ(rgbaColor);
-    setTextColor(newTextColor);
-    handleChangeColor(data.id, rgbaColor, setBackgroundColor);
+  const handleBackgroundColorChange = (color: { hex: string }) => {
+    const selectedCombination = colorCombinations.find(
+      (combination) =>
+        combination.background.toLowerCase() === color.hex.toLowerCase()
+    );
+    if (selectedCombination) {
+      setTextColor(selectedCombination.text);
+      handleChangeColorWithCombination(
+        data.id,
+        selectedCombination.background,
+        selectedCombination.text,
+        setBackgroundColor
+      );
+    } else {
+      const calculatedTextColor = getContrastYIQ(color.hex);
+      setTextColor(calculatedTextColor);
+      handleChangeColorWithCombination(
+        data.id,
+        color.hex,
+        calculatedTextColor,
+        setBackgroundColor
+      );
+    }
   };
 
   const onAddTag = (newTag: string) => {
@@ -260,7 +279,7 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
           view={view as Views}
           onEventResize={handleEventResize}
           onEventDrop={handleEventDrop}
-          onView={(newView) => handleViewChange(newView)} // Fix for toolbar buttons
+          onView={(newView) => handleViewChange(newView)}
           date={currentDate}
           onNavigate={(date) => setCurrentDate(date)}
           toolbar={true}
@@ -286,10 +305,36 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
         <DuplicateButton onClick={() => handleDuplicate(data.id)} />
         {isColorPickerVisible && (
           <div className={`${styles.colorPicker} nodrag`} ref={colorPickerRef}>
-            <SketchPicker
+            <CompactPicker
               color={backgroundColor}
-              onChangeComplete={handleChangeComplete}
+              onChange={handleBackgroundColorChange}
+              colors={colorCombinations.map(
+                (combination) => combination.background
+              )}
+              styles={{
+                default: {
+                  input: {
+                    height: '16px',
+                    fontSize: '12px'
+                  },
+                  swatch: {
+                    width: '20px',
+                    height: '20px',
+                    position: 'relative'
+                  }
+                }
+              }}
+              width="180px"
+              className="compact-picker"
             />
+            {colorCombinations.map((combination) => (
+              <div
+                key={combination.background}
+                className="compact-picker__swatch"
+                style={{ backgroundColor: combination.background }}
+                data-name={combination.name}
+              />
+            ))}
           </div>
         )}
       </div>

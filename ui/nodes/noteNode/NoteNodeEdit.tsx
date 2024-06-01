@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, CSSProperties } from 'react';
 import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
-import { SketchPicker } from 'react-color';
+import { CompactPicker } from 'react-color';
 import { useStore } from '@/app/store/useCanvasStore';
 import styles from './NoteNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
@@ -18,10 +18,11 @@ import {
   handleSave,
   handleClose,
   handleDelete,
-  handleChangeColor,
+  handleChangeColorWithCombination,
   handleAddTag,
   handleAttachFile,
   handleDuplicate,
+  colorCombinations,
   getContrastYIQ
 } from '@/ui/canvasEditor/utils/CommonNodeFunctions';
 import Quill from 'quill';
@@ -83,23 +84,19 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         theme: 'snow',
         modules: {
           toolbar: [
-            ['bold', 'italic', 'underline', 'strike'], // toggled buttons
+            ['bold', 'italic', 'underline', 'strike'],
             ['blockquote', 'code-block'],
-
-            [{ header: 1 }, { header: 2 }], // custom button values
+            [{ header: 1 }, { header: 2 }],
             [{ list: 'ordered' }, { list: 'bullet' }],
-            [{ script: 'sub' }, { script: 'super' }], // superscript/subscript
-            [{ indent: '-1' }, { indent: '+1' }], // outdent/indent
-            [{ direction: 'rtl' }], // text direction
-
-            [{ size: ['small', false, 'large', 'huge'] }], // custom dropdown
+            [{ script: 'sub' }, { script: 'super' }],
+            [{ indent: '-1' }, { indent: '+1' }],
+            [{ direction: 'rtl' }],
+            [{ size: ['small', false, 'large', 'huge'] }],
             [{ header: [1, 2, 3, 4, 5, 6, false] }],
-
-            [{ color: [] }, { background: [] }], // dropdown with defaults from theme
+            [{ color: [] }, { background: [] }],
             [{ font: [] }],
             [{ align: [] }],
-
-            ['clean'] // remove formatting button
+            ['clean']
           ]
         }
       });
@@ -154,11 +151,29 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     handleTitleChange(data.id, newTitle, setTitle);
   };
 
-  const handleBackgroundColorChange = (color, event) => {
-    const rgbaColor = `rgba(${color.rgb.r}, ${color.rgb.g}, ${color.rgb.b}, ${color.rgb.a})`;
-    const newTextColor = getContrastYIQ(rgbaColor);
-    setTextColor(newTextColor);
-    handleChangeColor(data.id, rgbaColor, setBackgroundColor);
+  const handleBackgroundColorChange = (color: { hex: string }) => {
+    const selectedCombination = colorCombinations.find(
+      (combination) =>
+        combination.background.toLowerCase() === color.hex.toLowerCase()
+    );
+    if (selectedCombination) {
+      setTextColor(selectedCombination.text);
+      handleChangeColorWithCombination(
+        data.id,
+        selectedCombination.background,
+        selectedCombination.text,
+        setBackgroundColor
+      );
+    } else {
+      const calculatedTextColor = getContrastYIQ(color.hex);
+      setTextColor(calculatedTextColor);
+      handleChangeColorWithCombination(
+        data.id,
+        color.hex,
+        calculatedTextColor,
+        setBackgroundColor
+      );
+    }
   };
 
   const onAddTag = (newTag: string) => {
@@ -210,7 +225,6 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     }
   }, [colorPickerRef]);
 
-  // Define custom CSS properties
   const customStyles: CSSProperties = {
     width: nodeWidth,
     height: nodeHeight,
@@ -270,10 +284,36 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         <DuplicateButton onClick={() => handleDuplicate(data.id)} />
         {isColorPickerVisible && (
           <div className={`${styles.colorPicker} nodrag`} ref={colorPickerRef}>
-            <SketchPicker
+            <CompactPicker
               color={backgroundColor}
-              onBackgroundColorChange={handleBackgroundColorChange}
+              onChange={handleBackgroundColorChange}
+              colors={colorCombinations.map(
+                (combination) => combination.background
+              )}
+              styles={{
+                default: {
+                  input: {
+                    height: '16px',
+                    fontSize: '12px'
+                  },
+                  swatch: {
+                    width: '20px',
+                    height: '20px',
+                    position: 'relative'
+                  }
+                }
+              }}
+              width="180px"
+              className="compact-picker"
             />
+            {colorCombinations.map((combination) => (
+              <div
+                key={combination.background}
+                className="compact-picker__swatch"
+                style={{ backgroundColor: combination.background }}
+                data-name={combination.name}
+              />
+            ))}
           </div>
         )}
       </div>

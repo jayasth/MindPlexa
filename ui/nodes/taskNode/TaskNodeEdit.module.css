@@ -173,6 +173,20 @@
   cursor: pointer;
 }
 
+.colorPicker .compact-picker__swatch:hover::after {
+  content: attr(data-name);
+  position: absolute;
+  top: -20px;
+  left: 0;
+  background: #fff;
+  padding: 2px 4px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 10;
+}
+
 .nodrag {
   -webkit-user-drag: none;
   user-select: none;

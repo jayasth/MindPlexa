@@ -1,10 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { NodeProps, Handle, Position } from 'reactflow';
 import { useStore } from '@/app/store/useCanvasStore';
 import styles from './TaskNodeView.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 import { FaEdit } from 'react-icons/fa';
-import { getContrastYIQ } from '@/ui/canvasEditor/utils/CommonNodeFunctions';
 
 interface TaskNodeViewProps extends NodeProps {
   data: {
@@ -19,21 +18,8 @@ interface TaskNodeViewProps extends NodeProps {
 }
 
 const TaskNodeView: React.FC<TaskNodeViewProps> = ({ data, width, height }) => {
-  const { title, tasks, id, backgroundColor } = data;
+  const { title, tasks, id, backgroundColor, textColor } = data;
   const toggleEditMode = useStore((state) => state.toggleEditMode);
-  const updateNode = useStore((state) => state.updateNode);
-
-  const [textColor, setTextColor] = useState(
-    data.textColor || getContrastYIQ(backgroundColor || '#F4F4F4')
-  );
-
-  useEffect(() => {
-    const newTextColor = getContrastYIQ(backgroundColor || '#F4F4F4');
-    if (textColor !== newTextColor) {
-      setTextColor(newTextColor);
-      updateNode(id, { data: { ...data, textColor: newTextColor } });
-    }
-  }, [backgroundColor, textColor, id, updateNode, data]);
 
   return (
     <div className={styles.taskNode} style={{ width, height, backgroundColor }}>

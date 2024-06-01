@@ -17,11 +17,12 @@ import {
   handleSave,
   handleClose,
   handleDelete,
-  handleChangeColor,
+  handleChangeColorWithCombination,
   handleAddTag,
   handleAttachFile,
   handleDuplicate,
-  getContrastYIQ
+  getContrastYIQ,
+  colorCombinations
 } from '@/ui/canvasEditor/utils/CommonNodeFunctions';
 import {
   DndContext,
@@ -38,7 +39,7 @@ import {
   verticalListSortingStrategy
 } from '@dnd-kit/sortable';
 import { SortableItem } from './SortableItem';
-import { SketchPicker } from 'react-color';
+import { CompactPicker } from 'react-color';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import Button from '@/ui/Button/Button';
 import { getNodeSpecificProperties } from '@/ui/canvasEditor/utils/nodeProperties';
@@ -114,15 +115,45 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
     setIsSelected(selected);
   }, [selected]);
 
+  const handleBackgroundColorChange = (color: { hex: string }) => {
+    const selectedCombination = colorCombinations.find(
+      (combination) =>
+        combination.background.toLowerCase() === color.hex.toLowerCase()
+    );
+    if (selectedCombination) {
+      setTextColor(selectedCombination.text);
+      handleChangeColorWithCombination(
+        data.id,
+        selectedCombination.background,
+        selectedCombination.text,
+        setBackgroundColor
+      );
+    } else {
+      const calculatedTextColor = getContrastYIQ(color.hex);
+      setTextColor(calculatedTextColor);
+      handleChangeColorWithCombination(
+        data.id,
+        color.hex,
+        calculatedTextColor,
+        setBackgroundColor
+      );
+    }
+  };
+
+  const toggleColorPicker = () => {
+    setIsColorPickerVisible(!isColorPickerVisible);
+  };
+
+  const handleClickOutside = (event: MouseEvent) => {
+    if (
+      colorPickerRef.current &&
+      !colorPickerRef.current.contains(event.target as Node)
+    ) {
+      setIsColorPickerVisible(false);
+    }
+  };
+
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        colorPickerRef.current &&
-        !colorPickerRef.current.contains(event.target as Node)
-      ) {
-        setIsColorPickerVisible(false);
-      }
-    };
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
@@ -139,17 +170,6 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
 
   const onAttachFiles = (files: File[]) => {
     setAttachedFiles([...attachedFiles, ...files]);
-  };
-
-  const toggleColorPicker = () => {
-    setIsColorPickerVisible(!isColorPickerVisible);
-  };
-
-  const handleBackgroundColorChange = (color: any) => {
-    const newColor = color.hex;
-    setBackgroundColor(newColor);
-    setTextColor(getContrastYIQ(newColor));
-    handleChangeColor(data.id, newColor, () => {});
   };
 
   const sensors = useSensors(
@@ -310,10 +330,36 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
         <DuplicateButton onClick={() => handleDuplicate(data.id)} />
         {isColorPickerVisible && (
           <div className={`${styles.colorPicker} nodrag`} ref={colorPickerRef}>
-            <SketchPicker
+            <CompactPicker
               color={backgroundColor}
-              onBackgroundColorChange={handleBackgroundColorChange}
+              onChange={handleBackgroundColorChange}
+              colors={colorCombinations.map(
+                (combination) => combination.background
+              )}
+              styles={{
+                default: {
+                  input: {
+                    height: '16px',
+                    fontSize: '12px'
+                  },
+                  swatch: {
+                    width: '20px',
+                    height: '20px',
+                    position: 'relative'
+                  }
+                }
+              }}
+              width="180px"
+              className="compact-picker"
             />
+            {colorCombinations.map((combination) => (
+              <div
+                key={combination.background}
+                className="compact-picker__swatch"
+                style={{ backgroundColor: combination.background }}
+                data-name={combination.name}
+              />
+            ))}
           </div>
         )}
         <button
