@@ -138,7 +138,7 @@ export const handleChangeColorWithCombination = (
 ) => {
   const { updateNode } = useStore.getState();
   onChangeColor(backgroundColor);
-  updateNode(id, { data: { backgroundColor, textColor: textColor } });
+  updateNode(id, { data: { backgroundColor, textColor } });
 };
 
 export const handleTitleChange = (

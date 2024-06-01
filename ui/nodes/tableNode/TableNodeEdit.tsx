@@ -136,9 +136,10 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     handleTitleChange(data.id, newTitle, setTitle);
   };
 
-  const handleBackgroundColorChange = (color, event) => {
+  const handleBackgroundColorChange = (color: { hex: string }) => {
     const selectedCombination = colorCombinations.find(
-      (combination) => combination.background === color.hex
+      (combination) =>
+        combination.background.toLowerCase() === color.hex.toLowerCase()
     );
     if (selectedCombination) {
       setTextColor(selectedCombination.text);
@@ -159,7 +160,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
       );
     }
   };
-
   const onAddTag = (newTag: string) => {
     setTags([...tags, newTag]);
   };
