@@ -1,10 +1,11 @@
 import React from 'react';
 import { FaUndo, FaRedo, FaDownload, FaTrash } from 'react-icons/fa';
-import { HexColorPicker } from 'react-colorful';
+import { HexColorPicker, HexColorInput } from 'react-colorful';
 import { Modal } from 'react-responsive-modal';
 import 'react-responsive-modal/styles.css';
 import Slider from './DrawNodeSlider';
 import toolbarStyles from '@/ui/nodes/drawNode/components/DrawNodeToolbar.module.css';
+import Input from '@/ui/Input/Input';
 
 interface DrawNodeToolbarProps {
   tools: Array<[any, any, number]>;
@@ -75,6 +76,12 @@ const DrawNodeToolbar: React.FC<DrawNodeToolbarProps> = ({
           <Modal open={colorOpen} onClose={() => setColorOpen(false)} center>
             <div ref={colorPickerRef} style={{ padding: '20px' }}>
               <HexColorPicker color={color} onChange={setColor} />
+              <Input
+                className={toolbarStyles.input}
+                variant="slim"
+                value={color}
+                onChange={setColor}
+              />
             </div>
           </Modal>
         </label>
