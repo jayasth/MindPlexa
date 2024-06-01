@@ -128,7 +128,6 @@ export const useStore = createStore<CanvasState>((set, get) => ({
   },
 
   updateNode: (id, data) => {
-    console.log('Store: Pre-update node check:', { id, data });
     set((state) => {
       const existingNodeIndex = state.nodes.findIndex((node) => node.id === id);
       if (existingNodeIndex !== -1) {
@@ -136,22 +135,23 @@ export const useStore = createStore<CanvasState>((set, get) => ({
         const updatedBackgroundColor =
           data.data && data.data.backgroundColor
             ? data.data.backgroundColor
-            : existingNode.data.backgroundColor || '#F4F4F4'; // Default color added here
-        const textColor =
-          parseInt(updatedBackgroundColor.replace('#', ''), 16) > 0xffffff / 2
-            ? '#575757'
-            : '#F4F4F4';
+            : existingNode.data.backgroundColor || '#F4F4F4';
+        const updatedTextColor =
+          data.data && data.data.textColor
+            ? data.data.textColor
+            : existingNode.data.textColor || '#575757'; // Default text color if not provided
+
         const updatedNode = {
           ...existingNode,
           ...data,
           style: {
             ...existingNode.style,
-            color: textColor // Ensure textColor is updated in style
+            color: updatedTextColor // Ensure textColor is updated in style
           },
           data: {
             ...existingNode.data,
             ...data.data,
-            textColor: textColor // Computed text color based on updated background color
+            textColor: updatedTextColor // Ensure textColor is updated in data
           },
           position: data.position || existingNode.position,
           width: data.width !== undefined ? data.width : existingNode.width,
@@ -159,11 +159,9 @@ export const useStore = createStore<CanvasState>((set, get) => ({
           selected:
             data.selected !== undefined ? data.selected : existingNode.selected
         };
-        console.log('Store: Updated node data:', updatedNode);
         const updatedNodes = [...state.nodes];
         updatedNodes[existingNodeIndex] = updatedNode;
         state.nodeInternals.set(id, updatedNode);
-        console.log('Store: Updated node:', updatedNode);
         return { nodes: updatedNodes };
       }
       return state;

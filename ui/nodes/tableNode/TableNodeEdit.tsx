@@ -161,6 +161,9 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     }
   };
 
+  console.log(`TableNodeEdit: Background color changed to: ${backgroundColor}`);
+  console.log(`TableNodeEdit: Text color changed to: ${textColor}`);
+
   const onAddTag = (newTag: string) => {
     setTags([...tags, newTag]);
   };

@@ -25,6 +25,10 @@ const TableNodeView: React.FC<TableNodeViewProps> = ({
   const { title, content, id, backgroundColor, textColor } = data;
   const toggleEditMode = useStore((state) => state.toggleEditMode);
 
+  console.log(
+    `TableNodeView: backgroundColor = ${backgroundColor}, textColor = ${textColor}`
+  );
+
   return (
     <div
       className={styles.tableNode}

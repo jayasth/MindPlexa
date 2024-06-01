@@ -141,6 +141,10 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     const { view, edit } = nodeComponents[node.type];
     const NodeComponent = node.isEditing ? edit : view;
 
+    console.log(
+      `NodeRenderer: Rendering ${node.type} with background color: ${node.data.backgroundColor}, text color: ${node.data.textColor}`
+    );
+
     return (
       <NodeComponent
         {...commonProps}
