@@ -298,8 +298,10 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
                 key={index}
                 className={styles.tag}
                 style={{ color: textColor }}
+                onClick={() => onRemoveTag(tag)}
               >
-                #{tag}
+                #{tag}{' '}
+                <button className={styles.removeTagButton}>&times;</button>
               </span>
             ))}
           </div>
