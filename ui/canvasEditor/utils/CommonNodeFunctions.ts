@@ -247,6 +247,23 @@ export const handleAttachFile = (
   }
 };
 
+export const handleRemoveFile = (
+  id: string,
+  fileToRemove: File | string,
+  callback: () => void
+) => {
+  const { updateNode } = useStore.getState();
+  const existingFiles =
+    useStore.getState().nodes.find((n) => n.id === id)?.data?.attachedFiles ||
+    [];
+  const updatedFiles = existingFiles.filter((file) => file !== fileToRemove);
+
+  updateNode(id, {
+    data: { attachedFiles: updatedFiles }
+  });
+  callback();
+};
+
 export const handleDuplicate = (id: string) => {
   const { nodes, addNode, setSelectedNodes } = useStore.getState();
   const nodeToDuplicate = nodes.find((node) => node.id === id);
