@@ -299,10 +299,10 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         <SaveButton
           onClick={() =>
             handleSave(data.id, () => {}, {
+              ...data,
               title,
               content,
-              tags,
-              attachedFiles
+              tags
             })
           }
         />
@@ -362,11 +362,18 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         isOpen={isTagModalOpen}
         onClose={() => setIsTagModalOpen(false)}
         onAddTag={(newTags) => {
-          setTags([...tags, ...newTags]);
-          handleAddTag(data.id, [...tags, ...newTags], (tag) =>
+          const uniqueTags = [...new Set([...tags, ...newTags])];
+          setTags(uniqueTags);
+          handleAddTag(data.id, uniqueTags, (tag) =>
             setTags((prev) => [...prev, tag])
           );
         }}
+        onRemoveTag={(tagToRemove) => {
+          const updatedTags = tags.filter((tag) => tag !== tagToRemove);
+          setTags(updatedTags);
+          handleAddTag(data.id, updatedTags, () => {});
+        }}
+        existingTags={tags}
       />
     </div>
   );

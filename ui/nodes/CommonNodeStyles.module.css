@@ -11,3 +11,27 @@
 .fileInput {
   display: none;
 }
+
+.tagList {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.tag {
+  background-color: #e0e0e0;
+  border-radius: 4px;
+  padding: 4px 8px;
+  margin-right: 8px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+}
+
+.removeTagButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-left: 4px;
+  color: #888;
+}

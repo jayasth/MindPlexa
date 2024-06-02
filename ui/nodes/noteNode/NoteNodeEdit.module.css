@@ -45,19 +45,6 @@
   padding: 4px;
 }
 
-.actionButton {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  margin-left: 4px;
-  color: inherit;
-}
-
-.fileInput {
-  display: none;
-}
-
 .noteContent {
   flex-grow: 1;
   overflow: auto;
@@ -82,14 +69,6 @@
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
-}
-
-.tag {
-  background-color: transparent;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 12px;
-  cursor: pointer;
 }
 
 .fileContainer {

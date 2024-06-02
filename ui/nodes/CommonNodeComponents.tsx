@@ -67,11 +67,20 @@ export const DuplicateButton = ({ onClick }) => (
   </button>
 );
 
-export const TagModal = ({ isOpen, onClose, onAddTag }) => {
+export const TagModal = ({
+  isOpen,
+  onClose,
+  onAddTag,
+  onRemoveTag,
+  existingTags
+}) => {
   const [newTags, setNewTags] = useState('');
 
   const handleAddTags = () => {
-    const tagList = newTags.split(',').map((tag) => tag.trim());
+    const tagList = newTags
+      .split(',')
+      .map((tag) => tag.trim())
+      .filter((tag) => tag !== '');
     onAddTag(tagList);
     setNewTags('');
     onClose();
@@ -89,6 +98,19 @@ export const TagModal = ({ isOpen, onClose, onAddTag }) => {
       <Button variant="slim" onClick={handleAddTags}>
         Add Tags
       </Button>
+      <div className={styles.tagList}>
+        {existingTags.map((tag) => (
+          <div key={tag} className={styles.tag}>
+            <span>#{tag}</span>
+            <button
+              className={styles.removeTagButton}
+              onClick={() => onRemoveTag(tag)}
+            >
+              &times;
+            </button>
+          </div>
+        ))}
+      </div>
     </Modal>
   );
 };
