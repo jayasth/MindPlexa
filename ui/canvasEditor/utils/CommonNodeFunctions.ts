@@ -205,42 +205,42 @@ export const handleAddTag = (
 
 export const handleAttachFile = (
   id: string,
-  onAttachFile: (files: File[]) => void
+  files: File[],
+  callback: () => void
 ) => {
-  return (e: React.ChangeEvent<HTMLInputElement>) => {
-    const maxFiles = 3;
-    const maxFileSize = 2 * 1024 * 1024; // 2 MB in bytes
-    const allowedFileTypes = [
-      'image/jpeg',
-      'image/png',
-      'application/pdf',
-      'text/plain'
-    ];
+  const { updateNode } = useStore.getState();
+  const maxFileSize = 2 * 1024 * 1024; // 2 MB in bytes
+  const allowedFileTypes = [
+    'image/jpeg',
+    'image/png',
+    'application/pdf',
+    'text/plain'
+  ];
 
-    if (e.target.files) {
-      const files = Array.from(e.target.files).slice(0, maxFiles);
-      const validFiles = files.filter((file) => {
-        return allowedFileTypes.includes(file.type) && file.size <= maxFileSize;
-      });
+  const validFiles = files.filter((file) => {
+    return allowedFileTypes.includes(file.type) && file.size <= maxFileSize;
+  });
 
-      if (validFiles.length > 0) {
-        onAttachFile(validFiles);
-        const { updateNode } = useStore.getState();
-        const existingFiles =
-          useStore.getState().nodes.find((n) => n.id === id)?.data
-            ?.attachedFiles || [];
-        updateNode(id, {
-          data: { attachedFiles: [...existingFiles, ...validFiles] }
-        });
-        return validFiles;
-      } else {
-        alert(
-          'Please select valid files. Only JPEG, PNG, PDF, and TXT files under 2MB.'
-        );
-      }
+  if (validFiles.length > 0) {
+    const existingFiles =
+      useStore.getState().nodes.find((n) => n.id === id)?.data?.attachedFiles ||
+      [];
+    const allFiles = [...existingFiles, ...validFiles];
+
+    if (allFiles.length > 10) {
+      alert('You can attach a maximum of 10 files.');
+      return;
     }
-    return null;
-  };
+
+    updateNode(id, {
+      data: { attachedFiles: allFiles }
+    });
+    callback();
+  } else {
+    alert(
+      'Please select valid files. Only JPEG, PNG, PDF, and TXT files under 2MB.'
+    );
+  }
 };
 
 export const handleDuplicate = (id: string) => {

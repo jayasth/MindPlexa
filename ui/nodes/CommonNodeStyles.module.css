@@ -40,3 +40,32 @@
   color: #888;
   font-size: 12px;
 }
+
+.fileList {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 8px;
+  max-width: 400px;
+  max-height: 200px;
+  overflow: auto;
+}
+
+.file {
+  background-color: #e0e0e0;
+  border-radius: 4px;
+  padding: 2px 6px;
+  margin-right: 8px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+}
+
+.removeFileButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-left: 4px;
+  color: #888;
+  font-size: 12px;
+}

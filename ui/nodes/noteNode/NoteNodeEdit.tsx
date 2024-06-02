@@ -12,7 +12,8 @@ import {
   AttachFileButton,
   CloseButton,
   DuplicateButton,
-  TagModal
+  TagModal,
+  FileModal
 } from '@/ui/nodes/CommonNodeComponents';
 import {
   handleTitleChange,
@@ -74,6 +75,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   const [nodeHeight, setNodeHeight] = useState(height);
   const [isColorPickerVisible, setIsColorPickerVisible] = useState(false);
   const [isTagModalOpen, setIsTagModalOpen] = useState(false);
+  const [isFileModalOpen, setIsFileModalOpen] = useState(false);
 
   const updateNode = useStore((state) => state.updateNode);
   const colorPickerRef = useRef<HTMLDivElement>(null);
@@ -197,6 +199,12 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   const onAttachFiles = (files: File[]) => {
     setAttachedFiles(files);
   };
+
+ const onRemoveFile = (fileToRemove: File) => {
+    const updatedFiles = attachedFiles.filter((file) => file !== fileToRemove);
+    setAttachedFiles(updatedFiles);
+    handleAttachFile(data.id, updatedFiles, () => {});
+  }; 
 
   useEffect(() => {
     setNodeWidth(width);
@@ -323,9 +331,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         <DeleteButton onClick={() => handleDelete(data.id, () => {})} />
         <ChangeColorButton onClick={() => toggleColorPicker()} />
         <AddTagButton onClick={() => setIsTagModalOpen(true)} />
-        <AttachFileButton
-          onChange={(e) => handleAttachFile(data.id, onAttachFiles)(e)}
-        />
+        <AttachFileButton onClick={() => setIsFileModalOpen(true)} />
         <DuplicateButton onClick={() => handleDuplicate(data.id)} />
         {isColorPickerVisible && (
           <div className={`${styles.colorPicker} nodrag`} ref={colorPickerRef}>
@@ -378,6 +384,13 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         onAddTag={onAddTag}
         onRemoveTag={onRemoveTag}
         existingTags={tags}
+      />
+      <FileModal
+        isOpen={isFileModalOpen}
+        onClose={() => setIsFileModalOpen(false)}
+        onAttachFiles={onAttachFiles}
+        onRemoveFile={onRemoveFile}
+        existingFiles={attachedFiles}
       />
     </div>
   );

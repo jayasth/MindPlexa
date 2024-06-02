@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   FaSave,
   FaTrash,
@@ -48,11 +48,10 @@ export const AddTagButton = ({ onClick }) => (
   </button>
 );
 
-export const AttachFileButton = ({ onChange }) => (
-  <label className={styles.actionButton} title="Attach File">
+export const AttachFileButton = ({ onClick }) => (
+  <button className={styles.actionButton} onClick={onClick} title="Attach File">
     <FaPaperclip size={ICON_SIZE} />
-    <input type="file" className={styles.fileInput} onChange={onChange} />
-  </label>
+  </button>
 );
 
 export const CloseButton = ({ onClick }) => (
@@ -104,6 +103,84 @@ export const TagModal = ({
             <button
               className={styles.removeTagButton}
               onClick={() => onRemoveTag(tag)}
+            >
+              &times;
+            </button>
+          </div>
+        ))}
+      </div>
+    </Modal>
+  );
+};
+
+export const FileModal = ({
+  isOpen,
+  onClose,
+  onAttachFiles,
+  onRemoveFile,
+  existingFiles
+}) => {
+  const [newFiles, setNewFiles] = useState<File[]>([]);
+  const [fileUrl, setFileUrl] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const files = Array.from(e.target.files);
+      setNewFiles((prevFiles) => [...prevFiles, ...files]);
+    }
+  };
+
+  const handleAddFiles = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleAddFileUrl = () => {
+    if (fileUrl) {
+      const fileName = fileUrl.split('/').pop() || 'file';
+      const file = new File([fileUrl], fileName, { type: 'text/plain' });
+      const allFiles = [...existingFiles, file];
+      if (allFiles.length > 10) {
+        alert('You can attach a maximum of 10 files.');
+        return;
+      }
+      onAttachFiles(allFiles);
+      setFileUrl('');
+    }
+  };
+
+  return (
+    <Modal open={isOpen} onClose={onClose} center>
+      <h2>Attach Files</h2>
+      <input
+        type="file"
+        multiple
+        onChange={handleFileChange}
+        className={styles.fileInput}
+        ref={fileInputRef}
+        style={{ display: 'none' }}
+      />
+      <Button variant="slim" onClick={handleAddFiles}>
+        Add Files
+      </Button>
+      <Input
+        variant="slim"
+        value={fileUrl}
+        onChange={(value) => setFileUrl(value)}
+        placeholder="Enter file URL"
+      />
+      <Button variant="slim" onClick={handleAddFileUrl}>
+        Add File from URL
+      </Button>
+      <div className={styles.fileList}>
+        {existingFiles.map((file, index) => (
+          <div key={index} className={styles.file}>
+            <span>{file.name}</span>
+            <button
+              className={styles.removeFileButton}
+              onClick={() => onRemoveFile(file)}
             >
               &times;
             </button>
