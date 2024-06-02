@@ -8,9 +8,11 @@ import {
   FaArrowRight,
   FaCopy
 } from 'react-icons/fa';
-import { Modal } from 'react-responsive-modal';
+import Modal from 'react-responsive-modal';
 import 'react-responsive-modal/styles.css';
 import styles from './CommonNodeStyles.module.css';
+import Input from '@/ui/Input/Input';
+import Button from '@/ui/Button/Button';
 
 const ICON_SIZE = 16;
 
@@ -78,13 +80,15 @@ export const TagModal = ({ isOpen, onClose, onAddTag }) => {
   return (
     <Modal open={isOpen} onClose={onClose} center>
       <h2>Add Tags</h2>
-      <input
-        type="text"
+      <Input
+        variant="slim"
         value={newTags}
-        onChange={(e) => setNewTags(e.target.value)}
+        onChange={(value) => setNewTags(value)}
         placeholder="Enter tags, separated by commas"
       />
-      <button onClick={handleAddTags}>Add Tags</button>
+      <Button variant="slim" onClick={handleAddTags}>
+        Add Tags
+      </Button>
     </Modal>
   );
 };

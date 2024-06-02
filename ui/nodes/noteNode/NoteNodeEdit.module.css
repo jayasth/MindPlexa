@@ -85,7 +85,7 @@
 }
 
 .tag {
-  background-color: #e0e0e0;
+  background-color: transparent;
   padding: 2px 6px;
   border-radius: 4px;
   font-size: 12px;
@@ -99,7 +99,7 @@
 }
 
 .file {
-  background-color: #e0e0e0;
+  background-color: transparent;
   padding: 2px 6px;
   border-radius: 4px;
   font-size: 12px;
