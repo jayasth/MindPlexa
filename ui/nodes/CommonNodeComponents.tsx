@@ -146,8 +146,7 @@ export const FileModal = ({
     if (fileUrl) {
       try {
         new URL(fileUrl); // Validate URL
-        const fileName = fileUrl.split('/').pop() || 'file';
-        const file = new File([fileUrl], fileName, { type: 'text/plain' });
+        const file = new File([fileUrl], fileUrl, { type: 'text/plain' });
         const allFiles = [...existingFiles, file];
         if (allFiles.length > 10) {
           alert('You can attach a maximum of 10 files.');
