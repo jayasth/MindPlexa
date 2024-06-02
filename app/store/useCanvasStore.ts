@@ -139,19 +139,30 @@ export const useStore = createStore<CanvasState>((set, get) => ({
         const updatedTextColor =
           data.data && data.data.textColor
             ? data.data.textColor
-            : existingNode.data.textColor || '#575757'; // Default text color if not provided
+            : existingNode.data.textColor || '#575757';
+
+        const updatedTags =
+          data.data && data.data.tags
+            ? data.data.tags
+            : existingNode.data.tags || [];
+        const updatedAttachedFiles =
+          data.data && data.data.attachedFiles
+            ? data.data.attachedFiles
+            : existingNode.data.attachedFiles || [];
 
         const updatedNode = {
           ...existingNode,
           ...data,
           style: {
             ...existingNode.style,
-            color: updatedTextColor // Ensure textColor is updated in style
+            color: updatedTextColor
           },
           data: {
             ...existingNode.data,
             ...data.data,
-            textColor: updatedTextColor // Ensure textColor is updated in data
+            textColor: updatedTextColor,
+            tags: updatedTags,
+            attachedFiles: updatedAttachedFiles
           },
           position: data.position || existingNode.position,
           width: data.width !== undefined ? data.width : existingNode.width,

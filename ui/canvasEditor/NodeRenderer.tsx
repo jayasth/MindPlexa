@@ -104,11 +104,15 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     if (node.type !== 'selectionMenu') {
       toggleEditMode(id);
       const newSize = getNodeSpecificProperties(node.type, !node.isEditing);
-      updateNode(id, newSize);
+      updateNode(id, {
+        ...newSize,
+        data: {
+          ...node.data,
+          tags: node.data.tags || [],
+          attachedFiles: node.data.attachedFiles || []
+        }
+      });
       onNodeResizeStop(id, newSize, node.position);
-      console.log(
-        `NodeRenderer: Edit toggle for node ${id}: new size = width: ${newSize.width}, height = ${newSize.height}, position = x: ${node.position.x}, y: ${node.position.y}`
-      );
     }
   };
 

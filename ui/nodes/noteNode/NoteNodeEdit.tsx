@@ -179,8 +179,9 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   };
 
   const onAddTag = (newTags: string[]) => {
-    setTags((prevTags) => [...prevTags, ...newTags]);
-    handleAddTag(data.id, [...tags, ...newTags], (tag) =>
+    const uniqueTags = Array.from(new Set([...tags, ...newTags]));
+    setTags(uniqueTags);
+    handleAddTag(data.id, uniqueTags, (tag) =>
       setTags((prev) => [...prev, tag])
     );
   };
@@ -362,7 +363,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         isOpen={isTagModalOpen}
         onClose={() => setIsTagModalOpen(false)}
         onAddTag={(newTags) => {
-          const uniqueTags = [...new Set([...tags, ...newTags])];
+          const uniqueTags = Array.from(new Set([...tags, ...newTags]));
           setTags(uniqueTags);
           handleAddTag(data.id, uniqueTags, (tag) =>
             setTags((prev) => [...prev, tag])

@@ -83,7 +83,6 @@ export const TagModal = ({
       .filter((tag) => tag !== '');
     onAddTag(tagList);
     setNewTags('');
-    onClose();
   };
 
   return (
