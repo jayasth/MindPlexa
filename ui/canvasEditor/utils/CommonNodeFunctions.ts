@@ -198,13 +198,9 @@ export const handleAddTag = (
   tags: string[],
   onAddTag: (tag: string) => void
 ) => {
-  const newTags = prompt('Enter new tags (comma separated)');
-  if (newTags) {
-    const tagList = newTags.split(',').map((tag) => tag.trim());
-    tagList.forEach((tag) => onAddTag(tag));
-    const { updateNode } = useStore.getState();
-    updateNode(id, { data: { tags: [...tags, ...tagList] } });
-  }
+  const { updateNode } = useStore.getState();
+  updateNode(id, { data: { tags } });
+  tags.forEach((tag) => onAddTag(tag));
 };
 
 export const handleAttachFile = (

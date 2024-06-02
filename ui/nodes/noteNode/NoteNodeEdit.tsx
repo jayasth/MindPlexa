@@ -11,7 +11,8 @@ import {
   AddTagButton,
   AttachFileButton,
   CloseButton,
-  DuplicateButton
+  DuplicateButton,
+  TagModal
 } from '@/ui/nodes/CommonNodeComponents';
 import {
   handleTitleChange,
@@ -68,6 +69,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   const [nodeWidth, setNodeWidth] = useState(width);
   const [nodeHeight, setNodeHeight] = useState(height);
   const [isColorPickerVisible, setIsColorPickerVisible] = useState(false);
+  const [isTagModalOpen, setIsTagModalOpen] = useState(false);
 
   const updateNode = useStore((state) => state.updateNode);
   const colorPickerRef = useRef<HTMLDivElement>(null);
@@ -176,8 +178,11 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     }
   };
 
-  const onAddTag = (newTag: string) => {
-    setTags([...tags, newTag]);
+  const onAddTag = (newTags: string[]) => {
+    setTags((prevTags) => [...prevTags, ...newTags]);
+    handleAddTag(data.id, [...tags, ...newTags], (tag) =>
+      setTags((prev) => [...prev, tag])
+    );
   };
 
   const onAttachFiles = (files: File[]) => {
@@ -303,7 +308,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         />
         <DeleteButton onClick={() => handleDelete(data.id, () => {})} />
         <ChangeColorButton onClick={() => toggleColorPicker()} />
-        <AddTagButton onClick={() => handleAddTag(data.id, tags, onAddTag)} />
+        <AddTagButton onClick={() => setIsTagModalOpen(true)} />
         <AttachFileButton
           onChange={(e) => handleAttachFile(data.id, onAttachFiles)(e)}
         />
@@ -352,6 +357,16 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         type="source"
         position={Position.Bottom}
         className={`${edgeStyles.reactFlowHandle} ${edgeStyles.reactFlowHandleBottom}`}
+      />
+      <TagModal
+        isOpen={isTagModalOpen}
+        onClose={() => setIsTagModalOpen(false)}
+        onAddTag={(newTags) => {
+          setTags([...tags, ...newTags]);
+          handleAddTag(data.id, [...tags, ...newTags], (tag) =>
+            setTags((prev) => [...prev, tag])
+          );
+        }}
       />
     </div>
   );
