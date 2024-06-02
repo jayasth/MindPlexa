@@ -247,10 +247,10 @@ export const handleAttachFile = (
   }
 };
 
-export const handleRemoveFile = (
+export const handleRemoveAttachedFile = (
   id: string,
   fileToRemove: File | string,
-  callback: () => void
+  onRemoveFile: (file: File | string) => void
 ) => {
   const { updateNode } = useStore.getState();
   const existingFiles =
@@ -261,7 +261,7 @@ export const handleRemoveFile = (
   updateNode(id, {
     data: { attachedFiles: updatedFiles }
   });
-  callback();
+  onRemoveFile(fileToRemove);
 };
 
 export const handleDuplicate = (id: string) => {

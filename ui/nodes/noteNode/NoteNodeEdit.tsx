@@ -22,7 +22,7 @@ import {
   handleDelete,
   handleChangeColorWithCombination,
   handleAddTag,
-  handleAttachFile,
+  handleRemoveAttachedFile,
   handleDuplicate,
   colorCombinations,
   getContrastYIQ
@@ -201,9 +201,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   };
 
   const onRemoveFile = (fileToRemove: File) => {
-    const updatedFiles = attachedFiles.filter((file) => file !== fileToRemove);
-    setAttachedFiles(updatedFiles);
-    handleAttachFile(data.id, updatedFiles, () => {});
+    handleRemoveAttachedFile(data.id, fileToRemove, () => {});
   };
 
   useEffect(() => {
@@ -425,6 +423,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         onAttachFiles={onAttachFiles}
         onRemoveFile={onRemoveFile}
         existingFiles={attachedFiles}
+        data={data}
       />
     </div>
   );

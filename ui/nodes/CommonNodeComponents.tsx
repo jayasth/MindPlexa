@@ -13,6 +13,7 @@ import 'react-responsive-modal/styles.css';
 import styles from './CommonNodeStyles.module.css';
 import Input from '@/ui/Input/Input';
 import Button from '@/ui/Button/Button';
+import { handleRemoveAttachedFile } from '@/ui/canvasEditor/utils/CommonNodeFunctions';
 
 const ICON_SIZE = 16;
 
@@ -119,7 +120,8 @@ export const FileModal = ({
   onClose,
   onAttachFiles,
   onRemoveFile,
-  existingFiles
+  existingFiles,
+  data
 }) => {
   const [fileUrl, setFileUrl] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -225,7 +227,7 @@ export const FileModal = ({
             </span>
             <button
               className={styles.removeFileButton}
-              onClick={() => onRemoveFile(file)}
+              onClick={() => handleRemoveAttachedFile(data.id, file, () => {})}
             >
               &times;
             </button>
