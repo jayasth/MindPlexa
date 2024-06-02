@@ -337,15 +337,31 @@ export const handleDuplicate = (id: string) => {
 export const handleAttachmentPreview = (fileOrUrl: File | string) => {
   const previewWindow = document.createElement('div');
   previewWindow.style.position = 'fixed';
-  previewWindow.style.bottom = '10px';
-  previewWindow.style.right = '10px';
-  previewWindow.style.width = '300px';
-  previewWindow.style.height = '200px';
+  previewWindow.style.maxWidth = '300px'; // Set a maximum width for the preview window
+  previewWindow.style.maxHeight = '200px'; // Set a maximum height for the preview window
   previewWindow.style.backgroundColor = 'white';
   previewWindow.style.border = '1px solid #ccc';
   previewWindow.style.boxShadow = '0 0 10px rgba(0,0,0,0.1)';
   previewWindow.style.zIndex = '1000';
+  previewWindow.style.overflow = 'hidden'; // Add overflow: hidden to prevent content from spilling out
   previewWindow.className = 'file-preview';
+
+  const handleMouseMove = (event: MouseEvent) => {
+    const { clientX, clientY } = event;
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+    const previewWidth = previewWindow.offsetWidth;
+    const previewHeight = previewWindow.offsetHeight;
+
+    // Calculate the position to keep the preview window within the viewport
+    const left = Math.min(clientX + 20, windowWidth - previewWidth - 20);
+    const top = Math.min(clientY + 20, windowHeight - previewHeight - 20);
+
+    previewWindow.style.left = `${left}px`;
+    previewWindow.style.top = `${top}px`;
+  };
+
+  document.addEventListener('mousemove', handleMouseMove);
 
   if (typeof fileOrUrl === 'string') {
     // Handle URL preview
@@ -358,36 +374,19 @@ export const handleAttachmentPreview = (fileOrUrl: File | string) => {
   } else {
     // Handle file preview
     const fileURL = URL.createObjectURL(fileOrUrl);
-    const iframe = document.createElement('iframe');
-    iframe.src = fileURL;
-    iframe.style.width = '100%';
-    iframe.style.height = '100%';
-    iframe.style.border = 'none';
-    previewWindow.appendChild(iframe);
+    const img = document.createElement('img');
+    img.src = fileURL;
+    img.style.maxWidth = '100%';
+    img.style.maxHeight = '100%';
+    img.style.objectFit = 'contain'; // Resize the image to fit within the preview window
+    previewWindow.appendChild(img);
   }
 
   document.body.appendChild(previewWindow);
-};
 
-export const useHoverPreview = (fileOrUrl: File | string) => {
-  const [isHovered, setIsHovered] = useState(false);
-
-  const handleMouseEnter = () => {
-    setIsHovered(true);
-    handleAttachmentPreview(fileOrUrl);
-  };
-
-  const handleMouseLeave = () => {
-    setIsHovered(false);
-    const preview = document.querySelector('.file-preview');
-    if (preview) {
-      document.body.removeChild(preview);
-    }
-  };
-
-  return {
-    isHovered,
-    handleMouseEnter,
-    handleMouseLeave
+  // Clean up event listener and preview window when the component unmounts
+  return () => {
+    document.removeEventListener('mousemove', handleMouseMove);
+    document.body.removeChild(previewWindow);
   };
 };
