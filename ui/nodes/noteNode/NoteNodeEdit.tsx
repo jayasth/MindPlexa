@@ -36,6 +36,8 @@ interface NoteNodeEditProps extends NodeProps {
     title?: string;
     backgroundColor?: string;
     textColor?: string;
+    tags?: string[];
+    attachedFiles?: File[];
   };
   width: number;
   height: number;
@@ -63,8 +65,10 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     data.backgroundColor || '#F4F4F4'
   );
   const [textColor, setTextColor] = useState(data.textColor || '#575757');
-  const [tags, setTags] = useState<string[]>([]);
-  const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
+  const [tags, setTags] = useState<string[]>(data.tags || []);
+  const [attachedFiles, setAttachedFiles] = useState<File[]>(
+    data.attachedFiles || []
+  );
   const [isContainerSelected, setIsContainerSelected] = useState(false);
   const [nodeWidth, setNodeWidth] = useState(width);
   const [nodeHeight, setNodeHeight] = useState(height);
@@ -181,9 +185,13 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   const onAddTag = (newTags: string[]) => {
     const uniqueTags = Array.from(new Set([...tags, ...newTags]));
     setTags(uniqueTags);
-    handleAddTag(data.id, uniqueTags, (tag) =>
-      setTags((prev) => [...prev, tag])
-    );
+    handleAddTag(data.id, uniqueTags, () => {});
+  };
+
+  const onRemoveTag = (tagToRemove: string) => {
+    const updatedTags = tags.filter((tag) => tag !== tagToRemove);
+    setTags(updatedTags);
+    handleAddTag(data.id, updatedTags, () => {});
   };
 
   const onAttachFiles = (files: File[]) => {
@@ -194,6 +202,11 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     setNodeWidth(width);
     setNodeHeight(height);
   }, [width, height]);
+
+  useEffect(() => {
+    setTags(data.tags || []);
+    setAttachedFiles(data.attachedFiles || []);
+  }, [data.tags, data.attachedFiles]);
 
   const handleResize = (event, { width, height }) => {
     setNodeWidth(width);
@@ -362,18 +375,8 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
       <TagModal
         isOpen={isTagModalOpen}
         onClose={() => setIsTagModalOpen(false)}
-        onAddTag={(newTags) => {
-          const uniqueTags = Array.from(new Set([...tags, ...newTags]));
-          setTags(uniqueTags);
-          handleAddTag(data.id, uniqueTags, (tag) =>
-            setTags((prev) => [...prev, tag])
-          );
-        }}
-        onRemoveTag={(tagToRemove) => {
-          const updatedTags = tags.filter((tag) => tag !== tagToRemove);
-          setTags(updatedTags);
-          handleAddTag(data.id, updatedTags, () => {});
-        }}
+        onAddTag={onAddTag}
+        onRemoveTag={onRemoveTag}
         existingTags={tags}
       />
     </div>
