@@ -205,7 +205,7 @@ export const handleAddTag = (
 
 export const handleAttachFile = (
   id: string,
-  files: File[],
+  files: (File | string)[],
   callback: () => void
 ) => {
   const { updateNode } = useStore.getState();
@@ -218,6 +218,10 @@ export const handleAttachFile = (
   ];
 
   const validFiles = files.filter((file) => {
+    if (typeof file === 'string') {
+      // Assuming URLs are valid if they are strings
+      return true;
+    }
     return allowedFileTypes.includes(file.type) && file.size <= maxFileSize;
   });
 

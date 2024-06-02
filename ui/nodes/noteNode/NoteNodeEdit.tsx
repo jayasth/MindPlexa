@@ -200,11 +200,11 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     setAttachedFiles(files);
   };
 
- const onRemoveFile = (fileToRemove: File) => {
+  const onRemoveFile = (fileToRemove: File) => {
     const updatedFiles = attachedFiles.filter((file) => file !== fileToRemove);
     setAttachedFiles(updatedFiles);
     handleAttachFile(data.id, updatedFiles, () => {});
-  }; 
+  };
 
   useEffect(() => {
     setNodeWidth(width);
@@ -306,13 +306,47 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
           </div>
           <div className={styles.fileContainer}>
             {attachedFiles.map((file, index) => (
-              <span
-                key={index}
-                className={styles.file}
-                style={{ color: textColor }}
-              >
-                {file.name}
-              </span>
+              <div key={index} className={styles.file}>
+                <span
+                  onClick={() => {
+                    if (file.type === 'text/plain') {
+                      window.open(file.name, '_blank');
+                    } else {
+                      const url = URL.createObjectURL(file);
+                      window.open(url, '_blank');
+                    }
+                  }}
+                  onMouseEnter={(e) => {
+                    if (file.type.startsWith('image/')) {
+                      const preview = document.createElement('img');
+                      preview.src = URL.createObjectURL(file);
+                      preview.style.position = 'absolute';
+                      preview.style.top = `${e.clientY}px`;
+                      preview.style.left = `${e.clientX}px`;
+                      preview.style.width = '100px';
+                      preview.style.height = '100px';
+                      preview.style.zIndex = '1000';
+                      preview.className = 'file-preview';
+                      document.body.appendChild(preview);
+                    }
+                  }}
+                  onMouseLeave={() => {
+                    const preview = document.querySelector('.file-preview');
+                    if (preview) {
+                      document.body.removeChild(preview);
+                    }
+                  }}
+                  style={{ cursor: 'pointer', textDecoration: 'underline' }}
+                >
+                  {file.name}
+                </span>
+                <button
+                  className={styles.removeFileButton}
+                  onClick={() => onRemoveFile(file)}
+                >
+                  &times;
+                </button>
+              </div>
             ))}
           </div>
         </div>
