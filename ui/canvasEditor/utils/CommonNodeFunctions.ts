@@ -1,6 +1,7 @@
 import { useStore } from '@/app/store/useCanvasStore';
 import { nanoid } from 'nanoid';
 import { nodeDimensions } from './nodeProperties';
+import { useState } from 'react';
 
 export const getContrastYIQ = (color: string) => {
   let r,
@@ -331,4 +332,62 @@ export const handleDuplicate = (id: string) => {
     addNode(newNode);
     setSelectedNodes([newNode.id]);
   }
+};
+
+export const handleAttachmentPreview = (fileOrUrl: File | string) => {
+  const previewWindow = document.createElement('div');
+  previewWindow.style.position = 'fixed';
+  previewWindow.style.bottom = '10px';
+  previewWindow.style.right = '10px';
+  previewWindow.style.width = '300px';
+  previewWindow.style.height = '200px';
+  previewWindow.style.backgroundColor = 'white';
+  previewWindow.style.border = '1px solid #ccc';
+  previewWindow.style.boxShadow = '0 0 10px rgba(0,0,0,0.1)';
+  previewWindow.style.zIndex = '1000';
+  previewWindow.className = 'file-preview';
+
+  if (typeof fileOrUrl === 'string') {
+    // Handle URL preview
+    const iframe = document.createElement('iframe');
+    iframe.src = fileOrUrl;
+    iframe.style.width = '100%';
+    iframe.style.height = '100%';
+    iframe.style.border = 'none';
+    previewWindow.appendChild(iframe);
+  } else {
+    // Handle file preview
+    const fileURL = URL.createObjectURL(fileOrUrl);
+    const iframe = document.createElement('iframe');
+    iframe.src = fileURL;
+    iframe.style.width = '100%';
+    iframe.style.height = '100%';
+    iframe.style.border = 'none';
+    previewWindow.appendChild(iframe);
+  }
+
+  document.body.appendChild(previewWindow);
+};
+
+export const useHoverPreview = (fileOrUrl: File | string) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  const handleMouseEnter = () => {
+    setIsHovered(true);
+    handleAttachmentPreview(fileOrUrl);
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovered(false);
+    const preview = document.querySelector('.file-preview');
+    if (preview) {
+      document.body.removeChild(preview);
+    }
+  };
+
+  return {
+    isHovered,
+    handleMouseEnter,
+    handleMouseLeave
+  };
 };

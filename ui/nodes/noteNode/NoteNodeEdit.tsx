@@ -25,7 +25,8 @@ import {
   handleRemoveAttachedFile,
   handleDuplicate,
   colorCombinations,
-  getContrastYIQ
+  getContrastYIQ,
+  handleAttachmentPreview
 } from '@/ui/canvasEditor/utils/CommonNodeFunctions';
 import Quill from 'quill';
 import 'quill/dist/quill.snow.css';
@@ -314,20 +315,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
                       window.open(url, '_blank');
                     }
                   }}
-                  onMouseEnter={(e) => {
-                    if (file.type.startsWith('image/')) {
-                      const preview = document.createElement('img');
-                      preview.src = URL.createObjectURL(file);
-                      preview.style.position = 'absolute';
-                      preview.style.top = `${e.clientY}px`;
-                      preview.style.left = `${e.clientX}px`;
-                      preview.style.width = '100px';
-                      preview.style.height = '100px';
-                      preview.style.zIndex = '1000';
-                      preview.className = 'file-preview';
-                      document.body.appendChild(preview);
-                    }
-                  }}
+                  onMouseEnter={() => handleAttachmentPreview(file)}
                   onMouseLeave={() => {
                     const preview = document.querySelector('.file-preview');
                     if (preview) {

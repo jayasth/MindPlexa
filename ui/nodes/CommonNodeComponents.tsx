@@ -13,7 +13,10 @@ import 'react-responsive-modal/styles.css';
 import styles from './CommonNodeStyles.module.css';
 import Input from '@/ui/Input/Input';
 import Button from '@/ui/Button/Button';
-import { handleRemoveAttachedFile } from '@/ui/canvasEditor/utils/CommonNodeFunctions';
+import {
+  handleRemoveAttachedFile,
+  handleAttachmentPreview
+} from '@/ui/canvasEditor/utils/CommonNodeFunctions';
 
 const ICON_SIZE = 16;
 
@@ -193,28 +196,8 @@ export const FileModal = ({
         {existingFiles.map((file, index) => (
           <div key={index} className={styles.file}>
             <span
-              onClick={() => {
-                if (file.type === 'text/plain') {
-                  window.open(file.name, '_blank');
-                } else {
-                  const url = URL.createObjectURL(file);
-                  window.open(url, '_blank');
-                }
-              }}
-              onMouseEnter={(e) => {
-                if (file.type.startsWith('image/')) {
-                  const preview = document.createElement('img');
-                  preview.src = URL.createObjectURL(file);
-                  preview.style.position = 'absolute';
-                  preview.style.top = `${e.clientY}px`;
-                  preview.style.left = `${e.clientX}px`;
-                  preview.style.width = '100px';
-                  preview.style.height = '100px';
-                  preview.style.zIndex = '1000';
-                  preview.className = 'file-preview';
-                  document.body.appendChild(preview);
-                }
-              }}
+              onClick={() => handleAttachmentPreview(file)}
+              onMouseEnter={() => handleAttachmentPreview(file)}
               onMouseLeave={() => {
                 const preview = document.querySelector('.file-preview');
                 if (preview) {
