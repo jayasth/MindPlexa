@@ -92,8 +92,9 @@ export const TagModal = ({
         value={newTags}
         onChange={(value) => setNewTags(value)}
         placeholder="Enter tags, separated by commas"
+        className={styles.input}
       />
-      <Button variant="slim" onClick={handleAddTags}>
+      <Button variant="slim" onClick={handleAddTags} className={styles.button}>
         Add Tags
       </Button>
       <div className={styles.tagList}>
@@ -120,14 +121,18 @@ export const FileModal = ({
   onRemoveFile,
   existingFiles
 }) => {
-  const [newFiles, setNewFiles] = useState<File[]>([]);
   const [fileUrl, setFileUrl] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const files = Array.from(e.target.files);
-      setNewFiles((prevFiles) => [...prevFiles, ...files]);
+      const allFiles = [...existingFiles, ...files];
+      if (allFiles.length > 10) {
+        alert('You can attach a maximum of 10 files.');
+        return;
+      }
+      onAttachFiles(allFiles);
     }
   };
 
@@ -139,15 +144,20 @@ export const FileModal = ({
 
   const handleAddFileUrl = () => {
     if (fileUrl) {
-      const fileName = fileUrl.split('/').pop() || 'file';
-      const file = new File([fileUrl], fileName, { type: 'text/plain' });
-      const allFiles = [...existingFiles, file];
-      if (allFiles.length > 10) {
-        alert('You can attach a maximum of 10 files.');
-        return;
+      try {
+        new URL(fileUrl); // Validate URL
+        const fileName = fileUrl.split('/').pop() || 'file';
+        const file = new File([fileUrl], fileName, { type: 'text/plain' });
+        const allFiles = [...existingFiles, file];
+        if (allFiles.length > 10) {
+          alert('You can attach a maximum of 10 files.');
+          return;
+        }
+        onAttachFiles(allFiles);
+        setFileUrl('');
+      } catch (e) {
+        alert('Invalid URL');
       }
-      onAttachFiles(allFiles);
-      setFileUrl('');
     }
   };
 
@@ -160,9 +170,8 @@ export const FileModal = ({
         onChange={handleFileChange}
         className={styles.fileInput}
         ref={fileInputRef}
-        style={{ display: 'none' }}
       />
-      <Button variant="slim" onClick={handleAddFiles}>
+      <Button variant="slim" onClick={handleAddFiles} className={styles.button}>
         Add Files
       </Button>
       <Input
@@ -170,9 +179,14 @@ export const FileModal = ({
         value={fileUrl}
         onChange={(value) => setFileUrl(value)}
         placeholder="Enter file URL"
+        className={styles.input}
       />
-      <Button variant="slim" onClick={handleAddFileUrl}>
-        Add File from URL
+      <Button
+        variant="slim"
+        onClick={handleAddFileUrl}
+        className={styles.button}
+      >
+        Add URL Link
       </Button>
       <div className={styles.fileList}>
         {existingFiles.map((file, index) => (

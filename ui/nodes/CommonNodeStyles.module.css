@@ -12,6 +12,14 @@
   display: none;
 }
 
+.input {
+  margin-bottom: 10px;
+}
+
+.button {
+  margin-bottom: 10px;
+}
+
 .tagList {
   display: flex;
   flex-wrap: wrap;
