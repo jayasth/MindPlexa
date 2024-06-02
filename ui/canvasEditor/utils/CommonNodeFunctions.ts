@@ -198,11 +198,12 @@ export const handleAddTag = (
   tags: string[],
   onAddTag: (tag: string) => void
 ) => {
-  const newTag = prompt('Enter new tag');
-  if (newTag) {
-    onAddTag(newTag);
+  const newTags = prompt('Enter new tags (comma separated)');
+  if (newTags) {
+    const tagList = newTags.split(',').map((tag) => tag.trim());
+    tagList.forEach((tag) => onAddTag(tag));
     const { updateNode } = useStore.getState();
-    updateNode(id, { data: { tags: [...tags, newTag] } });
+    updateNode(id, { data: { tags: [...tags, ...tagList] } });
   }
 };
 

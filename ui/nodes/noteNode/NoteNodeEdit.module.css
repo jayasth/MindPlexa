@@ -20,7 +20,7 @@
 }
 
 .titleInput {
-  font-size: 12px;
+  font-size: 16px;
   font-weight: bold;
   border: none;
   background-color: transparent;
@@ -28,6 +28,13 @@
   flex-grow: 1;
   cursor: text;
   color: inherit;
+  box-shadow: none !important;
+}
+
+.titleInput:focus,
+.titleInput:active {
+  border-bottom: 2px solid #989ff0;
+  transition: border-bottom 0.3s ease-in-out;
 }
 
 .footer {
@@ -35,6 +42,7 @@
   justify-content: space-between;
   margin-top: 8px;
   background-color: transparent;
+  padding: 4px;
 }
 
 .actionButton {
@@ -62,11 +70,18 @@
   cursor: text;
 }
 
+.tagFileContainer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  border: 1px solid #ccc;
+  padding: 8px;
+}
+
 .tagContainer {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
-  margin-top: 8px;
 }
 
 .tag {
@@ -74,6 +89,21 @@
   padding: 2px 6px;
   border-radius: 4px;
   font-size: 12px;
+  cursor: pointer;
+}
+
+.fileContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.file {
+  background-color: #e0e0e0;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
 }
 
 .attachedFile {
