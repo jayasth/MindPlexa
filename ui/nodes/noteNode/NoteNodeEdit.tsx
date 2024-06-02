@@ -264,30 +264,32 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         className={`${styles.noteContent} nowheel nodrag`}
         style={{ color: textColor }}
       />
-      <div className={styles.tagFileContainer}>
-        <div className={styles.tagContainer}>
-          {tags.map((tag, index) => (
-            <span
-              key={index}
-              className={styles.tag}
-              style={{ color: textColor }}
-            >
-              #{tag}
-            </span>
-          ))}
+      {(tags.length > 0 || attachedFiles.length > 0) && (
+        <div className={styles.tagFileContainer}>
+          <div className={styles.tagContainer}>
+            {tags.map((tag, index) => (
+              <span
+                key={index}
+                className={styles.tag}
+                style={{ color: textColor }}
+              >
+                #{tag}
+              </span>
+            ))}
+          </div>
+          <div className={styles.fileContainer}>
+            {attachedFiles.map((file, index) => (
+              <span
+                key={index}
+                className={styles.file}
+                style={{ color: textColor }}
+              >
+                {file.name}
+              </span>
+            ))}
+          </div>
         </div>
-        <div className={styles.fileContainer}>
-          {attachedFiles.map((file, index) => (
-            <span
-              key={index}
-              className={styles.file}
-              style={{ color: textColor }}
-            >
-              {file.name}
-            </span>
-          ))}
-        </div>
-      </div>
+      )}
       <div className={styles.footer}>
         <SaveButton
           onClick={() =>
