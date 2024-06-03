@@ -54,8 +54,8 @@ const AIAssistanceModal: React.FC<AIAssistanceModalProps> = ({ onClose }) => {
 
       // Ensure nodes have the correct data properties
       const updatedNodes = newNodes.map((node) => {
-        const title = node.data?.title || 'Generated title here';
-        const content = node.data?.content || 'Generated description here';
+        const title = node.data?.title || 'Untitled';
+        const content = node.data?.content || 'No Description Available ';
         console.log(`AIGeneratorModal Node title: ${title}`);
         console.log(`AIGeneratorModal Node content: ${content}`);
         return {
@@ -93,8 +93,8 @@ const AIAssistanceModal: React.FC<AIAssistanceModalProps> = ({ onClose }) => {
     ); // Updated function call
 
     const offsetNodes = newNodes.map((node) => {
-      const title = node.data?.title || 'Generated title here';
-      const content = node.data?.content || 'Generated description here';
+      const title = node.data?.title || 'Untitled';
+      const content = node.data?.content || 'No Description Available';
       console.log(`AIGeneratorModal Node title: ${title}`);
       console.log(`AIGeneratorModal Node content: ${content}`);
       return {

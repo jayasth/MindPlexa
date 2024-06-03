@@ -110,7 +110,7 @@ const convertToReactFlowElements = (
     }
 
     const nodeLabel = node.querySelector('.nodeLabel')?.textContent;
-    const { title, type, content } = extractTitleAndType(nodeLabel || ''); // Updated to include content
+    const { title, type, content } = extractTitleAndType(nodeLabel || '');
 
     const position = {
       x: parseFloat(node.getAttribute('transform')!.split('(')[1]) * 1.2,
@@ -120,20 +120,13 @@ const convertToReactFlowElements = (
     const nodeId = `${type}-${nanoid()}`;
     const { width, height } = nodeDimensions.note;
 
-    // Extract title and content
-    const [nodeTitle, nodeDescription] = title.split('\\n');
-    console.log(`mermaidGeneratorUtils Parsed Node Title: ${nodeTitle}`);
-    console.log(
-      `mermaidGeneratorUtils Parsed Node Content: ${nodeDescription}`
-    );
-
     nodes.push({
       id: nodeId,
       type: 'note',
       position,
       data: {
-        title: (nodeTitle || 'Untitled').trim(),
-        content: (nodeDescription || '').trim() // Ensure content is correctly assigned
+        title: title.trim(),
+        content: content || 'No Description Available'
       },
       style: {
         backgroundColor: '#F4F4F4',
