@@ -12,17 +12,21 @@ export function extractTitleAndType(input: string): {
   id: string;
   content: string;
 } {
-  // Updated regex to handle separation by <br> and ensure capturing group for content
-  const regex = /^([^[\]]+)\[(.+?)(?:<br>(.+))?\]$/;
+  const regex = /^([^[\]]+)\[(.+?)\\n(.+)?\]$/;
   const match = input.match(regex);
 
   if (match) {
     const id = match[1].trim();
     const title = match[2].trim();
-    const content = (match[3] || '').trim(); // Use the third capturing group as content
+    const content = match[3] ? match[3].trim() : 'No description available';
     return { title, type: 'note', id, content };
   } else {
-    return { title: input.trim(), type: 'note', id: nanoid(), content: '' };
+    return {
+      title: input.trim(),
+      type: 'note',
+      id: nanoid(),
+      content: 'No description available'
+    };
   }
 }
 

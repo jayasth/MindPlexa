@@ -126,7 +126,7 @@ const convertToReactFlowElements = (
       position,
       data: {
         title: title.trim(),
-        content: content || 'No Description Available'
+        content: content.trim() || 'No Description Available'
       },
       style: {
         backgroundColor: '#F4F4F4',
