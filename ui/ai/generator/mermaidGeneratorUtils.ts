@@ -129,8 +129,8 @@ const convertToReactFlowElements = (
       position,
       data: {
         title: (nodeTitle || 'Untitled').trim(),
-        content: (nodeDescription || 'Generated description here').trim()
-      }, // Set the content to nodeDescription
+        content: (nodeDescription || '').trim() // Set the content to nodeDescription
+      },
       style: {
         backgroundColor: '#F4F4F4',
         color: '#575757'

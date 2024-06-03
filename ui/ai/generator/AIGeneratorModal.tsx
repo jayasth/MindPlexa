@@ -57,7 +57,7 @@ const AIAssistanceModal: React.FC<AIAssistanceModalProps> = ({ onClose }) => {
         ...node,
         data: {
           ...node.data,
-          content: node.data?.content || 'Generated description here'
+          content: (node.data?.content || 'Generated description here').trim()
         }
       }));
 
