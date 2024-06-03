@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef, CSSProperties } from 'react';
 import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
-import { CompactPicker } from 'react-color';
 import { useStore } from '@/app/store/useCanvasStore';
 import styles from './NoteNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
@@ -13,7 +12,8 @@ import {
   CloseButton,
   DuplicateButton,
   TagModal,
-  FileModal
+  FileModal,
+  ColorPickerModal
 } from '@/ui/nodes/CommonNodeComponents';
 import {
   handleTitleChange,
@@ -79,7 +79,6 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   const [isFileModalOpen, setIsFileModalOpen] = useState(false);
 
   const updateNode = useStore((state) => state.updateNode);
-  const colorPickerRef = useRef<HTMLDivElement>(null);
   const quillRef = useRef<HTMLDivElement>(null);
   const quillInstance = useRef<Quill | null>(null);
 
@@ -233,24 +232,6 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     setIsColorPickerVisible(!isColorPickerVisible);
   };
 
-  const handleClickOutside = (event) => {
-    if (
-      colorPickerRef.current &&
-      !colorPickerRef.current.contains(event.target)
-    ) {
-      setIsColorPickerVisible(false);
-    }
-  };
-
-  useEffect(() => {
-    if (typeof document !== 'undefined') {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
-      };
-    }
-  }, [colorPickerRef]);
-
   const customStyles: CSSProperties = {
     width: nodeWidth,
     height: nodeHeight,
@@ -355,40 +336,13 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         <AddTagButton onClick={() => setIsTagModalOpen(true)} />
         <AttachFileButton onClick={() => setIsFileModalOpen(true)} />
         <DuplicateButton onClick={() => handleDuplicate(data.id)} />
-        {isColorPickerVisible && (
-          <div className={`${styles.colorPicker} nodrag`} ref={colorPickerRef}>
-            <CompactPicker
-              color={backgroundColor}
-              onChange={handleBackgroundColorChange}
-              colors={colorCombinations.map(
-                (combination) => combination.background
-              )}
-              styles={{
-                default: {
-                  input: {
-                    height: '16px',
-                    fontSize: '12px'
-                  },
-                  swatch: {
-                    width: '20px',
-                    height: '20px',
-                    position: 'relative'
-                  }
-                }
-              }}
-              width="180px"
-              className="compact-picker"
-            />
-            {colorCombinations.map((combination) => (
-              <div
-                key={combination.background}
-                className="compact-picker__swatch"
-                style={{ backgroundColor: combination.background }}
-                data-name={combination.name}
-              />
-            ))}
-          </div>
-        )}
+        <ColorPickerModal
+          isOpen={isColorPickerVisible}
+          onClose={() => setIsColorPickerVisible(false)}
+          currentColor={backgroundColor}
+          onChangeColor={handleBackgroundColorChange}
+          colorCombinations={colorCombinations}
+        />
       </div>
       <Handle
         type="target"

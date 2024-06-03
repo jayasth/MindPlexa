@@ -10,6 +10,7 @@ import {
 } from 'react-icons/fa';
 import Modal from 'react-responsive-modal';
 import 'react-responsive-modal/styles.css';
+import { CompactPicker } from 'react-color';
 import styles from './CommonNodeStyles.module.css';
 import Input from '@/ui/Input/Input';
 import Button from '@/ui/Button/Button';
@@ -217,6 +218,48 @@ export const FileModal = ({
           </div>
         ))}
       </div>
+    </Modal>
+  );
+};
+
+export const ColorPickerModal = ({
+  isOpen,
+  onClose,
+  onChangeColor,
+  currentColor,
+  colorCombinations
+}) => {
+  return (
+    <Modal open={isOpen} onClose={onClose} center>
+      <h2>Change Background Color</h2>
+      <CompactPicker
+        color={currentColor}
+        onChange={onChangeColor}
+        colors={colorCombinations.map((combination) => combination.background)}
+        styles={{
+          default: {
+            input: {
+              height: '16px',
+              fontSize: '12px'
+            },
+            swatch: {
+              width: '20px',
+              height: '20px',
+              position: 'relative'
+            }
+          }
+        }}
+        width="180px"
+        className="compact-picker"
+      />
+      {colorCombinations.map((combination) => (
+        <div
+          key={combination.background}
+          className="compact-picker__swatch"
+          style={{ backgroundColor: combination.background }}
+          data-name={combination.name}
+        />
+      ))}
     </Modal>
   );
 };
