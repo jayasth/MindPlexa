@@ -21,11 +21,14 @@ export function extractTitleAndType(input: string): {
     const content = match[3] ? match[3].trim() : 'No description available';
     return { title, type: 'note', id, content };
   } else {
+    const parts = input.split('\\n');
+    const title = parts[0].trim();
+    const content = parts[1] ? parts[1].trim() : 'No description available';
     return {
-      title: input.trim(),
+      title,
       type: 'note',
       id: nanoid(),
-      content: 'No description available'
+      content
     };
   }
 }

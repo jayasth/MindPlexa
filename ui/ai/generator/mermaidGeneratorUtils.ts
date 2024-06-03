@@ -125,8 +125,11 @@ const convertToReactFlowElements = (
       type: 'note',
       position,
       data: {
+        id: nodeId,
         title: title.trim(),
-        content: content.trim() || 'No Description Available'
+        content: content.trim() || 'No description available',
+        backgroundColor: '#F4F4F4',
+        textColor: '#575757'
       },
       style: {
         backgroundColor: '#F4F4F4',
