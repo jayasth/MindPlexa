@@ -1,12 +1,9 @@
 export const promptTemplate = (userInput: string) => {
   return `Generate a Mermaid JS flowchart for the topic: "${userInput}". 
-
 Each node should have a unique title (subtopic of the user input) and a brief description for it, separated by a double colon (::).
 Use the following format for each node: "NodeID[NodeTitle::NodeDescription]". 
-If you use the input topic itself as the first node, make sure to trim the title and write the decription for it as well.
 Ensure the output is valid Mermaid syntax and does not include any special characters or double quotes within the node titles or descriptions.
 All nodes should have the default type "note".
 Ensure the diagram is well-structured, well-branched depending on the input topic, and well-balanced.
-If a node does not have a description, use "No description available" as the default description.
-Ensure that all nodes are connected in a logical sequence.`;
+If a node does not have a description, use "No description available" as the default description.`;
 };

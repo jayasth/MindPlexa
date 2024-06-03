@@ -36,9 +36,9 @@ export function extractTitleAndType(input: string): {
         content
       };
     } else {
-      console.log(`Failed to parse input: ${input}`);
+      console.error(`Failed to parse input: ${input}`);
       return {
-        title: input.trim(),
+        title: 'Untitled',
         type: 'note',
         id: nanoid(),
         content: 'No description available'

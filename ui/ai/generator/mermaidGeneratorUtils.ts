@@ -74,10 +74,39 @@ export async function parseMermaidCode(
     };
   }
 
-  const { nodes, edges } = convertToReactFlowElements(svgCode.svg);
+  let nodes: Node[] = [];
+  let edges: Edge[] = [];
+  try {
+    ({ nodes, edges } = convertToReactFlowElements(svgCode.svg));
+  } catch (error: any) {
+    console.error(
+      'mermaidGeneratorUtils Error converting to React Flow elements:',
+      error
+    );
+    return {
+      nodes: [],
+      edges: []
+    };
+  }
+
+  // Filter out nodes without meaningful content or incorrectly formatted entries
+  const filteredNodes = nodes.filter(
+    (node) =>
+      node.data.title !== 'Untitled' &&
+      node.data.content !== 'No description available'
+  );
 
   // Apply layout
-  const layoutedElements = applyDagreLayout(nodes, edges);
+  let layoutedElements: { nodes: Node[]; edges: Edge[] };
+  try {
+    layoutedElements = applyDagreLayout(filteredNodes, edges);
+  } catch (error: any) {
+    console.error('mermaidGeneratorUtils Error applying Dagre layout:', error);
+    return {
+      nodes: filteredNodes,
+      edges
+    };
+  }
 
   return layoutedElements;
 }
