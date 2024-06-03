@@ -78,6 +78,10 @@ const AIAssistanceModal: React.FC<AIAssistanceModalProps> = ({ onClose }) => {
 
     const offsetNodes = newNodes.map((node) => ({
       ...node,
+      data: {
+        ...node.data,
+        description: node.data?.description || 'Generated description here'
+      },
       position: {
         x: node.position.x + optimalPosition.x,
         y: node.position.y + optimalPosition.y

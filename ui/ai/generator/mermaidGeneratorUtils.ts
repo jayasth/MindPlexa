@@ -124,7 +124,7 @@ const convertToReactFlowElements = (
       id: nodeId,
       type: 'note',
       position,
-      data: { title, content: 'Generated description here' }, // Placeholder for description
+      data: { title, content: nodeLabel || 'Generated description here' }, // Set the content to nodeLabel
       style: {
         backgroundColor: '#F4F4F4',
         color: '#575757'
