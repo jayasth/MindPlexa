@@ -120,11 +120,17 @@ const convertToReactFlowElements = (
     const nodeId = `${type}-${nanoid()}`;
     const { width, height } = nodeDimensions.note;
 
+    // Extract title and description
+    const [nodeTitle, nodeDescription] = title.split('\\n');
+
     nodes.push({
       id: nodeId,
       type: 'note',
       position,
-      data: { title, content: nodeLabel || 'Generated description here' }, // Set the content to nodeLabel
+      data: {
+        title: (nodeTitle || 'Untitled').trim(),
+        content: (nodeDescription || 'Generated description here').trim()
+      }, // Set the content to nodeDescription
       style: {
         backgroundColor: '#F4F4F4',
         color: '#575757'

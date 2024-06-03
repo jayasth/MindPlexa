@@ -52,16 +52,25 @@ const AIAssistanceModal: React.FC<AIAssistanceModalProps> = ({ onClose }) => {
         data.mermaidCode
       );
 
+      // Ensure nodes have the correct data properties
+      const updatedNodes = newNodes.map((node) => ({
+        ...node,
+        data: {
+          ...node.data,
+          content: node.data?.content || 'Generated description here'
+        }
+      }));
+
       // Check if there are existing nodes on the canvas before setting new nodes
       const existingNodes = useStore.getState().nodes;
 
       if (existingNodes.length > 0) {
-        setGeneratedNodes(newNodes);
+        setGeneratedNodes(updatedNodes);
         setGeneratedEdges(newEdges);
         setShowConfirmModal(true);
       } else {
         // Directly integrate the generated nodes and edges if the canvas is empty
-        handleConfirmIntegration(newNodes, newEdges);
+        handleConfirmIntegration(updatedNodes, newEdges);
       }
     } catch (error) {
       console.error('Error generating mindmap:', error);
@@ -78,10 +87,6 @@ const AIAssistanceModal: React.FC<AIAssistanceModalProps> = ({ onClose }) => {
 
     const offsetNodes = newNodes.map((node) => ({
       ...node,
-      data: {
-        ...node.data,
-        description: node.data?.description || 'Generated description here'
-      },
       position: {
         x: node.position.x + optimalPosition.x,
         y: node.position.y + optimalPosition.y
