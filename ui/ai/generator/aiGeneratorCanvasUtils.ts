@@ -12,24 +12,38 @@ export function extractTitleAndType(input: string): {
   id: string;
   content: string;
 } {
-  const regex = /^([^[\]]+)\[(.+?)\\n(.+)?\]$/;
+  const regex = /^(\w+)\[(.+?)::(.+?)\]$/;
   const match = input.match(regex);
 
   if (match) {
     const id = match[1].trim();
     const title = match[2].trim();
-    const content = match[3] ? match[3].trim() : 'No description available';
+    const content = match[3].trim();
+    console.log(
+      `Parsed values - ID: ${id}, Title: ${title}, Content: ${content}`
+    );
     return { title, type: 'note', id, content };
   } else {
-    const parts = input.split('\\n');
-    const title = parts[0].trim();
-    const content = parts[1] ? parts[1].trim() : 'No description available';
-    return {
-      title,
-      type: 'note',
-      id: nanoid(),
-      content
-    };
+    const parts = input.split('::');
+    if (parts.length === 2) {
+      const title = parts[0].trim();
+      const content = parts[1].trim();
+      console.log(`Parsed values - Title: ${title}, Content: ${content}`);
+      return {
+        title,
+        type: 'note',
+        id: nanoid(),
+        content
+      };
+    } else {
+      console.log(`Failed to parse input: ${input}`);
+      return {
+        title: input.trim(),
+        type: 'note',
+        id: nanoid(),
+        content: 'No description available'
+      };
+    }
   }
 }
 
