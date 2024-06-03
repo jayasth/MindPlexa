@@ -55,17 +55,17 @@ export async function parseMermaidCode(
   const filteredCode = removeDoubleQuoteInsideParentheses(
     removeDoubleQuoteInsideBrackets(removeMarkdowncode(mermaidCode))
   );
-  console.log('Filtered Mermaid Code:', filteredCode);
+  console.log('mermaidGeneratorUtils Filtered Mermaid Code:', filteredCode);
   let svgCode: any;
 
   try {
     mermaid.initialize({ startOnLoad: false });
     svgCode = await mermaid.render('mermaid-chart', filteredCode);
   } catch (error: any) {
-    console.error('Mermaid parsing error:', error);
+    console.error('mermaidGeneratorUtils Mermaid parsing error:', error);
     if (error.message.includes('No diagram type detected')) {
       console.error(
-        'Mermaid parsing error: UnknownDiagramError - No diagram type detected. Please check the configuration or syntax of your Mermaid code.'
+        'mermaidGeneratorUtils Mermaid parsing error: UnknownDiagramError - No diagram type detected. Please check the configuration or syntax of your Mermaid code.'
       );
     }
     return {
@@ -110,7 +110,7 @@ const convertToReactFlowElements = (
     }
 
     const nodeLabel = node.querySelector('.nodeLabel')?.textContent;
-    const { title, type } = extractTitleAndType(nodeLabel || '');
+    const { title, type, content } = extractTitleAndType(nodeLabel || ''); // Updated to include content
 
     const position = {
       x: parseFloat(node.getAttribute('transform')!.split('(')[1]) * 1.2,
@@ -120,8 +120,12 @@ const convertToReactFlowElements = (
     const nodeId = `${type}-${nanoid()}`;
     const { width, height } = nodeDimensions.note;
 
-    // Extract title and description
+    // Extract title and content
     const [nodeTitle, nodeDescription] = title.split('\\n');
+    console.log(`mermaidGeneratorUtils Parsed Node Title: ${nodeTitle}`);
+    console.log(
+      `mermaidGeneratorUtils Parsed Node Content: ${nodeDescription}`
+    );
 
     nodes.push({
       id: nodeId,
@@ -129,7 +133,7 @@ const convertToReactFlowElements = (
       position,
       data: {
         title: (nodeTitle || 'Untitled').trim(),
-        content: (nodeDescription || '').trim() // Set the content to nodeDescription
+        content: (nodeDescription || '').trim() // Ensure content is correctly assigned
       },
       style: {
         backgroundColor: '#F4F4F4',

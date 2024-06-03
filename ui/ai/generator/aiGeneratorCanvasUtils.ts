@@ -10,16 +10,18 @@ export function extractTitleAndType(input: string): {
   title: string;
   type: string;
   id: string;
+  content: string;
 } {
-  const regex = /^([^[\]]+)\[(.+)\]$/;
+  const regex = /^([^[\]]+)\[(.+)\\n(.+)\]$/;
   const match = input.match(regex);
 
   if (match) {
     const id = match[1].trim();
     const title = match[2].trim();
-    return { title, type: 'note', id };
+    const content = match[3].trim();
+    return { title, type: 'note', id, content };
   } else {
-    return { title: input.trim(), type: 'note', id: nanoid() };
+    return { title: input.trim(), type: 'note', id: nanoid(), content: '' };
   }
 }
 

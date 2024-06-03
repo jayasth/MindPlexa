@@ -47,19 +47,26 @@ const AIAssistanceModal: React.FC<AIAssistanceModalProps> = ({ onClose }) => {
       }
 
       const data = await response.json();
-      console.log('Response data:', data);
+      console.log('AIGeneratorModal Response data:', data);
       const { nodes: newNodes, edges: newEdges } = await parseMermaidCode(
         data.mermaidCode
       );
 
       // Ensure nodes have the correct data properties
-      const updatedNodes = newNodes.map((node) => ({
-        ...node,
-        data: {
-          ...node.data,
-          content: (node.data?.content || 'Generated description here').trim()
-        }
-      }));
+      const updatedNodes = newNodes.map((node) => {
+        const title = node.data?.title || 'Generated title here';
+        const content = node.data?.content || 'Generated description here';
+        console.log(`AIGeneratorModal Node title: ${title}`);
+        console.log(`AIGeneratorModal Node content: ${content}`);
+        return {
+          ...node,
+          data: {
+            ...node.data,
+            title,
+            content
+          }
+        };
+      });
 
       // Check if there are existing nodes on the canvas before setting new nodes
       const existingNodes = useStore.getState().nodes;
@@ -73,7 +80,7 @@ const AIAssistanceModal: React.FC<AIAssistanceModalProps> = ({ onClose }) => {
         handleConfirmIntegration(updatedNodes, newEdges);
       }
     } catch (error) {
-      console.error('Error generating mindmap:', error);
+      console.error('AIGeneratorModal: Error generating mindmap:', error);
       // Handle error state
     }
   };
@@ -85,13 +92,24 @@ const AIAssistanceModal: React.FC<AIAssistanceModalProps> = ({ onClose }) => {
       canvasSize
     ); // Updated function call
 
-    const offsetNodes = newNodes.map((node) => ({
-      ...node,
-      position: {
-        x: node.position.x + optimalPosition.x,
-        y: node.position.y + optimalPosition.y
-      }
-    }));
+    const offsetNodes = newNodes.map((node) => {
+      const title = node.data?.title || 'Generated title here';
+      const content = node.data?.content || 'Generated description here';
+      console.log(`AIGeneratorModal Node title: ${title}`);
+      console.log(`AIGeneratorModal Node content: ${content}`);
+      return {
+        ...node,
+        position: {
+          x: node.position.x + optimalPosition.x,
+          y: node.position.y + optimalPosition.y
+        },
+        data: {
+          ...node.data,
+          title,
+          content
+        }
+      };
+    });
 
     setNodes((currentNodes) => [...currentNodes, ...offsetNodes]);
     setEdges((currentEdges) => [...currentEdges, ...newEdges]);
