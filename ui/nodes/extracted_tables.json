@@ -1,0 +1,362 @@
+[
+  {
+    "table_structure": "Table: base_nodes, Column: id, Type: uuid, Nullable: NO, Default: gen_random_uuid()"
+  },
+  {
+    "table_structure": "Table: base_nodes, Column: canvas_id, Type: uuid, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: base_nodes, Column: color, Type: character varying, Nullable: YES, Default: NULL::character varying"
+  },
+  {
+    "table_structure": "Table: base_nodes, Column: created_at, Type: timestamp with time zone, Nullable: YES, Default: now()"
+  },
+  {
+    "table_structure": "Table: base_nodes, Column: updated_at, Type: timestamp with time zone, Nullable: YES, Default: now()"
+  },
+  {
+    "table_structure": "Table: base_nodes, Column: position, Type: json, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: base_nodes, Column: width, Type: integer, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: base_nodes, Column: height, Type: integer, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: base_nodes, Column: type, Type: character varying, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: canvases, Column: id, Type: uuid, Nullable: NO, Default: gen_random_uuid()"
+  },
+  {
+    "table_structure": "Table: canvases, Column: name, Type: text, Nullable: NO, Default: None"
+  },
+  {
+    "table_structure": "Table: canvases, Column: description, Type: text, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: canvases, Column: content, Type: text, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: canvases, Column: created_at, Type: timestamp with time zone, Nullable: YES, Default: now()"
+  },
+  {
+    "table_structure": "Table: canvases, Column: updated_at, Type: timestamp with time zone, Nullable: YES, Default: now()"
+  },
+  {
+    "table_structure": "Table: canvases, Column: user_id, Type: uuid, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: canvases, Column: nodes, Type: jsonb, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: canvases, Column: note_nodes, Type: jsonb, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: canvases, Column: task_nodes, Type: jsonb, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: canvases, Column: custom_nodes, Type: jsonb, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: code_nodes, Column: id, Type: uuid, Nullable: NO, Default: gen_random_uuid()"
+  },
+  {
+    "table_structure": "Table: code_nodes, Column: title, Type: text, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: code_nodes, Column: language, Type: text, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: code_nodes, Column: code, Type: text, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: code_nodes, Column: base_node_id, Type: uuid, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: custom_nodes, Column: id, Type: uuid, Nullable: NO, Default: gen_random_uuid()"
+  },
+  {
+    "table_structure": "Table: custom_nodes, Column: type, Type: text, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: custom_nodes, Column: title, Type: text, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: custom_nodes, Column: data, Type: jsonb, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: custom_nodes, Column: base_node_id, Type: uuid, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: customers, Column: id, Type: uuid, Nullable: NO, Default: None"
+  },
+  {
+    "table_structure": "Table: customers, Column: stripe_customer_id, Type: text, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: draw_nodes, Column: id, Type: uuid, Nullable: NO, Default: gen_random_uuid()"
+  },
+  {
+    "table_structure": "Table: draw_nodes, Column: title, Type: text, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: draw_nodes, Column: data, Type: jsonb, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: draw_nodes, Column: base_node_id, Type: uuid, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: insights, Column: id, Type: uuid, Nullable: NO, Default: uuid_generate_v4()"
+  },
+  {
+    "table_structure": "Table: insights, Column: title, Type: character varying, Nullable: NO, Default: None"
+  },
+  {
+    "table_structure": "Table: insights, Column: description, Type: text, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: insights, Column: workspace_id, Type: uuid, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: insights, Column: user_id, Type: uuid, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: insights, Column: created_at, Type: timestamp with time zone, Nullable: YES, Default: CURRENT_TIMESTAMP"
+  },
+  {
+    "table_structure": "Table: insights, Column: updated_at, Type: timestamp with time zone, Nullable: YES, Default: CURRENT_TIMESTAMP"
+  },
+  {
+    "table_structure": "Table: note_nodes, Column: id, Type: uuid, Nullable: NO, Default: gen_random_uuid()"
+  },
+  {
+    "table_structure": "Table: note_nodes, Column: title, Type: text, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: note_nodes, Column: content, Type: text, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: note_nodes, Column: base_node_id, Type: uuid, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: prices, Column: id, Type: text, Nullable: NO, Default: None"
+  },
+  {
+    "table_structure": "Table: prices, Column: product_id, Type: text, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: prices, Column: active, Type: boolean, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: prices, Column: description, Type: text, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: prices, Column: unit_amount, Type: bigint, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: prices, Column: currency, Type: text, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: prices, Column: type, Type: USER-DEFINED, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: prices, Column: interval, Type: USER-DEFINED, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: prices, Column: interval_count, Type: integer, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: prices, Column: trial_period_days, Type: integer, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: prices, Column: metadata, Type: jsonb, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: products, Column: id, Type: text, Nullable: NO, Default: None"
+  },
+  {
+    "table_structure": "Table: products, Column: active, Type: boolean, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: products, Column: name, Type: text, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: products, Column: description, Type: text, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: products, Column: image, Type: text, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: products, Column: metadata, Type: jsonb, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: profiles, Column: id, Type: uuid, Nullable: NO, Default: uuid_generate_v4()"
+  },
+  {
+    "table_structure": "Table: profiles, Column: user_id, Type: uuid, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: profiles, Column: full_name, Type: text, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: profiles, Column: avatar_url, Type: text, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: profiles, Column: bio, Type: text, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: profiles, Column: website, Type: text, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: profiles, Column: email, Type: character varying, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: profiles, Column: phone, Type: text, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: profiles, Column: created_at, Type: timestamp without time zone, Nullable: YES, Default: CURRENT_TIMESTAMP"
+  },
+  {
+    "table_structure": "Table: profiles, Column: updated_at, Type: timestamp without time zone, Nullable: YES, Default: CURRENT_TIMESTAMP"
+  },
+  {
+    "table_structure": "Table: projects, Column: id, Type: uuid, Nullable: NO, Default: uuid_generate_v4()"
+  },
+  {
+    "table_structure": "Table: projects, Column: name, Type: character varying, Nullable: NO, Default: None"
+  },
+  {
+    "table_structure": "Table: projects, Column: description, Type: text, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: projects, Column: created_at, Type: timestamp with time zone, Nullable: YES, Default: CURRENT_TIMESTAMP"
+  },
+  {
+    "table_structure": "Table: projects, Column: updated_at, Type: timestamp with time zone, Nullable: YES, Default: CURRENT_TIMESTAMP"
+  },
+  {
+    "table_structure": "Table: projects, Column: slug, Type: character varying, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: projects, Column: user_id, Type: uuid, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: projects, Column: status, Type: character varying, Nullable: YES, Default: 'active'::character varying"
+  },
+  {
+    "table_structure": "Table: projects, Column: due_date, Type: date, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: subscriptions, Column: id, Type: text, Nullable: NO, Default: None"
+  },
+  {
+    "table_structure": "Table: subscriptions, Column: user_id, Type: uuid, Nullable: NO, Default: None"
+  },
+  {
+    "table_structure": "Table: subscriptions, Column: status, Type: USER-DEFINED, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: subscriptions, Column: metadata, Type: jsonb, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: subscriptions, Column: price_id, Type: text, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: subscriptions, Column: quantity, Type: integer, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: subscriptions, Column: cancel_at_period_end, Type: boolean, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: subscriptions, Column: created, Type: timestamp with time zone, Nullable: NO, Default: timezone('utc'::text, now())"
+  },
+  {
+    "table_structure": "Table: subscriptions, Column: current_period_start, Type: timestamp with time zone, Nullable: NO, Default: timezone('utc'::text, now())"
+  },
+  {
+    "table_structure": "Table: subscriptions, Column: current_period_end, Type: timestamp with time zone, Nullable: NO, Default: timezone('utc'::text, now())"
+  },
+  {
+    "table_structure": "Table: subscriptions, Column: ended_at, Type: timestamp with time zone, Nullable: YES, Default: timezone('utc'::text, now())"
+  },
+  {
+    "table_structure": "Table: subscriptions, Column: cancel_at, Type: timestamp with time zone, Nullable: YES, Default: timezone('utc'::text, now())"
+  },
+  {
+    "table_structure": "Table: subscriptions, Column: canceled_at, Type: timestamp with time zone, Nullable: YES, Default: timezone('utc'::text, now())"
+  },
+  {
+    "table_structure": "Table: subscriptions, Column: trial_start, Type: timestamp with time zone, Nullable: YES, Default: timezone('utc'::text, now())"
+  },
+  {
+    "table_structure": "Table: subscriptions, Column: trial_end, Type: timestamp with time zone, Nullable: YES, Default: timezone('utc'::text, now())"
+  },
+  {
+    "table_structure": "Table: task_nodes, Column: id, Type: uuid, Nullable: NO, Default: gen_random_uuid()"
+  },
+  {
+    "table_structure": "Table: task_nodes, Column: title, Type: text, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: task_nodes, Column: task, Type: text, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: task_nodes, Column: completed, Type: boolean, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: task_nodes, Column: base_node_id, Type: uuid, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: users, Column: id, Type: uuid, Nullable: NO, Default: None"
+  },
+  {
+    "table_structure": "Table: users, Column: full_name, Type: text, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: users, Column: avatar_url, Type: text, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: users, Column: billing_address, Type: jsonb, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: users, Column: payment_method, Type: jsonb, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: workspace_members, Column: id, Type: uuid, Nullable: NO, Default: uuid_generate_v4()"
+  },
+  {
+    "table_structure": "Table: workspace_members, Column: user_id, Type: uuid, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: workspace_members, Column: workspace_id, Type: uuid, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: workspace_members, Column: role, Type: character varying, Nullable: NO, Default: None"
+  },
+  {
+    "table_structure": "Table: workspace_members, Column: created_at, Type: timestamp with time zone, Nullable: YES, Default: CURRENT_TIMESTAMP"
+  },
+  {
+    "table_structure": "Table: workspace_members, Column: updated_at, Type: timestamp with time zone, Nullable: YES, Default: CURRENT_TIMESTAMP"
+  },
+  {
+    "table_structure": "Table: workspaces, Column: id, Type: uuid, Nullable: NO, Default: uuid_generate_v4()"
+  },
+  {
+    "table_structure": "Table: workspaces, Column: name, Type: character varying, Nullable: NO, Default: None"
+  },
+  {
+    "table_structure": "Table: workspaces, Column: description, Type: text, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: workspaces, Column: owner_id, Type: uuid, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: workspaces, Column: created_at, Type: timestamp with time zone, Nullable: YES, Default: CURRENT_TIMESTAMP"
+  },
+  {
+    "table_structure": "Table: workspaces, Column: updated_at, Type: timestamp with time zone, Nullable: YES, Default: CURRENT_TIMESTAMP"
+  }
+]

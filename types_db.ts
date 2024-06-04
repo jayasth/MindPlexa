@@ -53,43 +53,139 @@ export type Database = {
           },
         ]
       }
+      calendar_nodes: {
+        Row: {
+          attached_files: Json | null
+          background_color: string | null
+          base_node_id: string | null
+          events: Json | null
+          id: string
+          tags: string[] | null
+          text_color: string | null
+          title: string | null
+          view: string | null
+        }
+        Insert: {
+          attached_files?: Json | null
+          background_color?: string | null
+          base_node_id?: string | null
+          events?: Json | null
+          id?: string
+          tags?: string[] | null
+          text_color?: string | null
+          title?: string | null
+          view?: string | null
+        }
+        Update: {
+          attached_files?: Json | null
+          background_color?: string | null
+          base_node_id?: string | null
+          events?: Json | null
+          id?: string
+          tags?: string[] | null
+          text_color?: string | null
+          title?: string | null
+          view?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calendar_nodes_base_node_id_fkey"
+            columns: ["base_node_id"]
+            isOneToOne: false
+            referencedRelation: "base_nodes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      canvas_node_relationships: {
+        Row: {
+          canvas_id: string
+          node_id: string
+          node_type: string
+        }
+        Insert: {
+          canvas_id: string
+          node_id: string
+          node_type: string
+        }
+        Update: {
+          canvas_id?: string
+          node_id?: string
+          node_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calendar_node_fk"
+            columns: ["node_id"]
+            isOneToOne: false
+            referencedRelation: "calendar_nodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "canvas_node_relationships_canvas_id_fkey"
+            columns: ["canvas_id"]
+            isOneToOne: false
+            referencedRelation: "canvases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "draw_node_fk"
+            columns: ["node_id"]
+            isOneToOne: false
+            referencedRelation: "draw_nodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "note_node_fk"
+            columns: ["node_id"]
+            isOneToOne: false
+            referencedRelation: "note_nodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "table_node_fk"
+            columns: ["node_id"]
+            isOneToOne: false
+            referencedRelation: "table_nodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_node_fk"
+            columns: ["node_id"]
+            isOneToOne: false
+            referencedRelation: "task_nodes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       canvases: {
         Row: {
           content: string | null
           created_at: string | null
-          custom_nodes: Json | null
           description: string | null
           id: string
           name: string
           nodes: Json | null
-          note_nodes: Json | null
-          task_nodes: Json | null
           updated_at: string | null
           user_id: string | null
         }
         Insert: {
           content?: string | null
           created_at?: string | null
-          custom_nodes?: Json | null
           description?: string | null
           id?: string
           name: string
           nodes?: Json | null
-          note_nodes?: Json | null
-          task_nodes?: Json | null
           updated_at?: string | null
           user_id?: string | null
         }
         Update: {
           content?: string | null
           created_at?: string | null
-          custom_nodes?: Json | null
           description?: string | null
           id?: string
           name?: string
           nodes?: Json | null
-          note_nodes?: Json | null
-          task_nodes?: Json | null
           updated_at?: string | null
           user_id?: string | null
         }
@@ -99,70 +195,6 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      code_nodes: {
-        Row: {
-          base_node_id: string | null
-          code: string | null
-          id: string
-          language: string | null
-          title: string | null
-        }
-        Insert: {
-          base_node_id?: string | null
-          code?: string | null
-          id?: string
-          language?: string | null
-          title?: string | null
-        }
-        Update: {
-          base_node_id?: string | null
-          code?: string | null
-          id?: string
-          language?: string | null
-          title?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "code_nodes_base_node_id_fkey"
-            columns: ["base_node_id"]
-            isOneToOne: false
-            referencedRelation: "base_nodes"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      custom_nodes: {
-        Row: {
-          base_node_id: string | null
-          data: Json | null
-          id: string
-          title: string | null
-          type: string | null
-        }
-        Insert: {
-          base_node_id?: string | null
-          data?: Json | null
-          id?: string
-          title?: string | null
-          type?: string | null
-        }
-        Update: {
-          base_node_id?: string | null
-          data?: Json | null
-          id?: string
-          title?: string | null
-          type?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "custom_nodes_base_node_id_fkey"
-            columns: ["base_node_id"]
-            isOneToOne: false
-            referencedRelation: "base_nodes"
             referencedColumns: ["id"]
           },
         ]
@@ -192,21 +224,33 @@ export type Database = {
       }
       draw_nodes: {
         Row: {
+          attached_files: Json | null
+          background_color: string | null
           base_node_id: string | null
-          data: Json | null
+          drawing_data: string | null
           id: string
+          tags: string[] | null
+          text_color: string | null
           title: string | null
         }
         Insert: {
+          attached_files?: Json | null
+          background_color?: string | null
           base_node_id?: string | null
-          data?: Json | null
+          drawing_data?: string | null
           id?: string
+          tags?: string[] | null
+          text_color?: string | null
           title?: string | null
         }
         Update: {
+          attached_files?: Json | null
+          background_color?: string | null
           base_node_id?: string | null
-          data?: Json | null
+          drawing_data?: string | null
           id?: string
+          tags?: string[] | null
+          text_color?: string | null
           title?: string | null
         }
         Relationships: [
@@ -251,21 +295,33 @@ export type Database = {
       }
       note_nodes: {
         Row: {
+          attached_files: Json | null
+          background_color: string | null
           base_node_id: string | null
           content: string | null
           id: string
+          tags: string[] | null
+          text_color: string | null
           title: string | null
         }
         Insert: {
+          attached_files?: Json | null
+          background_color?: string | null
           base_node_id?: string | null
           content?: string | null
           id?: string
+          tags?: string[] | null
+          text_color?: string | null
           title?: string | null
         }
         Update: {
+          attached_files?: Json | null
+          background_color?: string | null
           base_node_id?: string | null
           content?: string | null
           id?: string
+          tags?: string[] | null
+          text_color?: string | null
           title?: string | null
         }
         Relationships: [
@@ -507,26 +563,79 @@ export type Database = {
           },
         ]
       }
-      task_nodes: {
+      table_nodes: {
         Row: {
+          attached_files: Json | null
+          background_color: string | null
           base_node_id: string | null
-          completed: boolean | null
+          columns: Json | null
           id: string
-          task: string | null
+          rows: Json | null
+          tags: string[] | null
+          text_color: string | null
           title: string | null
         }
         Insert: {
+          attached_files?: Json | null
+          background_color?: string | null
           base_node_id?: string | null
-          completed?: boolean | null
+          columns?: Json | null
           id?: string
-          task?: string | null
+          rows?: Json | null
+          tags?: string[] | null
+          text_color?: string | null
           title?: string | null
         }
         Update: {
+          attached_files?: Json | null
+          background_color?: string | null
           base_node_id?: string | null
-          completed?: boolean | null
+          columns?: Json | null
           id?: string
-          task?: string | null
+          rows?: Json | null
+          tags?: string[] | null
+          text_color?: string | null
+          title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "table_nodes_base_node_id_fkey"
+            columns: ["base_node_id"]
+            isOneToOne: false
+            referencedRelation: "base_nodes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_nodes: {
+        Row: {
+          attached_files: Json | null
+          background_color: string | null
+          base_node_id: string | null
+          id: string
+          tags: string[] | null
+          tasks: Json | null
+          text_color: string | null
+          title: string | null
+        }
+        Insert: {
+          attached_files?: Json | null
+          background_color?: string | null
+          base_node_id?: string | null
+          id?: string
+          tags?: string[] | null
+          tasks?: Json | null
+          text_color?: string | null
+          title?: string | null
+        }
+        Update: {
+          attached_files?: Json | null
+          background_color?: string | null
+          base_node_id?: string | null
+          id?: string
+          tags?: string[] | null
+          tasks?: Json | null
+          text_color?: string | null
           title?: string | null
         }
         Relationships: [

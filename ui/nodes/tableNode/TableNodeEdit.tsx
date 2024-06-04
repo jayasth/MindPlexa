@@ -54,14 +54,10 @@ import {
   getContrastYIQ
 } from '@/ui/canvasEditor/utils/CommonNodeFunctions';
 
+import { TableNodeData } from '@/ui/canvasEditor/utils/nodeDatatypes';
+
 interface TableNodeEditProps extends NodeProps {
-  data: {
-    id: string;
-    content?: any;
-    title?: string;
-    backgroundColor?: string;
-    textColor?: string;
-  };
+  data: TableNodeData;
   width: number;
   height: number;
   selected: boolean;

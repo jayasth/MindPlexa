@@ -30,17 +30,10 @@ import {
 } from '@/ui/canvasEditor/utils/CommonNodeFunctions';
 import Quill from 'quill';
 import 'quill/dist/quill.snow.css';
+import { NoteNodeData } from '@/ui/canvasEditor/utils/nodeDatatypes';
 
 interface NoteNodeEditProps extends NodeProps {
-  data: {
-    id: string;
-    content?: string;
-    title?: string;
-    backgroundColor?: string;
-    textColor?: string;
-    tags?: string[];
-    attachedFiles?: File[];
-  };
+  data: NoteNodeData;
   width: number;
   height: number;
   selected: boolean;

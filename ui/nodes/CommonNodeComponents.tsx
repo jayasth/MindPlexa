@@ -257,7 +257,7 @@ export const ColorPickerModal = ({
           key={combination.background}
           className="compact-picker__swatch"
           style={{ backgroundColor: combination.background }}
-          data-name={combination.name}
+          title={combination.name}
         />
       ))}
     </Modal>

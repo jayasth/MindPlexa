@@ -319,9 +319,29 @@ export const handleDuplicate = (id: string) => {
     }
 
     const newData = JSON.parse(JSON.stringify(nodeToDuplicate.data));
-
     const newId = `${nodeToDuplicate.type}-${nanoid()}`;
     newData.id = newId;
+
+    // Handle different node data types
+    if (newData.type === 'text') {
+      newData.content = `Copy of ${newData.content}`;
+    } else if (newData.type === 'image') {
+      newData.url = newData.url;
+    } else if (newData.type === 'video') {
+      newData.url = newData.url;
+    } else if (newData.type === 'file') {
+      newData.fileName = `Copy of ${newData.fileName}`;
+    }
+
+    // Ensure attached files/URLs are copied
+    if (nodeToDuplicate.data.attachedFiles) {
+      newData.attachedFiles = [...nodeToDuplicate.data.attachedFiles];
+    }
+
+    // Append 'copy' to the title to differentiate from the original
+    if (newData.title) {
+      newData.title = `${newData.title} copy`;
+    }
 
     const newNode = {
       ...nodeToDuplicate,

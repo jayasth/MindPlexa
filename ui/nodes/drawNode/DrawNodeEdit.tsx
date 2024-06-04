@@ -55,15 +55,10 @@ import { useHistory } from '@/ui/nodes/drawNode/drawNodeHistory';
 import { getNodeSpecificProperties } from '@/ui/canvasEditor/utils/nodeProperties';
 import type { IconType } from 'react-icons/lib';
 import DrawNodeToolbar from '@/ui/nodes/drawNode/components/DrawNodeToolbar';
+import type { DrawNodeData } from '@/ui/canvasEditor/utils/nodeDatatypes';
 
 interface DrawNodeEditProps extends NodeProps {
-  data: {
-    id: string;
-    title?: string;
-    backgroundColor?: string;
-    textColor?: string;
-    content?: string;
-  };
+  data: DrawNodeData;
   width: number;
   height: number;
   selected: boolean;

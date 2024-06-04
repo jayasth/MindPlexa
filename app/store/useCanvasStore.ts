@@ -13,6 +13,13 @@ import {
   nodeDimensions,
   getNodeSpecificProperties
 } from '@/ui/canvasEditor/utils/nodeProperties';
+import {
+  NoteNodeData,
+  TaskNodeData,
+  TableNodeData,
+  CalendarNodeData,
+  DrawNodeData
+} from '@/ui/canvasEditor/utils/nodeDatatypes';
 
 interface CanvasState {
   nodes: Node[];
@@ -115,6 +122,28 @@ export const useStore = createStore<CanvasState>((set, get) => ({
         toolbarColor: toolbarColor // Computed toolbar color
       }
     };
+
+    switch (node.type) {
+      case 'note':
+        newNode.data = { ...newNode.data, ...(node.data as NoteNodeData) };
+        break;
+      case 'task':
+        newNode.data = { ...newNode.data, ...(node.data as TaskNodeData) };
+        break;
+      case 'table':
+        newNode.data = { ...newNode.data, ...(node.data as TableNodeData) };
+        break;
+      case 'calendar':
+        newNode.data = { ...newNode.data, ...(node.data as CalendarNodeData) };
+        break;
+      case 'draw':
+        newNode.data = { ...newNode.data, ...(node.data as DrawNodeData) };
+        break;
+      // Add more cases for other node types if needed
+      default:
+        break;
+    }
+
     console.log('Store: New node with position and dimensions:', newNode);
     set((state) => {
       const canvasSize = {
@@ -132,44 +161,57 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       const existingNodeIndex = state.nodes.findIndex((node) => node.id === id);
       if (existingNodeIndex !== -1) {
         const existingNode = state.nodes[existingNodeIndex];
-        const updatedBackgroundColor =
-          data.data && data.data.backgroundColor
-            ? data.data.backgroundColor
-            : existingNode.data.backgroundColor || '#F4F4F4';
-        const updatedTextColor =
-          data.data && data.data.textColor
-            ? data.data.textColor
-            : existingNode.data.textColor || '#575757';
-
-        const updatedTags =
-          data.data && data.data.tags
-            ? data.data.tags
-            : existingNode.data.tags || [];
-        const updatedAttachedFiles =
-          data.data && data.data.attachedFiles
-            ? data.data.attachedFiles
-            : existingNode.data.attachedFiles || [];
-
         const updatedNode = {
           ...existingNode,
           ...data,
-          style: {
-            ...existingNode.style,
-            color: updatedTextColor
-          },
           data: {
             ...existingNode.data,
             ...data.data,
-            textColor: updatedTextColor,
-            tags: updatedTags,
-            attachedFiles: updatedAttachedFiles
-          },
-          position: data.position || existingNode.position,
-          width: data.width !== undefined ? data.width : existingNode.width,
-          height: data.height !== undefined ? data.height : existingNode.height,
-          selected:
-            data.selected !== undefined ? data.selected : existingNode.selected
+            backgroundColor:
+              data.data?.backgroundColor || existingNode.data.backgroundColor,
+            textColor: data.data?.textColor || existingNode.data.textColor,
+            tags: data.data?.tags || existingNode.data.tags || [],
+            attachedFiles:
+              data.data?.attachedFiles || existingNode.data.attachedFiles || []
+          }
         };
+
+        switch (existingNode.type) {
+          case 'note':
+            updatedNode.data = {
+              ...updatedNode.data,
+              ...(data.data as NoteNodeData)
+            };
+            break;
+          case 'task':
+            updatedNode.data = {
+              ...updatedNode.data,
+              ...(data.data as TaskNodeData)
+            };
+            break;
+          case 'table':
+            updatedNode.data = {
+              ...updatedNode.data,
+              ...(data.data as TableNodeData)
+            };
+            break;
+          case 'calendar':
+            updatedNode.data = {
+              ...updatedNode.data,
+              ...(data.data as CalendarNodeData)
+            };
+            break;
+          case 'draw':
+            updatedNode.data = {
+              ...updatedNode.data,
+              ...(data.data as DrawNodeData)
+            };
+            break;
+          // Add more cases for other node types if needed
+          default:
+            break;
+        }
+
         const updatedNodes = [...state.nodes];
         updatedNodes[existingNodeIndex] = updatedNode;
         state.nodeInternals.set(id, updatedNode);

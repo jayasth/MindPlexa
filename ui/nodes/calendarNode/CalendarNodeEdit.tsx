@@ -36,18 +36,12 @@ import {
 import { CompactPicker } from 'react-color';
 import EventModal from '@/ui/nodes/calendarNode/EventModal';
 import CalendarToolbar from '@/ui/nodes/calendarNode/CalendarToolbar';
+import { CalendarNodeData } from '@/ui/canvasEditor/utils/nodeDatatypes';
 
 const localizer = momentLocalizer(moment);
 
 interface CalendarNodeEditProps extends NodeProps {
-  data: {
-    id: string;
-    events?: any[];
-    title?: string;
-    backgroundColor?: string;
-    textColor?: string;
-    view?: string;
-  };
+  data: CalendarNodeData;
   width: number;
   height: number;
   selected: boolean;

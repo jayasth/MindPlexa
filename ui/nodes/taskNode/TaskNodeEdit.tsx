@@ -41,17 +41,11 @@ import {
 import { SortableItem } from './SortableItem';
 import { CompactPicker } from 'react-color';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
-import Button from '@/ui/Button/Button';
 import { getNodeSpecificProperties } from '@/ui/canvasEditor/utils/nodeProperties';
+import { TaskNodeData } from '@/ui/canvasEditor/utils/nodeDatatypes';
 
 interface TaskNodeEditProps extends NodeProps {
-  data: {
-    id: string;
-    tasks?: { id: string; text: string; completed: boolean }[];
-    title?: string;
-    backgroundColor?: string;
-    textColor?: string;
-  };
+  data: TaskNodeData;
   width: number;
   height: number;
   selected: boolean;
