@@ -29,7 +29,6 @@ import {
   ExportButton,
   ImportButton
 } from '@/ui/nodes/tableNode/TableNodeToolbar';
-import { CompactPicker } from 'react-color';
 import AddTableModal from '@/ui/nodes/tableNode/AddTableModal';
 import CustomHeader from '@/ui/nodes/tableNode/CustomHeader';
 
@@ -84,9 +83,10 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
 }) => {
   const [isSelected, setIsSelected] = useState(selected);
   const [title, setTitle] = useState(data.title || 'Untitled Table');
-  const [content, setContent] = useState(
-    data.content || { columns: [], rows: [] }
-  );
+  const [content, setContent] = useState({
+    columns: data.columns || [],
+    rows: data.rows || []
+  });
   const [backgroundColor, setBackgroundColor] = useState(
     data.backgroundColor || '#F4F4F4'
   );
@@ -109,7 +109,8 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   useEffect(() => {
     if (
       title !== data.title ||
-      content !== data.content ||
+      content.columns !== data.columns ||
+      content.rows !== data.rows ||
       tags.length > 0 ||
       attachedFiles.length > 0 ||
       backgroundColor !== data.backgroundColor ||
@@ -118,7 +119,8 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
       updateNode(data.id, {
         data: {
           title,
-          content,
+          columns: content.columns,
+          rows: content.rows,
           tags,
           attachedFiles,
           backgroundColor,
@@ -261,6 +263,15 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           onClick={() => handleClose(data.id, () => {}, title, content)}
         />
       </div>
+      <div className={styles.toolbar}>
+        <AddTableButton onClick={() => setIsModalOpen(true)} />{' '}
+        <AddColumnButton
+          onClick={() => addColumn(content, setContent, updateNode)}
+        />
+        <AddRowButton onClick={() => addRow(content, setContent, updateNode)} />
+        <ExportButton onClick={() => exportTableData(content)} />
+        <ImportButton onChange={(e) => importTableData(e, setContent)} />
+      </div>
       <div className={`${styles.tableContent} nowheel nodrag`}>
         <div
           className="ag-theme-alpine"
@@ -268,8 +279,14 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
         >
           <AgGridReact
             columnDefs={content.columns.map((col) => ({
+              ...col,
+              headerComponent: CustomHeader,
+              headerComponentParams: {
+                content,
+                setContent,
+                updateNode
+              },
               headerName: col.headerName,
-              field: col.field,
               type: col.type,
               sortable: false,
               filter: false
@@ -344,7 +361,8 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           onClick={() =>
             handleSave(data.id, () => {}, {
               title,
-              content,
+              columns: content.columns,
+              rows: content.rows,
               tags,
               attachedFiles
             })
@@ -388,6 +406,29 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
         existingFiles={attachedFiles}
         data={data}
       />
+      {isModalOpen && (
+        <AddTableModal
+          onClose={() => setIsModalOpen(false)}
+          onAddTable={(columns, rows) => {
+            const newColumns = columns.map((col, index) => ({
+              headerName: col.name || `Column ${index + 1}`,
+              field: `col${index + 1}`,
+              editable: true,
+              type: col.type,
+              defaultValue: col.defaultValue
+            }));
+
+            const newRows = Array.from({ length: rows }, () =>
+              newColumns.reduce((acc, col) => {
+                acc[col.field] = col.defaultValue || '';
+                return acc;
+              }, {})
+            );
+
+            setContent({ columns: newColumns, rows: newRows });
+          }}
+        />
+      )}
     </div>
   );
 };
