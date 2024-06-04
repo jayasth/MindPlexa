@@ -17,7 +17,10 @@ import {
   AddTagButton,
   AttachFileButton,
   CloseButton,
-  DuplicateButton
+  DuplicateButton,
+  TagModal,
+  FileModal,
+  ColorPickerModal
 } from '@/ui/nodes/CommonNodeComponents';
 import {
   AddTableButton,
@@ -50,8 +53,10 @@ import {
   handleChangeColorWithCombination,
   handleClose,
   handleDuplicate,
+  handleRemoveAttachedFile,
   colorCombinations,
-  getContrastYIQ
+  getContrastYIQ,
+  handleAttachmentPreview
 } from '@/ui/canvasEditor/utils/CommonNodeFunctions';
 
 import { TableNodeData } from '@/ui/canvasEditor/utils/nodeDatatypes';
@@ -86,12 +91,16 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     data.backgroundColor || '#F4F4F4'
   );
   const [textColor, setTextColor] = useState(data.textColor || '#575757');
-  const [tags, setTags] = useState<string[]>([]);
-  const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
+  const [tags, setTags] = useState<string[]>(data.tags || []);
+  const [attachedFiles, setAttachedFiles] = useState<File[]>(
+    data.attachedFiles || []
+  );
   const [isContainerSelected, setIsContainerSelected] = useState(false);
   const [nodeWidth, setNodeWidth] = useState(width);
   const [nodeHeight, setNodeHeight] = useState(height);
   const [isColorPickerVisible, setIsColorPickerVisible] = useState(false);
+  const [isTagModalOpen, setIsTagModalOpen] = useState(false);
+  const [isFileModalOpen, setIsFileModalOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const updateNode = useStore((state) => state.updateNode);
@@ -157,15 +166,24 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     }
   };
 
-  console.log(`TableNodeEdit: Background color changed to: ${backgroundColor}`);
-  console.log(`TableNodeEdit: Text color changed to: ${textColor}`);
-
   const onAddTag = (newTag: string) => {
-    setTags([...tags, newTag]);
+    const uniqueTags = Array.from(new Set([...tags, newTag]));
+    setTags(uniqueTags);
+    handleAddTag(data.id, uniqueTags, () => {});
+  };
+
+  const onRemoveTag = (tagToRemove: string) => {
+    const updatedTags = tags.filter((tag) => tag !== tagToRemove);
+    setTags(updatedTags);
+    handleAddTag(data.id, updatedTags, () => {});
   };
 
   const onAttachFiles = (files: File[]) => {
     setAttachedFiles(files);
+  };
+
+  const onRemoveFile = (fileToRemove: File) => {
+    handleRemoveAttachedFile(data.id, fileToRemove, () => {});
   };
 
   useEffect(() => {
@@ -324,10 +342,8 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
         />
         <DeleteButton onClick={() => handleDelete(data.id, () => {})} />
         <ChangeColorButton onClick={() => toggleColorPicker()} />
-        <AddTagButton onClick={() => handleAddTag(data.id, tags, onAddTag)} />
-        <AttachFileButton
-          onChange={(e) => handleAttachFile(data.id, onAttachFiles)(e)}
-        />
+        <AddTagButton onClick={() => setIsTagModalOpen(true)} />
+        <AttachFileButton onClick={() => setIsFileModalOpen(true)} />
         <DuplicateButton onClick={() => handleDuplicate(data.id)} />
         {isColorPickerVisible && (
           <div className={`${styles.colorPicker} nodrag`} ref={colorPickerRef}>
@@ -392,6 +408,21 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           onAddTable={handleAddTable}
         />
       )}
+      <TagModal
+        isOpen={isTagModalOpen}
+        onClose={() => setIsTagModalOpen(false)}
+        onAddTag={onAddTag}
+        onRemoveTag={onRemoveTag}
+        existingTags={tags}
+      />
+      <FileModal
+        isOpen={isFileModalOpen}
+        onClose={() => setIsFileModalOpen(false)}
+        onAttachFiles={onAttachFiles}
+        onRemoveFile={onRemoveFile}
+        existingFiles={attachedFiles}
+        data={data}
+      />
     </div>
   );
 };

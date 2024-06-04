@@ -9,28 +9,6 @@ import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
 import { useStore } from '@/app/store/useCanvasStore';
 import styles from './DrawNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
-import {
-  SaveButton,
-  DeleteButton,
-  ChangeColorButton,
-  AddTagButton,
-  AttachFileButton,
-  CloseButton,
-  DuplicateButton
-} from '@/ui/nodes/CommonNodeComponents';
-import {
-  handleTitleChange,
-  handleSave,
-  handleClose,
-  handleDelete,
-  handleChangeColorWithCombination,
-  handleAddTag,
-  handleAttachFile,
-  handleDuplicate,
-  getContrastYIQ,
-  colorCombinations
-} from '@/ui/canvasEditor/utils/CommonNodeFunctions';
-import { CompactPicker } from 'react-color';
 
 import {
   FaPencilAlt,
@@ -56,6 +34,31 @@ import { getNodeSpecificProperties } from '@/ui/canvasEditor/utils/nodePropertie
 import type { IconType } from 'react-icons/lib';
 import DrawNodeToolbar from '@/ui/nodes/drawNode/components/DrawNodeToolbar';
 import type { DrawNodeData } from '@/ui/canvasEditor/utils/nodeDatatypes';
+import {
+  SaveButton,
+  DeleteButton,
+  ChangeColorButton,
+  AddTagButton,
+  AttachFileButton,
+  CloseButton,
+  DuplicateButton,
+  TagModal,
+  FileModal,
+  ColorPickerModal
+} from '@/ui/nodes/CommonNodeComponents';
+import {
+  handleTitleChange,
+  handleSave,
+  handleClose,
+  handleDelete,
+  handleChangeColorWithCombination,
+  handleAddTag,
+  handleRemoveAttachedFile,
+  handleDuplicate,
+  colorCombinations,
+  getContrastYIQ,
+  handleAttachmentPreview
+} from '@/ui/canvasEditor/utils/CommonNodeFunctions';
 
 interface DrawNodeEditProps extends NodeProps {
   data: DrawNodeData;
@@ -106,16 +109,20 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     data.backgroundColor || '#F4F4F4'
   );
   const [textColor, setTextColor] = useState(data.textColor || '#575757');
-  const [tags, setTags] = useState<string[]>([]);
-  const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
+  const [tags, setTags] = useState<string[]>(data.tags || []);
+  const [attachedFiles, setAttachedFiles] = useState<File[]>(
+    data.attachedFiles || []
+  );
   const [isContainerSelected, setIsContainerSelected] = useState(false);
   const [nodeWidth, setNodeWidth] = useState(width);
   const [nodeHeight, setNodeHeight] = useState(height);
-  const [isColorPickerVisible, setIsColorPickerVisible] = useState(false);
-  const [content, setContent] = useState(data.content || '');
+  const [drawingData, setDrawingData] = useState(data.drawingData || '');
   const [color, setColor] = useState('#531B93');
   const [strokeWidth, setStrokeWidth] = useState(5);
   const [sizeOpen, setSizeOpen] = useState(false);
+  const [isColorPickerVisible, setIsColorPickerVisible] = useState(false);
+  const [isTagModalOpen, setIsTagModalOpen] = useState(false);
+  const [isFileModalOpen, setIsFileModalOpen] = useState(false);
   const artboardInstance = useRef<ArtboardRef | null>(null);
 
   const brush = useBrush({ color, strokeWidth });
@@ -143,13 +150,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const { undo, redo, history, canUndo, canRedo } = useHistory();
 
   const updateNode = useStore((state) => state.updateNode);
-  const colorPickerRef = useRef<HTMLDivElement>(null);
   const sizePickerRef = useRef<HTMLDivElement>(null);
-  const backgroundColorPickerRef = useRef<HTMLDivElement>(null);
-
-  useClickOutside(backgroundColorPickerRef, () =>
-    setIsColorPickerVisible(false)
-  );
 
   useEffect(() => {
     const nodeProperties = getNodeSpecificProperties('draw', true);
@@ -163,9 +164,9 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         title,
         tags,
         attachedFiles,
-        backgroundColor,
         textColor,
-        content
+        backgroundColor,
+        drawingData
       }
     });
   }, [
@@ -173,9 +174,9 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     title,
     tags,
     attachedFiles,
-    backgroundColor,
     textColor,
-    content,
+    backgroundColor,
+    drawingData,
     updateNode
   ]);
 
@@ -185,12 +186,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        colorPickerRef.current &&
-        !colorPickerRef.current.contains(event.target as Node)
-      ) {
-        setIsColorPickerVisible(false);
-      }
       if (
         sizePickerRef.current &&
         !sizePickerRef.current.contains(event.target as Node)
@@ -208,45 +203,24 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     setStrokeWidth(tools[currentTool][2]);
   }, [currentTool]);
 
-  const onChangeTitle = (value: string) => {
-    handleTitleChange(data.id, value, setTitle);
+  const onAddTag = (newTags: string[]) => {
+    const uniqueTags = Array.from(new Set([...tags, ...newTags]));
+    setTags(uniqueTags);
+    handleAddTag(data.id, uniqueTags, () => {});
   };
 
-  const onAddTag = (tag: string) => {
-    setTags([...tags, tag]);
+  const onRemoveTag = (tagToRemove: string) => {
+    const updatedTags = tags.filter((tag) => tag !== tagToRemove);
+    setTags(updatedTags);
+    handleAddTag(data.id, updatedTags, () => {});
   };
 
   const onAttachFiles = (files: File[]) => {
     setAttachedFiles([...attachedFiles, ...files]);
   };
 
-  const toggleColorPicker = () => {
-    setIsColorPickerVisible(!isColorPickerVisible);
-  };
-
-  const handleBackgroundColorChange = (color: { hex: string }) => {
-    const selectedCombination = colorCombinations.find(
-      (combination) =>
-        combination.background.toLowerCase() === color.hex.toLowerCase()
-    );
-    if (selectedCombination) {
-      setTextColor(selectedCombination.text);
-      handleChangeColorWithCombination(
-        data.id,
-        selectedCombination.background,
-        selectedCombination.text,
-        setBackgroundColor
-      );
-    } else {
-      const calculatedTextColor = getContrastYIQ(color.hex);
-      setTextColor(calculatedTextColor);
-      handleChangeColorWithCombination(
-        data.id,
-        color.hex,
-        calculatedTextColor,
-        setBackgroundColor
-      );
-    }
+  const onRemoveFile = (fileToRemove: File) => {
+    handleRemoveAttachedFile(data.id, fileToRemove, () => {});
   };
 
   const handleContainerClick = () => {
@@ -263,29 +237,8 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     onNodeResizeStop(data.id, { width, height }, position);
   };
 
-  const handleSaveDrawing = () => {
-    const artboardRef = artboardInstance.current;
-    if (artboardRef) {
-      const dataUri = artboardRef.getImageAsDataUri();
-      setContent(dataUri || '');
-      handleSave(data.id, () => {}, {
-        title,
-        tags,
-        attachedFiles,
-        backgroundColor,
-        textColor,
-        content: dataUri
-      });
-    }
-  };
-
-  const handleCloseDrawing = () => {
-    const artboardRef = artboardInstance.current;
-    if (artboardRef) {
-      const dataUri = artboardRef.getImageAsDataUri();
-      setContent(dataUri || '');
-      handleClose(data.id, () => {}, title, dataUri);
-    }
+  const toggleColorPicker = () => {
+    setIsColorPickerVisible(!isColorPickerVisible);
   };
 
   const customStyles: CSSProperties = {
@@ -312,11 +265,13 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         <input
           type="text"
           value={title}
-          onChange={(e) => onChangeTitle(e.target.value)}
+          onChange={(e) => handleTitleChange(data.id, e.target.value, setTitle)}
           className={`${styles.titleInput} nodrag`}
           style={{ color: textColor }}
         />
-        <CloseButton onClick={handleCloseDrawing} />
+        <CloseButton
+          onClick={() => handleClose(data.id, () => {}, title, drawingData)}
+        />
       </div>
       <div className={`${styles.drawContent} nowheel nodrag`}>
         <DrawNodeToolbar
@@ -331,8 +286,8 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
           redo={redo}
           canUndo={canUndo}
           canRedo={canRedo}
-          download={() => {}}
-          clear={() => {}}
+          download={() => artboardInstance.current?.download()}
+          clear={() => artboardInstance.current?.clear()}
         />
         <div id="artboard" className={styles.artboard}>
           <Artboard
@@ -340,58 +295,45 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
             ref={artboardInstance}
             history={history}
             style={{ border: '1px gray solid' }}
-            content={content}
+            content={drawingData}
             width={nodeWidth / 2}
             height={nodeHeight / 2}
           />
         </div>
       </div>
       <div className={styles.footer}>
-        <SaveButton onClick={handleSaveDrawing} />
-        <DeleteButton onClick={() => handleDelete(data.id, () => {})} />
-        <ChangeColorButton onClick={toggleColorPicker} />
-        <AddTagButton onClick={() => handleAddTag(data.id, tags, onAddTag)} />
-        <AttachFileButton
-          onChange={(e) => handleAttachFile(data.id, onAttachFiles)(e)}
+        <SaveButton
+          onClick={() =>
+            handleSave(data.id, () => {}, {
+              ...data,
+              title,
+              tags,
+              attachedFiles,
+              backgroundColor,
+              textColor,
+              drawingData
+            })
+          }
         />
+        <DeleteButton onClick={() => handleDelete(data.id, () => {})} />
+        <ChangeColorButton onClick={() => toggleColorPicker()} />
+        <AddTagButton onClick={() => setIsTagModalOpen(true)} />
+        <AttachFileButton onClick={() => setIsFileModalOpen(true)} />
         <DuplicateButton onClick={() => handleDuplicate(data.id)} />
-        {isColorPickerVisible && (
-          <div
-            className={`${styles.colorPicker} nodrag`}
-            ref={backgroundColorPickerRef}
-          >
-            <CompactPicker
-              color={backgroundColor}
-              onChange={handleBackgroundColorChange}
-              colors={colorCombinations.map(
-                (combination) => combination.background
-              )}
-              styles={{
-                default: {
-                  input: {
-                    height: '16px',
-                    fontSize: '12px'
-                  },
-                  swatch: {
-                    width: '20px',
-                    height: '20px',
-                    position: 'relative'
-                  }
-                }
-              }}
-              width="180px"
-              className="compact-picker"
-            />
-            {colorCombinations.map((combination) => (
-              <div
-                key={combination.background}
-                className="compact-picker__swatch"
-                style={{ backgroundColor: combination.background }}
-                data-name={combination.name}
-              />
-            ))}
-          </div>
-        )}
+        <ColorPickerModal
+          isOpen={isColorPickerVisible}
+          onClose={() => setIsColorPickerVisible(false)}
+          currentColor={backgroundColor}
+          onChangeColor={(color) =>
+            handleChangeColorWithCombination(
+              data.id,
+              color.hex,
+              getContrastYIQ(color.hex),
+              setBackgroundColor
+            )
+          }
+          colorCombinations={colorCombinations}
+        />
       </div>
       <div className={styles.tagContainer}>
         {tags.map((tag, index) => (
@@ -414,6 +356,21 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         type="source"
         position={Position.Bottom}
         className={`${edgeStyles.reactFlowHandle} ${edgeStyles.reactFlowHandleBottom}`}
+      />
+      <TagModal
+        isOpen={isTagModalOpen}
+        onClose={() => setIsTagModalOpen(false)}
+        onAddTag={onAddTag}
+        onRemoveTag={onRemoveTag}
+        existingTags={tags}
+      />
+      <FileModal
+        isOpen={isFileModalOpen}
+        onClose={() => setIsFileModalOpen(false)}
+        onAttachFiles={onAttachFiles}
+        onRemoveFile={onRemoveFile}
+        existingFiles={attachedFiles}
+        data={data}
       />
     </div>
   );

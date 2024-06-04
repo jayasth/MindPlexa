@@ -4,15 +4,6 @@ import { useStore } from '@/app/store/useCanvasStore';
 import styles from './TaskNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 import {
-  SaveButton,
-  DeleteButton,
-  ChangeColorButton,
-  AddTagButton,
-  AttachFileButton,
-  CloseButton,
-  DuplicateButton
-} from '@/ui/nodes/CommonNodeComponents';
-import {
   handleTitleChange,
   handleSave,
   handleClose,
@@ -21,9 +12,22 @@ import {
   handleAddTag,
   handleAttachFile,
   handleDuplicate,
+  handleRemoveAttachedFile,
   getContrastYIQ,
   colorCombinations
 } from '@/ui/canvasEditor/utils/CommonNodeFunctions';
+import {
+  SaveButton,
+  DeleteButton,
+  ChangeColorButton,
+  AddTagButton,
+  AttachFileButton,
+  CloseButton,
+  DuplicateButton,
+  TagModal,
+  FileModal,
+  ColorPickerModal
+} from '@/ui/nodes/CommonNodeComponents';
 import {
   DndContext,
   closestCenter,
@@ -39,7 +43,6 @@ import {
   verticalListSortingStrategy
 } from '@dnd-kit/sortable';
 import { SortableItem } from './SortableItem';
-import { CompactPicker } from 'react-color';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { getNodeSpecificProperties } from '@/ui/canvasEditor/utils/nodeProperties';
 import { TaskNodeData } from '@/ui/canvasEditor/utils/nodeDatatypes';
@@ -72,12 +75,16 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
     data.backgroundColor || '#F4F4F4'
   );
   const [textColor, setTextColor] = useState(data.textColor || '#575757');
-  const [tags, setTags] = useState<string[]>([]);
-  const [attachedFiles, setAttachedFiles] = useState<File[]>([]);
+  const [tags, setTags] = useState<string[]>(data.tags || []);
+  const [attachedFiles, setAttachedFiles] = useState<File[]>(
+    data.attachedFiles || []
+  );
   const [isContainerSelected, setIsContainerSelected] = useState(false);
   const [nodeWidth, setNodeWidth] = useState(width);
   const [nodeHeight, setNodeHeight] = useState(height);
   const [isColorPickerVisible, setIsColorPickerVisible] = useState(false);
+  const [isTagModalOpen, setIsTagModalOpen] = useState(false);
+  const [isFileModalOpen, setIsFileModalOpen] = useState(false);
   const [newTaskText, setNewTaskText] = useState('');
   const [showCompletedTasks, setShowCompletedTasks] = useState(true);
 
@@ -92,7 +99,14 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
 
   useEffect(() => {
     updateNode(data.id, {
-      data: { title, tasks, tags, attachedFiles, backgroundColor, textColor }
+      data: {
+        title,
+        tasks,
+        tags,
+        attachedFiles,
+        backgroundColor,
+        textColor
+      }
     });
   }, [
     data.id,
@@ -160,10 +174,24 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
 
   const onAddTag = (tag: string) => {
     setTags([...tags, tag]);
+    handleAddTag(data.id, [...tags, tag], () => {});
+  };
+
+  const onRemoveTag = (tagToRemove: string) => {
+    const updatedTags = tags.filter((tag) => tag !== tagToRemove);
+    setTags(updatedTags);
+    handleAddTag(data.id, updatedTags, () => {});
   };
 
   const onAttachFiles = (files: File[]) => {
     setAttachedFiles([...attachedFiles, ...files]);
+    handleAttachFile(data.id, [...attachedFiles, ...files], () => {});
+  };
+
+  const onRemoveFile = (fileToRemove: File) => {
+    const updatedFiles = attachedFiles.filter((file) => file !== fileToRemove);
+    setAttachedFiles(updatedFiles);
+    handleRemoveAttachedFile(data.id, fileToRemove, () => {});
   };
 
   const sensors = useSensors(
@@ -316,46 +344,10 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
           }
         />
         <DeleteButton onClick={() => handleDelete(data.id, () => {})} />
-        <ChangeColorButton onClick={toggleColorPicker} />
-        <AddTagButton onClick={() => handleAddTag(data.id, tags, onAddTag)} />
-        <AttachFileButton
-          onChange={(e) => handleAttachFile(data.id, onAttachFiles)(e)}
-        />
+        <ChangeColorButton onClick={() => toggleColorPicker()} />
+        <AddTagButton onClick={() => setIsTagModalOpen(true)} />
+        <AttachFileButton onClick={() => setIsFileModalOpen(true)} />
         <DuplicateButton onClick={() => handleDuplicate(data.id)} />
-        {isColorPickerVisible && (
-          <div className={`${styles.colorPicker} nodrag`} ref={colorPickerRef}>
-            <CompactPicker
-              color={backgroundColor}
-              onChange={handleBackgroundColorChange}
-              colors={colorCombinations.map(
-                (combination) => combination.background
-              )}
-              styles={{
-                default: {
-                  input: {
-                    height: '16px',
-                    fontSize: '12px'
-                  },
-                  swatch: {
-                    width: '20px',
-                    height: '20px',
-                    position: 'relative'
-                  }
-                }
-              }}
-              width="180px"
-              className="compact-picker"
-            />
-            {colorCombinations.map((combination) => (
-              <div
-                key={combination.background}
-                className="compact-picker__swatch"
-                style={{ backgroundColor: combination.background }}
-                data-name={combination.name}
-              />
-            ))}
-          </div>
-        )}
         <button
           onClick={toggleShowCompletedTasks}
           className={styles.iconButton}
@@ -365,6 +357,28 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
         >
           {showCompletedTasks ? <FaEyeSlash /> : <FaEye />}
         </button>
+        <ColorPickerModal
+          isOpen={isColorPickerVisible}
+          onClose={() => setIsColorPickerVisible(false)}
+          currentColor={backgroundColor}
+          onChangeColor={handleBackgroundColorChange}
+          colorCombinations={colorCombinations}
+        />
+        <TagModal
+          isOpen={isTagModalOpen}
+          onClose={() => setIsTagModalOpen(false)}
+          onAddTag={onAddTag}
+          onRemoveTag={onRemoveTag}
+          existingTags={tags}
+        />
+        <FileModal
+          isOpen={isFileModalOpen}
+          onClose={() => setIsFileModalOpen(false)}
+          onAttachFiles={onAttachFiles}
+          onRemoveFile={onRemoveFile}
+          existingFiles={attachedFiles}
+          data={data}
+        />
       </div>
       <div className={styles.tagContainer}>
         {tags.map((tag, index) => (

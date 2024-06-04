@@ -9,6 +9,40 @@
   cursor: move;
 }
 
+.drawContent {
+  flex-grow: 1;
+  overflow: auto;
+  background-color: transparent;
+  outline: none;
+  resize: none;
+  padding: 8px;
+  z-index: 0;
+  cursor: text;
+  border: 1px solid #ccc;
+  display: flex;
+  flex-direction: column;
+}
+
+.canvas {
+  width: 100%;
+  height: 100%;
+  border: 1px solid #ccc;
+  cursor: crosshair;
+  flex: 1;
+}
+
+.artboard {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid gray;
+  width: 100%;
+  height: 100%;
+}
+
+/* common on all nodes */
+
 .header {
   display: flex;
   align-items: center;
@@ -42,41 +76,41 @@
   justify-content: space-between;
   margin-top: 8px;
   background-color: transparent;
+  padding: 4px;
 }
 
-.actionButton {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  margin-left: 4px;
-  color: inherit;
-}
-
-.fileInput {
-  display: none;
-}
-
-.drawContent {
-  flex-grow: 1;
-  overflow: auto;
-  background-color: transparent;
-  outline: none;
-  resize: none;
-  padding: 8px;
-  z-index: 0;
-  cursor: text;
-  border: 1px solid #ccc;
+.tagFileContainer {
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
+  margin-top: 8px;
+  border: 1px solid #ccc;
+  padding: 8px;
 }
 
-.canvas {
-  width: 100%;
-  height: 100%;
-  border: 1px solid #ccc;
-  cursor: crosshair;
-  flex: 1;
+.tagContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.fileContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.file {
+  background-color: transparent;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.attachedFile {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #666;
 }
 
 .colorPicker {
@@ -99,6 +133,7 @@
   white-space: nowrap;
   z-index: 10;
 }
+
 .nodrag {
   -webkit-user-drag: none;
   user-select: none;
@@ -112,34 +147,4 @@
 
 .nowheel::-webkit-scrollbar {
   display: none; /* Safari and Chrome */
-}
-
-.artboard {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border: 1px solid gray;
-  width: 100%;
-  height: 100%;
-}
-
-.tagContainer {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  margin-top: 8px;
-}
-
-.tag {
-  background-color: #e0e0e0;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 12px;
-}
-
-.attachedFile {
-  margin-top: 8px;
-  font-size: 12px;
-  color: #666;
 }
