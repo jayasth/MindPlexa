@@ -21,29 +21,29 @@ export const validateCellValue = (value: any, type: string): boolean => {
   }
 };
 
-export const onCellValueChanged = (event, setContent) => {
-  const { colDef, newValue, oldValue, data, api } = event;
+export const onCellValueChanged = (event, setContent, setAlert) => {
+  const { colDef, newValue, oldValue, api } = event;
   const columnType = colDef.type;
 
   if (!validateCellValue(newValue, columnType)) {
-    const userConfirmed = window.confirm(
-      `Invalid value for column type ${columnType}. Do you want to keep the new value?`
-    );
-    if (!userConfirmed) {
-      // Revert to the old value
-      const rowIndex = event.rowIndex;
-      const colId = colDef.field;
-      if (colId !== undefined && rowIndex !== null) {
-        const newRows = [...data];
-        newRows[rowIndex][colId] = oldValue;
-        setContent((prevContent) => ({
-          ...prevContent,
-          rows: newRows
-        }));
-        api.refreshCells({ rowNodes: [event.node], columns: [colId] });
-      }
-      return;
-    }
+    // Display an error message and highlight the invalid cell
+    setAlert({
+      type: 'error',
+      message: `Invalid value for column type ${columnType}. Please enter a valid value.`,
+      show: true
+    });
+
+    // Highlight the invalid cell
+    api.flashCells({
+      rowNodes: [event.node],
+      columns: [colDef.field],
+      flashDelay: 2000
+    });
+
+    // Keep the invalid value but highlight the cell
+    event.node.setDataValue(colDef.field, newValue);
+    api.refreshCells({ rowNodes: [event.node], columns: [colDef.field] });
+    return;
   }
 
   setContent((prevContent) => {

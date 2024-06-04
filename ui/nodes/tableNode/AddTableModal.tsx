@@ -101,7 +101,7 @@ const AddTableModal = ({ onClose, onAddTable, hasExistingData }) => {
         <div className={styles.formGroup}>
           <label>Number of Rows:</label>
           <Input
-            type="tel"
+            type="number"
             value={rows}
             onChange={handleRowsChange}
             min="1"

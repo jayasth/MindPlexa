@@ -327,7 +327,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
               params.api.sizeColumnsToFit();
             }}
             onCellValueChanged={(event) =>
-              onCellValueChanged(event, setContent)
+              onCellValueChanged(event, setContent, () => {})
             }
           />
         </div>
