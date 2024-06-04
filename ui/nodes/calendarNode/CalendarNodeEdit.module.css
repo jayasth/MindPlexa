@@ -11,47 +11,6 @@
   color: var(--text-color, #575757);
 }
 
-.header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 12px;
-  background-color: transparent;
-  z-index: 0;
-  cursor: move;
-}
-
-.titleInput {
-  font-size: 14px;
-  font-weight: bold;
-  border: none;
-  background-color: transparent;
-  outline: none;
-  flex-grow: 1;
-  cursor: text;
-  color: inherit;
-}
-
-.footer {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 8px;
-  background-color: transparent;
-}
-
-.actionButton {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  margin-left: 4px;
-  color: inherit;
-}
-
-.fileInput {
-  display: none;
-}
-
 .calendarContent {
   flex-grow: 1;
   overflow: auto;
@@ -64,18 +23,70 @@
   cursor: text;
 }
 
+/* common on all nodes */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background-color: transparent;
+  z-index: 0;
+  cursor: move;
+}
+
+.titleInput {
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  background-color: transparent;
+  outline: none;
+  flex-grow: 1;
+  cursor: text;
+  color: inherit;
+  box-shadow: none !important;
+}
+
+.titleInput:focus,
+.titleInput:active {
+  border-bottom: 2px solid #989ff0;
+  transition: border-bottom 0.3s ease-in-out;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  background-color: transparent;
+  padding: 4px;
+}
+
+.tagFileContainer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  border: 1px solid #ccc;
+  padding: 8px;
+}
+
 .tagContainer {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
-  margin-top: 8px;
 }
 
-.tag {
-  background-color: #e0e0e0;
+.fileContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.file {
+  background-color: transparent;
   padding: 2px 6px;
   border-radius: 4px;
   font-size: 12px;
+  cursor: pointer;
 }
 
 .attachedFile {

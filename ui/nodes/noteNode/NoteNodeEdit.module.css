@@ -9,6 +9,39 @@
   cursor: move;
 }
 
+.noteContent {
+  flex-grow: 1;
+  overflow: auto;
+  background-color: transparent;
+  border: 1px solid #ccc;
+  outline: none;
+  resize: none;
+  padding: 8px;
+  z-index: 0;
+  cursor: text;
+}
+
+.ql-toolbar {
+  color: inherit;
+  background-color: inherit;
+}
+
+.ql-stroke {
+  fill: none;
+  stroke: inherit;
+}
+
+.ql-fill {
+  fill: inherit;
+  stroke: none;
+}
+
+.ql-picker {
+  color: inherit;
+}
+
+/* common on all nodes */
+
 .header {
   display: flex;
   align-items: center;
@@ -43,18 +76,6 @@
   margin-top: 8px;
   background-color: transparent;
   padding: 4px;
-}
-
-.noteContent {
-  flex-grow: 1;
-  overflow: auto;
-  background-color: transparent;
-  border: 1px solid #ccc;
-  outline: none;
-  resize: none;
-  padding: 8px;
-  z-index: 0;
-  cursor: text;
 }
 
 .tagFileContainer {
@@ -110,25 +131,6 @@
   font-size: 12px;
   white-space: nowrap;
   z-index: 10;
-}
-
-.ql-toolbar {
-  color: inherit;
-  background-color: inherit;
-}
-
-.ql-stroke {
-  fill: none;
-  stroke: inherit;
-}
-
-.ql-fill {
-  fill: inherit;
-  stroke: none;
-}
-
-.ql-picker {
-  color: inherit;
 }
 
 .nodrag {
