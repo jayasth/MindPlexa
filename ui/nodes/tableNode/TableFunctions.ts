@@ -1,4 +1,3 @@
-import { useStore } from '@/app/store/useCanvasStore';
 import Papa from 'papaparse';
 
 export const validateCellValue = (value: any, type: string): boolean => {
@@ -27,9 +26,13 @@ export const onCellValueChanged = (event, setContent) => {
   const columnType = colDef.type;
 
   if (!validateCellValue(newValue, columnType)) {
-    alert(`Invalid value for column type ${columnType}`);
-    api.undoCellEditing(); // Using AG Grid API to revert changes
-    return;
+    const userConfirmed = window.confirm(
+      `Invalid value for column type ${columnType}`
+    );
+    if (!userConfirmed) {
+      api.undoCellEditing();
+      return;
+    }
   }
 
   setContent((prevContent) => {
@@ -57,13 +60,13 @@ export const addColumn = (
     headerName: 'New Column',
     field: `col${content.columns.length + 1}`,
     editable: true,
-    type: 'text' // Default type
+    type: 'text'
   };
   setContent({
     ...content,
     columns: [...content.columns, newColumn]
   });
-  api.refreshCells && api.refreshCells({ force: true }); // Refresh cells to reflect new column
+  api.refreshCells && api.refreshCells({ force: true });
 };
 
 export const addRow = (
@@ -80,7 +83,7 @@ export const addRow = (
     ...content,
     rows: [...content.rows, newRow]
   });
-  api.refreshCells && api.refreshCells({ force: true }); // Refresh cells to reflect new row
+  api.refreshCells && api.refreshCells({ force: true });
 };
 
 export const importTableData = (
@@ -99,7 +102,7 @@ export const importTableData = (
         headerName: key,
         field: key,
         editable: true,
-        type: 'text' // Default type
+        type: 'text'
       }));
       setContent({ columns, rows: importedData });
     }

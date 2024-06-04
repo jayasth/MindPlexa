@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { Modal } from 'react-responsive-modal';
+import 'react-responsive-modal/styles.css';
 import Button from '@/ui/Button/Button';
 import Input from '@/ui/Input/Input';
 import Dropdown from '@/ui/dropdown/Dropdown';
@@ -9,6 +11,7 @@ const AddTableModal = ({ onClose, onAddTable }) => {
     { name: '', type: 'text', defaultValue: '' }
   ]);
   const [rows, setRows] = useState(1);
+  const [isWarningOpen, setIsWarningOpen] = useState(false);
   const validTypes = [
     'text',
     'number',
@@ -33,13 +36,19 @@ const AddTableModal = ({ onClose, onAddTable }) => {
   };
 
   const handleAddTable = () => {
-    if (columns.length > 0 || rows > 0) {
-      if (!window.confirm('This will override existing data. Continue?')) {
-        return;
-      }
+    const hasExistingData = columns.length > 0 || rows > 0;
+    if (hasExistingData) {
+      setIsWarningOpen(true);
+    } else {
+      onAddTable(columns, rows);
+      onClose();
     }
+  };
+
+  const handleConfirmAddTable = () => {
     onAddTable(columns, rows);
     onClose();
+    setIsWarningOpen(false);
   };
 
   const handleRowsChange = (value) => {
@@ -111,6 +120,22 @@ const AddTableModal = ({ onClose, onAddTable }) => {
           </Button>
         </div>
       </div>
+      <Modal
+        open={isWarningOpen}
+        onClose={() => setIsWarningOpen(false)}
+        center
+      >
+        <h2>Warning</h2>
+        <p>This will override existing data. Continue?</p>
+        <div className={styles.actions}>
+          <Button variant="submit" onClick={handleConfirmAddTable}>
+            Yes
+          </Button>
+          <Button variant="cancel" onClick={() => setIsWarningOpen(false)}>
+            No
+          </Button>
+        </div>
+      </Modal>
     </div>
   );
 };
