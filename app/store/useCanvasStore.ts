@@ -164,6 +164,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
         const updatedNode = {
           ...existingNode,
           ...data,
+          position: data.position || existingNode.position,
           data: {
             ...existingNode.data,
             ...data.data,
@@ -175,7 +176,6 @@ export const useStore = createStore<CanvasState>((set, get) => ({
               data.data?.attachedFiles || existingNode.data.attachedFiles || []
           }
         };
-
         switch (existingNode.type) {
           case 'note':
             updatedNode.data = {

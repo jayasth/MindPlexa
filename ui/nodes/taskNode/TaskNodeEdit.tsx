@@ -10,11 +10,11 @@ import {
   handleDelete,
   handleChangeColorWithCombination,
   handleAddTag,
-  handleAttachFile,
   handleDuplicate,
   handleRemoveAttachedFile,
   getContrastYIQ,
-  colorCombinations
+  colorCombinations,
+  handleAttachmentPreview
 } from '@/ui/canvasEditor/utils/CommonNodeFunctions';
 import {
   SaveButton,
@@ -172,9 +172,10 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
     handleTitleChange(data.id, value, setTitle);
   };
 
-  const onAddTag = (tag: string) => {
-    setTags([...tags, tag]);
-    handleAddTag(data.id, [...tags, tag], () => {});
+  const onAddTag = (newTags: string[]) => {
+    const uniqueTags = Array.from(new Set([...tags, ...newTags]));
+    setTags(uniqueTags);
+    handleAddTag(data.id, uniqueTags, () => {});
   };
 
   const onRemoveTag = (tagToRemove: string) => {
@@ -184,15 +185,17 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
   };
 
   const onAttachFiles = (files: File[]) => {
-    setAttachedFiles([...attachedFiles, ...files]);
-    handleAttachFile(data.id, [...attachedFiles, ...files], () => {});
+    setAttachedFiles(files);
   };
 
   const onRemoveFile = (fileToRemove: File) => {
-    const updatedFiles = attachedFiles.filter((file) => file !== fileToRemove);
-    setAttachedFiles(updatedFiles);
     handleRemoveAttachedFile(data.id, fileToRemove, () => {});
   };
+
+  useEffect(() => {
+    setTags(data.tags || []);
+    setAttachedFiles(data.attachedFiles || []);
+  }, [data.tags, data.attachedFiles]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -330,6 +333,55 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
           style={{ color: textColor }}
         />
       </div>
+      {(tags.length > 0 || attachedFiles.length > 0) && (
+        <div className={styles.tagFileContainer}>
+          <div className={styles.tagContainer}>
+            {tags.map((tag, index) => (
+              <span
+                key={index}
+                className={styles.tag}
+                style={{ color: textColor }}
+                onClick={() => onRemoveTag(tag)}
+              >
+                #{tag}{' '}
+                <button className={styles.removeTagButton}>&times;</button>
+              </span>
+            ))}
+          </div>
+          <div className={styles.fileContainer}>
+            {attachedFiles.map((file, index) => (
+              <div key={index} className={styles.file}>
+                <span
+                  onClick={() => {
+                    if (file.type === 'text/plain') {
+                      window.open(file.name, '_blank');
+                    } else {
+                      const url = URL.createObjectURL(file);
+                      window.open(url, '_blank');
+                    }
+                  }}
+                  onMouseEnter={() => handleAttachmentPreview(file)}
+                  onMouseLeave={() => {
+                    const preview = document.querySelector('.file-preview');
+                    if (preview) {
+                      document.body.removeChild(preview);
+                    }
+                  }}
+                  style={{ cursor: 'pointer', textDecoration: 'underline' }}
+                >
+                  {file.name}
+                </span>
+                <button
+                  className={styles.removeFileButton}
+                  onClick={() => onRemoveFile(file)}
+                >
+                  &times;
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       <div className={styles.footer}>
         <SaveButton
           onClick={() =>
@@ -380,18 +432,6 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
           data={data}
         />
       </div>
-      <div className={styles.tagContainer}>
-        {tags.map((tag, index) => (
-          <span key={index} className={styles.tag} style={{ color: textColor }}>
-            {tag}
-          </span>
-        ))}
-      </div>
-      {attachedFiles.length > 0 && (
-        <div className={styles.attachedFile} style={{ color: textColor }}>
-          Attached files: {attachedFiles.map((file) => file.name).join(', ')}
-        </div>
-      )}
       <Handle
         type="target"
         position={Position.Top}
