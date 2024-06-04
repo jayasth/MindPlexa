@@ -13,3 +13,16 @@
 .fileInput {
   display: none;
 }
+
+.addColumnContainer {
+  display: flex;
+  align-items: center;
+}
+
+.columnTypeSelect {
+  margin-right: 8px;
+  padding: 4px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}

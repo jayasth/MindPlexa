@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FaBold, FaItalic, FaUnderline, FaSort } from 'react-icons/fa';
 import { MdOutlineViewColumn, MdOutlineViewAgenda } from 'react-icons/md';
 import {
@@ -20,11 +20,21 @@ export const AddTableButton = ({ onClick }) => (
   </button>
 );
 
-export const AddColumnButton = ({ onClick }) => (
-  <button className={styles.actionButton} onClick={onClick} title="Add Column">
-    <MdOutlineViewColumn size={iconSize} />
-  </button>
-);
+export const AddColumnButton = ({ onClick }) => {
+  const columnType = 'text';
+
+  return (
+    <div className={styles.addColumnContainer}>
+      <button
+        className={styles.actionButton}
+        onClick={() => onClick(columnType)}
+        title="Add Column"
+      >
+        <MdOutlineViewColumn size={iconSize} />
+      </button>
+    </div>
+  );
+};
 
 export const AddRowButton = ({ onClick }) => (
   <button className={styles.actionButton} onClick={onClick} title="Add Row">

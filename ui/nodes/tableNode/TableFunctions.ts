@@ -27,10 +27,21 @@ export const onCellValueChanged = (event, setContent) => {
 
   if (!validateCellValue(newValue, columnType)) {
     const userConfirmed = window.confirm(
-      `Invalid value for column type ${columnType}`
+      `Invalid value for column type ${columnType}. Do you want to keep the new value?`
     );
     if (!userConfirmed) {
-      api.undoCellEditing();
+      // Revert to the old value
+      const rowIndex = event.rowIndex;
+      const colId = colDef.field;
+      if (colId !== undefined && rowIndex !== null) {
+        const newRows = [...data];
+        newRows[rowIndex][colId] = oldValue;
+        setContent((prevContent) => ({
+          ...prevContent,
+          rows: newRows
+        }));
+        api.refreshCells({ rowNodes: [event.node], columns: [colId] });
+      }
       return;
     }
   }
@@ -53,14 +64,15 @@ export const onCellValueChanged = (event, setContent) => {
 export const addColumn = (
   content: any,
   setContent: (content: any) => void,
-  api
+  api,
+  columnType: string = 'text'
 ) => {
   console.log('TableFunctions: Adding column');
   const newColumn = {
     headerName: 'New Column',
     field: `col${content.columns.length + 1}`,
     editable: true,
-    type: 'text'
+    type: columnType
   };
   setContent({
     ...content,

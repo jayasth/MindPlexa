@@ -266,7 +266,9 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
       <div className={styles.toolbar}>
         <AddTableButton onClick={() => setIsModalOpen(true)} />{' '}
         <AddColumnButton
-          onClick={() => addColumn(content, setContent, updateNode)}
+          onClick={(columnType) =>
+            addColumn(content, setContent, updateNode, columnType)
+          }
         />
         <AddRowButton onClick={() => addRow(content, setContent, updateNode)} />
         <ExportButton onClick={() => exportTableData(content)} />
@@ -427,6 +429,9 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
 
             setContent({ columns: newColumns, rows: newRows });
           }}
+          hasExistingData={
+            content.columns.length > 0 || content.rows.length > 0
+          }
         />
       )}
     </div>

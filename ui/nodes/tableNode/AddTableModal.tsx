@@ -6,7 +6,7 @@ import Input from '@/ui/Input/Input';
 import Dropdown from '@/ui/dropdown/Dropdown';
 import styles from './AddTableModal.module.css';
 
-const AddTableModal = ({ onClose, onAddTable }) => {
+const AddTableModal = ({ onClose, onAddTable, hasExistingData }) => {
   const [columns, setColumns] = useState([
     { name: '', type: 'text', defaultValue: '' }
   ]);
@@ -36,7 +36,6 @@ const AddTableModal = ({ onClose, onAddTable }) => {
   };
 
   const handleAddTable = () => {
-    const hasExistingData = columns.length > 0 || rows > 0;
     if (hasExistingData) {
       setIsWarningOpen(true);
     } else {
@@ -56,7 +55,7 @@ const AddTableModal = ({ onClose, onAddTable }) => {
   };
 
   return (
-    <div className={styles.modal}>
+    <div className={`${styles.modal} nodrag nowheel`}>
       <div className={styles.modalContent}>
         <h2>Add Table</h2>
         <div className={styles.formGroup}>
@@ -102,11 +101,11 @@ const AddTableModal = ({ onClose, onAddTable }) => {
         <div className={styles.formGroup}>
           <label>Number of Rows:</label>
           <Input
-            type="number"
+            type="tel"
             value={rows}
             onChange={handleRowsChange}
-            onWheel={(e) => e.preventDefault()}
             min="1"
+            max="10"
             variant="slim"
             className={styles.inputNarrow}
           />

@@ -1,7 +1,8 @@
 import React from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { FaTimes, FaGripLines } from 'react-icons/fa';
+import { FaTimes } from 'react-icons/fa';
+import { MdDragIndicator } from 'react-icons/md';
 import styles from './TaskNodeEdit.module.css';
 
 interface SortableItemProps {
@@ -63,7 +64,7 @@ export function SortableItem({
         <FaTimes />
       </button>
       <div {...listeners} className={styles.dragHandle}>
-        <FaGripLines />
+        <MdDragIndicator />
       </div>
     </div>
   );
