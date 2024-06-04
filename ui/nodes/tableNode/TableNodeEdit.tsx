@@ -27,10 +27,14 @@ import {
   AddColumnButton,
   AddRowButton,
   ExportButton,
-  ImportButton
+  ImportButton,
+  DeleteTableButton
 } from '@/ui/nodes/tableNode/TableNodeToolbar';
 import AddTableModal from '@/ui/nodes/tableNode/AddTableModal';
 import CustomHeader from '@/ui/nodes/tableNode/CustomHeader';
+import { Modal } from 'react-responsive-modal';
+import 'react-responsive-modal/styles.css';
+import Button from '@/ui/Button/Button';
 
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
@@ -102,6 +106,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   const [isTagModalOpen, setIsTagModalOpen] = useState(false);
   const [isFileModalOpen, setIsFileModalOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const updateNode = useStore((state) => state.updateNode);
   const colorPickerRef = useRef<HTMLDivElement>(null);
@@ -230,6 +235,11 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     };
   }, []);
 
+  const handleDeleteTable = () => {
+    setContent({ columns: [], rows: [] }); // Clear the table content
+    setIsDeleteModalOpen(false); // Close the modal
+  };
+
   const customStyles: CSSProperties = {
     width: nodeWidth,
     height: nodeHeight,
@@ -263,18 +273,31 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           onClick={() => handleClose(data.id, () => {}, title, content)}
         />
       </div>
-      <div className={styles.toolbar}>
-        <AddTableButton onClick={() => setIsModalOpen(true)} />{' '}
-        <AddColumnButton
-          onClick={(columnType) =>
-            addColumn(content, setContent, updateNode, columnType)
-          }
-        />
-        <AddRowButton onClick={() => addRow(content, setContent, updateNode)} />
-        <ExportButton onClick={() => exportTableData(content)} />
-        <ImportButton onChange={(e) => importTableData(e, setContent)} />
-      </div>
+
       <div className={`${styles.tableContent} nowheel nodrag`}>
+        <div className={styles.toolbar}>
+          <AddTableButton onClick={() => setIsModalOpen(true)} />{' '}
+          <AddColumnButton
+            onClick={(columnType) =>
+              addColumn(content, setContent, updateNode, columnType)
+            }
+          />
+          <AddRowButton
+            onClick={() => addRow(content, setContent, updateNode)}
+          />
+          <ExportButton onClick={() => exportTableData(content)} />
+          <ImportButton onChange={(e) => importTableData(e, setContent)} />
+          <DeleteTableButton
+            onClick={() => {
+              if (content.columns.length > 0 || content.rows.length > 0) {
+                setIsDeleteModalOpen(true);
+              } else {
+                handleDeleteTable();
+              }
+            }}
+          />
+        </div>
+
         <div
           className="ag-theme-alpine"
           style={{ height: '100%', width: '100%' }}
@@ -434,6 +457,25 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           }
         />
       )}
+      <Modal
+        open={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        center
+      >
+        <h2>Confirm Deletion</h2>
+        <p>
+          Are you sure you want to delete the entire table? This action cannot
+          be undone.
+        </p>
+        <div className={styles.actions}>
+          <Button variant="submit" onClick={handleDeleteTable}>
+            Yes
+          </Button>
+          <Button variant="cancel" onClick={() => setIsDeleteModalOpen(false)}>
+            Cancel
+          </Button>
+        </div>
+      </Modal>
     </div>
   );
 };

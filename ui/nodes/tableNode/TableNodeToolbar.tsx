@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { FaBold, FaItalic, FaUnderline, FaSort } from 'react-icons/fa';
+import { FaSort } from 'react-icons/fa';
+import { FcDeleteDatabase } from 'react-icons/fc';
 import { MdOutlineViewColumn, MdOutlineViewAgenda } from 'react-icons/md';
 import {
   CiImport,
@@ -42,24 +43,6 @@ export const AddRowButton = ({ onClick }) => (
   </button>
 );
 
-export const BoldButton = ({ onClick }) => (
-  <button className={styles.actionButton} onClick={onClick} title="Bold">
-    <FaBold size={iconSize} />
-  </button>
-);
-
-export const ItalicButton = ({ onClick }) => (
-  <button className={styles.actionButton} onClick={onClick} title="Italic">
-    <FaItalic size={iconSize} />
-  </button>
-);
-
-export const UnderlineButton = ({ onClick }) => (
-  <button className={styles.actionButton} onClick={onClick} title="Underline">
-    <FaUnderline size={iconSize} />
-  </button>
-);
-
 export const AlignLeftButton = ({ onClick }) => (
   <button className={styles.actionButton} onClick={onClick} title="Align Left">
     <CiTextAlignLeft size={iconSize} />
@@ -91,6 +74,16 @@ export const SortButton = ({ onClick }) => (
 export const FilterButton = ({ onClick }) => (
   <button className={styles.actionButton} onClick={onClick} title="Filter">
     <CiFilter size={iconSize} />
+  </button>
+);
+
+export const DeleteTableButton = ({ onClick }) => (
+  <button
+    className={styles.actionButton}
+    onClick={onClick}
+    title="Delete Table"
+  >
+    <FcDeleteDatabase size={iconSize} />
   </button>
 );
 

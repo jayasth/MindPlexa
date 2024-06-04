@@ -45,6 +45,12 @@
   padding: 4px;
 }
 
+.actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+
 /* common on all nodes */
 
 .header {
