@@ -166,8 +166,8 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     }
   };
 
-  const onAddTag = (newTag: string) => {
-    const uniqueTags = Array.from(new Set([...tags, newTag]));
+  const onAddTag = (newTags: string[]) => {
+    const uniqueTags = Array.from(new Set([...tags, ...newTags]));
     setTags(uniqueTags);
     handleAddTag(data.id, uniqueTags, () => {});
   };
@@ -187,6 +187,11 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   };
 
   useEffect(() => {
+    setTags(data.tags || []);
+    setAttachedFiles(data.attachedFiles || []);
+  }, [data.tags, data.attachedFiles]);
+
+  useEffect(() => {
     setNodeWidth(width);
     setNodeHeight(height);
   }, [width, height]);
@@ -203,54 +208,25 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     [data.id, onNodeResizeStop, position]
   );
 
-  const handleContainerClick = () => {
-    setIsContainerSelected(true);
-  };
-
-  const handleContainerBlur = () => {
-    setIsContainerSelected(false);
-  };
-
   const toggleColorPicker = () => {
     setIsColorPickerVisible(!isColorPickerVisible);
   };
 
-  const handleClickOutside = (event) => {
+  const handleClickOutside = (event: MouseEvent) => {
     if (
       colorPickerRef.current &&
-      !colorPickerRef.current.contains(event.target)
+      !colorPickerRef.current.contains(event.target as Node)
     ) {
       setIsColorPickerVisible(false);
     }
   };
 
   useEffect(() => {
-    if (typeof document !== 'undefined') {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () => {
-        document.removeEventListener('mousedown', handleClickOutside);
-      };
-    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, []);
-
-  const handleAddTable = (columns, rows) => {
-    const newColumns = columns.map((col, index) => ({
-      headerName: col.name || `Column ${index + 1}`,
-      field: `col${index + 1}`,
-      editable: true,
-      type: col.type,
-      defaultValue: col.defaultValue
-    }));
-
-    const newRows = Array.from({ length: rows }, () =>
-      newColumns.reduce((acc, col) => {
-        acc[col.field] = col.defaultValue || '';
-        return acc;
-      }, {})
-    );
-
-    setContent({ columns: newColumns, rows: newRows });
-  };
 
   const customStyles: CSSProperties = {
     width: nodeWidth,
@@ -261,10 +237,10 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
 
   return (
     <div
-      className={styles.tableNode}
+      className={`${styles.tableNode} ${isSelected ? styles.selected : ''}`}
       style={customStyles}
-      onClick={handleContainerClick}
-      onBlur={handleContainerBlur}
+      onClick={() => setIsContainerSelected(true)}
+      onBlur={() => setIsContainerSelected(false)}
     >
       <NodeResizer
         isVisible={isContainerSelected}
@@ -285,15 +261,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           onClick={() => handleClose(data.id, () => {}, title, content)}
         />
       </div>
-      <div className={styles.toolbar}>
-        <AddTableButton onClick={() => setIsModalOpen(true)} />{' '}
-        <AddColumnButton
-          onClick={() => addColumn(content, setContent, updateNode)}
-        />
-        <AddRowButton onClick={() => addRow(content, setContent, updateNode)} />
-        <ExportButton onClick={() => exportTableData(content)} />
-        <ImportButton onChange={(e) => importTableData(e, setContent)} />
-      </div>
       <div className={`${styles.tableContent} nowheel nodrag`}>
         <div
           className="ag-theme-alpine"
@@ -301,14 +268,8 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
         >
           <AgGridReact
             columnDefs={content.columns.map((col) => ({
-              ...col,
-              headerComponent: CustomHeader,
-              headerComponentParams: {
-                content,
-                setContent,
-                updateNode
-              },
               headerName: col.headerName,
+              field: col.field,
               type: col.type,
               sortable: false,
               filter: false
@@ -329,6 +290,55 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           />
         </div>
       </div>
+      {(tags.length > 0 || attachedFiles.length > 0) && (
+        <div className={styles.tagFileContainer}>
+          <div className={styles.tagContainer}>
+            {tags.map((tag, index) => (
+              <span
+                key={index}
+                className={styles.tag}
+                style={{ color: textColor }}
+                onClick={() => onRemoveTag(tag)}
+              >
+                #{tag}{' '}
+                <button className={styles.removeTagButton}>&times;</button>
+              </span>
+            ))}
+          </div>
+          <div className={styles.fileContainer}>
+            {attachedFiles.map((file, index) => (
+              <div key={index} className={styles.file}>
+                <span
+                  onClick={() => {
+                    if (file.type === 'text/plain') {
+                      window.open(file.name, '_blank');
+                    } else {
+                      const url = URL.createObjectURL(file);
+                      window.open(url, '_blank');
+                    }
+                  }}
+                  onMouseEnter={() => handleAttachmentPreview(file)}
+                  onMouseLeave={() => {
+                    const preview = document.querySelector('.file-preview');
+                    if (preview) {
+                      document.body.removeChild(preview);
+                    }
+                  }}
+                  style={{ cursor: 'pointer', textDecoration: 'underline' }}
+                >
+                  {file.name}
+                </span>
+                <button
+                  className={styles.removeFileButton}
+                  onClick={() => onRemoveFile(file)}
+                >
+                  &times;
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       <div className={styles.footer}>
         <SaveButton
           onClick={() =>
@@ -345,53 +355,14 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
         <AddTagButton onClick={() => setIsTagModalOpen(true)} />
         <AttachFileButton onClick={() => setIsFileModalOpen(true)} />
         <DuplicateButton onClick={() => handleDuplicate(data.id)} />
-        {isColorPickerVisible && (
-          <div className={`${styles.colorPicker} nodrag`} ref={colorPickerRef}>
-            <CompactPicker
-              color={backgroundColor}
-              onChange={handleBackgroundColorChange}
-              colors={colorCombinations.map(
-                (combination) => combination.background
-              )}
-              styles={{
-                default: {
-                  input: {
-                    height: '16px',
-                    fontSize: '12px'
-                  },
-                  swatch: {
-                    width: '20px',
-                    height: '20px',
-                    position: 'relative'
-                  }
-                }
-              }}
-              width="180px"
-              className="compact-picker"
-            />
-            {colorCombinations.map((combination) => (
-              <div
-                key={combination.background}
-                className="compact-picker__swatch"
-                style={{ backgroundColor: combination.background }}
-                data-name={combination.name}
-              />
-            ))}
-          </div>
-        )}
+        <ColorPickerModal
+          isOpen={isColorPickerVisible}
+          onClose={() => setIsColorPickerVisible(false)}
+          currentColor={backgroundColor}
+          onChangeColor={handleBackgroundColorChange}
+          colorCombinations={colorCombinations}
+        />
       </div>
-      <div className={styles.tagContainer}>
-        {tags.map((tag, index) => (
-          <span key={index} className={styles.tag} style={{ color: textColor }}>
-            {tag}
-          </span>
-        ))}
-      </div>
-      {attachedFiles.length > 0 && (
-        <div className={styles.attachedFile} style={{ color: textColor }}>
-          Attached files: {attachedFiles.map((file) => file.name).join(', ')}
-        </div>
-      )}
       <Handle
         type="target"
         position={Position.Top}
@@ -402,12 +373,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
         position={Position.Bottom}
         className={`${edgeStyles.reactFlowHandle} ${edgeStyles.reactFlowHandleBottom}`}
       />
-      {isModalOpen && (
-        <AddTableModal
-          onClose={() => setIsModalOpen(false)}
-          onAddTable={handleAddTable}
-        />
-      )}
       <TagModal
         isOpen={isTagModalOpen}
         onClose={() => setIsTagModalOpen(false)}

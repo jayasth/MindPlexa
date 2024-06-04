@@ -206,6 +206,11 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
     handleRemoveAttachedFile(data.id, fileToRemove, () => {});
   };
 
+  useEffect(() => {
+    setTags(data.tags || []);
+    setAttachedFiles(data.attachedFiles || []);
+  }, [data.tags, data.attachedFiles]);
+
   const toggleColorPicker = () => {
     setIsColorPickerVisible(!isColorPickerVisible);
   };
