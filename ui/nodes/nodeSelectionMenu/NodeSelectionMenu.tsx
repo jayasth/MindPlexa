@@ -1,12 +1,10 @@
 import React, { useRef } from 'react';
 import { NodeProps, Handle, Position } from 'reactflow';
-import {
-  CiStickyNote,
-  CiBoxList,
-  CiViewTable,
-  CiCalendarDate
-} from 'react-icons/ci';
-import { IoBrushOutline } from 'react-icons/io5';
+
+import { IoList, IoCalendar, IoBrush } from 'react-icons/io5';
+import { PiNotepadFill } from 'react-icons/pi';
+import { FaTable } from 'react-icons/fa6';
+
 import { useStore } from '@/app/store/useCanvasStore';
 import styles from './NodeSelectionMenu.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
@@ -61,11 +59,11 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
 
   const nodeTypes = ['note', 'task', 'table', 'calendar', 'draw'];
   const icons = {
-    note: <CiStickyNote />,
-    task: <CiBoxList />,
-    table: <CiViewTable />,
-    calendar: <CiCalendarDate />,
-    draw: <IoBrushOutline />
+    note: <PiNotepadFill />,
+    task: <IoList />,
+    table: <FaTable />,
+    calendar: <IoCalendar />,
+    draw: <IoBrush />
   };
 
   const replaceNodeWithType = (

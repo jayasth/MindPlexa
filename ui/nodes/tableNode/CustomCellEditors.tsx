@@ -2,14 +2,27 @@ import React from 'react';
 import { ICellEditorParams } from 'ag-grid-community';
 
 export const DateEditor = (props: ICellEditorParams) => {
-  const [value, setValue] = React.useState(props.value);
+  const [value, setValue] = React.useState(props.value || '');
 
+  const handleDateChange = (e) => {
+    setValue(e.target.value);
+    props.stopEditing();
+  };
+
+  const handleInputChange = (e) => {
+    setValue(e.target.value);
+  };
   return (
     <input
       type="date"
       value={value}
-      onChange={(e) => setValue(e.target.value)}
-      onBlur={() => props.stopEditing()}
+      onChange={handleDateChange}
+      onBlur={(e) => props.stopEditing()}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') {
+          props.stopEditing();
+        }
+      }}
     />
   );
 };

@@ -3,20 +3,23 @@ import {
   MdOutlineKeyboardDoubleArrowLeft,
   MdOutlineKeyboardDoubleArrowRight
 } from 'react-icons/md';
-import { PiNetworkFill } from 'react-icons/pi';
+
 import {
-  IoHome,
-  IoList,
-  IoCalendar,
-  IoBrush,
-  IoArrowUndo,
-  IoArrowRedo,
-  IoShare,
-  IoDownload,
-  IoApps
+  CiHome,
+  CiStickyNote,
+  CiBoxList,
+  CiViewTable,
+  CiCalendarDate,
+  CiUndo,
+  CiRedo,
+  CiShare1
+} from 'react-icons/ci';
+import { PiNetworkThin } from 'react-icons/pi';
+import {
+  IoBrushOutline,
+  IoDownloadOutline,
+  IoAppsOutline
 } from 'react-icons/io5';
-import { PiNotepadFill } from 'react-icons/pi';
-import { FaTable } from 'react-icons/fa6';
 
 import Link from 'next/link';
 import { useStore } from '@/app/store/useCanvasStore';
@@ -112,7 +115,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
           <>
             <Link href="/workspace/canvases" passHref>
               <button className={buttonClass} title="Open Editor">
-                <IoHome size={iconSize} />
+                <CiHome size={iconSize} />
               </button>
             </Link>
             <button
@@ -120,66 +123,66 @@ const Toolbar: React.FC<ToolbarProps> = ({
               className={buttonClass}
               title="Generate Mindmap"
             >
-              <PiNetworkFill size={iconSize} />
+              <PiNetworkThin size={iconSize} />
             </button>
             <button
               onClick={() => handleAddNode('selectionMenu')}
               className={buttonClass}
               title="Selection Menu"
             >
-              <IoApps size={iconSize} />
+              <IoAppsOutline size={iconSize} />
             </button>
             <button
               onClick={() => handleAddNode('note')}
               className={buttonClass}
               title="Note"
             >
-              <PiNotepadFill size={iconSize} />
+              <CiStickyNote size={iconSize} />
             </button>
             <button
               onClick={() => handleAddNode('task')}
               className={buttonClass}
               title="Task"
             >
-              <IoList size={iconSize} />
+              <CiBoxList size={iconSize} />
             </button>
             <button
               onClick={() => handleAddNode('table')}
               className={buttonClass}
               title="Table"
             >
-              <FaTable size={iconSize} />
+              <CiViewTable size={iconSize} />
             </button>
             <button
               onClick={() => handleAddNode('calendar')}
               className={buttonClass}
               title="Calendar"
             >
-              <IoCalendar size={iconSize} />
+              <CiCalendarDate size={iconSize} />
             </button>
             <button
               onClick={() => handleAddNode('draw')}
               className={buttonClass}
               title="Draw"
             >
-              <IoBrush size={iconSize} />
+              <IoBrushOutline size={iconSize} />
             </button>
 
             <button onClick={onUndo} className={buttonClass} title="Undo">
-              <IoArrowUndo size={iconSize} />
+              <CiUndo size={iconSize} />
             </button>
             <button onClick={onRedo} className={buttonClass} title="Redo">
-              <IoArrowRedo size={iconSize} />
+              <CiRedo size={iconSize} />
             </button>
             <button onClick={onShare} className={buttonClass} title="Share">
-              <IoShare size={iconSize} />
+              <CiShare1 size={iconSize} />
             </button>
             <button
               onClick={onDownload}
               className={buttonClass}
               title="Download"
             >
-              <IoDownload size={iconSize} />
+              <IoDownloadOutline size={iconSize} />
             </button>
           </>
         )}

@@ -69,7 +69,7 @@ import {
   CurrencyEditor,
   DropdownEditor,
   BooleanEditor
-} from '@/ui/nodes/tableNode/CustomEditors';
+} from '@/ui/nodes/tableNode/CustomCellEditors';
 
 interface TableNodeEditProps extends NodeProps {
   data: TableNodeData;
