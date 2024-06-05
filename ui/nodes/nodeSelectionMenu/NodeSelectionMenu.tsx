@@ -1,11 +1,15 @@
 import React, { useRef } from 'react';
 import { NodeProps, Handle, Position } from 'reactflow';
-import { FaTasks, FaCalendarAlt, FaPaintBrush, FaTable } from 'react-icons/fa';
-import { PiNotepad } from 'react-icons/pi';
+import {
+  CiStickyNote,
+  CiBoxList,
+  CiViewTable,
+  CiCalendarDate
+} from 'react-icons/ci';
+import { IoBrushOutline } from 'react-icons/io5';
 import { useStore } from '@/app/store/useCanvasStore';
 import styles from './NodeSelectionMenu.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
-import { nanoid } from 'nanoid';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 
 interface NodeSelectionMenuProps extends NodeProps {
@@ -57,11 +61,11 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
 
   const nodeTypes = ['note', 'task', 'table', 'calendar', 'draw'];
   const icons = {
-    note: <PiNotepad />,
-    task: <FaTasks />,
-    table: <FaTable />,
-    calendar: <FaCalendarAlt />,
-    draw: <FaPaintBrush />
+    note: <CiStickyNote />,
+    task: <CiBoxList />,
+    table: <CiViewTable />,
+    calendar: <CiCalendarDate />,
+    draw: <IoBrushOutline />
   };
 
   const replaceNodeWithType = (

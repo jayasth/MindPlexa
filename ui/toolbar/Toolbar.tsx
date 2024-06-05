@@ -1,23 +1,26 @@
 import React, { useState } from 'react';
 import {
-  FaAngleDoubleRight,
-  FaAngleDoubleLeft,
-  FaBrain,
-  FaTasks,
-  FaRegAddressBook,
-  FaCalendarAlt,
-  FaPaintBrush,
-  FaUndo,
-  FaRedo,
-  FaShare,
-  FaDownload,
-  FaHome,
-  FaTable
-} from 'react-icons/fa';
-import { MdFormatListBulletedAdd } from 'react-icons/md';
-import { nanoid } from 'nanoid';
+  MdOutlineKeyboardDoubleArrowLeft,
+  MdOutlineKeyboardDoubleArrowRight
+} from 'react-icons/md';
 
-import { PiNotepad } from 'react-icons/pi';
+import {
+  CiHome,
+  CiStickyNote,
+  CiBoxList,
+  CiViewTable,
+  CiCalendarDate,
+  CiUndo,
+  CiRedo,
+  CiShare1
+} from 'react-icons/ci';
+import { PiNetworkThin } from 'react-icons/pi';
+import {
+  IoBrushOutline,
+  IoDownloadOutline,
+  IoAppsOutline
+} from 'react-icons/io5';
+
 import Link from 'next/link';
 import { useStore } from '@/app/store/useCanvasStore';
 import { createNode } from '@/ui/canvasEditor/utils/nodeCreation';
@@ -66,7 +69,6 @@ const Toolbar: React.FC<ToolbarProps> = ({
         (node) => {
           addNode(node);
           if (reactFlowInstance && nodes.length === 0) {
-            // Only center if it's the first node
             reactFlowInstance.setCenter(node.position.x, node.position.y, {
               zoom: 1
             });
@@ -84,6 +86,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
   };
 
   const buttonClass = `${styles.button} ${isOpen ? styles.open : ''}`;
+  const iconSize = 16;
 
   return (
     <>
@@ -93,7 +96,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
           onClick={toggleToolbar}
           title="Show Toolbar"
         >
-          <FaAngleDoubleRight />
+          <MdOutlineKeyboardDoubleArrowRight size={iconSize} />
         </button>
       )}
       <div className={`${styles.toolbar} ${isOpen ? styles.open : ''}`}>
@@ -102,13 +105,17 @@ const Toolbar: React.FC<ToolbarProps> = ({
           onClick={toggleToolbar}
           title={isOpen ? 'Hide Toolbar' : 'Show Toolbar'}
         >
-          {isOpen ? <FaAngleDoubleLeft /> : <FaAngleDoubleRight />}
+          {isOpen ? (
+            <MdOutlineKeyboardDoubleArrowLeft size={iconSize} />
+          ) : (
+            <MdOutlineKeyboardDoubleArrowRight size={iconSize} />
+          )}
         </button>
         {isOpen && (
           <>
             <Link href="/workspace/canvases" passHref>
               <button className={buttonClass} title="Open Editor">
-                <FaHome />
+                <CiHome size={iconSize} />
               </button>
             </Link>
             <button
@@ -116,65 +123,66 @@ const Toolbar: React.FC<ToolbarProps> = ({
               className={buttonClass}
               title="Generate Mindmap"
             >
-              <FaBrain />
-            </button>
-            <button
-              onClick={() => handleAddNode('note')}
-              className={buttonClass}
-              title="Add Note"
-            >
-              <PiNotepad />
-            </button>
-            <button
-              onClick={() => handleAddNode('task')}
-              className={buttonClass}
-              title="Add Task"
-            >
-              <FaTasks />
-            </button>
-            <button
-              onClick={() => handleAddNode('table')}
-              className={buttonClass}
-              title="Add Table"
-            >
-              <FaTable />
-            </button>
-            <button
-              onClick={() => handleAddNode('calendar')}
-              className={buttonClass}
-              title="Add Calendar"
-            >
-              <FaCalendarAlt />
-            </button>
-            <button
-              onClick={() => handleAddNode('draw')}
-              className={buttonClass}
-              title="Add Draw"
-            >
-              <FaPaintBrush />
+              <PiNetworkThin size={iconSize} />
             </button>
             <button
               onClick={() => handleAddNode('selectionMenu')}
               className={buttonClass}
-              title="Add Node Selection Menu"
+              title="Selection Menu"
             >
-              <MdFormatListBulletedAdd />
+              <IoAppsOutline size={iconSize} />
             </button>
+            <button
+              onClick={() => handleAddNode('note')}
+              className={buttonClass}
+              title="Note"
+            >
+              <CiStickyNote size={iconSize} />
+            </button>
+            <button
+              onClick={() => handleAddNode('task')}
+              className={buttonClass}
+              title="Task"
+            >
+              <CiBoxList size={iconSize} />
+            </button>
+            <button
+              onClick={() => handleAddNode('table')}
+              className={buttonClass}
+              title="Table"
+            >
+              <CiViewTable size={iconSize} />
+            </button>
+            <button
+              onClick={() => handleAddNode('calendar')}
+              className={buttonClass}
+              title="Calendar"
+            >
+              <CiCalendarDate size={iconSize} />
+            </button>
+            <button
+              onClick={() => handleAddNode('draw')}
+              className={buttonClass}
+              title="Draw"
+            >
+              <IoBrushOutline size={iconSize} />
+            </button>
+
             <button onClick={onUndo} className={buttonClass} title="Undo">
-              <FaUndo />
+              <CiUndo size={iconSize} />
             </button>
             <button onClick={onRedo} className={buttonClass} title="Redo">
-              <FaRedo />
+              <CiRedo size={iconSize} />
             </button>
             <button onClick={onShare} className={buttonClass} title="Share">
-              <FaShare />
+              <CiShare1 size={iconSize} />
             </button>
             <button
               onClick={onDownload}
               className={buttonClass}
               title="Download"
             >
-              <FaDownload />
+              <IoDownloadOutline size={iconSize} />
             </button>
           </>
         )}

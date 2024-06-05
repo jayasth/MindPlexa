@@ -21,24 +21,27 @@
 }
 
 .toggleButton {
+  padding: 4px 4px;
+  margin: 4px;
   background-color: #494949;
   color: white;
   border: none;
   padding: 0.3rem;
-  border-radius: 2px;
+  border-radius: 4px;
   cursor: pointer;
   margin-bottom: 0.5rem;
 }
 
 .button {
-  background-color: transparent;
-  color: #575757;
-  border: none;
-  padding: 0.5rem;
-  border-radius: 8px;
-  margin-bottom: 0.5rem;
+  padding: 4px 4px;
+  margin: 4px;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s;
 }
 
 .button:hover {
