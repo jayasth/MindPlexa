@@ -44,7 +44,8 @@ import {
   addRow,
   importTableData,
   exportTableData,
-  onCellValueChanged
+  onCellValueChanged,
+  handleKeyDown
 } from '@/ui/nodes/tableNode/TableFunctions';
 
 import {
@@ -115,7 +116,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const updateNode = useStore((state) => state.updateNode);
-  const colorPickerRef = useRef<HTMLDivElement>(null);
   const tableRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<any>(null);
 
@@ -227,22 +227,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     setIsColorPickerVisible(!isColorPickerVisible);
   };
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        colorPickerRef.current &&
-        !colorPickerRef.current.contains(event.target as Node)
-      ) {
-        setIsColorPickerVisible(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
-
   const handleDeleteTable = () => {
     setContent({ columns: [], rows: [] }); // Clear the table content
     setIsDeleteModalOpen(false); // Close the modal
@@ -293,37 +277,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
       valueFormatter
     };
   });
-
-  const handleKeyDown = (event: React.KeyboardEvent) => {
-    const api = gridRef.current?.api;
-    if (api) {
-      switch (event.key) {
-        case 'ArrowUp':
-          api.tabToPreviousCell();
-          break;
-        case 'ArrowDown':
-          api.tabToNextCell();
-          break;
-        case 'ArrowLeft':
-          api.tabToPreviousCell();
-          break;
-        case 'ArrowRight':
-          api.tabToNextCell();
-          break;
-        case 'Enter':
-          api.startEditingCell({
-            rowIndex: api.getFocusedCell().rowIndex,
-            colKey: api.getFocusedCell().column.getColId()
-          });
-          break;
-        case 'Escape':
-          api.stopEditing();
-          break;
-        default:
-          break;
-      }
-    }
-  };
 
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
@@ -437,6 +390,10 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
             onGridReady={(params) => {
               gridRef.current = params;
               params.api.sizeColumnsToFit();
+              // Add the keydown event listener to the grid's DOM element
+              params.api.addEventListener('keydown', (event) =>
+                handleKeyDown(event, gridRef)
+              );
             }}
             onCellValueChanged={(event) =>
               onCellValueChanged(event, setContent)

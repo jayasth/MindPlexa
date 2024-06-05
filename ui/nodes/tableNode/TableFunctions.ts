@@ -141,3 +141,34 @@ export const exportTableData = (content: any) => {
   linkElement.setAttribute('download', exportFileDefaultName);
   linkElement.click();
 };
+
+export const handleKeyDown = (event, gridRef) => {
+  const api = gridRef.current?.api;
+  if (api) {
+    switch (event.key) {
+      case 'ArrowUp':
+        api.tabToPreviousCell();
+        break;
+      case 'ArrowDown':
+        api.tabToNextCell();
+        break;
+      case 'ArrowLeft':
+        api.tabToPreviousCell();
+        break;
+      case 'ArrowRight':
+        api.tabToNextCell();
+        break;
+      case 'Enter':
+        api.startEditingCell({
+          rowIndex: api.getFocusedCell().rowIndex,
+          colKey: api.getFocusedCell().column.getColId()
+        });
+        break;
+      case 'Escape':
+        api.stopEditing();
+        break;
+      default:
+        break;
+    }
+  }
+};
