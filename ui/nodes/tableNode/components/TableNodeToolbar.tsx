@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { FaSort } from 'react-icons/fa';
 import { FcDeleteDatabase } from 'react-icons/fc';
 import { MdOutlineViewColumn, MdOutlineViewAgenda } from 'react-icons/md';

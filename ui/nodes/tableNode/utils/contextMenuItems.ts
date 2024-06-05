@@ -1,5 +1,5 @@
 import { Papa } from 'papaparse';
-import { addColumn } from './TableFunctions';
+import { addColumn } from '@/ui/nodes/tableNode/utils/TableFunctions';
 
 export const getContextMenuItems = (
   params,
