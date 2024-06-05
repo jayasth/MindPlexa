@@ -41,16 +41,6 @@ export const onCellValueChanged = (event, setContent) => {
       columns: [event.colDef.field]
     });
 
-    // Add invalid class
-    event.api
-      .getCellRendererInstances({
-        rowNodes: [event.node],
-        columns: [event.colDef.field]
-      })
-      .forEach((cellRenderer) => {
-        cellRenderer.eGui.classList.add('invalid-cell');
-      });
-
     setTimeout(() => {
       alert(`Invalid value for column type "${columnType}": ${newValue}`);
     }, 0);
@@ -74,16 +64,6 @@ export const onCellValueChanged = (event, setContent) => {
     rowNodes: [event.node],
     columns: [event.colDef.field]
   });
-
-  // Remove invalid class if present
-  event.api
-    .getCellRendererInstances({
-      rowNodes: [event.node],
-      columns: [event.colDef.field]
-    })
-    .forEach((cellRenderer) => {
-      cellRenderer.eGui.classList.remove('invalid-cell');
-    });
 };
 
 export const addColumn = (
