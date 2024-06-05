@@ -22,11 +22,11 @@ const AddTableModal = ({ onClose, onAddTable, hasExistingData }) => {
   const validTypes = [
     { value: 'text', label: 'Text' },
     { value: 'number', label: 'Number' },
+    { value: 'email', label: 'Email' },
     { value: 'date', label: 'Date' },
     { value: 'boolean', label: 'Boolean' },
     { value: 'currency', label: 'Currency' },
-    { value: 'dropdown', label: 'Dropdown' },
-    { value: 'email', label: 'Email' }
+    { value: 'dropdown', label: 'Dropdown' }
   ];
 
   const handleAddColumn = () => {

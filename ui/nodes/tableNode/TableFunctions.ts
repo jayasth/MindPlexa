@@ -60,6 +60,12 @@ export const onCellValueChanged = (event, setContent) => {
     });
     return { ...prevContent, rows: updatedRows };
   });
+
+  event.node.setDataValue(event.colDef.field, formattedValue);
+  event.api.refreshCells({
+    rowNodes: [event.node],
+    columns: [event.colDef.field]
+  });
 };
 
 export const addColumn = (

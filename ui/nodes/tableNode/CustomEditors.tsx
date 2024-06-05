@@ -29,7 +29,7 @@ export const CurrencyEditor = (props: ICellEditorParams) => {
 
 export const DropdownEditor = (props: ICellEditorParams) => {
   const [value, setValue] = React.useState(props.value);
-  const options = props.colDef.cellEditorParams.options || [];
+  const options = props.colDef.cellEditorParams?.options || [];
 
   return (
     <select
