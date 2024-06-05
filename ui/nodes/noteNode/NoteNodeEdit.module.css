@@ -40,6 +40,10 @@
   color: inherit;
 }
 
+.invalidCell {
+  background-color: #ffcccc !important;
+}
+
 /* common on all nodes */
 
 .header {

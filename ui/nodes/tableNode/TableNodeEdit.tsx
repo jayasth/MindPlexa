@@ -117,6 +117,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   const updateNode = useStore((state) => state.updateNode);
   const colorPickerRef = useRef<HTMLDivElement>(null);
   const tableRef = useRef<HTMLDivElement>(null);
+  const gridRef = useRef<any>(null);
 
   useEffect(() => {
     if (
@@ -293,6 +294,65 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     };
   });
 
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    const api = gridRef.current?.api;
+    if (api) {
+      switch (event.key) {
+        case 'ArrowUp':
+          api.tabToPreviousCell();
+          break;
+        case 'ArrowDown':
+          api.tabToNextCell();
+          break;
+        case 'ArrowLeft':
+          api.tabToPreviousCell();
+          break;
+        case 'ArrowRight':
+          api.tabToNextCell();
+          break;
+        case 'Enter':
+          api.startEditingCell({
+            rowIndex: api.getFocusedCell().rowIndex,
+            colKey: api.getFocusedCell().column.getColId()
+          });
+          break;
+        case 'Escape':
+          api.stopEditing();
+          break;
+        default:
+          break;
+      }
+    }
+  };
+
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (event.ctrlKey && event.key === 'n') {
+        addRow(content, setContent, updateNode);
+      } else if (event.ctrlKey && event.key === 'm') {
+        addColumn(content, setContent, updateNode);
+      } else if (event.ctrlKey && event.key === 'd') {
+        // Delete selected row
+        const api = gridRef.current?.api;
+        if (api) {
+          const selectedRows = api.getSelectedRows();
+          if (selectedRows.length > 0) {
+            const updatedRows = content.rows.filter(
+              (_, index) =>
+                !selectedRows.some((row) => row.id === content.rows[index].id)
+            );
+            setContent({ ...content, rows: updatedRows });
+          }
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyPress);
+    return () => {
+      document.removeEventListener('keydown', handleKeyPress);
+    };
+  }, [content, setContent, updateNode]);
+
   return (
     <div
       className={`${styles.tableNode} ${isSelected ? styles.selected : ''}`}
@@ -328,7 +388,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           <AddTableButton
             onClick={() => setIsModalOpen(true)}
             aria-label="Add Table"
-          />{' '}
+          />
           <AddColumnButton
             onClick={(columnType) =>
               addColumn(content, setContent, updateNode, columnType)
@@ -375,6 +435,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
               editable: true
             }}
             onGridReady={(params) => {
+              gridRef.current = params;
               params.api.sizeColumnsToFit();
             }}
             onCellValueChanged={(event) =>

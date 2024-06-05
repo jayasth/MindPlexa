@@ -31,18 +31,20 @@ export const formatCellValue = (value: any, type: string): any => {
 
 export const onCellValueChanged = (event, setContent) => {
   const oldValue = event.oldValue;
-  const newValue = event.newValue;
+  let newValue = event.newValue;
   const columnType = event.colDef.type;
 
   if (!validateCellValue(newValue, columnType)) {
-    event.node.setDataValue(event.colDef.field, oldValue);
+    newValue = ''; // Clear the invalid value
+    event.node.setDataValue(event.colDef.field, newValue);
+    event.node.data.invalid = true; // Mark the row as invalid
     event.api.refreshCells({
       rowNodes: [event.node],
       columns: [event.colDef.field]
     });
 
     setTimeout(() => {
-      alert(`Invalid value for column type "${columnType}": ${newValue}`);
+      alert(`Invalid value for column type "${columnType}": ${event.newValue}`);
     }, 0);
     return;
   }
@@ -60,6 +62,7 @@ export const onCellValueChanged = (event, setContent) => {
   });
 
   event.node.setDataValue(event.colDef.field, formattedValue);
+  event.node.data.invalid = false; // Mark the row as valid
   event.api.refreshCells({
     rowNodes: [event.node],
     columns: [event.colDef.field]
