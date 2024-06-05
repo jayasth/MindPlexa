@@ -64,6 +64,13 @@ import {
 
 import { TableNodeData } from '@/ui/canvasEditor/utils/nodeDatatypes';
 
+import {
+  DateEditor,
+  CurrencyEditor,
+  DropdownEditor,
+  BooleanEditor
+} from '@/ui/nodes/tableNode/CustomEditors';
+
 interface TableNodeEditProps extends NodeProps {
   data: TableNodeData;
   width: number;
@@ -248,6 +255,45 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     color: textColor
   };
 
+  const columnDefs = content.columns.map((col) => {
+    let cellEditor: any = 'agTextCellEditor';
+    let valueFormatter: ((params: any) => string) | null = null;
+
+    switch (col.type) {
+      case 'date':
+        cellEditor = DateEditor;
+        break;
+      case 'currency':
+        cellEditor = CurrencyEditor;
+        valueFormatter = (params) => `$${params.value}`;
+        break;
+      case 'dropdown':
+        cellEditor = DropdownEditor;
+        break;
+      case 'boolean':
+        cellEditor = BooleanEditor;
+        break;
+      default:
+        cellEditor = 'agTextCellEditor';
+    }
+
+    return {
+      ...col,
+      headerComponent: CustomHeader,
+      headerComponentParams: {
+        content,
+        setContent,
+        updateNode
+      },
+      headerName: col.headerName,
+      type: col.type,
+      sortable: false,
+      filter: false,
+      cellEditor,
+      valueFormatter
+    };
+  });
+
   return (
     <div
       className={`${styles.tableNode} ${isSelected ? styles.selected : ''}`}
@@ -321,19 +367,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           aria-label="Data Table"
         >
           <AgGridReact
-            columnDefs={content.columns.map((col) => ({
-              ...col,
-              headerComponent: CustomHeader,
-              headerComponentParams: {
-                content,
-                setContent,
-                updateNode
-              },
-              headerName: col.headerName,
-              type: col.type,
-              sortable: false,
-              filter: false
-            }))}
+            columnDefs={columnDefs as any}
             rowData={content.rows}
             domLayout="autoHeight"
             rowHeight={30}

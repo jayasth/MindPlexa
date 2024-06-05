@@ -9,13 +9,11 @@ export const validateCellValue = (value: any, type: string): boolean => {
     case 'date':
       return !isNaN(Date.parse(value));
     case 'boolean':
-      return value === 'true' || value === 'false';
+      return typeof value === 'boolean';
     case 'currency':
       return !isNaN(parseFloat(value)) && isFinite(value);
     case 'dropdown':
-      return (
-        Array.isArray(value) && value.every((item) => typeof item === 'string')
-      );
+      return typeof value === 'string';
     case 'email':
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       return emailRegex.test(value);
@@ -24,8 +22,8 @@ export const validateCellValue = (value: any, type: string): boolean => {
   }
 };
 
-export const formatCellValue = (value: any, format: string): any => {
-  switch (format) {
+export const formatCellValue = (value: any, type: string): any => {
+  switch (type) {
     case 'currency':
       return `$${Number(value).toFixed(2)}`;
     case 'percentage':
@@ -47,7 +45,6 @@ export const onCellValueChanged = (event, setContent) => {
       columns: [event.colDef.field]
     });
 
-    // Display an error message or highlight the invalid cell
     alert(`Invalid value for column type "${columnType}": ${newValue}`);
     return;
   }

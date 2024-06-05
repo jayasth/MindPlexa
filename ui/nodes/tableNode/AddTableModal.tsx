@@ -6,19 +6,27 @@ import Input from '@/ui/Input/Input';
 import Dropdown from '@/ui/dropdown/Dropdown';
 import styles from './AddTableModal.module.css';
 
+interface Column {
+  name: string;
+  type: string;
+  defaultValue: string;
+  cellEditorParams?: { options: string[] };
+}
+
 const AddTableModal = ({ onClose, onAddTable, hasExistingData }) => {
-  const [columns, setColumns] = useState([
+  const [columns, setColumns] = useState<Column[]>([
     { name: '', type: 'text', defaultValue: '' }
   ]);
   const [rows, setRows] = useState(1);
   const [isWarningOpen, setIsWarningOpen] = useState(false);
   const validTypes = [
-    'text',
-    'number',
-    'date',
-    'boolean',
-    'currency',
-    'dropdown'
+    { value: 'text', label: 'Text' },
+    { value: 'number', label: 'Number' },
+    { value: 'date', label: 'Date' },
+    { value: 'boolean', label: 'Boolean' },
+    { value: 'currency', label: 'Currency' },
+    { value: 'dropdown', label: 'Dropdown' },
+    { value: 'email', label: 'Email' }
   ];
 
   const handleAddColumn = () => {
@@ -27,7 +35,7 @@ const AddTableModal = ({ onClose, onAddTable, hasExistingData }) => {
 
   const handleColumnChange = (index, field, value) => {
     const newColumns = [...columns];
-    if (field === 'type' && !validTypes.includes(value)) {
+    if (field === 'type' && !validTypes.some((type) => type.value === value)) {
       alert('Invalid type selected.');
       return;
     }
@@ -39,13 +47,25 @@ const AddTableModal = ({ onClose, onAddTable, hasExistingData }) => {
     if (hasExistingData) {
       setIsWarningOpen(true);
     } else {
-      onAddTable(columns, rows);
+      const formattedColumns = columns.map((col) => {
+        if (col.type === 'dropdown') {
+          col.cellEditorParams = { options: col.defaultValue.split(',') };
+        }
+        return col;
+      });
+      onAddTable(formattedColumns, rows);
       onClose();
     }
   };
 
   const handleConfirmAddTable = () => {
-    onAddTable(columns, rows);
+    const formattedColumns = columns.map((col) => {
+      if (col.type === 'dropdown') {
+        col.cellEditorParams = { options: col.defaultValue.split(',') };
+      }
+      return col;
+    });
+    onAddTable(formattedColumns, rows);
     onClose();
     setIsWarningOpen(false);
   };
@@ -77,14 +97,18 @@ const AddTableModal = ({ onClose, onAddTable, hasExistingData }) => {
                 className={styles.dropdownWide}
               >
                 {validTypes.map((type) => (
-                  <option key={type} value={type}>
-                    {type.charAt(0).toUpperCase() + type.slice(1)}
+                  <option key={type.value} value={type.value}>
+                    {type.label}
                   </option>
                 ))}
               </Dropdown>
               <Input
                 type="text"
-                placeholder="Default Value"
+                placeholder={
+                  col.type === 'dropdown'
+                    ? 'Options (comma separated)'
+                    : 'Default Value'
+                }
                 value={col.defaultValue}
                 onChange={(value) =>
                   handleColumnChange(index, 'defaultValue', value)
