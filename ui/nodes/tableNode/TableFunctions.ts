@@ -5,7 +5,7 @@ export const validateCellValue = (value: any, type: string): boolean => {
     case 'text':
       return typeof value === 'string';
     case 'number':
-      return !isNaN(value);
+      return !isNaN(Number(value));
     case 'date':
       return !isNaN(Date.parse(value));
     case 'boolean':
@@ -16,48 +16,52 @@ export const validateCellValue = (value: any, type: string): boolean => {
       return (
         Array.isArray(value) && value.every((item) => typeof item === 'string')
       );
+    case 'email':
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return emailRegex.test(value);
     default:
       return true;
   }
 };
 
-export const onCellValueChanged = (event, setContent, setAlert) => {
-  const { colDef, newValue, oldValue, api } = event;
-  const columnType = colDef.type;
+export const formatCellValue = (value: any, format: string): any => {
+  switch (format) {
+    case 'currency':
+      return `$${Number(value).toFixed(2)}`;
+    case 'percentage':
+      return `${Number(value).toFixed(2)}%`;
+    default:
+      return value;
+  }
+};
+
+export const onCellValueChanged = (event, setContent) => {
+  const oldValue = event.oldValue;
+  const newValue = event.newValue;
+  const columnType = event.colDef.type;
 
   if (!validateCellValue(newValue, columnType)) {
-    // Display an error message and highlight the invalid cell
-    setAlert({
-      type: 'error',
-      message: `Invalid value for column type ${columnType}. Please enter a valid value.`,
-      show: true
-    });
-
-    // Highlight the invalid cell
-    api.flashCells({
+    event.node.setDataValue(event.colDef.field, oldValue);
+    event.api.refreshCells({
       rowNodes: [event.node],
-      columns: [colDef.field],
-      flashDelay: 2000
+      columns: [event.colDef.field]
     });
 
-    // Keep the invalid value but highlight the cell
-    event.node.setDataValue(colDef.field, newValue);
-    api.refreshCells({ rowNodes: [event.node], columns: [colDef.field] });
+    // Display an error message or highlight the invalid cell
+    alert(`Invalid value for column type "${columnType}": ${newValue}`);
     return;
   }
 
+  const formattedValue = formatCellValue(newValue, columnType);
+
   setContent((prevContent) => {
-    const rowIndex = event.rowIndex;
-    const colId = colDef.field;
-    if (colId !== undefined && rowIndex !== null) {
-      const newRows = [...prevContent.rows];
-      newRows[rowIndex][colId] = newValue;
-      return {
-        ...prevContent,
-        rows: newRows
-      };
-    }
-    return prevContent;
+    const updatedRows = prevContent.rows.map((row, index) => {
+      if (index === event.rowIndex) {
+        return { ...row, [event.colDef.field]: formattedValue };
+      }
+      return row;
+    });
+    return { ...prevContent, rows: updatedRows };
   });
 };
 

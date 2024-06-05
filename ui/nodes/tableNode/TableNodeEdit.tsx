@@ -110,6 +110,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
 
   const updateNode = useStore((state) => state.updateNode);
   const colorPickerRef = useRef<HTMLDivElement>(null);
+  const tableRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (
@@ -219,16 +220,16 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     setIsColorPickerVisible(!isColorPickerVisible);
   };
 
-  const handleClickOutside = (event: MouseEvent) => {
-    if (
-      colorPickerRef.current &&
-      !colorPickerRef.current.contains(event.target as Node)
-    ) {
-      setIsColorPickerVisible(false);
-    }
-  };
-
   useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        colorPickerRef.current &&
+        !colorPickerRef.current.contains(event.target as Node)
+      ) {
+        setIsColorPickerVisible(false);
+      }
+    };
+
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
@@ -253,6 +254,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
       style={customStyles}
       onClick={() => setIsContainerSelected(true)}
       onBlur={() => setIsContainerSelected(false)}
+      ref={tableRef}
     >
       <NodeResizer
         isVisible={isContainerSelected}
@@ -268,25 +270,38 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           onChange={(e) => onChangeTitle(e.target.value)}
           className={`${styles.titleInput} nodrag`}
           style={{ color: textColor }}
+          aria-label="Table Title"
         />
         <CloseButton
           onClick={() => handleClose(data.id, () => {}, title, content)}
+          aria-label="Close Table"
         />
       </div>
 
       <div className={`${styles.tableContent} nowheel nodrag`}>
         <div className={styles.toolbar}>
-          <AddTableButton onClick={() => setIsModalOpen(true)} />{' '}
+          <AddTableButton
+            onClick={() => setIsModalOpen(true)}
+            aria-label="Add Table"
+          />{' '}
           <AddColumnButton
             onClick={(columnType) =>
               addColumn(content, setContent, updateNode, columnType)
             }
+            aria-label="Add Column"
           />
           <AddRowButton
             onClick={() => addRow(content, setContent, updateNode)}
+            aria-label="Add Row"
           />
-          <ExportButton onClick={() => exportTableData(content)} />
-          <ImportButton onChange={(e) => importTableData(e, setContent)} />
+          <ExportButton
+            onClick={() => exportTableData(content)}
+            aria-label="Export Table"
+          />
+          <ImportButton
+            onChange={(e) => importTableData(e, setContent)}
+            aria-label="Import Table"
+          />
           <DeleteTableButton
             onClick={() => {
               if (content.columns.length > 0 || content.rows.length > 0) {
@@ -295,12 +310,15 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
                 handleDeleteTable();
               }
             }}
+            aria-label="Delete Table"
           />
         </div>
 
         <div
           className="ag-theme-alpine"
           style={{ height: '100%', width: '100%' }}
+          role="grid"
+          aria-label="Data Table"
         >
           <AgGridReact
             columnDefs={content.columns.map((col) => ({
@@ -327,7 +345,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
               params.api.sizeColumnsToFit();
             }}
             onCellValueChanged={(event) =>
-              onCellValueChanged(event, setContent, () => {})
+              onCellValueChanged(event, setContent)
             }
           />
         </div>
@@ -341,6 +359,13 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
                 className={styles.tag}
                 style={{ color: textColor }}
                 onClick={() => onRemoveTag(tag)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    onRemoveTag(tag);
+                  }
+                }}
               >
                 #{tag}{' '}
                 <button className={styles.removeTagButton}>&times;</button>
@@ -367,12 +392,25 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
                     }
                   }}
                   style={{ cursor: 'pointer', textDecoration: 'underline' }}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      if (file.type === 'text/plain') {
+                        window.open(file.name, '_blank');
+                      } else {
+                        const url = URL.createObjectURL(file);
+                        window.open(url, '_blank');
+                      }
+                    }
+                  }}
                 >
                   {file.name}
                 </span>
                 <button
                   className={styles.removeFileButton}
                   onClick={() => onRemoveFile(file)}
+                  aria-label={`Remove file ${file.name}`}
                 >
                   &times;
                 </button>
@@ -392,12 +430,28 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
               attachedFiles
             })
           }
+          aria-label="Save Table"
         />
-        <DeleteButton onClick={() => handleDelete(data.id, () => {})} />
-        <ChangeColorButton onClick={() => toggleColorPicker()} />
-        <AddTagButton onClick={() => setIsTagModalOpen(true)} />
-        <AttachFileButton onClick={() => setIsFileModalOpen(true)} />
-        <DuplicateButton onClick={() => handleDuplicate(data.id)} />
+        <DeleteButton
+          onClick={() => handleDelete(data.id, () => {})}
+          aria-label="Delete Table"
+        />
+        <ChangeColorButton
+          onClick={() => toggleColorPicker()}
+          aria-label="Change Color"
+        />
+        <AddTagButton
+          onClick={() => setIsTagModalOpen(true)}
+          aria-label="Add Tag"
+        />
+        <AttachFileButton
+          onClick={() => setIsFileModalOpen(true)}
+          aria-label="Attach File"
+        />
+        <DuplicateButton
+          onClick={() => handleDuplicate(data.id)}
+          aria-label="Duplicate Table"
+        />
         <ColorPickerModal
           isOpen={isColorPickerVisible}
           onClose={() => setIsColorPickerVisible(false)}
