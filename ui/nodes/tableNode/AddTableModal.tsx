@@ -24,9 +24,7 @@ const AddTableModal = ({ onClose, onAddTable, hasExistingData }) => {
     { value: 'number', label: 'Number' },
     { value: 'email', label: 'Email' },
     { value: 'date', label: 'Date' },
-    { value: 'boolean', label: 'Boolean' },
-    { value: 'currency', label: 'Currency' },
-    { value: 'dropdown', label: 'Dropdown' }
+    { value: 'currency', label: 'Currency' }
   ];
 
   const handleAddColumn = () => {
@@ -129,7 +127,7 @@ const AddTableModal = ({ onClose, onAddTable, hasExistingData }) => {
             value={rows}
             onChange={handleRowsChange}
             min="1"
-            max="10"
+            max="1000"
             variant="slim"
             className={styles.inputNarrow}
           />

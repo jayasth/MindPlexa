@@ -86,7 +86,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
   };
 
   const buttonClass = `${styles.button} ${isOpen ? styles.open : ''}`;
-  const iconSize = 16;
+  const iconSize = 20;
 
   return (
     <>
