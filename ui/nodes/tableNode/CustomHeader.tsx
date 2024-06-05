@@ -37,10 +37,9 @@ const CustomHeader: React.FC<CustomHeaderProps> = ({ column, displayName }) => {
       >
         <option value="text">Aa</option>
         <option value="number">123</option>
+        <option value="email">📩</option>
         <option value="date">📅</option>
-        <option value="boolean">✓</option>
         <option value="currency">$</option>
-        <option value="dropdown">▼</option>
       </Dropdown>
     </div>
   );

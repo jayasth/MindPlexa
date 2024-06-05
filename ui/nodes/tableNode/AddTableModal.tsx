@@ -9,13 +9,12 @@ import styles from './AddTableModal.module.css';
 interface Column {
   name: string;
   type: string;
-  defaultValue: string;
   cellEditorParams?: { options: string[] };
 }
 
 const AddTableModal = ({ onClose, onAddTable, hasExistingData }) => {
   const [columns, setColumns] = useState<Column[]>([
-    { name: '', type: 'text', defaultValue: '' }
+    { name: '', type: 'text' }
   ]);
   const [rows, setRows] = useState(1);
   const [isWarningOpen, setIsWarningOpen] = useState(false);
@@ -28,7 +27,7 @@ const AddTableModal = ({ onClose, onAddTable, hasExistingData }) => {
   ];
 
   const handleAddColumn = () => {
-    setColumns([...columns, { name: '', type: 'text', defaultValue: '' }]);
+    setColumns([...columns, { name: '', type: 'text' }]);
   };
 
   const handleColumnChange = (index, field, value) => {
@@ -45,25 +44,13 @@ const AddTableModal = ({ onClose, onAddTable, hasExistingData }) => {
     if (hasExistingData) {
       setIsWarningOpen(true);
     } else {
-      const formattedColumns = columns.map((col) => {
-        if (col.type === 'dropdown') {
-          col.cellEditorParams = { options: col.defaultValue.split(',') };
-        }
-        return col;
-      });
-      onAddTable(formattedColumns, rows);
+      onAddTable(columns, rows);
       onClose();
     }
   };
 
   const handleConfirmAddTable = () => {
-    const formattedColumns = columns.map((col) => {
-      if (col.type === 'dropdown') {
-        col.cellEditorParams = { options: col.defaultValue.split(',') };
-      }
-      return col;
-    });
-    onAddTable(formattedColumns, rows);
+    onAddTable(columns, rows);
     onClose();
     setIsWarningOpen(false);
   };
@@ -100,20 +87,6 @@ const AddTableModal = ({ onClose, onAddTable, hasExistingData }) => {
                   </option>
                 ))}
               </Dropdown>
-              <Input
-                type="text"
-                placeholder={
-                  col.type === 'dropdown'
-                    ? 'Options (comma separated)'
-                    : 'Default Value'
-                }
-                value={col.defaultValue}
-                onChange={(value) =>
-                  handleColumnChange(index, 'defaultValue', value)
-                }
-                variant="slim"
-                className={styles.inputWide}
-              />
             </div>
           ))}
           <Button variant="slim" onClick={handleAddColumn}>
