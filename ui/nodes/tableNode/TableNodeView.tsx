@@ -1,7 +1,7 @@
 import React from 'react';
 import { NodeProps, Handle, Position } from 'reactflow';
 import { useStore } from '@/app/store/useCanvasStore';
-import styles from './TableNodeView.module.css';
+import styles from '@/ui/nodes/tableNode/styles/TableNodeView.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 import { FaEdit } from 'react-icons/fa';
 

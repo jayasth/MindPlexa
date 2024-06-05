@@ -11,7 +11,7 @@ import {
   CiTextAlignLeft,
   CiTextAlignRight
 } from 'react-icons/ci';
-import styles from '@/ui/nodes/tableNode/TableNodeToolbar.module.css';
+import styles from '@/ui/nodes/tableNode/styles/TableNodeToolbar.module.css';
 
 const iconSize = 16;
 

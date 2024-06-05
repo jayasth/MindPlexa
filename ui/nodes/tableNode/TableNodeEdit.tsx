@@ -8,7 +8,7 @@ import React, {
 import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
 import { AgGridReact } from 'ag-grid-react';
 import { useStore } from '@/app/store/useCanvasStore';
-import styles from './TableNodeEdit.module.css';
+import styles from '@/ui/nodes/tableNode/styles/TableNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 import {
   SaveButton,
@@ -29,9 +29,8 @@ import {
   ExportButton,
   ImportButton,
   DeleteTableButton
-} from '@/ui/nodes/tableNode/TableNodeToolbar';
-import AddTableModal from '@/ui/nodes/tableNode/AddTableModal';
-import CustomHeader from '@/ui/nodes/tableNode/CustomHeader';
+} from '@/ui/nodes/tableNode/components/TableNodeToolbar';
+import AddTableModal from '@/ui/nodes/tableNode/components/AddTableModal';
 import { Modal } from 'react-responsive-modal';
 import 'react-responsive-modal/styles.css';
 import Button from '@/ui/Button/Button';
@@ -47,7 +46,7 @@ import {
   exportTableData,
   onCellValueChanged,
   handleKeyDown
-} from '@/ui/nodes/tableNode/TableFunctions';
+} from '@/ui/nodes/tableNode/utils/TableFunctions';
 
 import {
   handleTitleChange,
@@ -66,11 +65,9 @@ import {
 
 import { TableNodeData } from '@/ui/canvasEditor/utils/nodeDatatypes';
 
-import {
-  DateEditor,
-  DropdownEditor,
-  BooleanEditor
-} from '@/ui/nodes/tableNode/CustomCellEditors';
+import { getColumnDefs } from '@/ui/nodes/tableNode/utils/columnDefs';
+import { getContextMenuItems } from '@/ui/nodes/tableNode/utils/contextMenuItems';
+import { useKeyPressHandler } from '@/ui/nodes/tableNode/utils/useKeyPressHandler';
 
 interface TableNodeEditProps extends NodeProps {
   data: TableNodeData;
@@ -240,183 +237,9 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     color: textColor
   };
 
-  const columnDefs = content.columns.map((col) => {
-    let cellEditor: any = 'agTextCellEditor';
-    let valueFormatter: ((params: any) => string) | null = null;
+  const columnDefs = getColumnDefs(content, setContent, updateNode);
 
-    switch (col.type) {
-      case 'date':
-        cellEditor = DateEditor;
-        break;
-      case 'currency':
-        cellEditor = 'agTextCellEditor';
-        valueFormatter = (params) => (params.value ? `$${params.value}` : '');
-        break;
-      case 'dropdown':
-        cellEditor = DropdownEditor;
-        break;
-      case 'boolean':
-        cellEditor = BooleanEditor;
-        break;
-      default:
-        cellEditor = 'agTextCellEditor';
-    }
-
-    return {
-      ...col,
-      headerComponent: CustomHeader,
-      headerComponentParams: {
-        content,
-        setContent,
-        updateNode
-      },
-      headerName: col.headerName,
-      type: col.type,
-      sortable: false,
-      filter: false,
-      cellEditor,
-      valueFormatter
-    };
-  });
-
-  useEffect(() => {
-    const handleKeyPress = (event: KeyboardEvent) => {
-      if (event.ctrlKey && event.key === 'n') {
-        addRow(content, setContent, updateNode);
-      } else if (event.ctrlKey && event.key === 'm') {
-        addColumn(content, setContent, updateNode);
-      } else if (event.ctrlKey && event.key === 'd') {
-        // Delete selected row
-        const api = gridRef.current?.api;
-        if (api) {
-          const selectedRows = api.getSelectedRows();
-          if (selectedRows.length > 0) {
-            const updatedRows = content.rows.filter(
-              (_, index) =>
-                !selectedRows.some((row) => row.id === content.rows[index].id)
-            );
-            setContent({ ...content, rows: updatedRows });
-          }
-        }
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyPress);
-    return () => {
-      document.removeEventListener('keydown', handleKeyPress);
-    };
-  }, [content, setContent, updateNode]);
-
-  const getContextMenuItems = (params) => {
-    const result = [
-      'copy',
-      'copyWithHeaders',
-      'paste',
-      'separator',
-      {
-        name: 'Sort Ascending',
-        action: () =>
-          params.columnApi.applyColumnState({
-            state: [{ colId: params.column.getId(), sort: 'asc' }],
-            applyOrder: true
-          })
-      },
-      {
-        name: 'Sort Descending',
-        action: () =>
-          params.columnApi.applyColumnState({
-            state: [{ colId: params.column.getId(), sort: 'desc' }],
-            applyOrder: true
-          })
-      },
-      'separator',
-      {
-        name: 'Align Left',
-        action: () =>
-          params.columnApi.getColumnState().forEach((col) => {
-            if (col.colId === params.column.getId()) {
-              col.cellClass = 'ag-cell-left';
-            }
-          })
-      },
-      {
-        name: 'Align Center',
-        action: () =>
-          params.columnApi.getColumnState().forEach((col) => {
-            if (col.colId === params.column.getId()) {
-              col.cellClass = 'ag-cell-center';
-            }
-          })
-      },
-      {
-        name: 'Align Right',
-        action: () =>
-          params.columnApi.getColumnState().forEach((col) => {
-            if (col.colId === params.column.getId()) {
-              col.cellClass = 'ag-cell-right';
-            }
-          })
-      },
-      'separator',
-      {
-        name: 'Add Column',
-        action: () => addColumn(content, setContent, updateNode)
-      },
-      {
-        name: 'Delete Column',
-        action: () => {
-          const updatedColumns = content.columns.filter(
-            (col) => col.field !== params.column.getId()
-          );
-          setContent({ ...content, columns: updatedColumns });
-        }
-      },
-      'separator',
-      {
-        name: 'Export Column Data',
-        action: () => {
-          const columnData = content.rows.map(
-            (row) => row[params.column.getId()]
-          );
-          const csvContent =
-            'data:text/csv;charset=utf-8,' + columnData.join('\n');
-          const encodedUri = encodeURI(csvContent);
-          const link = document.createElement('a');
-          link.setAttribute('href', encodedUri);
-          link.setAttribute('download', `${params.column.getId()}.csv`);
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-        }
-      },
-      {
-        name: 'Import Column Data',
-        action: () => {
-          const input = document.createElement('input');
-          input.type = 'file';
-          input.accept = '.csv';
-          input.onchange = (e) => {
-            const file = (e.target as HTMLInputElement).files?.[0];
-            if (file) {
-              const reader = new FileReader();
-              reader.onload = (event) => {
-                const csvData = event.target?.result as string;
-                const parsedData = Papa.parse(csvData, { header: false }).data;
-                const updatedRows = content.rows.map((row, index) => ({
-                  ...row,
-                  [params.column.getId()]: parsedData[index][0]
-                }));
-                setContent({ ...content, rows: updatedRows });
-              };
-              reader.readAsText(file);
-            }
-          };
-          input.click();
-        }
-      }
-    ];
-    return result;
-  };
+  useKeyPressHandler(content, setContent, updateNode, gridRef);
 
   return (
     <div
@@ -510,7 +333,9 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
             onCellValueChanged={(event) =>
               onCellValueChanged(event, setContent)
             }
-            getContextMenuItems={getContextMenuItems}
+            getContextMenuItems={(params) =>
+              getContextMenuItems(params, content, setContent, updateNode)
+            }
           />
         </div>
       </div>

@@ -4,7 +4,7 @@ import 'react-responsive-modal/styles.css';
 import Button from '@/ui/Button/Button';
 import Input from '@/ui/Input/Input';
 import Dropdown from '@/ui/dropdown/Dropdown';
-import styles from './AddTableModal.module.css';
+import styles from '@/ui/nodes/tableNode/styles/AddTableModal.module.css';
 
 interface Column {
   name: string;

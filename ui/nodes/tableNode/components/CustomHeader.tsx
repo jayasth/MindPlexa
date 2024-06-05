@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Input from '@/ui/Input/Input';
 import Dropdown from '@/ui/dropdown/Dropdown';
-import styles from './CustomHeader.module.css';
+import styles from '@/ui/nodes/tableNode/styles/CustomHeader.module.css';
 
 interface CustomHeaderProps {
   column: any;
