@@ -66,7 +66,6 @@ import { TableNodeData } from '@/ui/canvasEditor/utils/nodeDatatypes';
 
 import {
   DateEditor,
-  CurrencyEditor,
   DropdownEditor,
   BooleanEditor
 } from '@/ui/nodes/tableNode/CustomCellEditors';
@@ -264,8 +263,8 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
         cellEditor = DateEditor;
         break;
       case 'currency':
-        cellEditor = CurrencyEditor;
-        valueFormatter = (params) => `$${params.value}`;
+        cellEditor = 'agTextCellEditor';
+        valueFormatter = (params) => (params.value ? `$${params.value}` : '');
         break;
       case 'dropdown':
         cellEditor = DropdownEditor;

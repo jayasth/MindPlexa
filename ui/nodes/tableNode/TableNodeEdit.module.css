@@ -51,6 +51,10 @@
   gap: 20px;
 }
 
+.invalid-cell {
+  background-color: #ffcccc;
+}
+
 /* common on all nodes */
 
 .header {

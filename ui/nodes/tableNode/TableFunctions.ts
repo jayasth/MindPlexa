@@ -13,7 +13,6 @@ export const validateCellValue = (value: any, type: string): boolean => {
       return !isNaN(Date.parse(value));
     case 'currency':
       return !isNaN(parseFloat(value)) && isFinite(value);
-
     default:
       return true;
   }
@@ -22,7 +21,7 @@ export const validateCellValue = (value: any, type: string): boolean => {
 export const formatCellValue = (value: any, type: string): any => {
   switch (type) {
     case 'currency':
-      return `$${Number(value).toFixed(2)}`;
+      return value ? `$${Number(value).toFixed(2)}` : '';
     case 'percentage':
       return `${Number(value).toFixed(2)}%`;
     default:
@@ -41,6 +40,16 @@ export const onCellValueChanged = (event, setContent) => {
       rowNodes: [event.node],
       columns: [event.colDef.field]
     });
+
+    // Add invalid class
+    event.api
+      .getCellRendererInstances({
+        rowNodes: [event.node],
+        columns: [event.colDef.field]
+      })
+      .forEach((cellRenderer) => {
+        cellRenderer.eGui.classList.add('invalid-cell');
+      });
 
     setTimeout(() => {
       alert(`Invalid value for column type "${columnType}": ${newValue}`);
@@ -65,6 +74,16 @@ export const onCellValueChanged = (event, setContent) => {
     rowNodes: [event.node],
     columns: [event.colDef.field]
   });
+
+  // Remove invalid class if present
+  event.api
+    .getCellRendererInstances({
+      rowNodes: [event.node],
+      columns: [event.colDef.field]
+    })
+    .forEach((cellRenderer) => {
+      cellRenderer.eGui.classList.remove('invalid-cell');
+    });
 };
 
 export const addColumn = (

@@ -12,30 +12,18 @@ export const DateEditor = (props: ICellEditorParams) => {
   const handleInputChange = (e) => {
     setValue(e.target.value);
   };
+
   return (
     <input
       type="date"
       value={value}
       onChange={handleDateChange}
-      onBlur={(e) => props.stopEditing()}
+      onBlur={() => props.stopEditing()}
       onKeyDown={(e) => {
         if (e.key === 'Enter') {
           props.stopEditing();
         }
       }}
-    />
-  );
-};
-
-export const CurrencyEditor = (props: ICellEditorParams) => {
-  const [value, setValue] = React.useState(props.value);
-
-  return (
-    <input
-      type="number"
-      value={value}
-      onChange={(e) => setValue(e.target.value)}
-      onBlur={() => props.stopEditing()}
     />
   );
 };
