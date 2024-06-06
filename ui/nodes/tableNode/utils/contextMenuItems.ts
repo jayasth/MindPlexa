@@ -14,8 +14,12 @@ export const getContextMenuItems = (
   content,
   setContent,
   updateNode
-) => {
-  return [
+): (string | ContextMenuItem)[] => {
+  const result: (string | ContextMenuItem)[] = [
+    'copy',
+    'copyWithHeaders',
+    'paste',
+    'separator',
     {
       name: 'Rename Column',
       action: () => {
@@ -163,6 +167,7 @@ export const getContextMenuItems = (
       }
     }
   ];
+  return result;
 };
 
 const changeColumnType = (params, content, setContent, newType) => {
@@ -206,9 +211,7 @@ export const getColumnDefs = (content, setContent, updateNode) => {
         context: { content, setContent, updateNode }
       },
       headerClass: 'custom-header-class',
-      colId: col.field,
-      getContextMenuItems: (params) =>
-        getContextMenuItems(params, content, setContent, updateNode)
+      colId: col.field
     };
   });
 };
