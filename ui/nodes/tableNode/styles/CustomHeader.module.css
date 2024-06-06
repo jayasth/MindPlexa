@@ -4,11 +4,10 @@
   align-items: center;
   padding: 0 8px;
   cursor: pointer;
-  position: relative; /* Ensure the position is relative */
-  outline: none; /* Remove default outline */
+  position: relative;
 }
 
-.headerContainer span {
+.headerText {
   flex-grow: 1;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -18,11 +17,5 @@
 .menuIcon {
   margin-left: 8px;
   cursor: pointer;
-  color: #575757; /* Use a fancy color */
-}
-
-.headerContainer:focus {
-  outline: 1px solid #7c3aed;
-  outline-offset: 2px;
-  transition: outline 0.3s ease-in-out;
+  color: #575757;
 }
