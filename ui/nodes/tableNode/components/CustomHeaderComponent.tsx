@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { IHeaderParams } from 'ag-grid-community';
 import styles from '@/ui/nodes/tableNode/styles/CustomHeaderComponent.module.css';
+import CustomContextMenu from '@/ui/nodes/tableNode/components/CustomContextMenu';
 
 const CustomHeaderComponent = (props: IHeaderParams) => {
   const [showMenu, setShowMenu] = useState(false);
@@ -37,6 +38,21 @@ const CustomHeaderComponent = (props: IHeaderParams) => {
     setShowMenu(false);
   };
 
+  const handleRename = () => {
+    // Implement your rename logic here
+    alert('Rename logic not implemented');
+  };
+
+  const handleChangeType = () => {
+    // Implement your change type logic here
+    alert('Change type logic not implemented');
+  };
+
+  const handleDelete = () => {
+    // Implement your delete logic here
+    alert('Delete logic not implemented');
+  };
+
   return (
     <div className={styles.headerContainer}>
       <span>{props.displayName}</span>
@@ -60,6 +76,12 @@ const CustomHeaderComponent = (props: IHeaderParams) => {
           <div className={styles.contextMenuItem} onClick={filterColumn}>
             Filter
           </div>
+          <CustomContextMenu
+            id="custom-header-context-menu"
+            onRename={handleRename}
+            onChangeType={handleChangeType}
+            onDelete={handleDelete}
+          />
         </div>
       )}
     </div>

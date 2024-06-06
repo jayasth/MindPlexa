@@ -210,7 +210,7 @@ export const getColumnDefs = (content, setContent, updateNode) => {
         menuIcon: 'fa-bars',
         context: { content, setContent, updateNode }
       },
-      headerClass: 'custom-header-class',
+      headerClass: '         custom-header-class',
       colId: col.field
     };
   });

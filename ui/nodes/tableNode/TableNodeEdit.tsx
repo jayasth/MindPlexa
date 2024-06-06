@@ -70,6 +70,7 @@ import {
 } from '@/ui/nodes/tableNode/utils/contextMenuItems';
 import { useKeyPressHandler } from '@/ui/nodes/tableNode/utils/useKeyPressHandler';
 import CustomHeaderComponent from '@/ui/nodes/tableNode/components/CustomHeaderComponent';
+import CustomContextMenu from '@/ui/nodes/tableNode/components/CustomContextMenu';
 
 interface TableNodeEditProps extends NodeProps {
   data: TableNodeData;
