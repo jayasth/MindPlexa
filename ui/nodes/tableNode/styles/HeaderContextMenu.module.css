@@ -9,16 +9,3 @@
   min-width: 120px;
   font-size: 12px;
 }
-
-.contextMenu .react-contexify__item {
-  padding: 8px 16px;
-  cursor: pointer;
-}
-
-.react-contexify__item--hover {
-  background-color: transparent !important;
-}
-
-.react-contexify__item--hover .react-contexify__item__content {
-  color: inherit !important;
-}
