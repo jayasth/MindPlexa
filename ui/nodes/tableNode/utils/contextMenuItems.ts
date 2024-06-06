@@ -14,15 +14,8 @@ export const getContextMenuItems = (
   content,
   setContent,
   updateNode
-): (string | { name: string; action?: () => void; subMenu?: any[] })[] => {
-  const result: (
-    | string
-    | { name: string; action?: () => void; subMenu?: any[] }
-  )[] = [
-    'copy',
-    'copyWithHeaders',
-    'paste',
-    'separator',
+) => {
+  return [
     {
       name: 'Rename Column',
       action: () => {
@@ -170,7 +163,6 @@ export const getContextMenuItems = (
       }
     }
   ];
-  return result;
 };
 
 const changeColumnType = (params, content, setContent, newType) => {

@@ -243,12 +243,10 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     (colDef) => ({
       ...colDef,
       headerComponent: CustomHeader,
-      headerComponentParams: {
-        menuIcon: 'fa-bars'
-      }
+      getContextMenuItems: (params) =>
+        getContextMenuItems(params, content, setContent, updateNode)
     })
   );
-
   useKeyPressHandler(content, setContent, updateNode, gridRef);
 
   return (
