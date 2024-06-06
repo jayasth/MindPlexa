@@ -39,10 +39,13 @@ const HeaderContextMenu = ({
         <Item onClick={onFilter}>Filter</Item>
         <Separator />
         <Item onClick={onRename}>Rename Column</Item>
-        <Submenu label="Change Datatype" className={styles.contextSubmenu}>
+        <Submenu label="Change Datatype" style={{ minWidth: '120px' }}>
           {Object.entries(typeIcons).map(([type, icon]) => (
             <Item key={type} onClick={() => onChangeType(type)}>
-              {icon} {type.charAt(0).toUpperCase() + type.slice(1)}
+              {icon}{' '}
+              <span style={{ marginLeft: '8px' }}>
+                {type.charAt(0).toUpperCase() + type.slice(1)}
+              </span>
             </Item>
           ))}
         </Submenu>
