@@ -14,12 +14,19 @@ const CustomHeader = (props: IHeaderParams) => {
 
   const handleLeftClick = (event: React.MouseEvent) => {
     event.preventDefault();
-    if (menuOpen) {
-      hideAll();
-    } else {
-      show({ event, props: { column: props.column } });
+    const rect = headerRef.current?.getBoundingClientRect();
+    if (rect) {
+      if (menuOpen) {
+        hideAll();
+      } else {
+        show({
+          event,
+          props: { column: props.column },
+          position: { x: rect.left, y: rect.bottom }
+        });
+      }
+      setMenuOpen(!menuOpen);
     }
-    setMenuOpen(!menuOpen);
   };
 
   return (
