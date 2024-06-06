@@ -16,7 +16,7 @@
 }
 
 .contextMenu .react-contexify__item:hover {
-  background-color: #f0f0f0;
+  background-color: #f0f0f0 !important;
 }
 
 .contextMenu .react-contexify__separator {
