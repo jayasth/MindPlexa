@@ -21,7 +21,7 @@ const HeaderContextMenu = ({
         <Item onClick={onFilter}>Filter</Item>
         <Separator />
         <Item onClick={onRename}>Rename Column</Item>
-        <Item onClick={onChangeType}>Change Column Type</Item>
+        <Item onClick={onChangeType}>Change Datatype</Item>
         <Item onClick={onDelete}>Delete Column</Item>
       </Menu>
     </Portal>

@@ -6,7 +6,7 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   border-radius: 4px;
   padding: 8px 0;
-  min-width: 150px;
+  min-width: 120px;
   font-size: 12px;
 }
 
@@ -15,11 +15,10 @@
   cursor: pointer;
 }
 
-.contextMenu .react-contexify__item:hover {
-  background-color: #f0f0f0 !important;
+.react-contexify__item--hover {
+  background-color: transparent !important;
 }
 
-.contextMenu .react-contexify__separator {
-  margin: 4px 0;
-  border-top: 1px solid #e0e0e0;
+.react-contexify__item--hover .react-contexify__item__content {
+  color: inherit !important;
 }
