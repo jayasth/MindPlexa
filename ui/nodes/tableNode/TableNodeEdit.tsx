@@ -70,7 +70,7 @@ import {
 } from '@/ui/nodes/tableNode/utils/contextMenuItems';
 import { useKeyPressHandler } from '@/ui/nodes/tableNode/utils/useKeyPressHandler';
 import CustomHeaderComponent from '@/ui/nodes/tableNode/components/CustomHeaderComponent';
-import CustomContextMenu from '@/ui/nodes/tableNode/components/CustomContextMenu';
+import HeaderContextMenu from '@/ui/nodes/tableNode/components/HeaderContextMenu';
 
 interface TableNodeEditProps extends NodeProps {
   data: TableNodeData;
@@ -533,6 +533,44 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           </Button>
         </div>
       </Modal>
+      {content.columns.map((col) => (
+        <HeaderContextMenu
+          key={col.field}
+          id={`header-context-menu-${col.field}`}
+          onSortAsc={() => {
+            gridRef.current.api.applyColumnState({
+              state: [{ colId: col.field, sort: 'asc' }],
+              applyOrder: true
+            });
+          }}
+          onSortDesc={() => {
+            gridRef.current.api.applyColumnState({
+              state: [{ colId: col.field, sort: 'desc' }],
+              applyOrder: true
+            });
+          }}
+          onFilter={() => alert('Filter logic not implemented')}
+          onRename={() => {
+            const newName = prompt('Enter new column name:', col.headerName);
+            if (newName) {
+              const updatedColumns = content.columns.map((column) => {
+                if (column.field === col.field) {
+                  return { ...column, headerName: newName };
+                }
+                return column;
+              });
+              setContent({ ...content, columns: updatedColumns });
+            }
+          }}
+          onChangeType={() => alert('Change type logic not implemented')}
+          onDelete={() => {
+            const updatedColumns = content.columns.filter(
+              (column) => column.field !== col.field
+            );
+            setContent({ ...content, columns: updatedColumns });
+          }}
+        />
+      ))}
     </div>
   );
 };
