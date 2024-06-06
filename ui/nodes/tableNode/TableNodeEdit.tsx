@@ -34,7 +34,6 @@ import AddTableModal from '@/ui/nodes/tableNode/components/AddTableModal';
 import { Modal } from 'react-responsive-modal';
 import 'react-responsive-modal/styles.css';
 import Button from '@/ui/Button/Button';
-import { Papa } from 'papaparse';
 
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
@@ -70,6 +69,7 @@ import {
   getContextMenuItems
 } from '@/ui/nodes/tableNode/utils/contextMenuItems';
 import { useKeyPressHandler } from '@/ui/nodes/tableNode/utils/useKeyPressHandler';
+import CustomHeaderComponent from '@/ui/nodes/tableNode/components/CustomHeaderComponent';
 
 interface TableNodeEditProps extends NodeProps {
   data: TableNodeData;
@@ -239,7 +239,15 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     color: textColor
   };
 
-  const columnDefs = getColumnDefs(content, setContent, updateNode);
+  const columnDefs = getColumnDefs(content, setContent, updateNode).map(
+    (colDef) => ({
+      ...colDef,
+      headerComponent: CustomHeaderComponent,
+      headerComponentParams: {
+        menuIcon: 'fa-bars'
+      }
+    })
+  );
 
   useKeyPressHandler(content, setContent, updateNode, gridRef);
 
@@ -322,7 +330,11 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
             rowHeight={30}
             defaultColDef={{
               resizable: true,
-              editable: true
+              editable: true,
+              headerComponent: CustomHeaderComponent,
+              headerComponentParams: {
+                menuIcon: 'fa-bars'
+              }
             }}
             onGridReady={(params) => {
               gridRef.current = params;
