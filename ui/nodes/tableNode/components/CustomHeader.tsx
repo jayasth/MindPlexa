@@ -1,35 +1,28 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, MouseEvent } from 'react';
 import { IHeaderParams } from 'ag-grid-community';
-import { useContextMenu } from 'react-contexify';
-import 'react-contexify/ReactContexify.css';
 import { IoChevronDown, IoChevronUp } from 'react-icons/io5';
 import styles from '@/ui/nodes/tableNode/styles/CustomHeader.module.css';
 
 const CustomHeader = (props: IHeaderParams) => {
   const [menuOpen, setMenuOpen] = useState(false);
-  const { show, hideAll } = useContextMenu({
-    id: `header-context-menu-${props.column.getId()}`
-  });
   const headerRef = useRef<HTMLDivElement>(null);
 
-  const handleLeftClick = (event: React.MouseEvent) => {
+  const handleLeftClick = (event: MouseEvent<HTMLDivElement>) => {
     event.preventDefault();
-    if (menuOpen) {
-      hideAll();
-    } else {
-      show({
-        event,
-        props: { column: props.column }
-      });
+    if (event.type === 'click') {
+      setMenuOpen(!menuOpen);
+    } else if (event.type === 'contextmenu') {
+      props.showColumnMenu(event.currentTarget as HTMLElement);
     }
-    setMenuOpen(!menuOpen);
   };
+
   return (
     <div
       className={styles.headerContainer}
       onClick={handleLeftClick}
+      onContextMenu={handleLeftClick}
       ref={headerRef}
-      tabIndex={0} // Make the header focusable
+      tabIndex={0}
     >
       <span>{props.displayName}</span>
       <span className={styles.menuIcon}>

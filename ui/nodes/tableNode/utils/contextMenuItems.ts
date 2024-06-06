@@ -14,8 +14,11 @@ export const getContextMenuItems = (
   content,
   setContent,
   updateNode
-): (string | ContextMenuItem)[] => {
-  const result: (string | ContextMenuItem)[] = [
+): (string | { name: string; action?: () => void; subMenu?: any[] })[] => {
+  const result: (
+    | string
+    | { name: string; action?: () => void; subMenu?: any[] }
+  )[] = [
     'copy',
     'copyWithHeaders',
     'paste',
@@ -211,7 +214,9 @@ export const getColumnDefs = (content, setContent, updateNode) => {
         context: { content, setContent, updateNode }
       },
       headerClass: 'custom-header-class',
-      colId: col.field
+      colId: col.field,
+      getContextMenuItems: (params) =>
+        getContextMenuItems(params, content, setContent, updateNode)
     };
   });
 };
