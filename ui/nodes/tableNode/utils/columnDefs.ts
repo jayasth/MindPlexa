@@ -1,9 +1,5 @@
-import CustomHeader from '@/ui/nodes/tableNode/components/CustomHeader';
-import {
-  DateEditor,
-  DropdownEditor,
-  BooleanEditor
-} from '@/ui/nodes/tableNode/utils/CustomCellEditors';
+import { DateEditor } from '@/ui/nodes/tableNode/utils/CustomCellEditors';
+import { getContextMenuItems } from '@/ui/nodes/tableNode/utils/contextMenuItems';
 
 export const getColumnDefs = (content, setContent, updateNode) => {
   return content.columns.map((col) => {
@@ -18,25 +14,13 @@ export const getColumnDefs = (content, setContent, updateNode) => {
         cellEditor = 'agTextCellEditor';
         valueFormatter = (params) => (params.value ? `$${params.value}` : '');
         break;
-      case 'dropdown':
-        cellEditor = DropdownEditor;
-        break;
-      case 'boolean':
-        cellEditor = BooleanEditor;
-        break;
       default:
         cellEditor = 'agTextCellEditor';
     }
 
     return {
       ...col,
-      headerComponent: CustomHeader,
-      headerComponentParams: {
-        content,
-        setContent,
-        updateNode
-      },
-      headerName: col.headerName,
+      headerName: col.headerName, // Use column header name from contextMenuItems
       type: col.type,
       sortable: false,
       filter: false,

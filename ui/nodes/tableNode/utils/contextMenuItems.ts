@@ -1,4 +1,5 @@
 import { Papa } from 'papaparse';
+import { DateEditor } from '@/ui/nodes/tableNode/utils/CustomCellEditors';
 import { addColumn } from '@/ui/nodes/tableNode/utils/TableFunctions';
 
 export const getContextMenuItems = (
@@ -170,4 +171,35 @@ const changeColumnType = (params, content, setContent, newType) => {
     return col;
   });
   setContent({ ...content, columns: updatedColumns });
+};
+
+export const getColumnDefs = (content, setContent, updateNode) => {
+  return content.columns.map((col) => {
+    let cellEditor: any = 'agTextCellEditor';
+    let valueFormatter: ((params: any) => string) | null = null;
+
+    switch (col.type) {
+      case 'date':
+        cellEditor = DateEditor;
+        break;
+      case 'currency':
+        cellEditor = 'agTextCellEditor';
+        valueFormatter = (params) => (params.value ? `$${params.value}` : '');
+        break;
+      default:
+        cellEditor = 'agTextCellEditor';
+    }
+
+    return {
+      ...col,
+      headerName: col.headerName, // Use column header name from contextMenuItems
+      type: col.type,
+      sortable: false,
+      filter: false,
+      cellEditor,
+      valueFormatter,
+      getContextMenuItems: (params) =>
+        getContextMenuItems(params, content, setContent, updateNode)
+    };
+  });
 };

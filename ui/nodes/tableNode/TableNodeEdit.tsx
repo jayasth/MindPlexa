@@ -65,8 +65,10 @@ import {
 
 import { TableNodeData } from '@/ui/canvasEditor/utils/nodeDatatypes';
 
-import { getColumnDefs } from '@/ui/nodes/tableNode/utils/columnDefs';
-import { getContextMenuItems } from '@/ui/nodes/tableNode/utils/contextMenuItems';
+import {
+  getColumnDefs,
+  getContextMenuItems
+} from '@/ui/nodes/tableNode/utils/contextMenuItems';
 import { useKeyPressHandler } from '@/ui/nodes/tableNode/utils/useKeyPressHandler';
 
 interface TableNodeEditProps extends NodeProps {
