@@ -34,6 +34,7 @@ const CustomHeader = (props: IHeaderParams) => {
       className={styles.headerContainer}
       onClick={handleLeftClick}
       ref={headerRef}
+      tabIndex={0} // Make the header focusable
     >
       <span>{props.displayName}</span>
       <span className={styles.menuIcon}>
