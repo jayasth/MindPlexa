@@ -4,7 +4,7 @@
   align-items: center;
   padding: 0 8px;
   cursor: pointer; /* Change cursor to pointer for left-click */
-  position: relative; /* For positioning the context menu */
+  position: relative; /* Change to absolute for closer positioning */
 }
 
 .headerContainer span {
@@ -17,4 +17,5 @@
 .menuIcon {
   margin-left: 8px;
   cursor: pointer;
+  color: #575757; /* Use a fancy color */
 }
