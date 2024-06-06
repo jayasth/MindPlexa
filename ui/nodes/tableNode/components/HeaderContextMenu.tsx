@@ -11,7 +11,10 @@ const HeaderContextMenu = ({
   onFilter,
   onRename,
   onChangeType,
-  onDelete
+  onDelete,
+  onAlignLeft,
+  onAlignCenter,
+  onAlignRight
 }) => {
   return (
     <Portal>
@@ -22,6 +25,11 @@ const HeaderContextMenu = ({
         <Separator />
         <Item onClick={onRename}>Rename Column</Item>
         <Item onClick={onChangeType}>Change Datatype</Item>
+        <Separator />
+        <Item onClick={onAlignLeft}>Align Left</Item>
+        <Item onClick={onAlignCenter}>Align Center</Item>
+        <Item onClick={onAlignRight}>Align Right</Item>
+        <Separator />
         <Item onClick={onDelete}>Delete Column</Item>
       </Menu>
     </Portal>

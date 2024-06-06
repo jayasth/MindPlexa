@@ -569,6 +569,27 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
             );
             setContent({ ...content, columns: updatedColumns });
           }}
+          onAlignLeft={() => {
+            gridRef.current.api.getColumnState().forEach((column) => {
+              if (column.colId === col.field) {
+                column.cellClass = 'ag-cell-left';
+              }
+            });
+          }}
+          onAlignCenter={() => {
+            gridRef.current.api.getColumnState().forEach((column) => {
+              if (column.colId === col.field) {
+                column.cellClass = 'ag-cell-center';
+              }
+            });
+          }}
+          onAlignRight={() => {
+            gridRef.current.api.getColumnState().forEach((column) => {
+              if (column.colId === col.field) {
+                column.cellClass = 'ag-cell-right';
+              }
+            });
+          }}
         />
       ))}
     </div>

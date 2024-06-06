@@ -9,6 +9,16 @@ interface ContextMenuItem {
   subMenu?: ContextMenuItem[];
 }
 
+const changeColumnType = (params, content, setContent, newType) => {
+  const updatedColumns = content.columns.map((col) => {
+    if (col.field === params.column.getId()) {
+      return { ...col, type: newType };
+    }
+    return col;
+  });
+  setContent({ ...content, columns: updatedColumns });
+};
+
 export const getContextMenuItems = (
   params,
   content,
@@ -42,23 +52,23 @@ export const getContextMenuItems = (
       name: 'Change Column Type',
       subMenu: [
         {
-          name: 'Aa',
+          name: 'Text',
           action: () => changeColumnType(params, content, setContent, 'text')
         },
         {
-          name: '123',
+          name: 'Number',
           action: () => changeColumnType(params, content, setContent, 'number')
         },
         {
-          name: '📩',
+          name: 'Email',
           action: () => changeColumnType(params, content, setContent, 'email')
         },
         {
-          name: '📅',
+          name: 'Date',
           action: () => changeColumnType(params, content, setContent, 'date')
         },
         {
-          name: '$',
+          name: 'Currency',
           action: () =>
             changeColumnType(params, content, setContent, 'currency')
         }
@@ -168,16 +178,6 @@ export const getContextMenuItems = (
     }
   ];
   return result;
-};
-
-const changeColumnType = (params, content, setContent, newType) => {
-  const updatedColumns = content.columns.map((col) => {
-    if (col.field === params.column.getId()) {
-      return { ...col, type: newType };
-    }
-    return col;
-  });
-  setContent({ ...content, columns: updatedColumns });
 };
 
 export const getColumnDefs = (content, setContent, updateNode) => {

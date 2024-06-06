@@ -3,7 +3,31 @@ import { IHeaderParams } from 'ag-grid-community';
 import { useContextMenu } from 'react-contexify';
 import 'react-contexify/ReactContexify.css';
 import { IoChevronDown, IoChevronUp } from 'react-icons/io5';
+import {
+  FaTextWidth,
+  FaHashtag,
+  FaEnvelope,
+  FaCalendarAlt,
+  FaDollarSign
+} from 'react-icons/fa';
+
+import {
+  MdOutlineTextFields,
+  MdAlternateEmail,
+  MdOutlineDateRange,
+  MdAttachMoney
+} from 'react-icons/md';
+import { AiOutlineFieldNumber } from 'react-icons/ai';
+
 import styles from '@/ui/nodes/tableNode/styles/CustomHeader.module.css';
+
+const typeIcons = {
+  text: <MdOutlineTextFields />,
+  number: <AiOutlineFieldNumber />,
+  email: <MdAlternateEmail />,
+  date: <MdOutlineDateRange />,
+  currency: <MdAttachMoney />
+};
 
 const CustomHeader = (props: IHeaderParams) => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -41,6 +65,9 @@ const CustomHeader = (props: IHeaderParams) => {
       tabIndex={0} // Make the header focusable
     >
       <span>{props.displayName}</span>
+      <span className={styles.typeIcon}>
+        {typeIcons[props.column.getColDef().type as keyof typeof typeIcons]}
+      </span>
       <span className={styles.menuIcon}>
         {menuOpen ? <IoChevronUp /> : <IoChevronDown />}
       </span>
