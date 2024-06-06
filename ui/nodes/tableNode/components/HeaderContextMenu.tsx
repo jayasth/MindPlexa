@@ -1,6 +1,7 @@
 import React from 'react';
 import { Menu, Item, Separator } from 'react-contexify';
 import 'react-contexify/ReactContexify.css';
+import styles from '@/ui/nodes/tableNode/styles/HeaderContextMenu.module.css';
 
 const HeaderContextMenu = ({
   id,
@@ -12,7 +13,7 @@ const HeaderContextMenu = ({
   onDelete
 }) => {
   return (
-    <Menu id={id}>
+    <Menu id={id} className={styles.contextMenu}>
       <Item onClick={onSortAsc}>Sort Ascending</Item>
       <Item onClick={onSortDesc}>Sort Descending</Item>
       <Item onClick={onFilter}>Filter</Item>

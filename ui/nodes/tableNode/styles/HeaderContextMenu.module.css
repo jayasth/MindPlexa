@@ -1,0 +1,25 @@
+.contextMenu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1000;
+  background-color: white;
+  border: 1px solid #ccc;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  padding: 8px 0;
+}
+
+.contextMenu .react-contexify__item {
+  padding: 8px 16px;
+  cursor: pointer;
+}
+
+.contextMenu .react-contexify__item:hover {
+  background-color: #f0f0f0;
+}
+
+.contextMenu .react-contexify__separator {
+  margin: 4px 0;
+  border-top: 1px solid #e0e0e0;
+}
