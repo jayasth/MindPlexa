@@ -549,7 +549,9 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
               applyOrder: true
             });
           }}
-          onFilter={() => alert('Filter logic not implemented')}
+          onFilter={() =>
+            gridRef.current.api.setFilterModel({ [col.field]: null })
+          }
           onRename={() => {
             const newName = prompt('Enter new column name:', col.headerName);
             if (newName) {
@@ -562,7 +564,16 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
               setContent({ ...content, columns: updatedColumns });
             }
           }}
-          onChangeType={() => alert('Change type logic not implemented')}
+          onChangeType={(newType) => {
+            const updatedColumns = content.columns.map((column) => {
+              if (column.field === col.field) {
+                return { ...column, type: newType };
+              }
+              return column;
+            });
+            setContent({ ...content, columns: updatedColumns });
+            gridRef.current.api.refreshHeader();
+          }}
           onDelete={() => {
             const updatedColumns = content.columns.filter(
               (column) => column.field !== col.field

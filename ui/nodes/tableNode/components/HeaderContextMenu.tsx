@@ -3,6 +3,21 @@ import { Menu, Item, Separator, Submenu } from 'react-contexify';
 import 'react-contexify/ReactContexify.css';
 import styles from '@/ui/nodes/tableNode/styles/HeaderContextMenu.module.css';
 import Portal from '@/ui/nodes/tableNode/Portal';
+import {
+  MdOutlineTextFields,
+  MdAlternateEmail,
+  MdOutlineDateRange,
+  MdAttachMoney
+} from 'react-icons/md';
+import { AiOutlineFieldNumber } from 'react-icons/ai';
+
+const typeIcons = {
+  text: <MdOutlineTextFields />,
+  number: <AiOutlineFieldNumber />,
+  email: <MdAlternateEmail />,
+  date: <MdOutlineDateRange />,
+  currency: <MdAttachMoney />
+};
 
 const HeaderContextMenu = ({
   id,
@@ -25,11 +40,11 @@ const HeaderContextMenu = ({
         <Separator />
         <Item onClick={onRename}>Rename Column</Item>
         <Submenu label="Change Datatype" className={styles.contextSubmenu}>
-          <Item onClick={() => onChangeType('text')}>Text</Item>
-          <Item onClick={() => onChangeType('number')}>Number</Item>
-          <Item onClick={() => onChangeType('email')}>Email</Item>
-          <Item onClick={() => onChangeType('date')}>Date</Item>
-          <Item onClick={() => onChangeType('currency')}>Currency</Item>
+          {Object.entries(typeIcons).map(([type, icon]) => (
+            <Item key={type} onClick={() => onChangeType(type)}>
+              {icon} {type.charAt(0).toUpperCase() + type.slice(1)}
+            </Item>
+          ))}
         </Submenu>
         <Separator />
         <Item onClick={onAlignLeft}>Align Left</Item>
