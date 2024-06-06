@@ -264,6 +264,7 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
             onEdgesChange={onEdgesChange}
             onConnect={handleConnect}
             onConnectStart={onConnectStart}
+            disableKeyboardA11y={true}
             onConnectEnd={(event) => {
               onConnectEnd(event);
               if (parentNode && childNodePosition) {

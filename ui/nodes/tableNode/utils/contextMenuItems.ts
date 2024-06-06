@@ -94,30 +94,36 @@ export const getContextMenuItems = (
     'separator',
     {
       name: 'Align Left',
-      action: () =>
+      action: () => {
         params.columnApi.getColumnState().forEach((col) => {
           if (col.colId === params.column.getId()) {
             col.cellClass = 'ag-cell-left';
           }
-        })
+        });
+        params.api.refreshCells({ force: true });
+      }
     },
     {
       name: 'Align Center',
-      action: () =>
+      action: () => {
         params.columnApi.getColumnState().forEach((col) => {
           if (col.colId === params.column.getId()) {
             col.cellClass = 'ag-cell-center';
           }
-        })
+        });
+        params.api.refreshCells({ force: true });
+      }
     },
     {
       name: 'Align Right',
-      action: () =>
+      action: () => {
         params.columnApi.getColumnState().forEach((col) => {
           if (col.colId === params.column.getId()) {
             col.cellClass = 'ag-cell-right';
           }
-        })
+        });
+        params.api.refreshCells({ force: true });
+      }
     },
     'separator',
     {
