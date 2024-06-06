@@ -192,14 +192,29 @@ export const getColumnDefs = (content, setContent, updateNode) => {
 
     return {
       ...col,
-      headerName: col.headerName, // Use column header name from contextMenuItems
+      headerName: col.headerName,
       type: col.type,
-      sortable: false,
-      filter: false,
+      sortable: true,
+      filter: true,
       cellEditor,
       valueFormatter,
-      getContextMenuItems: (params) =>
-        getContextMenuItems(params, content, setContent, updateNode)
+      headerComponentParams: {
+        menuIcon: 'fa-bars',
+        template: `
+          <div class="ag-cell-label-container" role="presentation">
+            <span ref="eMenu" class="ag-header-icon ag-header-cell-menu-button"></span>
+            <div ref="eLabel" class="ag-header-cell-label" role="presentation">
+              <span ref="eText" class="ag-header-cell-text" role="columnheader"></span>
+              <span ref="eFilter" class="ag-header-icon ag-filter-icon"></span>
+              <span ref="eSortOrder" class="ag-header-icon ag-sort-order"></span>
+              <span ref="eSortAsc" class="ag-header-icon ag-sort-ascending-icon"></span>
+              <span ref="eSortDesc" class="ag-header-icon ag-sort-descending-icon"></span>
+            </div>
+          </div>
+        `
+      },
+      headerClass: 'custom-header-class',
+      colId: col.field
     };
   });
 };

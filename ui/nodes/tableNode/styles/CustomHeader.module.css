@@ -5,6 +5,7 @@
   width: 100%;
   padding: 4px 8px;
   background-color: #f9f9f9;
+  z-index: 100; /* Ensure header is above other elements */
 }
 
 .headerInput {
@@ -25,4 +26,5 @@
   white-space: nowrap;
   flex-shrink: 0;
   height: 28px;
+  z-index: 200; /* Ensure dropdown is above other elements */
 }

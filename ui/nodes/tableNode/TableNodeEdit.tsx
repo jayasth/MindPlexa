@@ -327,7 +327,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
             onGridReady={(params) => {
               gridRef.current = params;
               params.api.sizeColumnsToFit();
-              // Add the keydown event listener to the grid's DOM element
               params.api.addEventListener('keydown', (event) =>
                 handleKeyDown(event, gridRef)
               );
