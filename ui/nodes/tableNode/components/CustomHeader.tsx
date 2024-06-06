@@ -32,6 +32,7 @@ const CustomHeader = (props: IHeaderParams) => {
     }
     setMenuOpen(!menuOpen);
   };
+
   return (
     <div
       className={styles.headerContainer}
