@@ -1,7 +1,7 @@
 import { Papa } from 'papaparse';
 import { DateEditor } from '@/ui/nodes/tableNode/utils/CustomCellEditors';
 import { addColumn } from '@/ui/nodes/tableNode/utils/TableFunctions';
-import CustomHeaderComponent from '@/ui/nodes/tableNode/components/CustomHeaderComponent';
+import CustomHeader from '@/ui/nodes/tableNode/components/CustomHeader';
 
 interface ContextMenuItem {
   name: string;
@@ -205,7 +205,7 @@ export const getColumnDefs = (content, setContent, updateNode) => {
       filter: true,
       cellEditor,
       valueFormatter,
-      headerComponent: CustomHeaderComponent,
+      headerComponent: CustomHeader,
       headerComponentParams: {
         menuIcon: 'fa-bars',
         context: { content, setContent, updateNode }

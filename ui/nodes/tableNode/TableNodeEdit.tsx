@@ -69,7 +69,7 @@ import {
   getContextMenuItems
 } from '@/ui/nodes/tableNode/utils/contextMenuItems';
 import { useKeyPressHandler } from '@/ui/nodes/tableNode/utils/useKeyPressHandler';
-import CustomHeaderComponent from '@/ui/nodes/tableNode/components/CustomHeaderComponent';
+import CustomHeader from '@/ui/nodes/tableNode/components/CustomHeader';
 import HeaderContextMenu from '@/ui/nodes/tableNode/components/HeaderContextMenu';
 
 interface TableNodeEditProps extends NodeProps {
@@ -243,7 +243,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   const columnDefs = getColumnDefs(content, setContent, updateNode).map(
     (colDef) => ({
       ...colDef,
-      headerComponent: CustomHeaderComponent,
+      headerComponent: CustomHeader,
       headerComponentParams: {
         menuIcon: 'fa-bars'
       }
@@ -332,7 +332,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
             defaultColDef={{
               resizable: true,
               editable: true,
-              headerComponent: CustomHeaderComponent,
+              headerComponent: CustomHeader,
               headerComponentParams: {
                 menuIcon: 'fa-bars'
               }

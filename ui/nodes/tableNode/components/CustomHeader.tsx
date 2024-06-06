@@ -1,33 +1,22 @@
-import React, { useRef, useEffect } from 'react';
+import React from 'react';
+import { IHeaderParams } from 'ag-grid-community';
+import { useContextMenu } from 'react-contexify';
+import 'react-contexify/ReactContexify.css';
+import styles from '@/ui/nodes/tableNode/styles/CustomHeader.module.css';
 
-const CustomHeader = (props) => {
-  const { column, menuIcon, showColumnMenu } = props;
-  const headerCellRef = useRef(null);
-  const textRef = useRef(null);
-  const menuRef = useRef(null);
+const CustomHeader = (props: IHeaderParams) => {
+  const { show } = useContextMenu({
+    id: `header-context-menu-${props.column.getId()}`
+  });
 
-  useEffect(() => {
-    column.eHeaderCell = headerCellRef.current;
-    column.eText = textRef.current;
-    column.eMenu = menuRef.current;
-  }, [column]);
+  const handleContextMenu = (event: React.MouseEvent) => {
+    event.preventDefault();
+    show({ event });
+  };
 
   return (
-    <div className="ag-cell-label-container" role="presentation">
-      <span
-        ref={headerCellRef}
-        className="ag-header-cell-label"
-        role="presentation"
-      >
-        <span ref={textRef} className="ag-header-cell-text" role="columnheader">
-          {column.colDef.headerName}
-        </span>
-        <span
-          ref={menuRef}
-          className={`ag-header-icon ag-header-cell-menu-button ${menuIcon}`}
-          onClick={(event) => showColumnMenu(event, column)}
-        ></span>
-      </span>
+    <div className={styles.headerContainer} onContextMenu={handleContextMenu}>
+      <span>{props.displayName}</span>
     </div>
   );
 };

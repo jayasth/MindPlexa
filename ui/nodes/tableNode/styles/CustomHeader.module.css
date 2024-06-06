@@ -1,27 +1,14 @@
 .headerContainer {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  padding: 4px;
+  align-items: center;
+  padding: 0 8px;
+  cursor: context-menu; /* Indicate that right-click is available */
 }
 
-.menuIcon {
-  cursor: pointer;
-}
-
-.menu {
-  position: absolute;
-  background: white;
-  border: 1px solid #ccc;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
-}
-
-.menuItem {
-  padding: 8px 12px;
-  cursor: pointer;
-}
-
-.menuItem:hover {
-  background-color: #f0f0f0;
+.headerContainer span {
+  flex-grow: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
