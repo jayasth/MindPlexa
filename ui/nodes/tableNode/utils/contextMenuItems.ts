@@ -13,6 +13,51 @@ export const getContextMenuItems = (
     'paste',
     'separator',
     {
+      name: 'Rename Column',
+      action: () => {
+        const newName = prompt(
+          'Enter new column name:',
+          params.column.colDef.headerName
+        );
+        if (newName) {
+          const updatedColumns = content.columns.map((col) => {
+            if (col.field === params.column.getId()) {
+              return { ...col, headerName: newName };
+            }
+            return col;
+          });
+          setContent({ ...content, columns: updatedColumns });
+        }
+      }
+    },
+    {
+      name: 'Change Column Type',
+      subMenu: [
+        {
+          name: 'Aa',
+          action: () => changeColumnType(params, content, setContent, 'text')
+        },
+        {
+          name: '123',
+          action: () => changeColumnType(params, content, setContent, 'number')
+        },
+        {
+          name: '📩',
+          action: () => changeColumnType(params, content, setContent, 'email')
+        },
+        {
+          name: '📅',
+          action: () => changeColumnType(params, content, setContent, 'date')
+        },
+        {
+          name: '$',
+          action: () =>
+            changeColumnType(params, content, setContent, 'currency')
+        }
+      ]
+    },
+    'separator',
+    {
       name: 'Sort Ascending',
       action: () =>
         params.columnApi.applyColumnState({
@@ -115,4 +160,14 @@ export const getContextMenuItems = (
     }
   ];
   return result;
+};
+
+const changeColumnType = (params, content, setContent, newType) => {
+  const updatedColumns = content.columns.map((col) => {
+    if (col.field === params.column.getId()) {
+      return { ...col, type: newType };
+    }
+    return col;
+  });
+  setContent({ ...content, columns: updatedColumns });
 };
