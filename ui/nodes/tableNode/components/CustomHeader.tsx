@@ -1,46 +1,33 @@
-import React, { useState } from 'react';
-import Input from '@/ui/Input/Input';
-import Dropdown from '@/ui/dropdown/Dropdown';
-import styles from '@/ui/nodes/tableNode/styles/CustomHeader.module.css';
+import React, { useRef, useEffect } from 'react';
 
-interface CustomHeaderProps {
-  column: any;
-  displayName: string;
-}
+const CustomHeader = (props) => {
+  const { column, menuIcon, showColumnMenu } = props;
+  const headerCellRef = useRef(null);
+  const textRef = useRef(null);
+  const menuRef = useRef(null);
 
-const CustomHeader: React.FC<CustomHeaderProps> = ({ column, displayName }) => {
-  const [headerName, setHeaderName] = useState(displayName);
-  const [columnType, setColumnType] = useState(column.colDef.type);
-
-  const handleHeaderNameChange = (value: string) => {
-    setHeaderName(value);
-    column.colDef.headerName = value; // Update the header name in the column definition
-  };
-
-  const handleColumnTypeChange = (value: string) => {
-    setColumnType(value);
-    column.colDef.type = value; // Update the column type in the column definition
-  };
+  useEffect(() => {
+    column.eHeaderCell = headerCellRef.current;
+    column.eText = textRef.current;
+    column.eMenu = menuRef.current;
+  }, [column]);
 
   return (
-    <div className={styles.headerContainer}>
-      <Input
-        value={headerName}
-        onChange={handleHeaderNameChange}
-        className={styles.headerInput}
-      />
-      <Dropdown
-        value={columnType}
-        onChange={handleColumnTypeChange}
-        variant="slim"
-        className={styles.typeDropdown}
+    <div className="ag-cell-label-container" role="presentation">
+      <span
+        ref={headerCellRef}
+        className="ag-header-cell-label"
+        role="presentation"
       >
-        <option value="text">Aa</option>
-        <option value="number">123</option>
-        <option value="email">📩</option>
-        <option value="date">📅</option>
-        <option value="currency">$</option>
-      </Dropdown>
+        <span ref={textRef} className="ag-header-cell-text" role="columnheader">
+          {column.colDef.headerName}
+        </span>
+        <span
+          ref={menuRef}
+          className={`ag-header-icon ag-header-cell-menu-button ${menuIcon}`}
+          onClick={(event) => showColumnMenu(event, column)}
+        ></span>
+      </span>
     </div>
   );
 };
