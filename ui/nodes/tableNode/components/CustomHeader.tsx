@@ -22,7 +22,7 @@ const typeIcons = {
   currency: <MdAttachMoney />
 };
 
-const CustomHeader = (props: IHeaderParams) => {
+const CustomHeader = (props: IHeaderParams & { type: string }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const { show, hideAll } = useContextMenu({
     id: `header-context-menu-${props.column.getId()}`
@@ -57,7 +57,8 @@ const CustomHeader = (props: IHeaderParams) => {
       ref={headerRef}
       tabIndex={0} // Make the header focusable
     >
-      <span>{props.displayName}</span>
+      <div>{props.column.getColDef().headerName}</div>
+      <div>{props.type}</div> {/* Display the column type */}
       <span className={styles.typeIcon}>
         {typeIcons[props.column.getColDef().type as keyof typeof typeIcons]}
       </span>

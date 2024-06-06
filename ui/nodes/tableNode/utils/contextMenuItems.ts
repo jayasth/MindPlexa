@@ -9,7 +9,7 @@ interface ContextMenuItem {
   subMenu?: ContextMenuItem[];
 }
 
-const changeColumnType = (params, content, setContent, newType) => {
+const changeColumnType = (params, content, setContent, newType, gridRef) => {
   const updatedColumns = content.columns.map((col) => {
     if (col.field === params.column.getId()) {
       return { ...col, type: newType };
@@ -17,13 +17,15 @@ const changeColumnType = (params, content, setContent, newType) => {
     return col;
   });
   setContent({ ...content, columns: updatedColumns });
+  gridRef.current.api.refreshHeader();
 };
 
 export const getContextMenuItems = (
   params,
   content,
   setContent,
-  updateNode
+  updateNode,
+  gridRef
 ): (string | ContextMenuItem)[] => {
   const result: (string | ContextMenuItem)[] = [
     'copy',
@@ -53,24 +55,28 @@ export const getContextMenuItems = (
       subMenu: [
         {
           name: 'Text',
-          action: () => changeColumnType(params, content, setContent, 'text')
+          action: () =>
+            changeColumnType(params, content, setContent, 'text', gridRef)
         },
         {
           name: 'Number',
-          action: () => changeColumnType(params, content, setContent, 'number')
+          action: () =>
+            changeColumnType(params, content, setContent, 'number', gridRef)
         },
         {
           name: 'Email',
-          action: () => changeColumnType(params, content, setContent, 'email')
+          action: () =>
+            changeColumnType(params, content, setContent, 'email', gridRef)
         },
         {
           name: 'Date',
-          action: () => changeColumnType(params, content, setContent, 'date')
+          action: () =>
+            changeColumnType(params, content, setContent, 'date', gridRef)
         },
         {
           name: 'Currency',
           action: () =>
-            changeColumnType(params, content, setContent, 'currency')
+            changeColumnType(params, content, setContent, 'currency', gridRef)
         }
       ]
     },
@@ -180,6 +186,14 @@ export const getContextMenuItems = (
           }
         };
         input.click();
+      }
+    },
+    {
+      name: 'Clear Filter',
+      action: () => {
+        gridRef.current.api.setFilterModel({
+          [params.column.getId()]: null
+        });
       }
     }
   ];

@@ -243,9 +243,11 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   const columnDefs = getColumnDefs(content, setContent, updateNode).map(
     (colDef) => ({
       ...colDef,
+      filter: true,
       headerComponent: CustomHeader,
       headerComponentParams: {
-        menuIcon: 'fa-bars'
+        menuIcon: 'fa-bars',
+        type: colDef.type
       }
     })
   );
@@ -348,7 +350,13 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
               onCellValueChanged(event, setContent)
             }
             getContextMenuItems={(params) =>
-              getContextMenuItems(params, content, setContent, updateNode)
+              getContextMenuItems(
+                params,
+                content,
+                setContent,
+                updateNode,
+                gridRef
+              )
             }
           />
         </div>
