@@ -3,13 +3,6 @@ import { IHeaderParams } from 'ag-grid-community';
 import { useContextMenu } from 'react-contexify';
 import 'react-contexify/ReactContexify.css';
 import { IoChevronDown, IoChevronUp } from 'react-icons/io5';
-import {
-  FaTextWidth,
-  FaHashtag,
-  FaEnvelope,
-  FaCalendarAlt,
-  FaDollarSign
-} from 'react-icons/fa';
 
 import {
   MdOutlineTextFields,
