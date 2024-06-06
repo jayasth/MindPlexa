@@ -240,17 +240,20 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     color: textColor
   };
 
-  const columnDefs = getColumnDefs(content, setContent, updateNode).map(
-    (colDef) => ({
-      ...colDef,
-      filter: true,
-      headerComponent: CustomHeader,
-      headerComponentParams: {
-        menuIcon: 'fa-bars',
-        type: colDef.type
-      }
-    })
-  );
+  const columnDefs = getColumnDefs(
+    content,
+    setContent,
+    updateNode,
+    gridRef
+  ).map((colDef) => ({
+    ...colDef,
+    filter: true,
+    headerComponent: CustomHeader,
+    headerComponentParams: {
+      menuIcon: 'fa-bars',
+      type: colDef.type
+    }
+  }));
 
   useKeyPressHandler(content, setContent, updateNode, gridRef);
 
