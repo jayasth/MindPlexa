@@ -34,7 +34,7 @@ import AddTableModal from '@/ui/nodes/tableNode/components/AddTableModal';
 import { Modal } from 'react-responsive-modal';
 import 'react-responsive-modal/styles.css';
 import Button from '@/ui/Button/Button';
-
+import { ToastProvider, ToastViewport, Toast } from '@radix-ui/react-toast';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 
@@ -45,7 +45,8 @@ import {
   exportTableData,
   onCellValueChanged,
   handleKeyDown,
-  onCellKeyDown
+  onCellKeyDown,
+  validateCellValue
 } from '@/ui/nodes/tableNode/utils/TableFunctions';
 
 import {
@@ -116,6 +117,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   const [isFileModalOpen, setIsFileModalOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
 
   const updateNode = useStore((state) => state.updateNode);
   const tableRef = useRef<HTMLDivElement>(null);
@@ -230,8 +232,8 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   };
 
   const handleDeleteTable = () => {
-    setContent({ columns: [], rows: [] }); // Clear the table content
-    setIsDeleteModalOpen(false); // Close the modal
+    setContent({ columns: [], rows: [] });
+    setIsDeleteModalOpen(false);
   };
 
   const customStyles: CSSProperties = {
@@ -255,371 +257,395 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
       type: colDef.type
     },
     cellClassRules: {
-      'cell-editing': (params) => params.node.editing // Add a new rule
+      'cell-editing': (params) => params.node.editing,
+      'cell-error': (params) => !validateCellValue(params.value, colDef.type) // Add this line
     }
   }));
 
   useKeyPressHandler(content, setContent, updateNode, gridRef);
 
+  const handleInvalidInput = (message: string) => {
+    setToastMessage(message);
+    setTimeout(() => setToastMessage(''), 5000); // Clear the message after 5 seconds
+  };
+
   return (
-    <div
-      className={`${styles.tableNode} ${isSelected ? styles.selected : ''}`}
-      style={customStyles}
-      onClick={() => setIsContainerSelected(true)}
-      onBlur={() => setIsContainerSelected(false)}
-      ref={tableRef}
-    >
-      <NodeResizer
-        isVisible={isContainerSelected}
-        minWidth={200}
-        minHeight={200}
-        onResize={handleResize}
-        onResizeEnd={handleResizeEnd}
-      />
-      <div className={styles.header}>
-        <input
-          type="text"
-          value={title}
-          onChange={(e) => onChangeTitle(e.target.value)}
-          className={`${styles.titleInput} nodrag`}
-          style={{ color: textColor }}
-          aria-label="Table Title"
+    <ToastProvider>
+      {toastMessage && (
+        <Toast>
+          <div>{toastMessage}</div>
+        </Toast>
+      )}
+      <div
+        className={`${styles.tableNode} ${isSelected ? styles.selected : ''}`}
+        style={customStyles}
+        onClick={() => setIsContainerSelected(true)}
+        onBlur={() => setIsContainerSelected(false)}
+        ref={tableRef}
+      >
+        <NodeResizer
+          isVisible={isContainerSelected}
+          minWidth={200}
+          minHeight={200}
+          onResize={handleResize}
+          onResizeEnd={handleResizeEnd}
         />
-        <CloseButton
-          onClick={() => handleClose(data.id, () => {}, title, content)}
-          aria-label="Close Table"
-        />
-      </div>
-
-      <div className={`${styles.tableContent} nowheel nodrag`}>
-        <div className={styles.toolbar}>
-          <AddTableButton
-            onClick={() => setIsModalOpen(true)}
-            aria-label="Add Table"
+        <div className={styles.header}>
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => onChangeTitle(e.target.value)}
+            className={`${styles.titleInput} nodrag`}
+            style={{ color: textColor }}
+            aria-label="Table Title"
           />
-          <AddColumnButton
-            onClick={(columnType) =>
-              addColumn(content, setContent, updateNode, columnType)
-            }
-            aria-label="Add Column"
-          />
-          <AddRowButton
-            onClick={() => addRow(content, setContent, updateNode)}
-            aria-label="Add Row"
-          />
-          <ExportButton
-            onClick={() => exportTableData(content)}
-            aria-label="Export Table"
-          />
-          <ImportButton
-            onChange={(e) => importTableData(e, setContent)}
-            aria-label="Import Table"
-          />
-          <DeleteTableButton
-            onClick={() => {
-              if (content.columns.length > 0 || content.rows.length > 0) {
-                setIsDeleteModalOpen(true);
-              } else {
-                handleDeleteTable();
-              }
-            }}
-            aria-label="Delete Table"
+          <CloseButton
+            onClick={() => handleClose(data.id, () => {}, title, content)}
+            aria-label="Close Table"
           />
         </div>
 
-        <div
-          className="ag-theme-alpine"
-          style={{ height: '100%', width: '100%' }}
-          role="grid"
-          aria-label="Data Table"
-        >
-          <AgGridReact
-            columnDefs={columnDefs as any}
-            rowData={content.rows}
-            domLayout="autoHeight"
-            rowHeight={30}
-            defaultColDef={{
-              resizable: true,
-              editable: true,
-              headerComponent: CustomHeader,
-              headerComponentParams: {
-                menuIcon: 'fa-bars'
+        <div className={`${styles.tableContent} nowheel nodrag`}>
+          <div className={styles.toolbar}>
+            <AddTableButton
+              onClick={() => setIsModalOpen(true)}
+              aria-label="Add Table"
+            />
+            <AddColumnButton
+              onClick={(columnType) =>
+                addColumn(content, setContent, updateNode, columnType)
               }
-            }}
-            onGridReady={(params) => {
-              gridRef.current = params;
-              params.api.sizeColumnsToFit();
-              params.api.addEventListener('keydown', (event) =>
-                handleKeyDown(event, gridRef)
-              );
-            }}
-            onCellValueChanged={(event) =>
-              onCellValueChanged(event, setContent)
-            }
-            onCellKeyDown={onCellKeyDown}
-            getContextMenuItems={(params) =>
-              getContextMenuItems(
-                params,
-                content,
-                setContent,
-                updateNode,
-                gridRef
-              )
-            }
-          />
-        </div>
-      </div>
-      {(tags.length > 0 || attachedFiles.length > 0) && (
-        <div className={styles.tagFileContainer}>
-          <div className={styles.tagContainer}>
-            {tags.map((tag, index) => (
-              <span
-                key={index}
-                className={styles.tag}
-                style={{ color: textColor }}
-                onClick={() => onRemoveTag(tag)}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    onRemoveTag(tag);
-                  }
-                }}
-              >
-                #{tag}{' '}
-                <button className={styles.removeTagButton}>&times;</button>
-              </span>
-            ))}
+              aria-label="Add Column"
+            />
+            <AddRowButton
+              onClick={() => addRow(content, setContent, updateNode)}
+              aria-label="Add Row"
+            />
+            <ExportButton
+              onClick={() => exportTableData(content)}
+              aria-label="Export Table"
+            />
+            <ImportButton
+              onChange={(e) => importTableData(e, setContent)}
+              aria-label="Import Table"
+            />
+            <DeleteTableButton
+              onClick={() => {
+                if (content.columns.length > 0 || content.rows.length > 0) {
+                  setIsDeleteModalOpen(true);
+                } else {
+                  handleDeleteTable();
+                }
+              }}
+              aria-label="Delete Table"
+            />
           </div>
-          <div className={styles.fileContainer}>
-            {attachedFiles.map((file, index) => (
-              <div key={index} className={styles.file}>
+
+          <div
+            className="ag-theme-alpine"
+            style={{ height: '100%', width: '100%' }}
+            role="grid"
+            aria-label="Data Table"
+          >
+            <AgGridReact
+              columnDefs={columnDefs as any}
+              rowData={content.rows}
+              domLayout="autoHeight"
+              rowHeight={30}
+              defaultColDef={{
+                resizable: true,
+                editable: true,
+                headerComponent: CustomHeader,
+                headerComponentParams: {
+                  menuIcon: 'fa-bars'
+                }
+              }}
+              onGridReady={(params) => {
+                gridRef.current = params;
+                params.api.sizeColumnsToFit();
+                params.api.addEventListener('keydown', (event) =>
+                  handleKeyDown(event, gridRef)
+                );
+              }}
+              onCellValueChanged={(event) => {
+                const { newValue, colDef } = event;
+                if (!validateCellValue(newValue, colDef.type as string)) {
+                  handleInvalidInput(
+                    `Invalid value for column type "${colDef.type}": ${newValue}`
+                  );
+                } else {
+                  onCellValueChanged(event, setContent);
+                }
+              }}
+              onCellKeyDown={onCellKeyDown}
+              getContextMenuItems={(params) =>
+                getContextMenuItems(
+                  params,
+                  content,
+                  setContent,
+                  updateNode,
+                  gridRef
+                )
+              }
+            />
+          </div>
+        </div>
+        {(tags.length > 0 || attachedFiles.length > 0) && (
+          <div className={styles.tagFileContainer}>
+            <div className={styles.tagContainer}>
+              {tags.map((tag, index) => (
                 <span
-                  onClick={() => {
-                    if (file.type === 'text/plain') {
-                      window.open(file.name, '_blank');
-                    } else {
-                      const url = URL.createObjectURL(file);
-                      window.open(url, '_blank');
-                    }
-                  }}
-                  onMouseEnter={() => handleAttachmentPreview(file)}
-                  onMouseLeave={() => {
-                    const preview = document.querySelector('.file-preview');
-                    if (preview) {
-                      document.body.removeChild(preview);
-                    }
-                  }}
-                  style={{ cursor: 'pointer', textDecoration: 'underline' }}
+                  key={index}
+                  className={styles.tag}
+                  style={{ color: textColor }}
+                  onClick={() => onRemoveTag(tag)}
                   role="button"
                   tabIndex={0}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
+                      onRemoveTag(tag);
+                    }
+                  }}
+                >
+                  #{tag}{' '}
+                  <button className={styles.removeTagButton}>&times;</button>
+                </span>
+              ))}
+            </div>
+            <div className={styles.fileContainer}>
+              {attachedFiles.map((file, index) => (
+                <div key={index} className={styles.file}>
+                  <span
+                    onClick={() => {
                       if (file.type === 'text/plain') {
                         window.open(file.name, '_blank');
                       } else {
                         const url = URL.createObjectURL(file);
                         window.open(url, '_blank');
                       }
-                    }
-                  }}
-                >
-                  {file.name}
-                </span>
-                <button
-                  className={styles.removeFileButton}
-                  onClick={() => onRemoveFile(file)}
-                  aria-label={`Remove file ${file.name}`}
-                >
-                  &times;
-                </button>
-              </div>
-            ))}
+                    }}
+                    onMouseEnter={() => handleAttachmentPreview(file)}
+                    onMouseLeave={() => {
+                      const preview = document.querySelector('.file-preview');
+                      if (preview) {
+                        document.body.removeChild(preview);
+                      }
+                    }}
+                    style={{ cursor: 'pointer', textDecoration: 'underline' }}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        if (file.type === 'text/plain') {
+                          window.open(file.name, '_blank');
+                        } else {
+                          const url = URL.createObjectURL(file);
+                          window.open(url, '_blank');
+                        }
+                      }
+                    }}
+                  >
+                    {file.name}
+                  </span>
+                  <button
+                    className={styles.removeFileButton}
+                    onClick={() => onRemoveFile(file)}
+                    aria-label={`Remove file ${file.name}`}
+                  >
+                    &times;
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
+        )}
+        <div className={styles.footer}>
+          <SaveButton
+            onClick={() =>
+              handleSave(data.id, () => {}, {
+                title,
+                columns: content.columns,
+                rows: content.rows,
+                tags,
+                attachedFiles
+              })
+            }
+            aria-label="Save Table"
+          />
+          <DeleteButton
+            onClick={() => handleDelete(data.id, () => {})}
+            aria-label="Delete Table"
+          />
+          <ChangeColorButton
+            onClick={() => toggleColorPicker()}
+            aria-label="Change Color"
+          />
+          <AddTagButton
+            onClick={() => setIsTagModalOpen(true)}
+            aria-label="Add Tag"
+          />
+          <AttachFileButton
+            onClick={() => setIsFileModalOpen(true)}
+            aria-label="Attach File"
+          />
+          <DuplicateButton
+            onClick={() => handleDuplicate(data.id)}
+            aria-label="Duplicate Table"
+          />
+          <ColorPickerModal
+            isOpen={isColorPickerVisible}
+            onClose={() => setIsColorPickerVisible(false)}
+            currentColor={backgroundColor}
+            onChangeColor={handleBackgroundColorChange}
+            colorCombinations={colorCombinations}
+          />
         </div>
-      )}
-      <div className={styles.footer}>
-        <SaveButton
-          onClick={() =>
-            handleSave(data.id, () => {}, {
-              title,
-              columns: content.columns,
-              rows: content.rows,
-              tags,
-              attachedFiles
-            })
-          }
-          aria-label="Save Table"
+        <Handle
+          type="target"
+          position={Position.Top}
+          className={`${edgeStyles.reactFlowHandle} ${edgeStyles.reactFlowHandleTop}`}
         />
-        <DeleteButton
-          onClick={() => handleDelete(data.id, () => {})}
-          aria-label="Delete Table"
+        <Handle
+          type="source"
+          position={Position.Bottom}
+          className={`${edgeStyles.reactFlowHandle} ${edgeStyles.reactFlowHandleBottom}`}
         />
-        <ChangeColorButton
-          onClick={() => toggleColorPicker()}
-          aria-label="Change Color"
+        <TagModal
+          isOpen={isTagModalOpen}
+          onClose={() => setIsTagModalOpen(false)}
+          onAddTag={onAddTag}
+          onRemoveTag={onRemoveTag}
+          existingTags={tags}
         />
-        <AddTagButton
-          onClick={() => setIsTagModalOpen(true)}
-          aria-label="Add Tag"
+        <FileModal
+          isOpen={isFileModalOpen}
+          onClose={() => setIsFileModalOpen(false)}
+          onAttachFiles={onAttachFiles}
+          onRemoveFile={onRemoveFile}
+          existingFiles={attachedFiles}
+          data={data}
         />
-        <AttachFileButton
-          onClick={() => setIsFileModalOpen(true)}
-          aria-label="Attach File"
-        />
-        <DuplicateButton
-          onClick={() => handleDuplicate(data.id)}
-          aria-label="Duplicate Table"
-        />
-        <ColorPickerModal
-          isOpen={isColorPickerVisible}
-          onClose={() => setIsColorPickerVisible(false)}
-          currentColor={backgroundColor}
-          onChangeColor={handleBackgroundColorChange}
-          colorCombinations={colorCombinations}
-        />
-      </div>
-      <Handle
-        type="target"
-        position={Position.Top}
-        className={`${edgeStyles.reactFlowHandle} ${edgeStyles.reactFlowHandleTop}`}
-      />
-      <Handle
-        type="source"
-        position={Position.Bottom}
-        className={`${edgeStyles.reactFlowHandle} ${edgeStyles.reactFlowHandleBottom}`}
-      />
-      <TagModal
-        isOpen={isTagModalOpen}
-        onClose={() => setIsTagModalOpen(false)}
-        onAddTag={onAddTag}
-        onRemoveTag={onRemoveTag}
-        existingTags={tags}
-      />
-      <FileModal
-        isOpen={isFileModalOpen}
-        onClose={() => setIsFileModalOpen(false)}
-        onAttachFiles={onAttachFiles}
-        onRemoveFile={onRemoveFile}
-        existingFiles={attachedFiles}
-        data={data}
-      />
-      {isModalOpen && (
-        <AddTableModal
-          onClose={() => setIsModalOpen(false)}
-          onAddTable={(columns, rows) => {
-            const newColumns = columns.map((col, index) => ({
-              headerName: col.name || `Column ${index + 1}`,
-              field: `col${index + 1}`,
-              editable: true,
-              type: col.type,
-              defaultValue: col.defaultValue
-            }));
+        {isModalOpen && (
+          <AddTableModal
+            onClose={() => setIsModalOpen(false)}
+            onAddTable={(columns, rows) => {
+              const newColumns = columns.map((col, index) => ({
+                headerName: col.name || `Column ${index + 1}`,
+                field: `col${index + 1}`,
+                editable: true,
+                type: col.type,
+                defaultValue: col.defaultValue
+              }));
 
-            const newRows = Array.from({ length: rows }, () =>
-              newColumns.reduce((acc, col) => {
-                acc[col.field] = col.defaultValue || '';
-                return acc;
-              }, {})
-            );
+              const newRows = Array.from({ length: rows }, () =>
+                newColumns.reduce((acc, col) => {
+                  acc[col.field] = col.defaultValue || '';
+                  return acc;
+                }, {})
+              );
 
-            setContent({ columns: newColumns, rows: newRows });
-          }}
-          hasExistingData={
-            content.columns.length > 0 || content.rows.length > 0
-          }
-        />
-      )}
-      <Modal
-        open={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
-        center
-      >
-        <h2>Confirm Deletion</h2>
-        <p>
-          Are you sure you want to delete the entire table? This action cannot
-          be undone.
-        </p>
-        <div className={styles.actions}>
-          <Button variant="submit" onClick={handleDeleteTable}>
-            Yes
-          </Button>
-          <Button variant="cancel" onClick={() => setIsDeleteModalOpen(false)}>
-            Cancel
-          </Button>
-        </div>
-      </Modal>
-      {content.columns.map((col) => (
-        <HeaderContextMenu
-          key={col.field}
-          id={`header-context-menu-${col.field}`}
-          onSortAsc={() => {
-            gridRef.current.api.applyColumnState({
-              state: [{ colId: col.field, sort: 'asc' }],
-              applyOrder: true
-            });
-          }}
-          onSortDesc={() => {
-            gridRef.current.api.applyColumnState({
-              state: [{ colId: col.field, sort: 'desc' }],
-              applyOrder: true
-            });
-          }}
-          onFilter={() =>
-            gridRef.current.api.setFilterModel({ [col.field]: null })
-          }
-          onRename={() => {
-            const newName = prompt('Enter new column name:', col.headerName);
-            if (newName) {
+              setContent({ columns: newColumns, rows: newRows });
+            }}
+            hasExistingData={
+              content.columns.length > 0 || content.rows.length > 0
+            }
+          />
+        )}
+        <Modal
+          open={isDeleteModalOpen}
+          onClose={() => setIsDeleteModalOpen(false)}
+          center
+        >
+          <h2>Confirm Deletion</h2>
+          <p>
+            Are you sure you want to delete the entire table? This action cannot
+            be undone.
+          </p>
+          <div className={styles.actions}>
+            <Button variant="submit" onClick={handleDeleteTable}>
+              Yes
+            </Button>
+            <Button
+              variant="cancel"
+              onClick={() => setIsDeleteModalOpen(false)}
+            >
+              Cancel
+            </Button>
+          </div>
+        </Modal>
+        {content.columns.map((col) => (
+          <HeaderContextMenu
+            key={col.field}
+            id={`header-context-menu-${col.field}`}
+            onSortAsc={() => {
+              gridRef.current.api.applyColumnState({
+                state: [{ colId: col.field, sort: 'asc' }],
+                applyOrder: true
+              });
+            }}
+            onSortDesc={() => {
+              gridRef.current.api.applyColumnState({
+                state: [{ colId: col.field, sort: 'desc' }],
+                applyOrder: true
+              });
+            }}
+            onFilter={() =>
+              gridRef.current.api.setFilterModel({ [col.field]: null })
+            }
+            onRename={() => {
+              const newName = prompt('Enter new column name:', col.headerName);
+              if (newName) {
+                const updatedColumns = content.columns.map((column) => {
+                  if (column.field === col.field) {
+                    return { ...column, headerName: newName };
+                  }
+                  return column;
+                });
+                setContent({ ...content, columns: updatedColumns });
+              }
+            }}
+            onChangeType={(newType) => {
               const updatedColumns = content.columns.map((column) => {
                 if (column.field === col.field) {
-                  return { ...column, headerName: newName };
+                  return { ...column, type: newType };
                 }
                 return column;
               });
               setContent({ ...content, columns: updatedColumns });
-            }
-          }}
-          onChangeType={(newType) => {
-            const updatedColumns = content.columns.map((column) => {
-              if (column.field === col.field) {
-                return { ...column, type: newType };
-              }
-              return column;
-            });
-            setContent({ ...content, columns: updatedColumns });
-            gridRef.current.api.refreshHeader();
-          }}
-          onDelete={() => {
-            const updatedColumns = content.columns.filter(
-              (column) => column.field !== col.field
-            );
-            setContent({ ...content, columns: updatedColumns });
-          }}
-          onAlignLeft={() => {
-            gridRef.current.api.getColumnState().forEach((column) => {
-              if (column.colId === col.field) {
-                column.cellClass = 'ag-cell-left';
-              }
-            });
-          }}
-          onAlignCenter={() => {
-            gridRef.current.api.getColumnState().forEach((column) => {
-              if (column.colId === col.field) {
-                column.cellClass = 'ag-cell-center';
-              }
-            });
-          }}
-          onAlignRight={() => {
-            gridRef.current.api.getColumnState().forEach((column) => {
-              if (column.colId === col.field) {
-                column.cellClass = 'ag-cell-right';
-              }
-            });
-          }}
-        />
-      ))}
-    </div>
+              gridRef.current.api.refreshHeader();
+            }}
+            onDelete={() => {
+              const updatedColumns = content.columns.filter(
+                (column) => column.field !== col.field
+              );
+              setContent({ ...content, columns: updatedColumns });
+            }}
+            onAlignLeft={() => {
+              gridRef.current.api.getColumnState().forEach((column) => {
+                if (column.colId === col.field) {
+                  column.cellClass = 'ag-cell-left';
+                }
+              });
+            }}
+            onAlignCenter={() => {
+              gridRef.current.api.getColumnState().forEach((column) => {
+                if (column.colId === col.field) {
+                  column.cellClass = 'ag-cell-center';
+                }
+              });
+            }}
+            onAlignRight={() => {
+              gridRef.current.api.getColumnState().forEach((column) => {
+                if (column.colId === col.field) {
+                  column.cellClass = 'ag-cell-right';
+                }
+              });
+            }}
+          />
+        ))}
+      </div>
+      <ToastViewport />
+    </ToastProvider>
   );
 };
 

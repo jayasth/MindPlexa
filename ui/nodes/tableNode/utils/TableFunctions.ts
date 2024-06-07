@@ -3,9 +3,9 @@ import Papa from 'papaparse';
 export const validateCellValue = (value: any, type: string): boolean => {
   switch (type) {
     case 'text':
-      return typeof value === 'string';
+      return typeof value === 'string' && value.trim() !== '';
     case 'number':
-      return !isNaN(Number(value));
+      return !isNaN(Number(value)) && isFinite(value);
     case 'email':
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       return emailRegex.test(value);
@@ -13,15 +13,31 @@ export const validateCellValue = (value: any, type: string): boolean => {
       return !isNaN(Date.parse(value));
     case 'currency':
       return !isNaN(parseFloat(value)) && isFinite(value);
+    case 'percentage':
+      return (
+        !isNaN(parseFloat(value)) &&
+        isFinite(value) &&
+        Number(value) >= 0 &&
+        Number(value) <= 100
+      );
     default:
       return true;
   }
 };
 
-export const formatCellValue = (value: any, type: string): any => {
+export const formatCellValue = (
+  value: any,
+  type: string,
+  currencyCode: string = 'USD'
+): any => {
   switch (type) {
     case 'currency':
-      return value ? `$${Number(value).toFixed(2)}` : '';
+      return value
+        ? new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: currencyCode
+          }).format(Number(value))
+        : '';
     case 'percentage':
       return `${Number(value).toFixed(2)}%`;
     default:
@@ -210,8 +226,4 @@ export const onCellKeyDown = (params) => {
     }
     params.event.preventDefault();
   }
-};
-
-export const suppressKeyboardEvent = (params) => {
-  return false; // Do not suppress any keyboard events
 };

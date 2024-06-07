@@ -49,6 +49,10 @@
   background-color: #f3f4f6; /* Light grey background to indicate editing */
 }
 
+.cell-error {
+  background-color: #f8d7da; /* Light red background */
+}
+
 .actions {
   display: flex;
   justify-content: space-between;
