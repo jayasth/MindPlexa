@@ -1,0 +1,51 @@
+.tagFileContainer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  border: 1px solid #ccc;
+  padding: 8px;
+}
+
+.tagContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.tag {
+  background-color: transparent;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.removeTagButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  margin-left: 4px;
+}
+
+.fileContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.file {
+  background-color: transparent;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.removeFileButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  margin-left: 4px;
+}

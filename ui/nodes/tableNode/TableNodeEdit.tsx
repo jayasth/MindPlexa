@@ -31,9 +31,7 @@ import {
   DeleteTableButton
 } from '@/ui/nodes/tableNode/components/TableNodeToolbar';
 import AddTableModal from '@/ui/nodes/tableNode/components/AddTableModal';
-import { Modal } from 'react-responsive-modal';
-import 'react-responsive-modal/styles.css';
-import Button from '@/ui/Button/Button';
+import DeleteTableModal from '@/ui/nodes/tableNode/components/DeleteTableModal';
 import { ToastProvider, ToastViewport, Toast } from '@radix-ui/react-toast';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
@@ -73,6 +71,7 @@ import {
 import { useKeyPressHandler } from '@/ui/nodes/tableNode/utils/useKeyPressHandler';
 import CustomHeader from '@/ui/nodes/tableNode/components/CustomHeader';
 import HeaderContextMenu from '@/ui/nodes/tableNode/components/HeaderContextMenu';
+import TagFileContainer from '@/ui/nodes/tableNode/components/TagFileContainer';
 
 interface TableNodeEditProps extends NodeProps {
   data: TableNodeData;
@@ -390,75 +389,14 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
             />
           </div>
         </div>
-        {(tags.length > 0 || attachedFiles.length > 0) && (
-          <div className={styles.tagFileContainer}>
-            <div className={styles.tagContainer}>
-              {tags.map((tag, index) => (
-                <span
-                  key={index}
-                  className={styles.tag}
-                  style={{ color: textColor }}
-                  onClick={() => onRemoveTag(tag)}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      onRemoveTag(tag);
-                    }
-                  }}
-                >
-                  #{tag}{' '}
-                  <button className={styles.removeTagButton}>&times;</button>
-                </span>
-              ))}
-            </div>
-            <div className={styles.fileContainer}>
-              {attachedFiles.map((file, index) => (
-                <div key={index} className={styles.file}>
-                  <span
-                    onClick={() => {
-                      if (file.type === 'text/plain') {
-                        window.open(file.name, '_blank');
-                      } else {
-                        const url = URL.createObjectURL(file);
-                        window.open(url, '_blank');
-                      }
-                    }}
-                    onMouseEnter={() => handleAttachmentPreview(file)}
-                    onMouseLeave={() => {
-                      const preview = document.querySelector('.file-preview');
-                      if (preview) {
-                        document.body.removeChild(preview);
-                      }
-                    }}
-                    style={{ cursor: 'pointer', textDecoration: 'underline' }}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        if (file.type === 'text/plain') {
-                          window.open(file.name, '_blank');
-                        } else {
-                          const url = URL.createObjectURL(file);
-                          window.open(url, '_blank');
-                        }
-                      }
-                    }}
-                  >
-                    {file.name}
-                  </span>
-                  <button
-                    className={styles.removeFileButton}
-                    onClick={() => onRemoveFile(file)}
-                    aria-label={`Remove file ${file.name}`}
-                  >
-                    &times;
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        <TagFileContainer
+          tags={tags}
+          attachedFiles={attachedFiles}
+          onRemoveTag={onRemoveTag}
+          onRemoveFile={onRemoveFile}
+          textColor={textColor}
+          handleAttachmentPreview={handleAttachmentPreview}
+        />
         <div className={styles.footer}>
           <SaveButton
             onClick={() =>
@@ -551,28 +489,11 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
             }
           />
         )}
-        <Modal
-          open={isDeleteModalOpen}
+        <DeleteTableModal
+          isOpen={isDeleteModalOpen}
           onClose={() => setIsDeleteModalOpen(false)}
-          center
-        >
-          <h2>Confirm Deletion</h2>
-          <p>
-            Are you sure you want to delete the entire table? This action cannot
-            be undone.
-          </p>
-          <div className={styles.actions}>
-            <Button variant="submit" onClick={handleDeleteTable}>
-              Yes
-            </Button>
-            <Button
-              variant="cancel"
-              onClick={() => setIsDeleteModalOpen(false)}
-            >
-              Cancel
-            </Button>
-          </div>
-        </Modal>
+          onConfirm={handleDeleteTable}
+        />
         {content.columns.map((col) => (
           <HeaderContextMenu
             key={col.field}

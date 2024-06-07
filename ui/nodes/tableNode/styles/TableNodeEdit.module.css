@@ -127,40 +127,6 @@
   padding: 4px;
 }
 
-.tagFileContainer {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 8px;
-  border: 1px solid #ccc;
-  padding: 8px;
-}
-
-.tagContainer {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
-.fileContainer {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
-.file {
-  background-color: transparent;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 12px;
-  cursor: pointer;
-}
-
-.attachedFile {
-  margin-top: 8px;
-  font-size: 12px;
-  color: #666;
-}
-
 .colorPicker {
   position: absolute;
   left: 0;
