@@ -11,7 +11,7 @@ import {
 import Modal from 'react-responsive-modal';
 import 'react-responsive-modal/styles.css';
 import { CompactPicker } from 'react-color';
-import styles from '@/ui/nodes/common/CommonNodeComponents.module.css';
+import styles from '@/ui/nodes/common/CommonNodeStyles.module.css';
 import Input from '@/ui/Input/Input';
 import Button from '@/ui/Button/Button';
 import {
