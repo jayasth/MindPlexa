@@ -45,8 +45,7 @@ import {
   exportTableData,
   onCellValueChanged,
   handleKeyDown,
-  onCellKeyDown,
-  suppressKeyboardEvent
+  onCellKeyDown
 } from '@/ui/nodes/tableNode/utils/TableFunctions';
 
 import {

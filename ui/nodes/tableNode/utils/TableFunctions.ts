@@ -194,25 +194,24 @@ export const onCellKeyDown = (params) => {
     key === 'ArrowDown'
   ) {
     params.api.stopEditing();
-    if (key === 'Enter' || key === 'ArrowDown') {
-      params.api.tabToNextCell();
-    } else if (key === 'Tab' || key === 'ArrowRight') {
-      params.api.tabToNextCell();
-    } else if (key === 'ArrowLeft' || key === 'ArrowUp') {
-      params.api.tabToPreviousCell();
+    switch (key) {
+      case 'Enter':
+      case 'ArrowDown':
+        params.api.tabToNextCell();
+        break;
+      case 'Tab':
+      case 'ArrowRight':
+        params.api.tabToNextCell();
+        break;
+      case 'ArrowLeft':
+      case 'ArrowUp':
+        params.api.tabToPreviousCell();
+        break;
     }
     params.event.preventDefault();
   }
 };
 
 export const suppressKeyboardEvent = (params) => {
-  const key = params.event.key;
-  return (
-    key === 'Enter' ||
-    key === 'Tab' ||
-    key === 'ArrowRight' ||
-    key === 'ArrowLeft' ||
-    key === 'ArrowUp' ||
-    key === 'ArrowDown'
-  );
+  return false; // Do not suppress any keyboard events
 };
