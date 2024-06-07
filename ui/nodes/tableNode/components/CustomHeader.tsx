@@ -58,7 +58,6 @@ const CustomHeader = (props: IHeaderParams & { type: string }) => {
       tabIndex={0} // Make the header focusable
     >
       <div>{props.column.getColDef().headerName}</div>
-      <div>{props.type}</div> {/* Display the column type */}
       <span className={styles.typeIcon}>
         {typeIcons[props.column.getColDef().type as keyof typeof typeIcons]}
       </span>
