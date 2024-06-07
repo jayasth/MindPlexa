@@ -52,14 +52,14 @@ import {
   handleSave,
   handleDelete,
   handleAddTag,
-  handleChangeColorWithCombination,
   handleClose,
   handleDuplicate,
   handleRemoveAttachedFile,
   colorCombinations,
-  getContrastYIQ,
   handleAttachmentPreview
 } from '@/ui/nodes/common/CommonNodeFunctions';
+
+import { useBackgroundColorChange } from '@/ui/nodes/common/useBackgroundColorChange';
 
 import { TableNodeData } from '@/ui/canvasEditor/utils/nodeDatatypes';
 
@@ -158,29 +158,14 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     handleTitleChange(data.id, newTitle, setTitle);
   };
 
-  const handleBackgroundColorChange = (color: { hex: string }) => {
-    const selectedCombination = colorCombinations.find(
-      (combination) =>
-        combination.background.toLowerCase() === color.hex.toLowerCase()
-    );
-    if (selectedCombination) {
-      setTextColor(selectedCombination.text);
-      handleChangeColorWithCombination(
-        data.id,
-        selectedCombination.background,
-        selectedCombination.text,
-        setBackgroundColor
-      );
-    } else {
-      const calculatedTextColor = getContrastYIQ(color.hex);
-      setTextColor(calculatedTextColor);
-      handleChangeColorWithCombination(
-        data.id,
-        color.hex,
-        calculatedTextColor,
-        setBackgroundColor
-      );
-    }
+  const handleBackgroundColorChange = useBackgroundColorChange(
+    data.id,
+    setBackgroundColor,
+    setTextColor
+  );
+
+  const onChangeColor = (color: { hex: string }) => {
+    handleBackgroundColorChange(color);
   };
 
   const onAddTag = (newTags: string[]) => {
@@ -433,7 +418,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
             isOpen={isColorPickerVisible}
             onClose={() => setIsColorPickerVisible(false)}
             currentColor={backgroundColor}
-            onChangeColor={handleBackgroundColorChange}
+            onChangeColor={onChangeColor}
             colorCombinations={colorCombinations}
           />
         </div>

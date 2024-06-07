@@ -21,17 +21,16 @@ import {
   handleSave,
   handleClose,
   handleDelete,
-  handleChangeColorWithCombination,
+  colorCombinations,
   handleAddTag,
   handleRemoveAttachedFile,
   handleDuplicate,
-  colorCombinations,
-  getContrastYIQ,
   handleAttachmentPreview
 } from '@/ui/nodes/common/CommonNodeFunctions';
 import Quill from 'quill';
 import 'quill/dist/quill.snow.css';
 import { NoteNodeData } from '@/ui/canvasEditor/utils/nodeDatatypes';
+import { useBackgroundColorChange } from '@/ui/nodes/common/useBackgroundColorChange';
 
 interface NoteNodeEditProps extends NodeProps {
   data: NoteNodeData;
@@ -75,6 +74,16 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   const updateNode = useStore((state) => state.updateNode);
   const quillRef = useRef<HTMLDivElement>(null);
   const quillInstance = useRef<Quill | null>(null);
+
+  const handleBackgroundColorChange = useBackgroundColorChange(
+    data.id,
+    setBackgroundColor,
+    setTextColor
+  );
+
+  const onChangeColor = (color: { hex: string }) => {
+    handleBackgroundColorChange(color);
+  };
 
   useEffect(() => {
     if (
@@ -151,31 +160,6 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
 
   const onChangeTitle = (newTitle: string) => {
     handleTitleChange(data.id, newTitle, setTitle);
-  };
-
-  const handleBackgroundColorChange = (color: { hex: string }) => {
-    const selectedCombination = colorCombinations.find(
-      (combination) =>
-        combination.background.toLowerCase() === color.hex.toLowerCase()
-    );
-    if (selectedCombination) {
-      setTextColor(selectedCombination.text);
-      handleChangeColorWithCombination(
-        data.id,
-        selectedCombination.background,
-        selectedCombination.text,
-        setBackgroundColor
-      );
-    } else {
-      const calculatedTextColor = getContrastYIQ(color.hex);
-      setTextColor(calculatedTextColor);
-      handleChangeColorWithCombination(
-        data.id,
-        color.hex,
-        calculatedTextColor,
-        setBackgroundColor
-      );
-    }
   };
 
   const onAddTag = (newTags: string[]) => {
@@ -295,7 +279,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
           isOpen={isColorPickerVisible}
           onClose={() => setIsColorPickerVisible(false)}
           currentColor={backgroundColor}
-          onChangeColor={handleBackgroundColorChange}
+          onChangeColor={onChangeColor}
           colorCombinations={colorCombinations}
         />
       </div>

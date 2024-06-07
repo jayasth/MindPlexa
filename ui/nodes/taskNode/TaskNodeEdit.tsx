@@ -8,14 +8,13 @@ import {
   handleSave,
   handleClose,
   handleDelete,
-  handleChangeColorWithCombination,
+  colorCombinations,
   handleAddTag,
   handleDuplicate,
   handleRemoveAttachedFile,
-  getContrastYIQ,
-  colorCombinations,
   handleAttachmentPreview
 } from '@/ui/nodes/common/CommonNodeFunctions';
+import { useBackgroundColorChange } from '@/ui/nodes/common/useBackgroundColorChange';
 import {
   SaveButton,
   DeleteButton,
@@ -92,6 +91,16 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
   const updateNode = useStore((state) => state.updateNode);
   const colorPickerRef = useRef<HTMLDivElement>(null);
 
+  const handleBackgroundColorChange = useBackgroundColorChange(
+    data.id,
+    setBackgroundColor,
+    setTextColor
+  );
+
+  const onChangeColor = (color: { hex: string }) => {
+    handleBackgroundColorChange(color);
+  };
+
   useEffect(() => {
     const nodeProperties = getNodeSpecificProperties('task', true);
     setNodeWidth(nodeProperties.width);
@@ -123,31 +132,6 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
   useEffect(() => {
     setIsSelected(selected);
   }, [selected]);
-
-  const handleBackgroundColorChange = (color: { hex: string }) => {
-    const selectedCombination = colorCombinations.find(
-      (combination) =>
-        combination.background.toLowerCase() === color.hex.toLowerCase()
-    );
-    if (selectedCombination) {
-      setTextColor(selectedCombination.text);
-      handleChangeColorWithCombination(
-        data.id,
-        selectedCombination.background,
-        selectedCombination.text,
-        setBackgroundColor
-      );
-    } else {
-      const calculatedTextColor = getContrastYIQ(color.hex);
-      setTextColor(calculatedTextColor);
-      handleChangeColorWithCombination(
-        data.id,
-        color.hex,
-        calculatedTextColor,
-        setBackgroundColor
-      );
-    }
-  };
 
   const toggleColorPicker = () => {
     setIsColorPickerVisible(!isColorPickerVisible);
@@ -375,7 +359,7 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
           isOpen={isColorPickerVisible}
           onClose={() => setIsColorPickerVisible(false)}
           currentColor={backgroundColor}
-          onChangeColor={handleBackgroundColorChange}
+          onChangeColor={onChangeColor}
           colorCombinations={colorCombinations}
         />
         <TagModal

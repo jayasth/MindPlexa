@@ -27,14 +27,13 @@ import {
   handleSave,
   handleClose,
   handleDelete,
-  handleChangeColorWithCombination,
   handleAddTag,
   handleRemoveAttachedFile,
   handleDuplicate,
   colorCombinations,
-  getContrastYIQ,
   handleAttachmentPreview
 } from '@/ui/nodes/common/CommonNodeFunctions';
+import { useBackgroundColorChange } from '@/ui/nodes/common/useBackgroundColorChange';
 
 const localizer = momentLocalizer(moment);
 
@@ -162,29 +161,14 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
     setEvents(events.map((ev) => (ev === event ? updatedEvent : ev)));
   };
 
-  const handleBackgroundColorChange = (color: { hex: string }) => {
-    const selectedCombination = colorCombinations.find(
-      (combination) =>
-        combination.background.toLowerCase() === color.hex.toLowerCase()
-    );
-    if (selectedCombination) {
-      setTextColor(selectedCombination.text);
-      handleChangeColorWithCombination(
-        data.id,
-        selectedCombination.background,
-        selectedCombination.text,
-        setBackgroundColor
-      );
-    } else {
-      const calculatedTextColor = getContrastYIQ(color.hex);
-      setTextColor(calculatedTextColor);
-      handleChangeColorWithCombination(
-        data.id,
-        color.hex,
-        calculatedTextColor,
-        setBackgroundColor
-      );
-    }
+  const handleBackgroundColorChange = useBackgroundColorChange(
+    data.id,
+    setBackgroundColor,
+    setTextColor
+  );
+
+  const onChangeColor = (color: { hex: string }) => {
+    handleBackgroundColorChange(color);
   };
 
   const onAddTag = (newTags: string[]) => {
@@ -304,7 +288,7 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
           isOpen={isColorPickerVisible}
           onClose={() => setIsColorPickerVisible(false)}
           currentColor={backgroundColor}
-          onChangeColor={handleBackgroundColorChange}
+          onChangeColor={onChangeColor}
           colorCombinations={colorCombinations}
         />
       </div>
