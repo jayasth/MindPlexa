@@ -1,5 +1,7 @@
 .modal {
   padding: 20px;
+  max-height: 40vh;
+  overflow-y: auto;
 }
 
 .modalContent {
@@ -8,10 +10,19 @@
   gap: 20px;
 }
 
+.modalHeader {
+  text-align: center;
+  font-size: 16px;
+}
+
 .formGroup {
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+.label {
+  font-size: 14px;
 }
 
 .columnConfig {
@@ -26,10 +37,17 @@
 
 .dropdownWide {
   flex: 1;
+  min-width: 90px;
 }
 
 .inputNarrow {
-  width: 100px;
+  width: 60px;
+}
+
+.rowInputGroup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .actions {
@@ -42,10 +60,19 @@
   background: none;
   border: none;
   cursor: pointer;
-  color: red;
+  color: inherit;
+  transition: color 0.3s ease;
+}
+
+.deleteButton:hover {
+  color: #ff6961;
 }
 
 .dragHandle {
   cursor: grab;
   margin-left: 10px;
+}
+
+.addButton {
+  flex-grow: 1;
 }

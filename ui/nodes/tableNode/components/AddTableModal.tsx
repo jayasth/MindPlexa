@@ -159,12 +159,17 @@ const AddTableModal = ({ onClose, onAddTable, hasExistingData }) => {
   };
 
   return (
-    <Modal open onClose={onClose} center>
+    <Modal
+      open
+      onClose={onClose}
+      center
+      classNames={{ modal: styles.customModal }}
+    >
       <div className={`${styles.modal} nodrag nowheel`}>
         <div className={styles.modalContent}>
-          <h2>Add Table</h2>
+          <h2 className={styles.modalHeader}>Add Table</h2>
           <div className={styles.formGroup}>
-            <label>Columns:</label>
+            <label className={styles.label}>Columns:</label>
             <DndContext
               sensors={sensors}
               collisionDetection={closestCenter}
@@ -191,21 +196,25 @@ const AddTableModal = ({ onClose, onAddTable, hasExistingData }) => {
             </Button>
           </div>
           <div className={styles.formGroup}>
-            <label>Number of Rows:</label>
-            <Input
-              type="number"
-              value={rows}
-              onChange={handleRowsChange}
-              min="1"
-              max="1000"
-              variant="slim"
-              className={styles.inputNarrow}
-            />
-          </div>
-          <div className={styles.actions}>
-            <Button variant="submit" onClick={handleAddTable}>
-              Add Table
-            </Button>
+            <label className={styles.label}>Rows:</label>
+            <div className={styles.rowInputGroup}>
+              <Input
+                type="number"
+                value={rows}
+                onChange={handleRowsChange}
+                min="1"
+                max="1000"
+                variant="slim"
+                className={styles.inputNarrow}
+              />
+              <Button
+                variant="submit"
+                onClick={handleAddTable}
+                className={styles.addButton}
+              >
+                Add Table
+              </Button>
+            </div>
           </div>
         </div>
         <Modal
