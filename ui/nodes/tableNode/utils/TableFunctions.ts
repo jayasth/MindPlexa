@@ -46,6 +46,7 @@ export const onCellValueChanged = (event, setContent) => {
     setTimeout(() => {
       alert(`Invalid value for column type "${columnType}": ${event.newValue}`);
     }, 0);
+    event.api.stopEditing(); // Commit changes when leaving the cell
     return;
   }
 
@@ -67,6 +68,7 @@ export const onCellValueChanged = (event, setContent) => {
     rowNodes: [event.node],
     columns: [event.colDef.field]
   });
+  event.api.stopEditing(); // Commit changes when leaving the cell
 };
 
 export const addColumn = (
@@ -145,6 +147,13 @@ export const exportTableData = (content: any) => {
 export const handleKeyDown = (event, gridRef) => {
   const api = gridRef.current?.api;
   if (api) {
+    if (
+      ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter'].includes(
+        event.key
+      )
+    ) {
+      api.stopEditing(); // Commit editing before moving
+    }
     switch (event.key) {
       case 'ArrowUp':
         api.tabToPreviousCell();

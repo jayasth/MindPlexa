@@ -45,6 +45,10 @@
   padding: 4px;
 }
 
+.cell-editing {
+  background-color: #f3f4f6; /* Light grey background to indicate editing */
+}
+
 .actions {
   display: flex;
   justify-content: space-between;

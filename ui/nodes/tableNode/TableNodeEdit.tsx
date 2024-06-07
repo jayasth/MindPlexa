@@ -252,6 +252,9 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     headerComponentParams: {
       menuIcon: 'fa-bars',
       type: colDef.type
+    },
+    cellClassRules: {
+      'cell-editing': (params) => params.node.editing // Add a new rule
     }
   }));
 
