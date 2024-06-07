@@ -148,9 +148,14 @@ export const handleKeyDown = (event, gridRef) => {
   const api = gridRef.current?.api;
   if (api) {
     if (
-      ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter'].includes(
-        event.key
-      )
+      [
+        'ArrowUp',
+        'ArrowDown',
+        'ArrowLeft',
+        'ArrowRight',
+        'Enter',
+        'Tab'
+      ].includes(event.key)
     ) {
       api.stopEditing(); // Commit editing before moving
     }
@@ -159,19 +164,15 @@ export const handleKeyDown = (event, gridRef) => {
         api.tabToPreviousCell();
         break;
       case 'ArrowDown':
+      case 'Enter':
         api.tabToNextCell();
         break;
       case 'ArrowLeft':
         api.tabToPreviousCell();
         break;
       case 'ArrowRight':
+      case 'Tab':
         api.tabToNextCell();
-        break;
-      case 'Enter':
-        api.startEditingCell({
-          rowIndex: api.getFocusedCell().rowIndex,
-          colKey: api.getFocusedCell().column.getColId()
-        });
         break;
       case 'Escape':
         api.stopEditing();
@@ -180,4 +181,38 @@ export const handleKeyDown = (event, gridRef) => {
         break;
     }
   }
+};
+
+export const onCellKeyDown = (params) => {
+  const key = params.event.key;
+  if (
+    key === 'Enter' ||
+    key === 'Tab' ||
+    key === 'ArrowRight' ||
+    key === 'ArrowLeft' ||
+    key === 'ArrowUp' ||
+    key === 'ArrowDown'
+  ) {
+    params.api.stopEditing();
+    if (key === 'Enter' || key === 'ArrowDown') {
+      params.api.tabToNextCell();
+    } else if (key === 'Tab' || key === 'ArrowRight') {
+      params.api.tabToNextCell();
+    } else if (key === 'ArrowLeft' || key === 'ArrowUp') {
+      params.api.tabToPreviousCell();
+    }
+    params.event.preventDefault();
+  }
+};
+
+export const suppressKeyboardEvent = (params) => {
+  const key = params.event.key;
+  return (
+    key === 'Enter' ||
+    key === 'Tab' ||
+    key === 'ArrowRight' ||
+    key === 'ArrowLeft' ||
+    key === 'ArrowUp' ||
+    key === 'ArrowDown'
+  );
 };

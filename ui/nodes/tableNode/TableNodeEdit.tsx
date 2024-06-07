@@ -44,7 +44,9 @@ import {
   importTableData,
   exportTableData,
   onCellValueChanged,
-  handleKeyDown
+  handleKeyDown,
+  onCellKeyDown,
+  suppressKeyboardEvent
 } from '@/ui/nodes/tableNode/utils/TableFunctions';
 
 import {
@@ -355,6 +357,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
             onCellValueChanged={(event) =>
               onCellValueChanged(event, setContent)
             }
+            onCellKeyDown={onCellKeyDown}
             getContextMenuItems={(params) =>
               getContextMenuItems(
                 params,
