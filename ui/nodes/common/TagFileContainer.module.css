@@ -2,8 +2,11 @@
   display: flex;
   justify-content: space-between;
   margin-top: 8px;
-  border: 1px solid #ccc;
   padding: 8px;
+}
+
+.withBorder {
+  border: 1px solid #ccc;
 }
 
 .tagContainer {

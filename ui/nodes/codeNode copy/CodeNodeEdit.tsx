@@ -10,7 +10,7 @@ import {
   AddTagButton,
   AttachFileButton,
   CloseButton
-} from '@/ui/nodes/CommonNodeComponents';
+} from '@/ui/nodes/common/CommonNodeComponents';
 import {
   handleTitleChange,
   handleSave,
@@ -19,7 +19,7 @@ import {
   handleChangeColor,
   handleAddTag,
   handleAttachFile
-} from '@/ui/canvasEditor/utils/CommonNodeFunctions';
+} from '@/ui/nodes/common/CommonNodeFunctions';
 
 interface CodeNodeEditProps extends NodeProps {
   data: {

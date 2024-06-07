@@ -45,7 +45,7 @@ import {
   TagModal,
   FileModal,
   ColorPickerModal
-} from '@/ui/nodes/CommonNodeComponents';
+} from '@/ui/nodes/common/CommonNodeComponents';
 import {
   handleTitleChange,
   handleSave,
@@ -58,7 +58,7 @@ import {
   colorCombinations,
   getContrastYIQ,
   handleAttachmentPreview
-} from '@/ui/canvasEditor/utils/CommonNodeFunctions';
+} from '@/ui/nodes/common/CommonNodeFunctions';
 
 interface DrawNodeEditProps extends NodeProps {
   data: DrawNodeData;

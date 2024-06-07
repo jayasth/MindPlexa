@@ -1,6 +1,6 @@
 import { useStore } from '@/app/store/useCanvasStore';
 import { nanoid } from 'nanoid';
-import { nodeDimensions } from './nodeProperties';
+import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 import { useState } from 'react';
 
 export const getContrastYIQ = (color: string) => {

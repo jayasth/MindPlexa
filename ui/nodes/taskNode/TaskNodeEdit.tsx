@@ -15,7 +15,7 @@ import {
   getContrastYIQ,
   colorCombinations,
   handleAttachmentPreview
-} from '@/ui/canvasEditor/utils/CommonNodeFunctions';
+} from '@/ui/nodes/common/CommonNodeFunctions';
 import {
   SaveButton,
   DeleteButton,
@@ -27,7 +27,7 @@ import {
   TagModal,
   FileModal,
   ColorPickerModal
-} from '@/ui/nodes/CommonNodeComponents';
+} from '@/ui/nodes/common/CommonNodeComponents';
 import {
   DndContext,
   closestCenter,

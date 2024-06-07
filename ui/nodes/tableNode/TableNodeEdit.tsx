@@ -21,7 +21,7 @@ import {
   TagModal,
   FileModal,
   ColorPickerModal
-} from '@/ui/nodes/CommonNodeComponents';
+} from '@/ui/nodes/common/CommonNodeComponents';
 import {
   AddTableButton,
   AddColumnButton,
@@ -60,7 +60,7 @@ import {
   colorCombinations,
   getContrastYIQ,
   handleAttachmentPreview
-} from '@/ui/canvasEditor/utils/CommonNodeFunctions';
+} from '@/ui/nodes/common/CommonNodeFunctions';
 
 import { TableNodeData } from '@/ui/canvasEditor/utils/nodeDatatypes';
 
@@ -71,7 +71,7 @@ import {
 import { useKeyPressHandler } from '@/ui/nodes/tableNode/utils/useKeyPressHandler';
 import CustomHeader from '@/ui/nodes/tableNode/components/CustomHeader';
 import HeaderContextMenu from '@/ui/nodes/tableNode/components/HeaderContextMenu';
-import TagFileContainer from '@/ui/nodes/tableNode/components/TagFileContainer';
+import TagFileContainer from '@/ui/nodes/common/TagFileContainer';
 
 interface TableNodeEditProps extends NodeProps {
   data: TableNodeData;

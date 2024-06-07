@@ -11,13 +11,13 @@ import {
 import Modal from 'react-responsive-modal';
 import 'react-responsive-modal/styles.css';
 import { CompactPicker } from 'react-color';
-import styles from './CommonNodeStyles.module.css';
+import styles from '@/ui/nodes/common/CommonNodeComponents.module.css';
 import Input from '@/ui/Input/Input';
 import Button from '@/ui/Button/Button';
 import {
   handleRemoveAttachedFile,
   handleAttachmentPreview
-} from '@/ui/canvasEditor/utils/CommonNodeFunctions';
+} from '@/ui/nodes/common/CommonNodeFunctions';
 
 const ICON_SIZE = 16;
 
