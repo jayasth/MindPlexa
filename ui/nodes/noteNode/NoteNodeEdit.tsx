@@ -15,6 +15,7 @@ import {
   FileModal,
   ColorPickerModal
 } from '@/ui/nodes/common/CommonNodeComponents';
+import TagFileContainer from '@/ui/nodes/common/TagFileContainer';
 import {
   handleTitleChange,
   handleSave,
@@ -265,53 +266,14 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         style={{ color: textColor }}
       />
       {(tags.length > 0 || attachedFiles.length > 0) && (
-        <div className={styles.tagFileContainer}>
-          <div className={styles.tagContainer}>
-            {tags.map((tag, index) => (
-              <span
-                key={index}
-                className={styles.tag}
-                style={{ color: textColor }}
-                onClick={() => onRemoveTag(tag)}
-              >
-                #{tag}{' '}
-                <button className={styles.removeTagButton}>&times;</button>
-              </span>
-            ))}
-          </div>
-          <div className={styles.fileContainer}>
-            {attachedFiles.map((file, index) => (
-              <div key={index} className={styles.file}>
-                <span
-                  onClick={() => {
-                    if (file.type === 'text/plain') {
-                      window.open(file.name, '_blank');
-                    } else {
-                      const url = URL.createObjectURL(file);
-                      window.open(url, '_blank');
-                    }
-                  }}
-                  onMouseEnter={() => handleAttachmentPreview(file)}
-                  onMouseLeave={() => {
-                    const preview = document.querySelector('.file-preview');
-                    if (preview) {
-                      document.body.removeChild(preview);
-                    }
-                  }}
-                  style={{ cursor: 'pointer', textDecoration: 'underline' }}
-                >
-                  {file.name}
-                </span>
-                <button
-                  className={styles.removeFileButton}
-                  onClick={() => onRemoveFile(file)}
-                >
-                  &times;
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
+        <TagFileContainer
+          tags={tags}
+          attachedFiles={attachedFiles}
+          onRemoveTag={onRemoveTag}
+          onRemoveFile={onRemoveFile}
+          textColor={textColor}
+          handleAttachmentPreview={handleAttachmentPreview}
+        />
       )}
       <div className={styles.footer}>
         <SaveButton

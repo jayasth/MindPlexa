@@ -52,7 +52,6 @@ import {
   handleSave,
   handleDelete,
   handleAddTag,
-  handleAttachFile,
   handleChangeColorWithCombination,
   handleClose,
   handleDuplicate,
