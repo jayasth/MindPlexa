@@ -99,8 +99,6 @@
 
 .toast {
   position: absolute;
-  top: 10px; /* Position it at the top of the table */
-  right: 10px;
   background-color: #f8d7da; /* Light red background */
   color: #721c24; /* Dark red text */
   padding: 10px;

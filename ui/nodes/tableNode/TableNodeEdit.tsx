@@ -45,7 +45,8 @@ import {
   handleKeyDown,
   onCellKeyDown,
   validateCellValue,
-  getColumnDefs
+  getColumnDefs,
+  handleInvalidInput
 } from '@/ui/nodes/tableNode/utils/TableFunctions';
 
 import {
@@ -229,11 +230,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
 
   useKeyPressHandler(content, setContent, updateNode, gridRef);
 
-  const handleInvalidInput = (message: string) => {
-    setToastMessage(message);
-    setTimeout(() => setToastMessage(''), 5000); // Clear the message after 5 seconds
-  };
-
   return (
     <ToastProvider>
       {toastMessage && (
@@ -336,7 +332,9 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
                 const { newValue, colDef } = event;
                 if (!validateCellValue(newValue, colDef.type as string)) {
                   handleInvalidInput(
-                    `Invalid value for column type "${colDef.type}": ${newValue}`
+                    `Invalid value for column type "${colDef.type}": ${newValue}`,
+                    event,
+                    gridRef
                   );
                 } else {
                   onCellValueChanged(event, setContent);
