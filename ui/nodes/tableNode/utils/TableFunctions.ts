@@ -1,25 +1,27 @@
 import Papa from 'papaparse';
+import { CSSProperties } from 'react';
 import CustomHeader from '@/ui/nodes/tableNode/components/CustomHeader';
 
 export const validateCellValue = (value: any, type: string): boolean => {
   switch (type) {
     case 'text':
-      return typeof value === 'string' && value.trim() !== '';
+      return typeof value === 'string' || value === '';
     case 'number':
-      return !isNaN(Number(value)) && isFinite(value);
+      return (!isNaN(Number(value)) && isFinite(value)) || value === '';
     case 'email':
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      return emailRegex.test(value);
+      return emailRegex.test(value) || value === '';
     case 'date':
-      return !isNaN(Date.parse(value));
+      return !isNaN(Date.parse(value)) || value === '';
     case 'currency':
-      return !isNaN(parseFloat(value)) && isFinite(value);
+      return (!isNaN(parseFloat(value)) && isFinite(value)) || value === '';
     case 'percentage':
       return (
-        !isNaN(parseFloat(value)) &&
-        isFinite(value) &&
-        Number(value) >= 0 &&
-        Number(value) <= 100
+        (!isNaN(parseFloat(value)) &&
+          isFinite(value) &&
+          Number(value) >= 0 &&
+          Number(value) <= 100) ||
+        value === ''
       );
     default:
       return true;
@@ -82,6 +84,27 @@ export const onCellValueChanged = (event, setContent) => {
       columns: [event.colDef.field]
     });
   }
+};
+
+export const getColumnDefs = (content, setContent, updateNode, gridRef) => {
+  return content.columns.map((colDef) => ({
+    ...colDef,
+    filter: true,
+    headerComponent: CustomHeader,
+    headerComponentParams: {
+      menuIcon: 'fa-bars',
+      type: colDef.type
+    },
+    cellStyle: (params) => {
+      const isValid = validateCellValue(params.value, colDef.type);
+      const invalidCellStyle: CSSProperties = {
+        backgroundColor: '#f8d7da',
+        border: '1px solid #f5c6cb',
+        color: '#721c24'
+      };
+      return isValid ? {} : invalidCellStyle;
+    }
+  }));
 };
 
 export const addColumn = (
@@ -223,27 +246,4 @@ export const onCellKeyDown = (params) => {
     }
     params.event.preventDefault();
   }
-};
-
-export const getColumnDefs = (content, setContent, updateNode, gridRef) => {
-  return content.columns.map((colDef) => ({
-    ...colDef,
-    filter: true,
-    headerComponent: CustomHeader,
-    headerComponentParams: {
-      menuIcon: 'fa-bars',
-      type: colDef.type
-    },
-    cellClassRules: {
-      'cell-editing': (params) => {
-        console.log('cell-editing:', params.node.editing);
-        return params.node.editing;
-      },
-      'cell-error': (params) => {
-        const isValid = validateCellValue(params.value, colDef.type);
-        console.log('cell-error:', !isValid, params.value, colDef.type);
-        return !isValid;
-      }
-    }
-  }));
 };
