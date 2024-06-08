@@ -241,7 +241,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     },
     cellClassRules: {
       'cell-editing': (params) => params.node.editing,
-      'cell-error': (params) => !validateCellValue(params.value, colDef.type) // Add this line
+      'cell-error': (params) => !validateCellValue(params.value, colDef.type)
     }
   }));
 

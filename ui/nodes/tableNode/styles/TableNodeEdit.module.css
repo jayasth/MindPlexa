@@ -51,6 +51,7 @@
 
 .cell-error {
   background-color: #f8d7da; /* Light red background */
+  border: 1px solid #f5c6cb; /* Red border */
 }
 
 .actions {
@@ -87,6 +88,40 @@
   display: inline-block;
   width: 16px;
   height: 16px;
+}
+
+.toast {
+  position: absolute;
+  top: 10px; /* Position it at the top of the table */
+  right: 10px;
+  background-color: #f8d7da; /* Light red background */
+  color: #721c24; /* Dark red text */
+  padding: 10px;
+  border: 1px solid #f5c6cb; /* Red border */
+  border-radius: 5px;
+  z-index: 1000; /* Ensure it appears above other elements */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  animation:
+    fadeIn 0.5s,
+    fadeOut 0.5s 4.5s; /* Fade in and out */
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
 }
 
 /* common on all nodes */

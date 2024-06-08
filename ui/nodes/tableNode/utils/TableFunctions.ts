@@ -51,8 +51,7 @@ export const onCellValueChanged = (event, setContent) => {
   const columnType = event.colDef.type;
 
   if (!validateCellValue(newValue, columnType)) {
-    newValue = ''; // Clear the invalid value
-    event.node.setDataValue(event.colDef.field, newValue);
+    event.node.setDataValue(event.colDef.field, oldValue); // Revert to old value
     event.node.data.invalid = true; // Mark the row as invalid
     event.api.refreshCells({
       rowNodes: [event.node],
@@ -60,10 +59,8 @@ export const onCellValueChanged = (event, setContent) => {
     });
 
     setTimeout(() => {
-      alert(`Invalid value for column type "${columnType}": ${event.newValue}`);
+      alert(`Invalid value for column type "${columnType}": ${newValue}`);
     }, 0);
-    event.api.stopEditing(); // Commit changes when leaving the cell
-    return;
   }
 
   const formattedValue = formatCellValue(newValue, columnType);
@@ -84,7 +81,6 @@ export const onCellValueChanged = (event, setContent) => {
     rowNodes: [event.node],
     columns: [event.colDef.field]
   });
-  event.api.stopEditing(); // Commit changes when leaving the cell
 };
 
 export const addColumn = (
