@@ -1,4 +1,5 @@
 import Papa from 'papaparse';
+import CustomHeader from '@/ui/nodes/tableNode/components/CustomHeader';
 
 export const validateCellValue = (value: any, type: string): boolean => {
   switch (type) {
@@ -61,26 +62,26 @@ export const onCellValueChanged = (event, setContent) => {
     setTimeout(() => {
       alert(`Invalid value for column type "${columnType}": ${newValue}`);
     }, 0);
-  }
+  } else {
+    const formattedValue = formatCellValue(newValue, columnType);
 
-  const formattedValue = formatCellValue(newValue, columnType);
-
-  setContent((prevContent) => {
-    const updatedRows = prevContent.rows.map((row, index) => {
-      if (index === event.rowIndex) {
-        return { ...row, [event.colDef.field]: formattedValue };
-      }
-      return row;
+    setContent((prevContent) => {
+      const updatedRows = prevContent.rows.map((row, index) => {
+        if (index === event.rowIndex) {
+          return { ...row, [event.colDef.field]: formattedValue };
+        }
+        return row;
+      });
+      return { ...prevContent, rows: updatedRows };
     });
-    return { ...prevContent, rows: updatedRows };
-  });
 
-  event.node.setDataValue(event.colDef.field, formattedValue);
-  event.node.data.invalid = false; // Mark the row as valid
-  event.api.refreshCells({
-    rowNodes: [event.node],
-    columns: [event.colDef.field]
-  });
+    event.node.setDataValue(event.colDef.field, formattedValue);
+    event.node.data.invalid = false; // Mark the row as valid
+    event.api.refreshCells({
+      rowNodes: [event.node],
+      columns: [event.colDef.field]
+    });
+  }
 };
 
 export const addColumn = (
@@ -222,4 +223,27 @@ export const onCellKeyDown = (params) => {
     }
     params.event.preventDefault();
   }
+};
+
+export const getColumnDefs = (content, setContent, updateNode, gridRef) => {
+  return content.columns.map((colDef) => ({
+    ...colDef,
+    filter: true,
+    headerComponent: CustomHeader,
+    headerComponentParams: {
+      menuIcon: 'fa-bars',
+      type: colDef.type
+    },
+    cellClassRules: {
+      'cell-editing': (params) => {
+        console.log('cell-editing:', params.node.editing);
+        return params.node.editing;
+      },
+      'cell-error': (params) => {
+        const isValid = validateCellValue(params.value, colDef.type);
+        console.log('cell-error:', !isValid, params.value, colDef.type);
+        return !isValid;
+      }
+    }
+  }));
 };

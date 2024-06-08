@@ -44,7 +44,8 @@ import {
   onCellValueChanged,
   handleKeyDown,
   onCellKeyDown,
-  validateCellValue
+  validateCellValue,
+  getColumnDefs
 } from '@/ui/nodes/tableNode/utils/TableFunctions';
 
 import {
@@ -63,13 +64,11 @@ import { useBackgroundColorChange } from '@/ui/nodes/common/useBackgroundColorCh
 
 import { TableNodeData } from '@/ui/canvasEditor/utils/nodeDatatypes';
 
-import {
-  getColumnDefs,
-  getContextMenuItems
-} from '@/ui/nodes/tableNode/utils/contextMenuItems';
+import { getContextMenuItems } from '@/ui/nodes/tableNode/utils/contextMenuItems';
 import { useKeyPressHandler } from '@/ui/nodes/tableNode/utils/useKeyPressHandler';
 import CustomHeader from '@/ui/nodes/tableNode/components/CustomHeader';
 import HeaderContextMenu from '@/ui/nodes/tableNode/components/HeaderContextMenu';
+
 import TagFileContainer from '@/ui/nodes/common/TagFileContainer';
 
 interface TableNodeEditProps extends NodeProps {
@@ -226,24 +225,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     color: textColor
   };
 
-  const columnDefs = getColumnDefs(
-    content,
-    setContent,
-    updateNode,
-    gridRef
-  ).map((colDef) => ({
-    ...colDef,
-    filter: true,
-    headerComponent: CustomHeader,
-    headerComponentParams: {
-      menuIcon: 'fa-bars',
-      type: colDef.type
-    },
-    cellClassRules: {
-      'cell-editing': (params) => params.node.editing,
-      'cell-error': (params) => !validateCellValue(params.value, colDef.type)
-    }
-  }));
+  const columnDefs = getColumnDefs(content, setContent, updateNode, gridRef);
 
   useKeyPressHandler(content, setContent, updateNode, gridRef);
 
