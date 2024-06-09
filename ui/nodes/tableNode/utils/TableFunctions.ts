@@ -121,33 +121,30 @@ export const handleInvalidInput = (
   params: any,
   gridRef: React.RefObject<any>
 ) => {
-  const cellRenderer = gridRef.current.api.getCellRendererInstances({
-    rowNodes: [params.node],
-    columns: [params.column]
-  })[0];
-
-  let cellRect;
-  if (cellRenderer && cellRenderer.getGui) {
-    cellRect = cellRenderer.getGui().getBoundingClientRect();
-  } else {
-    // Fallback to using the focused cell's position
-    cellRect = gridRef.current.api.getFocusedCell()?.cellRect;
-  }
-
-  const toastPosition = {
+  const cellRect = gridRef.current.api.getFocusedCell()?.cellRect;
+  const toastStyle: CSSProperties = {
+    position: 'absolute',
     top: cellRect ? `${cellRect.top + window.scrollY}px` : '10px',
-    left: cellRect ? `${cellRect.left + window.scrollX}px` : '10px'
+    left: cellRect ? `${cellRect.left + window.scrollX}px` : '10px',
+    backgroundColor: '#f8d7da',
+    color: '#721c24',
+    padding: '10px',
+    border: '1px solid #f5c6cb',
+    borderRadius: '5px',
+    zIndex: 1000,
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+    animation: 'fadeIn 0.5s, fadeOut 0.5s 4.5s'
   };
 
-  toast({
-    title: 'Invalid Input',
-    description: message,
-    style: {
-      position: 'absolute',
-      ...toastPosition
-    },
-    variant: 'destructive'
-  });
+  const toastElement = document.createElement('div');
+  toastElement.textContent = message;
+  Object.assign(toastElement.style, toastStyle);
+
+  document.body.appendChild(toastElement);
+
+  setTimeout(() => {
+    document.body.removeChild(toastElement);
+  }, 5000);
 };
 
 export const addColumn = (
