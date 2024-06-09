@@ -3,6 +3,7 @@ import { CSSProperties } from 'react';
 import { toast } from '@/ui/Toasts/use-toast';
 import CustomHeader from '@/ui/nodes/tableNode/components/CustomHeader';
 import { DateEditor } from '@/ui/nodes/tableNode/utils/CustomCellEditors';
+import { GridApi } from 'ag-grid-community';
 
 export const validateCellValue = (value: any, type: string): boolean => {
   switch (type) {
@@ -397,4 +398,77 @@ export const onCellKeyDown = (params) => {
     }
     params.event.preventDefault();
   }
+};
+
+// Function to handle cell click
+export const handleCellClick = (event) => {
+  console.log('Cell clicked', event);
+  // Add any additional logic for single cell click
+};
+
+// Function to handle cell double click
+export const handleCellDoubleClick = (event) => {
+  console.log('Cell double-clicked', event);
+  // Add any additional logic for double cell click
+};
+
+// Function to handle selection change
+export const handleSelectionChange = (gridApi: GridApi) => {
+  const selectedNodes = gridApi.getSelectedNodes();
+  const selectedData = selectedNodes.map((node) => node.data);
+  console.log('Selected Data:', selectedData);
+};
+
+// Function to handle right-click context menu
+export const getContextMenuItems = (params) => {
+  return [
+    'copy',
+    'cut',
+    'paste',
+    'separator',
+    {
+      name: 'Insert Row Above',
+      action: () => {
+        // Logic to insert row above
+      }
+    },
+    {
+      name: 'Insert Row Below',
+      action: () => {
+        // Logic to insert row below
+      }
+    },
+    {
+      name: 'Delete Row',
+      action: () => {
+        // Logic to delete row
+      }
+    },
+    'separator',
+    {
+      name: 'Sort Ascending',
+      action: () => {
+        params.columnApi.applyColumnState({
+          state: [{ colId: params.column.getId(), sort: 'asc' }],
+          applyOrder: true
+        });
+      }
+    },
+    {
+      name: 'Sort Descending',
+      action: () => {
+        params.columnApi.applyColumnState({
+          state: [{ colId: params.column.getId(), sort: 'desc' }],
+          applyOrder: true
+        });
+      }
+    },
+    'separator',
+    {
+      name: 'Filter',
+      action: () => {
+        // Logic to filter column
+      }
+    }
+  ];
 };
