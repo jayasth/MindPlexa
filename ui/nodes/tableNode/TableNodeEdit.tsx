@@ -32,7 +32,6 @@ import {
 } from '@/ui/nodes/tableNode/components/TableNodeToolbar';
 import AddTableModal from '@/ui/nodes/tableNode/components/AddTableModal';
 import DeleteTableModal from '@/ui/nodes/tableNode/components/DeleteTableModal';
-import { ToastProvider, ToastViewport, Toast } from '@radix-ui/react-toast';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 
@@ -115,7 +114,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   const [isFileModalOpen, setIsFileModalOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [toastMessage, setToastMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
   const updateNode = useStore((state) => state.updateNode);
   const tableRef = useRef<HTMLDivElement>(null);
@@ -231,11 +230,9 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   useKeyPressHandler(content, setContent, updateNode, gridRef);
 
   return (
-    <ToastProvider>
-      {toastMessage && (
-        <Toast>
-          <div>{toastMessage}</div>
-        </Toast>
+    <div>
+      {errorMessage && (
+        <div className={styles.errorMessage}>{errorMessage}</div>
       )}
       <div
         className={`${styles.tableNode} ${isSelected ? styles.selected : ''}`}
@@ -529,8 +526,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           />
         ))}
       </div>
-      <ToastViewport />
-    </ToastProvider>
+    </div>
   );
 };
 

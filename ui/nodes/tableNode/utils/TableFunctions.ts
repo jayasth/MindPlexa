@@ -107,6 +107,20 @@ export const getColumnDefs = (content, setContent, updateNode, gridRef) => {
   }));
 };
 
+export const showFloatingErrorMessage = (
+  message: string,
+  position: { top: number; left: number },
+  setErrorMessage: (message: string | null) => void,
+  setErrorPosition: (position: { top: number; left: number } | null) => void
+) => {
+  setErrorMessage(message);
+  setErrorPosition(position);
+  setTimeout(() => {
+    setErrorMessage(null);
+    setErrorPosition(null);
+  }, 5000);
+};
+
 export const handleInvalidInput = (
   message: string,
   params: any,
