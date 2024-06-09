@@ -490,9 +490,14 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
                 applyOrder: true
               });
             }}
-            onFilter={() =>
-              gridRef.current.api.setFilterModel({ [col.field]: null })
-            }
+            onFilter={() => {
+              const colDef = columnDefs.find((c) => c.field === col.field);
+              if (colDef && colDef.filterParams) {
+                gridRef.current.api.setFilterModel({
+                  [col.field]: colDef.filterParams
+                });
+              }
+            }}
             onRename={() => {
               const newName = prompt('Enter new column name:', col.headerName);
               if (newName) {
