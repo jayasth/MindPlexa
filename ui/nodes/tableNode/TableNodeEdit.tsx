@@ -28,10 +28,12 @@ import {
   AddRowButton,
   ExportButton,
   ImportButton,
-  DeleteTableButton
+  DeleteTableButton,
+  SettingsButton
 } from '@/ui/nodes/tableNode/components/TableNodeToolbar';
 import AddTableModal from '@/ui/nodes/tableNode/components/AddTableModal';
 import DeleteTableModal from '@/ui/nodes/tableNode/components/DeleteTableModal';
+import SettingsModal from '@/ui/nodes/tableNode/components/SettingsModal';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 
@@ -114,6 +116,8 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   const [isFileModalOpen, setIsFileModalOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [locale, setLocale] = useState('en-US'); // Default locale
   const [errorMessage, setErrorMessage] = useState('');
 
   const updateNode = useStore((state) => state.updateNode);
@@ -218,6 +222,11 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     setIsDeleteModalOpen(false);
   };
 
+  const handleLocaleChange = (newLocale) => {
+    setLocale(newLocale);
+    // Apply locale settings to existing columns and rows if necessary
+  };
+
   const customStyles: CSSProperties = {
     width: nodeWidth,
     height: nodeHeight,
@@ -271,9 +280,10 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
             />
             <AddColumnButton
               onClick={(columnType) =>
-                addColumn(content, setContent, updateNode, columnType)
+                addColumn(content, setContent, updateNode, columnType, locale)
               }
               aria-label="Add Column"
+              locale={locale} // Pass locale to AddColumnButton
             />
             <AddRowButton
               onClick={() => addRow(content, setContent, updateNode)}
@@ -297,6 +307,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
               }}
               aria-label="Delete Table"
             />
+            <SettingsButton onClick={() => setIsSettingsModalOpen(true)} />
           </div>
 
           <div
@@ -433,7 +444,8 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
                 field: `col${index + 1}`,
                 editable: true,
                 type: col.type,
-                defaultValue: col.defaultValue
+                defaultValue: col.defaultValue,
+                locale // Pass locale to column definition
               }));
 
               const newRows = Array.from({ length: rows }, () =>
@@ -448,12 +460,19 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
             hasExistingData={
               content.columns.length > 0 || content.rows.length > 0
             }
+            locale={locale} // Pass locale to AddTableModal
           />
         )}
         <DeleteTableModal
           isOpen={isDeleteModalOpen}
           onClose={() => setIsDeleteModalOpen(false)}
           onConfirm={handleDeleteTable}
+        />
+        <SettingsModal
+          isOpen={isSettingsModalOpen}
+          onClose={() => setIsSettingsModalOpen(false)}
+          onSave={handleLocaleChange}
+          initialLocale={locale}
         />
         {content.columns.map((col) => (
           <HeaderContextMenu

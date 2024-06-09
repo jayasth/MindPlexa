@@ -32,15 +32,20 @@ export const validateCellValue = (value: any, type: string): boolean => {
 export const formatCellValue = (
   value: any,
   type: string,
+  locale: string = 'en-US',
   currencyCode: string = 'USD'
 ): any => {
   switch (type) {
     case 'currency':
       return value
-        ? new Intl.NumberFormat('en-US', {
+        ? new Intl.NumberFormat(locale, {
             style: 'currency',
             currency: currencyCode
           }).format(Number(value))
+        : '';
+    case 'date':
+      return value
+        ? new Intl.DateTimeFormat(locale).format(new Date(value))
         : '';
     case 'percentage':
       return `${Number(value).toFixed(2)}%`;
@@ -53,6 +58,7 @@ export const onCellValueChanged = (event, setContent) => {
   const oldValue = event.oldValue;
   let newValue = event.newValue;
   const columnType = event.colDef.type;
+  const locale = event.colDef.locale || 'en-US';
 
   if (!validateCellValue(newValue, columnType)) {
     event.node.setDataValue(event.colDef.field, oldValue); // Revert to old value
@@ -68,7 +74,7 @@ export const onCellValueChanged = (event, setContent) => {
       variant: 'warning'
     });
   } else {
-    const formattedValue = formatCellValue(newValue, columnType);
+    const formattedValue = formatCellValue(newValue, columnType, locale, 'USD');
 
     setContent((prevContent) => {
       const updatedRows = prevContent.rows.map((row, index) => {
@@ -148,14 +154,16 @@ export const addColumn = (
   content: any,
   setContent: (content: any) => void,
   api,
-  columnType: string = 'text'
+  columnType: string = 'text',
+  locale: string = 'en-US'
 ) => {
   console.log('TableFunctions: Adding column');
   const newColumn = {
     headerName: 'New Column',
     field: `col${content.columns.length + 1}`,
     editable: true,
-    type: columnType
+    type: columnType,
+    locale // Store locale in column definition
   };
 
   // Check if there are no rows and add one if necessary
@@ -178,7 +186,8 @@ export const addColumn = (
 export const addRow = (
   content: any,
   setContent: (content: any) => void,
-  api
+  api,
+  locale: string = 'en-US'
 ) => {
   console.log('TableFunctions: Adding row');
   const newRow = content.columns.reduce((row: any, col: any) => {

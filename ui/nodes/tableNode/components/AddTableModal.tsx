@@ -95,7 +95,7 @@ const SortableItem = ({
   );
 };
 
-const AddTableModal = ({ onClose, onAddTable, hasExistingData }) => {
+const AddTableModal = ({ onClose, onAddTable, hasExistingData, locale }) => {
   const [columns, setColumns] = useState<Column[]>([
     { id: uuidv4(), name: '', type: 'text' }
   ]);
@@ -125,13 +125,13 @@ const AddTableModal = ({ onClose, onAddTable, hasExistingData }) => {
     if (hasExistingData) {
       setIsWarningOpen(true);
     } else {
-      onAddTable(columns, rows);
+      onAddTable(columns, rows, locale); // Pass locale to onAddTable
       onClose();
     }
   };
 
   const handleConfirmAddTable = () => {
-    onAddTable(columns, rows);
+    onAddTable(columns, rows, locale); // Pass locale to onAddTable
     onClose();
     setIsWarningOpen(false);
   };

@@ -9,7 +9,8 @@ import {
   CiFilter,
   CiTextAlignCenter,
   CiTextAlignLeft,
-  CiTextAlignRight
+  CiTextAlignRight,
+  CiSettings
 } from 'react-icons/ci';
 import styles from '@/ui/nodes/tableNode/styles/TableNodeToolbar.module.css';
 
@@ -21,14 +22,14 @@ export const AddTableButton = ({ onClick }) => (
   </button>
 );
 
-export const AddColumnButton = ({ onClick }) => {
+export const AddColumnButton = ({ onClick, locale }) => {
   const columnType = 'text';
 
   return (
     <div className={styles.addColumnContainer}>
       <button
         className={styles.actionButton}
-        onClick={() => onClick(columnType)}
+        onClick={() => onClick(columnType, locale)}
         title="Add Column"
       >
         <MdOutlineViewColumn size={iconSize} />
@@ -102,4 +103,10 @@ export const ImportButton = ({ onChange }) => (
     <CiImport size={iconSize} />
     <input type="file" className={styles.fileInput} onChange={onChange} />
   </label>
+);
+
+export const SettingsButton = ({ onClick }) => (
+  <button className={styles.actionButton} onClick={onClick} title="Settings">
+    <CiSettings size={iconSize} />
+  </button>
 );
