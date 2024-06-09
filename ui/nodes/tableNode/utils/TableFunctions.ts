@@ -218,7 +218,16 @@ export const getColumnDefs = (content, setContent, updateNode, gridRef) => {
         context: { content, setContent, updateNode }
       },
       headerClass: 'custom-header-class',
-      colId: col.field
+      colId: col.field,
+      cellStyle: (params) => {
+        const isValid = validateCellValue(params.value, col.type);
+        const invalidCellStyle: CSSProperties = {
+          backgroundColor: '#f8d7da',
+          border: '1px solid #f5c6cb',
+          color: '#721c24'
+        };
+        return isValid ? {} : invalidCellStyle;
+      }
     };
   });
 };
