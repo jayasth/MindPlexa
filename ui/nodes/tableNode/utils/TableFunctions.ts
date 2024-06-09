@@ -107,26 +107,24 @@ export const getColumnDefs = (content, setContent, updateNode, gridRef) => {
   }));
 };
 
-export const showFloatingErrorMessage = (
-  message: string,
-  position: { top: number; left: number },
-  setErrorMessage: (message: string | null) => void,
-  setErrorPosition: (position: { top: number; left: number } | null) => void
-) => {
-  setErrorMessage(message);
-  setErrorPosition(position);
-  setTimeout(() => {
-    setErrorMessage(null);
-    setErrorPosition(null);
-  }, 5000);
-};
-
 export const handleInvalidInput = (
   message: string,
   params: any,
   gridRef: React.RefObject<any>
 ) => {
-  const cellRect = gridRef.current.api.getFocusedCell()?.cellRect;
+  const cellRenderer = gridRef.current.api.getCellRendererInstances({
+    rowNodes: [params.node],
+    columns: [params.column]
+  })[0];
+
+  let cellRect;
+  if (cellRenderer && cellRenderer.getGui) {
+    cellRect = cellRenderer.getGui().getBoundingClientRect();
+  } else {
+    // Fallback to using the focused cell's position
+    cellRect = gridRef.current.api.getFocusedCell()?.cellRect;
+  }
+
   const toastStyle: CSSProperties = {
     position: 'absolute',
     top: cellRect ? `${cellRect.top + window.scrollY}px` : '10px',
@@ -151,7 +149,6 @@ export const handleInvalidInput = (
     document.body.removeChild(toastElement);
   }, 5000);
 };
-
 export const addColumn = (
   content: any,
   setContent: (content: any) => void,
