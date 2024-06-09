@@ -62,9 +62,11 @@ export const onCellValueChanged = (event, setContent) => {
       columns: [event.colDef.field]
     });
 
-    setTimeout(() => {
-      alert(`Invalid value for column type "${columnType}": ${newValue}`);
-    }, 0);
+    toast({
+      title: 'Invalid Input',
+      description: `Invalid value for column type "${columnType}": ${newValue}`,
+      variant: 'warning'
+    });
   } else {
     const formattedValue = formatCellValue(newValue, columnType);
 
@@ -155,9 +157,20 @@ export const addColumn = (
     editable: true,
     type: columnType
   };
+
+  // Check if there are no rows and add one if necessary
+  let newRows = content.rows;
+  if (newRows.length === 0) {
+    const newRow = { [newColumn.field]: '' };
+    newRows = [newRow];
+  } else {
+    newRows = newRows.map((row) => ({ ...row, [newColumn.field]: '' }));
+  }
+
   setContent({
     ...content,
-    columns: [...content.columns, newColumn]
+    columns: [...content.columns, newColumn],
+    rows: newRows
   });
   api.refreshCells && api.refreshCells({ force: true });
 };
