@@ -271,6 +271,15 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
         onMouseMove={(e) =>
           handleMouseMove(e, gridRef.current, selectionRange, setSelectionRange)
         }
+        onDoubleClick={(e) =>
+          handleAddRowOrColumn(
+            e,
+            gridRef.current,
+            content,
+            setContent,
+            updateNode
+          )
+        }
       >
         <NodeResizer
           isVisible={isContainerSelected}
@@ -356,7 +365,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
                 gridRef.current = params;
                 params.api.sizeColumnsToFit();
                 params.api.addEventListener('keydown', (event) =>
-                  handleKeyDown(event, gridRef)
+                  handleKeyDown(event, gridRef, content, setContent, updateNode)
                 );
               }}
               onCellValueChanged={(event) => {

@@ -9,14 +9,13 @@ export const useKeyPressHandler = (
 ) => {
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
-      if (event.ctrlKey && event.key === 'n') {
-        addRow(content, setContent, updateNode);
-      } else if (event.ctrlKey && event.key === 'm') {
-        addColumn(content, setContent, updateNode);
-      } else if (event.ctrlKey && event.key === 'd') {
-        // Delete selected row
-        const api = gridRef.current?.api;
-        if (api) {
+      const api = gridRef?.current?.api;
+      if (api) {
+        if (event.ctrlKey && event.key === 'n') {
+          addRow(content, setContent, updateNode);
+        } else if (event.ctrlKey && event.key === 'm') {
+          addColumn(content, setContent, updateNode);
+        } else if (event.ctrlKey && event.key === 'd') {
           const selectedRows = api.getSelectedRows();
           if (selectedRows.length > 0) {
             const updatedRows = content.rows.filter(
@@ -25,6 +24,12 @@ export const useKeyPressHandler = (
             );
             setContent({ ...content, rows: updatedRows });
           }
+        } else if (event.ctrlKey && event.key === 'a') {
+          api.selectAll();
+        } else if (event.ctrlKey && event.key === 'c') {
+          api.copySelectedRangeToClipboard();
+        } else if (event.ctrlKey && event.key === 'v') {
+          api.pasteFromClipboard();
         }
       }
     };
@@ -36,8 +41,14 @@ export const useKeyPressHandler = (
   }, [content, setContent, updateNode, gridRef]);
 };
 
-export const handleKeyDown = (event, gridRef) => {
-  const api = gridRef.current?.api;
+export const handleKeyDown = (
+  event,
+  gridRef,
+  content,
+  setContent,
+  updateNode
+) => {
+  const api = gridRef?.current?.api;
   if (api) {
     if (
       [
@@ -73,6 +84,15 @@ export const handleKeyDown = (event, gridRef) => {
         break;
       default:
         break;
+    }
+
+    if (event.key === 'Enter') {
+      const currentCell = api.getFocusedCell();
+      const currentRow = currentCell?.rowIndex;
+      const maxRow = api.getModel().getRowCount() - 1;
+      if (currentRow === maxRow) {
+        addRow(content, setContent, updateNode);
+      }
     }
   }
 };
@@ -170,42 +190,79 @@ export const handleCellContextMenu = (
   setIsContextMenuOpen(true);
 };
 
-// New functions for selecting cells/rows/columns and adding rows/columns on click and drag
-export const handleMouseDown = (event, params, setSelectionRange) => {
-  const startCell = params.api.getFocusedCell();
-  setSelectionRange({ start: startCell, end: startCell });
+export const handleMouseDown = (event, gridRef, setSelectionRange) => {
+  const api = gridRef?.current?.api;
+  if (api) {
+    const cell = api.getFocusedCell();
+    if (cell) {
+      setSelectionRange({ start: cell, end: cell });
+    }
+  }
 };
 
 export const handleMouseMove = (
   event,
-  params,
+  gridRef,
   selectionRange,
   setSelectionRange
 ) => {
-  if (selectionRange.start) {
-    const endCell = params.api.getFocusedCell();
-    setSelectionRange({ ...selectionRange, end: endCell });
+  const api = gridRef?.current?.api;
+  if (api && selectionRange.start) {
+    const cell = api.getFocusedCell();
+    if (cell) {
+      setSelectionRange({ ...selectionRange, end: cell });
+      api.addCellRange({
+        rowStartIndex: selectionRange.start.rowIndex,
+        rowEndIndex: cell.rowIndex,
+        columnStart: selectionRange.start.column,
+        columnEnd: cell.column
+      });
+    }
   }
 };
 
 export const handleMouseUp = (
   event,
-  params,
+  gridRef,
   selectionRange,
   setSelectionRange
 ) => {
-  if (selectionRange.start && selectionRange.end) {
-    // Handle selection logic here
-    console.log('Selection range:', selectionRange);
-  }
   setSelectionRange({ start: null, end: null });
 };
 
-export const handleAddRowOrColumn = (event, params, setContent, content) => {
-  const { rowIndex, colDef } = params;
-  if (event.target.classList.contains('add-row')) {
-    addRow(content, setContent, params.api);
-  } else if (event.target.classList.contains('add-column')) {
-    addColumn(content, setContent, params.api, colDef.type);
+export const handleAddRowOrColumn = (
+  event,
+  gridRef,
+  content,
+  setContent,
+  updateNode
+) => {
+  const api = gridRef?.current?.api;
+  if (api) {
+    const cellRange = api.getCellRanges()[0];
+    if (cellRange) {
+      const { rowStartIndex, rowEndIndex, columnStart, columnEnd } = cellRange;
+      if (rowStartIndex === rowEndIndex && columnStart === columnEnd) {
+        // Single cell selected
+        if (event.target.classList.contains('add-row')) {
+          addRow(content, setContent, updateNode);
+        } else if (event.target.classList.contains('add-column')) {
+          addColumn(content, setContent, updateNode, columnStart.colDef.type);
+        }
+      } else {
+        // Range selected
+        if (event.target.classList.contains('add-row')) {
+          const numRows = rowEndIndex - rowStartIndex + 1;
+          for (let i = 0; i < numRows; i++) {
+            addRow(content, setContent, updateNode);
+          }
+        } else if (event.target.classList.contains('add-column')) {
+          const numCols = columnEnd.columnIndex - columnStart.columnIndex + 1;
+          for (let i = 0; i < numCols; i++) {
+            addColumn(content, setContent, updateNode, columnStart.colDef.type);
+          }
+        }
+      }
+    }
   }
 };
