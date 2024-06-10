@@ -45,7 +45,8 @@ import {
   onCellValueChanged,
   validateCellValue,
   getColumnDefs,
-  handleInvalidInput
+  handleInvalidInput,
+  gridOptions // Import gridOptions
 } from '@/ui/nodes/tableNode/utils/TableFunctions';
 
 import {
@@ -64,17 +65,15 @@ import { useBackgroundColorChange } from '@/ui/nodes/common/useBackgroundColorCh
 
 import { TableNodeData } from '@/ui/canvasEditor/utils/nodeDatatypes';
 
-import { getContextMenuItems } from '@/ui/nodes/tableNode/utils/contextMenuItems';
-import CustomHeader from '@/ui/nodes/tableNode/components/CustomHeader';
-import HeaderContextMenu from '@/ui/nodes/tableNode/components/HeaderContextMenu';
-
-import TagFileContainer from '@/ui/nodes/common/TagFileContainer';
-
 import {
   useKeyPressHandler,
   handleKeyDown,
   onCellKeyDown
 } from '@/ui/nodes/tableNode/utils/KeyboardMouseHandlers';
+import CustomHeader from '@/ui/nodes/tableNode/components/CustomHeader';
+import HeaderContextMenu from '@/ui/nodes/tableNode/components/HeaderContextMenu';
+
+import TagFileContainer from '@/ui/nodes/common/TagFileContainer';
 
 interface TableNodeEditProps extends NodeProps {
   data: TableNodeData;
@@ -126,7 +125,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   const updateNode = useStore((state) => state.updateNode);
   const tableRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<any>(null);
-
   useEffect(() => {
     if (
       title !== data.title ||
@@ -320,6 +318,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
             aria-label="Data Table"
           >
             <AgGridReact
+              gridOptions={gridOptions} // Pass the gridOptions here
               columnDefs={columnDefs as any}
               rowData={content.rows}
               domLayout="autoHeight"
@@ -352,15 +351,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
                 }
               }}
               onCellKeyDown={onCellKeyDown}
-              getContextMenuItems={(params) =>
-                getContextMenuItems(
-                  params,
-                  content,
-                  setContent,
-                  updateNode,
-                  gridRef
-                )
-              }
             />
           </div>
         </div>
@@ -493,9 +483,14 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
                 applyOrder: true
               });
             }}
-            onFilter={() =>
-              gridRef.current.api.setFilterModel({ [col.field]: null })
-            }
+            onFilter={() => {
+              const colDef = columnDefs.find((c) => c.field === col.field);
+              if (colDef && colDef.filterParams) {
+                gridRef.current.api.setFilterModel({
+                  [col.field]: colDef.filterParams
+                });
+              }
+            }}
             onRename={() => {
               const newName = prompt('Enter new column name:', col.headerName);
               if (newName) {
