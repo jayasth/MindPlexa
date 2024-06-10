@@ -63,6 +63,8 @@ export const handleKeyDown = (event, gridRef) => {
         api.tabToPreviousCell();
         break;
       case 'ArrowRight':
+        api.tabToNextCell();
+        break;
       case 'Tab':
         api.tabToNextCell();
         break;
@@ -86,12 +88,49 @@ export const onCellKeyDown = (params) => {
     key === 'ArrowDown'
   ) {
     params.api.stopEditing();
+    const currentCell = params.api.getFocusedCell();
+    const currentRow = currentCell?.rowIndex;
+    const currentCol = currentCell?.column;
+    const maxRow = params.api.getModel().getRowCount() - 1;
+    const maxCol = params.columnApi.getAllDisplayedColumns().length - 1;
+
     switch (key) {
       case 'Enter':
+        if (
+          currentRow !== undefined &&
+          currentRow < maxRow &&
+          currentCol !== undefined
+        ) {
+          params.api.setFocusedCell(currentRow + 1, currentCol);
+        }
+        break;
       case 'ArrowDown':
-        params.api.tabToNextCell();
+        if (
+          currentRow !== undefined &&
+          currentRow < maxRow &&
+          currentCol !== undefined
+        ) {
+          params.api.setFocusedCell(currentRow + 1, currentCol);
+        }
+        break;
+      case 'ArrowUp':
+        if (
+          currentRow !== undefined &&
+          currentRow > 0 &&
+          currentCol !== undefined
+        ) {
+          params.api.setFocusedCell(currentRow - 1, currentCol);
+        }
         break;
       case 'Tab':
+        if (
+          currentRow !== undefined &&
+          currentRow < maxRow &&
+          currentCol !== undefined
+        ) {
+          params.api.setFocusedCell(currentRow, currentCol);
+        }
+        break;
       case 'ArrowRight':
         params.api.tabToNextCell();
         break;
