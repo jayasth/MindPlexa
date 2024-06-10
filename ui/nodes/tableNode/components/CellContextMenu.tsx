@@ -4,7 +4,18 @@ import 'react-contexify/ReactContexify.css';
 import styles from '@/ui/nodes/tableNode/styles/CellContextMenu.module.css';
 import Portal from '@/ui/nodes/tableNode/Portal';
 
-const CellContextMenu = ({
+interface CellContextMenuProps {
+  id: string;
+  position: { x: number; y: number };
+  params: any;
+  onClose: () => void;
+  setContent: React.Dispatch<React.SetStateAction<any>>;
+  content: any;
+  gridRef: React.MutableRefObject<any>;
+}
+
+const CellContextMenu: React.FC<CellContextMenuProps> = ({
+  id,
   position,
   params,
   onClose,
@@ -39,9 +50,9 @@ const CellContextMenu = ({
   return (
     <Portal>
       <Menu
-        id="cell-context-menu"
-        style={{ top: position.y, left: position.x }}
+        id={id}
         className={styles.contextMenu}
+        style={{ top: position.y, left: position.x }}
       >
         <Item onClick={handleCopy}>Copy</Item>
         <Item onClick={handlePaste}>Paste</Item>
