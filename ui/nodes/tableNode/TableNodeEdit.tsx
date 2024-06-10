@@ -358,15 +358,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
                 }
               }}
               onCellKeyDown={onCellKeyDown}
-              getContextMenuItems={(params) =>
-                getContextMenuItems(
-                  params,
-                  content,
-                  setContent,
-                  updateNode,
-                  gridRef
-                )
-              }
               onCellContextMenu={(params) =>
                 handleCellContextMenu(
                   params.event,

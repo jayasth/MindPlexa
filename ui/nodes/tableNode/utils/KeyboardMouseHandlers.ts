@@ -176,6 +176,9 @@ export const handleCellContextMenu = (
   setIsContextMenuOpen
 ) => {
   event.preventDefault(); // Prevent the default context menu
+  console.log('KeyboardMouseHandlers handleCellContextMenu called');
+  console.log('KeyboardMouseHandlers Event:', event);
+  console.log('KeyboardMouseHandlers Params:', params);
   setContextMenuPosition({
     x: event.clientX,
     y: event.clientY
