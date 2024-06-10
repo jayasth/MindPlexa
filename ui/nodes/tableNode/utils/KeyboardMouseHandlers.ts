@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { addRow, addColumn } from '@/ui/nodes/tableNode/utils/TableFunctions';
 
 export const useKeyPressHandler = (
@@ -163,55 +163,24 @@ export const onCellKeyDown = (params) => {
   }
 };
 
-export const handleCellClick = (event) => {
-  console.log('Cell clicked', event);
-  // Add any additional logic for single cell click
-};
-
-export const handleCellDoubleClick = (event) => {
-  console.log('Cell double-clicked', event);
-  // Add any additional logic for double cell click
-};
-
-export const handleCellContextMenu = (
-  event,
-  params,
-  setContextMenuPosition,
-  setContextMenuParams,
-  setIsContextMenuOpen
-) => {
-  event.preventDefault();
-  console.log('KeyboardMouseHandlers: Cell context menu triggered');
-  setContextMenuPosition({
-    x: event.clientX,
-    y: event.clientY
-  });
-  setContextMenuParams(params);
-  setIsContextMenuOpen(true);
-};
-
-export const handleMouseDown = (event, gridRef, setSelectionRange) => {
-  const api = gridRef?.current?.api;
-  if (api) {
-    const cell = api.getFocusedCell();
-    if (cell) {
-      setSelectionRange({ start: cell, end: cell });
-    }
+export const handleMouseDown = (params, gridRef, setSelectionRange) => {
+  const cell = params.api.getFocusedCell();
+  if (cell) {
+    setSelectionRange({ start: cell, end: cell });
   }
 };
 
 export const handleMouseMove = (
-  event,
+  params,
   gridRef,
   selectionRange,
   setSelectionRange
 ) => {
-  const api = gridRef?.current?.api;
-  if (api && selectionRange.start) {
-    const cell = api.getFocusedCell();
+  if (selectionRange.start) {
+    const cell = params.api.getFocusedCell();
     if (cell) {
       setSelectionRange({ ...selectionRange, end: cell });
-      api.addCellRange({
+      params.api.addCellRange({
         rowStartIndex: selectionRange.start.rowIndex,
         rowEndIndex: cell.rowIndex,
         columnStart: selectionRange.start.column,
@@ -222,7 +191,7 @@ export const handleMouseMove = (
 };
 
 export const handleMouseUp = (
-  event,
+  params,
   gridRef,
   selectionRange,
   setSelectionRange

@@ -262,24 +262,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
         onClick={() => setIsContainerSelected(true)}
         onBlur={() => setIsContainerSelected(false)}
         ref={tableRef}
-        onMouseDown={(e) =>
-          handleMouseDown(e, gridRef.current, setSelectionRange)
-        }
-        onMouseUp={(e) =>
-          handleMouseUp(e, gridRef.current, selectionRange, setSelectionRange)
-        }
-        onMouseMove={(e) =>
-          handleMouseMove(e, gridRef.current, selectionRange, setSelectionRange)
-        }
-        onDoubleClick={(e) =>
-          handleAddRowOrColumn(
-            e,
-            gridRef.current,
-            content,
-            setContent,
-            updateNode
-          )
-        }
       >
         <NodeResizer
           isVisible={isContainerSelected}
@@ -381,6 +363,20 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
                 }
               }}
               onCellKeyDown={onCellKeyDown}
+              onCellClicked={(event) =>
+                handleMouseDown(event, gridRef, setSelectionRange)
+              }
+              onCellMouseOver={(event) =>
+                handleMouseMove(
+                  event,
+                  gridRef,
+                  selectionRange,
+                  setSelectionRange
+                )
+              }
+              onCellMouseOut={(event) =>
+                handleMouseUp(event, gridRef, selectionRange, setSelectionRange)
+              }
               getContextMenuItems={(params) =>
                 getContextMenuItems(
                   params,
