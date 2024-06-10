@@ -68,12 +68,10 @@ import { TableNodeData } from '@/ui/canvasEditor/utils/nodeDatatypes';
 import {
   useKeyPressHandler,
   handleKeyDown,
-  onCellKeyDown,
-  handleCellContextMenu
+  onCellKeyDown
 } from '@/ui/nodes/tableNode/utils/KeyboardMouseHandlers';
 import CustomHeader from '@/ui/nodes/tableNode/components/CustomHeader';
 import HeaderContextMenu from '@/ui/nodes/tableNode/components/HeaderContextMenu';
-import CellContextMenu from '@/ui/nodes/tableNode/components/CellContextMenu';
 
 import TagFileContainer from '@/ui/nodes/common/TagFileContainer';
 
@@ -123,12 +121,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [locale, setLocale] = useState('en-US'); // Default locale
   const [errorMessage, setErrorMessage] = useState('');
-  const [contextMenuPosition, setContextMenuPosition] = useState({
-    x: 0,
-    y: 0
-  });
-  const [isContextMenuOpen, setIsContextMenuOpen] = useState(false);
-  const [contextMenuParams, setContextMenuParams] = useState(null);
 
   const updateNode = useStore((state) => state.updateNode);
   const tableRef = useRef<HTMLDivElement>(null);
@@ -359,15 +351,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
                 }
               }}
               onCellKeyDown={onCellKeyDown}
-              onCellContextMenu={(params) =>
-                handleCellContextMenu(
-                  params.event,
-                  params,
-                  setContextMenuPosition,
-                  setContextMenuParams,
-                  setIsContextMenuOpen
-                )
-              }
             />
           </div>
         </div>
@@ -559,17 +542,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
             }}
           />
         ))}
-        {isContextMenuOpen && contextMenuParams && (
-          <CellContextMenu
-            id="cell-context-menu"
-            position={contextMenuPosition}
-            params={contextMenuParams}
-            onClose={() => setIsContextMenuOpen(false)}
-            setContent={setContent}
-            content={content}
-            gridRef={gridRef}
-          />
-        )}
       </div>
     </div>
   );

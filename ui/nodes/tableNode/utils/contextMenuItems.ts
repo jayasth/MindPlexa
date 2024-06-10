@@ -1,6 +1,4 @@
-import { Papa } from 'papaparse';
 import { DateEditor } from '@/ui/nodes/tableNode/utils/CustomCellEditors';
-import { addColumn } from '@/ui/nodes/tableNode/utils/TableFunctions';
 import CustomHeader from '@/ui/nodes/tableNode/components/CustomHeader';
 
 const changeColumnType = (params, content, setContent, newType, gridRef) => {
