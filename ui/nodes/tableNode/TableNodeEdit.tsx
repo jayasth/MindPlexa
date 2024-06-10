@@ -363,7 +363,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
                 }
               }}
               onCellKeyDown={onCellKeyDown}
-              onCellClicked={(event) =>
+              onCellMouseDown={(event) =>
                 handleMouseDown(event, gridRef, setSelectionRange)
               }
               onCellMouseOver={(event) =>

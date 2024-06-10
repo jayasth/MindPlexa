@@ -164,6 +164,7 @@ export const onCellKeyDown = (params) => {
 };
 
 export const handleMouseDown = (params, gridRef, setSelectionRange) => {
+  console.log('MouseDown event triggered', params);
   const cell = params.api.getFocusedCell();
   if (cell) {
     setSelectionRange({ start: cell, end: cell });

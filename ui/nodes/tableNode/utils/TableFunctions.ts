@@ -137,9 +137,9 @@ export const gridOptions: GridOptions = {
       cellEditor: 'agTextCellEditor'
     }
     // Add more column types as needed
-  }
+  },
+  enableRangeSelection: true
 };
-
 export const getColumnDefs = (
   content,
   setContent,
