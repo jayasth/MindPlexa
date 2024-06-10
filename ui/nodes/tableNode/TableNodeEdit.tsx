@@ -43,8 +43,6 @@ import {
   importTableData,
   exportTableData,
   onCellValueChanged,
-  handleKeyDown,
-  onCellKeyDown,
   validateCellValue,
   getColumnDefs,
   handleInvalidInput
@@ -67,7 +65,11 @@ import { useBackgroundColorChange } from '@/ui/nodes/common/useBackgroundColorCh
 import { TableNodeData } from '@/ui/canvasEditor/utils/nodeDatatypes';
 
 import { getContextMenuItems } from '@/ui/nodes/tableNode/utils/contextMenuItems';
-import { useKeyPressHandler } from '@/ui/nodes/tableNode/utils/useKeyPressHandler';
+import {
+  useKeyPressHandler,
+  handleKeyDown,
+  onCellKeyDown
+} from '@/ui/nodes/tableNode/utils/KeyboardMouseHandlers';
 import CustomHeader from '@/ui/nodes/tableNode/components/CustomHeader';
 import HeaderContextMenu from '@/ui/nodes/tableNode/components/HeaderContextMenu';
 

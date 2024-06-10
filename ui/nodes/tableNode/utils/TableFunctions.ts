@@ -5,6 +5,8 @@ import CustomHeader from '@/ui/nodes/tableNode/components/CustomHeader';
 import { DateEditor } from '@/ui/nodes/tableNode/utils/CustomCellEditors';
 import { GridApi } from 'ag-grid-community';
 
+/* Cell Operations */
+
 export const validateCellValue = (value: any, type: string): boolean => {
   switch (type) {
     case 'text':
@@ -96,6 +98,20 @@ export const onCellValueChanged = (event, setContent) => {
     });
   }
 };
+
+export const handleInvalidInput = (
+  message: string,
+  params: any,
+  gridRef: React.RefObject<any>
+) => {
+  toast({
+    title: 'Invalid Input',
+    description: message,
+    variant: 'warning'
+  });
+};
+
+/* Column Operations */
 
 export const getColumnDefs = (content, setContent, updateNode, gridRef) => {
   return content.columns.map((col) => {
@@ -233,18 +249,6 @@ export const getColumnDefs = (content, setContent, updateNode, gridRef) => {
   });
 };
 
-export const handleInvalidInput = (
-  message: string,
-  params: any,
-  gridRef: React.RefObject<any>
-) => {
-  toast({
-    title: 'Invalid Input',
-    description: message,
-    variant: 'warning'
-  });
-};
-
 export const addColumn = (
   content: any,
   setContent: (content: any) => void,
@@ -261,7 +265,6 @@ export const addColumn = (
     locale // Store locale in column definition
   };
 
-  // Check if there are no rows and add one if necessary
   let newRows = content.rows;
   if (newRows.length === 0) {
     const newRow = { [newColumn.field]: '' };
@@ -295,6 +298,8 @@ export const addRow = (
   });
   api.refreshCells && api.refreshCells({ force: true });
 };
+
+/* File Operations */
 
 export const importTableData = (
   event: React.ChangeEvent<HTMLInputElement>,
@@ -330,145 +335,4 @@ export const exportTableData = (content: any) => {
   linkElement.setAttribute('href', dataUri);
   linkElement.setAttribute('download', exportFileDefaultName);
   linkElement.click();
-};
-
-export const handleKeyDown = (event, gridRef) => {
-  const api = gridRef.current?.api;
-  if (api) {
-    if (
-      [
-        'ArrowUp',
-        'ArrowDown',
-        'ArrowLeft',
-        'ArrowRight',
-        'Enter',
-        'Tab'
-      ].includes(event.key)
-    ) {
-      api.stopEditing(); // Commit editing before moving
-    }
-    switch (event.key) {
-      case 'ArrowUp':
-        api.tabToPreviousCell();
-        break;
-      case 'ArrowDown':
-      case 'Enter':
-        api.tabToNextCell();
-        break;
-      case 'ArrowLeft':
-        api.tabToPreviousCell();
-        break;
-      case 'ArrowRight':
-      case 'Tab':
-        api.tabToNextCell();
-        break;
-      case 'Escape':
-        api.stopEditing();
-        break;
-      default:
-        break;
-    }
-  }
-};
-
-export const onCellKeyDown = (params) => {
-  const key = params.event.key;
-  if (
-    key === 'Enter' ||
-    key === 'Tab' ||
-    key === 'ArrowRight' ||
-    key === 'ArrowLeft' ||
-    key === 'ArrowUp' ||
-    key === 'ArrowDown'
-  ) {
-    params.api.stopEditing();
-    switch (key) {
-      case 'Enter':
-      case 'ArrowDown':
-        params.api.tabToNextCell();
-        break;
-      case 'Tab':
-      case 'ArrowRight':
-        params.api.tabToNextCell();
-        break;
-      case 'ArrowLeft':
-      case 'ArrowUp':
-        params.api.tabToPreviousCell();
-        break;
-    }
-    params.event.preventDefault();
-  }
-};
-
-// Function to handle cell click
-export const handleCellClick = (event) => {
-  console.log('Cell clicked', event);
-  // Add any additional logic for single cell click
-};
-
-// Function to handle cell double click
-export const handleCellDoubleClick = (event) => {
-  console.log('Cell double-clicked', event);
-  // Add any additional logic for double cell click
-};
-
-// Function to handle selection change
-export const handleSelectionChange = (gridApi: GridApi) => {
-  const selectedNodes = gridApi.getSelectedNodes();
-  const selectedData = selectedNodes.map((node) => node.data);
-  console.log('Selected Data:', selectedData);
-};
-
-// Function to handle right-click context menu
-export const getContextMenuItems = (params) => {
-  return [
-    'copy',
-    'cut',
-    'paste',
-    'separator',
-    {
-      name: 'Insert Row Above',
-      action: () => {
-        // Logic to insert row above
-      }
-    },
-    {
-      name: 'Insert Row Below',
-      action: () => {
-        // Logic to insert row below
-      }
-    },
-    {
-      name: 'Delete Row',
-      action: () => {
-        // Logic to delete row
-      }
-    },
-    'separator',
-    {
-      name: 'Sort Ascending',
-      action: () => {
-        params.columnApi.applyColumnState({
-          state: [{ colId: params.column.getId(), sort: 'asc' }],
-          applyOrder: true
-        });
-      }
-    },
-    {
-      name: 'Sort Descending',
-      action: () => {
-        params.columnApi.applyColumnState({
-          state: [{ colId: params.column.getId(), sort: 'desc' }],
-          applyOrder: true
-        });
-      }
-    },
-    'separator',
-    {
-      name: 'Filter',
-      action: () => {
-        // Logic to filter column
-      }
-    }
-  ];
 };
