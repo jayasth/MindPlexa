@@ -3,7 +3,7 @@ import { CSSProperties } from 'react';
 import { toast } from '@/ui/Toasts/use-toast';
 import CustomHeader from '@/ui/nodes/tableNode/components/CustomHeader';
 import { DateEditor } from '@/ui/nodes/tableNode/utils/CustomCellEditors';
-import { GridApi } from 'ag-grid-community';
+import { GridOptions, ColDef } from 'ag-grid-community';
 
 /* Cell Operations */
 
@@ -113,122 +113,60 @@ export const handleInvalidInput = (
 
 /* Column Operations */
 
-export const getColumnDefs = (content, setContent, updateNode, gridRef) => {
-  return content.columns.map((col) => {
-    let cellEditor: any = 'agTextCellEditor';
-    let valueFormatter: ((params: any) => string) | null = null;
-    let filterParams: any = null;
+const gridOptions: GridOptions = {
+  columnTypes: {
+    text: {
+      // Define properties for text columns here
+    },
+    number: {
+      // Define properties for number columns here
+    },
+    date: {
+      // Define properties for date columns here
+    },
+    currency: {
+      // Define properties for currency columns here
+    }
+    // Add more column types as needed
+  }
+};
 
+export const getColumnDefs = (
+  content,
+  setContent,
+  updateNode,
+  gridRef
+): ColDef[] => {
+  return content.columns.map((col) => {
+    let columnType: string;
     switch (col.type) {
       case 'date':
-        cellEditor = DateEditor;
-        filterParams = {
-          filterOptions: [
-            'equals',
-            'notEqual',
-            'lessThan',
-            'greaterThan',
-            'inRange'
-          ],
-          comparator: (filterLocalDateAtMidnight, cellValue) => {
-            const dateAsString = cellValue;
-            if (dateAsString == null) return -1;
-            const dateParts = dateAsString.split('-');
-            const cellDate = new Date(
-              Number(dateParts[0]),
-              Number(dateParts[1]) - 1,
-              Number(dateParts[2])
-            );
-            if (filterLocalDateAtMidnight.getTime() === cellDate.getTime()) {
-              return 0;
-            }
-            if (cellDate < filterLocalDateAtMidnight) {
-              return -1;
-            }
-            if (cellDate > filterLocalDateAtMidnight) {
-              return 1;
-            }
-          }
-        };
+        columnType = 'date';
         break;
       case 'number':
-        cellEditor = 'agTextCellEditor';
-        filterParams = {
-          filterOptions: [
-            'equals',
-            'notEqual',
-            'lessThan',
-            'greaterThan',
-            'inRange'
-          ]
-        };
+        columnType = 'number';
         break;
       case 'currency':
-        cellEditor = 'agTextCellEditor';
-        valueFormatter = (params) => (params.value ? `$${params.value}` : '');
-        filterParams = {
-          filterOptions: [
-            'equals',
-            'notEqual',
-            'lessThan',
-            'greaterThan',
-            'inRange'
-          ],
-          comparator: (filterValue, cellValue) => {
-            const filterValueNum = parseFloat(
-              filterValue.replace(/[^0-9.-]+/g, '')
-            );
-            const cellValueNum = parseFloat(
-              cellValue.replace(/[^0-9.-]+/g, '')
-            );
-            if (filterValueNum === cellValueNum) {
-              return 0;
-            }
-            if (cellValueNum < filterValueNum) {
-              return -1;
-            }
-            if (cellValueNum > filterValueNum) {
-              return 1;
-            }
-          }
-        };
+        columnType = 'currency';
         break;
       case 'email':
-        cellEditor = 'agTextCellEditor';
-        filterParams = {
-          filterOptions: [
-            'contains',
-            'notContains',
-            'equals',
-            'notEqual',
-            'startsWith',
-            'endsWith'
-          ]
-        };
+        columnType = 'text';
         break;
       default:
-        cellEditor = 'agTextCellEditor';
-        filterParams = {
-          filterOptions: [
-            'contains',
-            'notContains',
-            'equals',
-            'notEqual',
-            'startsWith',
-            'endsWith'
-          ]
-        };
+        columnType = 'text';
     }
 
     return {
       ...col,
+      columnType, // Use columnType instead of type
       headerName: col.headerName,
-      type: col.type,
+      field: col.field,
+      editable: true,
       sortable: true,
       filter: true,
-      filterParams,
-      cellEditor,
-      valueFormatter,
+      filterParams: getFilterParams(col.type),
+      cellEditor: getCellEditor(col.type),
+      valueFormatter: getValueFormatter(col.type),
       headerComponent: CustomHeader,
       headerComponentParams: {
         menuIcon: 'fa-bars',
@@ -248,6 +186,116 @@ export const getColumnDefs = (content, setContent, updateNode, gridRef) => {
     };
   });
 };
+
+function getFilterParams(type: string) {
+  // Define filter parameters based on column type
+  switch (type) {
+    case 'date':
+      return {
+        filterOptions: [
+          'equals',
+          'notEqual',
+          'lessThan',
+          'greaterThan',
+          'inRange'
+        ],
+        comparator: (filterLocalDateAtMidnight, cellValue) => {
+          const dateAsString = cellValue;
+          if (dateAsString == null) return -1;
+          const dateParts = dateAsString.split('-');
+          const cellDate = new Date(
+            Number(dateParts[0]),
+            Number(dateParts[1]) - 1,
+            Number(dateParts[2])
+          );
+          if (filterLocalDateAtMidnight.getTime() === cellDate.getTime()) {
+            return 0;
+          }
+          if (cellDate < filterLocalDateAtMidnight) {
+            return -1;
+          }
+          if (cellDate > filterLocalDateAtMidnight) {
+            return 1;
+          }
+        }
+      };
+    case 'number':
+      return {
+        filterOptions: [
+          'equals',
+          'notEqual',
+          'lessThan',
+          'greaterThan',
+          'inRange'
+        ]
+      };
+    case 'currency':
+      return {
+        filterOptions: [
+          'equals',
+          'notEqual',
+          'lessThan',
+          'greaterThan',
+          'inRange'
+        ],
+        comparator: (filterValue, cellValue) => {
+          const filterValueNum = parseFloat(
+            filterValue.replace(/[^0-9.-]+/g, '')
+          );
+          const cellValueNum = parseFloat(cellValue.replace(/[^0-9.-]+/g, ''));
+          if (filterValueNum === cellValueNum) {
+            return 0;
+          }
+          if (cellValueNum < filterValueNum) {
+            return -1;
+          }
+          if (cellValueNum > filterValueNum) {
+            return 1;
+          }
+        }
+      };
+    case 'email':
+      return {
+        filterOptions: [
+          'contains',
+          'notContains',
+          'equals',
+          'notEqual',
+          'startsWith',
+          'endsWith'
+        ]
+      };
+    default:
+      return {
+        filterOptions: [
+          'contains',
+          'notContains',
+          'equals',
+          'notEqual',
+          'startsWith',
+          'endsWith'
+        ]
+      };
+  }
+}
+
+function getCellEditor(type: string) {
+  switch (type) {
+    case 'date':
+      return DateEditor;
+    default:
+      return 'agTextCellEditor';
+  }
+}
+
+function getValueFormatter(type: string) {
+  switch (type) {
+    case 'currency':
+      return (params) => (params.value ? `$${params.value}` : '');
+    default:
+      return null;
+  }
+}
 
 export const addColumn = (
   content: any,
