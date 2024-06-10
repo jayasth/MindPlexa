@@ -181,6 +181,7 @@ export const handleMouseDown = (params, gridRef, setSelectionRange) => {
         }
       });
   }
+  params.api.setFocusedCell(params.node.rowIndex, params.column.getId());
 };
 
 export const handleMouseMove = (

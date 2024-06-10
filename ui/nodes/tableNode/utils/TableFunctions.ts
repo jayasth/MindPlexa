@@ -177,7 +177,14 @@ export const getColumnDefs = (
           outline: '2px solid #7c3aed',
           outlineOffset: '-1px'
         };
-        return isValid ? {} : { ...invalidCellStyle, ...focusStyle };
+        const isFocused =
+          params.api.getFocusedCell()?.rowIndex === params.rowIndex &&
+          params.api.getFocusedCell()?.column.getId() === params.column.getId();
+        return isValid
+          ? isFocused
+            ? focusStyle
+            : {}
+          : { ...invalidCellStyle, ...(isFocused ? focusStyle : {}) };
       }
     };
   });
