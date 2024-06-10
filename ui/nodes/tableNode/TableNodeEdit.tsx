@@ -45,7 +45,8 @@ import {
   onCellValueChanged,
   validateCellValue,
   getColumnDefs,
-  handleInvalidInput
+  handleInvalidInput,
+  gridOptions // Import gridOptions
 } from '@/ui/nodes/tableNode/utils/TableFunctions';
 
 import {
@@ -325,6 +326,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
             aria-label="Data Table"
           >
             <AgGridReact
+              gridOptions={gridOptions} // Pass the gridOptions here
               columnDefs={columnDefs as any}
               rowData={content.rows}
               domLayout="autoHeight"

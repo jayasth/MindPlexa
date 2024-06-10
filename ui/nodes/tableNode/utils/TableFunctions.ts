@@ -113,19 +113,28 @@ export const handleInvalidInput = (
 
 /* Column Operations */
 
-const gridOptions: GridOptions = {
+export const gridOptions: GridOptions = {
   columnTypes: {
     text: {
-      // Define properties for text columns here
+      filter: 'agTextColumnFilter',
+      cellEditor: 'agTextCellEditor'
     },
     number: {
-      // Define properties for number columns here
+      filter: 'agNumberColumnFilter',
+      cellEditor: 'agNumberCellEditor'
     },
     date: {
-      // Define properties for date columns here
+      filter: 'agDateColumnFilter',
+      cellEditor: 'agDateCellEditor'
     },
     currency: {
-      // Define properties for currency columns here
+      filter: 'agNumberColumnFilter',
+      cellEditor: 'agTextCellEditor',
+      valueFormatter: (params) => (params.value ? `$${params.value}` : '')
+    },
+    email: {
+      filter: 'agTextColumnFilter',
+      cellEditor: 'agTextCellEditor'
     }
     // Add more column types as needed
   }
@@ -138,27 +147,9 @@ export const getColumnDefs = (
   gridRef
 ): ColDef[] => {
   return content.columns.map((col) => {
-    let columnType: string;
-    switch (col.type) {
-      case 'date':
-        columnType = 'date';
-        break;
-      case 'number':
-        columnType = 'number';
-        break;
-      case 'currency':
-        columnType = 'currency';
-        break;
-      case 'email':
-        columnType = 'text';
-        break;
-      default:
-        columnType = 'text';
-    }
-
     return {
       ...col,
-      columnType, // Use columnType instead of type
+      type: col.type, // Ensure this matches the types defined in gridOptions
       headerName: col.headerName,
       field: col.field,
       editable: true,
