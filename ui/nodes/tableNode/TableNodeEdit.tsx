@@ -64,7 +64,6 @@ import { useBackgroundColorChange } from '@/ui/nodes/common/useBackgroundColorCh
 
 import { TableNodeData } from '@/ui/canvasEditor/utils/nodeDatatypes';
 
-import { getContextMenuItems } from '@/ui/nodes/tableNode/utils/contextMenuItems';
 import {
   useKeyPressHandler,
   handleKeyDown,

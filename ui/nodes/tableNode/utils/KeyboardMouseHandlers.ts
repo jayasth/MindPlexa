@@ -114,60 +114,6 @@ export const handleCellDoubleClick = (event) => {
   // Add any additional logic for double cell click
 };
 
-// Function to handle right-click context menu
-export const getContextMenuItems = (params) => {
-  return [
-    'copy',
-    'cut',
-    'paste',
-    'separator',
-    {
-      name: 'Insert Row Above',
-      action: () => {
-        // Logic to insert row above
-      }
-    },
-    {
-      name: 'Insert Row Below',
-      action: () => {
-        // Logic to insert row below
-      }
-    },
-    {
-      name: 'Delete Row',
-      action: () => {
-        // Logic to delete row
-      }
-    },
-    'separator',
-    {
-      name: 'Sort Ascending',
-      action: () => {
-        params.columnApi.applyColumnState({
-          state: [{ colId: params.column.getId(), sort: 'asc' }],
-          applyOrder: true
-        });
-      }
-    },
-    {
-      name: 'Sort Descending',
-      action: () => {
-        params.columnApi.applyColumnState({
-          state: [{ colId: params.column.getId(), sort: 'desc' }],
-          applyOrder: true
-        });
-      }
-    },
-    'separator',
-    {
-      name: 'Filter',
-      action: () => {
-        // Logic to filter column
-      }
-    }
-  ];
-};
-
 export const handleCellContextMenu = (
   event,
   params,
