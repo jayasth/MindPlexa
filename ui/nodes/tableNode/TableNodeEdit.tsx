@@ -74,7 +74,11 @@ import TagFileContainer from '@/ui/nodes/common/TagFileContainer';
 import {
   useKeyPressHandler,
   handleKeyDown,
-  onCellKeyDown
+  onCellKeyDown,
+  handleMouseDown,
+  handleMouseUp,
+  handleMouseMove,
+  handleAddRowOrColumn
 } from '@/ui/nodes/tableNode/utils/KeyboardMouseHandlers';
 
 interface TableNodeEditProps extends NodeProps {
@@ -242,6 +246,11 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
 
   useKeyPressHandler(content, setContent, updateNode, gridRef);
 
+  const [selectionRange, setSelectionRange] = useState({
+    start: null,
+    end: null
+  });
+
   return (
     <div>
       {errorMessage && (
@@ -253,6 +262,15 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
         onClick={() => setIsContainerSelected(true)}
         onBlur={() => setIsContainerSelected(false)}
         ref={tableRef}
+        onMouseDown={(e) =>
+          handleMouseDown(e, gridRef.current, setSelectionRange)
+        }
+        onMouseUp={(e) =>
+          handleMouseUp(e, gridRef.current, selectionRange, setSelectionRange)
+        }
+        onMouseMove={(e) =>
+          handleMouseMove(e, gridRef.current, selectionRange, setSelectionRange)
+        }
       >
         <NodeResizer
           isVisible={isContainerSelected}

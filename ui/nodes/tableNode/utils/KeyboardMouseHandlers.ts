@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { addRow, addColumn } from '@/ui/nodes/tableNode/utils/TableFunctions';
 
 export const useKeyPressHandler = (
@@ -168,4 +168,44 @@ export const handleCellContextMenu = (
   });
   setContextMenuParams(params);
   setIsContextMenuOpen(true);
+};
+
+// New functions for selecting cells/rows/columns and adding rows/columns on click and drag
+export const handleMouseDown = (event, params, setSelectionRange) => {
+  const startCell = params.api.getFocusedCell();
+  setSelectionRange({ start: startCell, end: startCell });
+};
+
+export const handleMouseMove = (
+  event,
+  params,
+  selectionRange,
+  setSelectionRange
+) => {
+  if (selectionRange.start) {
+    const endCell = params.api.getFocusedCell();
+    setSelectionRange({ ...selectionRange, end: endCell });
+  }
+};
+
+export const handleMouseUp = (
+  event,
+  params,
+  selectionRange,
+  setSelectionRange
+) => {
+  if (selectionRange.start && selectionRange.end) {
+    // Handle selection logic here
+    console.log('Selection range:', selectionRange);
+  }
+  setSelectionRange({ start: null, end: null });
+};
+
+export const handleAddRowOrColumn = (event, params, setContent, content) => {
+  const { rowIndex, colDef } = params;
+  if (event.target.classList.contains('add-row')) {
+    addRow(content, setContent, params.api);
+  } else if (event.target.classList.contains('add-column')) {
+    addColumn(content, setContent, params.api, colDef.type);
+  }
 };
