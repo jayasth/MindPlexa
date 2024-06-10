@@ -68,7 +68,8 @@ import { getContextMenuItems } from '@/ui/nodes/tableNode/utils/contextMenuItems
 import {
   useKeyPressHandler,
   handleKeyDown,
-  onCellKeyDown
+  onCellKeyDown,
+  handleCellContextMenu
 } from '@/ui/nodes/tableNode/utils/KeyboardMouseHandlers';
 import CustomHeader from '@/ui/nodes/tableNode/components/CustomHeader';
 import HeaderContextMenu from '@/ui/nodes/tableNode/components/HeaderContextMenu';
@@ -246,15 +247,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
 
   useKeyPressHandler(content, setContent, updateNode, gridRef);
 
-  const handleCellContextMenu = (params) => {
-    setContextMenuPosition({
-      x: params.event.clientX,
-      y: params.event.clientY
-    });
-    setContextMenuParams(params);
-    setIsContextMenuOpen(true);
-  };
-
   return (
     <div>
       {errorMessage && (
@@ -375,7 +367,15 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
                   gridRef
                 )
               }
-              onCellContextMenu={handleCellContextMenu}
+              onCellContextMenu={(params) =>
+                handleCellContextMenu(
+                  params.event,
+                  params,
+                  setContextMenuPosition,
+                  setContextMenuParams,
+                  setIsContextMenuOpen
+                )
+              }
             />
           </div>
         </div>

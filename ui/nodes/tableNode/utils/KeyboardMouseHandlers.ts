@@ -167,3 +167,19 @@ export const getContextMenuItems = (params) => {
     }
   ];
 };
+
+export const handleCellContextMenu = (
+  event,
+  params,
+  setContextMenuPosition,
+  setContextMenuParams,
+  setIsContextMenuOpen
+) => {
+  event.preventDefault(); // Prevent the default context menu
+  setContextMenuPosition({
+    x: event.clientX,
+    y: event.clientY
+  });
+  setContextMenuParams(params);
+  setIsContextMenuOpen(true);
+};
