@@ -150,7 +150,7 @@ export const getColumnDefs = (
   return content.columns.map((col) => {
     return {
       ...col,
-      type: col.type, // Ensure this matches the types defined in gridOptions
+      type: col.type,
       headerName: col.headerName,
       field: col.field,
       editable: true,
@@ -173,7 +173,11 @@ export const getColumnDefs = (
           border: '1px solid #f5c6cb',
           color: '#721c24'
         };
-        return isValid ? {} : invalidCellStyle;
+        const focusStyle: CSSProperties = {
+          outline: '2px solid #7c3aed',
+          outlineOffset: '-1px'
+        };
+        return isValid ? {} : { ...invalidCellStyle, ...focusStyle };
       }
     };
   });

@@ -34,6 +34,7 @@ import {
 import AddTableModal from '@/ui/nodes/tableNode/components/AddTableModal';
 import DeleteTableModal from '@/ui/nodes/tableNode/components/DeleteTableModal';
 import SettingsModal from '@/ui/nodes/tableNode/components/SettingsModal';
+import { ICellRendererComp } from 'ag-grid-community';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 
@@ -362,10 +363,20 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
                   onCellValueChanged(event, setContent);
                 }
               }}
-              onCellKeyDown={onCellKeyDown}
               onCellMouseDown={(event) => {
                 console.log('Mouse Down Event:', event);
                 handleMouseDown(event, gridRef, setSelectionRange);
+                event.api
+                  .getCellRendererInstances({
+                    rowNodes: [event.node],
+                    columns: [event.column]
+                  })
+                  .forEach((renderer) => {
+                    const gui = (renderer as ICellRendererComp).getGui();
+                    if (gui) {
+                      gui.classList.add('selectCell');
+                    }
+                  });
               }}
               onCellMouseOver={(event) => {
                 console.log('Mouse Move Event:', event);
@@ -377,13 +388,18 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
                 );
               }}
               onCellMouseOut={(event) => {
-                console.log('Mouse Up Event:', event);
-                handleMouseUp(
-                  event,
-                  gridRef,
-                  selectionRange,
-                  setSelectionRange
-                );
+                console.log('Mouse Out Event:', event);
+                event.api
+                  .getCellRendererInstances({
+                    rowNodes: [event.node],
+                    columns: [event.column]
+                  })
+                  .forEach((renderer) => {
+                    const gui = (renderer as ICellRendererComp).getGui();
+                    if (gui) {
+                      gui.classList.remove('selectCell');
+                    }
+                  });
               }}
               getContextMenuItems={(params) =>
                 getContextMenuItems(

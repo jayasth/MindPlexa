@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { addRow, addColumn } from '@/ui/nodes/tableNode/utils/TableFunctions';
+import { ICellRendererComp } from 'ag-grid-community';
 
 export const useKeyPressHandler = (
   content,
@@ -168,6 +169,17 @@ export const handleMouseDown = (params, gridRef, setSelectionRange) => {
   const cell = params.api.getFocusedCell();
   if (cell) {
     setSelectionRange({ start: cell, end: cell });
+    params.api
+      .getCellRendererInstances({
+        rowNodes: [params.node],
+        columns: [params.column]
+      })
+      .forEach((renderer) => {
+        const gui = (renderer as ICellRendererComp).getGui();
+        if (gui) {
+          gui.classList.add('selectCell');
+        }
+      });
   }
 };
 
@@ -188,6 +200,17 @@ export const handleMouseMove = (
         columnStart: selectionRange.start.column,
         columnEnd: cell.column
       });
+      params.api
+        .getCellRendererInstances({
+          rowNodes: [params.node],
+          columns: [params.column]
+        })
+        .forEach((renderer) => {
+          const gui = (renderer as ICellRendererComp).getGui();
+          if (gui) {
+            gui.classList.add('selectCell');
+          }
+        });
     }
   }
 };
@@ -200,8 +223,18 @@ export const handleMouseUp = (
 ) => {
   console.log('MouseUp event triggered', params);
   setSelectionRange({ start: null, end: null });
+  params.api
+    .getCellRendererInstances({
+      rowNodes: [params.node],
+      columns: [params.column]
+    })
+    .forEach((renderer) => {
+      const gui = (renderer as ICellRendererComp).getGui();
+      if (gui) {
+        gui.classList.remove('selectCell');
+      }
+    });
 };
-
 export const handleAddRowOrColumn = (
   event,
   gridRef,

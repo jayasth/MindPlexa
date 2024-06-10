@@ -32,21 +32,7 @@
   border-collapse: collapse;
 }
 
-.tableContent .ag-header-cell,
-.tableContent .ag-cell {
-  border-right: 1px solid #ccc;
-}
-
-.tableContent .ag-row {
-  border-bottom: 1px solid #ccc;
-}
-
-.tableContent .ag-cell {
-  padding: 4px;
-}
-
-.tableContent .ag-cell:focus,
-.tableContent .ag-cell.ag-cell-inline-editing:focus {
+.selectedCell {
   outline: 1px solid #7c3aed;
   outline-offset: 2px;
   transition: outline 0.3s ease-in-out;
