@@ -363,20 +363,28 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
                 }
               }}
               onCellKeyDown={onCellKeyDown}
-              onCellMouseDown={(event) =>
-                handleMouseDown(event, gridRef, setSelectionRange)
-              }
-              onCellMouseOver={(event) =>
+              onCellMouseDown={(event) => {
+                console.log('Mouse Down Event:', event);
+                handleMouseDown(event, gridRef, setSelectionRange);
+              }}
+              onCellMouseOver={(event) => {
+                console.log('Mouse Move Event:', event);
                 handleMouseMove(
                   event,
                   gridRef,
                   selectionRange,
                   setSelectionRange
-                )
-              }
-              onCellMouseOut={(event) =>
-                handleMouseUp(event, gridRef, selectionRange, setSelectionRange)
-              }
+                );
+              }}
+              onCellMouseOut={(event) => {
+                console.log('Mouse Up Event:', event);
+                handleMouseUp(
+                  event,
+                  gridRef,
+                  selectionRange,
+                  setSelectionRange
+                );
+              }}
               getContextMenuItems={(params) =>
                 getContextMenuItems(
                   params,

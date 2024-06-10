@@ -177,6 +177,7 @@ export const handleMouseMove = (
   selectionRange,
   setSelectionRange
 ) => {
+  console.log('MouseMove event triggered', params);
   if (selectionRange.start) {
     const cell = params.api.getFocusedCell();
     if (cell) {
@@ -197,6 +198,7 @@ export const handleMouseUp = (
   selectionRange,
   setSelectionRange
 ) => {
+  console.log('MouseUp event triggered', params);
   setSelectionRange({ start: null, end: null });
 };
 
