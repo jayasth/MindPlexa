@@ -6,7 +6,7 @@ import React, {
   useCallback
 } from 'react';
 import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
-import { AgGridReact, AgGridReactProps } from 'ag-grid-react';
+import { AgGridReact } from 'ag-grid-react';
 import { useStore } from '@/app/store/useCanvasStore';
 import styles from '@/ui/nodes/tableNode/styles/TableNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
@@ -34,7 +34,6 @@ import {
 import AddTableModal from '@/ui/nodes/tableNode/components/AddTableModal';
 import DeleteTableModal from '@/ui/nodes/tableNode/components/DeleteTableModal';
 import SettingsModal from '@/ui/nodes/tableNode/components/SettingsModal';
-import { ICellRendererComp } from 'ag-grid-community';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 
@@ -81,10 +80,6 @@ import {
   handleMouseMove,
   handleAddRowOrColumn
 } from '@/ui/nodes/tableNode/utils/KeyboardMouseHandlers';
-
-interface CustomAgGridReactProps extends AgGridReactProps {
-  rowMultiSelectWithCtrlKey?: boolean;
-}
 
 interface TableNodeEditProps extends NodeProps {
   data: TableNodeData;
@@ -340,7 +335,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
               rowData={content.rows}
               domLayout="autoHeight"
               rowHeight={30}
-              rowMultiSelectWithClick={true}
               defaultColDef={{
                 resizable: true,
                 editable: true,
@@ -355,14 +349,40 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
                 params.api.addEventListener('keydown', (event) =>
                   handleKeyDown(event, gridRef, content, setContent, updateNode)
                 );
-                params.api.addEventListener('mousedown', (event) =>
-                  handleMouseDown(event, gridRef, content)
+              }}
+              onCellValueChanged={(event) => {
+                const { newValue, colDef } = event;
+                if (!validateCellValue(newValue, colDef.type as string)) {
+                  handleInvalidInput(
+                    `Invalid value for column type "${colDef.type}": ${newValue}`,
+                    event,
+                    gridRef
+                  );
+                } else {
+                  onCellValueChanged(event, setContent);
+                }
+              }}
+              onCellKeyDown={onCellKeyDown}
+              onCellMouseDown={(event) => {
+                console.log('Mouse Down Event:', event);
+                handleMouseDown(event, gridRef, setSelectionRange);
+              }}
+              onCellMouseOver={(event) => {
+                console.log('Mouse Move Event:', event);
+                handleMouseMove(
+                  event,
+                  gridRef,
+                  selectionRange,
+                  setSelectionRange
                 );
-                params.api.addEventListener('mouseup', (event) =>
-                  handleMouseUp(event, gridRef, content, setContent)
-                );
-                params.api.addEventListener('mousemove', (event) =>
-                  handleMouseMove(event, gridRef, content, setContent)
+              }}
+              onCellMouseOut={(event) => {
+                console.log('Mouse Up Event:', event);
+                handleMouseUp(
+                  event,
+                  gridRef,
+                  selectionRange,
+                  setSelectionRange
                 );
               }}
               getContextMenuItems={(params) =>
