@@ -163,25 +163,14 @@ export const onCellKeyDown = (params) => {
   }
 };
 
-export const handleMouseDown = (params, gridRef, setSelectionRange) => {
+export const handleMouseDown = (params, setSelectionRange) => {
   const cell = params.api.getFocusedCell();
   if (cell) {
     setSelectionRange({ start: cell, end: cell });
-    params.api.addCellRange({
-      rowStartIndex: cell.rowIndex,
-      rowEndIndex: cell.rowIndex,
-      columnStart: cell.column,
-      columnEnd: cell.column
-    });
   }
 };
 
-export const handleMouseMove = (
-  params,
-  gridRef,
-  selectionRange,
-  setSelectionRange
-) => {
+export const handleMouseMove = (params, selectionRange, setSelectionRange) => {
   if (selectionRange.start) {
     const cell = params.api.getFocusedCell();
     if (cell) {
