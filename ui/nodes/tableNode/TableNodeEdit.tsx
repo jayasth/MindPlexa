@@ -6,7 +6,7 @@ import React, {
   useCallback
 } from 'react';
 import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
-import { AgGridReact } from 'ag-grid-react';
+import { AgGridReact, AgGridReactProps } from 'ag-grid-react';
 import { useStore } from '@/app/store/useCanvasStore';
 import styles from '@/ui/nodes/tableNode/styles/TableNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
@@ -81,6 +81,10 @@ import {
   handleMouseMove,
   handleAddRowOrColumn
 } from '@/ui/nodes/tableNode/utils/KeyboardMouseHandlers';
+
+interface CustomAgGridReactProps extends AgGridReactProps {
+  rowMultiSelectWithCtrlKey?: boolean;
+}
 
 interface TableNodeEditProps extends NodeProps {
   data: TableNodeData;
@@ -336,6 +340,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
               rowData={content.rows}
               domLayout="autoHeight"
               rowHeight={30}
+              rowMultiSelectWithClick={true}
               defaultColDef={{
                 resizable: true,
                 editable: true,
@@ -350,56 +355,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
                 params.api.addEventListener('keydown', (event) =>
                   handleKeyDown(event, gridRef, content, setContent, updateNode)
                 );
-              }}
-              onCellValueChanged={(event) => {
-                const { newValue, colDef } = event;
-                if (!validateCellValue(newValue, colDef.type as string)) {
-                  handleInvalidInput(
-                    `Invalid value for column type "${colDef.type}": ${newValue}`,
-                    event,
-                    gridRef
-                  );
-                } else {
-                  onCellValueChanged(event, setContent);
-                }
-              }}
-              onCellMouseDown={(event) => {
-                console.log('Mouse Down Event:', event);
-                handleMouseDown(event, gridRef, setSelectionRange);
-                event.api
-                  .getCellRendererInstances({
-                    rowNodes: [event.node],
-                    columns: [event.column]
-                  })
-                  .forEach((renderer) => {
-                    const gui = (renderer as ICellRendererComp).getGui();
-                    if (gui) {
-                      gui.classList.add('selectCell');
-                    }
-                  });
-              }}
-              onCellMouseOver={(event) => {
-                console.log('Mouse Move Event:', event);
-                handleMouseMove(
-                  event,
-                  gridRef,
-                  selectionRange,
-                  setSelectionRange
-                );
-              }}
-              onCellMouseOut={(event) => {
-                console.log('Mouse Out Event:', event);
-                event.api
-                  .getCellRendererInstances({
-                    rowNodes: [event.node],
-                    columns: [event.column]
-                  })
-                  .forEach((renderer) => {
-                    const gui = (renderer as ICellRendererComp).getGui();
-                    if (gui) {
-                      gui.classList.remove('selectCell');
-                    }
-                  });
               }}
               getContextMenuItems={(params) =>
                 getContextMenuItems(

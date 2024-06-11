@@ -139,7 +139,9 @@ export const gridOptions: GridOptions = {
     // Add more column types as needed
   },
   enableRangeSelection: true,
-  enableCellTextSelection: true
+  enableCellTextSelection: true,
+  rowSelection: 'multiple',
+  rowMultiSelectWithClick: true
 };
 export const getColumnDefs = (
   content,
