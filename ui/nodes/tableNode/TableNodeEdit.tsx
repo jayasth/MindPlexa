@@ -74,12 +74,10 @@ import TagFileContainer from '@/ui/nodes/common/TagFileContainer';
 import {
   useKeyPressHandler,
   handleKeyDown,
-  onCellKeyDown,
-  handleMouseDown,
-  handleMouseUp,
-  handleMouseMove,
-  handleAddRowOrColumn
+  onCellKeyDown
 } from '@/ui/nodes/tableNode/utils/KeyboardMouseHandlers';
+
+import { RangeSelection } from '@/ui/nodes/tableNode/utils/RangeSelection';
 
 interface TableNodeEditProps extends NodeProps {
   data: TableNodeData;
@@ -131,6 +129,8 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   const updateNode = useStore((state) => state.updateNode);
   const tableRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<any>(null);
+
+  const rangeSelection = new RangeSelection();
 
   useEffect(() => {
     if (
@@ -246,11 +246,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
 
   useKeyPressHandler(content, setContent, updateNode, gridRef);
 
-  const [selectionRange, setSelectionRange] = useState({
-    start: null,
-    end: null
-  });
-
   return (
     <div>
       {errorMessage && (
@@ -363,15 +358,13 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
                 }
               }}
               onCellKeyDown={onCellKeyDown}
-              onCellMouseDown={(event) =>
-                handleMouseDown(event, setSelectionRange)
+              onCellMouseDown={(params) =>
+                rangeSelection.onCellMouseDown(params)
               }
-              onCellMouseOver={(event) =>
-                handleMouseMove(event, selectionRange, setSelectionRange)
+              onCellMouseOver={(params) =>
+                rangeSelection.onCellMouseOver(params)
               }
-              onCellMouseOut={() =>
-                handleMouseUp(null, gridRef, selectionRange, setSelectionRange)
-              }
+              onCellMouseOut={() => rangeSelection.onCellMouseUp()}
               getContextMenuItems={(params) =>
                 getContextMenuItems(
                   params,
