@@ -355,6 +355,15 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
                 params.api.addEventListener('keydown', (event) =>
                   handleKeyDown(event, gridRef, content, setContent, updateNode)
                 );
+                params.api.addEventListener('mousedown', (event) =>
+                  handleMouseDown(event, gridRef, content)
+                );
+                params.api.addEventListener('mouseup', (event) =>
+                  handleMouseUp(event, gridRef, content, setContent)
+                );
+                params.api.addEventListener('mousemove', (event) =>
+                  handleMouseMove(event, gridRef, content, setContent)
+                );
               }}
               getContextMenuItems={(params) =>
                 getContextMenuItems(

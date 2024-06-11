@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
 import { addRow, addColumn } from '@/ui/nodes/tableNode/utils/TableFunctions';
-import { ICellRendererComp } from 'ag-grid-community';
 
 export const useKeyPressHandler = (
   content,
