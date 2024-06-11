@@ -77,8 +77,6 @@ import {
   onCellKeyDown
 } from '@/ui/nodes/tableNode/utils/KeyboardMouseHandlers';
 
-import { RangeSelection } from '@/ui/nodes/tableNode/utils/RangeSelection';
-
 interface TableNodeEditProps extends NodeProps {
   data: TableNodeData;
   width: number;
@@ -129,8 +127,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   const updateNode = useStore((state) => state.updateNode);
   const tableRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<any>(null);
-
-  const rangeSelection = new RangeSelection();
 
   useEffect(() => {
     if (
@@ -358,22 +354,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
                 }
               }}
               onCellKeyDown={onCellKeyDown}
-              onCellMouseDown={(params) =>
-                rangeSelection.onCellMouseDown(params)
-              }
-              onCellMouseOver={(params) =>
-                rangeSelection.onCellMouseOver(params)
-              }
-              onCellMouseOut={() => rangeSelection.onCellMouseUp()}
-              getContextMenuItems={(params) =>
-                getContextMenuItems(
-                  params,
-                  content,
-                  setContent,
-                  updateNode,
-                  gridRef
-                )
-              }
             />
           </div>
         </div>
