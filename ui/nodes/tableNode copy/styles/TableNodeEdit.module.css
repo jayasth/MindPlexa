@@ -1,0 +1,158 @@
+.tableNode {
+  display: flex;
+  flex-direction: column;
+  border-radius: 8px;
+  padding: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  height: 100%;
+  cursor: move;
+  border: 1px solid #ddd;
+}
+
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  background-color: transparent;
+  border-bottom: 1px solid #ddd;
+}
+
+.tableContent {
+  flex-grow: 1;
+  overflow: auto;
+  background-color: transparent;
+  outline: none;
+  resize: none;
+  padding: 8px;
+  z-index: 0;
+  cursor: text;
+  border: 1px solid #ccc;
+  border-collapse: collapse;
+}
+
+.selectedCell {
+  outline: 1px solid #7c3aed;
+  outline-offset: 2px;
+  transition: outline 0.3s ease-in-out;
+}
+
+.cell-editing {
+  background-color: #f3f4f6; /* Light grey background to indicate editing */
+}
+
+.cell-error {
+  background-color: #f8d7da; /* Light red background */
+  border: 1px solid #f5c6cb; /* Red border */
+}
+
+.actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.ag-cell-left {
+  text-align: left;
+}
+
+.ag-cell-center {
+  text-align: center;
+}
+
+.ag-cell-right {
+  text-align: right;
+}
+
+/* custom header component */
+.custom-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.custom-header-menu-button {
+  margin-left: 8px;
+  cursor: pointer;
+}
+
+.context-menu-trigger {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+}
+
+/* common on all nodes */
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background-color: transparent;
+  z-index: 0;
+  cursor: move;
+}
+
+.titleInput {
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  background-color: transparent;
+  outline: none;
+  flex-grow: 1;
+  cursor: text;
+  color: inherit;
+  box-shadow: none !important;
+}
+
+.titleInput:focus,
+.titleInput:active {
+  border-bottom: 2px solid #989ff0;
+  transition: border-bottom 0.3s ease-in-out;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  background-color: transparent;
+  padding: 4px;
+}
+
+.colorPicker {
+  position: absolute;
+  left: 0;
+  bottom: 40px;
+  z-index: 1000;
+}
+
+.colorPicker .compact-picker__swatch:hover::after {
+  content: attr(data-name);
+  position: absolute;
+  top: -20px;
+  left: 0;
+  background: #fff;
+  padding: 2px 4px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 10;
+}
+
+.nodrag {
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+.nowheel {
+  overflow: auto;
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+  scrollbar-width: none; /* Firefox */
+}
+
+.nowheel::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
+}

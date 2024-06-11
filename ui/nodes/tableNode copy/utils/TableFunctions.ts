@@ -3,6 +3,7 @@ import { CSSProperties } from 'react';
 import { toast } from '@/ui/Toasts/use-toast';
 import CustomHeader from '@/ui/nodes/tableNode/components/CustomHeader';
 import { DateEditor } from '@/ui/nodes/tableNode/utils/CustomCellEditors';
+import { GridOptions, ColDef } from 'ag-grid-community';
 
 /* Cell Operations */
 
@@ -66,6 +67,10 @@ export const onCellValueChanged = (event, setContent) => {
   if (!validateCellValue(newValue, columnType)) {
     event.node.setDataValue(event.colDef.field, oldValue); // Revert to old value
     event.node.data.invalid = true; // Mark the row as invalid
+    event.api.refreshCells({
+      rowNodes: [event.node],
+      columns: [event.colDef.field]
+    });
 
     toast({
       title: 'Invalid Input',
@@ -87,6 +92,10 @@ export const onCellValueChanged = (event, setContent) => {
 
     event.node.setDataValue(event.colDef.field, formattedValue);
     event.node.data.invalid = false; // Mark the row as valid
+    event.api.refreshCells({
+      rowNodes: [event.node],
+      columns: [event.colDef.field]
+    });
   }
 };
 
@@ -104,7 +113,42 @@ export const handleInvalidInput = (
 
 /* Column Operations */
 
-export const getColumnDefs = (content, setContent, updateNode, gridRef) => {
+export const gridOptions: GridOptions = {
+  columnTypes: {
+    text: {
+      filter: 'agTextColumnFilter',
+      cellEditor: 'agTextCellEditor'
+    },
+    number: {
+      filter: 'agNumberColumnFilter',
+      cellEditor: 'agNumberCellEditor'
+    },
+    date: {
+      filter: 'agDateColumnFilter',
+      cellEditor: 'agDateCellEditor'
+    },
+    currency: {
+      filter: 'agNumberColumnFilter',
+      cellEditor: 'agTextCellEditor',
+      valueFormatter: (params) => (params.value ? `$${params.value}` : '')
+    },
+    email: {
+      filter: 'agTextColumnFilter',
+      cellEditor: 'agTextCellEditor'
+    }
+    // Add more column types as needed
+  },
+  enableRangeSelection: true,
+  enableCellTextSelection: true,
+  rowSelection: 'multiple',
+  rowMultiSelectWithClick: true
+};
+export const getColumnDefs = (
+  content,
+  setContent,
+  updateNode,
+  gridRef
+): ColDef[] => {
   return content.columns.map((col) => {
     return {
       ...col,
@@ -124,8 +168,8 @@ export const getColumnDefs = (content, setContent, updateNode, gridRef) => {
       },
       headerClass: 'custom-header-class',
       colId: col.field,
-      cellStyle: (cell) => {
-        const isValid = validateCellValue(cell.value, col.type);
+      cellStyle: (params) => {
+        const isValid = validateCellValue(params.value, col.type);
         const invalidCellStyle: CSSProperties = {
           backgroundColor: '#f8d7da',
           border: '1px solid #f5c6cb',
@@ -135,7 +179,9 @@ export const getColumnDefs = (content, setContent, updateNode, gridRef) => {
           outline: '2px solid #7c3aed',
           outlineOffset: '-1px'
         };
-        const isFocused = cell.isFocused;
+        const isFocused =
+          params.api.getFocusedCell()?.rowIndex === params.rowIndex &&
+          params.api.getFocusedCell()?.column.getId() === params.column.getId();
         return isValid
           ? isFocused
             ? focusStyle
@@ -145,6 +191,7 @@ export const getColumnDefs = (content, setContent, updateNode, gridRef) => {
     };
   });
 };
+
 function getFilterParams(type: string) {
   // Define filter parameters based on column type
   switch (type) {
@@ -258,6 +305,7 @@ function getValueFormatter(type: string) {
 export const addColumn = (
   content: any,
   setContent: (content: any) => void,
+  api,
   columnType: string = 'text',
   locale: string = 'en-US'
 ) => {
@@ -283,11 +331,13 @@ export const addColumn = (
     columns: [...content.columns, newColumn],
     rows: newRows
   });
+  api.refreshCells && api.refreshCells({ force: true });
 };
 
 export const addRow = (
   content: any,
   setContent: (content: any) => void,
+  api,
   locale: string = 'en-US'
 ) => {
   console.log('TableFunctions: Adding row');
@@ -299,6 +349,7 @@ export const addRow = (
     ...content,
     rows: [...content.rows, newRow]
   });
+  api.refreshCells && api.refreshCells({ force: true });
 };
 
 /* File Operations */

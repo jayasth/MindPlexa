@@ -6,7 +6,7 @@ import React, {
   useCallback
 } from 'react';
 import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
-import { useTable, useFilters, useSortBy, useRowSelect } from 'react-table';
+import { AgGridReact, AgGridReactProps } from 'ag-grid-react';
 import { useStore } from '@/app/store/useCanvasStore';
 import styles from '@/ui/nodes/tableNode/styles/TableNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
@@ -34,6 +34,9 @@ import {
 import AddTableModal from '@/ui/nodes/tableNode/components/AddTableModal';
 import DeleteTableModal from '@/ui/nodes/tableNode/components/DeleteTableModal';
 import SettingsModal from '@/ui/nodes/tableNode/components/SettingsModal';
+import { ICellRendererComp } from 'ag-grid-community';
+import 'ag-grid-community/styles/ag-grid.css';
+import 'ag-grid-community/styles/ag-theme-alpine.css';
 
 import {
   addColumn,
@@ -42,7 +45,9 @@ import {
   exportTableData,
   onCellValueChanged,
   validateCellValue,
-  handleInvalidInput
+  getColumnDefs,
+  handleInvalidInput,
+  gridOptions
 } from '@/ui/nodes/tableNode/utils/TableFunctions';
 
 import {
@@ -76,6 +81,10 @@ import {
   handleMouseMove,
   handleAddRowOrColumn
 } from '@/ui/nodes/tableNode/utils/KeyboardMouseHandlers';
+
+interface CustomAgGridReactProps extends AgGridReactProps {
+  rowMultiSelectWithCtrlKey?: boolean;
+}
 
 interface TableNodeEditProps extends NodeProps {
   data: TableNodeData;
@@ -126,33 +135,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
 
   const updateNode = useStore((state) => state.updateNode);
   const tableRef = useRef<HTMLDivElement>(null);
-
-  const {
-    getTableProps,
-    getTableBodyProps,
-    headerGroups,
-    rows,
-    prepareRow,
-    setFilter,
-    toggleRowSelected,
-    selectedFlatRows
-  } = useTable(
-    {
-      columns: content.columns,
-      data: content.rows,
-      initialState: {
-        sortBy: [
-          {
-            id: 'name',
-            desc: false
-          }
-        ]
-      }
-    },
-    useFilters,
-    useSortBy,
-    useRowSelect
-  );
+  const gridRef = useRef<any>(null);
 
   useEffect(() => {
     if (
@@ -264,7 +247,14 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     color: textColor
   };
 
-  useKeyPressHandler(content, setContent, updateNode);
+  const columnDefs = getColumnDefs(content, setContent, updateNode, gridRef);
+
+  useKeyPressHandler(content, setContent, updateNode, gridRef);
+
+  const [selectionRange, setSelectionRange] = useState({
+    start: null,
+    end: null
+  });
 
   return (
     <div>
@@ -308,23 +298,13 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
             />
             <AddColumnButton
               onClick={(columnType) =>
-                handleAddRowOrColumn(
-                  { target: { classList: { contains: () => true } } },
-                  columnType,
-                  locale
-                )
+                addColumn(content, setContent, updateNode, columnType, locale)
               }
               aria-label="Add Column"
               locale={locale} // Pass locale to AddColumnButton
             />
             <AddRowButton
-              onClick={() =>
-                handleAddRowOrColumn(
-                  { target: { classList: { contains: () => true } } },
-                  null,
-                  locale
-                )
-              }
+              onClick={() => addRow(content, setContent, updateNode)}
               aria-label="Add Row"
             />
             <ExportButton
@@ -349,71 +329,52 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           </div>
 
           <div
-            className={`${styles.tableContent} nowheel nodrag`}
-            {...getTableProps()}
+            className="ag-theme-alpine"
+            style={{ height: '100%', width: '100%' }}
+            role="grid"
+            aria-label="Data Table"
           >
-            <table>
-              <thead>
-                {headerGroups.map((headerGroup) => (
-                  <tr {...headerGroup.getHeaderGroupProps()}>
-                    {headerGroup.headers.map((column) => (
-                      <th {...column.getHeaderProps()}>
-                        <CustomHeader
-                          column={column}
-                          displayName={column.displayName}
-                          enableSorting={column.enableSorting}
-                          enableMenu={column.enableMenu}
-                          enableFilterButton={column.enableFilterButton}
-                          showFilter={column.showFilter}
-                          api={column.api}
-                          columnApi={column.columnApi}
-                          context={column.context}
-                          progressSort={column.progressSort}
-                          setSort={column.setSort}
-                          eGridHeader={column.eGridHeader}
-                          setTooltip={column.setTooltip}
-                          enableFilterIcon={column.enableFilterIcon}
-                          showColumnMenu={column.showColumnMenu}
-                          showColumnMenuAfterMouseClick={
-                            column.showColumnMenuAfterMouseClick
-                          }
-                          type={column.type}
-                        />
-                      </th>
-                    ))}
-                  </tr>
-                ))}
-              </thead>
-              <tbody {...getTableBodyProps()}>
-                {rows.map((row, i) => {
-                  prepareRow(row);
-                  return (
-                    <tr
-                      {...row.getRowProps()}
-                      className={`${
-                        row.isSelected ? styles.selectedRow : ''
-                      } ${row.original.invalid ? styles.invalidRow : ''}`}
-                      onClick={() => toggleRowSelected(row.index)}
-                    >
-                      {row.cells.map((cell) => (
-                        <td
-                          {...cell.getCellProps()}
-                          className={`${
-                            cell.column.isSorted
-                              ? cell.column.isSortedDesc
-                                ? styles.sortedDesc
-                                : styles.sortedAsc
-                              : ''
-                          }`}
-                        >
-                          {cell.render('Cell')}
-                        </td>
-                      ))}
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+            <AgGridReact
+              gridOptions={gridOptions}
+              columnDefs={columnDefs as any}
+              rowData={content.rows}
+              domLayout="autoHeight"
+              rowHeight={30}
+              rowMultiSelectWithClick={true}
+              defaultColDef={{
+                resizable: true,
+                editable: true,
+                headerComponent: CustomHeader,
+                headerComponentParams: {
+                  menuIcon: 'fa-bars'
+                }
+              }}
+              onGridReady={(params) => {
+                gridRef.current = params;
+                params.api.sizeColumnsToFit();
+                params.api.addEventListener('keydown', (event) =>
+                  handleKeyDown(event, gridRef, content, setContent, updateNode)
+                );
+                params.api.addEventListener('mousedown', (event) =>
+                  handleMouseDown(event, gridRef, content)
+                );
+                params.api.addEventListener('mouseup', (event) =>
+                  handleMouseUp(event, gridRef, content, setContent)
+                );
+                params.api.addEventListener('mousemove', (event) =>
+                  handleMouseMove(event, gridRef, content, setContent)
+                );
+              }}
+              getContextMenuItems={(params) =>
+                getContextMenuItems(
+                  params,
+                  content,
+                  setContent,
+                  updateNode,
+                  gridRef
+                )
+              }
+            />
           </div>
         </div>
         <TagFileContainer
@@ -495,8 +456,8 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
             onClose={() => setIsModalOpen(false)}
             onAddTable={(columns, rows) => {
               const newColumns = columns.map((col, index) => ({
-                Header: col.name || `Column ${index + 1}`,
-                accessor: `col${index + 1}`,
+                headerName: col.name || `Column ${index + 1}`,
+                field: `col${index + 1}`,
                 editable: true,
                 type: col.type,
                 defaultValue: col.defaultValue,
@@ -505,7 +466,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
 
               const newRows = Array.from({ length: rows }, () =>
                 newColumns.reduce((acc, col) => {
-                  acc[col.accessor] = col.defaultValue || '';
+                  acc[col.field] = col.defaultValue || '';
                   return acc;
                 }, {})
               );
@@ -529,6 +490,76 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           onSave={handleLocaleChange}
           initialLocale={locale}
         />
+        {content.columns.map((col) => (
+          <HeaderContextMenu
+            key={col.field}
+            id={`header-context-menu-${col.field}`}
+            onSortAsc={() => {
+              gridRef.current.api.applyColumnState({
+                state: [{ colId: col.field, sort: 'asc' }],
+                applyOrder: true
+              });
+            }}
+            onSortDesc={() => {
+              gridRef.current.api.applyColumnState({
+                state: [{ colId: col.field, sort: 'desc' }],
+                applyOrder: true
+              });
+            }}
+            onFilter={() =>
+              gridRef.current.api.setFilterModel({ [col.field]: null })
+            }
+            onRename={() => {
+              const newName = prompt('Enter new column name:', col.headerName);
+              if (newName) {
+                const updatedColumns = content.columns.map((column) => {
+                  if (column.field === col.field) {
+                    return { ...column, headerName: newName };
+                  }
+                  return column;
+                });
+                setContent({ ...content, columns: updatedColumns });
+              }
+            }}
+            onChangeType={(newType) => {
+              const updatedColumns = content.columns.map((column) => {
+                if (column.field === col.field) {
+                  return { ...column, type: newType };
+                }
+                return column;
+              });
+              setContent({ ...content, columns: updatedColumns });
+              gridRef.current.api.refreshHeader();
+            }}
+            onDelete={() => {
+              const updatedColumns = content.columns.filter(
+                (column) => column.field !== col.field
+              );
+              setContent({ ...content, columns: updatedColumns });
+            }}
+            onAlignLeft={() => {
+              gridRef.current.api.getColumnState().forEach((column) => {
+                if (column.colId === col.field) {
+                  column.cellClass = 'ag-cell-left';
+                }
+              });
+            }}
+            onAlignCenter={() => {
+              gridRef.current.api.getColumnState().forEach((column) => {
+                if (column.colId === col.field) {
+                  column.cellClass = 'ag-cell-center';
+                }
+              });
+            }}
+            onAlignRight={() => {
+              gridRef.current.api.getColumnState().forEach((column) => {
+                if (column.colId === col.field) {
+                  column.cellClass = 'ag-cell-right';
+                }
+              });
+            }}
+          />
+        ))}
       </div>
     </div>
   );

@@ -1,0 +1,78 @@
+.modal {
+  padding: 20px;
+  max-height: 40vh;
+  overflow-y: auto;
+}
+
+.modalContent {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.modalHeader {
+  text-align: center;
+  font-size: 16px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.label {
+  font-size: 14px;
+}
+
+.columnConfig {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.inputWide {
+  flex: 1;
+}
+
+.dropdownWide {
+  flex: 1;
+  min-width: 90px;
+}
+
+.inputNarrow {
+  width: 60px;
+}
+
+.rowInputGroup {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.deleteButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  transition: color 0.3s ease;
+}
+
+.deleteButton:hover {
+  color: #ff6961;
+}
+
+.dragHandle {
+  cursor: grab;
+  margin-left: 10px;
+}
+
+.addButton {
+  flex-grow: 1;
+}
