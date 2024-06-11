@@ -6,7 +6,6 @@ import React, {
   useCallback
 } from 'react';
 import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
-import { useTable, useFilters, useSortBy, useRowSelect } from 'react-table';
 import { useStore } from '@/app/store/useCanvasStore';
 import styles from '@/ui/nodes/tableNode/styles/TableNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
@@ -77,6 +76,17 @@ import {
   handleAddRowOrColumn
 } from '@/ui/nodes/tableNode/utils/KeyboardMouseHandlers';
 
+import {
+  useReactTable,
+  createColumnHelper,
+  getCoreRowModel,
+  flexRender,
+  getSortedRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  ColumnDef
+} from '@tanstack/react-table';
+
 interface TableNodeEditProps extends NodeProps {
   data: TableNodeData;
   width: number;
@@ -127,32 +137,23 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   const updateNode = useStore((state) => state.updateNode);
   const tableRef = useRef<HTMLDivElement>(null);
 
-  const {
-    getTableProps,
-    getTableBodyProps,
-    headerGroups,
-    rows,
-    prepareRow,
-    setFilter,
-    toggleRowSelected,
-    selectedFlatRows
-  } = useTable(
-    {
-      columns: content.columns,
-      data: content.rows,
-      initialState: {
-        sortBy: [
-          {
-            id: 'name',
-            desc: false
-          }
-        ]
-      }
-    },
-    useFilters,
-    useSortBy,
-    useRowSelect
+  const columnHelper = createColumnHelper<unknown>();
+  const columns: ColumnDef<unknown, any>[] = content.columns.map((col) =>
+    columnHelper.accessor(col.field as string, {
+      header: col.headerName,
+      cell: (info) => info.getValue(),
+      footer: (info) => info.column.id
+    })
   );
+
+  const table = useReactTable({
+    data: content.rows,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel()
+  });
 
   useEffect(() => {
     if (
@@ -348,70 +349,35 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
             <SettingsButton onClick={() => setIsSettingsModalOpen(true)} />
           </div>
 
-          <div
-            className={`${styles.tableContent} nowheel nodrag`}
-            {...getTableProps()}
-          >
+          <div className={`${styles.tableContent} nowheel nodrag`}>
             <table>
               <thead>
-                {headerGroups.map((headerGroup) => (
-                  <tr {...headerGroup.getHeaderGroupProps()}>
-                    {headerGroup.headers.map((column) => (
-                      <th {...column.getHeaderProps()}>
-                        <CustomHeader
-                          column={column}
-                          displayName={column.displayName}
-                          enableSorting={column.enableSorting}
-                          enableMenu={column.enableMenu}
-                          enableFilterButton={column.enableFilterButton}
-                          showFilter={column.showFilter}
-                          api={column.api}
-                          columnApi={column.columnApi}
-                          context={column.context}
-                          progressSort={column.progressSort}
-                          setSort={column.setSort}
-                          eGridHeader={column.eGridHeader}
-                          setTooltip={column.setTooltip}
-                          enableFilterIcon={column.enableFilterIcon}
-                          showColumnMenu={column.showColumnMenu}
-                          showColumnMenuAfterMouseClick={
-                            column.showColumnMenuAfterMouseClick
-                          }
-                          type={column.type}
-                        />
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <tr key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => (
+                      <th key={header.id}>
+                        {flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                       </th>
                     ))}
                   </tr>
                 ))}
               </thead>
-              <tbody {...getTableBodyProps()}>
-                {rows.map((row, i) => {
-                  prepareRow(row);
-                  return (
-                    <tr
-                      {...row.getRowProps()}
-                      className={`${
-                        row.isSelected ? styles.selectedRow : ''
-                      } ${row.original.invalid ? styles.invalidRow : ''}`}
-                      onClick={() => toggleRowSelected(row.index)}
-                    >
-                      {row.cells.map((cell) => (
-                        <td
-                          {...cell.getCellProps()}
-                          className={`${
-                            cell.column.isSorted
-                              ? cell.column.isSortedDesc
-                                ? styles.sortedDesc
-                                : styles.sortedAsc
-                              : ''
-                          }`}
-                        >
-                          {cell.render('Cell')}
-                        </td>
-                      ))}
-                    </tr>
-                  );
-                })}
+              <tbody>
+                {table.getRowModel().rows.map((row) => (
+                  <tr key={row.id}>
+                    {row.getVisibleCells().map((cell) => (
+                      <td key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>

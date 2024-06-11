@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { HeaderGroup } from 'react-table';
+import { Header } from '@tanstack/react-table';
 import { useContextMenu } from 'react-contexify';
 import 'react-contexify/ReactContexify.css';
 import { IoChevronDown, IoChevronUp } from 'react-icons/io5';
@@ -22,10 +22,15 @@ const typeIcons = {
   currency: <MdAttachMoney />
 };
 
-const CustomHeader = (props: HeaderGroup & { type: string }) => {
+interface CustomHeaderProps {
+  header: Header<any, any>;
+  type: string;
+}
+
+const CustomHeader: React.FC<CustomHeaderProps> = ({ header, type }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const { show, hideAll } = useContextMenu({
-    id: `header-context-menu-${props.id}`
+    id: `header-context-menu-${header.id}`
   });
   const headerRef = useRef<HTMLDivElement>(null);
 
@@ -40,7 +45,7 @@ const CustomHeader = (props: HeaderGroup & { type: string }) => {
 
       show({
         event,
-        props: { column: props },
+        props: { column: header.column },
         position: {
           x: xOffset,
           y: yOffset
@@ -57,9 +62,9 @@ const CustomHeader = (props: HeaderGroup & { type: string }) => {
       ref={headerRef}
       tabIndex={0} // Make the header focusable
     >
-      <div>{props.Header}</div>
+      <div>{header.column.columnDef.header?.toString()}</div>
       <span className={styles.typeIcon}>
-        {typeIcons[props.type as keyof typeof typeIcons]}
+        {typeIcons[type as keyof typeof typeIcons]}
       </span>
       <span className={styles.menuIcon}>
         {menuOpen ? <IoChevronUp /> : <IoChevronDown />}
