@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { addRow, addColumn } from '@/ui/nodes/tableNode/utils/TableFunctions';
+import debounce from 'lodash.debounce';
 
 export const useKeyPressHandler = (
   content,
@@ -248,7 +249,7 @@ export const useRangeSelection = (setContent) => {
     setEndCell(null);
   };
 
-  const handleCellMouseOver = (params: any) => {
+  const handleCellMouseOver = debounce((params: any) => {
     if (startCell) {
       console.log(
         'KeyboardMouseHandlers: handleCellMouseOver - Mouse over cell',
@@ -256,7 +257,7 @@ export const useRangeSelection = (setContent) => {
       );
       setEndCell({ row: params.node.rowIndex, col: params.colDef.field });
     }
-  };
+  }, 50);
 
   const handleCellMouseUp = () => {
     if (startCell && endCell) {
@@ -310,6 +311,7 @@ export const useRangeSelection = (setContent) => {
 
     return {};
   };
+
   return {
     handleCellMouseDown,
     handleCellMouseOver,

@@ -168,8 +168,9 @@ export const getColumnDefs = (
   gridRef
 ): ColDef[] => {
   return content.columns.map((col) => {
+    const { locale, ...restCol } = col; // Destructure to remove locale
     return {
-      ...col,
+      ...restCol,
       type: col.type,
       headerName: col.headerName,
       field: col.field,

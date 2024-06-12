@@ -78,6 +78,8 @@ import {
   useRangeSelection
 } from '@/ui/nodes/tableNode/utils/KeyboardMouseHandlers';
 
+import CellContextMenu from '@/ui/nodes/tableNode/components/CellContextMenu';
+
 interface TableNodeEditProps extends NodeProps {
   data: TableNodeData;
   width: number;
@@ -124,6 +126,12 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [locale, setLocale] = useState('en-US'); // Default locale
   const [errorMessage, setErrorMessage] = useState('');
+  const [contextMenu, setContextMenu] = useState({
+    visible: false,
+    x: 0,
+    y: 0,
+    params: null
+  });
 
   const updateNode = useStore((state) => state.updateNode);
   const tableRef = useRef<HTMLDivElement>(null);
@@ -250,6 +258,20 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
 
   useKeyPressHandler(content, setContent, updateNode, gridRef);
 
+  const handleCellContextMenu = (params) => {
+    params.event.preventDefault();
+    setContextMenu({
+      visible: true,
+      x: params.event.clientX,
+      y: params.event.clientY,
+      params
+    });
+  };
+
+  const closeContextMenu = () => {
+    setContextMenu({ visible: false, x: 0, y: 0, params: null });
+  };
+
   return (
     <div>
       {errorMessage && (
@@ -371,6 +393,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
               onCellKeyDown={onCellKeyDown}
               onCellMouseDown={handleCellMouseDown}
               onCellMouseOver={handleCellMouseOver}
+              onCellContextMenu={handleCellContextMenu}
             />
           </div>
         </div>
@@ -558,6 +581,17 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           />
         ))}
       </div>
+      {contextMenu.visible && (
+        <CellContextMenu
+          id="cell-context-menu"
+          position={{ x: contextMenu.x, y: contextMenu.y }}
+          params={contextMenu.params}
+          onClose={closeContextMenu}
+          setContent={setContent}
+          content={content}
+          gridRef={gridRef}
+        />
+      )}
     </div>
   );
 };
