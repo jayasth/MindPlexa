@@ -9,8 +9,9 @@ import CustomCellRenderer from '@/ui/nodes/tableNode/components/CustomCellRender
 /* Cell Operations */
 
 export const validateCellValue = (value: any, type: string): boolean => {
-  if (value === '') return true;
-
+  if (value === '' || value == null) {
+    return true;
+  }
   switch (type) {
     case 'text':
       return typeof value === 'string';
@@ -168,7 +169,7 @@ export const getColumnDefs = (
   gridRef
 ): ColDef[] => {
   return content.columns.map((col) => {
-    const { locale, ...restCol } = col; // Destructure to remove locale
+    const { locale, ...restCol } = col;
     return {
       ...restCol,
       type: col.type,
