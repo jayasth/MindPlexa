@@ -89,7 +89,7 @@ export const handleKeyDown = (
     if (event.key === 'Enter') {
       const currentCell = api.getFocusedCell();
       const currentRow = currentCell?.rowIndex;
-      const maxRow = api.getModel().getRowCount() - 1;
+      const maxRow = api.getDisplayedRowCount() - 1;
       if (currentRow === maxRow) {
         addRow(content, setContent, updateNode);
       }
@@ -111,8 +111,8 @@ export const onCellKeyDown = (params) => {
     const currentCell = params.api.getFocusedCell();
     const currentRow = currentCell?.rowIndex;
     const currentCol = currentCell?.column;
-    const maxRow = params.api.getModel().getRowCount() - 1;
-    const maxCol = params.columnApi.getAllDisplayedColumns().length - 1;
+    const maxRow = params.api.getDisplayedRowCount() - 1;
+    const maxCol = params.api.getAllDisplayedColumns().length - 1;
 
     switch (key) {
       case 'Enter':
@@ -173,18 +173,38 @@ export const useRangeSelection = (setContent) => {
   const [endCell, setEndCell] = useState<Cell | null>(null);
 
   const handleCellMouseDown = (params: any) => {
+    console.log(
+      'KeyboardMouseHandlers: handleCellMouseDown - Mouse down on cell',
+      { row: params.node.rowIndex, col: params.colDef.field }
+    );
     setStartCell({ row: params.node.rowIndex, col: params.colDef.field });
     setEndCell(null);
   };
 
   const handleCellMouseOver = (params: any) => {
     if (startCell) {
+      console.log(
+        'KeyboardMouseHandlers: handleCellMouseOver - Mouse over cell',
+        { row: params.node.rowIndex, col: params.colDef.field }
+      );
       setEndCell({ row: params.node.rowIndex, col: params.colDef.field });
     }
   };
 
-  const handleCellMouseOut = () => {
-    // Perform any action on mouse up if needed
+  const handleCellMouseUp = () => {
+    if (startCell && endCell) {
+      console.log(
+        'KeyboardMouseHandlers: handleCellMouseUp - Range selected from',
+        startCell,
+        'to',
+        endCell
+      );
+    }
+    console.log(
+      'KeyboardMouseHandlers: handleCellMouseUp - Mouse up, resetting selection'
+    );
+    setStartCell(null);
+    setEndCell(null);
   };
 
   const getCellStyle = (params: any) => {
@@ -201,6 +221,10 @@ export const useRangeSelection = (setContent) => {
         colDef.field >= startCol &&
         colDef.field <= endCol
       ) {
+        console.log('KeyboardMouseHandlers: getCellStyle - Cell is in range', {
+          rowIndex,
+          colDef
+        });
         return { backgroundColor: 'lightgray' };
       }
     }
@@ -210,7 +234,7 @@ export const useRangeSelection = (setContent) => {
   return {
     handleCellMouseDown,
     handleCellMouseOver,
-    handleCellMouseOut,
+    handleCellMouseUp,
     getCellStyle
   };
 };
