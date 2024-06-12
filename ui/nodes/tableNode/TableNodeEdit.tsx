@@ -129,6 +129,9 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   const tableRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<any>(null);
 
+  const { onCellMouseDown, onCellMouseOver, onCellMouseOut, getCellStyle } =
+    useCellRangeSelection(gridRef);
+
   useEffect(() => {
     if (
       title !== data.title ||
@@ -243,9 +246,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
 
   useKeyPressHandler(content, setContent, updateNode, gridRef);
 
-  const { onCellMouseDown, onCellMouseOver, onCellMouseOut, getCellStyle } =
-    useCellRangeSelection(gridRef);
-
   return (
     <div>
       {errorMessage && (
@@ -337,7 +337,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
                 headerComponentParams: {
                   menuIcon: 'fa-bars'
                 },
-                cellStyle: getCellStyle as any
+                cellStyle: getCellStyle as any // Ensure correct typing
               }}
               onGridReady={(params) => {
                 gridRef.current = params;
