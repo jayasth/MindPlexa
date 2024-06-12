@@ -27,9 +27,33 @@ export const useKeyPressHandler = (
         } else if (event.ctrlKey && event.key === 'a') {
           api.selectAll();
         } else if (event.ctrlKey && event.key === 'c') {
-          api.copySelectedRangeToClipboard();
+          const selectedNodes = api.getSelectedNodes();
+          if (selectedNodes.length > 0) {
+            const selectedData = selectedNodes.map((node) => node.data);
+            const clipboardText = JSON.stringify(selectedData);
+            navigator.clipboard.writeText(clipboardText).then(() => {
+              console.log('Copied to clipboard:', clipboardText);
+            });
+          }
         } else if (event.ctrlKey && event.key === 'v') {
-          api.pasteFromClipboard();
+          navigator.clipboard.readText().then((clipText) => {
+            console.log('Pasted text:', clipText);
+            const selectedNodes = api.getSelectedNodes();
+            if (selectedNodes.length > 0) {
+              const rowData = selectedNodes[0].data;
+              const focusedCell = api.getFocusedCell();
+              const column = api
+                .getColumnDefs()
+                .find((col) => col.field === focusedCell.column.colId);
+              if (column) {
+                rowData[column.field] = clipText;
+                const updatedRows = content.rows.map((row) =>
+                  row.id === rowData.id ? rowData : row
+                );
+                setContent({ ...content, rows: updatedRows });
+              }
+            }
+          });
         }
       }
     };

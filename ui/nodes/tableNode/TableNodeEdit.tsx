@@ -132,7 +132,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   const {
     handleCellMouseDown,
     handleCellMouseOver,
-    handleCellMouseOut,
+    handleCellMouseUp,
     getCellStyle
   } = useRangeSelection(setContent);
 
@@ -364,7 +364,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
               onCellKeyDown={onCellKeyDown}
               onCellMouseDown={handleCellMouseDown}
               onCellMouseOver={handleCellMouseOver}
-              onCellMouseOut={handleCellMouseOut}
             />
           </div>
         </div>

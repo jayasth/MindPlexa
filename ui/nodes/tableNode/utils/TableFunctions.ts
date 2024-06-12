@@ -4,6 +4,7 @@ import { toast } from '@/ui/Toasts/use-toast';
 import CustomHeader from '@/ui/nodes/tableNode/components/CustomHeader';
 import { DateEditor } from '@/ui/nodes/tableNode/utils/CustomCellEditors';
 import { GridOptions, ColDef } from 'ag-grid-community';
+import CustomCellRenderer from '@/ui/nodes/tableNode/components/CustomCellRenderer';
 
 /* Cell Operations */
 
@@ -167,6 +168,7 @@ export const getColumnDefs = (
       },
       headerClass: 'custom-header-class',
       colId: col.field,
+      cellRenderer: CustomCellRenderer, // Corrected property
       cellStyle: (params) => {
         const isValid = validateCellValue(params.value, col.type);
         const invalidCellStyle: CSSProperties = {
