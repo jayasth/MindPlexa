@@ -66,15 +66,12 @@ export const onCellValueChanged = (event, setContent) => {
   const columnType = event.colDef.type;
   const locale = event.colDef.locale || 'en-US';
 
-  // Check if the new value is an empty string
   if (newValue === '') {
-    // If the new value is an empty string, mark the row as valid
     event.node.data.invalid = false;
     event.api.refreshCells({
       rowNodes: [event.node],
       columns: [event.colDef.field]
     });
-    // Update the content with the empty value
     setContent((prevContent) => {
       const updatedRows = prevContent.rows.map((row, index) => {
         if (index === event.rowIndex) {
@@ -88,8 +85,8 @@ export const onCellValueChanged = (event, setContent) => {
   }
 
   if (!validateCellValue(newValue, columnType)) {
-    event.node.setDataValue(event.colDef.field, oldValue); // Revert to old value
-    event.node.data.invalid = true; // Mark the row as invalid
+    event.node.setDataValue(event.colDef.field, oldValue);
+    event.node.data.invalid = true;
     event.api.refreshCells({
       rowNodes: [event.node],
       columns: [event.colDef.field]
@@ -114,14 +111,13 @@ export const onCellValueChanged = (event, setContent) => {
     });
 
     event.node.setDataValue(event.colDef.field, formattedValue);
-    event.node.data.invalid = false; // Mark the row as valid
+    event.node.data.invalid = false;
     event.api.refreshCells({
       rowNodes: [event.node],
       columns: [event.colDef.field]
     });
   }
 };
-
 export const handleInvalidInput = (
   message: string,
   params: any,
@@ -133,7 +129,6 @@ export const handleInvalidInput = (
     variant: 'warning'
   });
 };
-
 /* Column Operations */
 
 export const gridOptions: GridOptions = {

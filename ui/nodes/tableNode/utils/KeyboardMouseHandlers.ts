@@ -106,6 +106,29 @@ export const handleKeyDown = (
       case 'Escape':
         api.stopEditing();
         break;
+      case 'v':
+        if (event.ctrlKey) {
+          const focusedCell = api.getFocusedCell();
+          if (focusedCell) {
+            api.startEditingCell({
+              rowIndex: focusedCell.rowIndex,
+              colKey: focusedCell.column.getId()
+            });
+            navigator.clipboard.readText().then((clipText) => {
+              const rowIndex = focusedCell.rowIndex;
+              const colId = focusedCell.column.getId();
+              const updatedRows = content.rows.map((row, index) => {
+                if (index === rowIndex) {
+                  return { ...row, [colId]: clipText };
+                }
+                return row;
+              });
+              setContent({ ...content, rows: updatedRows });
+              api.refreshCells({ force: true });
+            });
+          }
+        }
+        break;
       default:
         break;
     }
