@@ -74,7 +74,8 @@ import TagFileContainer from '@/ui/nodes/common/TagFileContainer';
 import {
   useKeyPressHandler,
   handleKeyDown,
-  onCellKeyDown
+  onCellKeyDown,
+  useRangeSelection
 } from '@/ui/nodes/tableNode/utils/KeyboardMouseHandlers';
 
 interface TableNodeEditProps extends NodeProps {
@@ -127,6 +128,13 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   const updateNode = useStore((state) => state.updateNode);
   const tableRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<any>(null);
+
+  const {
+    handleCellMouseDown,
+    handleCellMouseOver,
+    handleCellMouseOut,
+    getCellStyle
+  } = useRangeSelection(setContent);
 
   useEffect(() => {
     if (
@@ -354,6 +362,9 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
                 }
               }}
               onCellKeyDown={onCellKeyDown}
+              onCellMouseDown={handleCellMouseDown}
+              onCellMouseOver={handleCellMouseOver}
+              onCellMouseOut={handleCellMouseOut}
             />
           </div>
         </div>

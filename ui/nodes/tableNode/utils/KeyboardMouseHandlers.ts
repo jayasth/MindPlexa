@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { addRow, addColumn } from '@/ui/nodes/tableNode/utils/TableFunctions';
 
 export const useKeyPressHandler = (
@@ -161,4 +161,56 @@ export const onCellKeyDown = (params) => {
     }
     params.event.preventDefault();
   }
+};
+
+interface Cell {
+  row: number;
+  col: string;
+}
+
+export const useRangeSelection = (setContent) => {
+  const [startCell, setStartCell] = useState<Cell | null>(null);
+  const [endCell, setEndCell] = useState<Cell | null>(null);
+
+  const handleCellMouseDown = (params: any) => {
+    setStartCell({ row: params.node.rowIndex, col: params.colDef.field });
+    setEndCell(null);
+  };
+
+  const handleCellMouseOver = (params: any) => {
+    if (startCell) {
+      setEndCell({ row: params.node.rowIndex, col: params.colDef.field });
+    }
+  };
+
+  const handleCellMouseOut = () => {
+    // Perform any action on mouse up if needed
+  };
+
+  const getCellStyle = (params: any) => {
+    if (startCell && endCell) {
+      const { rowIndex, colDef } = params;
+      const startRow = Math.min(startCell.row, endCell.row);
+      const endRow = Math.max(startCell.row, endCell.row);
+      const startCol = Math.min(Number(startCell.col), Number(endCell.col));
+      const endCol = Math.max(Number(startCell.col), Number(endCell.col));
+
+      if (
+        rowIndex >= startRow &&
+        rowIndex <= endRow &&
+        colDef.field >= startCol &&
+        colDef.field <= endCol
+      ) {
+        return { backgroundColor: 'lightgray' };
+      }
+    }
+    return {};
+  };
+
+  return {
+    handleCellMouseDown,
+    handleCellMouseOver,
+    handleCellMouseOut,
+    getCellStyle
+  };
 };
