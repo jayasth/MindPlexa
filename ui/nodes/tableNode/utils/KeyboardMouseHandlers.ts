@@ -245,13 +245,20 @@ export const useRangeSelection = (setContent) => {
         colDef.field >= startCol &&
         colDef.field <= endCol
       ) {
-        console.log('KeyboardMouseHandlers: getCellStyle - Cell is in range', {
-          rowIndex,
-          colDef
-        });
         return { backgroundColor: 'lightgray' };
       }
     }
+
+    // Check if the cell value is empty
+    if (params.value === '') {
+      return {};
+    }
+
+    // Check if the cell is invalid
+    if (params.node.data.invalid) {
+      return { backgroundColor: '#f8d7da', border: '1px solid #f5c6cb' };
+    }
+
     return {};
   };
 

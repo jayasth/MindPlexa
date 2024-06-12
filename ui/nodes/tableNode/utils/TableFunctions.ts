@@ -66,6 +66,27 @@ export const onCellValueChanged = (event, setContent) => {
   const columnType = event.colDef.type;
   const locale = event.colDef.locale || 'en-US';
 
+  // Check if the new value is an empty string
+  if (newValue === '') {
+    // If the new value is an empty string, mark the row as valid
+    event.node.data.invalid = false;
+    event.api.refreshCells({
+      rowNodes: [event.node],
+      columns: [event.colDef.field]
+    });
+    // Update the content with the empty value
+    setContent((prevContent) => {
+      const updatedRows = prevContent.rows.map((row, index) => {
+        if (index === event.rowIndex) {
+          return { ...row, [event.colDef.field]: '' };
+        }
+        return row;
+      });
+      return { ...prevContent, rows: updatedRows };
+    });
+    return;
+  }
+
   if (!validateCellValue(newValue, columnType)) {
     event.node.setDataValue(event.colDef.field, oldValue); // Revert to old value
     event.node.data.invalid = true; // Mark the row as invalid
@@ -139,9 +160,9 @@ export const gridOptions: GridOptions = {
       cellEditor: 'agTextCellEditor'
     }
     // Add more column types as needed
-  },
-  rowSelection: 'multiple',
-  rowMultiSelectWithClick: true
+  }
+  // rowSelection: 'multiple',
+  // rowMultiSelectWithClick: true
 };
 
 export const getColumnDefs = (
