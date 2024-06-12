@@ -81,42 +81,98 @@ export const handleKeyDown = (
     const maxCol = api.getAllDisplayedColumns().length - 1;
 
     if (currentCell) {
+      let newRow = currentRow;
+      let newCol = currentCol;
+
       switch (event.key) {
         case 'ArrowDown':
           if (currentRow < maxRow) {
-            api.setFocusedCell(currentRow + 1, currentCol);
+            newRow = currentRow + 1;
+            api.setFocusedCell(newRow, currentCol);
+            api.ensureIndexVisible(newRow);
           }
           break;
         case 'ArrowUp':
           if (currentRow > 0) {
-            api.setFocusedCell(currentRow - 1, currentCol);
+            newRow = currentRow - 1;
+            api.setFocusedCell(newRow, currentCol);
+            api.ensureIndexVisible(newRow);
           }
           break;
         case 'ArrowRight':
           if (currentCol < maxCol) {
-            api.setFocusedCell(currentRow, currentCol + 1);
+            newCol = currentCol + 1;
+            api.setFocusedCell(currentRow, newCol);
           }
           break;
         case 'ArrowLeft':
           if (currentCol > 0) {
-            api.setFocusedCell(currentRow, currentCol - 1);
+            newCol = currentCol - 1;
+            api.setFocusedCell(currentRow, newCol);
           }
           break;
         case 'Enter':
-          if (currentRow < maxRow) {
-            api.setFocusedCell(currentRow + 1, currentCol);
+          if (event.shiftKey) {
+            api.startEditingCell({
+              rowIndex: currentRow,
+              colKey: currentCol.getId()
+            });
+          } else if (currentRow < maxRow) {
+            newRow = currentRow + 1;
+            api.setFocusedCell(newRow, currentCol);
+            api.ensureIndexVisible(newRow);
           }
           break;
         case 'Tab':
           if (currentCol < maxCol) {
-            api.setFocusedCell(currentRow, currentCol + 1);
+            newCol = currentCol + 1;
+            api.setFocusedCell(currentRow, newCol);
           } else if (currentRow < maxRow) {
-            api.setFocusedCell(currentRow + 1, 0);
+            newRow = currentRow + 1;
+            newCol = 0;
+            api.setFocusedCell(newRow, newCol);
+            api.ensureIndexVisible(newRow);
           }
+          break;
+        case 'Escape':
+          api.stopEditing();
+          break;
+        case 'Home':
+          newCol = 0;
+          api.setFocusedCell(currentRow, newCol);
+          break;
+        case 'End':
+          newCol = maxCol;
+          api.setFocusedCell(currentRow, newCol);
+          break;
+        case 'PageUp':
+          newRow = Math.max(currentRow - 10, 0);
+          api.setFocusedCell(newRow, currentCol);
+          api.ensureIndexVisible(newRow);
+          break;
+        case 'PageDown':
+          newRow = Math.min(currentRow + 10, maxRow);
+          api.setFocusedCell(newRow, currentCol);
+          api.ensureIndexVisible(newRow);
           break;
         default:
           break;
       }
+
+      // Provide feedback to screen readers
+      const focusedCell = api.getFocusedCell();
+      if (focusedCell) {
+        const cellValue = api.getValue(
+          focusedCell.column,
+          focusedCell.rowIndex
+        );
+        const cellInfo = `Row ${focusedCell.rowIndex + 1}, Column ${focusedCell.column.getColId()}: ${cellValue}`;
+        const liveRegion = document.getElementById('live-region');
+        if (liveRegion) {
+          liveRegion.textContent = cellInfo;
+        }
+      }
+
       event.preventDefault();
       api.refreshCells({ force: true });
     }
