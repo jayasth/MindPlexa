@@ -351,13 +351,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
               }}
               onCellValueChanged={(event) => {
                 const { newValue, colDef } = event;
-                if (!validateCellValue(newValue, colDef.type as string)) {
-                  handleInvalidInput(
-                    `Invalid value for column type "${colDef.type}": ${newValue}`,
-                    event,
-                    gridRef
-                  );
-                } else {
+                if (validateCellValue(newValue, colDef.type as string)) {
                   onCellValueChanged(event, setContent);
                 }
               }}

@@ -9,25 +9,26 @@ import CustomCellRenderer from '@/ui/nodes/tableNode/components/CustomCellRender
 /* Cell Operations */
 
 export const validateCellValue = (value: any, type: string): boolean => {
+  if (value === '') return true;
+
   switch (type) {
     case 'text':
-      return typeof value === 'string' || value === '';
+      return typeof value === 'string';
     case 'number':
-      return (!isNaN(Number(value)) && isFinite(value)) || value === '';
+      return !isNaN(Number(value)) && isFinite(value);
     case 'email':
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      return emailRegex.test(value) || value === '';
+      return emailRegex.test(value);
     case 'date':
-      return !isNaN(Date.parse(value)) || value === '';
+      return !isNaN(Date.parse(value));
     case 'currency':
-      return (!isNaN(parseFloat(value)) && isFinite(value)) || value === '';
+      return !isNaN(parseFloat(value)) && isFinite(value);
     case 'percentage':
       return (
-        (!isNaN(parseFloat(value)) &&
-          isFinite(value) &&
-          Number(value) >= 0 &&
-          Number(value) <= 100) ||
-        value === ''
+        !isNaN(parseFloat(value)) &&
+        isFinite(value) &&
+        Number(value) >= 0 &&
+        Number(value) <= 100
       );
     default:
       return true;
@@ -168,7 +169,7 @@ export const getColumnDefs = (
       },
       headerClass: 'custom-header-class',
       colId: col.field,
-      cellRenderer: CustomCellRenderer, // Corrected property
+      cellRenderer: CustomCellRenderer,
       cellStyle: (params) => {
         const isValid = validateCellValue(params.value, col.type);
         const invalidCellStyle: CSSProperties = {
@@ -183,7 +184,7 @@ export const getColumnDefs = (
         const isFocused =
           params.api.getFocusedCell()?.rowIndex === params.rowIndex &&
           params.api.getFocusedCell()?.column.getId() === params.column.getId();
-        return isValid
+        return isValid || params.value === ''
           ? isFocused
             ? focusStyle
             : {}
