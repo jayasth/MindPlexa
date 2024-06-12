@@ -118,7 +118,7 @@ export const handleKeyDown = (
           break;
       }
       event.preventDefault();
-      api.refreshCells({ force: true }); // Trigger a re-render to apply the new styles
+      api.refreshCells({ force: true });
     }
   }
 };
@@ -170,7 +170,7 @@ export const onCellKeyDown = (params) => {
         break;
     }
     params.event.preventDefault();
-    api.refreshCells({ force: true }); // Trigger a re-render to apply the new styles
+    api.refreshCells({ force: true });
   }
 };
 
