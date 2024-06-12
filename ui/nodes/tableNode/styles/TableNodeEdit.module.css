@@ -33,9 +33,13 @@
 }
 
 .selectedCell {
-  outline: 1px solid #7c3aed;
-  outline-offset: 2px;
-  transition: outline 0.3s ease-in-out;
+  background-color: #d3d3d3; /* Light grey background */
+  border: 1px solid #7c3aed; /* Purple border */
+}
+
+.focusedCell {
+  outline: 2px solid #7c3aed; /* Purple outline */
+  outline-offset: -1px;
 }
 
 .cell-editing {
