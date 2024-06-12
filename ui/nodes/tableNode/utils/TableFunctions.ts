@@ -118,6 +118,7 @@ export const onCellValueChanged = (event, setContent) => {
     });
   }
 };
+
 export const handleInvalidInput = (
   message: string,
   params: any,

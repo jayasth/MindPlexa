@@ -8,7 +8,11 @@ const CustomCellRenderer = (props) => {
     });
   };
 
-  return <div onClick={handleCellClick}>{props.value}</div>;
+  return (
+    <div onClick={handleCellClick} onDoubleClick={handleCellClick}>
+      {props.value}
+    </div>
+  );
 };
 
 export default CustomCellRenderer;
