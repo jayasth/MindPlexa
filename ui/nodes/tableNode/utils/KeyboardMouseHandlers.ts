@@ -74,136 +74,98 @@ export const handleKeyDown = (
 ) => {
   const api = gridRef?.current?.api;
   if (api) {
-    if (
-      [
-        'ArrowUp',
-        'ArrowDown',
-        'ArrowLeft',
-        'ArrowRight',
-        'Enter',
-        'Tab'
-      ].includes(event.key)
-    ) {
-      api.stopEditing();
-    }
-    switch (event.key) {
-      case 'ArrowUp':
-        api.tabToPreviousCell();
-        break;
-      case 'ArrowDown':
-      case 'Enter':
-        api.tabToNextCell();
-        break;
-      case 'ArrowLeft':
-        api.tabToPreviousCell();
-        break;
-      case 'ArrowRight':
-        api.tabToNextCell();
-        break;
-      case 'Tab':
-        api.tabToNextCell();
-        break;
-      case 'Escape':
-        api.stopEditing();
-        break;
-      case 'v':
-        if (event.ctrlKey) {
-          const focusedCell = api.getFocusedCell();
-          if (focusedCell) {
-            api.startEditingCell({
-              rowIndex: focusedCell.rowIndex,
-              colKey: focusedCell.column.getId()
-            });
-            navigator.clipboard.readText().then((clipText) => {
-              const rowIndex = focusedCell.rowIndex;
-              const colId = focusedCell.column.getId();
-              const updatedRows = content.rows.map((row, index) => {
-                if (index === rowIndex) {
-                  return { ...row, [colId]: clipText };
-                }
-                return row;
-              });
-              setContent({ ...content, rows: updatedRows });
-              api.refreshCells({ force: true });
-            });
-          }
-        }
-        break;
-      default:
-        break;
-    }
+    const currentCell = api.getFocusedCell();
+    const currentRow = currentCell?.rowIndex;
+    const currentCol = currentCell?.column;
+    const maxRow = api.getDisplayedRowCount() - 1;
+    const maxCol = api.getAllDisplayedColumns().length - 1;
 
-    if (event.key === 'Enter') {
-      const currentCell = api.getFocusedCell();
-      const currentRow = currentCell?.rowIndex;
-      const maxRow = api.getDisplayedRowCount() - 1;
-      if (currentRow === maxRow) {
-        addRow(content, setContent, updateNode);
+    if (currentCell) {
+      switch (event.key) {
+        case 'ArrowDown':
+          if (currentRow < maxRow) {
+            api.setFocusedCell(currentRow + 1, currentCol);
+          }
+          break;
+        case 'ArrowUp':
+          if (currentRow > 0) {
+            api.setFocusedCell(currentRow - 1, currentCol);
+          }
+          break;
+        case 'ArrowRight':
+          if (currentCol < maxCol) {
+            api.setFocusedCell(currentRow, currentCol + 1);
+          }
+          break;
+        case 'ArrowLeft':
+          if (currentCol > 0) {
+            api.setFocusedCell(currentRow, currentCol - 1);
+          }
+          break;
+        case 'Enter':
+          if (currentRow < maxRow) {
+            api.setFocusedCell(currentRow + 1, currentCol);
+          }
+          break;
+        case 'Tab':
+          if (currentCol < maxCol) {
+            api.setFocusedCell(currentRow, currentCol + 1);
+          } else if (currentRow < maxRow) {
+            api.setFocusedCell(currentRow + 1, 0);
+          }
+          break;
+        default:
+          break;
       }
+      event.preventDefault();
     }
   }
 };
 
 export const onCellKeyDown = (params) => {
   const key = params.event.key;
-  if (
-    key === 'Enter' ||
-    key === 'Tab' ||
-    key === 'ArrowRight' ||
-    key === 'ArrowLeft' ||
-    key === 'ArrowUp' ||
-    key === 'ArrowDown'
-  ) {
-    params.api.stopEditing();
-    const currentCell = params.api.getFocusedCell();
-    const currentRow = currentCell?.rowIndex;
-    const currentCol = currentCell?.column;
-    const maxRow = params.api.getDisplayedRowCount() - 1;
-    const maxCol = params.api.getAllDisplayedColumns().length - 1;
+  const api = params.api;
+  const currentCell = api.getFocusedCell();
+  const currentRow = currentCell?.rowIndex;
+  const currentCol = currentCell?.column;
+  const maxRow = api.getDisplayedRowCount() - 1;
+  const maxCol = api.getAllDisplayedColumns().length - 1;
 
+  if (currentCell) {
     switch (key) {
-      case 'Enter':
-        if (
-          currentRow !== undefined &&
-          currentRow < maxRow &&
-          currentCol !== undefined
-        ) {
-          params.api.setFocusedCell(currentRow + 1, currentCol);
-        }
-        break;
       case 'ArrowDown':
-        if (
-          currentRow !== undefined &&
-          currentRow < maxRow &&
-          currentCol !== undefined
-        ) {
-          params.api.setFocusedCell(currentRow + 1, currentCol);
+        if (currentRow < maxRow) {
+          api.setFocusedCell(currentRow + 1, currentCol);
         }
         break;
       case 'ArrowUp':
-        if (
-          currentRow !== undefined &&
-          currentRow > 0 &&
-          currentCol !== undefined
-        ) {
-          params.api.setFocusedCell(currentRow - 1, currentCol);
-        }
-        break;
-      case 'Tab':
-        if (
-          currentRow !== undefined &&
-          currentRow < maxRow &&
-          currentCol !== undefined
-        ) {
-          params.api.setFocusedCell(currentRow, currentCol);
+        if (currentRow > 0) {
+          api.setFocusedCell(currentRow - 1, currentCol);
         }
         break;
       case 'ArrowRight':
-        params.api.tabToNextCell();
+        if (currentCol < maxCol) {
+          api.setFocusedCell(currentRow, currentCol + 1);
+        }
         break;
       case 'ArrowLeft':
-      case 'ArrowUp':
-        params.api.tabToPreviousCell();
+        if (currentCol > 0) {
+          api.setFocusedCell(currentRow, currentCol - 1);
+        }
+        break;
+      case 'Enter':
+        if (currentRow < maxRow) {
+          api.setFocusedCell(currentRow + 1, currentCol);
+        }
+        break;
+      case 'Tab':
+        if (currentCol < maxCol) {
+          api.setFocusedCell(currentRow, currentCol + 1);
+        } else if (currentRow < maxRow) {
+          api.setFocusedCell(currentRow + 1, 0);
+        }
+        break;
+      default:
         break;
     }
     params.event.preventDefault();
