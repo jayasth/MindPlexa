@@ -74,8 +74,7 @@ import TagFileContainer from '@/ui/nodes/common/TagFileContainer';
 import {
   useKeyPressHandler,
   handleKeyDown,
-  onCellKeyDown,
-  useCellRangeSelection
+  onCellKeyDown
 } from '@/ui/nodes/tableNode/utils/KeyboardMouseHandlers';
 
 interface TableNodeEditProps extends NodeProps {
@@ -128,9 +127,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   const updateNode = useStore((state) => state.updateNode);
   const tableRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<any>(null);
-
-  const { onCellMouseDown, onCellMouseOver, onCellMouseOut, getCellStyle } =
-    useCellRangeSelection(gridRef);
 
   useEffect(() => {
     if (
@@ -336,8 +332,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
                 headerComponent: CustomHeader,
                 headerComponentParams: {
                   menuIcon: 'fa-bars'
-                },
-                cellStyle: getCellStyle as any // Ensure correct typing
+                }
               }}
               onGridReady={(params) => {
                 gridRef.current = params;
@@ -345,13 +340,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
                 params.api.addEventListener('keydown', (event) =>
                   handleKeyDown(event, gridRef, content, setContent, updateNode)
                 );
-                params.api.addEventListener('cellMouseOut', (event) =>
-                  useCellRangeSelection(gridRef)
-                );
               }}
-              onCellMouseDown={onCellMouseDown}
-              onCellMouseOver={onCellMouseOver}
-              onCellMouseOut={onCellMouseOut}
               onCellValueChanged={(event) => {
                 const { newValue, colDef } = event;
                 if (!validateCellValue(newValue, colDef.type as string)) {
