@@ -329,7 +329,20 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
             aria-label="Data Table"
           >
             <AgGridReact
-              gridOptions={gridOptions}
+              gridOptions={{
+                ...gridOptions,
+                getRowStyle: (params) => {
+                  const style = getCellStyle(params);
+                  if (style) {
+                    return {
+                      backgroundColor: style.backgroundColor || '',
+                      outline: style.outline || '',
+                      outlineOffset: style.outlineOffset || ''
+                    };
+                  }
+                  return undefined;
+                }
+              }}
               columnDefs={columnDefs as any}
               rowData={content.rows}
               domLayout="autoHeight"

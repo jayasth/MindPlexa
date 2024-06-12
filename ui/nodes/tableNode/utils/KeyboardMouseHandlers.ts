@@ -118,6 +118,7 @@ export const handleKeyDown = (
           break;
       }
       event.preventDefault();
+      api.refreshCells({ force: true }); // Trigger a re-render to apply the new styles
     }
   }
 };
@@ -169,6 +170,7 @@ export const onCellKeyDown = (params) => {
         break;
     }
     params.event.preventDefault();
+    api.refreshCells({ force: true }); // Trigger a re-render to apply the new styles
   }
 };
 
@@ -217,6 +219,17 @@ export const useRangeSelection = (setContent) => {
   };
 
   const getCellStyle = (params: any) => {
+    const focusedCell = params.api.getFocusedCell();
+    const isFocused =
+      focusedCell &&
+      focusedCell.rowIndex === params.rowIndex &&
+      focusedCell.column &&
+      focusedCell.column.getId() === params.colDef?.field;
+
+    if (isFocused) {
+      return { outline: '2px solid #7c3aed', outlineOffset: '-1px' };
+    }
+
     if (startCell && endCell) {
       const { rowIndex, colDef } = params;
       const startRow = Math.min(startCell.row, endCell.row);
@@ -227,6 +240,7 @@ export const useRangeSelection = (setContent) => {
       if (
         rowIndex >= startRow &&
         rowIndex <= endRow &&
+        colDef &&
         colDef.field >= startCol &&
         colDef.field <= endCol
       ) {
@@ -240,7 +254,6 @@ export const useRangeSelection = (setContent) => {
 
     return {};
   };
-
   return {
     handleCellMouseDown,
     handleCellMouseOver,
