@@ -10,6 +10,7 @@ import {
   MdAttachMoney
 } from 'react-icons/md';
 import { AiOutlineFieldNumber } from 'react-icons/ai';
+import { getContextMenuItems } from '@/ui/nodes/tableNode/utils/headerContextMenuItems';
 
 const typeIcons = {
   text: <MdOutlineTextFields />,
@@ -21,40 +22,49 @@ const typeIcons = {
 
 const HeaderContextMenu = ({
   id,
-  onSortAsc,
-  onSortDesc,
-  onFilter,
-  onRename,
-  onChangeType,
-  onDelete,
-  onAlignLeft,
-  onAlignCenter,
-  onAlignRight
+  params,
+  content,
+  setContent,
+  updateNode,
+  gridRef
 }) => {
+  const contextMenuItems = getContextMenuItems(
+    params,
+    content,
+    setContent,
+    updateNode,
+    gridRef
+  );
+
   return (
     <Portal>
       <Menu id={id} className={styles.contextMenu}>
-        <Item onClick={onSortAsc}>Sort Ascending</Item>
-        <Item onClick={onSortDesc}>Sort Descending</Item>
-        <Item onClick={onFilter}>Filter</Item>
-        <Separator />
-        <Item onClick={onRename}>Rename Column</Item>
-        <Submenu label="Change Datatype" style={{ minWidth: '120px' }}>
-          {Object.entries(typeIcons).map(([type, icon]) => (
-            <Item key={type} onClick={() => onChangeType(type)}>
-              {icon}{' '}
-              <span style={{ marginLeft: '8px' }}>
-                {type.charAt(0).toUpperCase() + type.slice(1)}
-              </span>
-            </Item>
-          ))}
-        </Submenu>
-        <Separator />
-        <Item onClick={onAlignLeft}>Align Left</Item>
-        <Item onClick={onAlignCenter}>Align Center</Item>
-        <Item onClick={onAlignRight}>Align Right</Item>
-        <Separator />
-        <Item onClick={onDelete}>Delete Column</Item>
+        {contextMenuItems.map((item, index) => {
+          if (typeof item === 'string') {
+            return <Separator key={index} />;
+          } else if (item.subMenu) {
+            return (
+              <Submenu
+                key={item.name}
+                label={item.name}
+                style={{ minWidth: '120px' }}
+              >
+                {item.subMenu.map((subItem) => (
+                  <Item key={subItem.name} onClick={subItem.action}>
+                    {typeIcons[subItem.name.toLowerCase()]}{' '}
+                    <span style={{ marginLeft: '8px' }}>{subItem.name}</span>
+                  </Item>
+                ))}
+              </Submenu>
+            );
+          } else {
+            return (
+              <Item key={item.name} onClick={item.action}>
+                {item.name}
+              </Item>
+            );
+          }
+        })}
       </Menu>
     </Portal>
   );

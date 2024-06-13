@@ -505,70 +505,11 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           <HeaderContextMenu
             key={col.field}
             id={`header-context-menu-${col.field}`}
-            onSortAsc={() => {
-              gridRef.current.api.applyColumnState({
-                state: [{ colId: col.field, sort: 'asc' }],
-                applyOrder: true
-              });
-            }}
-            onSortDesc={() => {
-              gridRef.current.api.applyColumnState({
-                state: [{ colId: col.field, sort: 'desc' }],
-                applyOrder: true
-              });
-            }}
-            onFilter={() =>
-              gridRef.current.api.setFilterModel({ [col.field]: null })
-            }
-            onRename={() => {
-              const newName = prompt('Enter new column name:', col.headerName);
-              if (newName) {
-                const updatedColumns = content.columns.map((column) => {
-                  if (column.field === col.field) {
-                    return { ...column, headerName: newName };
-                  }
-                  return column;
-                });
-                setContent({ ...content, columns: updatedColumns });
-              }
-            }}
-            onChangeType={(newType) => {
-              const updatedColumns = content.columns.map((column) => {
-                if (column.field === col.field) {
-                  return { ...column, type: newType };
-                }
-                return column;
-              });
-              setContent({ ...content, columns: updatedColumns });
-              gridRef.current.api.refreshHeader();
-            }}
-            onDelete={() => {
-              const updatedColumns = content.columns.filter(
-                (column) => column.field !== col.field
-              );
-              setContent({ ...content, columns: updatedColumns });
-            }}
-            onAlignLeft={() => {
-              gridRef.current.api.getColumnState().forEach((column) => {
-                if (column.colId === col.field) {
-                  column.cellClass = 'ag-cell-left';
-                }
-              });
-            }}
-            onAlignCenter={() => {
-              gridRef.current.api.getColumnState().forEach((column) => {
-                if (column.colId === col.field) {
-                  column.cellClass = 'ag-cell-center';
-                }
-              });
-            }}
-            onAlignRight={() => {
-              gridRef.current.api.getColumnState().forEach((column) => {
-                if (column.colId === col.field) {
-                  column.cellClass = 'ag-cell-right';
-                }
-              });
-            }}
+            params={{ column: { getId: () => col.field } }}
+            content={content}
+            setContent={setContent}
+            updateNode={updateNode}
+            gridRef={gridRef}
           />
         ))}
       </div>
