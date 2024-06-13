@@ -62,10 +62,17 @@ export const formatCellValue = (
 };
 
 export const onCellValueChanged = (event, setContent) => {
+  console.log('TableonCellValueChanged triggered');
   const oldValue = event.oldValue;
   let newValue = event.newValue;
   const columnType = event.colDef.type;
   const locale = event.colDef.locale || 'en-US';
+
+  console.log('onCellValueChanged called with:', {
+    oldValue,
+    newValue,
+    columnType
+  });
 
   if (newValue === undefined || newValue === null) {
     newValue = '';
@@ -97,6 +104,9 @@ export const onCellValueChanged = (event, setContent) => {
       columns: [event.colDef.field]
     });
 
+    console.log(
+      `TableFunctions: Invalid value for column type "${columnType}": ${newValue}`
+    );
     toast({
       title: 'Invalid Input',
       description: `Invalid value for column type "${columnType}": ${newValue}`,
@@ -124,17 +134,6 @@ export const onCellValueChanged = (event, setContent) => {
   }
 };
 
-export const handleInvalidInput = (
-  message: string,
-  params: any,
-  gridRef: React.RefObject<any>
-) => {
-  toast({
-    title: 'Invalid Input',
-    description: message,
-    variant: 'warning'
-  });
-};
 /* Column Operations */
 
 export const gridOptions: GridOptions = {
@@ -216,7 +215,6 @@ export const getColumnDefs = (
     };
   });
 };
-
 function getFilterParams(type: string) {
   // Define filter parameters based on column type
   switch (type) {

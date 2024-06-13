@@ -45,7 +45,6 @@ import {
   onCellValueChanged,
   validateCellValue,
   getColumnDefs,
-  handleInvalidInput,
   gridOptions
 } from '@/ui/nodes/tableNode/utils/TableFunctions';
 
@@ -65,7 +64,6 @@ import { useBackgroundColorChange } from '@/ui/nodes/common/useBackgroundColorCh
 
 import { TableNodeData } from '@/ui/canvasEditor/utils/nodeDatatypes';
 
-import { getContextMenuItems } from '@/ui/nodes/tableNode/utils/contextMenuItems';
 import CustomHeader from '@/ui/nodes/tableNode/components/CustomHeader';
 import HeaderContextMenu from '@/ui/nodes/tableNode/components/HeaderContextMenu';
 
