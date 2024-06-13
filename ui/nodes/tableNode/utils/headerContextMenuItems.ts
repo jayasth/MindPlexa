@@ -24,6 +24,11 @@ export const getContextMenuItems = (
   setIsRenameModalOpen,
   setSelectedColumn
 ): (string | ContextMenuItem)[] => {
+  if (!params || !params.column || !params.columnApi) {
+    console.error('Invalid params provided to context menu items.');
+    return [];
+  }
+
   const result: (string | ContextMenuItem)[] = [
     {
       name: 'Sort Ascending',

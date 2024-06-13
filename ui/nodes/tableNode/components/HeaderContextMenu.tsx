@@ -38,15 +38,17 @@ const HeaderContextMenu = ({
   const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState<Column | null>(null);
 
-  const items = getContextMenuItems(
-    params,
-    content,
-    setContent,
-    updateNode,
-    gridRef,
-    setIsRenameModalOpen,
-    setSelectedColumn
-  );
+  const items = params
+    ? getContextMenuItems(
+        params,
+        content,
+        setContent,
+        updateNode,
+        gridRef,
+        setIsRenameModalOpen,
+        setSelectedColumn
+      )
+    : [];
 
   const handleRenameSave = (newName: string, newType: string) => {
     if (selectedColumn) {
