@@ -379,10 +379,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
                 params.api.sizeColumnsToFit();
               }}
               onCellValueChanged={(event) => {
-                const { newValue, colDef } = event;
-                if (validateCellValue(newValue, colDef.type as string)) {
-                  onCellValueChanged(event, setContent);
-                }
+                onCellValueChanged(event, setContent);
               }}
               onCellKeyDown={onCellKeyDown}
               onCellMouseDown={handleCellMouseDown}

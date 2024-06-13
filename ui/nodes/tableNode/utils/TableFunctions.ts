@@ -97,7 +97,7 @@ export const onCellValueChanged = (event, setContent) => {
   }
 
   if (!validateCellValue(newValue, columnType)) {
-    event.node.setDataValue(event.colDef.field, oldValue);
+    // Do not revert the value, let it display as is
     event.node.data.invalid = true;
     event.api.refreshCells({
       rowNodes: [event.node],
@@ -133,7 +133,6 @@ export const onCellValueChanged = (event, setContent) => {
     });
   }
 };
-
 /* Column Operations */
 
 export const gridOptions: GridOptions = {
