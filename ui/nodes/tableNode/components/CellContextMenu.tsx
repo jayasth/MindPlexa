@@ -23,6 +23,9 @@ const CellContextMenu: React.FC<CellContextMenuProps> = ({
   content,
   gridRef
 }) => {
+  console.log('CellContextMenu: position', position);
+  console.log('CellContextMenu: params', params);
+
   const handleCopy = () => {
     const selectedNodes = gridRef.current.api.getSelectedNodes();
     const selectedData = selectedNodes.map((node) => node.data);

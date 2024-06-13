@@ -256,7 +256,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   useKeyPressHandler(content, setContent, updateNode, gridRef);
 
   const handleCellContextMenu = (params) => {
-    params.event.preventDefault();
+    // Do not prevent default behavior to allow the default browser context menu
     setContextMenu({
       visible: true,
       x: params.event.clientX,
