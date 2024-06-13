@@ -52,12 +52,16 @@ export const getContextMenuItems = (
     {
       name: 'Rename Column',
       action: () => {
-        const columnDef = params.column?.colDef;
+        const columnDef = params.column.getColDef();
         if (!columnDef) {
           console.error('Column definition is not available');
           return;
         }
-        setSelectedColumn(columnDef);
+        setSelectedColumn({
+          field: columnDef.field,
+          headerName: columnDef.headerName,
+          type: columnDef.type
+        });
         setIsRenameModalOpen(true);
       }
     },
