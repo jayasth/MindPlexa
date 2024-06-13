@@ -256,7 +256,8 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   useKeyPressHandler(content, setContent, updateNode, gridRef);
 
   const handleCellContextMenu = (params) => {
-    // Do not prevent default behavior to allow the default browser context menu
+    console.log('TableNodeEdit: Right-click event:', params);
+    params.event.preventDefault();
     setContextMenu({
       visible: true,
       x: params.event.clientX,
@@ -350,6 +351,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
             <AgGridReact
               gridOptions={{
                 ...gridOptions,
+                suppressContextMenu: true,
                 getRowStyle: (params) => {
                   const style = getCellStyle(params);
                   if (style) {

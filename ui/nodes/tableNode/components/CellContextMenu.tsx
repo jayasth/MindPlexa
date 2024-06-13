@@ -56,6 +56,7 @@ const CellContextMenu: React.FC<CellContextMenuProps> = ({
         id={id}
         className={styles.contextMenu}
         style={{ top: position.y, left: position.x }}
+        onContextMenu={(e) => e.preventDefault()}
       >
         <Item onClick={handleCopy}>Copy</Item>
         <Item onClick={handlePaste}>Paste</Item>
