@@ -10,7 +10,7 @@ const CustomCellRenderer = (props) => {
 
   return (
     <div onClick={handleCellClick} onDoubleClick={handleCellClick}>
-      {props.value}
+      {props.value !== undefined && props.value !== null ? props.value : ''}
     </div>
   );
 };

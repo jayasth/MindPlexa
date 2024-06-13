@@ -67,6 +67,10 @@ export const onCellValueChanged = (event, setContent) => {
   const columnType = event.colDef.type;
   const locale = event.colDef.locale || 'en-US';
 
+  if (newValue === undefined || newValue === null) {
+    newValue = '';
+  }
+
   if (newValue === '') {
     event.node.data.invalid = false;
     event.api.refreshCells({
