@@ -73,7 +73,6 @@ import TagFileContainer from '@/ui/nodes/common/TagFileContainer';
 
 import {
   useKeyPressHandler,
-  handleKeyDown,
   onCellKeyDown,
   useRangeSelection
 } from '@/ui/nodes/tableNode/utils/KeyboardMouseHandlers';
@@ -380,9 +379,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
               onGridReady={(params) => {
                 gridRef.current = params;
                 params.api.sizeColumnsToFit();
-                params.api.addEventListener('keydown', (event) =>
-                  handleKeyDown(event, gridRef, content, setContent, updateNode)
-                );
               }}
               onCellValueChanged={(event) => {
                 const { newValue, colDef } = event;
