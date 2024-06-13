@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Menu, Item, Separator, Submenu } from 'react-contexify';
 import 'react-contexify/ReactContexify.css';
 import styles from '@/ui/nodes/tableNode/styles/HeaderContextMenu.module.css';
@@ -11,6 +11,7 @@ import {
 } from 'react-icons/md';
 import { AiOutlineFieldNumber } from 'react-icons/ai';
 import { getContextMenuItems } from '@/ui/nodes/tableNode/utils/headerContextMenuItems';
+import RenameColumnModal from '@/ui/nodes/tableNode/components/RenameColumnModal';
 
 const typeIcons = {
   text: <MdOutlineTextFields />,
@@ -20,6 +21,12 @@ const typeIcons = {
   currency: <MdAttachMoney />
 };
 
+interface Column {
+  field: string;
+  headerName: string;
+  type: string;
+}
+
 const HeaderContextMenu = ({
   id,
   params,
@@ -28,13 +35,31 @@ const HeaderContextMenu = ({
   updateNode,
   gridRef
 }) => {
+  const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
+  const [selectedColumn, setSelectedColumn] = useState<Column | null>(null);
+
   const items = getContextMenuItems(
     params,
     content,
     setContent,
     updateNode,
-    gridRef
+    gridRef,
+    setIsRenameModalOpen,
+    setSelectedColumn
   );
+
+  const handleRenameSave = (newName: string, newType: string) => {
+    if (selectedColumn) {
+      const updatedColumns = content.columns.map((col) => {
+        if (col.field === selectedColumn.field) {
+          return { ...col, headerName: newName, type: newType };
+        }
+        return col;
+      });
+      setContent({ ...content, columns: updatedColumns });
+      gridRef.current.api.refreshHeader();
+    }
+  };
 
   return (
     <Portal>
@@ -66,6 +91,14 @@ const HeaderContextMenu = ({
           }
         })}
       </Menu>
+      {selectedColumn && (
+        <RenameColumnModal
+          isOpen={isRenameModalOpen}
+          onClose={() => setIsRenameModalOpen(false)}
+          column={selectedColumn}
+          onSave={handleRenameSave}
+        />
+      )}
     </Portal>
   );
 };

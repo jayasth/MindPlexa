@@ -1,6 +1,3 @@
-import { DateEditor } from '@/ui/nodes/tableNode/utils/CustomCellEditors';
-import CustomHeader from '@/ui/nodes/tableNode/components/CustomHeader';
-
 interface ContextMenuItem {
   name: string;
   action?: () => void;
@@ -23,7 +20,9 @@ export const getContextMenuItems = (
   content,
   setContent,
   updateNode,
-  gridRef
+  gridRef,
+  setIsRenameModalOpen,
+  setSelectedColumn
 ): (string | ContextMenuItem)[] => {
   const result: (string | ContextMenuItem)[] = [
     {
@@ -58,16 +57,8 @@ export const getContextMenuItems = (
           console.error('Column definition is not available');
           return;
         }
-        const newName = prompt('Enter new column name:', columnDef.headerName);
-        if (newName) {
-          const updatedColumns = content.columns.map((col) => {
-            if (col.field === params.column.getId()) {
-              return { ...col, headerName: newName };
-            }
-            return col;
-          });
-          setContent({ ...content, columns: updatedColumns });
-        }
+        setSelectedColumn(columnDef);
+        setIsRenameModalOpen(true);
       }
     },
     {
