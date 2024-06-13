@@ -28,7 +28,7 @@ const HeaderContextMenu = ({
   updateNode,
   gridRef
 }) => {
-  const contextMenuItems = getContextMenuItems(
+  const items = getContextMenuItems(
     params,
     content,
     setContent,
@@ -39,9 +39,9 @@ const HeaderContextMenu = ({
   return (
     <Portal>
       <Menu id={id} className={styles.contextMenu}>
-        {contextMenuItems.map((item, index) => {
+        {items.map((item) => {
           if (typeof item === 'string') {
-            return <Separator key={index} />;
+            return <Separator key={item} />;
           } else if (item.subMenu) {
             return (
               <Submenu

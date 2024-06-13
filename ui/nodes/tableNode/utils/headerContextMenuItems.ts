@@ -53,10 +53,12 @@ export const getContextMenuItems = (
     {
       name: 'Rename Column',
       action: () => {
-        const newName = prompt(
-          'Enter new column name:',
-          params.column.colDef.headerName
-        );
+        const columnDef = params.column?.colDef;
+        if (!columnDef) {
+          console.error('Column definition is not available');
+          return;
+        }
+        const newName = prompt('Enter new column name:', columnDef.headerName);
         if (newName) {
           const updatedColumns = content.columns.map((col) => {
             if (col.field === params.column.getId()) {
