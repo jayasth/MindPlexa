@@ -110,7 +110,6 @@ export const onCellKeyDown = (params) => {
     api.refreshCells({ force: true });
   }
 };
-
 interface Cell {
   row: number;
   col: string;
