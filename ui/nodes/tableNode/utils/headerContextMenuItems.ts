@@ -24,7 +24,7 @@ export const getContextMenuItems = (
   setIsRenameModalOpen,
   setSelectedColumn
 ): (string | ContextMenuItem)[] => {
-  if (!params || !params.column || !params.columnApi) {
+  if (!params || !params.column || !params.columnApi || !params.api) {
     console.error('Invalid params provided to context menu items.');
     return [];
   }

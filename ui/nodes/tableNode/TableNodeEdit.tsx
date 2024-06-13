@@ -508,7 +508,9 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
             params={{
               column: gridRef.current?.api
                 .getColumnState()
-                .find((c) => c.colId === col.field)
+                .find((c) => c.colId === col.field),
+              columnApi: gridRef.current?.columnApi,
+              api: gridRef.current?.api
             }}
             content={content}
             setContent={setContent}
