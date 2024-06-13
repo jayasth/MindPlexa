@@ -1,10 +1,19 @@
+// headerContextMenuItems.ts
+import { ColDef, ColumnState, GridApi } from 'ag-grid-community';
+
 interface ContextMenuItem {
   name: string;
   action?: () => void;
   subMenu?: ContextMenuItem[];
 }
 
-const changeColumnType = (params, content, setContent, newType, gridRef) => {
+const changeColumnType = (
+  params: { column: ColumnState; api: GridApi },
+  content: { columns: ColDef[]; rows: any[] },
+  setContent: (content: { columns: ColDef[]; rows: any[] }) => void,
+  newType: string,
+  gridRef: React.RefObject<any>
+) => {
   const updatedColumns = content.columns.map((col) => {
     if (col.field === params.column.colId) {
       return { ...col, type: newType };
@@ -16,15 +25,25 @@ const changeColumnType = (params, content, setContent, newType, gridRef) => {
 };
 
 export const getContextMenuItems = (
-  params,
-  content,
-  setContent,
-  updateNode,
-  gridRef,
-  setIsRenameModalOpen,
-  setSelectedColumn
+  params: {
+    column: ColumnState;
+    api: GridApi;
+  },
+  content: {
+    columns: ColDef[];
+    rows: any[];
+  },
+  setContent: (content: { columns: ColDef[]; rows: any[] }) => void,
+  updateNode: (id: string, data: Partial<any>) => void,
+  gridRef: React.RefObject<any>,
+  setIsRenameModalOpen: (isOpen: boolean) => void,
+  setSelectedColumn: (column: {
+    field: string;
+    headerName: string;
+    type: string;
+  }) => void
 ): (string | ContextMenuItem)[] => {
-  if (!params || !params.column || !params.columnApi || !params.api) {
+  if (!params || !params.column || !params.api) {
     console.error('Invalid params provided to context menu items.');
     return [];
   }
@@ -33,7 +52,7 @@ export const getContextMenuItems = (
     {
       name: 'Sort Ascending',
       action: () =>
-        params.columnApi.applyColumnState({
+        params.api.applyColumnState({
           state: [{ colId: params.column.colId, sort: 'asc' }],
           applyOrder: true
         })
@@ -41,7 +60,7 @@ export const getContextMenuItems = (
     {
       name: 'Sort Descending',
       action: () =>
-        params.columnApi.applyColumnState({
+        params.api.applyColumnState({
           state: [{ colId: params.column.colId, sort: 'desc' }],
           applyOrder: true
         })
@@ -49,7 +68,7 @@ export const getContextMenuItems = (
     {
       name: 'Filter',
       action: () => {
-        gridRef.current.api.setFilterModel({
+        params.api.setFilterModel({
           [params.column.colId]: null
         });
       }
@@ -62,13 +81,19 @@ export const getContextMenuItems = (
           console.error('Column is not available');
           return;
         }
-        const colDef = column.getColDef();
-        setSelectedColumn({
-          field: column.getColId(),
-          headerName: colDef.headerName,
-          type: colDef.type
-        });
-        setIsRenameModalOpen(true);
+        const colDef = content.columns.find(
+          (col) => col.field === column.colId
+        );
+        if (colDef) {
+          setSelectedColumn({
+            field: column.colId,
+            headerName: colDef.headerName || '',
+            type: Array.isArray(colDef.type)
+              ? colDef.type.join(', ')
+              : colDef.type || ''
+          });
+          setIsRenameModalOpen(true);
+        }
       }
     },
     {
@@ -104,33 +129,39 @@ export const getContextMenuItems = (
     {
       name: 'Align Left',
       action: () => {
-        params.columnApi.getColumnState().forEach((col) => {
-          if (col.colId === params.column.colId) {
-            col.cellClass = 'ag-cell-left';
+        const updatedColumns = content.columns.map((col) => {
+          if (col.field === params.column.colId) {
+            return { ...col, cellClass: 'ag-cell-left' };
           }
+          return col;
         });
+        setContent({ ...content, columns: updatedColumns });
         params.api.refreshCells({ force: true });
       }
     },
     {
       name: 'Align Center',
       action: () => {
-        params.columnApi.getColumnState().forEach((col) => {
-          if (col.colId === params.column.colId) {
-            col.cellClass = 'ag-cell-center';
+        const updatedColumns = content.columns.map((col) => {
+          if (col.field === params.column.colId) {
+            return { ...col, cellClass: 'ag-cell-center' };
           }
+          return col;
         });
+        setContent({ ...content, columns: updatedColumns });
         params.api.refreshCells({ force: true });
       }
     },
     {
       name: 'Align Right',
       action: () => {
-        params.columnApi.getColumnState().forEach((col) => {
-          if (col.colId === params.column.colId) {
-            col.cellClass = 'ag-cell-right';
+        const updatedColumns = content.columns.map((col) => {
+          if (col.field === params.column.colId) {
+            return { ...col, cellClass: 'ag-cell-right' };
           }
+          return col;
         });
+        setContent({ ...content, columns: updatedColumns });
         params.api.refreshCells({ force: true });
       }
     },
