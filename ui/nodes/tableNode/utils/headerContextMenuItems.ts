@@ -6,7 +6,7 @@ interface ContextMenuItem {
 
 const changeColumnType = (params, content, setContent, newType, gridRef) => {
   const updatedColumns = content.columns.map((col) => {
-    if (col.field === params.column.getId()) {
+    if (col.field === params.column.colId) {
       return { ...col, type: newType };
     }
     return col;
@@ -29,7 +29,7 @@ export const getContextMenuItems = (
       name: 'Sort Ascending',
       action: () =>
         params.columnApi.applyColumnState({
-          state: [{ colId: params.column.getId(), sort: 'asc' }],
+          state: [{ colId: params.column.colId, sort: 'asc' }],
           applyOrder: true
         })
     },
@@ -37,7 +37,7 @@ export const getContextMenuItems = (
       name: 'Sort Descending',
       action: () =>
         params.columnApi.applyColumnState({
-          state: [{ colId: params.column.getId(), sort: 'desc' }],
+          state: [{ colId: params.column.colId, sort: 'desc' }],
           applyOrder: true
         })
     },
@@ -45,22 +45,23 @@ export const getContextMenuItems = (
       name: 'Filter',
       action: () => {
         gridRef.current.api.setFilterModel({
-          [params.column.getId()]: null
+          [params.column.colId]: null
         });
       }
     },
     {
       name: 'Rename Column',
       action: () => {
-        const columnDef = params.column.getColDef();
-        if (!columnDef) {
-          console.error('Column definition is not available');
+        const column = params.column;
+        if (!column) {
+          console.error('Column is not available');
           return;
         }
+        const colDef = column.getColDef();
         setSelectedColumn({
-          field: columnDef.field,
-          headerName: columnDef.headerName,
-          type: columnDef.type
+          field: column.getColId(),
+          headerName: colDef.headerName,
+          type: colDef.type
         });
         setIsRenameModalOpen(true);
       }
@@ -99,7 +100,7 @@ export const getContextMenuItems = (
       name: 'Align Left',
       action: () => {
         params.columnApi.getColumnState().forEach((col) => {
-          if (col.colId === params.column.getId()) {
+          if (col.colId === params.column.colId) {
             col.cellClass = 'ag-cell-left';
           }
         });
@@ -110,7 +111,7 @@ export const getContextMenuItems = (
       name: 'Align Center',
       action: () => {
         params.columnApi.getColumnState().forEach((col) => {
-          if (col.colId === params.column.getId()) {
+          if (col.colId === params.column.colId) {
             col.cellClass = 'ag-cell-center';
           }
         });
@@ -121,7 +122,7 @@ export const getContextMenuItems = (
       name: 'Align Right',
       action: () => {
         params.columnApi.getColumnState().forEach((col) => {
-          if (col.colId === params.column.getId()) {
+          if (col.colId === params.column.colId) {
             col.cellClass = 'ag-cell-right';
           }
         });
@@ -132,7 +133,7 @@ export const getContextMenuItems = (
       name: 'Delete Column',
       action: () => {
         const updatedColumns = content.columns.filter(
-          (col) => col.field !== params.column.getId()
+          (col) => col.field !== params.column.colId
         );
         setContent({ ...content, columns: updatedColumns });
       }
