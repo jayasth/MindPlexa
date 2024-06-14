@@ -303,10 +303,8 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
               };
               setContent({ ...content, rows: content.rows });
               gridRef.current.api.refreshCells({ force: true });
-              // @ts-ignore
-              CellContextMenu.show({
+              CellContextMenu({
                 id: 'cell-context-menu',
-                event: e,
                 position,
                 params,
                 onClose: () => {},
