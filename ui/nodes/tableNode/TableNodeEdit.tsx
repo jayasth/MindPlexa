@@ -132,13 +132,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   const updateNode = useStore((state) => state.updateNode);
   const tableRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<any>(null);
-
-  const {
-    handleCellMouseDown,
-    handleCellMouseOver,
-    handleCellMouseUp,
-    getCellStyle
-  } = useRangeSelection(setContent);
+  const { getCellStyle } = useRangeSelection(setContent, gridRef);
 
   useEffect(() => {
     if (
@@ -268,24 +262,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
 
   useKeyPressHandler(content, setContent, updateNode, gridRef);
 
-  useEffect(() => {
-    if (gridRef.current) {
-      gridRef.current.api.setColumnDefs(
-        getColumnDefs(content, setContent, updateNode, gridRef)
-      );
-    }
-  }, [content.columns]);
-
-  const handleAddColumn = (columnType: string) => {
-    addColumn(content, setContent, updateNode, columnType);
-    if (gridRef.current) {
-      gridRef.current.api.setColumnDefs(
-        getColumnDefs(content, setContent, updateNode, gridRef)
-      );
-      gridRef.current.api.refreshHeader();
-    }
-  };
-
   return (
     <div>
       {errorMessage && (
@@ -330,9 +306,11 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
               aria-label="Add Table"
             />
             <AddColumnButton
-              onClick={handleAddColumn}
+              onClick={(columnType) =>
+                addColumn(content, setContent, updateNode, columnType, locale)
+              }
               aria-label="Add Column"
-              locale={locale}
+              locale={locale} // Pass locale to AddColumnButton
             />
             <AddRowButton
               onClick={() => addRow(content, setContent, updateNode)}
@@ -367,19 +345,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           >
             <AgGridReact
               gridOptions={{
-                ...gridOptions,
-                suppressContextMenu: false,
-                getRowStyle: (params) => {
-                  const style = getCellStyle(params);
-                  if (style) {
-                    return {
-                      backgroundColor: style.backgroundColor || '',
-                      outline: style.outline || '',
-                      outlineOffset: style.outlineOffset || ''
-                    };
-                  }
-                  return undefined;
-                }
+                ...gridOptions
               }}
               columnDefs={columnDefs as any}
               rowData={content.rows}
@@ -401,8 +367,18 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
                 onCellValueChanged(event, setContent);
               }}
               onCellKeyDown={onCellKeyDown}
-              onCellMouseDown={handleCellMouseDown}
-              onCellMouseOver={handleCellMouseOver}
+              ref={gridRef}
+              getRowStyle={(params) => {
+                const style = getCellStyle(params);
+                if (style) {
+                  return {
+                    backgroundColor: style.backgroundColor || '',
+                    outline: style.outline || '',
+                    outlineOffset: style.outlineOffset || ''
+                  };
+                }
+                return undefined;
+              }}
             />
           </div>
         </div>
