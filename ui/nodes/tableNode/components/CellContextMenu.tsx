@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { Menu, Item, Separator, useContextMenu } from 'react-contexify';
 import 'react-contexify/ReactContexify.css';
 import styles from '@/ui/nodes/tableNode/styles/CellContextMenu.module.css';
@@ -6,7 +6,7 @@ import Portal from '@/ui/nodes/tableNode/Portal';
 
 interface CellContextMenuProps {
   id: string;
-  position: { x: number; y: number };
+  position: { x: number; y: number } | null;
   params: any;
   onClose: () => void;
   setContent: React.Dispatch<React.SetStateAction<any>>;
@@ -27,16 +27,29 @@ const CellContextMenu: React.FC<CellContextMenuProps> = ({
     id
   });
 
+  const showContextMenu = useCallback(
+    (event: MouseEvent) => {
+      if (position) {
+        show({ event });
+      }
+    },
+    [show, position]
+  );
+
   useEffect(() => {
-    const event = new MouseEvent('contextmenu', {
-      clientX: position.x,
-      clientY: position.y,
-      bubbles: true,
-      cancelable: true,
-      view: window
-    });
-    show({ event });
-  }, [position, show]);
+    if (position) {
+      const handleContextMenu = (event: MouseEvent) => {
+        event.preventDefault();
+        showContextMenu(event);
+      };
+
+      window.addEventListener('contextmenu', handleContextMenu);
+
+      return () => {
+        window.removeEventListener('contextmenu', handleContextMenu);
+      };
+    }
+  }, [position, showContextMenu]);
 
   const handleCopy = () => {
     const selectedNodes = gridRef.current.api.getSelectedNodes();

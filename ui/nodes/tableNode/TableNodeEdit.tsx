@@ -243,11 +243,14 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     // Apply locale settings to existing columns and rows if necessary
   };
 
-  const handleCellContextMenu = (event: React.MouseEvent, params: any) => {
-    event.preventDefault();
-    setCellContextMenuPosition({ x: event.clientX, y: event.clientY });
-    setCellContextMenuParams(params);
-  };
+  const handleCellContextMenu = useCallback(
+    (event: React.MouseEvent, params: any) => {
+      event.preventDefault();
+      setCellContextMenuPosition({ x: event.clientX, y: event.clientY });
+      setCellContextMenuParams(params);
+    },
+    [setCellContextMenuPosition, setCellContextMenuParams]
+  );
 
   const handleCellContextMenuClose = () => {
     setCellContextMenuPosition(null);
