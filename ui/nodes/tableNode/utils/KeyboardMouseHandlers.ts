@@ -1,6 +1,179 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { addRow, addColumn } from '@/ui/nodes/tableNode/utils/TableFunctions';
 import debounce from 'lodash.debounce';
+
+interface Range {
+  startRow: number;
+  endRow: number;
+  startCol: number;
+  endCol: number;
+}
+
+interface Cell {
+  row: number;
+  col: number;
+}
+
+export const useRangeSelection = (
+  setContent,
+  gridRef: React.RefObject<any>
+) => {
+  const [ranges, setRanges] = useState<Range[]>([]);
+  const [currentRange, setCurrentRange] = useState<Range | null>(null);
+  const [startCell, setStartCell] = useState<Cell | null>(null);
+  const [endCell, setEndCell] = useState<Cell | null>(null);
+  const [isShiftKeyDown, setIsShiftKeyDown] = useState(false);
+
+  const handleCellMouseDown = (params: any) => {
+    const { rowIndex, colDef } = params;
+    setStartCell({ row: rowIndex, col: colDef.field });
+    setEndCell(null);
+    setCurrentRange({
+      startRow: rowIndex,
+      endRow: rowIndex,
+      startCol: colDef.field,
+      endCol: colDef.field
+    });
+  };
+
+  const handleCellMouseOver = debounce((params: any) => {
+    if (startCell && currentRange) {
+      const { rowIndex, colDef } = params;
+      setEndCell({ row: rowIndex, col: colDef.field });
+      setCurrentRange({
+        ...currentRange,
+        endRow: rowIndex,
+        endCol: colDef.field
+      });
+    }
+  }, 50);
+
+  const handleCellMouseUp = () => {
+    if (currentRange) {
+      setRanges([...ranges, currentRange]);
+    }
+    setStartCell(null);
+    setEndCell(null);
+    setCurrentRange(null);
+  };
+
+  const handleKeyDown = (event: KeyboardEvent) => {
+    const { key, shiftKey } = event;
+    const api = gridRef.current.api;
+    const currentCell = api.getFocusedCell();
+
+    if (shiftKey) {
+      setIsShiftKeyDown(true);
+      if (currentCell && startCell) {
+        const { rowIndex, column } = currentCell;
+        setEndCell({ row: rowIndex, col: column.colId });
+        setCurrentRange({
+          startRow: startCell.row,
+          endRow: rowIndex,
+          startCol: startCell.col,
+          endCol: column.colId
+        });
+      }
+    } else if (
+      key === 'ArrowUp' ||
+      key === 'ArrowDown' ||
+      key === 'ArrowLeft' ||
+      key === 'ArrowRight'
+    ) {
+      setStartCell(null);
+      setEndCell(null);
+      setCurrentRange(null);
+    }
+  };
+
+  const handleKeyUp = (event: KeyboardEvent) => {
+    const { shiftKey } = event;
+    if (!shiftKey) {
+      setIsShiftKeyDown(false);
+      if (currentRange) {
+        setRanges([...ranges, currentRange]);
+        setCurrentRange(null);
+      }
+    }
+  };
+
+  const getCellStyle = (params: any) => {
+    const { rowIndex, colDef } = params;
+    if (!colDef || !colDef.field) {
+      return {};
+    }
+
+    const isFocused =
+      params.api.getFocusedCell()?.rowIndex === rowIndex &&
+      params.api.getFocusedCell()?.column.getId() === colDef.field;
+
+    if (isFocused) {
+      return { outline: '2px solid #7c3aed', outlineOffset: '-1px' };
+    }
+
+    const isInRange = ranges.some(
+      (range) =>
+        rowIndex >= range.startRow &&
+        rowIndex <= range.endRow &&
+        colDef.field >= range.startCol &&
+        colDef.field <= range.endCol
+    );
+
+    if (isInRange) {
+      return { backgroundColor: 'rgba(124, 58, 237, 0.2)' };
+    }
+
+    if (
+      currentRange &&
+      rowIndex >= currentRange.startRow &&
+      rowIndex <= currentRange.endRow &&
+      colDef.field >= currentRange.startCol &&
+      colDef.field <= currentRange.endCol
+    ) {
+      return { backgroundColor: 'rgba(124, 58, 237, 0.4)' };
+    }
+
+    return {};
+  };
+
+  useEffect(() => {
+    if (!gridRef.current || !gridRef.current.api) {
+      return;
+    }
+
+    const api = gridRef.current.api;
+    const handleGridReady = () => {
+      api.addEventListener('cellMouseDown', handleCellMouseDown);
+      api.addEventListener('cellMouseOver', handleCellMouseOver);
+      api.addEventListener('cellMouseUp', handleCellMouseUp);
+      window.addEventListener('keydown', handleKeyDown);
+      window.addEventListener('keyup', handleKeyUp);
+    };
+
+    const handleGridDestroyed = () => {
+      api.removeEventListener('cellMouseDown', handleCellMouseDown);
+      api.removeEventListener('cellMouseOver', handleCellMouseOver);
+      api.removeEventListener('cellMouseUp', handleCellMouseUp);
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+
+    handleGridReady();
+
+    return () => {
+      handleGridDestroyed();
+    };
+  }, [
+    handleCellMouseDown,
+    handleCellMouseOver,
+    handleCellMouseUp,
+    handleKeyDown,
+    handleKeyUp,
+    gridRef
+  ]);
+
+  return { getCellStyle };
+};
 
 export const useKeyPressHandler = (
   content,
@@ -109,92 +282,4 @@ export const onCellKeyDown = (params) => {
     }
     api.refreshCells({ force: true });
   }
-};
-interface Cell {
-  row: number;
-  col: string;
-}
-
-export const useRangeSelection = (setContent) => {
-  const [startCell, setStartCell] = useState<Cell | null>(null);
-  const [endCell, setEndCell] = useState<Cell | null>(null);
-
-  const handleCellMouseDown = (params: any) => {
-    console.log(
-      'KeyboardMouseHandlers: handleCellMouseDown - Mouse down on cell',
-      { row: params.node.rowIndex, col: params.colDef.field }
-    );
-    setStartCell({ row: params.node.rowIndex, col: params.colDef.field });
-    setEndCell(null);
-  };
-
-  const handleCellMouseOver = debounce((params: any) => {
-    if (startCell) {
-      console.log(
-        'KeyboardMouseHandlers: handleCellMouseOver - Mouse over cell',
-        { row: params.node.rowIndex, col: params.colDef.field }
-      );
-      setEndCell({ row: params.node.rowIndex, col: params.colDef.field });
-    }
-  }, 50);
-
-  const handleCellMouseUp = () => {
-    if (startCell && endCell) {
-      console.log(
-        'KeyboardMouseHandlers: handleCellMouseUp - Range selected from',
-        startCell,
-        'to',
-        endCell
-      );
-    }
-    console.log(
-      'KeyboardMouseHandlers: handleCellMouseUp - Mouse up, resetting selection'
-    );
-    setStartCell(null);
-    setEndCell(null);
-  };
-
-  const getCellStyle = (params: any) => {
-    const focusedCell = params.api.getFocusedCell();
-    const isFocused =
-      focusedCell &&
-      focusedCell.rowIndex === params.rowIndex &&
-      focusedCell.column &&
-      focusedCell.column.getId() === params.colDef?.field;
-
-    if (isFocused) {
-      return { outline: '2px solid #7c3aed', outlineOffset: '-1px' };
-    }
-
-    if (startCell && endCell) {
-      const { rowIndex, colDef } = params;
-      const startRow = Math.min(startCell.row, endCell.row);
-      const endRow = Math.max(startCell.row, endCell.row);
-      const startCol = Math.min(Number(startCell.col), Number(endCell.col));
-      const endCol = Math.max(Number(startCell.col), Number(endCell.col));
-
-      if (
-        rowIndex >= startRow &&
-        rowIndex <= endRow &&
-        colDef &&
-        colDef.field >= startCol &&
-        colDef.field <= endCol
-      ) {
-        console.log('KeyboardMouseHandlers: getCellStyle - Cell is in range', {
-          rowIndex,
-          colDef
-        });
-        return { backgroundColor: 'lightgray' };
-      }
-    }
-
-    return {};
-  };
-
-  return {
-    handleCellMouseDown,
-    handleCellMouseOver,
-    handleCellMouseUp,
-    getCellStyle
-  };
 };

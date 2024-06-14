@@ -133,12 +133,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   const tableRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<any>(null);
 
-  const {
-    handleCellMouseDown,
-    handleCellMouseOver,
-    handleCellMouseUp,
-    getCellStyle
-  } = useRangeSelection(setContent);
+  const { getCellStyle } = useRangeSelection(setContent, gridRef);
 
   useEffect(() => {
     if (
@@ -385,8 +380,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
                 onCellValueChanged(event, setContent);
               }}
               onCellKeyDown={onCellKeyDown}
-              onCellMouseDown={handleCellMouseDown}
-              onCellMouseOver={handleCellMouseOver}
+              ref={gridRef}
             />
           </div>
         </div>
