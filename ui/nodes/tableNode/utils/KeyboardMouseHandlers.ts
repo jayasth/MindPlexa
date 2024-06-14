@@ -206,47 +206,31 @@ export const useKeyPressHandler = (
     const handleKeyPress = (event: KeyboardEvent) => {
       const api = gridRef?.current?.api;
       if (api) {
-        if (event.ctrlKey && event.key === 'n') {
-          addRow(content, setContent, updateNode);
-        } else if (event.ctrlKey && event.key === 'm') {
-          addColumn(content, setContent, updateNode);
-        } else if (event.ctrlKey && event.key === 'd') {
-          const selectedRows = api.getSelectedRows();
-          if (selectedRows.length > 0) {
-            const updatedRows = content.rows.filter(
-              (_, index) =>
-                !selectedRows.some((row) => row.id === content.rows[index].id)
-            );
-            setContent({ ...content, rows: updatedRows });
-          }
-        } else if (event.ctrlKey && event.key === 'a') {
+        if (event.ctrlKey && event.key === 'a') {
           api.selectAll();
+          event.preventDefault(); // Prevent default to ensure grid handles the event
         } else if (event.ctrlKey && event.key === 'c') {
           const selectedNodes = api.getSelectedNodes();
           if (selectedNodes.length > 0) {
-            const selectedData = selectedNodes.map((node) => node.data);
-            const clipboardText = JSON.stringify(selectedData);
-            navigator.clipboard.writeText(clipboardText).then(() => {
-              console.log('Copied to clipboard:', clipboardText);
-            });
+            const clipboardText = selectedNodes
+              .map((node) => {
+                const rowIndex = node.rowIndex;
+                const rowData = api.getDisplayedRowAtIndex(rowIndex).data;
+                return Object.values(rowData).join('\t');
+              })
+              .join('\n');
+            navigator.clipboard.writeText(clipboardText);
+            event.preventDefault();
           }
         } else if (event.ctrlKey && event.key === 'v') {
           navigator.clipboard.readText().then((clipText) => {
-            console.log('Pasted text:', clipText);
-            const selectedNodes = api.getSelectedNodes();
-            if (selectedNodes.length > 0) {
-              const rowData = selectedNodes[0].data;
-              const focusedCell = api.getFocusedCell();
-              const column = api
-                .getColumnDefs()
-                .find((col) => col.field === focusedCell.column.colId);
-              if (column) {
-                rowData[column.field] = clipText;
-                const updatedRows = content.rows.map((row) =>
-                  row.id === rowData.id ? rowData : row
-                );
-                setContent({ ...content, rows: updatedRows });
-              }
+            const focusedCell = api.getFocusedCell();
+            if (focusedCell) {
+              const rowNode = api.getRowNode(focusedCell.rowIndex);
+              const colId = focusedCell.column.colId;
+              rowNode.setDataValue(colId, clipText);
+              api.refreshCells({ force: true });
+              event.preventDefault();
             }
           });
         }
@@ -259,7 +243,6 @@ export const useKeyPressHandler = (
     };
   }, [content, setContent, updateNode, gridRef]);
 };
-
 export const onCellKeyDown = (params) => {
   const key = params.event.key;
   const api = params.api;

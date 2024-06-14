@@ -45,7 +45,7 @@ import {
   onCellValueChanged,
   validateCellValue,
   getColumnDefs,
-  gridOptions
+  gridOptions as existingOptions
 } from '@/ui/nodes/tableNode/utils/TableFunctions';
 
 import {
@@ -262,6 +262,21 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   const columnDefs = getColumnDefs(content, setContent, updateNode, gridRef);
 
   useKeyPressHandler(content, setContent, updateNode, gridRef);
+  const handleCellClick = useCallback(
+    (event) => {
+      if (gridRef.current) {
+        gridRef.current.api.deselectAll();
+      }
+    },
+    [gridRef]
+  );
+
+  const gridOptions = {
+    ...existingOptions,
+    suppressCellSelection: false,
+    enableRangeSelection: true,
+    onCellClicked: handleCellClick
+  };
 
   return (
     <div>
