@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { addRow, addColumn } from '@/ui/nodes/tableNode/utils/TableFunctions';
 import debounce from 'lodash.debounce';
 
 interface Range {
@@ -210,15 +209,11 @@ export const useKeyPressHandler = (
           api.selectAll();
           event.preventDefault(); // Prevent default to ensure grid handles the event
         } else if (event.ctrlKey && event.key === 'c') {
-          const selectedNodes = api.getSelectedNodes();
-          if (selectedNodes.length > 0) {
-            const clipboardText = selectedNodes
-              .map((node) => {
-                const rowIndex = node.rowIndex;
-                const rowData = api.getDisplayedRowAtIndex(rowIndex).data;
-                return Object.values(rowData).join('\t');
-              })
-              .join('\n');
+          const focusedCell = api.getFocusedCell();
+          if (focusedCell) {
+            const rowNode = api.getRowNode(focusedCell.rowIndex);
+            const rowData = rowNode.data;
+            const clipboardText = Object.values(rowData).join('\t');
             navigator.clipboard.writeText(clipboardText);
             event.preventDefault();
           }
@@ -228,7 +223,9 @@ export const useKeyPressHandler = (
             if (focusedCell) {
               const rowNode = api.getRowNode(focusedCell.rowIndex);
               const colId = focusedCell.column.colId;
-              rowNode.setDataValue(colId, clipText);
+              const currentValue = rowNode.data[colId];
+              const newValue = clipText; // Replace the current value with clipboard text
+              rowNode.setDataValue(colId, newValue);
               api.refreshCells({ force: true });
               event.preventDefault();
             }
@@ -243,6 +240,7 @@ export const useKeyPressHandler = (
     };
   }, [content, setContent, updateNode, gridRef]);
 };
+
 export const onCellKeyDown = (params) => {
   const key = params.event.key;
   const api = params.api;
