@@ -132,7 +132,13 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   const updateNode = useStore((state) => state.updateNode);
   const tableRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<any>(null);
-  const { getCellStyle } = useRangeSelection(setContent, gridRef);
+
+  const {
+    handleCellMouseDown,
+    handleCellMouseOver,
+    handleCellMouseUp,
+    getCellStyle
+  } = useRangeSelection(setContent);
 
   useEffect(() => {
     if (
@@ -345,7 +351,19 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           >
             <AgGridReact
               gridOptions={{
-                ...gridOptions
+                ...gridOptions,
+                suppressContextMenu: false,
+                getRowStyle: (params) => {
+                  const style = getCellStyle(params);
+                  if (style) {
+                    return {
+                      backgroundColor: style.backgroundColor || '',
+                      outline: style.outline || '',
+                      outlineOffset: style.outlineOffset || ''
+                    };
+                  }
+                  return undefined;
+                }
               }}
               columnDefs={columnDefs as any}
               rowData={content.rows}
@@ -367,18 +385,8 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
                 onCellValueChanged(event, setContent);
               }}
               onCellKeyDown={onCellKeyDown}
-              ref={gridRef}
-              getRowStyle={(params) => {
-                const style = getCellStyle(params);
-                if (style) {
-                  return {
-                    backgroundColor: style.backgroundColor || '',
-                    outline: style.outline || '',
-                    outlineOffset: style.outlineOffset || ''
-                  };
-                }
-                return undefined;
-              }}
+              onCellMouseDown={handleCellMouseDown}
+              onCellMouseOver={handleCellMouseOver}
             />
           </div>
         </div>
