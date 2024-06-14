@@ -69,9 +69,18 @@ const CellContextMenu: React.FC<CellContextMenuProps> = ({
   };
 
   const handleDeleteRow = () => {
-    const updatedRows = content.rows.filter((row) => row !== params.node.data);
-    setContent({ ...content, rows: updatedRows });
-    gridRef.current.api.refreshCells({ force: true });
+    console.log('CellContextMenu: params:', params); // Add this line
+    if (params && params.node && params.node.data) {
+      const updatedRows = content.rows.filter(
+        (row) => row !== params.node.data
+      );
+      setContent({ ...content, rows: updatedRows });
+      gridRef.current.api.refreshCells({ force: true });
+    } else {
+      console.error(
+        'CellContextMenu: params.node or params.node.data is undefined'
+      );
+    }
     onClose();
   };
 

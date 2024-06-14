@@ -241,6 +241,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   const handleCellContextMenu = useCallback(
     (event: React.MouseEvent, params: any) => {
       event.preventDefault();
+      console.log('TableNodeEdit: handleCellContextMenu params:', params);
       setCellContextMenuPosition({ x: event.clientX, y: event.clientY });
       setCellContextMenuParams(params);
     },
