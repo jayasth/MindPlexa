@@ -66,6 +66,7 @@ import { TableNodeData } from '@/ui/canvasEditor/utils/nodeDatatypes';
 
 import CustomHeader from '@/ui/nodes/tableNode/components/CustomHeader';
 import HeaderContextMenu from '@/ui/nodes/tableNode/components/HeaderContextMenu';
+import CellContextMenu from '@/ui/nodes/tableNode/components/CellContextMenu';
 
 import TagFileContainer from '@/ui/nodes/common/TagFileContainer';
 
@@ -74,8 +75,6 @@ import {
   onCellKeyDown,
   useRangeSelection
 } from '@/ui/nodes/tableNode/utils/KeyboardMouseHandlers';
-
-import CellContextMenu from '@/ui/nodes/tableNode/components/CellContextMenu';
 
 interface TableNodeEditProps extends NodeProps {
   data: TableNodeData;
@@ -123,6 +122,12 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [locale, setLocale] = useState('en-US'); // Default locale
   const [errorMessage, setErrorMessage] = useState('');
+
+  const [cellContextMenuPosition, setCellContextMenuPosition] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+  const [cellContextMenuParams, setCellContextMenuParams] = useState<any>(null);
 
   const updateNode = useStore((state) => state.updateNode);
   const tableRef = useRef<HTMLDivElement>(null);
@@ -238,6 +243,17 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     // Apply locale settings to existing columns and rows if necessary
   };
 
+  const handleCellContextMenu = (event: React.MouseEvent, params: any) => {
+    event.preventDefault();
+    setCellContextMenuPosition({ x: event.clientX, y: event.clientY });
+    setCellContextMenuParams(params);
+  };
+
+  const handleCellContextMenuClose = () => {
+    setCellContextMenuPosition(null);
+    setCellContextMenuParams(null);
+  };
+
   const customStyles: CSSProperties = {
     width: nodeWidth,
     height: nodeHeight,
@@ -287,49 +303,24 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           onResizeEnd={handleResizeEnd}
         />
         <div className={styles.header}>
-          <div
-            className={styles.title}
-            onContextMenu={(e) => {
-              e.preventDefault();
-              const target = e.target as HTMLElement;
-              const rect = target.getBoundingClientRect();
-              const position = { x: rect.left, y: rect.top };
-              const params = {
-                node: {
-                  data: {
-                    title
-                  }
-                }
-              };
-              setContent({ ...content, rows: content.rows });
-              gridRef.current.api.refreshCells({ force: true });
-              CellContextMenu({
-                id: 'cell-context-menu',
-                position,
-                params,
-                onClose: () => {},
-                setContent,
-                content,
-                gridRef
-              });
-            }}
-          >
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => onChangeTitle(e.target.value)}
-              className={`${styles.titleInput} nodrag`}
-              style={{ color: textColor }}
-              aria-label="Table Title"
-            />
-          </div>
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => onChangeTitle(e.target.value)}
+            className={`${styles.titleInput} nodrag`}
+            style={{ color: textColor }}
+            aria-label="Table Title"
+          />
           <CloseButton
             onClick={() => handleClose(data.id, () => {}, title, content)}
             aria-label="Close Table"
           />
         </div>
 
-        <div className={`${styles.tableContent} nowheel nodrag`}>
+        <div
+          className={`${styles.tableContent} nowheel nodrag`}
+          onContextMenu={(event) => handleCellContextMenu(event, event)}
+        >
           <div className={styles.toolbar}>
             <AddTableButton
               onClick={() => setIsModalOpen(true)}
@@ -542,6 +533,17 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
               gridRef={gridRef}
             />
           ))}
+        {cellContextMenuPosition && cellContextMenuParams && (
+          <CellContextMenu
+            id="cell-context-menu"
+            position={cellContextMenuPosition}
+            params={cellContextMenuParams}
+            onClose={handleCellContextMenuClose}
+            setContent={setContent}
+            content={content}
+            gridRef={gridRef}
+          />
+        )}
       </div>
     </div>
   );
