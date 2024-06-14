@@ -25,6 +25,10 @@ export const useRangeSelection = (
   const [isShiftKeyDown, setIsShiftKeyDown] = useState(false);
 
   const handleCellMouseDown = (params: any) => {
+    console.log(
+      'KeyboardMouseHandlers: handleCellMouseDown called with params:',
+      params
+    );
     const { rowIndex, colDef } = params;
     setStartCell({ row: rowIndex, col: colDef.field });
     setEndCell(null);
@@ -37,6 +41,10 @@ export const useRangeSelection = (
   };
 
   const handleCellMouseOver = debounce((params: any) => {
+    console.log(
+      'KeyboardMouseHandlers: handleCellMouseOver called with params:',
+      params
+    );
     if (startCell && currentRange) {
       const { rowIndex, colDef } = params;
       setEndCell({ row: rowIndex, col: colDef.field });
@@ -49,6 +57,7 @@ export const useRangeSelection = (
   }, 50);
 
   const handleCellMouseUp = () => {
+    console.log('KeyboardMouseHandlers: handleCellMouseUp called');
     if (currentRange) {
       setRanges([...ranges, currentRange]);
     }
@@ -58,6 +67,10 @@ export const useRangeSelection = (
   };
 
   const handleKeyDown = (event: KeyboardEvent) => {
+    console.log(
+      'KeyboardMouseHandlers: handleKeyDown called with event:',
+      event
+    );
     const { key, shiftKey } = event;
     const api = gridRef.current.api;
     const currentCell = api.getFocusedCell();
@@ -87,6 +100,7 @@ export const useRangeSelection = (
   };
 
   const handleKeyUp = (event: KeyboardEvent) => {
+    console.log('KeyboardMouseHandlers: handleKeyUp called with event:', event);
     const { shiftKey } = event;
     if (!shiftKey) {
       setIsShiftKeyDown(false);
@@ -98,6 +112,10 @@ export const useRangeSelection = (
   };
 
   const getCellStyle = (params: any) => {
+    console.log(
+      'KeyboardMouseHandlers: getCellStyle called with params:',
+      params
+    );
     const { rowIndex, colDef } = params;
     if (!colDef || !colDef.field) {
       return {};
@@ -137,12 +155,14 @@ export const useRangeSelection = (
   };
 
   useEffect(() => {
+    console.log('KeyboardMouseHandlers: useEffect called');
     if (!gridRef.current || !gridRef.current.api) {
       return;
     }
 
     const api = gridRef.current.api;
     const handleGridReady = () => {
+      console.log('KeyboardMouseHandlers: handleGridReady called');
       api.addEventListener('cellMouseDown', handleCellMouseDown);
       api.addEventListener('cellMouseOver', handleCellMouseOver);
       api.addEventListener('cellMouseUp', handleCellMouseUp);
@@ -151,6 +171,7 @@ export const useRangeSelection = (
     };
 
     const handleGridDestroyed = () => {
+      console.log('KeyboardMouseHandlers: handleGridDestroyed called');
       api.removeEventListener('cellMouseDown', handleCellMouseDown);
       api.removeEventListener('cellMouseOver', handleCellMouseOver);
       api.removeEventListener('cellMouseUp', handleCellMouseUp);
