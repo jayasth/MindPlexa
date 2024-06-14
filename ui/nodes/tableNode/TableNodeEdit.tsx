@@ -247,6 +247,24 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
 
   useKeyPressHandler(content, setContent, updateNode, gridRef);
 
+  useEffect(() => {
+    if (gridRef.current) {
+      gridRef.current.api.setColumnDefs(
+        getColumnDefs(content, setContent, updateNode, gridRef)
+      );
+    }
+  }, [content.columns]);
+
+  const handleAddColumn = (columnType: string) => {
+    addColumn(content, setContent, updateNode, columnType);
+    if (gridRef.current) {
+      gridRef.current.api.setColumnDefs(
+        getColumnDefs(content, setContent, updateNode, gridRef)
+      );
+      gridRef.current.api.refreshHeader();
+    }
+  };
+
   return (
     <div>
       {errorMessage && (
@@ -288,11 +306,9 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
               aria-label="Add Table"
             />
             <AddColumnButton
-              onClick={(columnType) =>
-                addColumn(content, setContent, updateNode, columnType, locale)
-              }
+              onClick={handleAddColumn}
               aria-label="Add Column"
-              locale={locale} // Pass locale to AddColumnButton
+              locale={locale}
             />
             <AddRowButton
               onClick={() => addRow(content, setContent, updateNode)}
@@ -479,23 +495,23 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           onSave={handleLocaleChange}
           initialLocale={locale}
         />
-        {content.columns.map((col) => (
-          <HeaderContextMenu
-            key={col.field}
-            id={`header-context-menu-${col.field}`}
-            params={{
-              column: gridRef.current?.api
-                .getColumnState()
-                .find((c) => c.colId === col.field),
-              columnApi: gridRef.current?.columnApi,
-              api: gridRef.current?.api
-            }}
-            content={content}
-            setContent={setContent}
-            updateNode={updateNode}
-            gridRef={gridRef}
-          />
-        ))}
+        {gridRef.current &&
+          content.columns.map((col) => (
+            <HeaderContextMenu
+              key={col.field}
+              id={`header-context-menu-${col.field}`}
+              params={{
+                column: gridRef.current.api
+                  .getColumnState()
+                  .find((c) => c.colId === col.field),
+                api: gridRef.current.api
+              }}
+              content={content}
+              setContent={setContent}
+              updateNode={updateNode}
+              gridRef={gridRef}
+            />
+          ))}
       </div>
     </div>
   );

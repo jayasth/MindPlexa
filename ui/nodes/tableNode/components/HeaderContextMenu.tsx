@@ -38,17 +38,20 @@ const HeaderContextMenu = ({
   const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState<Column | null>(null);
 
-  const items = params
-    ? getContextMenuItems(
-        params,
-        content,
-        setContent,
-        updateNode,
-        gridRef,
-        setIsRenameModalOpen,
-        setSelectedColumn
-      )
-    : [];
+  if (!params || !params.column || !params.api) {
+    console.error('Invalid params provided to context menu items.');
+    return null;
+  }
+
+  const items = getContextMenuItems(
+    params,
+    content,
+    setContent,
+    updateNode,
+    gridRef,
+    setIsRenameModalOpen,
+    setSelectedColumn
+  );
 
   const handleRenameSave = (newName: string, newType: string) => {
     if (selectedColumn) {
