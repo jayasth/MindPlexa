@@ -75,6 +75,8 @@ import {
   useRangeSelection
 } from '@/ui/nodes/tableNode/utils/KeyboardMouseHandlers';
 
+import CellContextMenu from '@/ui/nodes/tableNode/components/CellContextMenu';
+
 interface TableNodeEditProps extends NodeProps {
   data: TableNodeData;
   width: number;
@@ -285,14 +287,44 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           onResizeEnd={handleResizeEnd}
         />
         <div className={styles.header}>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => onChangeTitle(e.target.value)}
-            className={`${styles.titleInput} nodrag`}
-            style={{ color: textColor }}
-            aria-label="Table Title"
-          />
+          <div
+            className={styles.title}
+            onContextMenu={(e) => {
+              e.preventDefault();
+              const target = e.target as HTMLElement;
+              const rect = target.getBoundingClientRect();
+              const position = { x: rect.left, y: rect.top };
+              const params = {
+                node: {
+                  data: {
+                    title
+                  }
+                }
+              };
+              setContent({ ...content, rows: content.rows });
+              gridRef.current.api.refreshCells({ force: true });
+              // @ts-ignore
+              CellContextMenu.show({
+                id: 'cell-context-menu',
+                event: e,
+                position,
+                params,
+                onClose: () => {},
+                setContent,
+                content,
+                gridRef
+              });
+            }}
+          >
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => onChangeTitle(e.target.value)}
+              className={`${styles.titleInput} nodrag`}
+              style={{ color: textColor }}
+              aria-label="Table Title"
+            />
+          </div>
           <CloseButton
             onClick={() => handleClose(data.id, () => {}, title, content)}
             aria-label="Close Table"
