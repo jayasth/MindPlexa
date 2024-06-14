@@ -1,5 +1,5 @@
-import React from 'react';
-import { Menu, Item, Separator } from 'react-contexify';
+import React, { useEffect } from 'react';
+import { Menu, Item, Separator, useContextMenu } from 'react-contexify';
 import 'react-contexify/ReactContexify.css';
 import styles from '@/ui/nodes/tableNode/styles/CellContextMenu.module.css';
 import Portal from '@/ui/nodes/tableNode/Portal';
@@ -23,8 +23,20 @@ const CellContextMenu: React.FC<CellContextMenuProps> = ({
   content,
   gridRef
 }) => {
-  console.log('CellContextMenu: position', position);
-  console.log('CellContextMenu: params', params);
+  const { show } = useContextMenu({
+    id
+  });
+
+  useEffect(() => {
+    const event = new MouseEvent('contextmenu', {
+      clientX: position.x,
+      clientY: position.y,
+      bubbles: true,
+      cancelable: true,
+      view: window
+    });
+    show({ event });
+  }, [position, show]);
 
   const handleCopy = () => {
     const selectedNodes = gridRef.current.api.getSelectedNodes();
@@ -52,12 +64,7 @@ const CellContextMenu: React.FC<CellContextMenuProps> = ({
 
   return (
     <Portal>
-      <Menu
-        id={id}
-        className={styles.contextMenu}
-        style={{ top: position.y, left: position.x }}
-        onContextMenu={(e) => e.preventDefault()}
-      >
+      <Menu id={id} className={styles.contextMenu}>
         <Item onClick={handleCopy}>Copy</Item>
         <Item onClick={handlePaste}>Paste</Item>
         <Separator />
