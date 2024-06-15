@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, useState } from 'react';
 import { Menu, Item, Separator, useContextMenu } from 'react-contexify';
 import 'react-contexify/ReactContexify.css';
 import styles from '@/ui/nodes/tableNode/styles/CellContextMenu.module.css';
@@ -27,6 +27,8 @@ const CellContextMenu: React.FC<CellContextMenuProps> = ({
     id
   });
 
+  const [isCopying, setIsCopying] = useState(false);
+
   const showContextMenu = useCallback(
     (event: MouseEvent) => {
       if (position) {
@@ -51,37 +53,73 @@ const CellContextMenu: React.FC<CellContextMenuProps> = ({
     }
   }, [position, showContextMenu]);
 
-  const handleCopy = () => {
-    const selectedNodes = gridRef.current.api.getSelectedNodes();
-    const selectedData = selectedNodes.map((node) => node.data);
-    navigator.clipboard.writeText(JSON.stringify(selectedData));
-    onClose();
+  const handleCopy = async () => {
+    setIsCopying(true);
+    const api = gridRef.current.api;
+    const selectedRows = api.getSelectedRows();
+    if (selectedRows.length > 0) {
+      const clipboardText = selectedRows
+        .map((row) => Object.values(row).join('\t'))
+        .join('\n');
+      try {
+        await navigator.clipboard.writeText(clipboardText);
+        setIsCopying(false);
+      } catch (error) {
+        console.error('Failed to copy data to clipboard:', error);
+        setIsCopying(false);
+      }
+    } else {
+      const focusedCell = api.getFocusedCell();
+      if (focusedCell) {
+        const rowNode = api.getRowNode(focusedCell.rowIndex);
+        const rowData = rowNode.data;
+        const clipboardText = Object.values(rowData).join('\t');
+        try {
+          await navigator.clipboard.writeText(clipboardText);
+          setIsCopying(false);
+        } catch (error) {
+          console.error('Failed to copy data to clipboard:', error);
+          setIsCopying(false);
+        }
+      }
+    }
   };
 
-  const handlePaste = () => {
-    navigator.clipboard.readText().then((text) => {
-      const data = JSON.parse(text);
-      const updatedRows = [...content.rows, ...data];
-      setContent({ ...content, rows: updatedRows });
-      gridRef.current.api.refreshCells({ force: true });
-    });
-    onClose();
+  const handlePaste = async () => {
+    const api = gridRef.current.api;
+    const focusedCell = api.getFocusedCell();
+    if (focusedCell) {
+      try {
+        const clipboardText = await navigator.clipboard.readText();
+        const rowNode = api.getRowNode(focusedCell.rowIndex);
+        const colId = focusedCell.column.colId;
+        const currentValue = rowNode.data[colId];
+        const newValue = clipboardText; // Replace the current value with clipboard text
+        rowNode.setDataValue(colId, newValue);
+        api.refreshCells({ force: true });
+      } catch (error) {
+        console.error('Failed to paste data from clipboard:', error);
+      }
+    }
   };
 
   const handleDeleteRow = () => {
-    console.log('CellContextMenu: params:', params); // Add this line
-    if (params && params.node && params.node.data) {
+    const api = gridRef.current.api;
+    const selectedRows = api.getSelectedRows();
+    if (selectedRows.length > 0) {
       const updatedRows = content.rows.filter(
-        (row) => row !== params.node.data
+        (row) => !selectedRows.includes(row)
       );
       setContent({ ...content, rows: updatedRows });
-      gridRef.current.api.refreshCells({ force: true });
     } else {
-      console.error(
-        'CellContextMenu: params.node or params.node.data is undefined'
-      );
+      const focusedCell = api.getFocusedCell();
+      if (focusedCell) {
+        const updatedRows = content.rows.filter(
+          (row, index) => index !== focusedCell.rowIndex
+        );
+        setContent({ ...content, rows: updatedRows });
+      }
     }
-    onClose();
   };
 
   return (
