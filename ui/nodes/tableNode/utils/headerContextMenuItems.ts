@@ -53,7 +53,7 @@ export const getContextMenuItems = (
       action: () => {
         params.api.applyColumnState({
           state: [{ colId: params.column.colId, sort: 'asc' }],
-          applyOrder: true
+          applyOrder: false // Ensure the column order is not changed
         });
         params.api.refreshCells({ force: true });
         params.api.refreshHeader();
@@ -64,7 +64,7 @@ export const getContextMenuItems = (
       action: () => {
         params.api.applyColumnState({
           state: [{ colId: params.column.colId, sort: 'desc' }],
-          applyOrder: true
+          applyOrder: false // Ensure the column order is not changed
         });
         params.api.refreshCells({ force: true });
         params.api.refreshHeader();

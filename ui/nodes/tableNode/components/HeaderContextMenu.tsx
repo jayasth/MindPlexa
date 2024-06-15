@@ -69,7 +69,7 @@ const HeaderContextMenu = ({
   const handleSort = (sort: 'asc' | 'desc') => {
     params.api.applyColumnState({
       state: [{ colId: params.column.colId, sort }],
-      applyOrder: true
+      applyOrder: false // Ensure the column order is not changed
     });
     // Refresh the grid to ensure the correct order is displayed
     params.api.refreshCells({ force: true });
