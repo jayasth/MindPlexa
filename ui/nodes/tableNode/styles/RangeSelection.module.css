@@ -14,3 +14,8 @@
   border: 2px solid #7c3aed;
   pointer-events: none;
 }
+
+.selectedCell {
+  background-color: rgba(124, 58, 237, 0.3) !important;
+  border: 2px solid #7c3aed !important;
+}

@@ -9,9 +9,9 @@ interface RangeSelectionProps {
 
 interface RangeSelectionState {
   startRow: number | null;
-  startCol: number | null;
+  startCol: string | null;
   endRow: number | null;
-  endCol: number | null;
+  endCol: string | null;
 }
 
 const RangeSelection: React.FC<RangeSelectionProps> = ({
@@ -26,7 +26,7 @@ const RangeSelection: React.FC<RangeSelectionProps> = ({
     endCol: null
   });
   const [isDragging, setIsDragging] = useState(false);
-  const dragStartRef = useRef<{ row: number; col: number } | null>(null);
+  const dragStartRef = useRef<{ row: number; col: string } | null>(null);
 
   const isValidRange = (range: RangeSelectionState) => {
     return (
@@ -42,20 +42,29 @@ const RangeSelection: React.FC<RangeSelectionProps> = ({
     if (isValidRange(newRange)) {
       api.forEachNode((node) => {
         const row = node.rowIndex;
-        const col = node.column.getId();
-        if (
-          newRange.startRow !== null &&
-          newRange.endRow !== null &&
-          newRange.startCol !== null &&
-          newRange.endCol !== null
-        ) {
-          node.setSelected(
-            row >= newRange.startRow &&
+        node.columnApi.getAllColumns().forEach((col) => {
+          const colId = col.getId();
+          if (
+            newRange.startRow !== null &&
+            newRange.endRow !== null &&
+            newRange.startCol !== null &&
+            newRange.endCol !== null
+          ) {
+            const isSelected =
+              row >= newRange.startRow &&
               row <= newRange.endRow &&
-              col >= newRange.startCol &&
-              col <= newRange.endCol
-          );
-        }
+              colId >= newRange.startCol &&
+              colId <= newRange.endCol;
+            api
+              .getCellRendererInstances({ rowNodes: [node], columns: [col] })
+              .forEach((cellRenderer) => {
+                cellRenderer.eGui.classList.toggle(
+                  styles.selectedCell,
+                  isSelected
+                );
+              });
+          }
+        });
       });
     }
   };
@@ -177,29 +186,17 @@ const RangeSelection: React.FC<RangeSelectionProps> = ({
         <div
           className={styles.selectionOverlay}
           style={{
-            left: `${gridRef.current?.api.getColumnElemWidthActualAtColIndex(
-              selectedRange.startCol
-            )}px`,
-            top: `${gridRef.current?.api.getRowElemHeightActualAtRowIndex(
-              selectedRange.startRow
-            )}px`,
+            left: `${gridRef.current?.api.getColumnLeft(selectedRange.startCol)}px`,
+            top: `${gridRef.current?.api.getRowTop(selectedRange.startRow)}px`,
             width: `${
-              gridRef.current?.api.getColumnElemWidthActualAtColIndex(
-                selectedRange.endCol
-              ) -
-              gridRef.current?.api.getColumnElemWidthActualAtColIndex(
-                selectedRange.startCol
-              ) +
-              gridRef.current?.api.getColumnElemWidthActualAtColIndex(0)
+              gridRef.current?.api.getColumnLeft(selectedRange.endCol) -
+              gridRef.current?.api.getColumnLeft(selectedRange.startCol) +
+              gridRef.current?.api.getColumnWidth(selectedRange.endCol)
             }px`,
             height: `${
-              gridRef.current?.api.getRowElemHeightActualAtRowIndex(
-                selectedRange.endRow
-              ) -
-              gridRef.current?.api.getRowElemHeightActualAtRowIndex(
-                selectedRange.startRow
-              ) +
-              gridRef.current?.api.getRowElemHeightActualAtRowIndex(0)
+              gridRef.current?.api.getRowTop(selectedRange.endRow) -
+              gridRef.current?.api.getRowTop(selectedRange.startRow) +
+              gridRef.current?.api.getRowHeight(selectedRange.endRow)
             }px`
           }}
         />
