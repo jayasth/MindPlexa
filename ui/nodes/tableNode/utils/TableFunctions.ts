@@ -149,6 +149,7 @@ export const gridOptions: GridOptions = {
       cellEditor: 'agNumberCellEditor'
     },
     date: {
+      filter: 'agDateColumnFilter',
       cellEditor: 'agDateCellEditor'
     },
     currency: {
