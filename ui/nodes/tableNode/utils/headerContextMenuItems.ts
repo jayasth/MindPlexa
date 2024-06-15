@@ -23,6 +23,21 @@ const changeColumnType = (
   gridRef.current.api.refreshHeader();
 };
 
+const updateColumnAlignment = (api, colId, alignment) => {
+  const columnDefs = api.getColumnDefs();
+  const updatedColumnDefs = columnDefs.map((colDef) => {
+    if (colDef.field === colId) {
+      return {
+        ...colDef,
+        cellStyle: { textAlign: alignment }
+      };
+    }
+    return colDef;
+  });
+  api.setColumnDefs(updatedColumnDefs);
+  api.refreshCells({ force: true });
+};
+
 export const getContextMenuItems = (
   params: {
     column: ColumnState;
@@ -133,42 +148,18 @@ export const getContextMenuItems = (
     },
     {
       name: 'Align Left',
-      action: () => {
-        const updatedColumns = content.columns.map((col) => {
-          if (col.field === params.column.colId) {
-            return { ...col, cellStyle: { textAlign: 'left' } };
-          }
-          return col;
-        });
-        setContent({ ...content, columns: updatedColumns });
-        params.api.refreshCells({ force: true });
-      }
+      action: () =>
+        updateColumnAlignment(params.api, params.column.colId, 'left')
     },
     {
       name: 'Align Center',
-      action: () => {
-        const updatedColumns = content.columns.map((col) => {
-          if (col.field === params.column.colId) {
-            return { ...col, cellStyle: { textAlign: 'center' } };
-          }
-          return col;
-        });
-        setContent({ ...content, columns: updatedColumns });
-        params.api.refreshCells({ force: true });
-      }
+      action: () =>
+        updateColumnAlignment(params.api, params.column.colId, 'center')
     },
     {
       name: 'Align Right',
-      action: () => {
-        const updatedColumns = content.columns.map((col) => {
-          if (col.field === params.column.colId) {
-            return { ...col, cellStyle: { textAlign: 'right' } };
-          }
-          return col;
-        });
-        setContent({ ...content, columns: updatedColumns });
-        params.api.refreshCells({ force: true });
-      }
+      action: () =>
+        updateColumnAlignment(params.api, params.column.colId, 'right')
     },
     {
       name: 'Delete Column',
