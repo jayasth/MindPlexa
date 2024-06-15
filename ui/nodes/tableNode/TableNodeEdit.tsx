@@ -356,9 +356,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
             aria-label="Data Table"
           >
             <AgGridReact
-              gridOptions={{
-                ...gridOptions
-              }}
+              gridOptions={gridOptions}
               columnDefs={columnDefs as any}
               rowData={content.rows}
               domLayout="autoHeight"

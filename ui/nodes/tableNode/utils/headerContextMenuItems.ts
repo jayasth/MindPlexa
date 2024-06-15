@@ -86,14 +86,6 @@ export const getContextMenuItems = (
       }
     },
     {
-      name: 'Filter',
-      action: () => {
-        params.api.setFilterModel({
-          [params.column.colId]: null
-        });
-      }
-    },
-    {
       name: 'Rename Column',
       action: () => {
         const column = params.column;

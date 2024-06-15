@@ -159,9 +159,12 @@ export const gridOptions: GridOptions = {
       cellEditor: 'agTextCellEditor'
     }
     // Add more column types as needed
+  },
+  defaultColDef: {
+    filter: true, // Enable filtering by default
+    sortable: true,
+    resizable: true
   }
-  // rowSelection: 'multiple',
-  // rowMultiSelectWithClick: true
 };
 
 export const getColumnDefs = (
@@ -179,7 +182,7 @@ export const getColumnDefs = (
       field: col.field,
       editable: true,
       sortable: true,
-      filter: true,
+      floatingFilter: true,
       filterParams: getFilterParams(col.type),
       cellEditor: getCellEditor(col.type),
       valueFormatter: getValueFormatter(col.type),
@@ -337,7 +340,7 @@ export const addColumn = (
     field: `col${content.columns.length + 1}`,
     editable: true,
     type: columnType,
-    locale // Store locale in column definition
+    locale
   };
 
   let newRows = content.rows;
