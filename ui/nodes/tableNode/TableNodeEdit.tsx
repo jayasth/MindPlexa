@@ -274,6 +274,12 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     onCellClicked: handleCellClick
   };
 
+  const updateColumnState = () => {
+    if (gridRef.current) {
+      gridRef.current.api.refreshHeader();
+    }
+  };
+
   return (
     <div>
       {errorMessage && (
@@ -318,9 +324,10 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
               aria-label="Add Table"
             />
             <AddColumnButton
-              onClick={(columnType) =>
-                addColumn(content, setContent, updateNode, columnType, locale)
-              }
+              onClick={(columnType) => {
+                addColumn(content, setContent, updateNode, columnType, locale);
+                updateColumnState();
+              }}
               aria-label="Add Column"
               locale={locale} // Pass locale to AddColumnButton
             />
@@ -476,6 +483,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
               );
 
               setContent({ columns: newColumns, rows: newRows });
+              updateColumnState();
             }}
             hasExistingData={
               content.columns.length > 0 || content.rows.length > 0

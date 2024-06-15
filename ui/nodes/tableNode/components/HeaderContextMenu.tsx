@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Menu, Item, Separator, Submenu } from 'react-contexify';
 import 'react-contexify/ReactContexify.css';
 import styles from '@/ui/nodes/tableNode/styles/HeaderContextMenu.module.css';
@@ -38,8 +38,15 @@ const HeaderContextMenu = ({
   const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState<Column | null>(null);
 
+  useEffect(() => {
+    if (!params || !params.column || !params.api) {
+      console.error('HeaderContextMenu: Incomplete params provided.');
+      return;
+    }
+    // Additional logic to handle params initialization
+  }, [params]);
+
   if (!params || !params.column || !params.api) {
-    console.error('Invalid params provided to context menu items.');
     return null;
   }
 
@@ -69,7 +76,7 @@ const HeaderContextMenu = ({
   const handleSort = (sort: 'asc' | 'desc') => {
     params.api.applyColumnState({
       state: [{ colId: params.column.colId, sort }],
-      applyOrder: false // Ensure the column order is not changed
+      applyOrder: false
     });
     // Refresh the grid to ensure the correct order is displayed
     params.api.refreshCells({ force: true });

@@ -59,7 +59,7 @@ export const getContextMenuItems = (
 ): (string | ContextMenuItem)[] => {
   if (!params || !params.column || !params.api) {
     console.error(
-      'HeaderContextMenu: Invalid params provided to context menu items.'
+      'HeaderContextMenuItems: Invalid params provided to context menu items.'
     );
     return [];
   }
