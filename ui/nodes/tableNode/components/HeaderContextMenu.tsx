@@ -66,6 +66,16 @@ const HeaderContextMenu = ({
     }
   };
 
+  const handleSort = (sort: 'asc' | 'desc') => {
+    params.api.applyColumnState({
+      state: [{ colId: params.column.colId, sort }],
+      applyOrder: true
+    });
+    // Refresh the grid to ensure the correct order is displayed
+    params.api.refreshCells({ force: true });
+    params.api.refreshHeader();
+  };
+
   return (
     <Portal>
       <Menu id={id} className={styles.contextMenu}>
@@ -89,7 +99,16 @@ const HeaderContextMenu = ({
             );
           } else {
             return (
-              <Item key={item.name} onClick={item.action}>
+              <Item
+                key={item.name}
+                onClick={
+                  item.name === 'Sort Ascending'
+                    ? () => handleSort('asc')
+                    : item.name === 'Sort Descending'
+                      ? () => handleSort('desc')
+                      : item.action
+                }
+              >
                 {item.name}
               </Item>
             );

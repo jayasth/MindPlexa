@@ -1,4 +1,3 @@
-// headerContextMenuItems.ts
 import { ColDef, ColumnState, GridApi } from 'ag-grid-community';
 
 interface ContextMenuItem {
@@ -51,19 +50,25 @@ export const getContextMenuItems = (
   const result: (string | ContextMenuItem)[] = [
     {
       name: 'Sort Ascending',
-      action: () =>
+      action: () => {
         params.api.applyColumnState({
           state: [{ colId: params.column.colId, sort: 'asc' }],
           applyOrder: true
-        })
+        });
+        params.api.refreshCells({ force: true });
+        params.api.refreshHeader();
+      }
     },
     {
       name: 'Sort Descending',
-      action: () =>
+      action: () => {
         params.api.applyColumnState({
           state: [{ colId: params.column.colId, sort: 'desc' }],
           applyOrder: true
-        })
+        });
+        params.api.refreshCells({ force: true });
+        params.api.refreshHeader();
+      }
     },
     {
       name: 'Filter',
