@@ -12,14 +12,14 @@ export const useKeyPressHandler = (
       if (api) {
         if (event.ctrlKey && event.key === 'a') {
           api.selectAll();
-          event.preventDefault(); // Prevent default to ensure grid handles the event
+          event.preventDefault();
         } else if (event.ctrlKey && event.key === 'c') {
           const focusedCell = api.getFocusedCell();
           if (focusedCell) {
             const rowNode = api.getRowNode(focusedCell.rowIndex);
-            const rowData = rowNode.data;
-            const clipboardText = Object.values(rowData).join('\t');
-            navigator.clipboard.writeText(clipboardText);
+            const colId = focusedCell.column.colId;
+            const cellValue = rowNode.data[colId];
+            navigator.clipboard.writeText(cellValue);
             event.preventDefault();
           }
         } else if (event.ctrlKey && event.key === 'v') {
@@ -28,9 +28,7 @@ export const useKeyPressHandler = (
             if (focusedCell) {
               const rowNode = api.getRowNode(focusedCell.rowIndex);
               const colId = focusedCell.column.colId;
-              const currentValue = rowNode.data[colId];
-              const newValue = clipText; // Replace the current value with clipboard text
-              rowNode.setDataValue(colId, newValue);
+              rowNode.setDataValue(colId, clipText);
               api.refreshCells({ force: true });
               event.preventDefault();
             }
@@ -45,7 +43,6 @@ export const useKeyPressHandler = (
     };
   }, [content, setContent, updateNode, gridRef]);
 };
-
 export const onCellKeyDown = (params) => {
   const key = params.event.key;
   const api = params.api;
