@@ -75,8 +75,6 @@ import {
   onCellKeyDown
 } from '@/ui/nodes/tableNode/utils/KeyboardMouseHandlers';
 
-import RangeSelection from '@/ui/nodes/tableNode/components/RangeSelection';
-
 interface TableNodeEditProps extends NodeProps {
   data: TableNodeData;
   width: number;
@@ -123,7 +121,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [locale, setLocale] = useState('en-US'); // Default locale
   const [errorMessage, setErrorMessage] = useState('');
-  const [isEditing, setIsEditing] = useState(false);
 
   const [cellContextMenuPosition, setCellContextMenuPosition] = useState<{
     x: number;
@@ -263,34 +260,18 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   const columnDefs = getColumnDefs(content, setContent, updateNode, gridRef);
 
   useKeyPressHandler(content, setContent, updateNode, gridRef);
-
   const handleCellClick = useCallback(
     (event) => {
       if (gridRef.current) {
-        if (isEditing) {
-          gridRef.current.api.deselectAll();
-          setIsEditing(false);
-        } else {
-          gridRef.current.api.startEditingCell({
-            rowIndex: event.rowIndex,
-            colKey: event.column.getId()
-          });
-          setIsEditing(true);
-        }
+        gridRef.current.api.deselectAll();
       }
     },
-    [gridRef, isEditing, setIsEditing]
+    [gridRef]
   );
 
   const gridOptions = {
     ...existingOptions,
-    suppressCellSelection: false,
-    onCellClicked: handleCellClick,
-    onCellMouseDown: (event) => {
-      if (event.shiftKey) {
-        event.api.deselectAll();
-      }
-    }
+    onCellClicked: handleCellClick
   };
 
   return (
@@ -399,11 +380,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
               }}
               onCellKeyDown={onCellKeyDown}
               ref={gridRef}
-            />
-            <RangeSelection
-              gridRef={gridRef}
-              isEditing={isEditing}
-              setIsEditing={setIsEditing}
             />
           </div>
         </div>
