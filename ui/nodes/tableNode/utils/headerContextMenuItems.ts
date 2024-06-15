@@ -136,7 +136,7 @@ export const getContextMenuItems = (
       action: () => {
         const updatedColumns = content.columns.map((col) => {
           if (col.field === params.column.colId) {
-            return { ...col, cellClass: 'ag-cell-left' };
+            return { ...col, cellStyle: { textAlign: 'left' } };
           }
           return col;
         });
@@ -149,7 +149,7 @@ export const getContextMenuItems = (
       action: () => {
         const updatedColumns = content.columns.map((col) => {
           if (col.field === params.column.colId) {
-            return { ...col, cellClass: 'ag-cell-center' };
+            return { ...col, cellStyle: { textAlign: 'center' } };
           }
           return col;
         });
@@ -162,7 +162,7 @@ export const getContextMenuItems = (
       action: () => {
         const updatedColumns = content.columns.map((col) => {
           if (col.field === params.column.colId) {
-            return { ...col, cellClass: 'ag-cell-right' };
+            return { ...col, cellStyle: { textAlign: 'right' } };
           }
           return col;
         });

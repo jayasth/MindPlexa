@@ -52,18 +52,6 @@
   gap: 20px;
 }
 
-.ag-cell-left {
-  text-align: left;
-}
-
-.ag-cell-center {
-  text-align: center;
-}
-
-.ag-cell-right {
-  text-align: right;
-}
-
 /* custom header component */
 .custom-header {
   display: flex;
