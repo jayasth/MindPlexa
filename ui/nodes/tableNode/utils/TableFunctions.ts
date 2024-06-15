@@ -23,7 +23,10 @@ export const validateCellValue = (value: any, type: string): boolean => {
     case 'date':
       return !isNaN(Date.parse(value));
     case 'currency':
-      return !isNaN(parseFloat(value)) && isFinite(value);
+      return (
+        !isNaN(parseFloat(value.replace(/[^0-9.-]+/g, ''))) &&
+        isFinite(parseFloat(value.replace(/[^0-9.-]+/g, '')))
+      );
     case 'percentage':
       return (
         !isNaN(parseFloat(value)) &&
@@ -48,7 +51,7 @@ export const formatCellValue = (
         ? new Intl.NumberFormat(locale, {
             style: 'currency',
             currency: currencyCode
-          }).format(Number(value))
+          }).format(parseFloat(value.replace(/[^0-9.-]+/g, '')))
         : '';
     case 'date':
       return value
@@ -185,7 +188,7 @@ export const getColumnDefs = (
       floatingFilter: true,
       filterParams: getFilterParams(col.type),
       cellEditor: getCellEditor(col.type),
-      valueFormatter: getValueFormatter(col.type),
+      valueFormatter: getValueFormatter(col.type, locale),
       headerComponent: CustomHeader,
       headerComponentParams: {
         menuIcon: 'fa-bars',
@@ -217,6 +220,7 @@ export const getColumnDefs = (
     };
   });
 };
+
 function getFilterParams(type: string) {
   // Define filter parameters based on column type
   switch (type) {
@@ -318,10 +322,21 @@ function getCellEditor(type: string) {
   }
 }
 
-function getValueFormatter(type: string) {
+function getValueFormatter(type: string, locale: string) {
   switch (type) {
     case 'currency':
-      return (params) => (params.value ? `$${params.value}` : '');
+      return (params) =>
+        params.value
+          ? new Intl.NumberFormat(locale, {
+              style: 'currency',
+              currency: 'USD'
+            }).format(parseFloat(params.value.replace(/[^0-9.-]+/g, '')))
+          : '';
+    case 'date':
+      return (params) =>
+        params.value
+          ? new Intl.DateTimeFormat(locale).format(new Date(params.value))
+          : '';
     default:
       return null;
   }
