@@ -58,7 +58,9 @@ export const getContextMenuItems = (
   }) => void
 ): (string | ContextMenuItem)[] => {
   if (!params || !params.column || !params.api) {
-    console.error('Invalid params provided to context menu items.');
+    console.error(
+      'HeaderContextMenu: Invalid params provided to context menu items.'
+    );
     return [];
   }
 
@@ -90,7 +92,6 @@ export const getContextMenuItems = (
       action: () => {
         const column = params.column;
         if (!column) {
-          console.error('Column is not available');
           return;
         }
         const colDef = content.columns.find(
