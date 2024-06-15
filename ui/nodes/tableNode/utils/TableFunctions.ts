@@ -142,31 +142,37 @@ export const gridOptions: GridOptions = {
   columnTypes: {
     text: {
       filter: 'agTextColumnFilter',
+      floatingFilter: true,
       cellEditor: 'agTextCellEditor'
     },
     number: {
       filter: 'agNumberColumnFilter',
+      floatingFilter: true,
       cellEditor: 'agNumberCellEditor'
     },
     date: {
       filter: 'agDateColumnFilter',
+      floatingFilter: true,
       cellEditor: 'agDateCellEditor'
     },
     currency: {
       filter: 'agNumberColumnFilter',
+      floatingFilter: true,
       cellEditor: 'agTextCellEditor',
       valueFormatter: (params) => (params.value ? `$${params.value}` : '')
     },
     email: {
       filter: 'agTextColumnFilter',
+      floatingFilter: true,
       cellEditor: 'agTextCellEditor'
     }
     // Add more column types as needed
   },
   defaultColDef: {
-    filter: true, // Enable filtering by default
+    filter: true,
     sortable: true,
-    resizable: true
+    resizable: true,
+    floatingFilter: true
   }
 };
 
