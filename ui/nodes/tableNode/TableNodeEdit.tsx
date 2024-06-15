@@ -72,8 +72,7 @@ import TagFileContainer from '@/ui/nodes/common/TagFileContainer';
 
 import {
   useKeyPressHandler,
-  onCellKeyDown,
-  useRangeSelection
+  onCellKeyDown
 } from '@/ui/nodes/tableNode/utils/KeyboardMouseHandlers';
 
 interface TableNodeEditProps extends NodeProps {
@@ -132,8 +131,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   const updateNode = useStore((state) => state.updateNode);
   const tableRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<any>(null);
-
-  const { getCellStyle } = useRangeSelection(setContent, gridRef);
 
   useEffect(() => {
     if (
@@ -275,7 +272,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   const gridOptions = {
     ...existingOptions,
     suppressCellSelection: false,
-    enableRangeSelection: true,
     onCellClicked: handleCellClick
   };
 
@@ -362,19 +358,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           >
             <AgGridReact
               gridOptions={{
-                ...gridOptions,
-                suppressContextMenu: false,
-                getRowStyle: (params) => {
-                  const style = getCellStyle(params);
-                  if (style) {
-                    return {
-                      backgroundColor: style.backgroundColor || '',
-                      outline: style.outline || '',
-                      outlineOffset: style.outlineOffset || ''
-                    };
-                  }
-                  return undefined;
-                }
+                ...gridOptions
               }}
               columnDefs={columnDefs as any}
               rowData={content.rows}
