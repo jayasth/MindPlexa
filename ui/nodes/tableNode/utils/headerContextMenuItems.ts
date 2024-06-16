@@ -6,7 +6,7 @@ interface ContextMenuItem {
   subMenu?: ContextMenuItem[];
 }
 
-const changeColumnType = (
+export const changeColumnType = (
   params: { column: ColumnState; api: GridApi },
   content: { columns: ColDef[]; rows: any[] },
   setContent: (content: { columns: ColDef[]; rows: any[] }) => void,
@@ -23,7 +23,7 @@ const changeColumnType = (
   gridRef.current.api.refreshHeader();
 };
 
-const updateColumnAlignment = (api, colId, alignment) => {
+export const updateColumnAlignment = (api, colId, alignment) => {
   const columnDefs = api.getColumnDefs();
   const updatedColumnDefs = columnDefs.map((colDef) => {
     if (colDef.field === colId) {

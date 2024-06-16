@@ -11,8 +11,13 @@ import {
 } from 'react-icons/md';
 import { AiOutlineFieldNumber } from 'react-icons/ai';
 import { FaSortAlphaDown, FaSortAlphaUp } from 'react-icons/fa';
-import { getContextMenuItems } from '@/ui/nodes/tableNode/utils/headerContextMenuItems';
+import {
+  getContextMenuItems,
+  changeColumnType,
+  updateColumnAlignment
+} from '@/ui/nodes/tableNode/utils/headerContextMenuItems';
 import RenameColumnModal from '@/ui/nodes/tableNode/components/RenameColumnModal';
+import AddColumnModal from '@/ui/nodes/tableNode/components/AddColumnModal';
 import { GridApi, ColumnState, ColDef } from 'ag-grid-community';
 
 const typeIcons = {
@@ -38,7 +43,11 @@ const HeaderContextMenu = ({
   gridRef
 }) => {
   const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
+  const [isAddColumnModalOpen, setIsAddColumnModalOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState<Column | null>(null);
+  const [addColumnPosition, setAddColumnPosition] = useState<
+    'before' | 'after'
+  >('before');
 
   useEffect(() => {
     if (!params || !params.column || !params.api) {
@@ -75,6 +84,20 @@ const HeaderContextMenu = ({
     }
   };
 
+  const handleAddColumnSave = (newColumn) => {
+    const columnIndex = content.columns.findIndex(
+      (col) => col.field === params.column.colId
+    );
+    const newColumns = [...content.columns];
+    if (addColumnPosition === 'before') {
+      newColumns.splice(columnIndex, 0, newColumn);
+    } else {
+      newColumns.splice(columnIndex + 1, 0, newColumn);
+    }
+    setContent({ ...content, columns: newColumns });
+    gridRef.current.api.refreshHeader();
+  };
+
   const handleSort = (sort: 'asc' | 'desc') => {
     params.api.applyColumnState({
       state: [{ colId: params.column.colId, sort }],
@@ -83,43 +106,6 @@ const HeaderContextMenu = ({
     // Refresh the grid to ensure the correct order is displayed
     params.api.refreshCells({ force: true });
     params.api.refreshHeader();
-  };
-
-  const changeColumnType = (
-    params: { column: ColumnState; api: GridApi },
-    content: { columns: ColDef[]; rows: any[] },
-    setContent: (content: { columns: ColDef[]; rows: any[] }) => void,
-    newType: string,
-    gridRef: React.RefObject<any>
-  ) => {
-    const updatedColumns = content.columns.map((col) => {
-      if ('field' in col && col.field === params.column.colId) {
-        return { ...col, type: newType };
-      }
-      return col;
-    });
-    setContent({ ...content, columns: updatedColumns });
-    gridRef.current.api.refreshHeader();
-  };
-
-  const updateColumnAlignment = (
-    api: GridApi,
-    colId: string,
-    alignment: string
-  ) => {
-    const columnDefs = api.getColumnDefs() || [];
-    const updatedColumnDefs = columnDefs.map((colDef) => {
-      if ('field' in colDef && colDef.field === colId) {
-        return {
-          ...colDef,
-          cellStyle: { textAlign: alignment }
-        };
-      }
-      return colDef;
-    });
-    api.updateGridOptions({ columnDefs: updatedColumnDefs });
-    api.refreshCells({ force: true });
-    api.refreshHeader();
   };
 
   return (
@@ -194,6 +180,25 @@ const HeaderContextMenu = ({
           </Item>
         </Submenu>
         <Separator />
+        <Submenu label="Add Column">
+          <Item
+            onClick={() => {
+              setAddColumnPosition('before');
+              setIsAddColumnModalOpen(true);
+            }}
+          >
+            Add Column Before
+          </Item>
+          <Item
+            onClick={() => {
+              setAddColumnPosition('after');
+              setIsAddColumnModalOpen(true);
+            }}
+          >
+            Add Column After
+          </Item>
+        </Submenu>
+        <Separator />
         <Item
           onClick={() =>
             updateColumnAlignment(params.api, params.column.colId, 'left')
@@ -233,6 +238,13 @@ const HeaderContextMenu = ({
           onClose={() => setIsRenameModalOpen(false)}
           column={selectedColumn}
           onSave={handleRenameSave}
+        />
+      )}
+      {isAddColumnModalOpen && (
+        <AddColumnModal
+          isOpen={isAddColumnModalOpen}
+          onClose={() => setIsAddColumnModalOpen(false)}
+          onSave={handleAddColumnSave}
         />
       )}
     </Portal>
