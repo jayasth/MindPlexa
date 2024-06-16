@@ -59,6 +59,7 @@ const CustomFloatingFilter: React.FC<IFloatingFilterParams> = (props) => {
               value={dropdownValue}
               onChange={handleDropdownChange}
               className={styles.dropdown}
+              variant="slim"
             >
               <option value="contains">Contains</option>
               <option value="equals">Equals</option>

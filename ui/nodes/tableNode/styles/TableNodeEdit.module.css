@@ -36,6 +36,18 @@
 .ag-theme-alpine {
   width: 100%;
   height: 100%;
+  border: 1px solid #ccc !important;
+}
+
+.ag-root.ag-unselectable.ag-layout-auto-height {
+  border: 1px solid #ccc !important;
+}
+
+.ag-header-container {
+  border-right: 1px solid #ccc !important;
+}
+
+.ag-center-cols-container {
   border-right: 1px solid #ccc !important;
 }
 
