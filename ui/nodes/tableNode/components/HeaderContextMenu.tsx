@@ -196,21 +196,39 @@ const HeaderContextMenu = ({
         <Separator />
         <Item
           onClick={() =>
-            updateColumnAlignment(params.api, params.column.colId, 'left')
+            updateColumnAlignment(
+              params.api,
+              params.column.colId,
+              'left',
+              setContent,
+              content
+            )
           }
         >
           Align Left
         </Item>
         <Item
           onClick={() =>
-            updateColumnAlignment(params.api, params.column.colId, 'center')
+            updateColumnAlignment(
+              params.api,
+              params.column.colId,
+              'center',
+              setContent,
+              content
+            )
           }
         >
           Align Center
         </Item>
         <Item
           onClick={() =>
-            updateColumnAlignment(params.api, params.column.colId, 'right')
+            updateColumnAlignment(
+              params.api,
+              params.column.colId,
+              'right',
+              setContent,
+              content
+            )
           }
         >
           Align Right
