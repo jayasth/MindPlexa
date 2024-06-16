@@ -99,3 +99,13 @@ p a {
   width: 100%;
   position: relative; /* Adjust if needed */
 }
+
+/* ag-grid styles */
+
+.ag-cell {
+  border-right: 1px solid #ccc !important;
+}
+
+.ag-floating-filter {
+  border-right: 1px solid #ccc !important;
+}
