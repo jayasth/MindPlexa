@@ -335,14 +335,17 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
               onClick={() => addRow(content, setContent, updateNode)}
               aria-label="Add Row"
             />
+            <ImportButton
+              onChange={(e) => importTableData(e, setContent)}
+              content={content}
+              setContent={setContent}
+              aria-label="Import Table"
+            />
             <ExportButton
               onClick={() => exportTableData(content)}
               aria-label="Export Table"
             />
-            <ImportButton
-              onChange={(e) => importTableData(e, setContent)}
-              aria-label="Import Table"
-            />
+
             <DeleteTableButton
               onClick={() => {
                 if (content.columns.length > 0 || content.rows.length > 0) {
