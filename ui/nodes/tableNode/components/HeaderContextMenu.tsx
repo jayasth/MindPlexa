@@ -17,7 +17,6 @@ import {
 } from '@/ui/nodes/tableNode/utils/headerContextMenuItems';
 import RenameColumnModal from '@/ui/nodes/tableNode/components/RenameColumnModal';
 import AddColumnModal from '@/ui/nodes/tableNode/components/AddColumnModal';
-import { GridApi, ColumnState, ColDef } from 'ag-grid-community';
 
 const typeIcons = {
   text: <MdOutlineTextFields />,
@@ -264,4 +263,5 @@ const HeaderContextMenu = ({
     </Portal>
   );
 };
+
 export default HeaderContextMenu;

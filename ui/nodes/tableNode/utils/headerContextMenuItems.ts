@@ -34,7 +34,9 @@ export const updateColumnAlignment = (
     if (col.field === colId) {
       return {
         ...col,
-        cellStyle: { textAlign: alignment }
+        cellStyle: (params) => ({
+          textAlign: alignment
+        })
       };
     }
     return col;
