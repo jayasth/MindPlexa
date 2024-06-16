@@ -10,13 +10,7 @@ import {
   MdAttachMoney
 } from 'react-icons/md';
 import { AiOutlineFieldNumber } from 'react-icons/ai';
-import {
-  FaSort,
-  FaSortAlphaDown,
-  FaSortAlphaUp,
-  FaSortNumericDown,
-  FaSortNumericUp
-} from 'react-icons/fa';
+import { FaSortAlphaDown, FaSortAlphaUp } from 'react-icons/fa';
 import { getContextMenuItems } from '@/ui/nodes/tableNode/utils/headerContextMenuItems';
 import RenameColumnModal from '@/ui/nodes/tableNode/components/RenameColumnModal';
 import { GridApi, ColumnState, ColDef } from 'ag-grid-community';
@@ -113,20 +107,19 @@ const HeaderContextMenu = ({
     colId: string,
     alignment: string
   ) => {
-    const columnDefs = api.getColumnDefs();
-    if (columnDefs) {
-      const updatedColumnDefs = columnDefs.map((colDef) => {
-        if ('field' in colDef && colDef.field === colId) {
-          return {
-            ...colDef,
-            cellStyle: { textAlign: alignment }
-          };
-        }
-        return colDef;
-      });
-      api.updateGridOptions({ columnDefs: updatedColumnDefs });
-      api.refreshCells({ force: true });
-    }
+    const columnDefs = api.getColumnDefs() || [];
+    const updatedColumnDefs = columnDefs.map((colDef) => {
+      if ('field' in colDef && colDef.field === colId) {
+        return {
+          ...colDef,
+          cellStyle: { textAlign: alignment }
+        };
+      }
+      return colDef;
+    });
+    api.updateGridOptions({ columnDefs: updatedColumnDefs });
+    api.refreshCells({ force: true });
+    api.refreshHeader();
   };
 
   return (
