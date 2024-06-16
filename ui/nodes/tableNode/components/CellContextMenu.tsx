@@ -54,33 +54,15 @@ const CellContextMenu: React.FC<CellContextMenuProps> = ({
   }, [position, showContextMenu]);
 
   const handleCopy = async () => {
-    setIsCopying(true);
     const api = gridRef.current.api;
-    const selectedRows = api.getSelectedRows();
-    if (selectedRows.length > 0) {
-      const clipboardText = selectedRows
-        .map((row) => Object.values(row).join('\t'))
-        .join('\n');
+    const focusedCell = api.getFocusedCell();
+    if (focusedCell) {
+      const rowNode = api.getRowNode(focusedCell.rowIndex);
+      const cellValue = rowNode.data[focusedCell.column.colId];
       try {
-        await navigator.clipboard.writeText(clipboardText);
-        setIsCopying(false);
+        await navigator.clipboard.writeText(cellValue);
       } catch (error) {
         console.error('Failed to copy data to clipboard:', error);
-        setIsCopying(false);
-      }
-    } else {
-      const focusedCell = api.getFocusedCell();
-      if (focusedCell) {
-        const rowNode = api.getRowNode(focusedCell.rowIndex);
-        const rowData = rowNode.data;
-        const clipboardText = Object.values(rowData).join('\t');
-        try {
-          await navigator.clipboard.writeText(clipboardText);
-          setIsCopying(false);
-        } catch (error) {
-          console.error('Failed to copy data to clipboard:', error);
-          setIsCopying(false);
-        }
       }
     }
   };
