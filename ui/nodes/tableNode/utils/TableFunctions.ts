@@ -5,6 +5,7 @@ import CustomHeader from '@/ui/nodes/tableNode/components/CustomHeader';
 import { DateEditor } from '@/ui/nodes/tableNode/utils/CustomCellEditors';
 import { GridOptions, ColDef } from 'ag-grid-community';
 import CustomCellRenderer from '@/ui/nodes/tableNode/components/CustomCellRenderer';
+import CustomFloatingFilter from '@/ui/nodes/tableNode/components/CustomFloatingFilter';
 
 /* Cell Operations */
 
@@ -18,7 +19,7 @@ export const validateCellValue = (value: any, type: string): boolean => {
     case 'number':
       return !isNaN(Number(value)) && isFinite(value);
     case 'email':
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const emailRegex = /^[^\s@]+@[^\s@]+.[^\s@]+$/;
       return emailRegex.test(value);
     case 'date':
       return !isNaN(Date.parse(value));
@@ -197,6 +198,7 @@ export const getColumnDefs = (
       headerClass: 'custom-header-class',
       colId: col.field,
       cellRenderer: CustomCellRenderer,
+      floatingFilterComponent: CustomFloatingFilter,
       cellStyle: (params) => {
         const isValid = validateCellValue(params.value, col.type);
         const invalidCellStyle: CSSProperties = {
