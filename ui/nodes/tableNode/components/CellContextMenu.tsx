@@ -1,8 +1,22 @@
 import React, { useEffect, useCallback, useState } from 'react';
-import { Menu, Item, Separator, useContextMenu } from 'react-contexify';
+import {
+  Menu,
+  Item,
+  Separator,
+  Submenu,
+  useContextMenu
+} from 'react-contexify';
 import 'react-contexify/ReactContexify.css';
 import styles from '@/ui/nodes/tableNode/styles/CellContextMenu.module.css';
 import Portal from '@/ui/nodes/tableNode/Portal';
+import { MdContentCopy, MdContentPaste, MdDelete, MdAdd } from 'react-icons/md';
+import {
+  FaSort,
+  FaSortAlphaDown,
+  FaSortAlphaUp,
+  FaSortNumericDown,
+  FaSortNumericUp
+} from 'react-icons/fa';
 
 interface CellContextMenuProps {
   id: string;
@@ -104,13 +118,80 @@ const CellContextMenu: React.FC<CellContextMenuProps> = ({
     }
   };
 
+  const handleAddRowAbove = () => {
+    const api = gridRef.current.api;
+    const focusedCell = api.getFocusedCell();
+    if (focusedCell) {
+      const newRow = content.columns.reduce((row: any, col: any) => {
+        row[col.field] = '';
+        return row;
+      }, {});
+      const updatedRows = [...content.rows];
+      updatedRows.splice(focusedCell.rowIndex, 0, newRow);
+      setContent({ ...content, rows: updatedRows });
+    }
+  };
+
+  const handleAddRowBelow = () => {
+    const api = gridRef.current.api;
+    const focusedCell = api.getFocusedCell();
+    if (focusedCell) {
+      const newRow = content.columns.reduce((row: any, col: any) => {
+        row[col.field] = '';
+        return row;
+      }, {});
+      const updatedRows = [...content.rows];
+      updatedRows.splice(focusedCell.rowIndex + 1, 0, newRow);
+      setContent({ ...content, rows: updatedRows });
+    }
+  };
+
+  const handleSort = (sort: 'asc' | 'desc' | 'none') => {
+    const api = gridRef.current.api;
+    const focusedCell = api.getFocusedCell();
+    if (focusedCell) {
+      const colId = focusedCell.column.colId;
+      if (sort === 'none') {
+        api.setSortModel([]);
+      } else {
+        api.setSortModel([{ colId, sort }]);
+      }
+      api.refreshCells({ force: true });
+    }
+  };
+
   return (
     <Portal>
       <Menu id={id} className={styles.contextMenu}>
-        <Item onClick={handleCopy}>Copy</Item>
-        <Item onClick={handlePaste}>Paste</Item>
+        <Item onClick={handleCopy}>
+          <MdContentCopy /> Copy
+        </Item>
+        <Item onClick={handlePaste}>
+          <MdContentPaste /> Paste
+        </Item>
         <Separator />
-        <Item onClick={handleDeleteRow}>Delete Row</Item>
+        <Submenu label="Sort">
+          <Item onClick={() => handleSort('asc')}>
+            <FaSortAlphaUp /> Sort Ascending
+          </Item>
+          <Item onClick={() => handleSort('desc')}>
+            <FaSortAlphaDown /> Sort Descending
+          </Item>
+          <Item onClick={() => handleSort('none')}>
+            <FaSort /> Clear Sort
+          </Item>
+        </Submenu>
+        <Separator />
+        <Item onClick={handleAddRowAbove}>
+          <MdAdd /> Add Row Above
+        </Item>
+        <Item onClick={handleAddRowBelow}>
+          <MdAdd /> Add Row Below
+        </Item>
+        <Separator />
+        <Item onClick={handleDeleteRow}>
+          <MdDelete /> Delete Row
+        </Item>
       </Menu>
     </Portal>
   );
