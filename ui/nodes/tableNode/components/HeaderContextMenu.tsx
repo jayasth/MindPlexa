@@ -10,8 +10,16 @@ import {
   MdAttachMoney
 } from 'react-icons/md';
 import { AiOutlineFieldNumber } from 'react-icons/ai';
+import {
+  FaSort,
+  FaSortAlphaDown,
+  FaSortAlphaUp,
+  FaSortNumericDown,
+  FaSortNumericUp
+} from 'react-icons/fa';
 import { getContextMenuItems } from '@/ui/nodes/tableNode/utils/headerContextMenuItems';
 import RenameColumnModal from '@/ui/nodes/tableNode/components/RenameColumnModal';
+import { GridApi, ColumnState, ColDef } from 'ag-grid-community';
 
 const typeIcons = {
   text: <MdOutlineTextFields />,
@@ -83,44 +91,148 @@ const HeaderContextMenu = ({
     params.api.refreshHeader();
   };
 
+  const changeColumnType = (
+    params: { column: ColumnState; api: GridApi },
+    content: { columns: ColDef[]; rows: any[] },
+    setContent: (content: { columns: ColDef[]; rows: any[] }) => void,
+    newType: string,
+    gridRef: React.RefObject<any>
+  ) => {
+    const updatedColumns = content.columns.map((col) => {
+      if ('field' in col && col.field === params.column.colId) {
+        return { ...col, type: newType };
+      }
+      return col;
+    });
+    setContent({ ...content, columns: updatedColumns });
+    gridRef.current.api.refreshHeader();
+  };
+
+  const updateColumnAlignment = (
+    api: GridApi,
+    colId: string,
+    alignment: string
+  ) => {
+    const columnDefs = api.getColumnDefs();
+    if (columnDefs) {
+      const updatedColumnDefs = columnDefs.map((colDef) => {
+        if ('field' in colDef && colDef.field === colId) {
+          return {
+            ...colDef,
+            cellStyle: { textAlign: alignment }
+          };
+        }
+        return colDef;
+      });
+      api.updateGridOptions({ columnDefs: updatedColumnDefs });
+      api.refreshCells({ force: true });
+    }
+  };
+
   return (
     <Portal>
       <Menu id={id} className={styles.contextMenu}>
-        {items.map((item) => {
-          if (typeof item === 'string') {
-            return <Separator key={item} />;
-          } else if (item.subMenu) {
-            return (
-              <Submenu
-                key={item.name}
-                label={item.name}
-                style={{ minWidth: '120px' }}
-              >
-                {item.subMenu.map((subItem) => (
-                  <Item key={subItem.name} onClick={subItem.action}>
-                    {typeIcons[subItem.name.toLowerCase()]}{' '}
-                    <span style={{ marginLeft: '8px' }}>{subItem.name}</span>
-                  </Item>
-                ))}
-              </Submenu>
+        <Item onClick={() => handleSort('asc')}>
+          <FaSortAlphaUp /> Sort Ascending
+        </Item>
+        <Item onClick={() => handleSort('desc')}>
+          <FaSortAlphaDown /> Sort Descending
+        </Item>
+        <Separator />
+        <Item
+          onClick={() => {
+            const column = params.column;
+            if (!column) {
+              return;
+            }
+            const colDef = content.columns.find(
+              (col) => 'field' in col && col.field === column.colId
             );
-          } else {
-            return (
-              <Item
-                key={item.name}
-                onClick={
-                  item.name === 'Sort Ascending'
-                    ? () => handleSort('asc')
-                    : item.name === 'Sort Descending'
-                      ? () => handleSort('desc')
-                      : item.action
-                }
-              >
-                {item.name}
-              </Item>
-            );
+            if (colDef) {
+              setSelectedColumn({
+                field: column.colId,
+                headerName: colDef.headerName || '',
+                type: Array.isArray(colDef.type)
+                  ? colDef.type.join(', ')
+                  : colDef.type || ''
+              });
+              setIsRenameModalOpen(true);
+            }
+          }}
+        >
+          Rename Column
+        </Item>
+        <Separator />
+        <Submenu label="Change Datatype">
+          <Item
+            onClick={() =>
+              changeColumnType(params, content, setContent, 'text', gridRef)
+            }
+          >
+            {typeIcons['text']} Text
+          </Item>
+          <Item
+            onClick={() =>
+              changeColumnType(params, content, setContent, 'number', gridRef)
+            }
+          >
+            {typeIcons['number']} Number
+          </Item>
+          <Item
+            onClick={() =>
+              changeColumnType(params, content, setContent, 'email', gridRef)
+            }
+          >
+            {typeIcons['email']} Email
+          </Item>
+          <Item
+            onClick={() =>
+              changeColumnType(params, content, setContent, 'date', gridRef)
+            }
+          >
+            {typeIcons['date']} Date
+          </Item>
+          <Item
+            onClick={() =>
+              changeColumnType(params, content, setContent, 'currency', gridRef)
+            }
+          >
+            {typeIcons['currency']} Currency
+          </Item>
+        </Submenu>
+        <Separator />
+        <Item
+          onClick={() =>
+            updateColumnAlignment(params.api, params.column.colId, 'left')
           }
-        })}
+        >
+          Align Left
+        </Item>
+        <Item
+          onClick={() =>
+            updateColumnAlignment(params.api, params.column.colId, 'center')
+          }
+        >
+          Align Center
+        </Item>
+        <Item
+          onClick={() =>
+            updateColumnAlignment(params.api, params.column.colId, 'right')
+          }
+        >
+          Align Right
+        </Item>
+        <Separator />
+        <Item
+          onClick={() => {
+            const updatedColumns = content.columns.filter(
+              (col) => col.field !== params.column.colId
+            );
+            setContent({ ...content, columns: updatedColumns });
+          }}
+        >
+          Delete Column
+        </Item>
       </Menu>
       {selectedColumn && (
         <RenameColumnModal

@@ -87,82 +87,12 @@ export const getContextMenuItems = (
         params.api.refreshHeader();
       }
     },
-    {
-      name: 'Rename Column',
-      action: () => {
-        const column = params.column;
-        if (!column) {
-          return;
-        }
-        const colDef = content.columns.find(
-          (col) => col.field === column.colId
-        );
-        if (colDef) {
-          setSelectedColumn({
-            field: column.colId,
-            headerName: colDef.headerName || '',
-            type: Array.isArray(colDef.type)
-              ? colDef.type.join(', ')
-              : colDef.type || ''
-          });
-          setIsRenameModalOpen(true);
-        }
-      }
-    },
-    {
-      name: 'Change Datatype',
-      subMenu: [
-        {
-          name: 'Text',
-          action: () =>
-            changeColumnType(params, content, setContent, 'text', gridRef)
-        },
-        {
-          name: 'Number',
-          action: () =>
-            changeColumnType(params, content, setContent, 'number', gridRef)
-        },
-        {
-          name: 'Email',
-          action: () =>
-            changeColumnType(params, content, setContent, 'email', gridRef)
-        },
-        {
-          name: 'Date',
-          action: () =>
-            changeColumnType(params, content, setContent, 'date', gridRef)
-        },
-        {
-          name: 'Currency',
-          action: () =>
-            changeColumnType(params, content, setContent, 'currency', gridRef)
-        }
-      ]
-    },
-    {
-      name: 'Align Left',
-      action: () =>
-        updateColumnAlignment(params.api, params.column.colId, 'left')
-    },
-    {
-      name: 'Align Center',
-      action: () =>
-        updateColumnAlignment(params.api, params.column.colId, 'center')
-    },
-    {
-      name: 'Align Right',
-      action: () =>
-        updateColumnAlignment(params.api, params.column.colId, 'right')
-    },
-    {
-      name: 'Delete Column',
-      action: () => {
-        const updatedColumns = content.columns.filter(
-          (col) => col.field !== params.column.colId
-        );
-        setContent({ ...content, columns: updatedColumns });
-      }
-    }
+    'Rename Column',
+    'Change Datatype',
+    'Align Left',
+    'Align Center',
+    'Align Right',
+    'Delete Column'
   ];
   return result;
 };
