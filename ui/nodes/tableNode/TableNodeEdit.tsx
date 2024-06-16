@@ -368,6 +368,8 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
               rowData={content.rows}
               domLayout="autoHeight"
               rowHeight={30}
+              headerHeight={30}
+              floatingFiltersHeight={30}
               defaultColDef={{
                 resizable: true,
                 editable: true,

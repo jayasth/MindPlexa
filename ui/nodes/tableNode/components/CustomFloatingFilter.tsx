@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { IFloatingFilterParams } from 'ag-grid-community';
 import { Modal } from 'react-responsive-modal';
 import 'react-responsive-modal/styles.css';
+import { IoFilter } from 'react-icons/io5';
 import Dropdown from '@/ui/dropdown/Dropdown';
 import Input from '@/ui/Input/Input';
 import Button from '@/ui/Button/Button';
@@ -42,8 +43,12 @@ const CustomFloatingFilter: React.FC<IFloatingFilterParams> = (props) => {
         placeholder="Filter..."
         className={styles.input}
       />
-      <button onClick={handleModalOpen} className={styles.filterButton}>
-        Filter Options
+      <button
+        onClick={handleModalOpen}
+        className={styles.filterButton}
+        title="Advanced Filter"
+      >
+        <IoFilter />
       </button>
       <Modal open={isModalOpen} onClose={handleModalClose} center>
         <div className={styles.modalContent}>
@@ -73,9 +78,6 @@ const CustomFloatingFilter: React.FC<IFloatingFilterParams> = (props) => {
           <div className={styles.actions}>
             <Button variant="submit" onClick={handleModalClose}>
               Apply
-            </Button>
-            <Button variant="cancel" onClick={handleModalClose}>
-              Cancel
             </Button>
           </div>
         </div>

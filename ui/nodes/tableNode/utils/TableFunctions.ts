@@ -199,6 +199,9 @@ export const getColumnDefs = (
       colId: col.field,
       cellRenderer: CustomCellRenderer,
       floatingFilterComponent: CustomFloatingFilter,
+      floatingFilterComponentParams: {
+        suppressFilterButton: true
+      },
       cellStyle: (params) => {
         const isValid = validateCellValue(params.value, col.type);
         const invalidCellStyle: CSSProperties = {
