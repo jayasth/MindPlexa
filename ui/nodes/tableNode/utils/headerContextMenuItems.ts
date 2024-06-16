@@ -23,25 +23,18 @@ export const changeColumnType = (
   gridRef.current.api.refreshHeader();
 };
 
-export const updateColumnAlignment = (
-  api,
-  colId,
-  alignment,
-  setContent,
-  content
-) => {
-  const updatedColumns = content.columns.map((col) => {
-    if (col.field === colId) {
+export const updateColumnAlignment = (api, colId, alignment) => {
+  const columnDefs = api.getColumnDefs();
+  const updatedColumnDefs = columnDefs.map((colDef) => {
+    if (colDef.field === colId) {
       return {
-        ...col,
-        cellStyle: (params) => ({
-          textAlign: alignment
-        })
+        ...colDef,
+        cellStyle: { textAlign: alignment }
       };
     }
-    return col;
+    return colDef;
   });
-  setContent({ ...content, columns: updatedColumns });
+  api.setColumnDefs(updatedColumnDefs);
   api.refreshCells({ force: true });
 };
 

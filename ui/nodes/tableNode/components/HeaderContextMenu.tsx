@@ -13,7 +13,7 @@ import { AiOutlineFieldNumber } from 'react-icons/ai';
 import {
   getContextMenuItems,
   changeColumnType,
-  updateColumnAlignment
+  updateColumnAlignment // Importing updateColumnAlignment
 } from '@/ui/nodes/tableNode/utils/headerContextMenuItems';
 import RenameColumnModal from '@/ui/nodes/tableNode/components/RenameColumnModal';
 import AddColumnModal from '@/ui/nodes/tableNode/components/AddColumnModal';
@@ -193,45 +193,29 @@ const HeaderContextMenu = ({
           </Item>
         </Submenu>
         <Separator />
-        <Item
-          onClick={() =>
-            updateColumnAlignment(
-              params.api,
-              params.column.colId,
-              'left',
-              setContent,
-              content
-            )
-          }
-        >
-          Align Left
-        </Item>
-        <Item
-          onClick={() =>
-            updateColumnAlignment(
-              params.api,
-              params.column.colId,
-              'center',
-              setContent,
-              content
-            )
-          }
-        >
-          Align Center
-        </Item>
-        <Item
-          onClick={() =>
-            updateColumnAlignment(
-              params.api,
-              params.column.colId,
-              'right',
-              setContent,
-              content
-            )
-          }
-        >
-          Align Right
-        </Item>
+        <Submenu label="Alignment" style={{ minWidth: '120px' }}>
+          <Item
+            onClick={() =>
+              updateColumnAlignment(params.api, params.column.colId, 'left')
+            }
+          >
+            Align Left
+          </Item>
+          <Item
+            onClick={() =>
+              updateColumnAlignment(params.api, params.column.colId, 'center')
+            }
+          >
+            Align Center
+          </Item>
+          <Item
+            onClick={() =>
+              updateColumnAlignment(params.api, params.column.colId, 'right')
+            }
+          >
+            Align Right
+          </Item>
+        </Submenu>
         <Separator />
         <Item
           onClick={() => {
