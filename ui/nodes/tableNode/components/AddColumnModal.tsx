@@ -5,7 +5,6 @@ import Input from '@/ui/Input/Input';
 import Dropdown from '@/ui/dropdown/Dropdown';
 import Button from '@/ui/Button/Button';
 import styles from '@/ui/nodes/tableNode/styles/AddColumnModal.module.css';
-import { v4 as uuidv4 } from 'uuid';
 
 const validTypes = [
   { value: 'text', label: 'Text' },
@@ -15,15 +14,25 @@ const validTypes = [
   { value: 'currency', label: 'Currency' }
 ];
 
-const AddColumnModal = ({ isOpen, onClose, onSave }) => {
+const AddColumnModal = ({ isOpen, onClose, onSave, existingColumns }) => {
   const [columnName, setColumnName] = useState('');
   const [columnType, setColumnType] = useState('text');
 
+  const generateColumnId = () => {
+    const existingIds = existingColumns.map((col) => col.field);
+    let newId;
+    let counter = 1;
+    do {
+      newId = `col${existingColumns.length + counter}`;
+      counter++;
+    } while (existingIds.includes(newId));
+    return newId;
+  };
+
   const handleSave = () => {
     const newColumn = {
-      id: uuidv4(),
-      headerName: columnName || `Column ${uuidv4().slice(0, 4)}`,
-      field: `col${uuidv4()}`,
+      headerName: columnName || `Column ${existingColumns.length + 1}`,
+      field: generateColumnId(),
       type: columnType,
       editable: true
     };

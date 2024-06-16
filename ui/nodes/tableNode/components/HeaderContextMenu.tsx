@@ -10,7 +10,6 @@ import {
   MdAttachMoney
 } from 'react-icons/md';
 import { AiOutlineFieldNumber } from 'react-icons/ai';
-import { FaSortAlphaDown, FaSortAlphaUp } from 'react-icons/fa';
 import {
   getContextMenuItems,
   changeColumnType,
@@ -111,12 +110,8 @@ const HeaderContextMenu = ({
   return (
     <Portal>
       <Menu id={id} className={styles.contextMenu}>
-        <Item onClick={() => handleSort('asc')}>
-          <FaSortAlphaUp /> Sort Ascending
-        </Item>
-        <Item onClick={() => handleSort('desc')}>
-          <FaSortAlphaDown /> Sort Descending
-        </Item>
+        <Item onClick={() => handleSort('asc')}>Sort Ascending</Item>
+        <Item onClick={() => handleSort('desc')}>Sort Descending</Item>
         <Separator />
         <Item
           onClick={() => {
@@ -142,7 +137,7 @@ const HeaderContextMenu = ({
           Rename Column
         </Item>
         <Separator />
-        <Submenu label="Change Datatype">
+        <Submenu label="Change Datatype" style={{ minWidth: '120px' }}>
           <Item
             onClick={() =>
               changeColumnType(params, content, setContent, 'text', gridRef)
@@ -180,7 +175,7 @@ const HeaderContextMenu = ({
           </Item>
         </Submenu>
         <Separator />
-        <Submenu label="Add Column">
+        <Submenu label="Add Column" style={{ minWidth: '120px' }}>
           <Item
             onClick={() => {
               setAddColumnPosition('before');
@@ -245,10 +240,10 @@ const HeaderContextMenu = ({
           isOpen={isAddColumnModalOpen}
           onClose={() => setIsAddColumnModalOpen(false)}
           onSave={handleAddColumnSave}
+          existingColumns={content.columns}
         />
       )}
     </Portal>
   );
 };
-
 export default HeaderContextMenu;
