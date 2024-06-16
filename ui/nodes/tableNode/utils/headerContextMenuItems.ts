@@ -36,6 +36,7 @@ export const updateColumnAlignment = (api, colId, alignment) => {
   });
   api.setColumnDefs(updatedColumnDefs);
   api.refreshCells({ force: true });
+  api.refreshHeader();
 };
 
 export const getContextMenuItems = (

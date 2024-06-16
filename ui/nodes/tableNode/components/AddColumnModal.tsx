@@ -22,7 +22,7 @@ const AddColumnModal = ({ isOpen, onClose, onSave }) => {
   const handleSave = () => {
     const newColumn = {
       id: uuidv4(),
-      headerName: columnName,
+      headerName: columnName || `Column ${uuidv4().slice(0, 4)}`,
       field: `col${uuidv4()}`,
       type: columnType,
       editable: true
