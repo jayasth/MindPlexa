@@ -9,7 +9,7 @@ import { Modal } from 'react-responsive-modal';
 import 'react-responsive-modal/styles.css';
 import Button from '@/ui/Button/Button';
 import Input from '@/ui/Input/Input';
-import styles from '@/ui/nodes/tableNode/styles/AddTableModal.module.css';
+import styles from '@/ui/Modal/Modal.module.css';
 
 type Canvas = Tables<'canvases'>;
 

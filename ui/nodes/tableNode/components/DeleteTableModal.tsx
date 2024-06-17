@@ -1,7 +1,7 @@
 import React from 'react';
 import { Modal } from 'react-responsive-modal';
 import Button from '@/ui/Button/Button';
-import styles from '@/ui/nodes/tableNode/styles/DeleteTableModal.module.css';
+import styles from '@/ui/Modal/Modal.module.css';
 
 const DeleteTableModal = ({ isOpen, onClose, onConfirm }) => (
   <Modal open={isOpen} onClose={onClose} center>

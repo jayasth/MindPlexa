@@ -2,7 +2,7 @@ import React from 'react';
 import { Modal } from 'react-responsive-modal';
 import 'react-responsive-modal/styles.css';
 import Button from '@/ui/Button/Button';
-import styles from '@/ui/nodes/tableNode/styles/ConfirmationModal.module.css';
+import styles from '@/ui/Modal/Modal.module.css';
 
 const ConfirmationModal = ({ isOpen, onClose, onConfirm, message }) => {
   return (
@@ -10,7 +10,7 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, message }) => {
       open={isOpen}
       onClose={onClose}
       center
-      classNames={{ modal: styles.customModal }}
+      classNames={{ modal: styles.modal }}
     >
       <div className={styles.modalContent}>
         <h2>Warning</h2>

@@ -3,7 +3,7 @@ import { Modal } from 'react-responsive-modal';
 import 'react-responsive-modal/styles.css';
 import Button from '@/ui/Button/Button';
 import Dropdown from '@/ui/dropdown/Dropdown';
-import styles from '@/ui/nodes/tableNode/styles/SettingsModal.module.css';
+import styles from '@/ui/Modal/Modal.module.css';
 
 const locales = [
   { value: 'en-US', label: 'English (United States)' },
