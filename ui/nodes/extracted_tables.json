@@ -117,6 +117,27 @@
     "table_structure": "Table: draw_nodes, Column: text_color, Type: text, Nullable: YES, Default: None"
   },
   {
+    "table_structure": "Table: edges, Column: id, Type: uuid, Nullable: NO, Default: uuid_generate_v4()"
+  },
+  {
+    "table_structure": "Table: edges, Column: canvas_id, Type: uuid, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: edges, Column: source_node_id, Type: uuid, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: edges, Column: target_node_id, Type: uuid, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: edges, Column: data, Type: jsonb, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: edges, Column: created_at, Type: timestamp with time zone, Nullable: YES, Default: CURRENT_TIMESTAMP"
+  },
+  {
+    "table_structure": "Table: edges, Column: updated_at, Type: timestamp with time zone, Nullable: YES, Default: CURRENT_TIMESTAMP"
+  },
+  {
     "table_structure": "Table: insights, Column: id, Type: uuid, Nullable: NO, Default: uuid_generate_v4()"
   },
   {
@@ -136,6 +157,27 @@
   },
   {
     "table_structure": "Table: insights, Column: updated_at, Type: timestamp with time zone, Nullable: YES, Default: CURRENT_TIMESTAMP"
+  },
+  {
+    "table_structure": "Table: nodes, Column: id, Type: uuid, Nullable: NO, Default: uuid_generate_v4()"
+  },
+  {
+    "table_structure": "Table: nodes, Column: canvas_id, Type: uuid, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: nodes, Column: type, Type: text, Nullable: NO, Default: None"
+  },
+  {
+    "table_structure": "Table: nodes, Column: data, Type: jsonb, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: nodes, Column: position, Type: jsonb, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: nodes, Column: created_at, Type: timestamp with time zone, Nullable: YES, Default: CURRENT_TIMESTAMP"
+  },
+  {
+    "table_structure": "Table: nodes, Column: updated_at, Type: timestamp with time zone, Nullable: YES, Default: CURRENT_TIMESTAMP"
   },
   {
     "table_structure": "Table: note_nodes, Column: id, Type: uuid, Nullable: NO, Default: gen_random_uuid()"

@@ -263,6 +263,58 @@ export type Database = {
           },
         ]
       }
+      edges: {
+        Row: {
+          canvas_id: string | null
+          created_at: string | null
+          data: Json | null
+          id: string
+          source_node_id: string | null
+          target_node_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          canvas_id?: string | null
+          created_at?: string | null
+          data?: Json | null
+          id?: string
+          source_node_id?: string | null
+          target_node_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          canvas_id?: string | null
+          created_at?: string | null
+          data?: Json | null
+          id?: string
+          source_node_id?: string | null
+          target_node_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "edges_canvas_id_fkey"
+            columns: ["canvas_id"]
+            isOneToOne: false
+            referencedRelation: "canvases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "edges_source_node_id_fkey"
+            columns: ["source_node_id"]
+            isOneToOne: false
+            referencedRelation: "nodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "edges_target_node_id_fkey"
+            columns: ["target_node_id"]
+            isOneToOne: false
+            referencedRelation: "nodes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       insights: {
         Row: {
           created_at: string | null
@@ -292,6 +344,44 @@ export type Database = {
           workspace_id?: string | null
         }
         Relationships: []
+      }
+      nodes: {
+        Row: {
+          canvas_id: string | null
+          created_at: string | null
+          data: Json | null
+          id: string
+          position: Json | null
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          canvas_id?: string | null
+          created_at?: string | null
+          data?: Json | null
+          id?: string
+          position?: Json | null
+          type: string
+          updated_at?: string | null
+        }
+        Update: {
+          canvas_id?: string | null
+          created_at?: string | null
+          data?: Json | null
+          id?: string
+          position?: Json | null
+          type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nodes_canvas_id_fkey"
+            columns: ["canvas_id"]
+            isOneToOne: false
+            referencedRelation: "canvases"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       note_nodes: {
         Row: {
