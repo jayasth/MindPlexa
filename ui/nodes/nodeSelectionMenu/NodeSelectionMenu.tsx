@@ -3,9 +3,10 @@ import { NodeProps, Handle, Position } from 'reactflow';
 
 import { IoList, IoCalendar, IoBrush } from 'react-icons/io5';
 import { PiNotepadFill } from 'react-icons/pi';
-import { FaTable } from 'react-icons/fa6';
+import { FaTable } from 'react-icons/fa';
 
 import { useStore } from '@/app/store/useCanvasStore';
+import { insertNode } from '@/utils/supabase/databaseOperations'; // Ensure this function is correctly implemented
 import styles from './NodeSelectionMenu.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
@@ -66,7 +67,7 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
     draw: <IoBrush />
   };
 
-  const replaceNodeWithType = (
+  const replaceNodeWithType = async (
     nodeType: 'note' | 'task' | 'table' | 'calendar' | 'draw'
   ) => {
     console.log('NodeSelectionMenu: Replacing node with type: ', nodeType);
@@ -77,7 +78,7 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
       return;
     }
 
-    const updatedNode = {
+    const newNode = {
       ...tempNode,
       type: nodeType,
       data: {
@@ -88,10 +89,18 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
       height: nodeDimensions[nodeType].height
     };
 
-    console.log('NodeSelectionMenu: Updated node:', updatedNode);
+    const { data, error } = await insertNode(newNode); // Assuming insertNode handles creation in the DB
+    if (error) {
+      console.error('Error creating node:', error);
+      return;
+    }
 
-    // Update the node in the store
-    updateNode(id, updatedNode);
+    if (!data) {
+      console.error('No data returned from insertNode');
+      return;
+    }
+
+    addNode(data); // Update local state with new node from DB
 
     // Update the edges connected to the node
     const connectedEdges = edges.filter(
@@ -102,8 +111,8 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
     connectedEdges.forEach((edge) => {
       const updatedEdge = {
         ...edge,
-        source: edge.source === id ? id : edge.source,
-        target: edge.target === id ? id : edge.target
+        source: edge.source === id ? (data as any).id : edge.source,
+        target: edge.target === id ? (data as any).id : edge.target
       };
 
       // Update the edge in the store

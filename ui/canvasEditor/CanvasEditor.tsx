@@ -29,6 +29,16 @@ import { useEdgeConnection } from '@/ui/canvasEditor/hooks/useEdgeConnection';
 import { nanoid } from 'nanoid';
 import { handleTemporaryNodeCreation } from '@/ui/canvasEditor/utils/TemporaryNodeHandler';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
+import {
+  fetchCanvas,
+  insertNode,
+  insertEdge,
+  updateNode as updateNodeInDB,
+  updateEdge as updateEdgeInDB,
+  deleteNode,
+  deleteEdge,
+  saveCanvasState
+} from '@/utils/supabase/databaseOperations';
 
 const nodeOrigin: NodeOrigin = [0.5, 0.5];
 const defaultEdgeOptions = {
@@ -75,12 +85,36 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
     updateNode: state.updateNode
   }));
 
+  const canvasId = 'your-canvas-id'; // This should be dynamically set based on routing or user selection
+
   useEffect(() => {
-    if (initialCanvas) {
-      setNodes(initialCanvas.nodes);
-      setEdges(initialCanvas.edges);
+    async function loadData() {
+      const canvasData = await fetchCanvas(canvasId);
+      if (canvasData.data) {
+        const nodes = canvasData.data.nodes.map((node) => ({
+          id: node.id,
+          type: node.type,
+          position: node.position as unknown as XYPosition,
+          data: node.data
+        }));
+        const edges = canvasData.data.edges.map((edge) => ({
+          id: edge.id,
+          source: edge.sourceNode || '',
+          target: edge.targetNode || '',
+          data: edge.data
+        }));
+        const formattedEdges = edges.map((edge) => ({
+          ...edge,
+          source:
+            typeof edge.source === 'string' ? edge.source : edge.source.id,
+          target: typeof edge.target === 'string' ? edge.target : edge.target.id
+        }));
+        setNodes(() => nodes);
+        setEdges(() => formattedEdges);
+      }
     }
-  }, [initialCanvas, setNodes, setEdges]);
+    loadData();
+  }, [canvasId, setNodes, setEdges]);
 
   useEffect(() => {
     const updateCanvasSize = () => {
@@ -95,6 +129,20 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
     return () => window.removeEventListener('resize', updateCanvasSize);
   }, []);
 
+  useEffect(() => {
+    const autosaveInterval = setInterval(async () => {
+      console.log('Autosaving canvas state...');
+      try {
+        await saveCanvasState(canvasId, { nodes, edges });
+        console.log('Canvas state saved successfully.');
+      } catch (error) {
+        console.error('Failed to autosave canvas state:', error);
+      }
+    }, 10000); // Autosave every 10 seconds
+
+    return () => clearInterval(autosaveInterval);
+  }, [canvasId, nodes, edges]);
+
   const handleOpenAIAssistanceModal = () => {
     setShowAIAssistanceModal(true);
   };
@@ -103,17 +151,20 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
     setShowAIAssistanceModal(false);
   };
 
-  const handleAddNode = (node) => {
-    addNode(node);
-    setTimeout(() => {
-      reactFlowInstance.current?.fitView({
-        padding: 0.2,
-        includeHiddenNodes: false
-      });
-      reactFlowInstance.current?.setCenter(node.position.x, node.position.y, {
-        duration: 500
-      });
-    }, 100);
+  const handleAddNode = async (node) => {
+    const { data } = await insertNode(node);
+    if (data) {
+      addNode(data);
+      setTimeout(() => {
+        reactFlowInstance.current?.fitView({
+          padding: 0.2,
+          includeHiddenNodes: false
+        });
+        reactFlowInstance.current?.setCenter(node.position.x, node.position.y, {
+          duration: 500
+        });
+      }, 100);
+    }
   };
 
   const edgeTypes = useMemo(
@@ -124,7 +175,7 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
   );
 
   const onNodeResizeStop = useCallback(
-    (
+    async (
       nodeId: string,
       newSize: { width: number; height: number },
       newPosition: { x: number; y: number }
@@ -132,6 +183,7 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
       console.log(
         `CanvasEditor: Node size before resizing: width = ${newSize.width}, height = ${newSize.height}`
       );
+      await updateNodeInDB(nodeId, { ...newSize, position: newPosition });
       updateNode(nodeId, { ...newSize, position: newPosition });
       console.log(
         `CanvasEditor: Node size after resizing: width = ${newSize.width}, height = ${newSize.height}`
@@ -176,14 +228,15 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
   }, []);
 
   const onNodeDragStop = useCallback(
-    (event, node) => {
+    async (event, node) => {
+      await updateNodeInDB(node.id, { position: node.position });
       updateNode(node.id, { position: node.position });
     },
     [updateNode]
   );
 
   const handleConnect = useCallback(
-    (connection) => {
+    async (connection) => {
       if (!connection.source || !connection.target) {
         console.error('CanvasEditor: Incomplete connection data:', connection);
         return;
@@ -193,19 +246,30 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
         id: `e-${nanoid()}`,
         type: 'customEdge'
       };
-      setEdges((eds) => [...eds, newEdge]);
-      reactFlowInstance.current?.fitView({ padding: 0.2 });
+      const { data } = await insertEdge(newEdge);
+      if (data) {
+        setEdges((eds) => [...eds, data]);
+        reactFlowInstance.current?.fitView({ padding: 0.2 });
+      }
     },
     [setEdges]
   );
 
   const onEdgesChange = useCallback(
-    (changes) => {
+    async (changes) => {
       setEdges((eds) => {
         if (changes[0].type === 'remove') {
           return eds.filter((e) => e.id !== changes[0].id);
         }
         return applyEdgeChanges(changes, eds);
+      });
+
+      changes.forEach(async (change) => {
+        if (change.type === 'remove') {
+          await deleteEdge(change.id);
+        } else {
+          await updateEdgeInDB(change.id, change);
+        }
       });
     },
     [setEdges]

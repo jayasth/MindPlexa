@@ -4,6 +4,10 @@ import { Node as BaseNode } from '@/ui/canvasEditor/nodeTypes';
 import dynamic from 'next/dynamic';
 import { useStore } from '@/app/store/useCanvasStore';
 import { getNodeSpecificProperties } from '@/ui/canvasEditor/utils/nodeProperties';
+import {
+  updateNode as updateNodeInDB,
+  deleteNode as deleteNodeInDB
+} from '@/utils/supabase/databaseOperations';
 
 const NoteNodeEdit = dynamic(() => import('@/ui/nodes/noteNode/NoteNodeEdit'), {
   ssr: false
@@ -68,6 +72,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     | undefined; // node might be undefined if it has been deleted
 
   const updateNode = useStore((state) => state.updateNode);
+  const removeNode = useStore((state) => state.removeNode);
   const toggleEditMode = useStore((state) => state.toggleEditMode);
   const [size, setSize] = useState(
     getNodeSpecificProperties(node?.type, node?.isEditing ?? false)
@@ -113,13 +118,29 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
         }
       });
       onNodeResizeStop(id, newSize, node.position);
+      handleSaveChanges({ ...newSize, data: node.data });
+    }
+  };
+
+  const handleSaveChanges = async (newData) => {
+    const updates = { ...newData };
+    const { data: updatedData } = await updateNodeInDB(id, updates);
+    if (updatedData) {
+      updateNode(id, updatedData);
+    }
+  };
+
+  const handleDeleteNode = async () => {
+    const { error } = await deleteNodeInDB(id);
+    if (!error) {
+      removeNode(id);
     }
   };
 
   const commonProps = {
     draggable: true,
     connectable: true,
-    onDelete: () => console.log(`Delete ${node.type}`),
+    onDelete: handleDeleteNode,
     onChangeColor: () => console.log('Change Color'),
     onResize: () => console.log('Resize Node'),
     onTag: () => console.log('Tag Node'),
