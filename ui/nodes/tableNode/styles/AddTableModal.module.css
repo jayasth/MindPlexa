@@ -1,30 +1,3 @@
-.modal {
-  padding: 20px;
-  max-height: 40vh;
-  overflow-y: auto;
-}
-
-.modalContent {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.modalHeader {
-  text-align: center;
-  font-size: 16px;
-}
-
-.formGroup {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.label {
-  font-size: 14px;
-}
-
 .columnConfig {
   display: flex;
   align-items: center;
@@ -47,12 +20,6 @@
 .rowInputGroup {
   display: flex;
   align-items: center;
-  gap: 10px;
-}
-
-.actions {
-  display: flex;
-  justify-content: space-between;
   gap: 10px;
 }
 

@@ -514,8 +514,8 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
               id={`header-context-menu-${col.field}`}
               params={{
                 column: gridRef.current.api
-                  .getColumnState()
-                  .find((c) => c.colId === col.field),
+                  ?.getColumnState()
+                  ?.find((c) => c.colId === col.field),
                 api: gridRef.current.api
               }}
               content={content}

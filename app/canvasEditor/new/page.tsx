@@ -5,7 +5,11 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/supabaseClient';
 import type { Tables } from 'types_db';
-import Modal from '@/ui/Modal/Modal1';
+import { Modal } from 'react-responsive-modal';
+import 'react-responsive-modal/styles.css';
+import Button from '@/ui/Button/Button';
+import Input from '@/ui/Input/Input';
+import styles from '@/ui/nodes/tableNode/styles/AddTableModal.module.css';
 
 type Canvas = Tables<'canvases'>;
 
@@ -56,19 +60,30 @@ export default function NewCanvasPage() {
   return (
     <>
       {isModalOpen && (
-        <Modal
-          isOpen={isModalOpen}
-          onClose={handleCloseModal}
-          onSubmit={handleCreateCanvas}
-          title="Create New Canvas"
-        >
-          <input
-            type="text"
-            placeholder="Enter canvas title"
-            value={canvasTitle}
-            onChange={handleTitleChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-          />
+        <Modal open={isModalOpen} onClose={handleCloseModal} center>
+          <div className={styles.modal}>
+            <h2 className={styles.modalHeader}>Create New Canvas</h2>
+            <div className={styles.formGroup}>
+              <label className={styles.label}>Canvas Title:</label>
+              <Input
+                type="text"
+                placeholder="Enter canvas title"
+                value={canvasTitle}
+                onChange={(value: string) =>
+                  handleTitleChange({
+                    target: { value }
+                  } as React.ChangeEvent<HTMLInputElement>)
+                }
+                variant="slim"
+                className={styles.inputWide}
+              />
+            </div>
+            <div className={styles.actions}>
+              <Button variant="submit" onClick={handleCreateCanvas}>
+                Create
+              </Button>
+            </div>
+          </div>
         </Modal>
       )}
     </>

@@ -22,7 +22,8 @@ import { MdDragIndicator } from 'react-icons/md';
 import Button from '@/ui/Button/Button';
 import Input from '@/ui/Input/Input';
 import Dropdown from '@/ui/dropdown/Dropdown';
-import styles from '@/ui/nodes/tableNode/styles/AddTableModal.module.css';
+import modalStyles from '@/ui/Modal/Modal.module.css';
+import addTableModalStyles from '@/ui/nodes/tableNode/styles/AddTableModal.module.css';
 import { v4 as uuidv4 } from 'uuid';
 
 interface Column {
@@ -60,7 +61,7 @@ const SortableItem = ({
       ref={setNodeRef}
       style={style}
       {...attributes}
-      className={styles.columnConfig}
+      className={addTableModalStyles.columnConfig}
     >
       <Input
         type="text"
@@ -68,13 +69,13 @@ const SortableItem = ({
         value={column.name}
         onChange={(value) => handleColumnChange(index, 'name', value)}
         variant="slim"
-        className={styles.inputWide}
+        className={addTableModalStyles.inputWide}
       />
       <Dropdown
         value={column.type}
         onChange={(value) => handleColumnChange(index, 'type', value)}
         variant="slim"
-        className={styles.dropdownWide}
+        className={addTableModalStyles.dropdownWide}
       >
         {validTypes.map((type) => (
           <option key={type.value} value={type.value}>
@@ -84,11 +85,16 @@ const SortableItem = ({
       </Dropdown>
       <button
         onClick={() => handleDeleteColumn(index)}
-        className={styles.deleteButton}
+        className={addTableModalStyles.deleteButton}
+        title="Delete Column"
       >
         <FaTimes />
       </button>
-      <div {...listeners} className={styles.dragHandle}>
+      <div
+        {...listeners}
+        className={addTableModalStyles.dragHandle}
+        title="Drag Column"
+      >
         <MdDragIndicator />
       </div>
     </div>
@@ -163,13 +169,13 @@ const AddTableModal = ({ onClose, onAddTable, hasExistingData, locale }) => {
       open
       onClose={onClose}
       center
-      classNames={{ modal: styles.customModal }}
+      classNames={{ modal: modalStyles.customModal }}
     >
-      <div className={`${styles.modal} nodrag nowheel`}>
-        <div className={styles.modalContent}>
-          <h2 className={styles.modalHeader}>Add Table</h2>
-          <div className={styles.formGroup}>
-            <label className={styles.label}>Columns:</label>
+      <div className={`${modalStyles.modal} nodrag nowheel`}>
+        <div className={modalStyles.modalContent}>
+          <h2 className={modalStyles.modalHeader}>Add Table</h2>
+          <div className={modalStyles.formGroup}>
+            <label className={modalStyles.label}>Columns:</label>
             <DndContext
               sensors={sensors}
               collisionDetection={closestCenter}
@@ -195,9 +201,9 @@ const AddTableModal = ({ onClose, onAddTable, hasExistingData, locale }) => {
               Add Column
             </Button>
           </div>
-          <div className={styles.formGroup}>
-            <label className={styles.label}>Rows:</label>
-            <div className={styles.rowInputGroup}>
+          <div className={modalStyles.formGroup}>
+            <label className={modalStyles.label}>Rows:</label>
+            <div className={addTableModalStyles.rowInputGroup}>
               <Input
                 type="number"
                 value={rows}
@@ -205,12 +211,12 @@ const AddTableModal = ({ onClose, onAddTable, hasExistingData, locale }) => {
                 min="1"
                 max="1000"
                 variant="slim"
-                className={styles.inputNarrow}
+                className={addTableModalStyles.inputNarrow}
               />
               <Button
                 variant="submit"
                 onClick={handleAddTable}
-                className={styles.addButton}
+                className={addTableModalStyles.addButton}
               >
                 Add Table
               </Button>
@@ -224,7 +230,7 @@ const AddTableModal = ({ onClose, onAddTable, hasExistingData, locale }) => {
         >
           <h2>Warning</h2>
           <p>This will override existing data. Continue?</p>
-          <div className={styles.actions}>
+          <div className={modalStyles.actions}>
             <Button variant="submit" onClick={handleConfirmAddTable}>
               Yes
             </Button>

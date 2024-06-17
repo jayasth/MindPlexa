@@ -4,7 +4,7 @@ import 'react-responsive-modal/styles.css';
 import Input from '@/ui/Input/Input';
 import Dropdown from '@/ui/dropdown/Dropdown';
 import Button from '@/ui/Button/Button';
-import styles from '@/ui/nodes/tableNode/styles/AddTableModal.module.css';
+import modalStyles from '@/ui/Modal/Modal.module.css';
 
 const validTypes = [
   { value: 'text', label: 'Text' },
@@ -47,25 +47,25 @@ const RenameColumnModal: React.FC<RenameColumnModalProps> = ({
 
   return (
     <Modal open={isOpen} onClose={onClose} center>
-      <div className={styles.modal}>
-        <h2 className={styles.modalHeader}>Rename Column</h2>
-        <div className={styles.formGroup}>
-          <label className={styles.label}>Column Name:</label>
+      <div className={modalStyles.modal}>
+        <h2 className={modalStyles.modalHeader}>Rename Column</h2>
+        <div className={modalStyles.formGroup}>
+          <label className={modalStyles.label}>Column Name:</label>
           <Input
             type="text"
             value={columnName}
             onChange={(value: string) => setColumnName(value)}
             variant="slim"
-            className={styles.inputWide}
+            className={modalStyles.inputWide}
           />
         </div>
-        <div className={styles.formGroup}>
-          <label className={styles.label}>Column Type:</label>
+        <div className={modalStyles.formGroup}>
+          <label className={modalStyles.label}>Column Type:</label>
           <Dropdown
             value={columnType}
             onChange={(value: string) => setColumnType(value)}
             variant="slim"
-            className={styles.dropdownWide}
+            className={modalStyles.dropdownWide}
           >
             {validTypes.map((type) => (
               <option key={type.value} value={type.value}>
@@ -74,7 +74,7 @@ const RenameColumnModal: React.FC<RenameColumnModalProps> = ({
             ))}
           </Dropdown>
         </div>
-        <div className={styles.actions}>
+        <div className={modalStyles.actions}>
           <Button variant="submit" onClick={handleSave}>
             Save
           </Button>

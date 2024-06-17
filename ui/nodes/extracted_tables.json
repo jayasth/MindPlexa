@@ -27,6 +27,42 @@
     "table_structure": "Table: base_nodes, Column: type, Type: character varying, Nullable: YES, Default: None"
   },
   {
+    "table_structure": "Table: calendar_nodes, Column: id, Type: uuid, Nullable: NO, Default: gen_random_uuid()"
+  },
+  {
+    "table_structure": "Table: calendar_nodes, Column: base_node_id, Type: uuid, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: calendar_nodes, Column: title, Type: text, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: calendar_nodes, Column: events, Type: jsonb, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: calendar_nodes, Column: view, Type: text, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: calendar_nodes, Column: tags, Type: ARRAY, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: calendar_nodes, Column: attached_files, Type: jsonb, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: calendar_nodes, Column: background_color, Type: text, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: calendar_nodes, Column: text_color, Type: text, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: canvas_node_relationships, Column: canvas_id, Type: uuid, Nullable: NO, Default: None"
+  },
+  {
+    "table_structure": "Table: canvas_node_relationships, Column: node_id, Type: uuid, Nullable: NO, Default: None"
+  },
+  {
+    "table_structure": "Table: canvas_node_relationships, Column: node_type, Type: text, Nullable: NO, Default: None"
+  },
+  {
     "table_structure": "Table: canvases, Column: id, Type: uuid, Nullable: NO, Default: gen_random_uuid()"
   },
   {
@@ -51,45 +87,6 @@
     "table_structure": "Table: canvases, Column: nodes, Type: jsonb, Nullable: YES, Default: None"
   },
   {
-    "table_structure": "Table: canvases, Column: note_nodes, Type: jsonb, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: canvases, Column: task_nodes, Type: jsonb, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: canvases, Column: custom_nodes, Type: jsonb, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: code_nodes, Column: id, Type: uuid, Nullable: NO, Default: gen_random_uuid()"
-  },
-  {
-    "table_structure": "Table: code_nodes, Column: title, Type: text, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: code_nodes, Column: language, Type: text, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: code_nodes, Column: code, Type: text, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: code_nodes, Column: base_node_id, Type: uuid, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: custom_nodes, Column: id, Type: uuid, Nullable: NO, Default: gen_random_uuid()"
-  },
-  {
-    "table_structure": "Table: custom_nodes, Column: type, Type: text, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: custom_nodes, Column: title, Type: text, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: custom_nodes, Column: data, Type: jsonb, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: custom_nodes, Column: base_node_id, Type: uuid, Nullable: YES, Default: None"
-  },
-  {
     "table_structure": "Table: customers, Column: id, Type: uuid, Nullable: NO, Default: None"
   },
   {
@@ -99,13 +96,25 @@
     "table_structure": "Table: draw_nodes, Column: id, Type: uuid, Nullable: NO, Default: gen_random_uuid()"
   },
   {
+    "table_structure": "Table: draw_nodes, Column: base_node_id, Type: uuid, Nullable: YES, Default: None"
+  },
+  {
     "table_structure": "Table: draw_nodes, Column: title, Type: text, Nullable: YES, Default: None"
   },
   {
-    "table_structure": "Table: draw_nodes, Column: data, Type: jsonb, Nullable: YES, Default: None"
+    "table_structure": "Table: draw_nodes, Column: drawing_data, Type: text, Nullable: YES, Default: None"
   },
   {
-    "table_structure": "Table: draw_nodes, Column: base_node_id, Type: uuid, Nullable: YES, Default: None"
+    "table_structure": "Table: draw_nodes, Column: tags, Type: ARRAY, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: draw_nodes, Column: attached_files, Type: jsonb, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: draw_nodes, Column: background_color, Type: text, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: draw_nodes, Column: text_color, Type: text, Nullable: YES, Default: None"
   },
   {
     "table_structure": "Table: insights, Column: id, Type: uuid, Nullable: NO, Default: uuid_generate_v4()"
@@ -132,13 +141,25 @@
     "table_structure": "Table: note_nodes, Column: id, Type: uuid, Nullable: NO, Default: gen_random_uuid()"
   },
   {
+    "table_structure": "Table: note_nodes, Column: base_node_id, Type: uuid, Nullable: YES, Default: None"
+  },
+  {
     "table_structure": "Table: note_nodes, Column: title, Type: text, Nullable: YES, Default: None"
   },
   {
     "table_structure": "Table: note_nodes, Column: content, Type: text, Nullable: YES, Default: None"
   },
   {
-    "table_structure": "Table: note_nodes, Column: base_node_id, Type: uuid, Nullable: YES, Default: None"
+    "table_structure": "Table: note_nodes, Column: tags, Type: ARRAY, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: note_nodes, Column: attached_files, Type: jsonb, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: note_nodes, Column: background_color, Type: text, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: note_nodes, Column: text_color, Type: text, Nullable: YES, Default: None"
   },
   {
     "table_structure": "Table: prices, Column: id, Type: text, Nullable: NO, Default: None"
@@ -294,19 +315,55 @@
     "table_structure": "Table: subscriptions, Column: trial_end, Type: timestamp with time zone, Nullable: YES, Default: timezone('utc'::text, now())"
   },
   {
+    "table_structure": "Table: table_nodes, Column: id, Type: uuid, Nullable: NO, Default: gen_random_uuid()"
+  },
+  {
+    "table_structure": "Table: table_nodes, Column: base_node_id, Type: uuid, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: table_nodes, Column: title, Type: text, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: table_nodes, Column: columns, Type: jsonb, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: table_nodes, Column: rows, Type: jsonb, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: table_nodes, Column: tags, Type: ARRAY, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: table_nodes, Column: attached_files, Type: jsonb, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: table_nodes, Column: background_color, Type: text, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: table_nodes, Column: text_color, Type: text, Nullable: YES, Default: None"
+  },
+  {
     "table_structure": "Table: task_nodes, Column: id, Type: uuid, Nullable: NO, Default: gen_random_uuid()"
+  },
+  {
+    "table_structure": "Table: task_nodes, Column: base_node_id, Type: uuid, Nullable: YES, Default: None"
   },
   {
     "table_structure": "Table: task_nodes, Column: title, Type: text, Nullable: YES, Default: None"
   },
   {
-    "table_structure": "Table: task_nodes, Column: task, Type: text, Nullable: YES, Default: None"
+    "table_structure": "Table: task_nodes, Column: tasks, Type: jsonb, Nullable: YES, Default: None"
   },
   {
-    "table_structure": "Table: task_nodes, Column: completed, Type: boolean, Nullable: YES, Default: None"
+    "table_structure": "Table: task_nodes, Column: tags, Type: ARRAY, Nullable: YES, Default: None"
   },
   {
-    "table_structure": "Table: task_nodes, Column: base_node_id, Type: uuid, Nullable: YES, Default: None"
+    "table_structure": "Table: task_nodes, Column: attached_files, Type: jsonb, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: task_nodes, Column: background_color, Type: text, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: task_nodes, Column: text_color, Type: text, Nullable: YES, Default: None"
   },
   {
     "table_structure": "Table: users, Column: id, Type: uuid, Nullable: NO, Default: None"
