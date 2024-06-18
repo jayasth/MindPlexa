@@ -11,7 +11,6 @@ import { useStore } from '@/app/store/useCanvasStore';
 import styles from '@/ui/nodes/tableNode/styles/TableNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 import {
-  SaveButton,
   DeleteButton,
   ChangeColorButton,
   AddTagButton,
@@ -402,18 +401,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           handleAttachmentPreview={handleAttachmentPreview}
         />
         <div className={styles.footer}>
-          <SaveButton
-            onClick={() =>
-              handleSave(data.id, () => {}, {
-                title,
-                columns: content.columns,
-                rows: content.rows,
-                tags,
-                attachedFiles
-              })
-            }
-            aria-label="Save Table"
-          />
           <DeleteButton
             onClick={() => handleDelete(data.id, () => {})}
             aria-label="Delete Table"
@@ -457,6 +444,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           onClose={() => setIsTagModalOpen(false)}
           onAddTag={onAddTag}
           onRemoveTag={onRemoveTag}
+          data={data}
           existingTags={tags}
         />
         <FileModal

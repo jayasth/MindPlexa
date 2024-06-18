@@ -123,12 +123,6 @@
     "table_structure": "Table: edges, Column: canvas_id, Type: uuid, Nullable: YES, Default: None"
   },
   {
-    "table_structure": "Table: edges, Column: source_node_id, Type: uuid, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: edges, Column: target_node_id, Type: uuid, Nullable: YES, Default: None"
-  },
-  {
     "table_structure": "Table: edges, Column: data, Type: jsonb, Nullable: YES, Default: None"
   },
   {
@@ -136,6 +130,27 @@
   },
   {
     "table_structure": "Table: edges, Column: updated_at, Type: timestamp with time zone, Nullable: YES, Default: CURRENT_TIMESTAMP"
+  },
+  {
+    "table_structure": "Table: edges, Column: source_node_id, Type: uuid, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: edges, Column: target_node_id, Type: uuid, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: files, Column: id, Type: integer, Nullable: NO, Default: nextval('files_id_seq'::regclass)"
+  },
+  {
+    "table_structure": "Table: files, Column: name, Type: character varying, Nullable: NO, Default: None"
+  },
+  {
+    "table_structure": "Table: files, Column: file_type, Type: character varying, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: files, Column: file_data, Type: bytea, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: files, Column: file_url, Type: text, Nullable: YES, Default: None"
   },
   {
     "table_structure": "Table: insights, Column: id, Type: uuid, Nullable: NO, Default: uuid_generate_v4()"
@@ -159,6 +174,30 @@
     "table_structure": "Table: insights, Column: updated_at, Type: timestamp with time zone, Nullable: YES, Default: CURRENT_TIMESTAMP"
   },
   {
+    "table_structure": "Table: node_files, Column: node_id, Type: uuid, Nullable: NO, Default: None"
+  },
+  {
+    "table_structure": "Table: node_files, Column: file_id, Type: integer, Nullable: NO, Default: None"
+  },
+  {
+    "table_structure": "Table: node_tags, Column: node_id, Type: uuid, Nullable: NO, Default: None"
+  },
+  {
+    "table_structure": "Table: node_tags, Column: tag_id, Type: integer, Nullable: NO, Default: None"
+  },
+  {
+    "table_structure": "Table: node_types, Column: id, Type: integer, Nullable: NO, Default: nextval('node_types_id_seq'::regclass)"
+  },
+  {
+    "table_structure": "Table: node_types, Column: name, Type: character varying, Nullable: NO, Default: None"
+  },
+  {
+    "table_structure": "Table: node_types, Column: description, Type: text, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: node_types, Column: icon_url, Type: text, Nullable: YES, Default: None"
+  },
+  {
     "table_structure": "Table: nodes, Column: id, Type: uuid, Nullable: NO, Default: uuid_generate_v4()"
   },
   {
@@ -178,6 +217,9 @@
   },
   {
     "table_structure": "Table: nodes, Column: updated_at, Type: timestamp with time zone, Nullable: YES, Default: CURRENT_TIMESTAMP"
+  },
+  {
+    "table_structure": "Table: nodes, Column: base_node_id, Type: uuid, Nullable: YES, Default: None"
   },
   {
     "table_structure": "Table: note_nodes, Column: id, Type: uuid, Nullable: NO, Default: gen_random_uuid()"
@@ -382,6 +424,18 @@
   },
   {
     "table_structure": "Table: table_nodes, Column: text_color, Type: text, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: tags, Column: id, Type: integer, Nullable: NO, Default: nextval('tags_id_seq'::regclass)"
+  },
+  {
+    "table_structure": "Table: tags, Column: name, Type: character varying, Nullable: NO, Default: None"
+  },
+  {
+    "table_structure": "Table: tags, Column: description, Type: text, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: tags, Column: color, Type: character varying, Nullable: YES, Default: None"
   },
   {
     "table_structure": "Table: task_nodes, Column: id, Type: uuid, Nullable: NO, Default: gen_random_uuid()"

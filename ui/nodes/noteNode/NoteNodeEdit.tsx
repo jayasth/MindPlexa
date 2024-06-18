@@ -4,7 +4,6 @@ import { useStore } from '@/app/store/useCanvasStore';
 import styles from './NoteNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 import {
-  SaveButton,
   DeleteButton,
   ChangeColorButton,
   AddTagButton,
@@ -18,7 +17,6 @@ import {
 import TagFileContainer from '@/ui/nodes/common/TagFileContainer';
 import {
   handleTitleChange,
-  handleSave,
   handleClose,
   handleDelete,
   colorCombinations,
@@ -31,6 +29,7 @@ import Quill from 'quill';
 import 'quill/dist/quill.snow.css';
 import { NoteNodeData } from '@/ui/canvasEditor/utils/nodeDatatypes';
 import { useBackgroundColorChange } from '@/ui/nodes/common/useBackgroundColorChange';
+import { updateNode as updateNodeInDatabase } from '@/utils/supabase/databaseOperations';
 
 interface NoteNodeEditProps extends NodeProps {
   data: NoteNodeData;
@@ -217,6 +216,27 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     color: textColor
   };
 
+  const handleSave = async () => {
+    const updatedNodeData = {
+      data: {
+        title,
+        content,
+        tags,
+        attachedFiles,
+        backgroundColor,
+        textColor
+      }
+    };
+
+    const { error } = await updateNodeInDatabase(data.id, updatedNodeData);
+    if (error) {
+      console.error('Error updating note node:', error);
+      // Handle the error appropriately (e.g., show an error message)
+    } else {
+      // Handle successful update (e.g., show a success message, close the edit mode)
+    }
+  };
+
   return (
     <div
       className={styles.noteNode}
@@ -260,16 +280,6 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         />
       )}
       <div className={styles.footer}>
-        <SaveButton
-          onClick={() =>
-            handleSave(data.id, () => {}, {
-              ...data,
-              title,
-              content,
-              tags
-            })
-          }
-        />
         <DeleteButton onClick={() => handleDelete(data.id, () => {})} />
         <ChangeColorButton onClick={() => toggleColorPicker()} />
         <AddTagButton onClick={() => setIsTagModalOpen(true)} />
@@ -298,6 +308,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         onClose={() => setIsTagModalOpen(false)}
         onAddTag={onAddTag}
         onRemoveTag={onRemoveTag}
+        data={data}
         existingTags={tags}
       />
       <FileModal

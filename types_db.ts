@@ -315,6 +315,30 @@ export type Database = {
           },
         ]
       }
+      files: {
+        Row: {
+          file_data: string | null
+          file_type: string | null
+          file_url: string | null
+          id: number
+          name: string
+        }
+        Insert: {
+          file_data?: string | null
+          file_type?: string | null
+          file_url?: string | null
+          id?: number
+          name: string
+        }
+        Update: {
+          file_data?: string | null
+          file_type?: string | null
+          file_url?: string | null
+          id?: number
+          name?: string
+        }
+        Relationships: []
+      }
       insights: {
         Row: {
           created_at: string | null
@@ -345,8 +369,90 @@ export type Database = {
         }
         Relationships: []
       }
+      node_files: {
+        Row: {
+          file_id: number
+          node_id: string
+        }
+        Insert: {
+          file_id: number
+          node_id: string
+        }
+        Update: {
+          file_id?: number
+          node_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "node_files_file_id_fkey"
+            columns: ["file_id"]
+            isOneToOne: false
+            referencedRelation: "files"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "node_files_node_id_fkey"
+            columns: ["node_id"]
+            isOneToOne: false
+            referencedRelation: "nodes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      node_tags: {
+        Row: {
+          node_id: string
+          tag_id: number
+        }
+        Insert: {
+          node_id: string
+          tag_id: number
+        }
+        Update: {
+          node_id?: string
+          tag_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "node_tags_node_id_fkey"
+            columns: ["node_id"]
+            isOneToOne: false
+            referencedRelation: "nodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "node_tags_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      node_types: {
+        Row: {
+          description: string | null
+          icon_url: string | null
+          id: number
+          name: string
+        }
+        Insert: {
+          description?: string | null
+          icon_url?: string | null
+          id?: number
+          name: string
+        }
+        Update: {
+          description?: string | null
+          icon_url?: string | null
+          id?: number
+          name?: string
+        }
+        Relationships: []
+      }
       nodes: {
         Row: {
+          base_node_id: string | null
           canvas_id: string | null
           created_at: string | null
           data: Json | null
@@ -356,6 +462,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          base_node_id?: string | null
           canvas_id?: string | null
           created_at?: string | null
           data?: Json | null
@@ -365,6 +472,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          base_node_id?: string | null
           canvas_id?: string | null
           created_at?: string | null
           data?: Json | null
@@ -374,6 +482,13 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "nodes_base_node_id_fkey"
+            columns: ["base_node_id"]
+            isOneToOne: false
+            referencedRelation: "base_nodes"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "nodes_canvas_id_fkey"
             columns: ["canvas_id"]
@@ -696,6 +811,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      tags: {
+        Row: {
+          color: string | null
+          description: string | null
+          id: number
+          name: string
+        }
+        Insert: {
+          color?: string | null
+          description?: string | null
+          id?: number
+          name: string
+        }
+        Update: {
+          color?: string | null
+          description?: string | null
+          id?: number
+          name?: string
+        }
+        Relationships: []
       }
       task_nodes: {
         Row: {

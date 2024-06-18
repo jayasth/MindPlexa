@@ -14,10 +14,12 @@ import { CompactPicker } from 'react-color';
 import styles from '@/ui/nodes/common/CommonNodeStyles.module.css';
 import Input from '@/ui/Input/Input';
 import Button from '@/ui/Button/Button';
+import { handleAttachmentPreview } from '@/ui/nodes/common/CommonNodeFunctions';
 import {
-  handleRemoveAttachedFile,
-  handleAttachmentPreview
-} from '@/ui/nodes/common/CommonNodeFunctions';
+  updateNode,
+  attachFileToNode,
+  removeFileFromNode
+} from '@/utils/supabase/databaseOperations';
 
 const ICON_SIZE = 16;
 
@@ -76,17 +78,40 @@ export const TagModal = ({
   onClose,
   onAddTag,
   onRemoveTag,
-  existingTags
+  existingTags,
+  data
 }) => {
   const [newTags, setNewTags] = useState('');
 
-  const handleAddTags = () => {
+  const handleAddTags = async () => {
     const tagList = newTags
       .split(',')
       .map((tag) => tag.trim())
       .filter((tag) => tag !== '');
-    onAddTag(tagList);
-    setNewTags('');
+    const updatedTags = [...(existingTags || []), ...tagList];
+    const { error } = await updateNode(data.id, {
+      data: { tags: updatedTags }
+    });
+    if (error) {
+      console.error('Error updating node tags:', error);
+      // Handle the error appropriately (e.g., show an error message)
+    } else {
+      onAddTag(tagList);
+      setNewTags('');
+    }
+  };
+
+  const handleRemoveTag = async (tag) => {
+    const updatedTags = (existingTags || []).filter((t) => t !== tag);
+    const { error } = await updateNode(data.id, {
+      data: { tags: updatedTags }
+    });
+    if (error) {
+      console.error('Error updating node tags:', error);
+      // Handle the error appropriately (e.g., show an error message)
+    } else {
+      onRemoveTag(tag);
+    }
   };
 
   return (
@@ -108,7 +133,7 @@ export const TagModal = ({
             <span>#{tag}</span>
             <button
               className={styles.removeTagButton}
-              onClick={() => onRemoveTag(tag)}
+              onClick={() => handleRemoveTag(tag)}
             >
               &times;
             </button>
@@ -130,7 +155,7 @@ export const FileModal = ({
   const [fileUrl, setFileUrl] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const files = Array.from(e.target.files);
       const allFiles = [...existingFiles, ...files];
@@ -138,7 +163,13 @@ export const FileModal = ({
         alert('You can attach a maximum of 10 files.');
         return;
       }
-      onAttachFiles(allFiles);
+      const { error } = await attachFileToNode(data.id, files.length);
+      if (error) {
+        console.error('Error attaching files to node:', error);
+        // Handle the error appropriately (e.g., show an error message)
+      } else {
+        onAttachFiles(allFiles);
+      }
     }
   };
 
@@ -148,7 +179,7 @@ export const FileModal = ({
     }
   };
 
-  const handleAddFileUrl = () => {
+  const handleAddFileUrl = async () => {
     if (fileUrl) {
       try {
         new URL(fileUrl); // Validate URL
@@ -158,11 +189,27 @@ export const FileModal = ({
           alert('You can attach a maximum of 10 files.');
           return;
         }
-        onAttachFiles(allFiles);
-        setFileUrl('');
+        const { error } = await attachFileToNode(data.id, 1);
+        if (error) {
+          console.error('Error attaching files to node:', error);
+          // Handle the error appropriately (e.g., show an error message)
+        } else {
+          onAttachFiles(allFiles);
+          setFileUrl('');
+        }
       } catch (e) {
         alert('Invalid URL');
       }
+    }
+  };
+
+  const handleRemoveFile = async (file) => {
+    const { error } = await removeFileFromNode(data.id, file.id);
+    if (error) {
+      console.error('Error removing file from node:', error);
+      // Handle the error appropriately (e.g., show an error message)
+    } else {
+      onRemoveFile(file);
     }
   };
 
@@ -211,7 +258,7 @@ export const FileModal = ({
             </span>
             <button
               className={styles.removeFileButton}
-              onClick={() => handleRemoveAttachedFile(data.id, file, () => {})}
+              onClick={() => handleRemoveFile(file)}
             >
               &times;
             </button>

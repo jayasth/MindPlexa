@@ -1,0 +1,14 @@
+1. base_nodes: This table stores the core properties and common functionalities shared across all node types in MindPlexa. It includes properties like position, size, color, and the canvas association for each node. Additionally, it stores common functionalities like background color, text color, tags, and attached files, which are applicable to all node types.
+2. calendar_nodes: Specific to the calendar node type in MindPlexa, this table stores data related to events, view mode (e.g., day, week, month), and other calendar-related information.
+3. canvas_node_relationships: In MindPlexa, a canvas can have multiple nodes associated with it. This table maintains the relationships between canvases and the nodes they contain, allowing for the creation of complex diagrams and workflows.
+4. canvases: This table stores information about the canvases in MindPlexa, which are the zoomable working spaces where users can create and interconnect nodes. It includes properties like the canvas name, description, content, and the user association.
+5. draw_nodes: Specific to the draw node type in MindPlexa, this table stores data related to the drawing content, background color, text color, and other drawing-related information.
+6. edges: In MindPlexa, nodes can be interconnected using edges. This table stores information about the edges connecting nodes, including their source and target node IDs, canvas association, and any additional data related to the edge.
+7. nodes: This table stores general information about nodes in MindPlexa, such as their type, position, and any additional data specific to the node type.
+note_nodes: Specific to the note node type in MindPlexa, this table stores data related to the note content, background color, text color, and other note-related information.
+9. table_nodes: Specific to the data (table) node type in MindPlexa, this table stores data related to columns, rows, and other table-related information.
+10. task_nodes: Specific to the task node type in MindPlexa, this table stores data related to tasks, background color, text color, and other task-related information.
+11. tags (suggested): In MindPlexa, users can assign tags to nodes for better organization and filtering. This table stores the available tags and their metadata.
+12. node_tags (suggested): This table maintains the association between nodes and tags in MindPlexa, allowing multiple tags to be assigned to a single node.
+13. files (suggested): In MindPlexa, users can attach files or URLs to nodes. This table stores information about the attached files, such as their name, type, and data or URL.
+14. node_files (suggested): This table maintains the association between nodes and attached files in MindPlexa, allowing multiple files to be attached to a single node.

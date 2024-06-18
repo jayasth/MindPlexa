@@ -60,6 +60,7 @@ export const insertNode = async (
   return { data: data ? data[0] : null, error };
 };
 
+// Update a node
 export const updateNode = async (
   nodeId: string,
   updates: Partial<Node>
@@ -167,4 +168,36 @@ export const saveCanvasState = async (
   } catch (error) {
     return { data: null, error };
   }
+};
+
+// Create a new node (wrapper for insertNode)
+export const createNode = async (
+  node: Node
+): Promise<{ data: Node | null; error: any }> => {
+  return insertNode(node);
+};
+
+// Attach a file to a node
+export const attachFileToNode = async (
+  nodeId: string,
+  fileId: number
+): Promise<{ data: any | null; error: any }> => {
+  const { data, error } = await supabase
+    .from('node_files')
+    .insert([{ node_id: nodeId, file_id: fileId }]);
+  if (error) throw new Error(error.message);
+  return { data, error: null };
+};
+
+// Remove a file from a node
+export const removeFileFromNode = async (
+  nodeId: string,
+  fileId: string
+): Promise<{ data: any | null; error: any }> => {
+  const { data, error } = await supabase
+    .from('node_files')
+    .delete()
+    .match({ node_id: nodeId, id: fileId });
+  if (error) throw new Error(error.message);
+  return { data, error: null };
 };

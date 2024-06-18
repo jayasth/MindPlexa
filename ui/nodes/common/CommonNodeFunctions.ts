@@ -2,10 +2,52 @@ import { useStore } from '@/app/store/useCanvasStore';
 import {
   insertNode,
   updateNode,
-  deleteNode
+  deleteNode,
+  attachFileToNode,
+  removeFileFromNode
 } from '@/utils/supabase/databaseOperations';
 import { nanoid } from 'nanoid';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
+
+// Function to update node data
+export async function updateNodeData(nodeId, updates) {
+  try {
+    const updatedNode = await updateNode(nodeId, updates);
+    console.log('Node updated:', updatedNode);
+  } catch (error) {
+    console.error('Error updating node:', error);
+  }
+}
+
+// Function to delete a node
+export async function deleteNodeById(nodeId) {
+  try {
+    await deleteNode(nodeId);
+    console.log('Node deleted:', nodeId);
+  } catch (error) {
+    console.error('Error deleting node:', error);
+  }
+}
+
+// Function to handle file attachment
+export async function handleFileAttachment(nodeId, file) {
+  try {
+    const attachedFile = await attachFileToNode(nodeId, file);
+    console.log('File attached:', attachedFile);
+  } catch (error) {
+    console.error('Error attaching file:', error);
+  }
+}
+
+// Function to handle file removal
+export async function handleFileRemoval(nodeId, fileId) {
+  try {
+    await removeFileFromNode(nodeId, fileId);
+    console.log('File removed:', fileId);
+  } catch (error) {
+    console.error('Error removing file:', error);
+  }
+}
 
 export const addNewNode = async (nodeData) => {
   const { addNode } = useStore.getState();
@@ -19,30 +61,6 @@ export const addNewNode = async (nodeData) => {
   } else {
     console.error('No data returned on node insertion');
   }
-};
-
-export const updateExistingNode = async (nodeId, updates) => {
-  const { updateNode: updateNodeInStore } = useStore.getState();
-  const { data, error } = await updateNode(nodeId, updates);
-  if (error) {
-    console.error('Failed to update node:', error);
-    return;
-  }
-  if (data) {
-    updateNodeInStore(nodeId, data);
-  } else {
-    console.error('No data returned on node update');
-  }
-};
-
-export const removeNode = async (nodeId) => {
-  const { removeNode: removeNodeFromStore } = useStore.getState();
-  const { error } = await deleteNode(nodeId);
-  if (error) {
-    console.error('Failed to delete node:', error);
-    return;
-  }
-  removeNodeFromStore(nodeId);
 };
 
 export const getContrastYIQ = (color: string) => {
@@ -179,7 +197,7 @@ export const handleChangeColorWithCombination = (
   textColor: string,
   onChangeColor: (color: string) => void
 ) => {
-  updateExistingNode(id, { backgroundColor, textColor });
+  updateNodeData(id, { backgroundColor, textColor });
   onChangeColor(backgroundColor);
 };
 
@@ -188,14 +206,14 @@ export const handleTitleChange = (
   title: string,
   onChangeTitle: (title: string) => void
 ) => {
-  updateExistingNode(id, { title });
+  updateNodeData(id, { title });
   onChangeTitle(title);
 };
 
 export const handleSave = (id: string, onSave: () => void, nodeData: any) => {
   const { toggleEditMode } = useStore.getState();
   onSave();
-  updateExistingNode(id, nodeData);
+  updateNodeData(id, nodeData);
   toggleEditMode(id);
 };
 
@@ -206,7 +224,7 @@ export const handleClose = (
   content: any
 ) => {
   const { toggleEditMode } = useStore.getState();
-  updateExistingNode(nodeId, { title, content });
+  updateNodeData(nodeId, { title, content });
   onClose();
   toggleEditMode(nodeId);
 };
@@ -215,7 +233,7 @@ export const handleDelete = (id: string, onDelete: () => void) => {
   const { setEdges } = useStore.getState();
   if (window.confirm('Are you sure you want to delete this node?')) {
     onDelete();
-    removeNode(id);
+    deleteNodeById(id);
     // Update edges to remove any that are connected to the deleted node
     setEdges((edges) =>
       edges.filter((edge) => edge.source !== id && edge.target !== id)
@@ -229,7 +247,7 @@ export const handleChangeColor = (
   onChangeColor: (color: string) => void
 ) => {
   const textColor = getContrastYIQ(color);
-  updateExistingNode(id, { backgroundColor: color, textColor });
+  updateNodeData(id, { backgroundColor: color, textColor });
   onChangeColor(color);
 };
 
@@ -238,7 +256,7 @@ export const handleAddTag = (
   tags: string[],
   onAddTag: (tag: string) => void
 ) => {
-  updateExistingNode(id, { tags });
+  updateNodeData(id, { tags });
   tags.forEach((tag) => onAddTag(tag));
 };
 
@@ -274,7 +292,7 @@ export const handleAttachFile = (
       return;
     }
 
-    updateExistingNode(id, {
+    updateNodeData(id, {
       attachedFiles: allFiles
     });
     callback();
@@ -295,7 +313,7 @@ export const handleRemoveAttachedFile = (
     [];
   const updatedFiles = existingFiles.filter((file) => file !== fileToRemove);
 
-  updateExistingNode(id, {
+  updateNodeData(id, {
     attachedFiles: updatedFiles
   });
   onRemoveFile(fileToRemove);
@@ -390,6 +408,7 @@ export const handleDuplicate = async (id: string) => {
   await addNewNode(newNode);
   setSelectedNodes([newNode.id]);
 };
+
 export const handleAttachmentPreview = (fileOrUrl: File | string) => {
   const previewWindow = document.createElement('div');
   previewWindow.style.position = 'fixed';
