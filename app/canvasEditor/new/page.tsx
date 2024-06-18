@@ -3,53 +3,20 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/utils/supabase/supabaseClient';
-import type { Tables } from 'types_db';
+import { createCanvas } from '@/utils/canvas/canvasDatabaseOperations';
 import { Modal } from 'react-responsive-modal';
 import 'react-responsive-modal/styles.css';
 import Button from '@/ui/Button/Button';
 import Input from '@/ui/Input/Input';
 import styles from '@/ui/Modal/Modal.module.css';
 
-type Canvas = Tables<'canvases'>;
-
 export default function NewCanvasPage() {
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(true);
   const [canvasTitle, setCanvasTitle] = useState('');
-  const supabase = createClient();
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCanvasTitle(e.target.value);
-  };
-
-  const handleCreateCanvas = async () => {
-    if (canvasTitle.trim() !== '') {
-      const insertResponse = await supabase
-        .from('canvases')
-        .insert({ name: canvasTitle });
-
-      console.log('Insert response:', insertResponse);
-
-      const { data, error } = await supabase
-        .from('canvases')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(1);
-
-      console.log('Select data:', data);
-      console.log('Select error:', error);
-
-      if (error) {
-        console.error('Error fetching canvas:', error);
-      } else if (data && data[0]) {
-        console.log('Redirecting to new canvas...');
-        setIsModalOpen(false);
-        router.push(`/canvasEditor/${data[0].id}?new=true`);
-      } else {
-        console.log('Fetch operation returned no data');
-      }
-    }
   };
 
   const handleCloseModal = () => {
@@ -79,7 +46,12 @@ export default function NewCanvasPage() {
               />
             </div>
             <div className={styles.actions}>
-              <Button variant="submit" onClick={handleCreateCanvas}>
+              <Button
+                variant="submit"
+                onClick={() =>
+                  createCanvas(canvasTitle, setIsModalOpen, router)
+                }
+              >
                 Create
               </Button>
             </div>

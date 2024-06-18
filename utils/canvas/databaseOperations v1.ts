@@ -46,7 +46,7 @@ export const fetchCanvas = async (
 };
 
 // Insert a new node
-export const insertNode = async (
+export const createNode = async (
   node: Node
 ): Promise<{ data: Node | null; error: any }> => {
   const { data, error } = await supabase.from('nodes').insert([
@@ -87,7 +87,7 @@ export const deleteNode = async (
 };
 
 // Insert a new edge
-export const insertEdge = async (
+export const createEdge = async (
   edge: Edge
 ): Promise<{ data: Edge | null; error: any }> => {
   const { data, error } = await supabase.from('edges').insert([edge]);
@@ -170,11 +170,11 @@ export const saveCanvasState = async (
   }
 };
 
-// Create a new node (wrapper for insertNode)
+// Create a new node (wrapper for createNode)
 export const createNode = async (
   node: Node
 ): Promise<{ data: Node | null; error: any }> => {
-  return insertNode(node);
+  return createNode(node);
 };
 
 // Attach a file to a node

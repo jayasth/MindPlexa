@@ -32,14 +32,14 @@ import { handleTemporaryNodeCreation } from '@/ui/canvasEditor/utils/TemporaryNo
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 import {
   fetchCanvas,
-  insertNode,
-  insertEdge,
+  createNode,
+  createEdge,
   updateNode as updateNodeInDB,
   updateEdge as updateEdgeInDB,
   deleteNode,
   deleteEdge,
   saveCanvasState
-} from '@/utils/supabase/databaseOperations';
+} from '@/utils/canvas/canvasDatabaseOperations';
 
 const nodeOrigin: NodeOrigin = [0.5, 0.5];
 const defaultEdgeOptions = {
@@ -155,7 +155,7 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
   };
 
   const handleAddNode = async (node) => {
-    const { data } = await insertNode(node);
+    const { data } = await createNode(node);
     if (data) {
       addNode(data);
       setTimeout(() => {
@@ -249,7 +249,7 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
         id: `e-${nanoid()}`,
         type: 'customEdge'
       };
-      const { data } = await insertEdge(newEdge);
+      const { data } = await createEdge(newEdge);
       if (data) {
         setEdges((eds) => [...eds, data]);
         reactFlowInstance.current?.fitView({ padding: 0.2 });

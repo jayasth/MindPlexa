@@ -2,7 +2,7 @@ import { Node, XYPosition } from 'reactflow';
 import { getNodeSpecificProperties, nodeDimensions } from './nodeProperties';
 import { nanoid } from 'nanoid';
 import { findOptimalPosition } from './positioningUtils';
-import { createNode as createNodeInDatabase } from '@/utils/supabase/databaseOperations';
+import { createNode as createNodeInDatabase } from '@/utils/canvas/canvasDatabaseOperations';
 
 const setPosition = (x: number, y: number): XYPosition => {
   return { x, y };
@@ -76,9 +76,14 @@ export const createNode = async (
   console.log('nodeCreation: New node:', newNode);
 
   try {
-    const { data: createdNode, error } = await createNodeInDatabase(newNode);
+    const { data: createdNode, error } = await createNodeInDatabase({
+      id: newNode.id || '',
+      type: newNode.type || '',
+      position: JSON.stringify(newNode.position),
+      data: JSON.stringify(newNode.data)
+    });
     if (error) {
-      throw new Error(error);
+      throw new Error(error.message);
     }
     if (createdNode) {
       callback(createdNode);

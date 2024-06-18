@@ -19,7 +19,7 @@ import {
   updateNode,
   attachFileToNode,
   removeFileFromNode
-} from '@/utils/supabase/databaseOperations';
+} from '@/utils/canvas/canvasDatabaseOperations';
 
 const ICON_SIZE = 16;
 

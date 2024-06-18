@@ -1,11 +1,11 @@
 import { useStore } from '@/app/store/useCanvasStore';
 import {
-  insertNode,
+  createNode,
   updateNode,
   deleteNode,
   attachFileToNode,
   removeFileFromNode
-} from '@/utils/supabase/databaseOperations';
+} from '@/utils/canvas/canvasDatabaseOperations';
 import { nanoid } from 'nanoid';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 
@@ -51,7 +51,7 @@ export async function handleFileRemoval(nodeId, fileId) {
 
 export const addNewNode = async (nodeData) => {
   const { addNode } = useStore.getState();
-  const { data, error } = await insertNode(nodeData);
+  const { data, error } = await createNode(nodeData);
   if (error) {
     console.error('Failed to add node:', error);
     return;

@@ -6,7 +6,7 @@ import { PiNotepadFill } from 'react-icons/pi';
 import { FaTable } from 'react-icons/fa';
 
 import { useStore } from '@/app/store/useCanvasStore';
-import { insertNode } from '@/utils/supabase/databaseOperations'; // Ensure this function is correctly implemented
+import { createNode } from '@/utils/canvas/canvasDatabaseOperations'; // Ensure this function is correctly implemented
 import styles from './NodeSelectionMenu.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
@@ -89,14 +89,14 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
       height: nodeDimensions[nodeType].height
     };
 
-    const { data, error } = await insertNode(newNode); // Assuming insertNode handles creation in the DB
+    const { data, error } = await createNode(newNode); // Assuming createNode handles creation in the DB
     if (error) {
       console.error('Error creating node:', error);
       return;
     }
 
     if (!data) {
-      console.error('No data returned from insertNode');
+      console.error('No data returned from createNode');
       return;
     }
 

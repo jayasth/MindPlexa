@@ -29,7 +29,7 @@ import Quill from 'quill';
 import 'quill/dist/quill.snow.css';
 import { NoteNodeData } from '@/ui/canvasEditor/utils/nodeDatatypes';
 import { useBackgroundColorChange } from '@/ui/nodes/common/useBackgroundColorChange';
-import { updateNode as updateNodeInDatabase } from '@/utils/supabase/databaseOperations';
+import { updateNode as updateNodeInDatabase } from '@/utils/canvas/canvasDatabaseOperations';
 
 interface NoteNodeEditProps extends NodeProps {
   data: NoteNodeData;

@@ -4,7 +4,7 @@ import {
   applyNodeChanges,
   applyEdgeChanges
 } from '@/ui/canvasEditor/utils/canvasUtils';
-import { createNode } from '@/ui/canvasEditor/utils/nodeCreation';
+import { createNode as createNodeUI } from '@/ui/canvasEditor/utils/nodeCreation';
 import { getChildNodePosition } from '@/ui/canvasEditor/utils/getChildNodePosition';
 import { findOptimalPosition } from '@/ui/canvasEditor/utils/positioningUtils';
 import { nanoid } from 'nanoid';
@@ -22,14 +22,13 @@ import {
 } from '@/ui/canvasEditor/utils/nodeDatatypes';
 import {
   fetchCanvas,
-  insertNode,
-  updateNode,
-  deleteNode,
-  insertEdge,
-  deleteEdge,
-  updateEdge,
-  saveCanvasState
-} from '@/utils/supabase/databaseOperations';
+  createNode as createNodeDB,
+  updateNode as updateNodeDB,
+  deleteNode as deleteNodeDB,
+  createEdge as createEdgeDB,
+  deleteEdge as deleteEdgeDB,
+  updateEdge as updateEdgeDB
+} from '@/utils/canvas/canvasDatabaseOperations';
 
 interface CanvasState {
   nodes: Node[];
@@ -155,7 +154,12 @@ export const useStore = createStore<CanvasState>((set, get) => ({
     }
 
     console.log('Store: New node with position and dimensions:', newNode);
-    const { data, error } = await insertNode(newNode);
+    const { data, error } = await createNodeDB({
+      id: newNode.id,
+      type: newNode.type || '',
+      position: JSON.stringify(newNode.position),
+      data: JSON.stringify(newNode.data)
+    });
     if (error) {
       console.error('Error adding node:', error);
       return;
@@ -172,7 +176,11 @@ export const useStore = createStore<CanvasState>((set, get) => ({
   },
 
   updateNode: async (id, data) => {
-    const { error } = await updateNode(id, data);
+    const { error } = await updateNodeDB(id, {
+      ...data,
+      position: data.position ? JSON.stringify(data.position) : undefined,
+      data: data.data ? JSON.stringify(data.data) : undefined
+    });
     if (error) {
       console.error('Error updating node:', error);
       return;
@@ -243,7 +251,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
 
   addEdge: async (edge) => {
     console.log('Store: Adding edge:', edge);
-    const { data, error } = await insertEdge(edge);
+    const { data, error } = await createEdgeDB(edge);
     if (error) {
       console.error('Error adding edge:', error);
       return;
@@ -258,7 +266,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
   },
   removeNode: async (id) => {
     console.log('Store: Removing node with id:', id);
-    const { error } = await deleteNode(id);
+    const { error } = await deleteNodeDB(id);
     if (error) {
       console.error('Error removing node:', error);
       return;
@@ -272,7 +280,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
   },
   removeEdge: async (id) => {
     console.log('Store: Removing edge with id:', id);
-    const { error } = await deleteEdge(id);
+    const { error } = await deleteEdgeDB(id);
     if (error) {
       console.error('Error removing edge:', error);
       return;
@@ -290,7 +298,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
   },
   updateEdge: async (id, data) => {
     console.log('Store: Updating edge with id:', id, 'and data:', data);
-    const { error } = await updateEdge(id, data);
+    const { error } = await updateEdgeDB(id, data);
     if (error) {
       console.error('Error updating edge:', error);
       return;
@@ -394,7 +402,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       position: childNodePosition,
       data: {
         onSelect: (selectedNodeType, selectedPosition) => {
-          createNode(
+          createNodeUI(
             selectedNodeType,
             selectedPosition,
             nodes,

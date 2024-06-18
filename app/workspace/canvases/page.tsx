@@ -7,6 +7,7 @@ import { createClient } from '@/utils/supabase/supabaseClient';
 import type { Tables } from 'types_db';
 import { FaTrash } from 'react-icons/fa';
 import { MdAddCircleOutline } from 'react-icons/md';
+import { deleteCanvas } from '@/utils/canvas/canvasDatabaseOperations';
 
 type Canvas = Tables<'canvases'>;
 
@@ -33,20 +34,8 @@ export default function CanvasesPage() {
     return () => {};
   }, []);
 
-  const handleDeleteCanvas = async (canvasId: string) => {
-    const supabase = createClient();
-    const { error } = await supabase
-      .from('canvases')
-      .delete()
-      .eq('id', canvasId);
-
-    if (error) {
-      console.log('Error deleting canvas:', error);
-    } else {
-      setCanvases((prevCanvases) =>
-        prevCanvases.filter((canvas) => canvas.id !== canvasId)
-      );
-    }
+  const handleDelete = async (canvasId: string) => {
+    await deleteCanvas(canvasId, setCanvases);
   };
 
   return (
@@ -70,7 +59,7 @@ export default function CanvasesPage() {
                   <h2 className="text-xl font-bold">{canvas.name}</h2>
                 </Link>
                 <button
-                  onClick={() => handleDeleteCanvas(canvas.id)}
+                  onClick={() => handleDelete(canvas.id)}
                   className="text-lavender-500 hover:text-red-500"
                 >
                   <FaTrash />
