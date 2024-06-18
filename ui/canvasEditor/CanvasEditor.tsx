@@ -5,6 +5,7 @@ import React, {
   useEffect,
   useState
 } from 'react';
+import { useSearchParams } from 'next/navigation';
 import ReactFlow, {
   Controls,
   Background,
@@ -46,6 +47,8 @@ const defaultEdgeOptions = {
 };
 
 export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
+  const searchParams = useSearchParams();
+  const canvasId = searchParams.get('id');
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const reactFlowInstance = useRef<ReactFlowInstance | null>(null);
   const [showAIAssistanceModal, setShowAIAssistanceModal] = useState(false);
@@ -85,10 +88,9 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
     updateNode: state.updateNode
   }));
 
-  const canvasId = 'your-canvas-id'; // This should be dynamically set based on routing or user selection
-
   useEffect(() => {
     async function loadData() {
+      if (!canvasId) return;
       const canvasData = await fetchCanvas(canvasId);
       if (canvasData.data) {
         const nodes = canvasData.data.nodes.map((node) => ({
@@ -130,6 +132,8 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
   }, []);
 
   useEffect(() => {
+    if (!canvasId) return;
+
     const autosaveInterval = setInterval(async () => {
       console.log('Autosaving canvas state...');
       try {
@@ -142,7 +146,6 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
 
     return () => clearInterval(autosaveInterval);
   }, [canvasId, nodes, edges]);
-
   const handleOpenAIAssistanceModal = () => {
     setShowAIAssistanceModal(true);
   };

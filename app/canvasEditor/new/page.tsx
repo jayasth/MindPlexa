@@ -45,7 +45,7 @@ export default function NewCanvasPage() {
       } else if (data && data[0]) {
         console.log('Redirecting to new canvas...');
         setIsModalOpen(false);
-        router.push(`/canvasEditor/${data[0].id}`);
+        router.push(`/canvasEditor/${data[0].id}?new=true`);
       } else {
         console.log('Fetch operation returned no data');
       }
