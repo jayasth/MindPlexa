@@ -1,66 +1,15 @@
 [
   {
-    "table_structure": "Table: base_nodes, Column: id, Type: uuid, Nullable: NO, Default: gen_random_uuid()"
-  },
-  {
-    "table_structure": "Table: base_nodes, Column: canvas_id, Type: uuid, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: base_nodes, Column: color, Type: character varying, Nullable: YES, Default: NULL::character varying"
-  },
-  {
-    "table_structure": "Table: base_nodes, Column: created_at, Type: timestamp with time zone, Nullable: YES, Default: now()"
-  },
-  {
-    "table_structure": "Table: base_nodes, Column: updated_at, Type: timestamp with time zone, Nullable: YES, Default: now()"
-  },
-  {
-    "table_structure": "Table: base_nodes, Column: position, Type: json, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: base_nodes, Column: width, Type: integer, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: base_nodes, Column: height, Type: integer, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: base_nodes, Column: type, Type: character varying, Nullable: YES, Default: None"
-  },
-  {
     "table_structure": "Table: calendar_nodes, Column: id, Type: uuid, Nullable: NO, Default: gen_random_uuid()"
   },
   {
-    "table_structure": "Table: calendar_nodes, Column: base_node_id, Type: uuid, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: calendar_nodes, Column: title, Type: text, Nullable: YES, Default: None"
+    "table_structure": "Table: calendar_nodes, Column: common_node_id, Type: uuid, Nullable: YES, Default: None"
   },
   {
     "table_structure": "Table: calendar_nodes, Column: events, Type: jsonb, Nullable: YES, Default: None"
   },
   {
-    "table_structure": "Table: calendar_nodes, Column: view, Type: text, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: calendar_nodes, Column: tags, Type: ARRAY, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: calendar_nodes, Column: attached_files, Type: jsonb, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: calendar_nodes, Column: background_color, Type: text, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: calendar_nodes, Column: text_color, Type: text, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: canvas_node_relationships, Column: canvas_id, Type: uuid, Nullable: NO, Default: None"
-  },
-  {
-    "table_structure": "Table: canvas_node_relationships, Column: node_id, Type: uuid, Nullable: NO, Default: None"
-  },
-  {
-    "table_structure": "Table: canvas_node_relationships, Column: node_type, Type: text, Nullable: NO, Default: None"
+    "table_structure": "Table: calendar_nodes, Column: view, Type: character varying, Nullable: YES, Default: None"
   },
   {
     "table_structure": "Table: canvases, Column: id, Type: uuid, Nullable: NO, Default: gen_random_uuid()"
@@ -87,6 +36,48 @@
     "table_structure": "Table: canvases, Column: nodes, Type: jsonb, Nullable: YES, Default: None"
   },
   {
+    "table_structure": "Table: common_node_properties, Column: id, Type: uuid, Nullable: NO, Default: gen_random_uuid()"
+  },
+  {
+    "table_structure": "Table: common_node_properties, Column: canvas_id, Type: uuid, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: common_node_properties, Column: type, Type: character varying, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: common_node_properties, Column: title, Type: character varying, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: common_node_properties, Column: background_color, Type: character varying, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: common_node_properties, Column: text_color, Type: character varying, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: common_node_properties, Column: tags, Type: ARRAY, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: common_node_properties, Column: attached_files, Type: jsonb, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: common_node_properties, Column: is_editing, Type: boolean, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: common_node_properties, Column: position, Type: jsonb, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: common_node_properties, Column: width, Type: integer, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: common_node_properties, Column: height, Type: integer, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: common_node_properties, Column: created_at, Type: timestamp with time zone, Nullable: YES, Default: now()"
+  },
+  {
+    "table_structure": "Table: common_node_properties, Column: updated_at, Type: timestamp with time zone, Nullable: YES, Default: now()"
+  },
+  {
     "table_structure": "Table: customers, Column: id, Type: uuid, Nullable: NO, Default: None"
   },
   {
@@ -96,40 +87,16 @@
     "table_structure": "Table: draw_nodes, Column: id, Type: uuid, Nullable: NO, Default: gen_random_uuid()"
   },
   {
-    "table_structure": "Table: draw_nodes, Column: base_node_id, Type: uuid, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: draw_nodes, Column: title, Type: text, Nullable: YES, Default: None"
+    "table_structure": "Table: draw_nodes, Column: common_node_id, Type: uuid, Nullable: YES, Default: None"
   },
   {
     "table_structure": "Table: draw_nodes, Column: drawing_data, Type: text, Nullable: YES, Default: None"
   },
   {
-    "table_structure": "Table: draw_nodes, Column: tags, Type: ARRAY, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: draw_nodes, Column: attached_files, Type: jsonb, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: draw_nodes, Column: background_color, Type: text, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: draw_nodes, Column: text_color, Type: text, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: edges, Column: id, Type: uuid, Nullable: NO, Default: uuid_generate_v4()"
+    "table_structure": "Table: edges, Column: id, Type: uuid, Nullable: NO, Default: gen_random_uuid()"
   },
   {
     "table_structure": "Table: edges, Column: canvas_id, Type: uuid, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: edges, Column: data, Type: jsonb, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: edges, Column: created_at, Type: timestamp with time zone, Nullable: YES, Default: CURRENT_TIMESTAMP"
-  },
-  {
-    "table_structure": "Table: edges, Column: updated_at, Type: timestamp with time zone, Nullable: YES, Default: CURRENT_TIMESTAMP"
   },
   {
     "table_structure": "Table: edges, Column: source_node_id, Type: uuid, Nullable: YES, Default: None"
@@ -138,19 +105,13 @@
     "table_structure": "Table: edges, Column: target_node_id, Type: uuid, Nullable: YES, Default: None"
   },
   {
-    "table_structure": "Table: files, Column: id, Type: integer, Nullable: NO, Default: nextval('files_id_seq'::regclass)"
+    "table_structure": "Table: edges, Column: data, Type: jsonb, Nullable: YES, Default: None"
   },
   {
-    "table_structure": "Table: files, Column: name, Type: character varying, Nullable: NO, Default: None"
+    "table_structure": "Table: edges, Column: created_at, Type: timestamp with time zone, Nullable: YES, Default: now()"
   },
   {
-    "table_structure": "Table: files, Column: file_type, Type: character varying, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: files, Column: file_data, Type: bytea, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: files, Column: file_url, Type: text, Nullable: YES, Default: None"
+    "table_structure": "Table: edges, Column: updated_at, Type: timestamp with time zone, Nullable: YES, Default: now()"
   },
   {
     "table_structure": "Table: insights, Column: id, Type: uuid, Nullable: NO, Default: uuid_generate_v4()"
@@ -174,76 +135,13 @@
     "table_structure": "Table: insights, Column: updated_at, Type: timestamp with time zone, Nullable: YES, Default: CURRENT_TIMESTAMP"
   },
   {
-    "table_structure": "Table: node_files, Column: node_id, Type: uuid, Nullable: NO, Default: None"
-  },
-  {
-    "table_structure": "Table: node_files, Column: file_id, Type: integer, Nullable: NO, Default: None"
-  },
-  {
-    "table_structure": "Table: node_tags, Column: node_id, Type: uuid, Nullable: NO, Default: None"
-  },
-  {
-    "table_structure": "Table: node_tags, Column: tag_id, Type: integer, Nullable: NO, Default: None"
-  },
-  {
-    "table_structure": "Table: node_types, Column: id, Type: integer, Nullable: NO, Default: nextval('node_types_id_seq'::regclass)"
-  },
-  {
-    "table_structure": "Table: node_types, Column: name, Type: character varying, Nullable: NO, Default: None"
-  },
-  {
-    "table_structure": "Table: node_types, Column: description, Type: text, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: node_types, Column: icon_url, Type: text, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: nodes, Column: id, Type: uuid, Nullable: NO, Default: uuid_generate_v4()"
-  },
-  {
-    "table_structure": "Table: nodes, Column: canvas_id, Type: uuid, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: nodes, Column: type, Type: text, Nullable: NO, Default: None"
-  },
-  {
-    "table_structure": "Table: nodes, Column: data, Type: jsonb, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: nodes, Column: position, Type: jsonb, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: nodes, Column: created_at, Type: timestamp with time zone, Nullable: YES, Default: CURRENT_TIMESTAMP"
-  },
-  {
-    "table_structure": "Table: nodes, Column: updated_at, Type: timestamp with time zone, Nullable: YES, Default: CURRENT_TIMESTAMP"
-  },
-  {
-    "table_structure": "Table: nodes, Column: base_node_id, Type: uuid, Nullable: YES, Default: None"
-  },
-  {
     "table_structure": "Table: note_nodes, Column: id, Type: uuid, Nullable: NO, Default: gen_random_uuid()"
   },
   {
-    "table_structure": "Table: note_nodes, Column: base_node_id, Type: uuid, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: note_nodes, Column: title, Type: text, Nullable: YES, Default: None"
+    "table_structure": "Table: note_nodes, Column: common_node_id, Type: uuid, Nullable: YES, Default: None"
   },
   {
     "table_structure": "Table: note_nodes, Column: content, Type: text, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: note_nodes, Column: tags, Type: ARRAY, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: note_nodes, Column: attached_files, Type: jsonb, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: note_nodes, Column: background_color, Type: text, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: note_nodes, Column: text_color, Type: text, Nullable: YES, Default: None"
   },
   {
     "table_structure": "Table: prices, Column: id, Type: text, Nullable: NO, Default: None"
@@ -402,10 +300,7 @@
     "table_structure": "Table: table_nodes, Column: id, Type: uuid, Nullable: NO, Default: gen_random_uuid()"
   },
   {
-    "table_structure": "Table: table_nodes, Column: base_node_id, Type: uuid, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: table_nodes, Column: title, Type: text, Nullable: YES, Default: None"
+    "table_structure": "Table: table_nodes, Column: common_node_id, Type: uuid, Nullable: YES, Default: None"
   },
   {
     "table_structure": "Table: table_nodes, Column: columns, Type: jsonb, Nullable: YES, Default: None"
@@ -414,52 +309,13 @@
     "table_structure": "Table: table_nodes, Column: rows, Type: jsonb, Nullable: YES, Default: None"
   },
   {
-    "table_structure": "Table: table_nodes, Column: tags, Type: ARRAY, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: table_nodes, Column: attached_files, Type: jsonb, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: table_nodes, Column: background_color, Type: text, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: table_nodes, Column: text_color, Type: text, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: tags, Column: id, Type: integer, Nullable: NO, Default: nextval('tags_id_seq'::regclass)"
-  },
-  {
-    "table_structure": "Table: tags, Column: name, Type: character varying, Nullable: NO, Default: None"
-  },
-  {
-    "table_structure": "Table: tags, Column: description, Type: text, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: tags, Column: color, Type: character varying, Nullable: YES, Default: None"
-  },
-  {
     "table_structure": "Table: task_nodes, Column: id, Type: uuid, Nullable: NO, Default: gen_random_uuid()"
   },
   {
-    "table_structure": "Table: task_nodes, Column: base_node_id, Type: uuid, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: task_nodes, Column: title, Type: text, Nullable: YES, Default: None"
+    "table_structure": "Table: task_nodes, Column: common_node_id, Type: uuid, Nullable: YES, Default: None"
   },
   {
     "table_structure": "Table: task_nodes, Column: tasks, Type: jsonb, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: task_nodes, Column: tags, Type: ARRAY, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: task_nodes, Column: attached_files, Type: jsonb, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: task_nodes, Column: background_color, Type: text, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: task_nodes, Column: text_color, Type: text, Nullable: YES, Default: None"
   },
   {
     "table_structure": "Table: users, Column: id, Type: uuid, Nullable: NO, Default: None"

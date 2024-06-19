@@ -59,11 +59,11 @@ export const deleteCanvas = async (
 // Function to save the canvas state
 export const saveCanvasState = async (
   canvasId: string,
-  nodes: Database['public']['Tables']['nodes']['Insert'][],
+  nodes: Database['public']['Tables']['common_node_properties']['Insert'][],
   edges: Database['public']['Tables']['edges']['Insert'][]
 ) => {
   const { error: deleteNodesError } = await supabase
-    .from('nodes')
+    .from('common_node_properties')
     .delete()
     .eq('canvas_id', canvasId);
   if (deleteNodesError) {
@@ -87,7 +87,7 @@ export const saveCanvasState = async (
   }
 
   const { error: createNodesError } = await supabase
-    .from('nodes')
+    .from('common_node_properties')
     .insert(nodes);
   if (createNodesError) {
     console.error(
@@ -118,7 +118,7 @@ export const fetchCanvas = async (canvasId: string) => {
     .select(
       `
       *,
-      nodes(*),
+      common_node_properties(*),
       edges(*)
     `
     )
@@ -140,34 +140,36 @@ export const createNode = async (
   data: any
 ) => {
   try {
-    // Create a base node first
-    const baseNodeInsert = {
+    // Create a common node first
+    const commonNodeInsert = {
+      canvas_id: data.canvasId,
       type: nodeType,
       position: JSON.stringify(position),
       width: data.width,
       height: data.height,
-      color: data.backgroundColor || '#F4F4F4'
+      background_color: data.backgroundColor || '#F4F4F4',
+      text_color: data.textColor || '#575757',
+      title: data.title,
+      tags: data.tags,
+      attached_files: data.attachedFiles,
+      is_editing: data.isEditing
     };
 
-    const { data: baseNodeData, error: baseNodeError } = await supabase
-      .from('base_nodes')
-      .insert([baseNodeInsert])
+    const { data: commonNodeData, error: commonNodeError } = await supabase
+      .from('common_node_properties')
+      .insert([commonNodeInsert])
       .select()
       .single();
 
-    if (baseNodeError) {
-      console.error('Error inserting base node:', baseNodeError);
-      return { error: baseNodeError };
+    if (commonNodeError) {
+      console.error('Error inserting common node:', commonNodeError);
+      return { error: commonNodeError };
     }
 
     // Create the specific node type
     const specificNodeInsert = {
-      base_node_id: baseNodeData.id,
-      title: data.title,
-      background_color: data.backgroundColor || '#F4F4F4',
-      text_color: data.textColor || '#575757',
-      tags: data.tags,
-      attached_files: data.attachedFiles
+      common_node_id: commonNodeData.id,
+      ...data.uniqueData
     };
 
     const tableName = `${nodeType}_nodes` as keyof Database['public']['Tables'];
@@ -183,7 +185,7 @@ export const createNode = async (
       return { error: specificNodeError };
     }
 
-    return { data: { ...baseNodeData, ...specificNodeData } };
+    return { data: { ...commonNodeData, ...specificNodeData } };
   } catch (error) {
     console.error('Unexpected error creating node:', error);
     return { error };
@@ -193,32 +195,35 @@ export const createNode = async (
 // Function to update an existing node
 export const updateNode = async (
   id: string,
-  updates: Partial<Database['public']['Tables']['base_nodes']['Update']>,
+  updates: Partial<
+    Database['public']['Tables']['common_node_properties']['Update']
+  >,
   specificUpdates: any,
   nodeType: 'note' | 'task' | 'table' | 'calendar' | 'draw'
 ) => {
-  // Update the base node
-  const { data: baseNodeData, error: baseNodeError } = await supabase
-    .from('base_nodes')
+  // Update the common node
+  const { data: commonNodeData, error: commonNodeError } = await supabase
+    .from('common_node_properties')
     .update(updates)
     .eq('id', id)
     .select()
     .single();
 
-  if (baseNodeError) {
+  if (commonNodeError) {
     console.error(
-      'canvasDatabaseOperations: Error updating base node:',
-      baseNodeError
+      'canvasDatabaseOperations: Error updating common node:',
+      commonNodeError
     );
-    return { error: baseNodeError };
+    return { error: commonNodeError };
   }
 
   // Update the specific node type
   const tableName = `${nodeType}_nodes` as keyof Database['public']['Tables'];
+
   const { data: specificNodeData, error: specificNodeError } = await supabase
     .from(tableName)
     .update(specificUpdates)
-    .eq('base_node_id', id)
+    .eq('common_node_id', id)
     .select()
     .single();
 
@@ -230,7 +235,7 @@ export const updateNode = async (
     return { error: specificNodeError };
   }
 
-  return { data: { ...baseNodeData, ...specificNodeData } };
+  return { data: { ...commonNodeData, ...specificNodeData } };
 };
 
 // Function to delete a node
@@ -238,17 +243,14 @@ export const deleteNode = async (
   id: string,
   nodeType: 'note' | 'task' | 'table' | 'calendar' | 'draw'
 ) => {
-  const { error } = await supabase.from('nodes').delete().eq('id', id);
-  if (error) {
-    console.error('canvasDatabaseOperations: Error deleting node:', error);
-    return { error };
-  }
-
+  // Delete the specific node type
   const tableName = `${nodeType}_nodes` as keyof Database['public']['Tables'];
+
   const { error: specificError } = await supabase
     .from(tableName)
     .delete()
-    .eq('base_node_id', id);
+    .eq('common_node_id', id);
+
   if (specificError) {
     console.error(
       `canvasDatabaseOperations: Error deleting ${nodeType} node:`,
@@ -257,37 +259,20 @@ export const deleteNode = async (
     return { error: specificError };
   }
 
-  return { success: true };
-};
-
-// Function to attach a file to a node
-export const attachFileToNode = async (nodeId: string, fileId: number) => {
-  const { data, error } = await supabase
-    .from('node_files')
-    .insert([{ node_id: nodeId, file_id: fileId }]);
-  if (error) {
-    console.error(
-      'canvasDatabaseOperations: Error attaching file to node:',
-      error
-    );
-    return { error };
-  }
-  return { data };
-};
-
-// Function to remove a file from a node
-export const removeFileFromNode = async (nodeId: string, fileId: number) => {
-  const { error } = await supabase
-    .from('node_files')
+  // Delete the common node
+  const { error: commonError } = await supabase
+    .from('common_node_properties')
     .delete()
-    .match({ node_id: nodeId, file_id: fileId });
-  if (error) {
+    .eq('id', id);
+
+  if (commonError) {
     console.error(
-      'canvasDatabaseOperations: Error removing file from node:',
-      error
+      'canvasDatabaseOperations: Error deleting common node:',
+      commonError
     );
-    return { error };
+    return { error: commonError };
   }
+
   return { success: true };
 };
 

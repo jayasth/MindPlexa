@@ -9,179 +9,31 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      base_nodes: {
-        Row: {
-          canvas_id: string | null
-          color: string | null
-          created_at: string | null
-          height: number | null
-          id: string
-          position: Json | null
-          type: string | null
-          updated_at: string | null
-          width: number | null
-        }
-        Insert: {
-          canvas_id?: string | null
-          color?: string | null
-          created_at?: string | null
-          height?: number | null
-          id?: string
-          position?: Json | null
-          type?: string | null
-          updated_at?: string | null
-          width?: number | null
-        }
-        Update: {
-          canvas_id?: string | null
-          color?: string | null
-          created_at?: string | null
-          height?: number | null
-          id?: string
-          position?: Json | null
-          type?: string | null
-          updated_at?: string | null
-          width?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "base_nodes_canvas_id_fkey"
-            columns: ["canvas_id"]
-            isOneToOne: false
-            referencedRelation: "canvases"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_base_nodes_canvas_id"
-            columns: ["canvas_id"]
-            isOneToOne: false
-            referencedRelation: "canvases"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       calendar_nodes: {
         Row: {
-          attached_files: Json | null
-          background_color: string | null
-          base_node_id: string | null
+          common_node_id: string | null
           events: Json | null
           id: string
-          tags: string[] | null
-          text_color: string | null
-          title: string | null
           view: string | null
         }
         Insert: {
-          attached_files?: Json | null
-          background_color?: string | null
-          base_node_id?: string | null
+          common_node_id?: string | null
           events?: Json | null
           id?: string
-          tags?: string[] | null
-          text_color?: string | null
-          title?: string | null
           view?: string | null
         }
         Update: {
-          attached_files?: Json | null
-          background_color?: string | null
-          base_node_id?: string | null
+          common_node_id?: string | null
           events?: Json | null
           id?: string
-          tags?: string[] | null
-          text_color?: string | null
-          title?: string | null
           view?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "calendar_nodes_base_node_id_fkey"
-            columns: ["base_node_id"]
-            isOneToOne: false
-            referencedRelation: "base_nodes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_calendar_nodes_base_node_id"
-            columns: ["base_node_id"]
-            isOneToOne: false
-            referencedRelation: "base_nodes"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      canvas_node_relationships: {
-        Row: {
-          canvas_id: string
-          node_id: string
-          node_type: string
-        }
-        Insert: {
-          canvas_id: string
-          node_id: string
-          node_type: string
-        }
-        Update: {
-          canvas_id?: string
-          node_id?: string
-          node_type?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "calendar_node_fk"
-            columns: ["node_id"]
-            isOneToOne: false
-            referencedRelation: "calendar_nodes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "canvas_node_relationships_canvas_id_fkey"
-            columns: ["canvas_id"]
-            isOneToOne: false
-            referencedRelation: "canvases"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "draw_node_fk"
-            columns: ["node_id"]
-            isOneToOne: false
-            referencedRelation: "draw_nodes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_canvas_node_relationships_canvas_id"
-            columns: ["canvas_id"]
-            isOneToOne: false
-            referencedRelation: "canvases"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_canvas_node_relationships_node_id"
-            columns: ["node_id"]
-            isOneToOne: false
-            referencedRelation: "nodes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "note_node_fk"
-            columns: ["node_id"]
-            isOneToOne: false
-            referencedRelation: "note_nodes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "table_node_fk"
-            columns: ["node_id"]
-            isOneToOne: false
-            referencedRelation: "table_nodes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "task_node_fk"
-            columns: ["node_id"]
-            isOneToOne: false
-            referencedRelation: "task_nodes"
+            foreignKeyName: "calendar_nodes_common_node_id_fkey"
+            columns: ["common_node_id"]
+            isOneToOne: true
+            referencedRelation: "common_node_properties"
             referencedColumns: ["id"]
           },
         ]
@@ -227,6 +79,65 @@ export type Database = {
           },
         ]
       }
+      common_node_properties: {
+        Row: {
+          attached_files: Json | null
+          background_color: string | null
+          canvas_id: string | null
+          created_at: string | null
+          height: number | null
+          id: string
+          is_editing: boolean | null
+          position: Json | null
+          tags: string[] | null
+          text_color: string | null
+          title: string | null
+          type: string | null
+          updated_at: string | null
+          width: number | null
+        }
+        Insert: {
+          attached_files?: Json | null
+          background_color?: string | null
+          canvas_id?: string | null
+          created_at?: string | null
+          height?: number | null
+          id?: string
+          is_editing?: boolean | null
+          position?: Json | null
+          tags?: string[] | null
+          text_color?: string | null
+          title?: string | null
+          type?: string | null
+          updated_at?: string | null
+          width?: number | null
+        }
+        Update: {
+          attached_files?: Json | null
+          background_color?: string | null
+          canvas_id?: string | null
+          created_at?: string | null
+          height?: number | null
+          id?: string
+          is_editing?: boolean | null
+          position?: Json | null
+          tags?: string[] | null
+          text_color?: string | null
+          title?: string | null
+          type?: string | null
+          updated_at?: string | null
+          width?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "common_node_properties_canvas_id_fkey"
+            columns: ["canvas_id"]
+            isOneToOne: false
+            referencedRelation: "canvases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customers: {
         Row: {
           id: string
@@ -252,48 +163,26 @@ export type Database = {
       }
       draw_nodes: {
         Row: {
-          attached_files: Json | null
-          background_color: string | null
-          base_node_id: string | null
+          common_node_id: string | null
           drawing_data: string | null
           id: string
-          tags: string[] | null
-          text_color: string | null
-          title: string | null
         }
         Insert: {
-          attached_files?: Json | null
-          background_color?: string | null
-          base_node_id?: string | null
+          common_node_id?: string | null
           drawing_data?: string | null
           id?: string
-          tags?: string[] | null
-          text_color?: string | null
-          title?: string | null
         }
         Update: {
-          attached_files?: Json | null
-          background_color?: string | null
-          base_node_id?: string | null
+          common_node_id?: string | null
           drawing_data?: string | null
           id?: string
-          tags?: string[] | null
-          text_color?: string | null
-          title?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "draw_nodes_base_node_id_fkey"
-            columns: ["base_node_id"]
-            isOneToOne: false
-            referencedRelation: "base_nodes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_draw_nodes_base_node_id"
-            columns: ["base_node_id"]
-            isOneToOne: false
-            referencedRelation: "base_nodes"
+            foreignKeyName: "draw_nodes_common_node_id_fkey"
+            columns: ["common_node_id"]
+            isOneToOne: true
+            referencedRelation: "common_node_properties"
             referencedColumns: ["id"]
           },
         ]
@@ -338,41 +227,17 @@ export type Database = {
             foreignKeyName: "edges_source_node_id_fkey"
             columns: ["source_node_id"]
             isOneToOne: false
-            referencedRelation: "nodes"
+            referencedRelation: "common_node_properties"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "edges_target_node_id_fkey"
             columns: ["target_node_id"]
             isOneToOne: false
-            referencedRelation: "nodes"
+            referencedRelation: "common_node_properties"
             referencedColumns: ["id"]
           },
         ]
-      }
-      files: {
-        Row: {
-          file_data: string | null
-          file_type: string | null
-          file_url: string | null
-          id: number
-          name: string
-        }
-        Insert: {
-          file_data?: string | null
-          file_type?: string | null
-          file_url?: string | null
-          id?: number
-          name: string
-        }
-        Update: {
-          file_data?: string | null
-          file_type?: string | null
-          file_url?: string | null
-          id?: number
-          name?: string
-        }
-        Relationships: []
       }
       insights: {
         Row: {
@@ -404,221 +269,28 @@ export type Database = {
         }
         Relationships: []
       }
-      node_files: {
-        Row: {
-          file_id: number
-          node_id: string
-        }
-        Insert: {
-          file_id: number
-          node_id: string
-        }
-        Update: {
-          file_id?: number
-          node_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "fk_node_files_file_id"
-            columns: ["file_id"]
-            isOneToOne: false
-            referencedRelation: "files"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_node_files_node_id"
-            columns: ["node_id"]
-            isOneToOne: false
-            referencedRelation: "nodes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "node_files_file_id_fkey"
-            columns: ["file_id"]
-            isOneToOne: false
-            referencedRelation: "files"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "node_files_node_id_fkey"
-            columns: ["node_id"]
-            isOneToOne: false
-            referencedRelation: "nodes"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      node_tags: {
-        Row: {
-          node_id: string
-          tag_id: number
-        }
-        Insert: {
-          node_id: string
-          tag_id: number
-        }
-        Update: {
-          node_id?: string
-          tag_id?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "fk_node_tags_node_id"
-            columns: ["node_id"]
-            isOneToOne: false
-            referencedRelation: "nodes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_node_tags_tag_id"
-            columns: ["tag_id"]
-            isOneToOne: false
-            referencedRelation: "tags"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "node_tags_node_id_fkey"
-            columns: ["node_id"]
-            isOneToOne: false
-            referencedRelation: "nodes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "node_tags_tag_id_fkey"
-            columns: ["tag_id"]
-            isOneToOne: false
-            referencedRelation: "tags"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      node_types: {
-        Row: {
-          description: string | null
-          icon_url: string | null
-          id: number
-          name: string
-        }
-        Insert: {
-          description?: string | null
-          icon_url?: string | null
-          id?: number
-          name: string
-        }
-        Update: {
-          description?: string | null
-          icon_url?: string | null
-          id?: number
-          name?: string
-        }
-        Relationships: []
-      }
-      nodes: {
-        Row: {
-          base_node_id: string | null
-          canvas_id: string | null
-          created_at: string | null
-          data: Json | null
-          id: string
-          position: Json | null
-          type: string
-          updated_at: string | null
-        }
-        Insert: {
-          base_node_id?: string | null
-          canvas_id?: string | null
-          created_at?: string | null
-          data?: Json | null
-          id?: string
-          position?: Json | null
-          type: string
-          updated_at?: string | null
-        }
-        Update: {
-          base_node_id?: string | null
-          canvas_id?: string | null
-          created_at?: string | null
-          data?: Json | null
-          id?: string
-          position?: Json | null
-          type?: string
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "fk_nodes_base_node_id"
-            columns: ["base_node_id"]
-            isOneToOne: false
-            referencedRelation: "base_nodes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_nodes_canvas_id"
-            columns: ["canvas_id"]
-            isOneToOne: false
-            referencedRelation: "canvases"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "nodes_base_node_id_fkey"
-            columns: ["base_node_id"]
-            isOneToOne: false
-            referencedRelation: "base_nodes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "nodes_canvas_id_fkey"
-            columns: ["canvas_id"]
-            isOneToOne: false
-            referencedRelation: "canvases"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       note_nodes: {
         Row: {
-          attached_files: Json | null
-          background_color: string | null
-          base_node_id: string | null
+          common_node_id: string | null
           content: string | null
           id: string
-          tags: string[] | null
-          text_color: string | null
-          title: string | null
         }
         Insert: {
-          attached_files?: Json | null
-          background_color?: string | null
-          base_node_id?: string | null
+          common_node_id?: string | null
           content?: string | null
           id?: string
-          tags?: string[] | null
-          text_color?: string | null
-          title?: string | null
         }
         Update: {
-          attached_files?: Json | null
-          background_color?: string | null
-          base_node_id?: string | null
+          common_node_id?: string | null
           content?: string | null
           id?: string
-          tags?: string[] | null
-          text_color?: string | null
-          title?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "fk_note_nodes_base_node_id"
-            columns: ["base_node_id"]
-            isOneToOne: false
-            referencedRelation: "base_nodes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "note_nodes_base_node_id_fkey"
-            columns: ["base_node_id"]
-            isOneToOne: false
-            referencedRelation: "base_nodes"
+            foreignKeyName: "note_nodes_common_node_id_fkey"
+            columns: ["common_node_id"]
+            isOneToOne: true
+            referencedRelation: "common_node_properties"
             referencedColumns: ["id"]
           },
         ]
@@ -854,120 +526,55 @@ export type Database = {
       }
       table_nodes: {
         Row: {
-          attached_files: Json | null
-          background_color: string | null
-          base_node_id: string | null
           columns: Json | null
+          common_node_id: string | null
           id: string
           rows: Json | null
-          tags: string[] | null
-          text_color: string | null
-          title: string | null
         }
         Insert: {
-          attached_files?: Json | null
-          background_color?: string | null
-          base_node_id?: string | null
           columns?: Json | null
+          common_node_id?: string | null
           id?: string
           rows?: Json | null
-          tags?: string[] | null
-          text_color?: string | null
-          title?: string | null
         }
         Update: {
-          attached_files?: Json | null
-          background_color?: string | null
-          base_node_id?: string | null
           columns?: Json | null
+          common_node_id?: string | null
           id?: string
           rows?: Json | null
-          tags?: string[] | null
-          text_color?: string | null
-          title?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "fk_table_nodes_base_node_id"
-            columns: ["base_node_id"]
-            isOneToOne: false
-            referencedRelation: "base_nodes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "table_nodes_base_node_id_fkey"
-            columns: ["base_node_id"]
-            isOneToOne: false
-            referencedRelation: "base_nodes"
+            foreignKeyName: "table_nodes_common_node_id_fkey"
+            columns: ["common_node_id"]
+            isOneToOne: true
+            referencedRelation: "common_node_properties"
             referencedColumns: ["id"]
           },
         ]
       }
-      tags: {
-        Row: {
-          color: string | null
-          description: string | null
-          id: number
-          name: string
-        }
-        Insert: {
-          color?: string | null
-          description?: string | null
-          id?: number
-          name: string
-        }
-        Update: {
-          color?: string | null
-          description?: string | null
-          id?: number
-          name?: string
-        }
-        Relationships: []
-      }
       task_nodes: {
         Row: {
-          attached_files: Json | null
-          background_color: string | null
-          base_node_id: string | null
+          common_node_id: string | null
           id: string
-          tags: string[] | null
           tasks: Json | null
-          text_color: string | null
-          title: string | null
         }
         Insert: {
-          attached_files?: Json | null
-          background_color?: string | null
-          base_node_id?: string | null
+          common_node_id?: string | null
           id?: string
-          tags?: string[] | null
           tasks?: Json | null
-          text_color?: string | null
-          title?: string | null
         }
         Update: {
-          attached_files?: Json | null
-          background_color?: string | null
-          base_node_id?: string | null
+          common_node_id?: string | null
           id?: string
-          tags?: string[] | null
           tasks?: Json | null
-          text_color?: string | null
-          title?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "fk_task_nodes_base_node_id"
-            columns: ["base_node_id"]
-            isOneToOne: false
-            referencedRelation: "base_nodes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "task_nodes_base_node_id_fkey"
-            columns: ["base_node_id"]
-            isOneToOne: false
-            referencedRelation: "base_nodes"
+            foreignKeyName: "task_nodes_common_node_id_fkey"
+            columns: ["common_node_id"]
+            isOneToOne: true
+            referencedRelation: "common_node_properties"
             referencedColumns: ["id"]
           },
         ]
