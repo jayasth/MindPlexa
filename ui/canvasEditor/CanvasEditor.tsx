@@ -168,7 +168,7 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
         'note'
       );
       if (error) {
-        console.error('Error updating node:', error);
+        console.error('CanvasEditor: Error updating node:', error);
         return;
       }
       updateNodeInStore(nodeId, { ...newSize, position: newPosition });
@@ -223,7 +223,7 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
         'note'
       );
       if (error) {
-        console.error('Error updating node position:', error);
+        console.error('CanvasEditor: Error updating node position:', error);
         return;
       }
       updateNodeInStore(node.id, { position: node.position });

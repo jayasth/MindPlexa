@@ -250,7 +250,10 @@ export const useStore = createStore<CanvasState>((set, get) => ({
             updatedNode.type
           );
         if (updateNodeError) {
-          console.error('Error updating node:', updateNodeError);
+          console.error(
+            'useCanvasStore: Error updating node:',
+            updateNodeError
+          );
           return;
         }
         const updatedNodes = [...state.nodes];
