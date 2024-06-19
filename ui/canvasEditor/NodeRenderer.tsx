@@ -146,7 +146,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
               : undefined,
           type: updatedData.type ?? undefined,
           canvas_id: updatedData.canvas_id ?? null,
-          color: updatedData.color ?? null,
+
           created_at: updatedData.created_at ?? null,
           height: updatedData.height ?? null,
           id: updatedData.id.toString(),

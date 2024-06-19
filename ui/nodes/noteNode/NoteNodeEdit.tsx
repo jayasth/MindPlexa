@@ -4,6 +4,7 @@ import { useStore } from '@/app/store/useCanvasStore';
 import styles from './NoteNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 import {
+  SaveButton,
   DeleteButton,
   ChangeColorButton,
   AddTagButton,
@@ -17,6 +18,7 @@ import {
 import TagFileContainer from '@/ui/nodes/common/TagFileContainer';
 import {
   handleTitleChange,
+  handleSave,
   handleClose,
   handleDelete,
   colorCombinations,
@@ -29,7 +31,11 @@ import Quill from 'quill';
 import 'quill/dist/quill.snow.css';
 import { NoteNodeData } from '@/ui/canvasEditor/utils/nodeDatatypes';
 import { useBackgroundColorChange } from '@/ui/nodes/common/useBackgroundColorChange';
-import { updateNode as updateNodeInDatabase } from '@/utils/canvas/canvasDatabaseOperations';
+import {
+  createNode,
+  updateNode,
+  deleteNode
+} from '@/utils/canvas/canvasDatabaseOperations';
 
 interface NoteNodeEditProps extends NodeProps {
   data: NoteNodeData;
@@ -70,7 +76,6 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   const [isTagModalOpen, setIsTagModalOpen] = useState(false);
   const [isFileModalOpen, setIsFileModalOpen] = useState(false);
 
-  const updateNode = useStore((state) => state.updateNode);
   const quillRef = useRef<HTMLDivElement>(null);
   const quillInstance = useRef<Quill | null>(null);
 
@@ -122,9 +127,26 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   }, [content, data.id]);
 
   useEffect(() => {
-    updateNode(data.id, {
-      data: { title, content, tags, attachedFiles, backgroundColor, textColor }
-    });
+    // Convert attachedFiles to a JSON serializable format
+    const attachedFilesJson = attachedFiles.map((file) => ({
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      lastModified: file.lastModified
+    }));
+
+    updateNode(
+      data.id,
+      {
+        title,
+        tags,
+        attached_files: attachedFilesJson,
+        background_color: backgroundColor,
+        text_color: textColor
+      },
+      { content },
+      'note'
+    );
   }, [
     title,
     content,
@@ -132,7 +154,6 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     attachedFiles,
     backgroundColor,
     textColor,
-    updateNode,
     data.id
   ]);
 
@@ -216,35 +237,6 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     color: textColor
   };
 
-  const handleSave = async () => {
-    const updatedNodeData = {
-      title,
-      content,
-      tags,
-      attachedFiles: attachedFiles.map((file) => ({
-        name: file.name,
-        size: file.size,
-        type: file.type,
-        lastModified: file.lastModified
-      })),
-      backgroundColor,
-      textColor
-    };
-
-    const { error } = await updateNodeInDatabase(
-      data.id,
-      { data: updatedNodeData },
-      {},
-      'note'
-    );
-    if (error) {
-      console.error('Error updating note node:', error);
-      // Handle the error appropriately (e.g., show an error message)
-    } else {
-      // Handle successful update (e.g., show a success message, close the edit mode)
-    }
-  };
-
   return (
     <div
       className={styles.noteNode}
@@ -288,7 +280,17 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         />
       )}
       <div className={styles.footer}>
-        <DeleteButton onClick={() => handleDelete(data.id, () => {})} />
+        <SaveButton
+          onClick={() =>
+            handleSave(data.id, () => {}, {
+              ...data,
+              title,
+              content,
+              tags
+            })
+          }
+        />
+        <DeleteButton onClick={() => handleDelete(data.id, () => {}, 'note')} />
         <ChangeColorButton onClick={() => toggleColorPicker()} />
         <AddTagButton onClick={() => setIsTagModalOpen(true)} />
         <AttachFileButton onClick={() => setIsFileModalOpen(true)} />
@@ -316,7 +318,6 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         onClose={() => setIsTagModalOpen(false)}
         onAddTag={onAddTag}
         onRemoveTag={onRemoveTag}
-        data={data}
         existingTags={tags}
       />
       <FileModal
