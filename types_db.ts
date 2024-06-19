@@ -95,6 +95,13 @@ export type Database = {
             referencedRelation: "base_nodes"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_calendar_nodes_base_node_id"
+            columns: ["base_node_id"]
+            isOneToOne: false
+            referencedRelation: "base_nodes"
+            referencedColumns: ["id"]
+          },
         ]
       }
       canvas_node_relationships: {
@@ -256,6 +263,13 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "draw_nodes_base_node_id_fkey"
+            columns: ["base_node_id"]
+            isOneToOne: false
+            referencedRelation: "base_nodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_draw_nodes_base_node_id"
             columns: ["base_node_id"]
             isOneToOne: false
             referencedRelation: "base_nodes"
@@ -531,6 +545,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_note_nodes_base_node_id"
+            columns: ["base_node_id"]
+            isOneToOne: false
+            referencedRelation: "base_nodes"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "note_nodes_base_node_id_fkey"
             columns: ["base_node_id"]
             isOneToOne: false
@@ -804,6 +825,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_table_nodes_base_node_id"
+            columns: ["base_node_id"]
+            isOneToOne: false
+            referencedRelation: "base_nodes"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "table_nodes_base_node_id_fkey"
             columns: ["base_node_id"]
             isOneToOne: false
@@ -865,6 +893,13 @@ export type Database = {
           title?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_task_nodes_base_node_id"
+            columns: ["base_node_id"]
+            isOneToOne: false
+            referencedRelation: "base_nodes"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "task_nodes_base_node_id_fkey"
             columns: ["base_node_id"]

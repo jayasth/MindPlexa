@@ -17,7 +17,7 @@ export const createCanvas = async (
       .from('canvases')
       .insert({ name: canvasTitle });
 
-    console.log('Insert response:', insertResponse);
+    console.log('canvasDatabaseOperations: Insert response:', insertResponse);
 
     const { data, error } = await supabase
       .from('canvases')
@@ -25,17 +25,17 @@ export const createCanvas = async (
       .order('created_at', { ascending: false })
       .limit(1);
 
-    console.log('Select data:', data);
-    console.log('Select error:', error);
+    console.log('canvasDatabaseOperations: Select data:', data);
+    console.log('canvasDatabaseOperations: Select error:', error);
 
     if (error) {
-      console.error('Error fetching canvas:', error);
+      console.error('canvasDatabaseOperations: Error fetching canvas:', error);
     } else if (data && data[0]) {
-      console.log('Redirecting to new canvas...');
+      console.log('canvasDatabaseOperations: Redirecting to new canvas...');
       setIsModalOpen(false);
       router.push(`/canvasEditor/${data[0].id}?new=true`);
     } else {
-      console.log('Fetch operation returned no data');
+      console.log('canvasDatabaseOperations: Fetch operation returned no data');
     }
   }
 };
@@ -48,7 +48,7 @@ export const deleteCanvas = async (
   const { error } = await supabase.from('canvases').delete().eq('id', canvasId);
 
   if (error) {
-    console.log('Error deleting canvas:', error);
+    console.log('canvasDatabaseOperations: Error deleting canvas:', error);
   } else {
     setCanvases((prevCanvases: any) =>
       prevCanvases.filter((canvas: any) => canvas.id !== canvasId)
@@ -67,7 +67,10 @@ export const saveCanvasState = async (
     .delete()
     .eq('canvas_id', canvasId);
   if (deleteNodesError) {
-    console.error('Error deleting existing nodes:', deleteNodesError);
+    console.error(
+      'canvasDatabaseOperations: Error deleting existing nodes:',
+      deleteNodesError
+    );
     return { error: deleteNodesError };
   }
 
@@ -76,7 +79,10 @@ export const saveCanvasState = async (
     .delete()
     .eq('canvas_id', canvasId);
   if (deleteEdgesError) {
-    console.error('Error deleting existing edges:', deleteEdgesError);
+    console.error(
+      'canvasDatabaseOperations: Error deleting existing edges:',
+      deleteEdgesError
+    );
     return { error: deleteEdgesError };
   }
 
@@ -84,7 +90,10 @@ export const saveCanvasState = async (
     .from('nodes')
     .insert(nodes);
   if (createNodesError) {
-    console.error('Error inserting nodes:', createNodesError);
+    console.error(
+      'canvasDatabaseOperations: Error inserting nodes:',
+      createNodesError
+    );
     return { error: createNodesError };
   }
 
@@ -92,7 +101,10 @@ export const saveCanvasState = async (
     .from('edges')
     .insert(edges);
   if (createEdgesError) {
-    console.error('Error inserting edges:', createEdgesError);
+    console.error(
+      'canvasDatabaseOperations: Error inserting edges:',
+      createEdgesError
+    );
     return { error: createEdgesError };
   }
 
@@ -113,7 +125,7 @@ export const fetchCanvas = async (canvasId: string) => {
     .eq('id', canvasId)
     .single();
   if (error) {
-    console.error('Error fetching canvas:', error);
+    console.error('canvasDatabaseOperations: Error fetching canvas:', error);
     return { error };
   }
   return { data };
@@ -125,12 +137,23 @@ export const fetchCanvas = async (canvasId: string) => {
 export const createNode = async (
   node: Database['public']['Tables']['nodes']['Insert']
 ) => {
-  const { data, error } = await supabase.from('nodes').insert([node]).single();
-  if (error) {
-    console.error('Error inserting node:', error);
+  try {
+    const { data, error } = await supabase
+      .from('nodes')
+      .insert([node])
+      .single();
+    if (error) {
+      console.error('canvasDatabaseOperations: Error inserting node:', error);
+      return { error };
+    }
+    return { data };
+  } catch (error) {
+    console.error(
+      'canvasDatabaseOperations: Unexpected error inserting node:',
+      error
+    );
     return { error };
   }
-  return { data };
 };
 
 // Function to update an existing node
@@ -144,7 +167,7 @@ export const updateNode = async (
     .eq('id', id)
     .single();
   if (error) {
-    console.error('Error updating node:', error);
+    console.error('canvasDatabaseOperations: Error updating node:', error);
     return { error };
   }
   return { data };
@@ -154,7 +177,7 @@ export const updateNode = async (
 export const deleteNode = async (id: string) => {
   const { error } = await supabase.from('nodes').delete().eq('id', id);
   if (error) {
-    console.error('Error deleting node:', error);
+    console.error('canvasDatabaseOperations: Error deleting node:', error);
     return { error };
   }
   return { success: true };
@@ -166,7 +189,10 @@ export const attachFileToNode = async (nodeId: string, fileId: number) => {
     .from('node_files')
     .insert([{ node_id: nodeId, file_id: fileId }]);
   if (error) {
-    console.error('Error attaching file to node:', error);
+    console.error(
+      'canvasDatabaseOperations: Error attaching file to node:',
+      error
+    );
     return { error };
   }
   return { data };
@@ -179,7 +205,10 @@ export const removeFileFromNode = async (nodeId: string, fileId: number) => {
     .delete()
     .match({ node_id: nodeId, file_id: fileId });
   if (error) {
-    console.error('Error removing file from node:', error);
+    console.error(
+      'canvasDatabaseOperations: Error removing file from node:',
+      error
+    );
     return { error };
   }
   return { success: true };
@@ -193,7 +222,7 @@ export const createEdge = async (
 ): Promise<{ data: { id: string }; error?: any }> => {
   const { data, error } = await supabase.from('edges').insert([edge]).single();
   if (error) {
-    console.error('Error inserting edge:', error);
+    console.error('canvasDatabaseOperations: Error inserting edge:', error);
     return { data: { id: '' }, error };
   }
   return { data };
@@ -210,7 +239,7 @@ export const updateEdge = async (
     .eq('id', id)
     .single();
   if (error) {
-    console.error('Error updating edge:', error);
+    console.error('canvasDatabaseOperations: Error updating edge:', error);
     return { error };
   }
   return { data };
@@ -220,7 +249,7 @@ export const updateEdge = async (
 export const deleteEdge = async (id: string) => {
   const { error } = await supabase.from('edges').delete().eq('id', id);
   if (error) {
-    console.error('Error deleting edge:', error);
+    console.error('canvasDatabaseOperations: Error deleting edge:', error);
     return { error };
   }
   return { success: true };
