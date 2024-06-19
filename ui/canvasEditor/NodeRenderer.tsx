@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { NodeProps, Handle, Position } from 'reactflow';
 import { Node as BaseNode } from '@/ui/canvasEditor/nodeTypes';
 import dynamic from 'next/dynamic';
@@ -105,7 +105,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     return null;
   }
 
-  const handleEdit = () => {
+  const handleEdit = useCallback(() => {
     if (node.type !== 'selectionMenu') {
       toggleEditMode(id);
       const newSize = getNodeSpecificProperties(node.type, !node.isEditing);
@@ -120,27 +120,51 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
       onNodeResizeStop(id, newSize, node.position);
       handleSaveChanges({ ...newSize, data: node.data });
     }
-  };
+  }, [id, node, toggleEditMode, updateNode, onNodeResizeStop]);
 
-  const handleSaveChanges = async (newData) => {
-    const updates = { ...newData };
-    const { data: updatedData } = await updateNodeInDB(
-      id,
-      updates,
-      newData,
-      node.type
-    );
-    if (updatedData) {
-      updateNode(id, updatedData);
-    }
-  };
+  const handleSaveChanges = useCallback(
+    async (newData) => {
+      const updates = { ...newData };
+      const { data: updatedData } = await updateNodeInDB(
+        id,
+        updates,
+        newData,
+        node.type
+      );
+      if (updatedData) {
+        const validData = {
+          ...updatedData,
+          position:
+            typeof updatedData.position === 'object' &&
+            updatedData.position !== null &&
+            'x' in updatedData.position &&
+            'y' in updatedData.position
+              ? {
+                  x: updatedData.position.x as number,
+                  y: updatedData.position.y as number
+                }
+              : undefined,
+          type: updatedData.type ?? undefined,
+          canvas_id: updatedData.canvas_id ?? null,
+          color: updatedData.color ?? null,
+          created_at: updatedData.created_at ?? null,
+          height: updatedData.height ?? null,
+          id: updatedData.id.toString(),
+          updated_at: updatedData.updated_at ?? null,
+          width: updatedData.width ?? null
+        };
+        updateNode(id, validData);
+      }
+    },
+    [id, node?.type, updateNode]
+  );
 
-  const handleDeleteNode = async () => {
+  const handleDeleteNode = useCallback(async () => {
     const { error } = await deleteNodeInDB(id, node.type);
     if (!error) {
       removeNode(id);
     }
-  };
+  }, [id, node?.type, removeNode]);
 
   const commonProps = {
     draggable: true,
@@ -172,7 +196,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     const NodeComponent = node.isEditing ? edit : view;
 
     console.log(
-      `NodeRenderer: Rendering ${node.type} with background color: ${node.data.backgroundColor}, text color: ${node.data.textColor}`
+      `NodeRenderer: Rendering ${node.type} with background color: ${node.data?.backgroundColor}, text color: ${node.data?.textColor}`
     );
 
     return (
@@ -184,8 +208,8 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
           ...node.data,
           width: size.width,
           height: size.height,
-          backgroundColor: node.data.backgroundColor,
-          textColor: node.data.textColor
+          backgroundColor: node.data?.backgroundColor || '#F4F4F4',
+          textColor: node.data?.textColor || '#575757'
         }}
         selected={selected}
         onNodeResizeStop={onNodeResizeStop}

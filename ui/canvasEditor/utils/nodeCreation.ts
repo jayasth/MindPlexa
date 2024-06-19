@@ -34,12 +34,13 @@ export const createNode = async (
     availablePosition.y
   );
 
-  const nodeId = temporaryNodeId || uuidv4(); // Generate a valid UUID
+  const nodeId = temporaryNodeId || uuidv4();
 
   const defaultProperties = {
     draggable: true,
     connectable: true,
-    selectable: true
+    backgroundColor: '#F4F4F4',
+    textColor: '#575757'
   };
 
   const baseProperties: Partial<Node<any>> = {

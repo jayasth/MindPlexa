@@ -146,7 +146,7 @@ export const createNode = async (
       position: JSON.stringify(position),
       width: data.width,
       height: data.height,
-      color: data.backgroundColor
+      color: data.backgroundColor || '#F4F4F4'
     };
 
     const { data: baseNodeData, error: baseNodeError } = await supabase
@@ -164,11 +164,10 @@ export const createNode = async (
     const specificNodeInsert = {
       base_node_id: baseNodeData.id,
       title: data.title,
-      background_color: data.backgroundColor,
-      text_color: data.textColor,
+      background_color: data.backgroundColor || '#F4F4F4',
+      text_color: data.textColor || '#575757',
       tags: data.tags,
-      attached_files: data.attachedFiles,
-      ...data.specificData // Additional specific data for the node type
+      attached_files: data.attachedFiles
     };
 
     const tableName = `${nodeType}_nodes` as keyof Database['public']['Tables'];
