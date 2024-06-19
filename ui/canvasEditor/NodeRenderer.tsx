@@ -124,14 +124,19 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
 
   const handleSaveChanges = async (newData) => {
     const updates = { ...newData };
-    const { data: updatedData } = await updateNodeInDB(id, updates);
+    const { data: updatedData } = await updateNodeInDB(
+      id,
+      updates,
+      newData,
+      node.type
+    );
     if (updatedData) {
       updateNode(id, updatedData);
     }
   };
 
   const handleDeleteNode = async () => {
-    const { error } = await deleteNodeInDB(id);
+    const { error } = await deleteNodeInDB(id, node.type);
     if (!error) {
       removeNode(id);
     }

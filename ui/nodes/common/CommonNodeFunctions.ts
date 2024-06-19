@@ -1,67 +1,6 @@
 import { useStore } from '@/app/store/useCanvasStore';
-import {
-  createNode,
-  updateNode,
-  deleteNode,
-  attachFileToNode,
-  removeFileFromNode
-} from '@/utils/canvas/canvasDatabaseOperations';
 import { nanoid } from 'nanoid';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
-
-// Function to update node data
-export async function updateNodeData(nodeId, updates) {
-  try {
-    const updatedNode = await updateNode(nodeId, updates);
-    console.log('Node updated:', updatedNode);
-  } catch (error) {
-    console.error('Error updating node:', error);
-  }
-}
-
-// Function to delete a node
-export async function deleteNodeById(nodeId) {
-  try {
-    await deleteNode(nodeId);
-    console.log('Node deleted:', nodeId);
-  } catch (error) {
-    console.error('Error deleting node:', error);
-  }
-}
-
-// Function to handle file attachment
-export async function handleFileAttachment(nodeId, file) {
-  try {
-    const attachedFile = await attachFileToNode(nodeId, file);
-    console.log('File attached:', attachedFile);
-  } catch (error) {
-    console.error('Error attaching file:', error);
-  }
-}
-
-// Function to handle file removal
-export async function handleFileRemoval(nodeId, fileId) {
-  try {
-    await removeFileFromNode(nodeId, fileId);
-    console.log('File removed:', fileId);
-  } catch (error) {
-    console.error('Error removing file:', error);
-  }
-}
-
-export const addNewNode = async (nodeData) => {
-  const { addNode } = useStore.getState();
-  const { data, error } = await createNode(nodeData);
-  if (error) {
-    console.error('Failed to add node:', error);
-    return;
-  }
-  if (data) {
-    addNode(data);
-  } else {
-    console.error('No data returned on node insertion');
-  }
-};
 
 export const getContrastYIQ = (color: string) => {
   let r,
@@ -197,8 +136,9 @@ export const handleChangeColorWithCombination = (
   textColor: string,
   onChangeColor: (color: string) => void
 ) => {
-  updateNodeData(id, { backgroundColor, textColor });
+  const { updateNode } = useStore.getState();
   onChangeColor(backgroundColor);
+  updateNode(id, { data: { backgroundColor, textColor } });
 };
 
 export const handleTitleChange = (
@@ -206,14 +146,15 @@ export const handleTitleChange = (
   title: string,
   onChangeTitle: (title: string) => void
 ) => {
-  updateNodeData(id, { title });
+  const { updateNode } = useStore.getState();
   onChangeTitle(title);
+  updateNode(id, { data: { title } });
 };
 
 export const handleSave = (id: string, onSave: () => void, nodeData: any) => {
-  const { toggleEditMode } = useStore.getState();
+  const { updateNode, toggleEditMode } = useStore.getState();
   onSave();
-  updateNodeData(id, nodeData);
+  updateNode(id, { data: nodeData });
   toggleEditMode(id);
 };
 
@@ -223,17 +164,17 @@ export const handleClose = (
   title: string,
   content: any
 ) => {
-  const { toggleEditMode } = useStore.getState();
-  updateNodeData(nodeId, { title, content });
+  const { updateNode, toggleEditMode } = useStore.getState();
+  updateNode(nodeId, { data: { title, content } });
   onClose();
   toggleEditMode(nodeId);
 };
 
 export const handleDelete = (id: string, onDelete: () => void) => {
-  const { setEdges } = useStore.getState();
+  const { removeNode, setEdges } = useStore.getState();
   if (window.confirm('Are you sure you want to delete this node?')) {
     onDelete();
-    deleteNodeById(id);
+    removeNode(id);
     // Update edges to remove any that are connected to the deleted node
     setEdges((edges) =>
       edges.filter((edge) => edge.source !== id && edge.target !== id)
@@ -246,9 +187,10 @@ export const handleChangeColor = (
   color: string,
   onChangeColor: (color: string) => void
 ) => {
+  const { updateNode } = useStore.getState();
   const textColor = getContrastYIQ(color);
-  updateNodeData(id, { backgroundColor: color, textColor });
   onChangeColor(color);
+  updateNode(id, { data: { backgroundColor: color, textColor } });
 };
 
 export const handleAddTag = (
@@ -256,7 +198,8 @@ export const handleAddTag = (
   tags: string[],
   onAddTag: (tag: string) => void
 ) => {
-  updateNodeData(id, { tags });
+  const { updateNode } = useStore.getState();
+  updateNode(id, { data: { tags } });
   tags.forEach((tag) => onAddTag(tag));
 };
 
@@ -265,6 +208,7 @@ export const handleAttachFile = (
   files: (File | string)[],
   callback: () => void
 ) => {
+  const { updateNode } = useStore.getState();
   const maxFileSize = 2 * 1024 * 1024; // 2 MB in bytes
   const allowedFileTypes = [
     'image/jpeg',
@@ -292,8 +236,8 @@ export const handleAttachFile = (
       return;
     }
 
-    updateNodeData(id, {
-      attachedFiles: allFiles
+    updateNode(id, {
+      data: { attachedFiles: allFiles }
     });
     callback();
   } else {
@@ -308,105 +252,105 @@ export const handleRemoveAttachedFile = (
   fileToRemove: File | string,
   onRemoveFile: (file: File | string) => void
 ) => {
+  const { updateNode } = useStore.getState();
   const existingFiles =
     useStore.getState().nodes.find((n) => n.id === id)?.data?.attachedFiles ||
     [];
   const updatedFiles = existingFiles.filter((file) => file !== fileToRemove);
 
-  updateNodeData(id, {
-    attachedFiles: updatedFiles
+  updateNode(id, {
+    data: { attachedFiles: updatedFiles }
   });
   onRemoveFile(fileToRemove);
 };
 
-export const handleDuplicate = async (id: string) => {
+export const handleDuplicate = (id: string) => {
   const { nodes, addNode, setSelectedNodes } = useStore.getState();
   const nodeToDuplicate = nodes.find((node) => node.id === id);
-  if (!nodeToDuplicate) {
-    console.error('Original node not found');
-    return;
-  }
+  if (nodeToDuplicate) {
+    const nodeDimension =
+      nodeDimensions[nodeToDuplicate.type as keyof typeof nodeDimensions];
+    const isEditing = nodeToDuplicate.data.isEditing;
+    const nodeWidth =
+      isEditing && 'editWidth' in nodeDimension
+        ? nodeDimension.editWidth
+        : nodeToDuplicate.width;
+    const nodeHeight =
+      isEditing && 'editHeight' in nodeDimension
+        ? nodeDimension.editHeight
+        : nodeToDuplicate.height;
 
-  const nodeDimension =
-    nodeDimensions[nodeToDuplicate.type as keyof typeof nodeDimensions];
-  const isEditing = nodeToDuplicate.data.isEditing;
-  const nodeWidth =
-    isEditing && 'editWidth' in nodeDimension
-      ? nodeDimension.editWidth
-      : nodeToDuplicate.width;
-  const nodeHeight =
-    isEditing && 'editHeight' in nodeDimension
-      ? nodeDimension.editHeight
-      : nodeToDuplicate.height;
-
-  // Calculate a new position near the original node
-  let newPosition = {
-    x: nodeToDuplicate.position.x + (nodeWidth || 0) / 2 - 50,
-    y: nodeToDuplicate.position.y + (nodeHeight || 0) + 50
-  };
-
-  // Ensure the new position does not overlap with existing nodes
-  let attempts = 0;
-  const maxAttempts = 100;
-  const padding = 20; // Additional padding to avoid overlap
-
-  while (
-    nodes.some((node) => {
-      const nodeSize = nodeDimensions[node.type as keyof typeof nodeDimensions];
-      return (
-        Math.abs(node.position.x - newPosition.x) < nodeSize.width + padding &&
-        Math.abs(node.position.y - newPosition.y) < nodeSize.height + padding
-      );
-    }) &&
-    attempts < maxAttempts
-  ) {
-    newPosition = {
-      x: newPosition.x + padding,
-      y: newPosition.y + padding
+    // Calculate a new position near the original node
+    let newPosition = {
+      x: nodeToDuplicate.position.x + (nodeWidth || 0) / 2 - 50,
+      y: nodeToDuplicate.position.y + (nodeHeight || 0) + 50
     };
-    attempts++;
+
+    // Ensure the new position does not overlap with existing nodes
+    let attempts = 0;
+    const maxAttempts = 100;
+    const padding = 20; // Additional padding to avoid overlap
+
+    while (
+      nodes.some((node) => {
+        const nodeSize =
+          nodeDimensions[node.type as keyof typeof nodeDimensions];
+        return (
+          Math.abs(node.position.x - newPosition.x) <
+            nodeSize.width + padding &&
+          Math.abs(node.position.y - newPosition.y) < nodeSize.height + padding
+        );
+      }) &&
+      attempts < maxAttempts
+    ) {
+      newPosition = {
+        x: newPosition.x + padding,
+        y: newPosition.y + padding
+      };
+      attempts++;
+    }
+
+    if (attempts >= maxAttempts) {
+      console.error(
+        'Failed to find optimal position for duplicate node: Canvas might be too crowded.'
+      );
+      return;
+    }
+
+    const newData = JSON.parse(JSON.stringify(nodeToDuplicate.data));
+    const newId = `${nodeToDuplicate.type}-${nanoid()}`;
+    newData.id = newId;
+
+    // Handle different node data types
+    if (newData.type === 'text') {
+      newData.content = `Copy of ${newData.content}`;
+    } else if (newData.type === 'image') {
+      newData.url = newData.url;
+    } else if (newData.type === 'video') {
+      newData.url = newData.url;
+    } else if (newData.type === 'file') {
+      newData.fileName = `Copy of ${newData.fileName}`;
+    }
+
+    // Ensure attached files/URLs are copied
+    if (nodeToDuplicate.data.attachedFiles) {
+      newData.attachedFiles = [...nodeToDuplicate.data.attachedFiles];
+    }
+
+    // Append 'copy' to the title to differentiate from the original
+    if (newData.title) {
+      newData.title = `${newData.title} copy`;
+    }
+
+    const newNode = {
+      ...nodeToDuplicate,
+      id: newId,
+      position: newPosition,
+      data: newData
+    };
+    addNode(newNode);
+    setSelectedNodes([newNode.id]);
   }
-
-  if (attempts >= maxAttempts) {
-    console.error(
-      'Failed to find optimal position for duplicate node: Canvas might be too crowded.'
-    );
-    return;
-  }
-
-  const newData = JSON.parse(JSON.stringify(nodeToDuplicate.data));
-  const newId = `${nodeToDuplicate.type}-${nanoid()}`;
-  newData.id = newId;
-
-  // Handle different node data types
-  if (newData.type === 'text') {
-    newData.content = `Copy of ${newData.content}`;
-  } else if (newData.type === 'image') {
-    newData.url = newData.url;
-  } else if (newData.type === 'video') {
-    newData.url = newData.url;
-  } else if (newData.type === 'file') {
-    newData.fileName = `Copy of ${newData.fileName}`;
-  }
-
-  // Ensure attached files/URLs are copied
-  if (nodeToDuplicate.data.attachedFiles) {
-    newData.attachedFiles = [...nodeToDuplicate.data.attachedFiles];
-  }
-
-  // Append 'copy' to the title to differentiate from the original
-  if (newData.title) {
-    newData.title = `${newData.title} copy`;
-  }
-
-  const newNode = {
-    ...nodeToDuplicate,
-    id: newId,
-    position: newPosition,
-    data: newData
-  };
-  await addNewNode(newNode);
-  setSelectedNodes([newNode.id]);
 };
 
 export const handleAttachmentPreview = (fileOrUrl: File | string) => {

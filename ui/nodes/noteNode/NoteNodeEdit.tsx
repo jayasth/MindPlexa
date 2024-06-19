@@ -218,17 +218,25 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
 
   const handleSave = async () => {
     const updatedNodeData = {
-      data: {
-        title,
-        content,
-        tags,
-        attachedFiles,
-        backgroundColor,
-        textColor
-      }
+      title,
+      content,
+      tags,
+      attachedFiles: attachedFiles.map((file) => ({
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        lastModified: file.lastModified
+      })),
+      backgroundColor,
+      textColor
     };
 
-    const { error } = await updateNodeInDatabase(data.id, updatedNodeData);
+    const { error } = await updateNodeInDatabase(
+      data.id,
+      { data: updatedNodeData },
+      {},
+      'note'
+    );
     if (error) {
       console.error('Error updating note node:', error);
       // Handle the error appropriately (e.g., show an error message)

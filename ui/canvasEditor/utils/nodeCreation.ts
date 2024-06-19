@@ -1,6 +1,5 @@
 import { Node, XYPosition } from 'reactflow';
 import { getNodeSpecificProperties, nodeDimensions } from './nodeProperties';
-import { nanoid } from 'nanoid';
 import { findOptimalPosition } from './positioningUtils';
 import { createNode as createNodeInDatabase } from '@/utils/canvas/canvasDatabaseOperations';
 import { v4 as uuidv4 } from 'uuid';
@@ -77,20 +76,29 @@ export const createNode = async (
   console.log('nodeCreation: New node:', newNode);
 
   try {
-    const { data: createdNode, error } = await createNodeInDatabase({
-      id: newNode.id || '',
-      type: newNode.type || '',
-      position: JSON.stringify(newNode.position),
-      data: JSON.stringify(newNode.data)
-    });
-    if (error) {
-      console.error('NodeCreation: Database error:', error);
-      throw new Error(error instanceof Error ? error.message : 'Unknown error');
-    }
-    if (createdNode) {
-      callback(createdNode);
+    if (nodeType !== 'selectionMenu') {
+      const { data: createdNode, error } = await createNodeInDatabase(
+        nodeType,
+        positionAsXYPosition,
+        newNode.data
+      );
+      if (error) {
+        console.error('NodeCreation: Database error:', error);
+        throw new Error(
+          error instanceof Error ? error.message : 'Unknown error'
+        );
+      }
+      if (createdNode) {
+        const newNodeWithData: Node<any> = {
+          ...newNode,
+          data: createdNode
+        };
+        callback(newNodeWithData);
+      } else {
+        throw new Error('Node creation failed');
+      }
     } else {
-      throw new Error('Node creation failed');
+      throw new Error('Invalid node type: selectionMenu');
     }
   } catch (error) {
     console.error('NodeCreation: Error creating new node:', error);

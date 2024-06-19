@@ -135,23 +135,58 @@ export const fetchCanvas = async (canvasId: string) => {
 
 // Function to insert a new node
 export const createNode = async (
-  node: Database['public']['Tables']['nodes']['Insert']
+  nodeType: 'note' | 'task' | 'table' | 'calendar' | 'draw',
+  position: { x: number; y: number },
+  data: any
 ) => {
   try {
-    const { data, error } = await supabase
-      .from('nodes')
-      .insert([node])
+    // Create a base node first
+    const baseNodeInsert = {
+      type: nodeType,
+      position: JSON.stringify(position),
+      width: data.width,
+      height: data.height,
+      color: data.backgroundColor
+    };
+
+    const { data: baseNodeData, error: baseNodeError } = await supabase
+      .from('base_nodes')
+      .insert([baseNodeInsert])
+      .select()
       .single();
-    if (error) {
-      console.error('canvasDatabaseOperations: Error inserting node:', error);
-      return { error };
+
+    if (baseNodeError) {
+      console.error('Error inserting base node:', baseNodeError);
+      return { error: baseNodeError };
     }
-    return { data };
+
+    // Create the specific node type
+    const specificNodeInsert = {
+      base_node_id: baseNodeData.id,
+      title: data.title,
+      background_color: data.backgroundColor,
+      text_color: data.textColor,
+      tags: data.tags,
+      attached_files: data.attachedFiles,
+      ...data.specificData // Additional specific data for the node type
+    };
+
+    const tableName = `${nodeType}_nodes` as keyof Database['public']['Tables'];
+
+    const { data: specificNodeData, error: specificNodeError } = await supabase
+      .from(tableName)
+      .insert([specificNodeInsert])
+      .select()
+      .single();
+
+    if (specificNodeError) {
+      console.error(`Error inserting ${nodeType} node:`, specificNodeError);
+      return { error: specificNodeError };
+    }
+
+    return { data: { ...baseNodeData, ...specificNodeData } };
   } catch (error) {
-    console.error(
-      'canvasDatabaseOperations: Unexpected error inserting node:',
-      error
-    );
+    console.error('Unexpected error creating node:', error);
     return { error };
   }
 };
@@ -159,7 +194,9 @@ export const createNode = async (
 // Function to update an existing node
 export const updateNode = async (
   id: string,
-  updates: Database['public']['Tables']['nodes']['Update']
+  updates: Database['public']['Tables']['nodes']['Update'],
+  specificUpdates: any,
+  nodeType: 'note' | 'task' | 'table' | 'calendar' | 'draw'
 ) => {
   const { data, error } = await supabase
     .from('nodes')
@@ -170,16 +207,47 @@ export const updateNode = async (
     console.error('canvasDatabaseOperations: Error updating node:', error);
     return { error };
   }
+
+  const tableName = `${nodeType}_nodes` as keyof Database['public']['Tables'];
+  const { error: specificError } = await supabase
+    .from(tableName)
+    .update(specificUpdates)
+    .eq('base_node_id', id)
+    .single();
+  if (specificError) {
+    console.error(
+      `canvasDatabaseOperations: Error updating ${nodeType} node:`,
+      specificError
+    );
+    return { error: specificError };
+  }
+
   return { data };
 };
-
 // Function to delete a node
-export const deleteNode = async (id: string) => {
+export const deleteNode = async (
+  id: string,
+  nodeType: 'note' | 'task' | 'table' | 'calendar' | 'draw'
+) => {
   const { error } = await supabase.from('nodes').delete().eq('id', id);
   if (error) {
     console.error('canvasDatabaseOperations: Error deleting node:', error);
     return { error };
   }
+
+  const tableName = `${nodeType}_nodes` as keyof Database['public']['Tables'];
+  const { error: specificError } = await supabase
+    .from(tableName)
+    .delete()
+    .eq('base_node_id', id);
+  if (specificError) {
+    console.error(
+      `canvasDatabaseOperations: Error deleting ${nodeType} node:`,
+      specificError
+    );
+    return { error: specificError };
+  }
+
   return { success: true };
 };
 
