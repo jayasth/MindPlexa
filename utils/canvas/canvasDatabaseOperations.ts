@@ -135,6 +135,7 @@ export const fetchCanvas = async (canvasId: string) => {
 
 // Function to insert a new node
 export const createNode = async (
+  canvasId: string,
   nodeType: 'note' | 'task' | 'table' | 'calendar' | 'draw',
   position: { x: number; y: number },
   data: any
@@ -142,7 +143,7 @@ export const createNode = async (
   try {
     // Create a common node first
     const commonNodeInsert = {
-      canvas_id: data.canvasId,
+      canvas_id: canvasId,
       type: nodeType,
       position: JSON.stringify(position),
       width: data.width,

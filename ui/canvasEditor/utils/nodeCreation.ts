@@ -23,12 +23,12 @@ export const createNode = async (
   canvasSize: { width: number; height: number },
   isTemporary = nodeType === 'selectionMenu',
   isEditing = false,
+  canvasId: string,
   parentNode?: Node<any> | null,
   temporaryNodeId?: string
 ) => {
   const nodeDimension = nodeDimensions[nodeType];
   const availablePosition = findNewPosition(nodes, canvasSize);
-
   const positionAsXYPosition: XYPosition = setPosition(
     availablePosition.x,
     availablePosition.y
@@ -79,6 +79,7 @@ export const createNode = async (
   try {
     if (nodeType !== 'selectionMenu') {
       const { data: createdNode, error } = await createNodeInDatabase(
+        canvasId,
         nodeType,
         positionAsXYPosition,
         newNode.data

@@ -31,11 +31,7 @@ import Quill from 'quill';
 import 'quill/dist/quill.snow.css';
 import { NoteNodeData } from '@/ui/canvasEditor/utils/nodeDatatypes';
 import { useBackgroundColorChange } from '@/ui/nodes/common/useBackgroundColorChange';
-import {
-  createNode,
-  updateNode,
-  deleteNode
-} from '@/utils/canvas/canvasDatabaseOperations';
+import { updateNode } from '@/utils/canvas/canvasDatabaseOperations';
 
 interface NoteNodeEditProps extends NodeProps {
   data: NoteNodeData;

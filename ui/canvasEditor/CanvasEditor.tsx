@@ -29,16 +29,6 @@ import { useEdgeConnection } from '@/ui/canvasEditor/hooks/useEdgeConnection';
 import { nanoid } from 'nanoid';
 import { handleTemporaryNodeCreation } from '@/ui/canvasEditor/utils/TemporaryNodeHandler';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
-import {
-  createNode,
-  updateNode,
-  deleteNode,
-  createEdge,
-  updateEdge,
-  deleteEdge,
-  saveCanvasState,
-  fetchCanvas
-} from '@/utils/canvas/canvasDatabaseOperations';
 
 const nodeOrigin: NodeOrigin = [0.5, 0.5];
 const defaultEdgeOptions = {
@@ -113,38 +103,25 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
     setShowAIAssistanceModal(false);
   };
 
-  const handleAddNode = async (node) => {
-    const { data, error } = await createNode(
-      node.type,
-      node.position,
-      node.data
-    );
-    if (error) {
-      console.error('Error creating node:', error);
-      return;
-    }
-    if (data) {
-      const newNode = {
-        ...data,
-        data: node.data,
-        position: node.position as XYPosition,
-        type: data.type || 'defaultType',
-        id: data.id.toString()
-      };
-      addNode(newNode);
-      setTimeout(() => {
-        reactFlowInstance.current?.fitView({
-          padding: 0.2,
-          includeHiddenNodes: false
-        });
-        reactFlowInstance.current?.setCenter(node.position.x, node.position.y, {
-          duration: 500
-        });
-      }, 100);
-    } else {
-      console.error('Error: Node data is undefined');
-    }
+  const handleAddNode = (node) => {
+    const newNode = {
+      ...node,
+      id: nanoid(),
+      position: node.position as XYPosition,
+      type: node.type || 'defaultType'
+    };
+    addNode(newNode);
+    setTimeout(() => {
+      reactFlowInstance.current?.fitView({
+        padding: 0.2,
+        includeHiddenNodes: false
+      });
+      reactFlowInstance.current?.setCenter(node.position.x, node.position.y, {
+        duration: 500
+      });
+    }, 100);
   };
+
   const edgeTypes = useMemo(
     () => ({
       customEdge: (props) => <CustomEdge {...props} />
@@ -153,28 +130,12 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
   );
 
   const onNodeResizeStop = useCallback(
-    async (
+    (
       nodeId: string,
       newSize: { width: number; height: number },
       newPosition: { x: number; y: number }
     ) => {
-      console.log(
-        `CanvasEditor: Node size before resizing: width = ${newSize.width}, height = ${newSize.height}`
-      );
-      const { data, error } = await updateNode(
-        nodeId,
-        { width: newSize.width, height: newSize.height, position: newPosition },
-        {},
-        'note'
-      );
-      if (error) {
-        console.error('CanvasEditor: Error updating node:', error);
-        return;
-      }
       updateNodeInStore(nodeId, { ...newSize, position: newPosition });
-      console.log(
-        `CanvasEditor: Node size after resizing: width = ${newSize.width}, height = ${newSize.height}`
-      );
     },
     [updateNodeInStore]
   );
@@ -215,24 +176,14 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
   }, []);
 
   const onNodeDragStop = useCallback(
-    async (event, node) => {
-      const { data, error } = await updateNode(
-        node.id,
-        { position: node.position },
-        {},
-        'note'
-      );
-      if (error) {
-        console.error('CanvasEditor: Error updating node position:', error);
-        return;
-      }
+    (event, node) => {
       updateNodeInStore(node.id, { position: node.position });
     },
     [updateNodeInStore]
   );
 
   const handleConnect = useCallback(
-    async (connection) => {
+    (connection) => {
       if (!connection.source || !connection.target) {
         console.error('CanvasEditor: Incomplete connection data:', connection);
         return;
@@ -242,11 +193,6 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
         id: `e-${nanoid()}`,
         type: 'customEdge'
       };
-      const { data, error } = await createEdge(newEdge);
-      if (error) {
-        console.error('Error creating edge:', error);
-        return;
-      }
       setEdges((eds) => [...eds, newEdge]);
       reactFlowInstance.current?.fitView({ padding: 0.2 });
     },

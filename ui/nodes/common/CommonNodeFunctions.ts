@@ -1,10 +1,7 @@
 import { useStore } from '@/app/store/useCanvasStore';
 import { nanoid } from 'nanoid';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
-import {
-  updateNode as updateNodeInDatabase,
-  deleteNode as deleteNodeInDatabase
-} from '@/utils/canvas/canvasDatabaseOperations';
+import { deleteNode as deleteNodeInDatabase } from '@/utils/canvas/canvasDatabaseOperations';
 
 export const getContrastYIQ = (color: string) => {
   let r,

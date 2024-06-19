@@ -88,6 +88,8 @@ export type Database = {
           height: number | null
           id: string
           is_editing: boolean | null
+          is_temporary: boolean | null
+          parent_node_id: string | null
           position: Json | null
           tags: string[] | null
           text_color: string | null
@@ -104,6 +106,8 @@ export type Database = {
           height?: number | null
           id?: string
           is_editing?: boolean | null
+          is_temporary?: boolean | null
+          parent_node_id?: string | null
           position?: Json | null
           tags?: string[] | null
           text_color?: string | null
@@ -120,6 +124,8 @@ export type Database = {
           height?: number | null
           id?: string
           is_editing?: boolean | null
+          is_temporary?: boolean | null
+          parent_node_id?: string | null
           position?: Json | null
           tags?: string[] | null
           text_color?: string | null
@@ -134,6 +140,13 @@ export type Database = {
             columns: ["canvas_id"]
             isOneToOne: false
             referencedRelation: "canvases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "common_node_properties_parent_node_id_fkey"
+            columns: ["parent_node_id"]
+            isOneToOne: false
+            referencedRelation: "common_node_properties"
             referencedColumns: ["id"]
           },
         ]
