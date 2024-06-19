@@ -1,6 +1,10 @@
 import { useStore } from '@/app/store/useCanvasStore';
 import { nanoid } from 'nanoid';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
+import {
+  updateNode as updateNodeInDatabase,
+  deleteNode as deleteNodeInDatabase
+} from '@/utils/canvas/canvasDatabaseOperations';
 
 export const getContrastYIQ = (color: string) => {
   let r,
@@ -9,7 +13,6 @@ export const getContrastYIQ = (color: string) => {
     a = 1;
 
   if (color.startsWith('#')) {
-    // Hex color
     const hex = color.replace('#', '');
     r = parseInt(hex.substring(0, 2), 16);
     g = parseInt(hex.substring(2, 4), 16);
@@ -18,7 +21,6 @@ export const getContrastYIQ = (color: string) => {
       a = parseInt(hex.substring(6, 8), 16) / 255;
     }
   } else if (color.startsWith('rgb')) {
-    // RGB or RGBA color
     const rgba = color.match(/\d+(\.\d+)?/g);
     if (rgba) {
       r = parseInt(rgba[0]);
@@ -30,7 +32,6 @@ export const getContrastYIQ = (color: string) => {
     }
   }
 
-  // Apply alpha to the background color
   r = Math.round(r * a + 255 * (1 - a));
   g = Math.round(g * a + 255 * (1 - a));
   b = Math.round(b * a + 255 * (1 - a));
@@ -170,12 +171,20 @@ export const handleClose = (
   toggleEditMode(nodeId);
 };
 
-export const handleDelete = (id: string, onDelete: () => void) => {
+export const handleDelete = async (
+  id: string,
+  onDelete: () => void,
+  nodeType: 'note' | 'task' | 'table' | 'calendar' | 'draw'
+) => {
   const { removeNode, setEdges } = useStore.getState();
   if (window.confirm('Are you sure you want to delete this node?')) {
+    const { error } = await deleteNodeInDatabase(id, nodeType);
+    if (error) {
+      console.error('Error deleting node:', error);
+      return;
+    }
     onDelete();
     removeNode(id);
-    // Update edges to remove any that are connected to the deleted node
     setEdges((edges) =>
       edges.filter((edge) => edge.source !== id && edge.target !== id)
     );
@@ -210,19 +219,14 @@ export const handleAttachFile = (
 ) => {
   const { updateNode } = useStore.getState();
   const maxFileSize = 2 * 1024 * 1024; // 2 MB in bytes
-  const allowedFileTypes = [
-    'image/jpeg',
-    'image/png',
-    'application/pdf',
-    'text/plain'
-  ];
-
   const validFiles = files.filter((file) => {
-    if (typeof file === 'string') {
-      // Assuming URLs are valid if they are strings
-      return true;
-    }
-    return allowedFileTypes.includes(file.type) && file.size <= maxFileSize;
+    if (typeof file === 'string') return true;
+    return (
+      file.size <= maxFileSize &&
+      ['image/jpeg', 'image/png', 'application/pdf', 'text/plain'].includes(
+        file.type
+      )
+    );
   });
 
   if (validFiles.length > 0) {
@@ -280,16 +284,14 @@ export const handleDuplicate = (id: string) => {
         ? nodeDimension.editHeight
         : nodeToDuplicate.height;
 
-    // Calculate a new position near the original node
     let newPosition = {
       x: nodeToDuplicate.position.x + (nodeWidth || 0) / 2 - 50,
       y: nodeToDuplicate.position.y + (nodeHeight || 0) + 50
     };
 
-    // Ensure the new position does not overlap with existing nodes
     let attempts = 0;
     const maxAttempts = 100;
-    const padding = 20; // Additional padding to avoid overlap
+    const padding = 20;
 
     while (
       nodes.some((node) => {
@@ -321,7 +323,6 @@ export const handleDuplicate = (id: string) => {
     const newId = `${nodeToDuplicate.type}-${nanoid()}`;
     newData.id = newId;
 
-    // Handle different node data types
     if (newData.type === 'text') {
       newData.content = `Copy of ${newData.content}`;
     } else if (newData.type === 'image') {
@@ -332,12 +333,10 @@ export const handleDuplicate = (id: string) => {
       newData.fileName = `Copy of ${newData.fileName}`;
     }
 
-    // Ensure attached files/URLs are copied
     if (nodeToDuplicate.data.attachedFiles) {
       newData.attachedFiles = [...nodeToDuplicate.data.attachedFiles];
     }
 
-    // Append 'copy' to the title to differentiate from the original
     if (newData.title) {
       newData.title = `${newData.title} copy`;
     }
@@ -383,7 +382,6 @@ export const handleAttachmentPreview = (fileOrUrl: File | string) => {
 
   if (typeof fileOrUrl === 'string') {
     try {
-      // Handle URL preview
       const iframe = document.createElement('iframe');
       iframe.src = fileOrUrl;
       iframe.style.width = '100%';
@@ -397,7 +395,6 @@ export const handleAttachmentPreview = (fileOrUrl: File | string) => {
       previewWindow.appendChild(errorMessage);
     }
   } else {
-    // Handle file preview
     const fileURL = URL.createObjectURL(fileOrUrl);
     const fileType = fileOrUrl.type;
 
