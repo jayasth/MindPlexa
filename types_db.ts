@@ -51,6 +51,13 @@ export type Database = {
             referencedRelation: "canvases"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_base_nodes_canvas_id"
+            columns: ["canvas_id"]
+            isOneToOne: false
+            referencedRelation: "canvases"
+            referencedColumns: ["id"]
+          },
         ]
       }
       calendar_nodes: {
@@ -140,6 +147,20 @@ export type Database = {
             columns: ["node_id"]
             isOneToOne: false
             referencedRelation: "draw_nodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_canvas_node_relationships_canvas_id"
+            columns: ["canvas_id"]
+            isOneToOne: false
+            referencedRelation: "canvases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_canvas_node_relationships_node_id"
+            columns: ["node_id"]
+            isOneToOne: false
+            referencedRelation: "nodes"
             referencedColumns: ["id"]
           },
           {
@@ -398,6 +419,20 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_node_files_file_id"
+            columns: ["file_id"]
+            isOneToOne: false
+            referencedRelation: "files"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_node_files_node_id"
+            columns: ["node_id"]
+            isOneToOne: false
+            referencedRelation: "nodes"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "node_files_file_id_fkey"
             columns: ["file_id"]
             isOneToOne: false
@@ -427,6 +462,20 @@ export type Database = {
           tag_id?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_node_tags_node_id"
+            columns: ["node_id"]
+            isOneToOne: false
+            referencedRelation: "nodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_node_tags_tag_id"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "tags"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "node_tags_node_id_fkey"
             columns: ["node_id"]
@@ -496,6 +545,20 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_nodes_base_node_id"
+            columns: ["base_node_id"]
+            isOneToOne: false
+            referencedRelation: "base_nodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_nodes_canvas_id"
+            columns: ["canvas_id"]
+            isOneToOne: false
+            referencedRelation: "canvases"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "nodes_base_node_id_fkey"
             columns: ["base_node_id"]

@@ -20,7 +20,6 @@ import {
   CalendarNodeData,
   DrawNodeData
 } from '@/ui/canvasEditor/utils/nodeDatatypes';
-import { updateNode as updateNodeInDatabase } from '@/utils/canvas/canvasDatabaseOperations';
 
 interface CanvasState {
   nodes: Node[];
@@ -414,38 +413,17 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       edges: applyEdgeChanges(changes, state.edges)
     }));
   },
-  toggleEditMode: async (nodeId: string) => {
+  toggleEditMode: (nodeId: string) => {
     console.log(`Store: Toggling edit mode for node ${nodeId}`);
-    set((state) => {
-      const node = state.nodes.find((node) => node.id === nodeId);
-      if (node) {
-        const isEditing = !node.isEditing;
-        const updatedNode = { ...node, isEditing };
-
-        // Update the node in the database
-        updateNodeInDatabase(
-          nodeId,
-          {},
-          {},
-          node.type as 'note' | 'task' | 'table' | 'calendar' | 'draw'
-        )
-          .then((response) => {
-            if (response.error) {
-              console.error('Error updating node:', response.error);
-            } else {
-              console.log('Node updated successfully:', response.data);
-            }
-          })
-          .catch((error) => {
-            console.error('Unexpected error updating node:', error);
-          });
-
-        return {
-          nodes: state.nodes.map((n) => (n.id === nodeId ? updatedNode : n))
-        };
-      }
-      return state;
-    });
+    set((state) => ({
+      nodes: state.nodes.map((node) => {
+        if (node.id === nodeId) {
+          console.log(`Store: Before toggling, isEditing is ${node.isEditing}`);
+          return { ...node, isEditing: !node.isEditing };
+        }
+        return node;
+      })
+    }));
   },
   setSelectedNodes: (selectedIds) => {
     console.log('Store: Setting selected nodes:', selectedIds);
