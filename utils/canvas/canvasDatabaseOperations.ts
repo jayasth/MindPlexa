@@ -194,36 +194,46 @@ export const createNode = async (
 // Function to update an existing node
 export const updateNode = async (
   id: string,
-  updates: Database['public']['Tables']['nodes']['Update'],
+  updates: Partial<Database['public']['Tables']['base_nodes']['Update']>,
   specificUpdates: any,
   nodeType: 'note' | 'task' | 'table' | 'calendar' | 'draw'
 ) => {
-  const { data, error } = await supabase
-    .from('nodes')
+  // Update the base node
+  const { data: baseNodeData, error: baseNodeError } = await supabase
+    .from('base_nodes')
     .update(updates)
     .eq('id', id)
+    .select()
     .single();
-  if (error) {
-    console.error('canvasDatabaseOperations: Error updating node:', error);
-    return { error };
+
+  if (baseNodeError) {
+    console.error(
+      'canvasDatabaseOperations: Error updating base node:',
+      baseNodeError
+    );
+    return { error: baseNodeError };
   }
 
+  // Update the specific node type
   const tableName = `${nodeType}_nodes` as keyof Database['public']['Tables'];
-  const { error: specificError } = await supabase
+  const { data: specificNodeData, error: specificNodeError } = await supabase
     .from(tableName)
     .update(specificUpdates)
     .eq('base_node_id', id)
+    .select()
     .single();
-  if (specificError) {
+
+  if (specificNodeError) {
     console.error(
       `canvasDatabaseOperations: Error updating ${nodeType} node:`,
-      specificError
+      specificNodeError
     );
-    return { error: specificError };
+    return { error: specificNodeError };
   }
 
-  return { data };
+  return { data: { ...baseNodeData, ...specificNodeData } };
 };
+
 // Function to delete a node
 export const deleteNode = async (
   id: string,
