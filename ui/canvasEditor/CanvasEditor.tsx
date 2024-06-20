@@ -116,35 +116,49 @@ export default function CanvasEditor({ canvasId }) {
 
   useEffect(() => {
     if (canvasId) {
-      const subscription = supabase
-        .from('canvases')
-        .on('INSERT', (payload) => {
-          console.log('CanvasEditor: Canvas inserted:', payload);
-          // Fetch updated canvas data and update the store
-          fetchCanvas(canvasId).then((response) => {
-            if (response.data) {
-              setNodes(response.data.common_node_properties);
-              setEdges(response.data.edges);
-            }
-          });
-        })
-        .on('UPDATE', (payload) => {
-          console.log('CanvasEditor: Canvas updated:', payload);
-          // Fetch updated canvas data and update the store
-          fetchCanvas(canvasId).then((response) => {
-            if (response.data) {
-              setNodes(response.data.common_node_properties);
-              setEdges(response.data.edges);
-            }
-          });
-        })
-        .on('DELETE', (payload) => {
-          console.log('CanvasEditor: Canvas deleted:', payload);
-          // Handle canvas deletion (e.g., redirect to a different page)
-        })
+      const channel = supabase
+        .channel('canvases')
+        .on(
+          'postgres_changes',
+          { event: 'INSERT', schema: 'public', table: 'canvases' },
+          (payload) => {
+            console.log('CanvasEditor: Canvas inserted:', payload);
+            // Fetch updated canvas data and update the store
+            fetchCanvas(canvasId).then((response) => {
+              if (response.data) {
+                setNodes(response.data.common_node_properties);
+                setEdges(response.data.edges);
+              }
+            });
+          }
+        )
+        .on(
+          'postgres_changes',
+          { event: 'UPDATE', schema: 'public', table: 'canvases' },
+          (payload) => {
+            console.log('CanvasEditor: Canvas updated:', payload);
+            // Fetch updated canvas data and update the store
+            fetchCanvas(canvasId).then((response) => {
+              if (response.data) {
+                setNodes(response.data.common_node_properties);
+                setEdges(response.data.edges);
+              }
+            });
+          }
+        )
+        .on(
+          'postgres_changes',
+          { event: 'DELETE', schema: 'public', table: 'canvases' },
+          (payload) => {
+            console.log('CanvasEditor: Canvas deleted:', payload);
+            // Handle canvas deletion (e.g., redirect to a different page)
+          }
+        )
         .subscribe();
 
-      return () => subscription.unsubscribe();
+      return () => {
+        supabase.removeChannel(channel);
+      };
     }
   }, [canvasId]);
 
