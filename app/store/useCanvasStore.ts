@@ -26,7 +26,8 @@ import {
   deleteNode as deleteNodeInDatabase,
   createEdge as createEdgeInDatabase,
   updateEdge as updateEdgeInDatabase,
-  deleteEdge as deleteEdgeInDatabase
+  deleteEdge as deleteEdgeInDatabase,
+  fetchCanvas
 } from '@/utils/canvas/canvasDatabaseOperations';
 
 interface CanvasState {
@@ -59,6 +60,8 @@ interface CanvasState {
   onEdgesChange: (changes: any) => void;
   toggleEditMode: (nodeId: string) => void;
   setSelectedNodes: (selectedIds: string[]) => void;
+  canvasId: string | null;
+  setCanvasId: (canvasId: string | null) => void;
 }
 
 const createStore = <T extends object>(
@@ -80,6 +83,10 @@ export const useStore = createStore<CanvasState>((set, get) => ({
   nodeInternals: new Map(),
   showNodeSelectionMenu: false,
   menuPosition: null,
+  canvasId: null,
+  setCanvasId: (canvasId) => {
+    set({ canvasId });
+  },
   setNodes: (updater) => {
     console.log('Store: Setting nodes with updater:', updater);
     set((state) => {

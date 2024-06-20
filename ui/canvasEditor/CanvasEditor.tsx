@@ -29,17 +29,18 @@ import { useEdgeConnection } from '@/ui/canvasEditor/hooks/useEdgeConnection';
 import { nanoid } from 'nanoid';
 import { handleTemporaryNodeCreation } from '@/ui/canvasEditor/utils/TemporaryNodeHandler';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
+import { createClient } from '@/utils/supabase/supabaseClient';
+import { Database } from '@/types_db';
+import { fetchCanvas } from '@/utils/canvas/canvasDatabaseOperations';
+
+const supabase = createClient();
 
 const nodeOrigin: NodeOrigin = [0.5, 0.5];
 const defaultEdgeOptions = {
   type: 'customEdge'
 };
 
-export default function CanvasEditor({
-  initialCanvas,
-  onCanvasUpdate,
-  canvasId
-}) {
+export default function CanvasEditor({ canvasId }) {
   console.log('CanvasEditor: canvasId:', canvasId);
 
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
@@ -65,7 +66,8 @@ export default function CanvasEditor({
     nodeInternals,
     removeNode,
     addEdge,
-    updateNode: updateNodeInStore
+    updateNode: updateNodeInStore,
+    setCanvasId
   } = useStore((state) => ({
     nodes: state.nodes,
     edges: state.edges,
@@ -78,15 +80,13 @@ export default function CanvasEditor({
     nodeInternals: state.nodeInternals,
     removeNode: state.removeNode,
     addEdge: state.addEdge,
-    updateNode: state.updateNode
+    updateNode: state.updateNode,
+    setCanvasId: state.setCanvasId
   }));
 
   useEffect(() => {
-    if (initialCanvas) {
-      setNodes(initialCanvas.nodes);
-      setEdges(initialCanvas.edges);
-    }
-  }, [initialCanvas, setNodes, setEdges]);
+    setCanvasId(canvasId);
+  }, [canvasId, setCanvasId]);
 
   useEffect(() => {
     const updateCanvasSize = () => {
@@ -100,6 +100,17 @@ export default function CanvasEditor({
 
     return () => window.removeEventListener('resize', updateCanvasSize);
   }, []);
+
+  useEffect(() => {
+    if (canvasId) {
+      fetchCanvas(canvasId).then((response) => {
+        if (response.data) {
+          setNodes(response.data.common_node_properties);
+          setEdges(response.data.edges);
+        }
+      });
+    }
+  }, [canvasId, setNodes, setEdges]);
 
   const handleOpenAIAssistanceModal = () => {
     setShowAIAssistanceModal(true);
