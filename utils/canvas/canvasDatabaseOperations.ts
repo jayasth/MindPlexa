@@ -153,7 +153,9 @@ export const createNode = async (
       title: data.title,
       tags: data.tags,
       attached_files: data.attachedFiles,
-      is_editing: data.isEditing
+      is_editing: data.isEditing,
+      is_temporary: data.isTemporary || false,
+      parent_node_id: data.parentNodeId || null
     };
 
     const { data: commonNodeData, error: commonNodeError } = await supabase
@@ -203,9 +205,15 @@ export const updateNode = async (
   nodeType: 'note' | 'task' | 'table' | 'calendar' | 'draw'
 ) => {
   // Update the common node
+  const updatedCommonNode = {
+    ...updates,
+    is_temporary: updates.is_temporary || false,
+    parent_node_id: updates.parent_node_id || null
+  };
+
   const { data: commonNodeData, error: commonNodeError } = await supabase
     .from('common_node_properties')
-    .update(updates)
+    .update(updatedCommonNode)
     .eq('id', id)
     .select()
     .single();
