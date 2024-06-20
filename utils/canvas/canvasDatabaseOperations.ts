@@ -140,6 +140,12 @@ export const createNode = async (
   position: { x: number; y: number },
   data: any
 ) => {
+  console.log('canvasDatabaseOperations: createNode called with:', {
+    canvasId,
+    nodeType,
+    position,
+    data
+  });
   try {
     // Create a common node first
     const commonNodeInsert = {

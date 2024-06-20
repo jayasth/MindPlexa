@@ -78,6 +78,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
         false, // isEditing
         canvasId
       );
+      console.log('Toolbar: Canvas ID:', canvasId);
     } catch (error) {
       console.error(`Failed to add node of type ${type}:`, error);
     }

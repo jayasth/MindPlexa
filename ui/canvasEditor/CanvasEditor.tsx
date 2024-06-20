@@ -35,7 +35,13 @@ const defaultEdgeOptions = {
   type: 'customEdge'
 };
 
-export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
+export default function CanvasEditor({
+  initialCanvas,
+  onCanvasUpdate,
+  canvasId
+}) {
+  console.log('CanvasEditor: canvasId:', canvasId);
+
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const reactFlowInstance = useRef<ReactFlowInstance | null>(null);
   const [showAIAssistanceModal, setShowAIAssistanceModal] = useState(false);
@@ -243,6 +249,7 @@ export default function CanvasEditor({ initialCanvas, onCanvasUpdate }) {
       <ReactFlowProvider>
         <div className="p-2">
           <Toolbar
+            canvasId={canvasId}
             onUndo={() => console.log('Undo')}
             onRedo={() => console.log('Redo')}
             onShare={() => handleShare({ nodes, edges })}

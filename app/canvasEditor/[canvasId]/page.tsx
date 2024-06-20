@@ -47,5 +47,11 @@ export default function CanvasEditorPage() {
     return <div>Loading...</div>;
   }
 
-  return <CanvasEditor initialCanvas={undefined} onCanvasUpdate={undefined} />;
+  return (
+    <CanvasEditor
+      initialCanvas={canvas}
+      onCanvasUpdate={handleCanvasUpdate}
+      canvasId={canvasId}
+    />
+  );
 }

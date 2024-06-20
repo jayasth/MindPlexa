@@ -74,8 +74,6 @@ export const createNode = async (
     };
   }
 
-  console.log('nodeCreation: New node:', newNode);
-
   try {
     if (nodeType !== 'selectionMenu') {
       const newNodeData = {

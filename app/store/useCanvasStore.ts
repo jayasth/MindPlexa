@@ -28,8 +28,8 @@ interface CanvasState {
   setDomNode: (node: HTMLDivElement | null) => void;
   screenToFlowPosition: (position: { x: number; y: number }) => XYPosition;
   nodeInternals: Map<string, Node>;
-  setNodes: (updater: (nodes: Node[]) => Node[]) => void;
-  setEdges: (updater: (edges: Edge[]) => Edge[]) => void;
+  setNodes: (updater: Node[] | ((nodes: Node[]) => Node[])) => void;
+  setEdges: (updater: Edge[] | ((edges: Edge[]) => Edge[])) => void;
   addNode: (node: Node) => void;
   updateNode: (id: string, data: Partial<Node>) => void;
   addEdge: (edge: Edge) => void;
@@ -75,23 +75,28 @@ export const useStore = createStore<CanvasState>((set, get) => ({
   setNodes: (updater) => {
     console.log('Store: Setting nodes with updater:', updater);
     set((state) => {
-      const updatedNodes = updater(state.nodes);
+      const updatedNodes =
+        typeof updater === 'function' ? updater(state.nodes) : updater;
       state.nodeInternals.clear();
-      updatedNodes.forEach((node) => {
-        state.nodeInternals.set(node.id, node);
-        if (node.position) {
-          console.log(
-            `Store: Node ${node.id} position updated to`,
-            node.position
-          );
-        }
-      });
-      return { nodes: updatedNodes };
+      if (updatedNodes) {
+        updatedNodes.forEach((node) => {
+          state.nodeInternals.set(node.id, node);
+          if (node.position) {
+            console.log(
+              `Store: Node ${node.id} position updated to`,
+              node.position
+            );
+          }
+        });
+      }
+      return { nodes: updatedNodes || [] };
     });
   },
   setEdges: (updater) => {
     console.log('Store: Setting edges with updater:', updater);
-    set((state) => ({ edges: updater(state.edges) }));
+    set((state) => ({
+      edges: typeof updater === 'function' ? updater(state.edges) : updater
+    }));
   },
   addNode: (node) => {
     console.log('Store: Adding node:', node);
@@ -369,7 +374,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
             { width: 0, height: 0 },
             false,
             false,
-            parentNode
+            parentNode.id
           );
           removeNode(newNode.id);
         },
