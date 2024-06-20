@@ -21,6 +21,14 @@ import {
   DrawNodeData
 } from '@/ui/canvasEditor/utils/nodeDatatypes';
 
+import {
+  updateNode as updateNodeInDatabase,
+  deleteNode as deleteNodeInDatabase,
+  createEdge as createEdgeInDatabase,
+  updateEdge as updateEdgeInDatabase,
+  deleteEdge as deleteEdgeInDatabase
+} from '@/utils/canvas/canvasDatabaseOperations';
+
 interface CanvasState {
   nodes: Node[];
   edges: Edge[];
@@ -98,7 +106,8 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       edges: typeof updater === 'function' ? updater(state.edges) : updater
     }));
   },
-  addNode: (node) => {
+
+  addNode: async (node) => {
     console.log('Store: Adding node:', node);
     if (node.type === undefined) {
       console.error('Node type is undefined');
@@ -150,19 +159,20 @@ export const useStore = createStore<CanvasState>((set, get) => ({
     }
 
     console.log('Store: New node with position and dimensions:', newNode);
-    set((state) => {
+    set(async (state) => {
       const canvasSize = {
         width: state.domNode?.clientWidth || 1000,
         height: state.domNode?.clientHeight || 800
       };
       newNode.position = findOptimalPosition(state.nodes, canvasSize);
       state.nodeInternals.set(newNode.id, newNode);
+
       return { nodes: [...state.nodes, newNode] };
     });
   },
 
-  updateNode: (id, data) => {
-    set((state) => {
+  updateNode: async (id, data) => {
+    set(async (state) => {
       const existingNodeIndex = state.nodes.findIndex((node) => node.id === id);
       if (existingNodeIndex !== -1) {
         const existingNode = state.nodes[existingNodeIndex];
@@ -220,30 +230,95 @@ export const useStore = createStore<CanvasState>((set, get) => ({
         const updatedNodes = [...state.nodes];
         updatedNodes[existingNodeIndex] = updatedNode;
         state.nodeInternals.set(id, updatedNode);
+
+        // Update node in the database
+        const { data: updatedNodeData, error } = await updateNodeInDatabase(
+          id,
+          updatedNode,
+          updatedNode.data,
+          updatedNode.type
+        );
+
+        if (error) {
+          console.error('Error updating node in database:', error);
+          return state;
+        }
+
         return { nodes: updatedNodes };
       }
       return state;
     });
   },
 
-  addEdge: (edge) => {
-    console.log('Store: Adding edge:', edge);
-    set((state) => ({
-      edges: [...state.edges, { ...edge, id: nanoid() }]
-    }));
-  },
-  removeNode: (id) => {
+  removeNode: async (id) => {
     console.log('Store: Removing node with id:', id);
-    set((state) => ({
-      nodes: state.nodes.filter((node) => node.id !== id),
-      edges: state.edges.filter(
-        (edge) => edge.source !== id && edge.target !== id
-      )
-    }));
+    set(async (state) => {
+      const nodeToRemove = state.nodes.find((node) => node.id === id);
+      if (nodeToRemove) {
+        const { error } = await deleteNodeInDatabase(id, nodeToRemove.type);
+        if (error) {
+          console.error('Error deleting node from database:', error);
+          return state;
+        }
+      }
+      return {
+        nodes: state.nodes.filter((node) => node.id !== id),
+        edges: state.edges.filter(
+          (edge) => edge.source !== id && edge.target !== id
+        )
+      };
+    });
   },
-  removeEdge: (id) => {
+
+  addEdge: async (edge) => {
+    console.log('Store: Adding edge:', edge);
+    set(async (state) => {
+      const newEdge = { ...edge, id: nanoid() };
+
+      // Create edge in the database
+      const { data: createdEdge, error } = await createEdgeInDatabase(newEdge);
+      if (error) {
+        console.error('Error creating edge in database:', error);
+        return state;
+      }
+
+      return { edges: [...state.edges, { ...newEdge, ...createdEdge }] };
+    });
+  },
+
+  updateEdge: async (id, data) => {
+    console.log('Store: Updating edge with id:', id, 'and data:', data);
+    set(async (state) => {
+      const updatedEdges = state.edges.map((edge) => {
+        if (edge.id === id) {
+          return { ...edge, ...data };
+        }
+        return edge;
+      });
+
+      // Update edge in the database
+      const { data: updatedEdgeData, error } = await updateEdgeInDatabase(
+        id,
+        data
+      );
+      if (error) {
+        console.error('Error updating edge in database:', error);
+        return state;
+      }
+
+      return { edges: updatedEdges };
+    });
+  },
+
+  removeEdge: async (id) => {
     console.log('Store: Removing edge with id:', id);
-    set((state) => {
+    set(async (state) => {
+      const { error } = await deleteEdgeInDatabase(id);
+      if (error) {
+        console.error('Error deleting edge from database:', error);
+        return state;
+      }
+
       const updatedEdges = state.edges.filter((edge) => edge.id !== id);
       state.onEdgesChange([
         {
@@ -254,18 +329,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       return { edges: updatedEdges };
     });
   },
-  updateEdge: (id, data) => {
-    console.log('Store: Updating edge with id:', id, 'and data:', data);
-    set((state) => {
-      const updatedEdges = state.edges.map((edge) => {
-        if (edge.id === id) {
-          return { ...edge, ...data };
-        }
-        return edge;
-      });
-      return { edges: updatedEdges };
-    });
-  },
+
   setInitialState: (nodes, edges) => {
     console.log(
       'Store: Setting initial state with nodes:',
