@@ -78,11 +78,15 @@ export const createNode = async (
 
   try {
     if (nodeType !== 'selectionMenu') {
+      const newNodeData = {
+        ...newNode.data,
+        canvas_id: canvasId
+      };
       const { data: createdNode, error } = await createNodeInDatabase(
         canvasId,
         nodeType,
         positionAsXYPosition,
-        newNode.data
+        newNodeData
       );
       if (error) {
         console.error('NodeCreation: Database error:', error);

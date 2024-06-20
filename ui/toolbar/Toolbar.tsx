@@ -26,6 +26,7 @@ import { getNodeSpecificProperties } from '@/ui/canvasEditor/utils/nodePropertie
 import styles from './Toolbar.module.css';
 
 interface ToolbarProps {
+  canvasId: string; // Add this line
   onUndo: () => void;
   onRedo: () => void;
   onShare: () => void;
@@ -36,6 +37,7 @@ interface ToolbarProps {
 }
 
 const Toolbar: React.FC<ToolbarProps> = ({
+  canvasId,
   onUndo,
   onRedo,
   onShare,
@@ -71,7 +73,10 @@ const Toolbar: React.FC<ToolbarProps> = ({
             });
           }
         },
-        nodeProps
+        nodeProps,
+        false, // isTemporary
+        false, // isEditing
+        canvasId
       );
     } catch (error) {
       console.error(`Failed to add node of type ${type}:`, error);
