@@ -31,7 +31,10 @@ import { handleTemporaryNodeCreation } from '@/ui/canvasEditor/utils/TemporaryNo
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 import { createClient } from '@/utils/supabase/supabaseClient';
 import { Database } from '@/types_db';
-import { fetchCanvas } from '@/utils/canvas/canvasDatabaseOperations';
+import {
+  fetchCanvas,
+  saveCanvasState
+} from '@/utils/canvas/canvasDatabaseOperations';
 
 const supabase = createClient();
 
@@ -304,6 +307,13 @@ export default function CanvasEditor({ canvasId }) {
       setDomNode(reactFlowWrapper.current);
     }
   }, [reactFlowWrapper.current, domNode]);
+
+  // Save the canvas state when the component unmounts
+  useEffect(() => {
+    return () => {
+      saveCanvas();
+    };
+  }, [saveCanvas]);
 
   return (
     <div className="flex h-screen">
