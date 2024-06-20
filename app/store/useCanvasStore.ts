@@ -27,7 +27,8 @@ import {
   createEdge as createEdgeInDatabase,
   updateEdge as updateEdgeInDatabase,
   deleteEdge as deleteEdgeInDatabase,
-  fetchCanvas
+  fetchCanvas,
+  saveCanvasState
 } from '@/utils/canvas/canvasDatabaseOperations';
 
 interface CanvasState {
@@ -62,6 +63,7 @@ interface CanvasState {
   setSelectedNodes: (selectedIds: string[]) => void;
   canvasId: string | null;
   setCanvasId: (canvasId: string | null) => void;
+  saveCanvas: () => Promise<void>;
 }
 
 const createStore = <T extends object>(
@@ -508,6 +510,15 @@ export const useStore = createStore<CanvasState>((set, get) => ({
         selected: selectedIds.includes(node.id)
       }))
     }));
+  },
+  saveCanvas: async () => {
+    const { nodes, edges, canvasId } = get();
+    if (canvasId) {
+      const { error } = await saveCanvasState(canvasId, nodes, edges);
+      if (error) {
+        console.error('Error saving canvas state:', error);
+      }
+    }
   }
 }));
 

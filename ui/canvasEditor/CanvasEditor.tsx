@@ -67,7 +67,8 @@ export default function CanvasEditor({ canvasId }) {
     removeNode,
     addEdge,
     updateNode: updateNodeInStore,
-    setCanvasId
+    setCanvasId,
+    saveCanvas
   } = useStore((state) => ({
     nodes: state.nodes,
     edges: state.edges,
@@ -81,7 +82,8 @@ export default function CanvasEditor({ canvasId }) {
     removeNode: state.removeNode,
     addEdge: state.addEdge,
     updateNode: state.updateNode,
-    setCanvasId: state.setCanvasId
+    setCanvasId: state.setCanvasId,
+    saveCanvas: state.saveCanvas
   }));
 
   useEffect(() => {
@@ -111,6 +113,40 @@ export default function CanvasEditor({ canvasId }) {
       });
     }
   }, [canvasId, setNodes, setEdges]);
+
+  useEffect(() => {
+    if (canvasId) {
+      const subscription = supabase
+        .from('canvases')
+        .on('INSERT', (payload) => {
+          console.log('CanvasEditor: Canvas inserted:', payload);
+          // Fetch updated canvas data and update the store
+          fetchCanvas(canvasId).then((response) => {
+            if (response.data) {
+              setNodes(response.data.common_node_properties);
+              setEdges(response.data.edges);
+            }
+          });
+        })
+        .on('UPDATE', (payload) => {
+          console.log('CanvasEditor: Canvas updated:', payload);
+          // Fetch updated canvas data and update the store
+          fetchCanvas(canvasId).then((response) => {
+            if (response.data) {
+              setNodes(response.data.common_node_properties);
+              setEdges(response.data.edges);
+            }
+          });
+        })
+        .on('DELETE', (payload) => {
+          console.log('CanvasEditor: Canvas deleted:', payload);
+          // Handle canvas deletion (e.g., redirect to a different page)
+        })
+        .subscribe();
+
+      return () => subscription.unsubscribe();
+    }
+  }, [canvasId]);
 
   const handleOpenAIAssistanceModal = () => {
     setShowAIAssistanceModal(true);
