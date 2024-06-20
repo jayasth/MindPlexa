@@ -47,11 +47,6 @@ export default function CanvasEditorPage() {
     return <div>Loading...</div>;
   }
 
-  return (
-    <CanvasEditor
-      initialCanvas={canvas}
-      onCanvasUpdate={handleCanvasUpdate}
-      canvasId={canvasId}
-    />
-  );
+  return <CanvasEditor canvasId={canvasId} />;
+  // End of the Selection
 }
