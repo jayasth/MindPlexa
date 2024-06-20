@@ -107,7 +107,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
     }));
   },
 
-  addNode: async (node) => {
+  addNode: (node) => {
     console.log('Store: Adding node:', node);
     if (node.type === undefined) {
       console.error('Node type is undefined');
@@ -159,14 +159,13 @@ export const useStore = createStore<CanvasState>((set, get) => ({
     }
 
     console.log('Store: New node with position and dimensions:', newNode);
-    set(async (state) => {
+    set((state) => {
       const canvasSize = {
         width: state.domNode?.clientWidth || 1000,
         height: state.domNode?.clientHeight || 800
       };
       newNode.position = findOptimalPosition(state.nodes, canvasSize);
       state.nodeInternals.set(newNode.id, newNode);
-
       return { nodes: [...state.nodes, newNode] };
     });
   },
