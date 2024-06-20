@@ -18,6 +18,7 @@ import {
   handleRemoveAttachedFile,
   handleAttachmentPreview
 } from '@/ui/nodes/common/CommonNodeFunctions';
+import { updateNode as updateNodeInDatabase } from '@/utils/canvas/canvasDatabaseOperations';
 
 const ICON_SIZE = 16;
 
@@ -159,13 +160,18 @@ export const FileModal = ({
           return;
         }
         onAttachFiles(allFiles);
+        updateNodeInDatabase(
+          data.id,
+          { attached_files: allFiles },
+          { attachedFiles: allFiles },
+          data.type
+        );
         setFileUrl('');
       } catch (e) {
         alert('Invalid URL');
       }
     }
   };
-
   return (
     <Modal open={isOpen} onClose={onClose} center>
       <h2>Attach Files</h2>

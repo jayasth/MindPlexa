@@ -1,7 +1,10 @@
 import { useStore } from '@/app/store/useCanvasStore';
 import { nanoid } from 'nanoid';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
-import { deleteNode as deleteNodeInDatabase } from '@/utils/canvas/canvasDatabaseOperations';
+import {
+  updateNode as updateNodeInDatabase,
+  deleteNode as deleteNodeInDatabase
+} from '@/utils/canvas/canvasDatabaseOperations';
 
 export const getContrastYIQ = (color: string) => {
   let r,
@@ -152,10 +155,14 @@ export const handleTitleChange = (
 export const handleSave = (id: string, onSave: () => void, nodeData: any) => {
   const { updateNode, toggleEditMode } = useStore.getState();
   onSave();
-  updateNode(id, { data: nodeData });
+  updateNodeInDatabase(
+    id,
+    nodeData,
+    nodeData,
+    nodeData.type as 'note' | 'task' | 'table' | 'calendar' | 'draw'
+  );
   toggleEditMode(id);
 };
-
 export const handleClose = (
   nodeId: string,
   onClose: () => void,
