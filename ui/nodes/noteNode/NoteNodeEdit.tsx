@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef, CSSProperties } from 'react';
 import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
-import { useStore } from '@/app/store/useCanvasStore';
 import styles from './NoteNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 import {
@@ -138,7 +137,9 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         tags,
         attached_files: attachedFilesJson,
         background_color: backgroundColor,
-        text_color: textColor
+        text_color: textColor,
+        edit_width: nodeWidth,
+        edit_height: nodeHeight
       },
       { content },
       'note'
@@ -150,6 +151,8 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     attachedFiles,
     backgroundColor,
     textColor,
+    nodeWidth,
+    nodeHeight,
     data.id
   ]);
 

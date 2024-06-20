@@ -53,8 +53,16 @@ export const createNode = async (
   const specificNode = {
     ...baseProperties,
     ...getNodeSpecificProperties(nodeType, isEditing),
-    width: nodeDimension.width,
-    height: nodeDimension.height
+    view_width: nodeDimension.width,
+    view_height: nodeDimension.height,
+    edit_width:
+      'editWidth' in nodeDimension
+        ? nodeDimension.editWidth
+        : nodeDimension.width,
+    edit_height:
+      'editHeight' in nodeDimension
+        ? nodeDimension.editHeight
+        : nodeDimension.height
   };
 
   const newNode: Node<any> = {
@@ -62,9 +70,19 @@ export const createNode = async (
     id: baseProperties.id || '',
     type: baseProperties.type || '',
     position: positionAsXYPosition,
-    data: specificNode,
-    width: nodeDimension.width,
-    height: nodeDimension.height
+    data: {
+      ...specificNode,
+      view_width: nodeDimension.width,
+      view_height: nodeDimension.height,
+      edit_width:
+        'editWidth' in nodeDimension
+          ? nodeDimension.editWidth
+          : nodeDimension.width,
+      edit_height:
+        'editHeight' in nodeDimension
+          ? nodeDimension.editHeight
+          : nodeDimension.height
+    }
   };
 
   if (parentNode) {

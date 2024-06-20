@@ -1,13 +1,17 @@
 import type { Json } from '@/types_db';
 
 export interface Node {
-  data: any;
-  height: any;
-  width: any;
-  type: any;
   id: string;
+  type: 'note' | 'task' | 'table' | 'calendar' | 'draw' | 'selectionMenu';
   position: { x: number; y: number };
+  data: any;
+  view_width: number;
+  view_height: number;
+  edit_width: number;
+  edit_height: number;
   isEditing: boolean;
+  draggable: boolean;
+  connectable: boolean;
 }
 
 export interface Edge {
@@ -112,8 +116,8 @@ export const nodeTypesReducer = (
           node.id === action.payload.id
             ? {
                 ...node,
-                width: action.payload.width,
-                height: action.payload.height
+                view_width: action.payload.width,
+                view_height: action.payload.height
               }
             : node
         )

@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { NodeProps, Handle, Position } from 'reactflow';
+import React, { useEffect, useCallback } from 'react';
+import { NodeProps } from 'reactflow';
 import { Node as BaseNode } from '@/ui/canvasEditor/nodeTypes';
 import dynamic from 'next/dynamic';
 import { useStore } from '@/app/store/useCanvasStore';
@@ -74,22 +74,23 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
   const updateNode = useStore((state) => state.updateNode);
   const removeNode = useStore((state) => state.removeNode);
   const toggleEditMode = useStore((state) => state.toggleEditMode);
-  const [size, setSize] = useState(
-    getNodeSpecificProperties(node?.type, node?.isEditing ?? false)
-  );
+
+  // Determine size based on editing mode
+  const size = node?.isEditing
+    ? { width: node?.edit_width, height: node?.edit_height }
+    : { width: node?.view_width, height: node?.view_height };
 
   useEffect(() => {
     if (node && node.type !== 'selectionMenu') {
       console.log(
-        `NodeRenderer: Node ${id} type ${node.type}: width = ${node.width}, height = ${node.height}`
+        `NodeRenderer: Node ${id} type ${node.type}: width = ${node.view_width}, height = ${node.view_height}`
       );
     }
-  }, [node?.width, node?.height, node?.type, id]);
+  }, [node?.view_width, node?.view_height, node?.type, id]);
 
   useEffect(() => {
     if (node) {
       const newSize = getNodeSpecificProperties(node.type, node.isEditing);
-      setSize(newSize);
       updateNode(id, newSize);
       console.log(
         `NodeRenderer: Updated size for node ${id}: width = ${newSize.width}, height = ${newSize.height}`
@@ -129,7 +130,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
         id,
         updates,
         newData,
-        node.type
+        node.type as Exclude<typeof node.type, 'selectionMenu'>
       );
       if (updatedData) {
         const validData = {
@@ -146,20 +147,28 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
               : undefined,
           type: updatedData.type ?? undefined,
           canvas_id: updatedData.canvas_id ?? null,
-
           created_at: updatedData.created_at ?? null,
-          height: updatedData.height ?? null,
+          height: updatedData.view_height ?? null,
           id: updatedData.id.toString(),
           updated_at: updatedData.updated_at ?? null,
-          width: updatedData.width ?? null
+          width: updatedData.view_width ?? null,
+          view_width: updatedData.view_width ?? null,
+          view_height: updatedData.view_height ?? null,
+          edit_width: updatedData.edit_width ?? null,
+          edit_height: updatedData.edit_height ?? null,
+          draggable: updatedData.draggable ?? true,
+          connectable: updatedData.connectable ?? true
         };
         updateNode(id, validData);
       }
     },
     [id, node?.type, updateNode]
   );
-
   const handleDeleteNode = useCallback(async () => {
+    if (node.type === 'selectionMenu') {
+      console.error('Invalid node type: selectionMenu');
+      return;
+    }
     const { error } = await deleteNodeInDB(id, node.type);
     if (!error) {
       removeNode(id);

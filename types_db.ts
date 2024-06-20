@@ -84,8 +84,11 @@ export type Database = {
           attached_files: Json | null
           background_color: string | null
           canvas_id: string | null
+          connectable: boolean | null
           created_at: string | null
-          height: number | null
+          draggable: boolean | null
+          edit_height: number | null
+          edit_width: number | null
           id: string
           is_editing: boolean | null
           is_temporary: boolean | null
@@ -96,14 +99,18 @@ export type Database = {
           title: string | null
           type: string | null
           updated_at: string | null
-          width: number | null
+          view_height: number | null
+          view_width: number | null
         }
         Insert: {
           attached_files?: Json | null
           background_color?: string | null
           canvas_id?: string | null
+          connectable?: boolean | null
           created_at?: string | null
-          height?: number | null
+          draggable?: boolean | null
+          edit_height?: number | null
+          edit_width?: number | null
           id?: string
           is_editing?: boolean | null
           is_temporary?: boolean | null
@@ -114,14 +121,18 @@ export type Database = {
           title?: string | null
           type?: string | null
           updated_at?: string | null
-          width?: number | null
+          view_height?: number | null
+          view_width?: number | null
         }
         Update: {
           attached_files?: Json | null
           background_color?: string | null
           canvas_id?: string | null
+          connectable?: boolean | null
           created_at?: string | null
-          height?: number | null
+          draggable?: boolean | null
+          edit_height?: number | null
+          edit_width?: number | null
           id?: string
           is_editing?: boolean | null
           is_temporary?: boolean | null
@@ -132,7 +143,8 @@ export type Database = {
           title?: string | null
           type?: string | null
           updated_at?: string | null
-          width?: number | null
+          view_height?: number | null
+          view_width?: number | null
         }
         Relationships: [
           {

@@ -115,7 +115,6 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       edges: typeof updater === 'function' ? updater(state.edges) : updater
     }));
   },
-
   addNode: (node) => {
     console.log('Store: Adding node:', node);
     if (node.type === undefined) {
@@ -178,166 +177,38 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       return { nodes: [...state.nodes, newNode] };
     });
   },
-
-  updateNode: async (id, data) => {
-    set(async (state) => {
-      const existingNodeIndex = state.nodes.findIndex((node) => node.id === id);
-      if (existingNodeIndex !== -1) {
-        const existingNode = state.nodes[existingNodeIndex];
-        const updatedNode = {
-          ...existingNode,
-          ...data,
-          position: data.position || existingNode.position,
-          data: {
-            ...existingNode.data,
-            ...data.data,
-            backgroundColor:
-              data.data?.backgroundColor || existingNode.data.backgroundColor,
-            textColor: data.data?.textColor || existingNode.data.textColor,
-            tags: data.data?.tags || existingNode.data.tags || [],
-            attachedFiles:
-              data.data?.attachedFiles || existingNode.data.attachedFiles || []
-          }
-        };
-        switch (existingNode.type) {
-          case 'note':
-            updatedNode.data = {
-              ...updatedNode.data,
-              ...(data.data as NoteNodeData)
-            };
-            break;
-          case 'task':
-            updatedNode.data = {
-              ...updatedNode.data,
-              ...(data.data as TaskNodeData)
-            };
-            break;
-          case 'table':
-            updatedNode.data = {
-              ...updatedNode.data,
-              ...(data.data as TableNodeData)
-            };
-            break;
-          case 'calendar':
-            updatedNode.data = {
-              ...updatedNode.data,
-              ...(data.data as CalendarNodeData)
-            };
-            break;
-          case 'draw':
-            updatedNode.data = {
-              ...updatedNode.data,
-              ...(data.data as DrawNodeData)
-            };
-            break;
-          // Add more cases for other node types if needed
-          default:
-            break;
-        }
-
-        const updatedNodes = [...state.nodes];
-        updatedNodes[existingNodeIndex] = updatedNode;
-        state.nodeInternals.set(id, updatedNode);
-
-        // Update node in the database
-        const { data: updatedNodeData, error } = await updateNodeInDatabase(
-          id,
-          updatedNode,
-          updatedNode.data,
-          updatedNode.type
-        );
-
-        if (error) {
-          console.error('Error updating node in database:', error);
-          return state;
-        }
-
-        return { nodes: updatedNodes };
-      }
-      return state;
-    });
+  updateNode: (id, data) => {
+    console.log(`Store: Updating node ${id} with data:`, data);
+    set((state) => ({
+      nodes: state.nodes.map((node) =>
+        node.id === id ? { ...node, ...data } : node
+      )
+    }));
   },
-
-  removeNode: async (id) => {
-    console.log('Store: Removing node with id:', id);
-    set(async (state) => {
-      const nodeToRemove = state.nodes.find((node) => node.id === id);
-      if (nodeToRemove) {
-        const { error } = await deleteNodeInDatabase(id, nodeToRemove.type);
-        if (error) {
-          console.error('Error deleting node from database:', error);
-          return state;
-        }
-      }
-      return {
-        nodes: state.nodes.filter((node) => node.id !== id),
-        edges: state.edges.filter(
-          (edge) => edge.source !== id && edge.target !== id
-        )
-      };
-    });
-  },
-
-  addEdge: async (edge) => {
+  addEdge: (edge) => {
     console.log('Store: Adding edge:', edge);
-    set(async (state) => {
-      const newEdge = { ...edge, id: nanoid() };
-
-      // Create edge in the database
-      const { data: createdEdge, error } = await createEdgeInDatabase(newEdge);
-      if (error) {
-        console.error('Error creating edge in database:', error);
-        return state;
-      }
-
-      return { edges: [...state.edges, { ...newEdge, ...createdEdge }] };
-    });
+    set((state) => ({ edges: [...state.edges, edge] }));
   },
-
-  updateEdge: async (id, data) => {
-    console.log('Store: Updating edge with id:', id, 'and data:', data);
-    set(async (state) => {
-      const updatedEdges = state.edges.map((edge) => {
-        if (edge.id === id) {
-          return { ...edge, ...data };
-        }
-        return edge;
-      });
-
-      // Update edge in the database
-      const { data: updatedEdgeData, error } = await updateEdgeInDatabase(
-        id,
-        data
-      );
-      if (error) {
-        console.error('Error updating edge in database:', error);
-        return state;
-      }
-
-      return { edges: updatedEdges };
-    });
+  removeNode: (id) => {
+    console.log(`Store: Removing node ${id}`);
+    set((state) => ({
+      nodes: state.nodes.filter((node) => node.id !== id)
+    }));
   },
-
-  removeEdge: async (id) => {
-    console.log('Store: Removing edge with id:', id);
-    set(async (state) => {
-      const { error } = await deleteEdgeInDatabase(id);
-      if (error) {
-        console.error('Error deleting edge from database:', error);
-        return state;
-      }
-
-      const updatedEdges = state.edges.filter((edge) => edge.id !== id);
-      state.onEdgesChange([
-        {
-          type: 'remove',
-          id: id
-        }
-      ]);
-      return { edges: updatedEdges };
-    });
+  removeEdge: (id) => {
+    console.log(`Store: Removing edge ${id}`);
+    set((state) => ({
+      edges: state.edges.filter((edge) => edge.id !== id)
+    }));
   },
-
+  updateEdge: (id, data) => {
+    console.log(`Store: Updating edge ${id} with data:`, data);
+    set((state) => ({
+      edges: state.edges.map((edge) =>
+        edge.id === id ? { ...edge, ...data } : edge
+      )
+    }));
+  },
   setInitialState: (nodes, edges) => {
     console.log(
       'Store: Setting initial state with nodes:',
@@ -371,7 +242,14 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       style: {
         backgroundColor: '#F4F4F4',
         color: '#575757'
-      }
+      },
+      view_width: nodeDimensions[type].width,
+      view_height: nodeDimensions[type].height,
+      edit_width: nodeDimensions[type].editWidth,
+      edit_height: nodeDimensions[type].editHeight,
+      isEditing: false,
+      draggable: true,
+      connectable: true
     };
 
     const newEdge = {
@@ -496,7 +374,9 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       nodes: state.nodes.map((node) => {
         if (node.id === nodeId) {
           console.log(`Store: Before toggling, isEditing is ${node.isEditing}`);
-          return { ...node, isEditing: !node.isEditing };
+          const isEditing = !node.isEditing;
+          const newSize = getNodeSpecificProperties(node.type, isEditing);
+          return { ...node, isEditing, ...newSize };
         }
         return node;
       })

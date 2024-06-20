@@ -73,7 +73,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
             });
           }
         },
-        nodeProps,
+        canvasSize,
         false, // isTemporary
         false, // isEditing
         canvasId

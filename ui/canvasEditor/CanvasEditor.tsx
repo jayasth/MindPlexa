@@ -40,8 +40,6 @@ const defaultEdgeOptions = {
 };
 
 export default function CanvasEditor({ canvasId }) {
-  console.log('CanvasEditor: canvasId:', canvasId);
-
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const reactFlowInstance = useRef<ReactFlowInstance | null>(null);
   const [showAIAssistanceModal, setShowAIAssistanceModal] = useState(false);
@@ -119,8 +117,8 @@ export default function CanvasEditor({ canvasId }) {
             tags: node.tags || [],
             attachedFiles: node.attached_files || []
           },
-          width: node.width || 200,
-          height: node.height || 200
+          width: node.view_width || 200,
+          height: node.view_height || 200
         }));
         const edges: Edge[] = data.edges.map((edge) => ({
           id: edge.id,

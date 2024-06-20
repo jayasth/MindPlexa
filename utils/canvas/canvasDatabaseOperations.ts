@@ -152,8 +152,10 @@ export const createNode = async (
       canvas_id: canvasId,
       type: nodeType,
       position: JSON.stringify(position),
-      width: data.width,
-      height: data.height,
+      view_width: data.viewWidth,
+      view_height: data.viewHeight,
+      edit_width: data.editWidth,
+      edit_height: data.editHeight,
       background_color: data.backgroundColor || '#F4F4F4',
       text_color: data.textColor || '#575757',
       title: data.title,
@@ -213,6 +215,10 @@ export const updateNode = async (
   // Update the common node
   const updatedCommonNode = {
     ...updates,
+    view_width: updates.view_width,
+    view_height: updates.view_height,
+    edit_width: updates.edit_width,
+    edit_height: updates.edit_height,
     is_temporary: updates.is_temporary || false,
     parent_node_id: updates.parent_node_id || null
   };
