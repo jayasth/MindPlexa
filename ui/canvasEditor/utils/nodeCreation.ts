@@ -26,7 +26,7 @@ export const createNode = async (
   canvasId: string,
   parentNode?: Node<any> | null,
   temporaryNodeId?: string
-) => {
+): Promise<void> => {
   const nodeDimension = nodeDimensions[nodeType];
   const availablePosition = findNewPosition(nodes, canvasSize);
   const positionAsXYPosition: XYPosition = setPosition(
@@ -100,6 +100,7 @@ export const createNode = async (
           data: createdNode
         };
         callback(newNodeWithData);
+        console.log('nodeCreation: Canvas ID:', canvasId);
       } else {
         throw new Error('Node creation failed');
       }
