@@ -12,7 +12,9 @@ import ReactFlow, {
   NodeOrigin,
   ConnectionLineType,
   ReactFlowInstance,
-  XYPosition
+  XYPosition,
+  Node,
+  Edge
 } from 'reactflow';
 import Toolbar from '@/ui/toolbar/Toolbar';
 import AIAssistanceModal from '@/ui/ai/generator/AIGeneratorModal';
@@ -29,14 +31,8 @@ import { useEdgeConnection } from '@/ui/canvasEditor/hooks/useEdgeConnection';
 import { nanoid } from 'nanoid';
 import { handleTemporaryNodeCreation } from '@/ui/canvasEditor/utils/TemporaryNodeHandler';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
-import { createClient } from '@/utils/supabase/supabaseClient';
+import { fetchCanvas } from '@/utils/canvas/canvasDatabaseOperations';
 import { Database } from '@/types_db';
-import {
-  fetchCanvas,
-  saveCanvasState
-} from '@/utils/canvas/canvasDatabaseOperations';
-
-const supabase = createClient();
 
 const nodeOrigin: NodeOrigin = [0.5, 0.5];
 const defaultEdgeOptions = {
@@ -71,7 +67,8 @@ export default function CanvasEditor({ canvasId }) {
     addEdge,
     updateNode: updateNodeInStore,
     setCanvasId,
-    saveCanvas
+    saveCanvas,
+    setInitialState
   } = useStore((state) => ({
     nodes: state.nodes,
     edges: state.edges,
@@ -86,12 +83,56 @@ export default function CanvasEditor({ canvasId }) {
     addEdge: state.addEdge,
     updateNode: state.updateNode,
     setCanvasId: state.setCanvasId,
-    saveCanvas: state.saveCanvas
+    saveCanvas: state.saveCanvas,
+    setInitialState: state.setInitialState
   }));
 
   useEffect(() => {
     setCanvasId(canvasId);
-  }, [canvasId, setCanvasId]);
+    // Fetch the canvas data from the database
+    const fetchCanvasData = async () => {
+      const { data, error } = await fetchCanvas(canvasId);
+      if (error) {
+        console.error('Error fetching canvas data:', error);
+      } else if (data) {
+        const nodes: Node[] = data.common_node_properties.map((node) => ({
+          id: node.id,
+          type: node.type || 'defaultType',
+          position: {
+            x:
+              typeof node.position === 'object' &&
+              node.position !== null &&
+              'x' in node.position
+                ? (node.position.x as number)
+                : 0,
+            y:
+              typeof node.position === 'object' &&
+              node.position !== null &&
+              'y' in node.position
+                ? (node.position.y as number)
+                : 0
+          },
+          data: {
+            ...node,
+            backgroundColor: node.background_color || '#F4F4F4',
+            textColor: node.text_color || '#575757',
+            tags: node.tags || [],
+            attachedFiles: node.attached_files || []
+          },
+          width: node.width || 200,
+          height: node.height || 200
+        }));
+        const edges: Edge[] = data.edges.map((edge) => ({
+          id: edge.id,
+          source: edge.source_node_id || '',
+          target: edge.target_node_id || '',
+          type: 'customEdge'
+        }));
+        setInitialState(nodes, edges);
+      }
+    };
+    fetchCanvasData();
+  }, [canvasId, setCanvasId, setInitialState]);
 
   useEffect(() => {
     const updateCanvasSize = () => {
@@ -105,65 +146,6 @@ export default function CanvasEditor({ canvasId }) {
 
     return () => window.removeEventListener('resize', updateCanvasSize);
   }, []);
-
-  useEffect(() => {
-    if (canvasId) {
-      fetchCanvas(canvasId).then((response) => {
-        if (response.data) {
-          setNodes(response.data.common_node_properties);
-          setEdges(response.data.edges);
-        }
-      });
-    }
-  }, [canvasId, setNodes, setEdges]);
-
-  useEffect(() => {
-    if (canvasId) {
-      const channel = supabase
-        .channel('canvases')
-        .on(
-          'postgres_changes',
-          { event: 'INSERT', schema: 'public', table: 'canvases' },
-          (payload) => {
-            console.log('CanvasEditor: Canvas inserted:', payload);
-            // Fetch updated canvas data and update the store
-            fetchCanvas(canvasId).then((response) => {
-              if (response.data) {
-                setNodes(response.data.common_node_properties);
-                setEdges(response.data.edges);
-              }
-            });
-          }
-        )
-        .on(
-          'postgres_changes',
-          { event: 'UPDATE', schema: 'public', table: 'canvases' },
-          (payload) => {
-            console.log('CanvasEditor: Canvas updated:', payload);
-            // Fetch updated canvas data and update the store
-            fetchCanvas(canvasId).then((response) => {
-              if (response.data) {
-                setNodes(response.data.common_node_properties);
-                setEdges(response.data.edges);
-              }
-            });
-          }
-        )
-        .on(
-          'postgres_changes',
-          { event: 'DELETE', schema: 'public', table: 'canvases' },
-          (payload) => {
-            console.log('CanvasEditor: Canvas deleted:', payload);
-            // Handle canvas deletion (e.g., redirect to a different page)
-          }
-        )
-        .subscribe();
-
-      return () => {
-        supabase.removeChannel(channel);
-      };
-    }
-  }, [canvasId]);
 
   const handleOpenAIAssistanceModal = () => {
     setShowAIAssistanceModal(true);
