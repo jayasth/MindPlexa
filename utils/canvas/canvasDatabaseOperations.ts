@@ -139,7 +139,21 @@ export const createNode = async (
   canvasId: string,
   nodeType: 'note' | 'task' | 'table' | 'calendar' | 'draw',
   position: { x: number; y: number },
-  data: any
+  data: {
+    viewWidth?: number;
+    viewHeight?: number;
+    editWidth?: number;
+    editHeight?: number;
+    backgroundColor?: string;
+    textColor?: string;
+    title?: string;
+    tags?: string[];
+    attachedFiles?: string[];
+    isEditing?: boolean;
+    isTemporary?: boolean;
+    parentNodeId?: string | null;
+    uniqueData?: any;
+  }
 ) => {
   console.log('canvasDatabaseOperations: createNode called with:', {
     canvasId,
