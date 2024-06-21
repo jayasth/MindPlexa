@@ -83,7 +83,6 @@ export type Database = {
         Row: {
           attached_files: Json | null
           background_color: string | null
-          canvas_id: string | null
           connectable: boolean | null
           created_at: string | null
           draggable: boolean | null
@@ -105,7 +104,6 @@ export type Database = {
         Insert: {
           attached_files?: Json | null
           background_color?: string | null
-          canvas_id?: string | null
           connectable?: boolean | null
           created_at?: string | null
           draggable?: boolean | null
@@ -127,7 +125,6 @@ export type Database = {
         Update: {
           attached_files?: Json | null
           background_color?: string | null
-          canvas_id?: string | null
           connectable?: boolean | null
           created_at?: string | null
           draggable?: boolean | null
@@ -147,13 +144,6 @@ export type Database = {
           view_width?: number | null
         }
         Relationships: [
-          {
-            foreignKeyName: "common_node_properties_canvas_id_fkey"
-            columns: ["canvas_id"]
-            isOneToOne: false
-            referencedRelation: "canvases"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "common_node_properties_parent_node_id_fkey"
             columns: ["parent_node_id"]
@@ -293,6 +283,36 @@ export type Database = {
           workspace_id?: string | null
         }
         Relationships: []
+      }
+      node_canvas_link: {
+        Row: {
+          canvas_id: string
+          node_id: string
+        }
+        Insert: {
+          canvas_id: string
+          node_id: string
+        }
+        Update: {
+          canvas_id?: string
+          node_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "node_canvas_link_canvas_id_fkey"
+            columns: ["canvas_id"]
+            isOneToOne: false
+            referencedRelation: "canvases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "node_canvas_link_node_id_fkey"
+            columns: ["node_id"]
+            isOneToOne: false
+            referencedRelation: "common_node_properties"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       note_nodes: {
         Row: {

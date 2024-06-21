@@ -66,12 +66,6 @@
     "table_structure": "Table: common_node_properties, Column: position, Type: jsonb, Nullable: YES, Default: None"
   },
   {
-    "table_structure": "Table: common_node_properties, Column: width, Type: integer, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: common_node_properties, Column: height, Type: integer, Nullable: YES, Default: None"
-  },
-  {
     "table_structure": "Table: common_node_properties, Column: created_at, Type: timestamp with time zone, Nullable: YES, Default: now()"
   },
   {
@@ -82,6 +76,24 @@
   },
   {
     "table_structure": "Table: common_node_properties, Column: parent_node_id, Type: uuid, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: common_node_properties, Column: connectable, Type: boolean, Nullable: YES, Default: true"
+  },
+  {
+    "table_structure": "Table: common_node_properties, Column: draggable, Type: boolean, Nullable: YES, Default: true"
+  },
+  {
+    "table_structure": "Table: common_node_properties, Column: view_width, Type: integer, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: common_node_properties, Column: view_height, Type: integer, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: common_node_properties, Column: edit_width, Type: integer, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: common_node_properties, Column: edit_height, Type: integer, Nullable: YES, Default: None"
   },
   {
     "table_structure": "Table: customers, Column: id, Type: uuid, Nullable: NO, Default: None"

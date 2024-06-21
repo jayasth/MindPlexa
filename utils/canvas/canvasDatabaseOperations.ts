@@ -41,19 +41,33 @@ export const createCanvas = async (
   }
 };
 
-// Function to handle deleting a canvas, this is working
+// Function to handle deleting a canvas, updated to handle node_canvas_link
 export const deleteCanvas = async (
   canvasId: string,
   setCanvases: (canvases: any) => void
 ) => {
+  // First, remove all links to this canvas in node_canvas_link
+  const { error: linkError } = await supabase
+    .from('node_canvas_link')
+    .delete()
+    .eq('canvas_id', canvasId);
+
+  if (linkError) {
+    console.error('Error deleting canvas links:', linkError);
+    return { error: linkError };
+  }
+
+  // Then, delete the canvas itself
   const { error } = await supabase.from('canvases').delete().eq('id', canvasId);
 
   if (error) {
-    console.log('canvasDatabaseOperations: Error deleting canvas:', error);
+    console.error('Error deleting canvas:', error);
+    return { error };
   } else {
     setCanvases((prevCanvases: any) =>
       prevCanvases.filter((canvas: any) => canvas.id !== canvasId)
     );
+    return { success: true };
   }
 };
 
@@ -63,36 +77,15 @@ export const saveCanvasState = async (
   nodes: Database['public']['Tables']['common_node_properties']['Insert'][],
   edges: Database['public']['Tables']['edges']['Insert'][]
 ) => {
-  const { error: deleteNodesError } = await supabase
-    .from('common_node_properties')
-    .delete()
-    .eq('canvas_id', canvasId);
-  if (deleteNodesError) {
-    console.error(
-      'canvasDatabaseOperations: Error deleting existing nodes:',
-      deleteNodesError
-    );
-    return { error: deleteNodesError };
-  }
-
-  const { error: deleteEdgesError } = await supabase
-    .from('edges')
-    .delete()
-    .eq('canvas_id', canvasId);
-  if (deleteEdgesError) {
-    console.error(
-      'canvasDatabaseOperations: Error deleting existing edges:',
-      deleteEdgesError
-    );
-    return { error: deleteEdgesError };
-  }
-
+  // Assuming nodes are already linked to the canvas via node_canvas_link
+  // and only need to be updated or inserted in common_node_properties and specific node tables
   const { error: createNodesError } = await supabase
     .from('common_node_properties')
-    .insert(nodes);
+    .upsert(nodes); // Use upsert if nodes might already exist
+
   if (createNodesError) {
     console.error(
-      'canvasDatabaseOperations: Error inserting nodes:',
+      'canvasDatabaseOperations: Error inserting/updating nodes:',
       createNodesError
     );
     return { error: createNodesError };
@@ -100,10 +93,11 @@ export const saveCanvasState = async (
 
   const { error: createEdgesError } = await supabase
     .from('edges')
-    .insert(edges);
+    .upsert(edges); // Use upsert for edges as well
+
   if (createEdgesError) {
     console.error(
-      'canvasDatabaseOperations: Error inserting edges:',
+      'canvasDatabaseOperations: Error inserting/updating edges:',
       createEdgesError
     );
     return { error: createEdgesError };
@@ -119,7 +113,7 @@ export const fetchCanvas = async (canvasId: string) => {
     .select(
       `
       *,
-      common_node_properties(*),
+      node_canvas_link!inner(common_node_properties(*)),
       edges(*)
     `
     )
@@ -167,7 +161,6 @@ export const createNode = async (
 
     // Create a common node first
     const commonNodeInsert = {
-      canvas_id: canvasId,
       type: nodeType,
       position: JSON.stringify(position),
       view_width: data.viewWidth || defaultDimensions.width,
@@ -193,6 +186,16 @@ export const createNode = async (
     if (commonNodeError) {
       console.error('Error inserting common node:', commonNodeError);
       return { error: commonNodeError };
+    }
+
+    // Link node to canvas
+    const { error: linkError } = await supabase
+      .from('node_canvas_link')
+      .insert({ node_id: commonNodeData.id, canvas_id: canvasId });
+
+    if (linkError) {
+      console.error('Error linking node to canvas:', linkError);
+      return { error: linkError };
     }
 
     // Create the specific node type
@@ -278,39 +281,43 @@ export const updateNode = async (
   return { data: { ...commonNodeData, ...specificNodeData } };
 };
 
-// Function to delete a node
+// Function to delete a node, updated to handle node_canvas_link and specific node tables
 export const deleteNode = async (
-  id: string,
+  nodeId: string,
   nodeType: 'note' | 'task' | 'table' | 'calendar' | 'draw'
 ) => {
   // Delete the specific node type
   const tableName = `${nodeType}_nodes` as keyof Database['public']['Tables'];
-
   const { error: specificError } = await supabase
     .from(tableName)
     .delete()
-    .eq('common_node_id', id);
+    .eq('common_node_id', nodeId);
 
   if (specificError) {
-    console.error(
-      `canvasDatabaseOperations: Error deleting ${nodeType} node:`,
-      specificError
-    );
+    console.error(`Error deleting ${nodeType} node:`, specificError);
     return { error: specificError };
   }
 
-  // Delete the common node
+  // Delete the common node properties
   const { error: commonError } = await supabase
     .from('common_node_properties')
     .delete()
-    .eq('id', id);
+    .eq('id', nodeId);
 
   if (commonError) {
-    console.error(
-      'canvasDatabaseOperations: Error deleting common node:',
-      commonError
-    );
+    console.error('Error deleting common node properties:', commonError);
     return { error: commonError };
+  }
+
+  // Remove links from node_canvas_link
+  const { error: linkError } = await supabase
+    .from('node_canvas_link')
+    .delete()
+    .eq('node_id', nodeId);
+
+  if (linkError) {
+    console.error('Error deleting node links:', linkError);
+    return { error: linkError };
   }
 
   return { success: true };
