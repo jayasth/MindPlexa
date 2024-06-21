@@ -20,11 +20,15 @@ import {
   CalendarNodeData,
   DrawNodeData
 } from '@/ui/canvasEditor/utils/nodeDatatypes';
+
 import {
-  fetchCanvas,
+  updateNode as updateNodeInDatabase,
+  deleteNode as deleteNodeInDatabase,
+  createEdge as createEdgeInDatabase,
+  updateEdge as updateEdgeInDatabase,
+  deleteEdge as deleteEdgeInDatabase,
   saveCanvasState
 } from '@/utils/canvas/canvasDatabaseOperations';
-import { Database } from '@/types_db';
 
 interface CanvasState {
   nodes: Node[];
@@ -33,8 +37,8 @@ interface CanvasState {
   setDomNode: (node: HTMLDivElement | null) => void;
   screenToFlowPosition: (position: { x: number; y: number }) => XYPosition;
   nodeInternals: Map<string, Node>;
-  setNodes: (updater: (nodes: Node[]) => Node[]) => void;
-  setEdges: (updater: (edges: Edge[]) => Edge[]) => void;
+  setNodes: (updater: Node[] | ((nodes: Node[]) => Node[])) => void;
+  setEdges: (updater: Edge[] | ((edges: Edge[]) => Edge[])) => void;
   addNode: (node: Node) => void;
   updateNode: (id: string, data: Partial<Node>) => void;
   addEdge: (edge: Edge) => void;
@@ -87,24 +91,30 @@ export const useStore = createStore<CanvasState>((set, get) => ({
   setNodes: (updater) => {
     console.log('Store: Setting nodes with updater:', updater);
     set((state) => {
-      const updatedNodes = updater(state.nodes);
+      const updatedNodes =
+        typeof updater === 'function' ? updater(state.nodes) : updater;
       state.nodeInternals.clear();
-      updatedNodes.forEach((node) => {
-        state.nodeInternals.set(node.id, node);
-        if (node.position) {
-          console.log(
-            `Store: Node ${node.id} position updated to`,
-            node.position
-          );
-        }
-      });
-      return { nodes: updatedNodes };
+      if (updatedNodes) {
+        updatedNodes.forEach((node) => {
+          state.nodeInternals.set(node.id, node);
+          if (node.position) {
+            console.log(
+              `Store: Node ${node.id} position updated to`,
+              node.position
+            );
+          }
+        });
+      }
+      return { nodes: updatedNodes || [] };
     });
   },
   setEdges: (updater) => {
     console.log('Store: Setting edges with updater:', updater);
-    set((state) => ({ edges: updater(state.edges) }));
+    set((state) => ({
+      edges: typeof updater === 'function' ? updater(state.edges) : updater
+    }));
   },
+
   addNode: (node) => {
     console.log('Store: Adding node:', node);
     if (node.type === undefined) {
@@ -168,8 +178,8 @@ export const useStore = createStore<CanvasState>((set, get) => ({
     });
   },
 
-  updateNode: (id, data) => {
-    set((state) => {
+  updateNode: async (id, data) => {
+    set(async (state) => {
       const existingNodeIndex = state.nodes.findIndex((node) => node.id === id);
       if (existingNodeIndex !== -1) {
         const existingNode = state.nodes[existingNodeIndex];
@@ -227,30 +237,95 @@ export const useStore = createStore<CanvasState>((set, get) => ({
         const updatedNodes = [...state.nodes];
         updatedNodes[existingNodeIndex] = updatedNode;
         state.nodeInternals.set(id, updatedNode);
+
+        // Update node in the database
+        const { data: updatedNodeData, error } = await updateNodeInDatabase(
+          id,
+          updatedNode,
+          updatedNode.data,
+          updatedNode.type
+        );
+
+        if (error) {
+          console.error('Error updating node in database:', error);
+          return state;
+        }
+
         return { nodes: updatedNodes };
       }
       return state;
     });
   },
 
-  addEdge: (edge) => {
-    console.log('Store: Adding edge:', edge);
-    set((state) => ({
-      edges: [...state.edges, { ...edge, id: nanoid() }]
-    }));
-  },
-  removeNode: (id) => {
+  removeNode: async (id) => {
     console.log('Store: Removing node with id:', id);
-    set((state) => ({
-      nodes: state.nodes.filter((node) => node.id !== id),
-      edges: state.edges.filter(
-        (edge) => edge.source !== id && edge.target !== id
-      )
-    }));
+    set(async (state) => {
+      const nodeToRemove = state.nodes.find((node) => node.id === id);
+      if (nodeToRemove) {
+        const { error } = await deleteNodeInDatabase(id, nodeToRemove.type);
+        if (error) {
+          console.error('Error deleting node from database:', error);
+          return state;
+        }
+      }
+      return {
+        nodes: state.nodes.filter((node) => node.id !== id),
+        edges: state.edges.filter(
+          (edge) => edge.source !== id && edge.target !== id
+        )
+      };
+    });
   },
-  removeEdge: (id) => {
+
+  addEdge: async (edge) => {
+    console.log('Store: Adding edge:', edge);
+    set(async (state) => {
+      const newEdge = { ...edge, id: nanoid() };
+
+      // Create edge in the database
+      const { data: createdEdge, error } = await createEdgeInDatabase(newEdge);
+      if (error) {
+        console.error('Error creating edge in database:', error);
+        return state;
+      }
+
+      return { edges: [...state.edges, { ...newEdge, ...createdEdge }] };
+    });
+  },
+
+  updateEdge: async (id, data) => {
+    console.log('Store: Updating edge with id:', id, 'and data:', data);
+    set(async (state) => {
+      const updatedEdges = state.edges.map((edge) => {
+        if (edge.id === id) {
+          return { ...edge, ...data };
+        }
+        return edge;
+      });
+
+      // Update edge in the database
+      const { data: updatedEdgeData, error } = await updateEdgeInDatabase(
+        id,
+        data
+      );
+      if (error) {
+        console.error('Error updating edge in database:', error);
+        return state;
+      }
+
+      return { edges: updatedEdges };
+    });
+  },
+
+  removeEdge: async (id) => {
     console.log('Store: Removing edge with id:', id);
-    set((state) => {
+    set(async (state) => {
+      const { error } = await deleteEdgeInDatabase(id);
+      if (error) {
+        console.error('Error deleting edge from database:', error);
+        return state;
+      }
+
       const updatedEdges = state.edges.filter((edge) => edge.id !== id);
       state.onEdgesChange([
         {
@@ -261,18 +336,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       return { edges: updatedEdges };
     });
   },
-  updateEdge: (id, data) => {
-    console.log('Store: Updating edge with id:', id, 'and data:', data);
-    set((state) => {
-      const updatedEdges = state.edges.map((edge) => {
-        if (edge.id === id) {
-          return { ...edge, ...data };
-        }
-        return edge;
-      });
-      return { edges: updatedEdges };
-    });
-  },
+
   setInitialState: (nodes, edges) => {
     console.log(
       'Store: Setting initial state with nodes:',
@@ -336,8 +400,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       nodes,
       addNode,
       setEdges,
-      removeNode,
-      canvasId
+      removeNode
     } = get();
 
     if (!domNode) {
@@ -449,39 +512,11 @@ export const useStore = createStore<CanvasState>((set, get) => ({
   },
   saveCanvas: async () => {
     const { nodes, edges, canvasId } = get();
-    if (!canvasId) {
-      console.error('Store: Canvas ID is not available.');
-      return;
-    }
-    const commonNodes: Database['public']['Tables']['common_node_properties']['Insert'][] =
-      nodes.map((node) => ({
-        id: node.id,
-        type: node.type,
-        position: node.position,
-        view_width: node.view_width,
-        view_height: node.view_height,
-        edit_width: node.edit_width,
-        edit_height: node.edit_height,
-        background_color: node.data.backgroundColor,
-        text_color: node.data.textColor,
-        title: node.data.title,
-        tags: node.data.tags,
-        attached_files: node.data.attachedFiles,
-        is_editing: node.isEditing,
-        is_temporary: node.data.isTemporary || false,
-        canvas_id: canvasId,
-        parent_node_id: node.data.parentNode?.id || null
-      }));
-    const canvasEdges: Database['public']['Tables']['edges']['Insert'][] =
-      edges.map((edge) => ({
-        id: edge.id,
-        source_node_id: edge.source,
-        target_node_id: edge.target,
-        canvas_id: canvasId
-      }));
-    const { error } = await saveCanvasState(canvasId, commonNodes, canvasEdges);
-    if (error) {
-      console.error('Store: Error saving canvas state:', error);
+    if (canvasId) {
+      const { error } = await saveCanvasState(canvasId, nodes, edges);
+      if (error) {
+        console.error('Error saving canvas state:', error);
+      }
     }
   }
 }));

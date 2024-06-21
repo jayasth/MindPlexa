@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/supabaseClient';
 import { Database } from '@/types_db';
 import { useRouter } from 'next/navigation';
+import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 
 const supabase = createClient();
 
@@ -147,15 +148,18 @@ export const createNode = async (
     data
   });
   try {
+    // Get default dimensions from nodeProperties
+    const defaultDimensions = nodeDimensions[nodeType];
+
     // Create a common node first
     const commonNodeInsert = {
       canvas_id: canvasId,
       type: nodeType,
       position: JSON.stringify(position),
-      view_width: data.viewWidth,
-      view_height: data.viewHeight,
-      edit_width: data.editWidth,
-      edit_height: data.editHeight,
+      view_width: data.viewWidth || defaultDimensions.width,
+      view_height: data.viewHeight || defaultDimensions.height,
+      edit_width: data.editWidth || defaultDimensions.editWidth,
+      edit_height: data.editHeight || defaultDimensions.editHeight,
       background_color: data.backgroundColor || '#F4F4F4',
       text_color: data.textColor || '#575757',
       title: data.title,
