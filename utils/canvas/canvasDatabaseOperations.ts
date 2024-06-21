@@ -219,6 +219,7 @@ export const updateNode = async (
   // Update the common node
   const updatedCommonNode = {
     ...updates,
+    background_color: updates.background_color,
     view_width: updates.view_width,
     view_height: updates.view_height,
     edit_width: updates.edit_width,
