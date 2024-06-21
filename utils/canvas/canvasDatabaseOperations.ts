@@ -249,6 +249,7 @@ export const createNode = async (
     isTemporary?: boolean;
     parentNodeId?: string | null;
     uniqueData?: any;
+    zIndex?: number;
   }
 ) => {
   console.log('canvasDatabaseOperations: createNode called with:', {
@@ -276,7 +277,8 @@ export const createNode = async (
       attached_files: data.attachedFiles,
       is_editing: data.isEditing,
       is_temporary: data.isTemporary || false,
-      parent_node_id: data.parentNodeId || null
+      parent_node_id: data.parentNodeId || null,
+      z_index: data.zIndex || 0
     };
 
     const { data: commonNodeData, error: commonNodeError } = await supabase
@@ -344,7 +346,8 @@ export const updateNode = async (
     edit_width: updates.edit_width,
     edit_height: updates.edit_height,
     is_temporary: updates.is_temporary || false,
-    parent_node_id: updates.parent_node_id || null
+    parent_node_id: updates.parent_node_id || null,
+    z_index: updates.z_index
   };
 
   const { data: commonNodeData, error: commonNodeError } = await supabase
@@ -388,41 +391,46 @@ export const deleteNode = async (
   nodeId: string,
   nodeType: 'note' | 'task' | 'table' | 'calendar' | 'draw'
 ) => {
-  // Delete the specific node type
-  const tableName = `${nodeType}_nodes` as keyof Database['public']['Tables'];
-  const { error: specificError } = await supabase
-    .from(tableName)
-    .delete()
-    .eq('common_node_id', nodeId);
+  try {
+    // Delete the specific node type
+    const tableName = `${nodeType}_nodes` as keyof Database['public']['Tables'];
+    const { error: specificError } = await supabase
+      .from(tableName)
+      .delete()
+      .eq('common_node_id', nodeId);
 
-  if (specificError) {
-    console.error(`Error deleting ${nodeType} node:`, specificError);
-    return { error: specificError };
+    if (specificError) {
+      console.error(`Error deleting ${nodeType} node:`, specificError);
+      return { error: specificError };
+    }
+
+    // Delete the common node properties
+    const { error: commonError } = await supabase
+      .from('common_node_properties')
+      .delete()
+      .eq('id', nodeId);
+
+    if (commonError) {
+      console.error('Error deleting common node properties:', commonError);
+      return { error: commonError };
+    }
+
+    // Remove links from node_canvas_link
+    const { error: linkError } = await supabase
+      .from('node_canvas_link')
+      .delete()
+      .eq('node_id', nodeId);
+
+    if (linkError) {
+      console.error('Error deleting node links:', linkError);
+      return { error: linkError };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Unexpected error deleting node:', error);
+    return { error };
   }
-
-  // Delete the common node properties
-  const { error: commonError } = await supabase
-    .from('common_node_properties')
-    .delete()
-    .eq('id', nodeId);
-
-  if (commonError) {
-    console.error('Error deleting common node properties:', commonError);
-    return { error: commonError };
-  }
-
-  // Remove links from node_canvas_link
-  const { error: linkError } = await supabase
-    .from('node_canvas_link')
-    .delete()
-    .eq('node_id', nodeId);
-
-  if (linkError) {
-    console.error('Error deleting node links:', linkError);
-    return { error: linkError };
-  }
-
-  return { success: true };
 };
 
 /* edge related functions */

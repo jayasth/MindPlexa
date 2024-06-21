@@ -100,6 +100,7 @@ export type Database = {
           updated_at: string | null
           view_height: number | null
           view_width: number | null
+          z_index: number | null
         }
         Insert: {
           attached_files?: Json | null
@@ -121,6 +122,7 @@ export type Database = {
           updated_at?: string | null
           view_height?: number | null
           view_width?: number | null
+          z_index?: number | null
         }
         Update: {
           attached_files?: Json | null
@@ -142,6 +144,7 @@ export type Database = {
           updated_at?: string | null
           view_height?: number | null
           view_width?: number | null
+          z_index?: number | null
         }
         Relationships: [
           {
