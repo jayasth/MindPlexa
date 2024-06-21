@@ -16,12 +16,12 @@ const DeleteCanvasModal = ({
       <>
         <p>
           This canvas contains nodes. Do you want to delete the canvas only or
-          delete the canvas and its nodes?
+          delete the canvas and its nodes (except shared ones)?
         </p>
         {hasSharedNodes && (
           <p>
-            Some nodes in this canvas are shared with other canvases. Deleting
-            these nodes will remove them from all associated canvases.
+            Some nodes in this canvas are shared with other canvases. These
+            shared nodes will not be deleted.
           </p>
         )}
         <div className={styles.actions}>
@@ -29,7 +29,7 @@ const DeleteCanvasModal = ({
             Delete Canvas Only
           </Button>
           <Button variant="danger" onClick={() => onConfirm('withNodes')}>
-            Delete Canvas and Nodes
+            Delete Canvas and Nodes (except shared ones)
           </Button>
           <Button variant="cancel" onClick={onClose}>
             Cancel

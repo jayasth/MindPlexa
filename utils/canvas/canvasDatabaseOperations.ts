@@ -71,7 +71,7 @@ export const deleteCanvas = async (
   }
 };
 
-// Function to delete a canvas and its associated nodes
+// Function to delete a canvas and its associated nodes (except shared ones)
 export const deleteCanvasWithNodes = async (
   canvasId: string,
   setCanvases: (canvases: any) => void
@@ -91,8 +91,24 @@ export const deleteCanvasWithNodes = async (
 
     const nodeIds = linkedNodes.map((link) => link.node_id);
 
-    // Delete nodes from specific node tables
-    for (const nodeId of nodeIds) {
+    // Filter out shared nodes
+    const { data: sharedNodes, error: sharedError } = await client
+      .from('node_canvas_link')
+      .select('node_id')
+      .in('node_id', nodeIds)
+      .neq('canvas_id', canvasId);
+
+    if (sharedError) {
+      throw sharedError;
+    }
+
+    const sharedNodeIds = sharedNodes.map((node) => node.node_id);
+    const nonSharedNodeIds = nodeIds.filter(
+      (nodeId) => !sharedNodeIds.includes(nodeId)
+    );
+
+    // Delete non-shared nodes from specific node tables
+    for (const nodeId of nonSharedNodeIds) {
       const { data: nodeData, error: nodeError } = await client
         .from('common_node_properties')
         .select('type')
@@ -114,16 +130,16 @@ export const deleteCanvasWithNodes = async (
       if (deleteError) {
         throw deleteError;
       }
-    }
 
-    // Delete from common_node_properties
-    const { error: commonError } = await client
-      .from('common_node_properties')
-      .delete()
-      .in('id', nodeIds);
+      // Delete the common node properties
+      const { error: commonError } = await client
+        .from('common_node_properties')
+        .delete()
+        .eq('id', nodeId);
 
-    if (commonError) {
-      throw commonError;
+      if (commonError) {
+        throw commonError;
+      }
     }
 
     // Remove links from node_canvas_link
@@ -136,7 +152,7 @@ export const deleteCanvasWithNodes = async (
       throw linkDeleteError;
     }
 
-    // Delete the canvas
+    // Finally, delete the canvas itself
     const { error: canvasError } = await client
       .from('canvases')
       .delete()
@@ -149,6 +165,7 @@ export const deleteCanvasWithNodes = async (
     setCanvases((prevCanvases: any) =>
       prevCanvases.filter((canvas: any) => canvas.id !== canvasId)
     );
+
     return { success: true };
   } catch (error) {
     console.error('Error during canvas and node deletion:', error);
