@@ -67,6 +67,15 @@
   @apply shadow-lg shadow-red-300/50;
 }
 
+/* Danger variant styles */
+.danger {
+  @apply bg-red-500 text-white border border-transparent rounded-md shadow-sm transition duration-300 ease-in-out;
+}
+
+.danger:hover {
+  @apply bg-red-600 shadow-lg shadow-red-500/50;
+}
+
 /* Disabled State */
 .disabled,
 .disabled:hover {

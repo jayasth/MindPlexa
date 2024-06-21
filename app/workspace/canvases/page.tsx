@@ -7,12 +7,20 @@ import { createClient } from '@/utils/supabase/supabaseClient';
 import type { Tables } from 'types_db';
 import { FaTrash } from 'react-icons/fa';
 import { MdAddCircleOutline } from 'react-icons/md';
-import { deleteCanvas } from '@/utils/canvas/canvasDatabaseOperations';
+import {
+  deleteCanvas,
+  deleteCanvasWithNodes
+} from '@/utils/canvas/canvasDatabaseOperations';
+import DeleteCanvasModal from '@/ui/Modal/DeleteCanvasModal';
 
 type Canvas = Tables<'canvases'>;
 
 export default function CanvasesPage() {
   const [canvases, setCanvases] = useState<Canvas[]>([]);
+  const [selectedCanvasId, setSelectedCanvasId] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [hasNodes, setHasNodes] = useState(false);
+  const [hasSharedNodes, setHasSharedNodes] = useState(false);
   const supabase = createClient();
 
   useEffect(() => {
@@ -34,8 +42,48 @@ export default function CanvasesPage() {
     return () => {};
   }, []);
 
-  const handleDelete = async (canvasId: string) => {
-    await deleteCanvas(canvasId, setCanvases);
+  const openDeleteModal = async (canvasId: string) => {
+    setSelectedCanvasId(canvasId);
+    // Check if the canvas has nodes and if any of them are shared
+    const { data: nodes, error } = await supabase
+      .from('node_canvas_link')
+      .select('node_id')
+      .eq('canvas_id', canvasId);
+
+    if (error) {
+      console.error('Error fetching canvas nodes:', error);
+    } else {
+      setHasNodes(nodes.length > 0);
+      if (nodes.length > 0) {
+        const nodeIds = nodes.map((node) => node.node_id);
+        const { count } = await supabase
+          .from('node_canvas_link')
+          .select('node_id', { count: 'exact' })
+          .in('node_id', nodeIds)
+          .neq('canvas_id', canvasId);
+
+        if (count !== null) {
+          setHasSharedNodes(count > 0);
+        } else {
+          console.error('Error fetching shared nodes count');
+        }
+      }
+    }
+    setIsModalOpen(true);
+  };
+
+  const handleConfirmDelete = async (
+    deleteOption: 'canvasOnly' | 'withNodes'
+  ) => {
+    if (selectedCanvasId) {
+      if (deleteOption === 'canvasOnly') {
+        await deleteCanvas(selectedCanvasId, setCanvases);
+      } else {
+        await deleteCanvasWithNodes(selectedCanvasId, setCanvases);
+      }
+      setIsModalOpen(false);
+      setSelectedCanvasId(null);
+    }
   };
 
   return (
@@ -59,7 +107,7 @@ export default function CanvasesPage() {
                   <h2 className="text-xl font-bold">{canvas.name}</h2>
                 </Link>
                 <button
-                  onClick={() => handleDelete(canvas.id)}
+                  onClick={() => openDeleteModal(canvas.id)}
                   className="text-lavender-500 hover:text-red-500"
                 >
                   <FaTrash />
@@ -70,6 +118,13 @@ export default function CanvasesPage() {
           </li>
         ))}
       </ul>
+      <DeleteCanvasModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        hasNodes={hasNodes}
+        hasSharedNodes={hasSharedNodes}
+      />
     </div>
   );
 }

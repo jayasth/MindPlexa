@@ -71,6 +71,91 @@ export const deleteCanvas = async (
   }
 };
 
+// Function to delete a canvas and its associated nodes
+export const deleteCanvasWithNodes = async (
+  canvasId: string,
+  setCanvases: (canvases: any) => void
+) => {
+  const client = supabase;
+
+  try {
+    // Fetch linked nodes
+    const { data: linkedNodes, error: linkError } = await client
+      .from('node_canvas_link')
+      .select('node_id')
+      .eq('canvas_id', canvasId);
+
+    if (linkError) {
+      throw linkError;
+    }
+
+    const nodeIds = linkedNodes.map((link) => link.node_id);
+
+    // Delete nodes from specific node tables
+    for (const nodeId of nodeIds) {
+      const { data: nodeData, error: nodeError } = await client
+        .from('common_node_properties')
+        .select('type')
+        .eq('id', nodeId)
+        .single();
+
+      if (nodeError) {
+        throw nodeError;
+      }
+
+      const nodeType = nodeData.type;
+      const tableName =
+        `${nodeType}_nodes` as keyof Database['public']['Tables'];
+      const { error: deleteError } = await client
+        .from(tableName)
+        .delete()
+        .eq('common_node_id', nodeId);
+
+      if (deleteError) {
+        throw deleteError;
+      }
+    }
+
+    // Delete from common_node_properties
+    const { error: commonError } = await client
+      .from('common_node_properties')
+      .delete()
+      .in('id', nodeIds);
+
+    if (commonError) {
+      throw commonError;
+    }
+
+    // Remove links from node_canvas_link
+    const { error: linkDeleteError } = await client
+      .from('node_canvas_link')
+      .delete()
+      .eq('canvas_id', canvasId);
+
+    if (linkDeleteError) {
+      throw linkDeleteError;
+    }
+
+    // Delete the canvas
+    const { error: canvasError } = await client
+      .from('canvases')
+      .delete()
+      .eq('id', canvasId);
+
+    if (canvasError) {
+      throw canvasError;
+    }
+
+    setCanvases((prevCanvases: any) =>
+      prevCanvases.filter((canvas: any) => canvas.id !== canvasId)
+    );
+    return { success: true };
+  } catch (error) {
+    console.error('Error during canvas and node deletion:', error);
+    return { error };
+  }
+};
+
 // Function to save the canvas state
 export const saveCanvasState = async (
   canvasId: string,
