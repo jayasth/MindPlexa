@@ -91,7 +91,7 @@ export default function CanvasEditor({ canvasId }) {
     const fetchCanvasData = async () => {
       const { data, error } = await fetchCanvas(canvasId);
       if (error) {
-        console.error('Error fetching canvas data:', error);
+        console.error('CanvasEditor: Error fetching canvas data:', error);
       } else if (data) {
         const nodes: Node[] = data.node_canvas_link
           .map((link) => {

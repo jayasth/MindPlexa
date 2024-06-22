@@ -219,13 +219,28 @@ export const fetchCanvas = async (canvasId: string) => {
       edges(*)
     `
     )
-    .eq('id', canvasId)
-    .single();
+    .eq('id', canvasId);
+
   if (error) {
     console.error('canvasDatabaseOperations: Error fetching canvas:', error);
     return { error };
   }
-  return { data };
+
+  if (data.length === 0) {
+    const noRowsError = {
+      code: 'PGRST116',
+      details: 'The result contains 0 rows',
+      hint: null,
+      message: 'JSON object requested, multiple (or no) rows returned'
+    };
+    console.error(
+      'canvasDatabaseOperations: Error fetching canvas:',
+      noRowsError
+    );
+    return { error: noRowsError };
+  }
+
+  return { data: data[0] };
 };
 
 /* node related functions */
