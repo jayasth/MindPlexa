@@ -126,12 +126,16 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
   const handleSaveChanges = useCallback(
     async (newData) => {
       const updates = { ...newData };
-      const { data: updatedData } = await updateNodeInDB(
+      const { data: updatedData, error } = await updateNodeInDB(
         id,
         updates,
         newData,
         node.type as Exclude<typeof node.type, 'selectionMenu'>
       );
+      if (error) {
+        console.error('Error updating node in database:', error);
+        return; // Return early if there's an error
+      }
       if (updatedData) {
         const validData = {
           ...updatedData,
