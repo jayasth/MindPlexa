@@ -242,22 +242,31 @@ export const fetchCanvas = async (canvasId: string) => {
     .eq('id', canvasId)
     .single();
 
-  if (canvasExistsError || !canvasExists) {
+  if (canvasExistsError) {
+    console.error(
+      'canvasDatabaseOperations: Error checking canvas existence:',
+      canvasExistsError
+    );
+    return { error: 'Error checking canvas existence' };
+  }
+
+  if (!canvasExists) {
     console.error(
       'canvasDatabaseOperations: Canvas ID does not exist:',
-      canvasExistsError
+      canvasId
     );
     return { error: 'Canvas ID does not exist' };
   }
 
+  // Fetch canvas data along with linked nodes and edges
   const { data, error } = await supabase
     .from('canvases')
     .select(
       `
-    *,
-    node_canvas_link!inner(common_node_properties(*)),
-    edges(*)
-  `
+      *,
+      node_canvas_link!inner(common_node_properties(*)),
+      edges(*)
+    `
     )
     .eq('id', canvasId);
 
@@ -267,17 +276,11 @@ export const fetchCanvas = async (canvasId: string) => {
   }
 
   if (data.length === 0) {
-    const noRowsError = {
-      code: 'PGRST116',
-      details: 'The result contains 0 rows',
-      hint: null,
-      message: 'No canvas data found'
-    };
-    console.error(
-      'canvasDatabaseOperations: Error fetching canvas:',
-      noRowsError
+    console.log(
+      'canvasDatabaseOperations: No canvas data found for ID:',
+      canvasId
     );
-    return { error: noRowsError };
+    return { data: null };
   }
 
   return { data: data[0] };

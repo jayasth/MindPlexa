@@ -86,11 +86,14 @@ export default function CanvasEditor({ canvasId }) {
 
   useEffect(() => {
     setCanvasId(canvasId);
+    console.log('CanvasEditor: Fetching data for canvas ID:', canvasId);
     // Fetch the canvas data from the database
     const fetchCanvasData = async () => {
       const { data, error } = await fetchCanvas(canvasId);
       if (error) {
         console.error('CanvasEditor: Error fetching canvas data:', error);
+      } else if (data === null) {
+        console.log('CanvasEditor: No data found for this canvas.');
       } else if (data) {
         const nodes: Node[] = data.node_canvas_link
           .map((link) => {
