@@ -247,7 +247,10 @@ export const useStore = createStore<CanvasState>((set, get) => ({
         );
 
         if (error) {
-          console.error('Error updating node in database:', error);
+          console.error(
+            'UseCanvasStore: Error updating node in database:',
+            error
+          );
           return state;
         }
 
