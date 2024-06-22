@@ -179,37 +179,77 @@ export const saveCanvasState = async (
   nodes: Database['public']['Tables']['common_node_properties']['Insert'][],
   edges: Database['public']['Tables']['edges']['Insert'][]
 ) => {
-  // Assuming nodes are already linked to the canvas via node_canvas_link
-  // and only need to be updated or inserted in common_node_properties and specific node tables
-  const { error: createNodesError } = await supabase
-    .from('common_node_properties')
-    .upsert(nodes); // Use upsert if nodes might already exist
+  try {
+    // Upsert nodes
+    const { error: createNodesError } = await supabase
+      .from('common_node_properties')
+      .upsert(nodes);
 
-  if (createNodesError) {
-    console.error(
-      'canvasDatabaseOperations: Error inserting/updating nodes:',
-      createNodesError
+    if (createNodesError) {
+      console.error('Error inserting/updating nodes:', createNodesError);
+      return { error: createNodesError };
+    }
+
+    // Upsert edges
+    const { error: createEdgesError } = await supabase
+      .from('edges')
+      .upsert(edges);
+
+    if (createEdgesError) {
+      console.error('Error inserting/updating edges:', createEdgesError);
+      return { error: createEdgesError };
+    }
+
+    // Link nodes to the canvas if not already linked
+    const existingLinks = await supabase
+      .from('node_canvas_link')
+      .select('node_id')
+      .eq('canvas_id', canvasId);
+
+    const existingNodeIds = new Set(
+      existingLinks.data ? existingLinks.data.map((link) => link.node_id) : []
     );
-    return { error: createNodesError };
+    const newLinks = nodes
+      .filter((node) => node.id !== undefined && !existingNodeIds.has(node.id))
+      .map((node) => ({
+        node_id: node.id!,
+        canvas_id: canvasId
+      }));
+
+    if (newLinks.length > 0) {
+      const { error: linkError } = await supabase
+        .from('node_canvas_link')
+        .insert(newLinks);
+
+      if (linkError) {
+        console.error('Error linking nodes to canvas:', linkError);
+        return { error: linkError };
+      }
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Unexpected error saving canvas state:', error);
+    return { error };
   }
-
-  const { error: createEdgesError } = await supabase
-    .from('edges')
-    .upsert(edges); // Use upsert for edges as well
-
-  if (createEdgesError) {
-    console.error(
-      'canvasDatabaseOperations: Error inserting/updating edges:',
-      createEdgesError
-    );
-    return { error: createEdgesError };
-  }
-
-  return { success: true };
 };
-
 // Function to fetch the canvas state
 export const fetchCanvas = async (canvasId: string) => {
+  // Check if the canvas ID exists
+  const { data: canvasExists, error: canvasExistsError } = await supabase
+    .from('canvases')
+    .select('id')
+    .eq('id', canvasId)
+    .single();
+
+  if (canvasExistsError || !canvasExists) {
+    console.error(
+      'canvasDatabaseOperations: Canvas ID does not exist:',
+      canvasExistsError
+    );
+    return { error: 'Canvas ID does not exist' };
+  }
+
   const { data, error } = await supabase
     .from('canvases')
     .select(
@@ -231,7 +271,7 @@ export const fetchCanvas = async (canvasId: string) => {
       code: 'PGRST116',
       details: 'The result contains 0 rows',
       hint: null,
-      message: 'JSON object requested, multiple (or no) rows returned'
+      message: 'No canvas data found'
     };
     console.error(
       'canvasDatabaseOperations: Error fetching canvas:',

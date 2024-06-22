@@ -39,9 +39,6 @@
     "table_structure": "Table: common_node_properties, Column: id, Type: uuid, Nullable: NO, Default: gen_random_uuid()"
   },
   {
-    "table_structure": "Table: common_node_properties, Column: canvas_id, Type: uuid, Nullable: YES, Default: None"
-  },
-  {
     "table_structure": "Table: common_node_properties, Column: type, Type: character varying, Nullable: YES, Default: None"
   },
   {
@@ -94,6 +91,9 @@
   },
   {
     "table_structure": "Table: common_node_properties, Column: edit_height, Type: integer, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: common_node_properties, Column: z_index, Type: integer, Nullable: YES, Default: 0"
   },
   {
     "table_structure": "Table: customers, Column: id, Type: uuid, Nullable: NO, Default: None"
@@ -151,6 +151,12 @@
   },
   {
     "table_structure": "Table: insights, Column: updated_at, Type: timestamp with time zone, Nullable: YES, Default: CURRENT_TIMESTAMP"
+  },
+  {
+    "table_structure": "Table: node_canvas_link, Column: node_id, Type: uuid, Nullable: NO, Default: None"
+  },
+  {
+    "table_structure": "Table: node_canvas_link, Column: canvas_id, Type: uuid, Nullable: NO, Default: None"
   },
   {
     "table_structure": "Table: note_nodes, Column: id, Type: uuid, Nullable: NO, Default: gen_random_uuid()"
