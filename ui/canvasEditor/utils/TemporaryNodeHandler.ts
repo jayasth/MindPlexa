@@ -46,7 +46,7 @@ export const handleTemporaryNodeCreation = (
             },
             false,
             false,
-            parentNode
+            parentNode?.id || ''
           );
         }, 0);
       },

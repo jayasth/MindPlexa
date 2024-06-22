@@ -42,8 +42,8 @@ export const createNode = async (
     const commonNodeInsert = {
       type: nodeType,
       position: JSON.stringify(position),
-      view_width: data.viewWidth || defaultDimensions.width,
-      view_height: data.viewHeight || defaultDimensions.height,
+      view_width: data.viewWidth || defaultDimensions.viewWidth,
+      view_height: data.viewHeight || defaultDimensions.viewHeight,
       edit_width: data.editWidth || defaultDimensions.editWidth,
       edit_height: data.editHeight || defaultDimensions.editHeight,
       background_color: data.backgroundColor || '#F4F4F4',
