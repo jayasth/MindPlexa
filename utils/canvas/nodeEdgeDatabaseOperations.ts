@@ -113,59 +113,39 @@ export const updateNode = async (
   specificUpdates: any,
   nodeType: 'note' | 'task' | 'table' | 'calendar' | 'draw'
 ) => {
-  // Update the common node
-  const updatedCommonNode = {
-    type: updates.type,
-    position: updates.position,
-    view_width: updates.view_width,
-    view_height: updates.view_height,
-    edit_width: updates.edit_width,
-    edit_height: updates.edit_height,
-    background_color: updates.background_color,
-    text_color: updates.text_color,
-    title: updates.title,
-    tags: updates.tags,
-    attached_files: updates.attached_files,
-    is_editing: updates.is_editing,
-    is_temporary: updates.is_temporary,
-    parent_node_id: updates.parent_node_id,
-    z_index: updates.z_index
-  };
+  try {
+    // Update the common node properties
+    const { data: commonNodeData, error: commonNodeError } = await supabase
+      .from('common_node_properties')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
 
-  const { data: commonNodeData, error: commonNodeError } = await supabase
-    .from('common_node_properties')
-    .update(updatedCommonNode)
-    .eq('id', id)
-    .select()
-    .single();
+    if (commonNodeError) {
+      console.error('Error updating common node properties:', commonNodeError);
+      return { error: commonNodeError };
+    }
 
-  if (commonNodeError) {
-    console.error(
-      'nodeEdgeDatabaseOperations: Error updating common node:',
-      commonNodeError
-    );
-    return { error: commonNodeError };
+    // Update the specific node type table
+    const tableName = `${nodeType}_nodes` as keyof Database['public']['Tables'];
+    const { data: specificNodeData, error: specificNodeError } = await supabase
+      .from(tableName)
+      .update(specificUpdates)
+      .eq('common_node_id', id)
+      .select()
+      .single();
+
+    if (specificNodeError) {
+      console.error(`Error updating ${nodeType} node:`, specificNodeError);
+      return { error: specificNodeError };
+    }
+
+    return { data: { ...commonNodeData, ...specificNodeData } };
+  } catch (error) {
+    console.error('Unexpected error updating node:', error);
+    return { error };
   }
-
-  // Update the specific node type table
-  const tableName = `${nodeType}_nodes` as keyof Database['public']['Tables'];
-
-  const { data: specificNodeData, error: specificNodeError } = await supabase
-    .from(tableName)
-    .update(specificUpdates)
-    .eq('common_node_id', id)
-    .select()
-    .single();
-
-  if (specificNodeError) {
-    console.error(
-      `nodeEdgeDatabaseOperations: Error updating ${nodeType} node:`,
-      specificNodeError
-    );
-    return { error: specificNodeError };
-  }
-
-  return { data: { ...commonNodeData, ...specificNodeData } };
 };
 
 // Function to delete a node, updated to handle node_canvas_link and specific node tables

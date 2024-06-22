@@ -1,6 +1,9 @@
-interface EditableNodeDimension {
-  viewWidth: number;
-  viewHeight: number;
+interface BaseNodeDimension {
+  width: number;
+  height: number;
+}
+
+interface EditableNodeDimension extends BaseNodeDimension {
   editWidth: number;
   editHeight: number;
   mobileEditWidth: number;
@@ -10,48 +13,48 @@ interface EditableNodeDimension {
 type NodeDimensionTypes = {
   [K in 'note' | 'task' | 'table' | 'calendar' | 'draw']: EditableNodeDimension;
 } & {
-  [K in 'selectionMenu']: { width: number; height: number };
+  [K in 'selectionMenu']: BaseNodeDimension;
 };
 
 export const nodeDimensions: NodeDimensionTypes = {
   note: {
-    viewWidth: 150,
-    viewHeight: 80,
-    editWidth: 600,
+    width: 150,
+    height: 80,
+    editWidth: 600, // Increased width for desktop
     editHeight: 450,
-    mobileEditWidth: 300,
+    mobileEditWidth: 300, // Specific width for mobile
     mobileEditHeight: 450
   },
   task: {
-    viewWidth: 150,
-    viewHeight: 80,
-    editWidth: 600,
+    width: 150,
+    height: 80,
+    editWidth: 600, // Increased width for desktop
     editHeight: 450,
-    mobileEditWidth: 300,
+    mobileEditWidth: 300, // Specific width for mobile
     mobileEditHeight: 450
   },
   table: {
-    viewWidth: 150,
-    viewHeight: 80,
-    editWidth: 600,
+    width: 150,
+    height: 80,
+    editWidth: 600, // Increased width for desktop
     editHeight: 450,
-    mobileEditWidth: 300,
+    mobileEditWidth: 300, // Specific width for mobile
     mobileEditHeight: 450
   },
   calendar: {
-    viewWidth: 150,
-    viewHeight: 80,
-    editWidth: 600,
+    width: 150,
+    height: 80,
+    editWidth: 600, // Increased width for desktop
     editHeight: 450,
-    mobileEditWidth: 300,
+    mobileEditWidth: 300, // Specific width for mobile
     mobileEditHeight: 450
   },
   draw: {
-    viewWidth: 150,
-    viewHeight: 80,
-    editWidth: 600,
+    width: 150,
+    height: 80,
+    editWidth: 600, // Increased width for desktop
     editHeight: 450,
-    mobileEditWidth: 300,
+    mobileEditWidth: 300, // Specific width for mobile
     mobileEditHeight: 450
   },
   selectionMenu: { width: 200, height: 50 }
@@ -64,7 +67,7 @@ export const getNodeSpecificProperties = (
   const dimensions = nodeDimensions[nodeType];
   if (!dimensions) {
     console.warn(`Unknown node type: ${nodeType}`);
-    return { width: 100, height: 100, draggable: true, connectable: true };
+    return { width: 100, height: 100, draggable: true, connectable: true }; // Default properties
   }
 
   const baseProperties = {
@@ -80,12 +83,12 @@ export const getNodeSpecificProperties = (
         ? isMobile
           ? dimensions.mobileEditWidth
           : dimensions.editWidth
-        : dimensions.viewWidth,
+        : dimensions.width,
       height: isEditing
         ? isMobile
           ? dimensions.mobileEditHeight
           : dimensions.editHeight
-        : dimensions.viewHeight,
+        : dimensions.height,
       isEditing: isEditing
     };
   } else {

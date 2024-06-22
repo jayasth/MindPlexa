@@ -126,10 +126,38 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
   const handleSaveChanges = useCallback(
     async (newData) => {
       const updates = { ...newData };
+      let specificUpdates = {};
+
+      switch (node.type) {
+        case 'note':
+          specificUpdates = { content: newData.data.content };
+          break;
+        case 'task':
+          specificUpdates = { tasks: newData.data.tasks };
+          break;
+        case 'table':
+          specificUpdates = {
+            columns: newData.data.columns,
+            rows: newData.data.rows
+          };
+          break;
+        case 'calendar':
+          specificUpdates = {
+            events: newData.data.events,
+            view: newData.data.view
+          };
+          break;
+        case 'draw':
+          specificUpdates = { drawing_data: newData.data.drawingData };
+          break;
+        default:
+          break;
+      }
+
       const { data: updatedData, error } = await updateNodeInDB(
         id,
         updates,
-        newData,
+        specificUpdates,
         node.type as Exclude<typeof node.type, 'selectionMenu'>
       );
       if (error) {
@@ -168,6 +196,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     },
     [id, node?.type, updateNode]
   );
+
   const handleDeleteNode = useCallback(async () => {
     if (node.type === 'selectionMenu') {
       console.error('Invalid node type: selectionMenu');
