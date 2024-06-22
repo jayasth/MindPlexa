@@ -216,7 +216,7 @@ export const handleAddTag = (
   tags.forEach((tag) => onAddTag(tag));
 };
 
-export const handleAttachFile = async (
+export const handleAttachFile = (
   id: string,
   files: (File | string)[],
   callback: () => void
@@ -244,13 +244,9 @@ export const handleAttachFile = async (
       return;
     }
 
-    await updateNodeInDatabase(
-      id,
-      { attached_files: allFiles },
-      { attachedFiles: allFiles },
-      'note'
-    );
-    updateNode(id, { data: { attachedFiles: allFiles } });
+    updateNode(id, {
+      data: { attachedFiles: JSON.stringify(allFiles) } // Serialize files
+    });
     callback();
   } else {
     alert(
