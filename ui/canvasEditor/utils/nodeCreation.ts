@@ -96,7 +96,7 @@ export const createNode = async (
     if (nodeType !== 'selectionMenu') {
       const newNodeData = {
         ...newNode.data,
-        canvas_id: canvasId
+        z_index: 0
       };
       const { data: createdNode, error } = await createNodeInDatabase(
         canvasId,

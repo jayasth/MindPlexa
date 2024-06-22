@@ -4,7 +4,11 @@ export interface CommonNodeData {
   backgroundColor?: string;
   textColor?: string;
   tags?: string[];
-  attachedFiles?: File[];
+  attachedFiles?: string[];
+  isEditing?: boolean;
+  isTemporary?: boolean;
+  parentNodeId?: string | null;
+  zIndex?: number;
 }
 
 export interface NoteNodeData extends CommonNodeData {

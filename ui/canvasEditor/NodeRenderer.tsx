@@ -146,7 +146,6 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
                 }
               : undefined,
           type: updatedData.type ?? undefined,
-          canvas_id: updatedData.canvas_id ?? null,
           created_at: updatedData.created_at ?? null,
           height: updatedData.view_height ?? null,
           id: updatedData.id.toString(),
@@ -157,7 +156,8 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
           edit_width: updatedData.edit_width ?? null,
           edit_height: updatedData.edit_height ?? null,
           draggable: updatedData.draggable ?? true,
-          connectable: updatedData.connectable ?? true
+          connectable: updatedData.connectable ?? true,
+          z_index: updatedData.z_index ?? null
         };
         updateNode(id, validData);
       }

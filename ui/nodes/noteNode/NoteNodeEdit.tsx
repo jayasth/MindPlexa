@@ -61,7 +61,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   );
   const [textColor, setTextColor] = useState(data.textColor || '#575757');
   const [tags, setTags] = useState<string[]>(data.tags || []);
-  const [attachedFiles, setAttachedFiles] = useState<File[]>(
+  const [attachedFiles, setAttachedFiles] = useState<string[]>(
     data.attachedFiles || []
   );
   const [isContainerSelected, setIsContainerSelected] = useState(false);
@@ -124,10 +124,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   useEffect(() => {
     // Convert attachedFiles to a JSON serializable format
     const attachedFilesJson = attachedFiles.map((file) => ({
-      name: file.name,
-      size: file.size,
-      type: file.type,
-      lastModified: file.lastModified
+      name: file
     }));
 
     updateNode(
@@ -193,11 +190,11 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     handleAddTag(data.id, updatedTags, () => {});
   };
 
-  const onAttachFiles = (files: File[]) => {
+  const onAttachFiles = (files: string[]) => {
     setAttachedFiles(files);
   };
 
-  const onRemoveFile = (fileToRemove: File) => {
+  const onRemoveFile = (fileToRemove: string) => {
     handleRemoveAttachedFile(data.id, fileToRemove, () => {});
   };
 

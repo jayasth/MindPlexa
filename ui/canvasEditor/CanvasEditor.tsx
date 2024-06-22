@@ -93,33 +93,42 @@ export default function CanvasEditor({ canvasId }) {
       if (error) {
         console.error('Error fetching canvas data:', error);
       } else if (data) {
-        const nodes: Node[] = data.common_node_properties.map((node) => ({
-          id: node.id,
-          type: node.type || 'defaultType',
-          position: {
-            x:
-              typeof node.position === 'object' &&
-              node.position !== null &&
-              'x' in node.position
-                ? (node.position.x as number)
-                : 0,
-            y:
-              typeof node.position === 'object' &&
-              node.position !== null &&
-              'y' in node.position
-                ? (node.position.y as number)
-                : 0
-          },
-          data: {
-            ...node,
-            backgroundColor: node.background_color || '#F4F4F4',
-            textColor: node.text_color || '#575757',
-            tags: node.tags || [],
-            attachedFiles: node.attached_files || []
-          },
-          width: node.view_width || 200,
-          height: node.view_height || 200
-        }));
+        const nodes: Node[] = data.node_canvas_link
+          .map((link) => {
+            const node = link.common_node_properties;
+            if (node === null) {
+              console.error('Error: node is null');
+              return null;
+            }
+            return {
+              id: node.id,
+              type: node.type || 'defaultType',
+              position: {
+                x:
+                  typeof node.position === 'object' &&
+                  node.position !== null &&
+                  'x' in node.position
+                    ? (node.position.x as number)
+                    : 0,
+                y:
+                  typeof node.position === 'object' &&
+                  node.position !== null &&
+                  'y' in node.position
+                    ? (node.position.y as number)
+                    : 0
+              },
+              data: {
+                ...node,
+                backgroundColor: node.background_color || '#F4F4F4',
+                textColor: node.text_color || '#575757',
+                tags: node.tags || [],
+                attachedFiles: node.attached_files || []
+              },
+              width: node.view_width || 200,
+              height: node.view_height || 200
+            };
+          })
+          .filter((node) => node !== null) as Node[];
         const edges: Edge[] = data.edges.map((edge) => ({
           id: edge.id,
           source: edge.source_node_id || '',

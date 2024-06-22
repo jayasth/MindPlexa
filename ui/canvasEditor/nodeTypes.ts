@@ -12,6 +12,12 @@ export interface Node {
   isEditing: boolean;
   draggable: boolean;
   connectable: boolean;
+  background_color?: string;
+  text_color?: string;
+  tags?: string[];
+  attached_files?: string[];
+  parent_node_id?: string | null;
+  z_index?: number;
 }
 
 export interface Edge {
