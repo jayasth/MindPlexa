@@ -115,14 +115,20 @@ export const updateNode = async (
 ) => {
   // Update the common node
   const updatedCommonNode = {
-    ...updates,
-    background_color: updates.background_color,
+    type: updates.type,
+    position: updates.position,
     view_width: updates.view_width,
     view_height: updates.view_height,
     edit_width: updates.edit_width,
     edit_height: updates.edit_height,
-    is_temporary: updates.is_temporary || false,
-    parent_node_id: updates.parent_node_id || null,
+    background_color: updates.background_color,
+    text_color: updates.text_color,
+    title: updates.title,
+    tags: updates.tags,
+    attached_files: updates.attached_files,
+    is_editing: updates.is_editing,
+    is_temporary: updates.is_temporary,
+    parent_node_id: updates.parent_node_id,
     z_index: updates.z_index
   };
 
