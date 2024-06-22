@@ -89,7 +89,7 @@ export default function CanvasEditor({ canvasId }) {
     console.log('CanvasEditor: Fetching data for canvas ID:', canvasId);
     // Fetch the canvas data from the database
     const fetchCanvasData = async () => {
-      const { data, error } = await fetchCanvas(canvasId);
+      const { data, nodeData, error } = await fetchCanvas(canvasId);
       if (error) {
         console.error('CanvasEditor: Error fetching canvas data:', error);
       } else if (data === null) {
@@ -102,6 +102,16 @@ export default function CanvasEditor({ canvasId }) {
               console.error('Error: node is null');
               return null;
             }
+            if (node.type === null) {
+              console.error('Error: node type is null');
+              return null;
+            }
+
+            // Fetch specific node data
+            const specificNodeData = nodeData[node.type]?.find(
+              (n) => n.common_node_id === node.id
+            );
+
             return {
               id: node.id,
               type: node.type || 'defaultType',
@@ -121,6 +131,7 @@ export default function CanvasEditor({ canvasId }) {
               },
               data: {
                 ...node,
+                ...specificNodeData, // Merge specific node data
                 backgroundColor: node.background_color || '#F4F4F4',
                 textColor: node.text_color || '#575757',
                 tags: node.tags || [],

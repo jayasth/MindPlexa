@@ -283,5 +283,33 @@ export const fetchCanvas = async (canvasId: string) => {
     return { data: null };
   }
 
-  return { data: data[0] };
+  // Fetch specific node data for each node type
+  const nodeTypes = ['note', 'task', 'table', 'calendar', 'draw'];
+  const nodeDataPromises = nodeTypes.map((type) =>
+    supabase
+      .from(`${type}_nodes` as keyof Database['public']['Tables'])
+      .select('*')
+      .in(
+        'common_node_id',
+        data[0].node_canvas_link.map((link) => link.common_node_properties?.id)
+      )
+  );
+
+  const nodeDataResults = await Promise.all(nodeDataPromises);
+  const nodeData = nodeDataResults.reduce(
+    (acc, result, index) => {
+      if (result.error) {
+        console.error(
+          `Error fetching ${nodeTypes[index]} nodes:`,
+          result.error
+        );
+      } else {
+        acc[nodeTypes[index]] = result.data;
+      }
+      return acc;
+    },
+    {} as Record<string, any[]>
+  );
+
+  return { data: data[0], nodeData };
 };
