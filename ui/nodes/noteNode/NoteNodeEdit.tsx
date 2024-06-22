@@ -28,12 +28,13 @@ import {
 } from '@/ui/nodes/common/CommonNodeFunctions';
 import Quill from 'quill';
 import 'quill/dist/quill.snow.css';
-import { NoteNodeData } from '@/ui/canvasEditor/utils/nodeDatatypes';
+import { Database } from '@/types_db';
 import { useBackgroundColorChange } from '@/ui/nodes/common/useBackgroundColorChange';
 import { updateNode } from '@/utils/canvas/nodeEdgeDatabaseOperations';
 
 interface NoteNodeEditProps extends NodeProps {
-  data: NoteNodeData;
+  data: Database['public']['Tables']['note_nodes']['Row'] &
+    Database['public']['Tables']['common_node_properties']['Row'];
   width: number;
   height: number;
   selected: boolean;
@@ -57,12 +58,19 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   const [title, setTitle] = useState(data.title || 'Untitled Note');
   const [content, setContent] = useState(data.content || '');
   const [backgroundColor, setBackgroundColor] = useState(
-    data.backgroundColor || '#F4F4F4'
+    data.background_color || '#F4F4F4'
   );
-  const [textColor, setTextColor] = useState(data.textColor || '#575757');
+  const [textColor, setTextColor] = useState(data.text_color || '#575757');
   const [tags, setTags] = useState<string[]>(data.tags || []);
   const [attachedFiles, setAttachedFiles] = useState<string[]>(
-    data.attachedFiles || []
+    Array.isArray(data.attached_files)
+      ? data.attached_files.map((file) => {
+          if (typeof file === 'object' && file !== null && 'name' in file) {
+            return file.name as string;
+          }
+          return '';
+        })
+      : []
   );
   const [isContainerSelected, setIsContainerSelected] = useState(false);
   const [nodeWidth, setNodeWidth] = useState(width);
@@ -205,8 +213,17 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
 
   useEffect(() => {
     setTags(data.tags || []);
-    setAttachedFiles(data.attachedFiles || []);
-  }, [data.tags, data.attachedFiles]);
+    setAttachedFiles(
+      Array.isArray(data.attached_files)
+        ? data.attached_files.map((file) => {
+            if (typeof file === 'object' && file !== null && 'name' in file) {
+              return file.name as string;
+            }
+            return '';
+          })
+        : []
+    );
+  }, [data.tags, data.attached_files]);
 
   const handleResize = (event, { width, height }) => {
     setNodeWidth(width);

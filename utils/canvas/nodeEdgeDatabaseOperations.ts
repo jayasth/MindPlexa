@@ -20,7 +20,7 @@ export const createNode = async (
     textColor?: string;
     title?: string;
     tags?: string[];
-    attachedFiles?: string[];
+    attachedFiles?: any[];
     isEditing?: boolean;
     isTemporary?: boolean;
     parentNodeId?: string | null;
