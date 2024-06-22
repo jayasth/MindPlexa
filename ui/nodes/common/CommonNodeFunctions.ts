@@ -216,7 +216,7 @@ export const handleAddTag = (
   tags.forEach((tag) => onAddTag(tag));
 };
 
-export const handleAttachFile = (
+export const handleAttachFile = async (
   id: string,
   files: (File | string)[],
   callback: () => void
@@ -244,9 +244,13 @@ export const handleAttachFile = (
       return;
     }
 
-    updateNode(id, {
-      data: { attachedFiles: allFiles }
-    });
+    await updateNodeInDatabase(
+      id,
+      { attached_files: allFiles },
+      { attachedFiles: allFiles },
+      'note'
+    );
+    updateNode(id, { data: { attachedFiles: allFiles } });
     callback();
   } else {
     alert(

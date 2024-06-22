@@ -147,7 +147,7 @@ export const updateNode = async (
     return { error: commonNodeError };
   }
 
-  // Update the specific node type
+  // Update the specific node type table
   const tableName = `${nodeType}_nodes` as keyof Database['public']['Tables'];
 
   const { data: specificNodeData, error: specificNodeError } = await supabase
