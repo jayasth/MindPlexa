@@ -26,9 +26,9 @@ import {
   deleteNode as deleteNodeInDatabase,
   createEdge as createEdgeInDatabase,
   updateEdge as updateEdgeInDatabase,
-  deleteEdge as deleteEdgeInDatabase,
-  saveCanvasState
-} from '@/utils/canvas/canvasDatabaseOperations';
+  deleteEdge as deleteEdgeInDatabase
+} from '@/utils/canvas/nodeEdgeDatabaseOperations';
+import { saveCanvasState } from '@/utils/canvas/canvasDatabaseOperations';
 
 interface CanvasState {
   nodes: Node[];

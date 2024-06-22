@@ -7,7 +7,7 @@ import { getNodeSpecificProperties } from '@/ui/canvasEditor/utils/nodePropertie
 import {
   updateNode as updateNodeInDB,
   deleteNode as deleteNodeInDB
-} from '@/utils/canvas/canvasDatabaseOperations';
+} from '@/utils/canvas/nodeEdgeDatabaseOperations';
 
 const NoteNodeEdit = dynamic(() => import('@/ui/nodes/noteNode/NoteNodeEdit'), {
   ssr: false

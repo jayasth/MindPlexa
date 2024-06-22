@@ -18,7 +18,7 @@ import {
   handleRemoveAttachedFile,
   handleAttachmentPreview
 } from '@/ui/nodes/common/CommonNodeFunctions';
-import { updateNode as updateNodeInDatabase } from '@/utils/canvas/canvasDatabaseOperations';
+import { updateNode as updateNodeInDatabase } from '@/utils/canvas/nodeEdgeDatabaseOperations';
 
 const ICON_SIZE = 16;
 

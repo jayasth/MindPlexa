@@ -4,7 +4,7 @@ import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 import {
   updateNode as updateNodeInDatabase,
   deleteNode as deleteNodeInDatabase
-} from '@/utils/canvas/canvasDatabaseOperations';
+} from '@/utils/canvas/nodeEdgeDatabaseOperations';
 
 export const getContrastYIQ = (color: string) => {
   let r,

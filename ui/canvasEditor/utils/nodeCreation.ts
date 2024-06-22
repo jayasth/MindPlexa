@@ -1,7 +1,7 @@
 import { Node, XYPosition } from 'reactflow';
 import { getNodeSpecificProperties, nodeDimensions } from './nodeProperties';
 import { findOptimalPosition } from './positioningUtils';
-import { createNode as createNodeInDatabase } from '@/utils/canvas/canvasDatabaseOperations';
+import { createNode as createNodeInDatabase } from '@/utils/canvas/nodeEdgeDatabaseOperations';
 import { v4 as uuidv4 } from 'uuid';
 
 const setPosition = (x: number, y: number): XYPosition => {

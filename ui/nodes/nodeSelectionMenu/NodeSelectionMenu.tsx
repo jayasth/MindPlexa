@@ -6,7 +6,7 @@ import { PiNotepadFill } from 'react-icons/pi';
 import { FaTable } from 'react-icons/fa';
 
 import { useStore } from '@/app/store/useCanvasStore';
-import { createNode } from '@/utils/canvas/canvasDatabaseOperations'; // Ensure this function is correctly implemented
+import { createNode } from '@/utils/canvas/nodeEdgeDatabaseOperations';
 import styles from './NodeSelectionMenu.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
@@ -89,7 +89,7 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
       height: nodeDimensions[nodeType].height
     };
 
-    const { data, error } = await createNode(newNode); // Assuming createNode handles creation in the DB
+    const { data, error } = await createNode(newNode);
     if (error) {
       console.error('Error creating node:', error);
       return;
