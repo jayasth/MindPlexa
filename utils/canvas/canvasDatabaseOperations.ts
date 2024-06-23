@@ -53,7 +53,10 @@ export const deleteCanvas = async (
     .eq('canvas_id', canvasId);
 
   if (linkError) {
-    console.error('Error deleting canvas links:', linkError);
+    console.error(
+      'CanvasDatabaseOperations: Error deleting canvas links:',
+      linkError
+    );
     return { error: linkError };
   }
 
@@ -61,7 +64,7 @@ export const deleteCanvas = async (
   const { error } = await supabase.from('canvases').delete().eq('id', canvasId);
 
   if (error) {
-    console.error('Error deleting canvas:', error);
+    console.error('CanvasDatabaseOperations: Error deleting canvas:', error);
     return { error };
   } else {
     setCanvases((prevCanvases: any) =>
@@ -194,7 +197,10 @@ export const saveCanvasState = async (
       );
 
       if (updateNodeError) {
-        console.error('Error inserting/updating nodes:', updateNodeError);
+        console.error(
+          'CanvasDatabaseOperations: Error inserting/updating nodes:',
+          updateNodeError
+        );
         return { error: updateNodeError };
       }
     }
