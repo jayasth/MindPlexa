@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/supabaseClient';
 import { Database } from '@/types_db';
 import { useRouter } from 'next/navigation';
+import { updateNode } from '@/utils/canvas/nodeEdgeDatabaseOperations';
 
 const supabase = createClient();
 
@@ -175,18 +176,27 @@ export const deleteCanvasWithNodes = async (
 // Function to save the canvas state
 export const saveCanvasState = async (
   canvasId: string,
-  nodes: Database['public']['Tables']['common_node_properties']['Insert'][],
+  nodes: (Database['public']['Tables']['common_node_properties']['Insert'] & {
+    type: string;
+    uniqueData?: any;
+  })[],
   edges: Database['public']['Tables']['edges']['Insert'][]
 ) => {
   try {
     // Upsert nodes
-    const { error: createNodesError } = await supabase
-      .from('common_node_properties')
-      .upsert(nodes);
+    for (const node of nodes) {
+      const { id, type, uniqueData, ...commonProperties } = node;
+      const { error: updateNodeError } = await updateNode(
+        id!,
+        commonProperties,
+        uniqueData,
+        type as 'note' | 'task' | 'table' | 'calendar' | 'draw'
+      );
 
-    if (createNodesError) {
-      console.error('Error inserting/updating nodes:', createNodesError);
-      return { error: createNodesError };
+      if (updateNodeError) {
+        console.error('Error inserting/updating nodes:', updateNodeError);
+        return { error: updateNodeError };
+      }
     }
 
     // Upsert edges
