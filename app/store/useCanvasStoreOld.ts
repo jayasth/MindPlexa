@@ -22,7 +22,6 @@ import {
 } from '@/ui/canvasEditor/utils/nodeDatatypes';
 
 interface CanvasState {
-  canvasID: string;
   nodes: Node[];
   edges: Edge[];
   domNode: HTMLDivElement | null;
@@ -52,8 +51,6 @@ interface CanvasState {
   onEdgesChange: (changes: any) => void;
   toggleEditMode: (nodeId: string) => void;
   setSelectedNodes: (selectedIds: string[]) => void;
-  setCanvasId: (id: string) => void;
-  saveCanvas: () => void;
 }
 
 const createStore = <T extends object>(
@@ -63,7 +60,6 @@ const createStore = <T extends object>(
 };
 
 export const useStore = createStore<CanvasState>((set, get) => ({
-  canvasID: nanoid(),
   nodes: [],
   edges: [],
   domNode: null,
@@ -373,7 +369,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
             { width: 0, height: 0 },
             false,
             false,
-            parentNode.id
+            parentNode
           );
           removeNode(newNode.id);
         },
@@ -437,29 +433,6 @@ export const useStore = createStore<CanvasState>((set, get) => ({
         selected: selectedIds.includes(node.id)
       }))
     }));
-  },
-  setCanvasId: (id) => {
-    console.log('Store: Setting canvas ID to:', id);
-    set(() => ({ canvasID: id }));
-  },
-  saveCanvas: () => {
-    const { nodes, edges } = get();
-    const canvasData = {
-      nodes: nodes.map((node) => ({
-        id: node.id,
-        type: node.type,
-        position: node.position,
-        data: node.data
-      })),
-      edges: edges.map((edge) => ({
-        id: edge.id,
-        source: edge.source,
-        target: edge.target,
-        type: edge.type
-      }))
-    };
-    console.log('Store: Saving canvas data:', canvasData);
-    // Here you can add logic to save the canvasData to a server or local storage
   }
 }));
 
