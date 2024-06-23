@@ -49,7 +49,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
   const addNode = useStore((state) => state.addNode);
   const nodes = useStore((state) => state.nodes);
 
-  const handleAddNode = (
+  const handleAddNode = async (
     type: 'note' | 'task' | 'table' | 'calendar' | 'draw' | 'selectionMenu'
   ) => {
     try {
@@ -61,7 +61,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
       const position = findOptimalPosition(nodes, canvasSize);
       const nodeProps = getNodeSpecificProperties(type, false);
 
-      createNode(
+      await createNode(
         type,
         position,
         nodes,

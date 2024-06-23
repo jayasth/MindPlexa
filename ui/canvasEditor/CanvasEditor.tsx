@@ -31,7 +31,10 @@ import { useEdgeConnection } from '@/ui/canvasEditor/hooks/useEdgeConnection';
 import { nanoid } from 'nanoid';
 import { handleTemporaryNodeCreation } from '@/ui/canvasEditor/utils/TemporaryNodeHandler';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
-import { fetchCanvas } from '@/utils/canvas/canvasDatabaseOperations';
+import {
+  fetchCanvas,
+  saveCanvasState
+} from '@/utils/canvas/canvasDatabaseOperations';
 
 const nodeOrigin: NodeOrigin = [0.5, 0.5];
 const defaultEdgeOptions = {
@@ -316,6 +319,15 @@ export default function CanvasEditor({ canvasId }) {
       saveCanvas();
     };
   }, [saveCanvas]);
+
+  // Auto-save functionality
+  useEffect(() => {
+    const autoSaveInterval = setInterval(() => {
+      saveCanvasState(canvasId, nodes as any, edges as any);
+    }, 5000); // Auto-save every 5 seconds
+
+    return () => clearInterval(autoSaveInterval);
+  }, [canvasId, nodes, edges]);
 
   return (
     <div className="flex h-screen">

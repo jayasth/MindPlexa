@@ -14,10 +14,7 @@ import { CompactPicker } from 'react-color';
 import styles from '@/ui/nodes/common/CommonNodeStyles.module.css';
 import Input from '@/ui/Input/Input';
 import Button from '@/ui/Button/Button';
-import {
-  handleRemoveAttachedFile,
-  handleAttachmentPreview
-} from '@/ui/nodes/common/CommonNodeFunctions';
+import { handleAttachmentPreview } from '@/ui/nodes/common/CommonNodeFunctions';
 import { updateNode as updateNodeInDatabase } from '@/utils/canvas/nodeEdgeDatabaseOperations';
 
 const ICON_SIZE = 16;
@@ -172,6 +169,18 @@ export const FileModal = ({
       }
     }
   };
+
+  const handleRemoveFile = (fileToRemove: File | string) => {
+    const updatedFiles = existingFiles.filter((file) => file !== fileToRemove);
+    updateNodeInDatabase(
+      data.id,
+      { attached_files: updatedFiles },
+      { attachedFiles: updatedFiles },
+      data.type as 'note' | 'task' | 'table' | 'calendar' | 'draw'
+    );
+    onRemoveFile(fileToRemove);
+  };
+
   return (
     <Modal open={isOpen} onClose={onClose} center>
       <h2>Attach Files</h2>
@@ -217,7 +226,7 @@ export const FileModal = ({
             </span>
             <button
               className={styles.removeFileButton}
-              onClick={() => handleRemoveAttachedFile(data.id, file, () => {})}
+              onClick={() => handleRemoveFile(file)}
             >
               &times;
             </button>
