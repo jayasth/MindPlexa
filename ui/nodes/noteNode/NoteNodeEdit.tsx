@@ -31,6 +31,7 @@ import { Database } from '@/types_db';
 import { useBackgroundColorChange } from '@/ui/nodes/common/useBackgroundColorChange';
 import { updateNode } from '@/utils/canvas/nodeEdgeDatabaseOperations';
 import { useStore } from '@/app/store/useCanvasStore';
+import { debounce } from 'lodash';
 
 interface NoteNodeEditProps extends NodeProps {
   data: Database['public']['Tables']['note_nodes']['Row'] &
@@ -131,20 +132,8 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     }
   }, [content, data.id]);
 
-  useEffect(() => {
-    const updateNodeData = async () => {
-      const commonData = {
-        title,
-        tags,
-        attached_files: attachedFiles.map((file) => ({ name: file })),
-        background_color: backgroundColor,
-        text_color: textColor,
-        edit_width: nodeWidth,
-        edit_height: nodeHeight
-      };
-
-      const specificData = { content };
-
+  const debouncedUpdateNodeData = useRef(
+    debounce(async (commonData, specificData) => {
       try {
         const { error } = await updateNode(
           data.id,
@@ -162,9 +151,23 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
       } catch (error) {
         console.error('Error updating node:', error);
       }
+    }, 500)
+  ).current;
+
+  useEffect(() => {
+    const commonData = {
+      title,
+      tags,
+      attached_files: attachedFiles.map((file) => ({ name: file })),
+      background_color: backgroundColor,
+      text_color: textColor,
+      edit_width: nodeWidth,
+      edit_height: nodeHeight
     };
 
-    updateNodeData();
+    const specificData = { content };
+
+    debouncedUpdateNodeData(commonData, specificData);
   }, [
     title,
     content,

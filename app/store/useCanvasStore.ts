@@ -490,7 +490,11 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       nodes: state.nodes.map((node) => {
         if (node.id === nodeId) {
           console.log(`Store: Before toggling, isEditing is ${node.isEditing}`);
-          return { ...node, isEditing: !node.isEditing };
+          const updatedNode = { ...node, isEditing: !node.isEditing };
+          console.log(
+            `Store: After toggling, isEditing is ${updatedNode.isEditing}`
+          );
+          return updatedNode;
         }
         return node;
       })
