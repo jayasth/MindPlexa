@@ -127,6 +127,8 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     const { error } = await deleteNodeInDB(id, node.type);
     if (!error) {
       removeNode(id);
+    } else {
+      console.error(`Error deleting node ${id}: ${error.message}`);
     }
   }, [id, node?.type, removeNode]);
 

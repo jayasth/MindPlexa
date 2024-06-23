@@ -30,6 +30,7 @@ import 'quill/dist/quill.snow.css';
 import { Database } from '@/types_db';
 import { useBackgroundColorChange } from '@/ui/nodes/common/useBackgroundColorChange';
 import { updateNode } from '@/utils/canvas/nodeEdgeDatabaseOperations';
+import { useStore } from '@/app/store/useCanvasStore';
 
 interface NoteNodeEditProps extends NodeProps {
   data: Database['public']['Tables']['note_nodes']['Row'] &
@@ -91,6 +92,8 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     handleBackgroundColorChange(color);
   };
 
+  const { updateNode: updateNodeInStore } = useStore();
+
   useEffect(() => {
     if (
       typeof document !== 'undefined' &&
@@ -129,25 +132,39 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   }, [content, data.id]);
 
   useEffect(() => {
-    // Convert attachedFiles to a JSON serializable format
-    const attachedFilesJson = attachedFiles.map((file) => ({
-      name: file
-    }));
-
-    updateNode(
-      data.id,
-      {
+    const updateNodeData = async () => {
+      const commonData = {
         title,
         tags,
-        attached_files: attachedFilesJson,
+        attached_files: attachedFiles.map((file) => ({ name: file })),
         background_color: backgroundColor,
         text_color: textColor,
         edit_width: nodeWidth,
         edit_height: nodeHeight
-      },
-      { content },
-      'note'
-    );
+      };
+
+      const specificData = { content };
+
+      try {
+        const { error } = await updateNode(
+          data.id,
+          commonData,
+          specificData,
+          'note'
+        );
+        if (error) {
+          console.error('Error updating node:', error);
+        } else {
+          updateNodeInStore(data.id, {
+            data: { ...commonData, ...specificData }
+          });
+        }
+      } catch (error) {
+        console.error('Error updating node:', error);
+      }
+    };
+
+    updateNodeData();
   }, [
     title,
     content,
@@ -157,7 +174,8 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     textColor,
     nodeWidth,
     nodeHeight,
-    data.id
+    data.id,
+    updateNodeInStore
   ]);
 
   useEffect(() => {
@@ -249,6 +267,38 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     color: textColor
   };
 
+  const handleSave = async () => {
+    const commonData = {
+      title,
+      tags,
+      attached_files: attachedFiles.map((file) => ({ name: file })),
+      background_color: backgroundColor,
+      text_color: textColor,
+      edit_width: nodeWidth,
+      edit_height: nodeHeight
+    };
+
+    const specificData = { content };
+
+    try {
+      const { error } = await updateNode(
+        data.id,
+        commonData,
+        specificData,
+        'note'
+      );
+      if (error) {
+        console.error('Error saving node:', error);
+      } else {
+        updateNodeInStore(data.id, {
+          data: { ...commonData, ...specificData }
+        });
+      }
+    } catch (error) {
+      console.error('Error saving node:', error);
+    }
+  };
+
   return (
     <div
       className={styles.noteNode}
@@ -292,24 +342,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         />
       )}
       <div className={styles.footer}>
-        <SaveButton
-          onClick={() =>
-            updateNode(
-              data.id,
-              {
-                title,
-                tags,
-                attached_files: attachedFiles.map((file) => ({ name: file })),
-                background_color: backgroundColor,
-                text_color: textColor,
-                edit_width: nodeWidth,
-                edit_height: nodeHeight
-              },
-              { content },
-              'note'
-            )
-          }
-        />
+        <SaveButton onClick={handleSave} />
         <DeleteButton onClick={() => handleDelete(data.id, () => {}, 'note')} />
         <ChangeColorButton onClick={() => toggleColorPicker()} />
         <AddTagButton onClick={() => setIsTagModalOpen(true)} />

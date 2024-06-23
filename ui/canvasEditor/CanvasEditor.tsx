@@ -324,7 +324,7 @@ export default function CanvasEditor({ canvasId }) {
   useEffect(() => {
     const autoSaveInterval = setInterval(() => {
       saveCanvasState(canvasId, nodes as any, edges as any);
-    }, 5000); // Auto-save every 5 seconds
+    }, 30000); // Auto-save every 30 seconds
 
     return () => clearInterval(autoSaveInterval);
   }, [canvasId, nodes, edges]);
