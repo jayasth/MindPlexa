@@ -4,10 +4,7 @@ import { Node as BaseNode } from '@/ui/canvasEditor/nodeTypes';
 import dynamic from 'next/dynamic';
 import { useStore } from '@/app/store/useCanvasStore';
 import { getNodeSpecificProperties } from '@/ui/canvasEditor/utils/nodeProperties';
-import {
-  updateNode as updateNodeInDB,
-  deleteNode as deleteNodeInDB
-} from '@/utils/canvas/nodeEdgeDatabaseOperations';
+import { deleteNode as deleteNodeInDB } from '@/utils/canvas/nodeEdgeDatabaseOperations';
 
 const NoteNodeEdit = dynamic(() => import('@/ui/nodes/noteNode/NoteNodeEdit'), {
   ssr: false

@@ -53,8 +53,14 @@ export const createNode = async (
   const specificNode = {
     ...baseProperties,
     ...getNodeSpecificProperties(nodeType, isEditing),
-    view_width: nodeDimension.width,
-    view_height: nodeDimension.height,
+    view_width:
+      'viewWidth' in nodeDimension
+        ? nodeDimension.viewWidth
+        : nodeDimension.width,
+    view_height:
+      'viewHeight' in nodeDimension
+        ? nodeDimension.viewHeight
+        : nodeDimension.height,
     edit_width:
       'editWidth' in nodeDimension
         ? nodeDimension.editWidth
@@ -72,8 +78,14 @@ export const createNode = async (
     position: positionAsXYPosition,
     data: {
       ...specificNode,
-      view_width: nodeDimension.width,
-      view_height: nodeDimension.height,
+      view_width:
+        'viewWidth' in nodeDimension
+          ? nodeDimension.viewWidth
+          : nodeDimension.width,
+      view_height:
+        'viewHeight' in nodeDimension
+          ? nodeDimension.viewHeight
+          : nodeDimension.height,
       edit_width:
         'editWidth' in nodeDimension
           ? nodeDimension.editWidth
@@ -84,7 +96,6 @@ export const createNode = async (
           : nodeDimension.height
     }
   };
-
   if (parentNode) {
     newNode.data = {
       ...newNode.data,

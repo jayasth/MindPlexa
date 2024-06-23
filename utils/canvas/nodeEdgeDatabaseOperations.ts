@@ -1,6 +1,14 @@
 import { createClient } from '@/utils/supabase/supabaseClient';
 import { Database } from '@/types_db';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
+import {
+  NoteNodeData,
+  TaskNodeData,
+  TableNodeData,
+  CalendarNodeData,
+  DrawNodeData,
+  CommonNodeData
+} from '@/ui/canvasEditor/utils/nodeDatatypes';
 
 const supabase = createClient();
 
@@ -11,23 +19,19 @@ export const createNode = async (
   canvasId: string,
   nodeType: 'note' | 'task' | 'table' | 'calendar' | 'draw',
   position: { x: number; y: number },
-  data: {
+  data: CommonNodeData & {
     viewWidth?: number;
     viewHeight?: number;
     editWidth?: number;
     editHeight?: number;
-    backgroundColor?: string;
-    textColor?: string;
-    title?: string;
-    tags?: string[];
-    attachedFiles?: any[];
-    isEditing?: boolean;
-    isTemporary?: boolean;
-    parentNodeId?: string | null;
-    uniqueData?: any;
-    zIndex?: number;
+    uniqueData?:
+      | NoteNodeData
+      | TaskNodeData
+      | TableNodeData
+      | CalendarNodeData
+      | DrawNodeData;
   }
-) => {
+): Promise<{ data?: any; error?: any }> => {
   console.log('nodeEdgeDatabaseOperations: createNode called with:', {
     canvasId,
     nodeType,
@@ -39,23 +43,24 @@ export const createNode = async (
     const defaultDimensions = nodeDimensions[nodeType];
 
     // Create a common node first
-    const commonNodeInsert = {
-      type: nodeType,
-      position: JSON.stringify(position),
-      view_width: data.viewWidth || defaultDimensions.viewWidth,
-      view_height: data.viewHeight || defaultDimensions.viewHeight,
-      edit_width: data.editWidth || defaultDimensions.editWidth,
-      edit_height: data.editHeight || defaultDimensions.editHeight,
-      background_color: data.backgroundColor || '#F4F4F4',
-      text_color: data.textColor || '#575757',
-      title: data.title,
-      tags: data.tags,
-      attached_files: data.attachedFiles,
-      is_editing: data.isEditing,
-      is_temporary: data.isTemporary || false,
-      parent_node_id: data.parentNodeId || null,
-      z_index: data.zIndex || 0
-    };
+    const commonNodeInsert: Database['public']['Tables']['common_node_properties']['Insert'] =
+      {
+        type: nodeType,
+        position: JSON.stringify(position),
+        view_width: data.viewWidth || defaultDimensions.viewWidth,
+        view_height: data.viewHeight || defaultDimensions.viewHeight,
+        edit_width: data.editWidth || defaultDimensions.editWidth,
+        edit_height: data.editHeight || defaultDimensions.editHeight,
+        background_color: data.backgroundColor || '#F4F4F4',
+        text_color: data.textColor || '#575757',
+        title: data.title,
+        tags: data.tags,
+        attached_files: data.attachedFiles,
+        is_editing: data.isEditing,
+        is_temporary: data.isTemporary || false,
+        parent_node_id: data.parentNodeId || null,
+        z_index: data.zIndex || 0
+      };
 
     const { data: commonNodeData, error: commonNodeError } = await supabase
       .from('common_node_properties')
@@ -110,11 +115,16 @@ export const updateNode = async (
   updates: Partial<
     Database['public']['Tables']['common_node_properties']['Update']
   >,
-  specificUpdates: any,
+  specificUpdates: Partial<
+    | NoteNodeData
+    | TaskNodeData
+    | TableNodeData
+    | CalendarNodeData
+    | DrawNodeData
+  >,
   nodeType: 'note' | 'task' | 'table' | 'calendar' | 'draw'
-) => {
+): Promise<{ data?: any; error?: any }> => {
   try {
-    // Update the common node properties
     const { data: commonNodeData, error: commonNodeError } = await supabase
       .from('common_node_properties')
       .update(updates)
@@ -123,7 +133,10 @@ export const updateNode = async (
       .single();
 
     if (commonNodeError) {
-      console.error('Error updating common node properties:', commonNodeError);
+      console.error(
+        'nodeEdgeDatabaseOperations: Error updating common node properties:',
+        commonNodeError
+      );
       return { error: commonNodeError };
     }
 
@@ -152,7 +165,7 @@ export const updateNode = async (
 export const deleteNode = async (
   nodeId: string,
   nodeType: 'note' | 'task' | 'table' | 'calendar' | 'draw'
-) => {
+): Promise<{ success?: boolean; error?: any }> => {
   try {
     // Delete the specific node type
     const tableName = `${nodeType}_nodes` as keyof Database['public']['Tables'];
@@ -200,24 +213,29 @@ export const deleteNode = async (
 // Function to insert a new edge
 export const createEdge = async (
   edge: Database['public']['Tables']['edges']['Insert']
-): Promise<{ data: { id: string }; error?: any }> => {
-  const { data, error } = await supabase.from('edges').insert([edge]).single();
+): Promise<{ data?: { id: string }; error?: any }> => {
+  const { data, error } = await supabase
+    .from('edges')
+    .insert([edge])
+    .select()
+    .single();
   if (error) {
     console.error('nodeEdgeDatabaseOperations: Error inserting edge:', error);
-    return { data: { id: '' }, error };
+    return { error };
   }
-  return { data };
+  return { data: { id: data.id } };
 };
 
 // Function to update an existing edge
 export const updateEdge = async (
   id: string,
   updates: Database['public']['Tables']['edges']['Update']
-) => {
+): Promise<{ data?: any; error?: any }> => {
   const { data, error } = await supabase
     .from('edges')
     .update(updates)
     .eq('id', id)
+    .select()
     .single();
   if (error) {
     console.error('nodeEdgeDatabaseOperations: Error updating edge:', error);
@@ -227,7 +245,9 @@ export const updateEdge = async (
 };
 
 // Function to delete an edge
-export const deleteEdge = async (id: string) => {
+export const deleteEdge = async (
+  id: string
+): Promise<{ success?: boolean; error?: any }> => {
   const { error } = await supabase.from('edges').delete().eq('id', id);
   if (error) {
     console.error('nodeEdgeDatabaseOperations: Error deleting edge:', error);

@@ -301,10 +301,12 @@ export const handleDuplicate = (id: string) => {
       nodes.some((node) => {
         const nodeSize =
           nodeDimensions[node.type as keyof typeof nodeDimensions];
+        const width = 'width' in nodeSize ? nodeSize.width : nodeSize.viewWidth;
+        const height =
+          'height' in nodeSize ? nodeSize.height : nodeSize.viewHeight;
         return (
-          Math.abs(node.position.x - newPosition.x) <
-            nodeSize.width + padding &&
-          Math.abs(node.position.y - newPosition.y) < nodeSize.height + padding
+          Math.abs(node.position.x - newPosition.x) < width + padding &&
+          Math.abs(node.position.y - newPosition.y) < height + padding
         );
       }) &&
       attempts < maxAttempts
