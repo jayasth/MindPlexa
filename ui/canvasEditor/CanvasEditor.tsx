@@ -89,12 +89,10 @@ export default function CanvasEditor({ canvasId }) {
 
   useEffect(() => {
     setCanvasId(canvasId);
-    console.log('CanvasEditor: Fetching data for canvas ID:', canvasId);
     // Fetch the canvas data from the database
     const fetchCanvasData = async () => {
       const { data, nodeData, error } = await fetchCanvas(canvasId);
       if (error) {
-        console.error('CanvasEditor: Error fetching canvas data:', error);
       } else if (data === null) {
         console.log('CanvasEditor: No data found for this canvas.');
       } else if (data) {
@@ -102,11 +100,11 @@ export default function CanvasEditor({ canvasId }) {
           .map((link) => {
             const node = link.common_node_properties;
             if (node === null) {
-              console.error('Error: node is null');
+              console.error('CanvasEditor: Error: node is null');
               return null;
             }
             if (node.type === null) {
-              console.error('Error: node type is null');
+              console.error('CanvasEditor: Error: node type is null');
               return null;
             }
 
@@ -114,6 +112,13 @@ export default function CanvasEditor({ canvasId }) {
             const specificNodeData = nodeData[node.type]?.find(
               (n) => n.common_node_id === node.id
             );
+
+            const mergedNodeData = {
+              ...node,
+              ...specificNodeData // Merge specific node data
+            };
+
+            console.log('CanvasEditor: Node data:', mergedNodeData);
 
             return {
               id: node.id,
@@ -132,16 +137,9 @@ export default function CanvasEditor({ canvasId }) {
                     ? (node.position.y as number)
                     : 0
               },
-              data: {
-                ...node,
-                ...specificNodeData, // Merge specific node data
-                backgroundColor: node.background_color || '#F4F4F4',
-                textColor: node.text_color || '#575757',
-                tags: node.tags || [],
-                attachedFiles: node.attached_files || []
-              },
-              width: node.view_width || 200,
-              height: node.view_height || 200
+              data: mergedNodeData,
+              width: node.view_width || nodeDimensions[node.type]?.viewWidth,
+              height: node.view_height || nodeDimensions[node.type]?.viewHeight
             };
           })
           .filter((node) => node !== null) as Node[];

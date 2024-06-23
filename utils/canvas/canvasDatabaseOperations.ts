@@ -18,25 +18,17 @@ export const createCanvas = async (
       .from('canvases')
       .insert({ name: canvasTitle });
 
-    console.log('canvasDatabaseOperations: Insert response:', insertResponse);
-
     const { data, error } = await supabase
       .from('canvases')
       .select('*')
       .order('created_at', { ascending: false })
       .limit(1);
 
-    console.log('canvasDatabaseOperations: Select data:', data);
-    console.log('canvasDatabaseOperations: Select error:', error);
-
     if (error) {
       console.error('canvasDatabaseOperations: Error fetching canvas:', error);
     } else if (data && data[0]) {
-      console.log('canvasDatabaseOperations: Redirecting to new canvas...');
       setIsModalOpen(false);
       router.push(`/canvasEditor/${data[0].id}?new=true`);
-    } else {
-      console.log('canvasDatabaseOperations: Fetch operation returned no data');
     }
   }
 };
@@ -189,6 +181,12 @@ export const saveCanvasState = async (
     // Upsert nodes
     for (const node of nodes) {
       const { id, type, uniqueData, ...commonProperties } = node;
+      console.log('canvasDatabaseOperations: Node properties before upsert:', {
+        id,
+        type,
+        uniqueData,
+        ...commonProperties
+      });
       const { error: updateNodeError } = await updateNode(
         id!,
         commonProperties,
@@ -197,10 +195,6 @@ export const saveCanvasState = async (
       );
 
       if (updateNodeError) {
-        console.error(
-          'CanvasDatabaseOperations: Error inserting/updating nodes:',
-          updateNodeError
-        );
         return { error: updateNodeError };
       }
     }
@@ -211,7 +205,6 @@ export const saveCanvasState = async (
       .upsert(edges);
 
     if (createEdgesError) {
-      console.error('Error inserting/updating edges:', createEdgesError);
       return { error: createEdgesError };
     }
 
@@ -237,67 +230,79 @@ export const saveCanvasState = async (
         .insert(newLinks);
 
       if (linkError) {
-        console.error('Error linking nodes to canvas:', linkError);
         return { error: linkError };
       }
     }
 
     return { success: true };
   } catch (error) {
-    console.error('Unexpected error saving canvas state:', error);
     return { error };
   }
 };
 
 // Function to fetch the canvas state
 export const fetchCanvas = async (canvasId: string) => {
-  try {
-    const { data, error } = await supabase
-      .from('canvases')
-      .select(
-        `
-        *,
-        node_canvas_link(
-          *,
-          common_node_properties(
-            *,
-            note_nodes(*),
-            task_nodes(*),
-            calendar_nodes(*),
-            table_nodes(*),
-            draw_nodes(*)
-          )
-        ),
-        edges(*)
-      `
-      )
-      .eq('id', canvasId)
-      .single();
+  // Check if the canvas ID exists
+  const { data: canvasExists, error: canvasExistsError } = await supabase
+    .from('canvases')
+    .select('id')
+    .eq('id', canvasId)
+    .single();
 
-    if (error) {
-      console.error('Error fetching canvas:', error);
-      return { data: null, error };
-    }
-    const nodeData = {
-      note: data.node_canvas_link.map(
-        (link) => link.common_node_properties?.note_nodes || []
-      ),
-      task: data.node_canvas_link.map(
-        (link) => link.common_node_properties?.task_nodes || []
-      ),
-      calendar: data.node_canvas_link.map(
-        (link) => link.common_node_properties?.calendar_nodes || []
-      ),
-      table: data.node_canvas_link.map(
-        (link) => link.common_node_properties?.table_nodes || []
-      ),
-      draw: data.node_canvas_link.map(
-        (link) => link.common_node_properties?.draw_nodes || []
-      )
-    };
-    return { data, nodeData, error: null };
-  } catch (error) {
-    console.error('Error fetching canvas:', error);
-    return { data: null, error };
+  if (canvasExistsError) {
+    return { error: 'Error checking canvas existence' };
   }
+
+  if (!canvasExists) {
+    return { error: 'Canvas ID does not exist' };
+  }
+
+  // Fetch canvas data along with linked nodes and edges
+  const { data, error } = await supabase
+    .from('canvases')
+    .select(
+      `
+      *,
+      node_canvas_link!inner(common_node_properties(*)),
+      edges(*)
+    `
+    )
+    .eq('id', canvasId);
+
+  if (error) {
+    return { error };
+  }
+
+  if (data.length === 0) {
+    return { data: null };
+  }
+
+  // Fetch specific node data for each node type
+  const nodeTypes = ['note', 'task', 'table', 'calendar', 'draw'];
+  const nodeDataPromises = nodeTypes.map((type) =>
+    supabase
+      .from(`${type}_nodes` as keyof Database['public']['Tables'])
+      .select('*')
+      .in(
+        'common_node_id',
+        data[0].node_canvas_link.map((link) => link.common_node_properties?.id)
+      )
+  );
+
+  const nodeDataResults = await Promise.all(nodeDataPromises);
+  const nodeData = nodeDataResults.reduce(
+    (acc, result, index) => {
+      if (!result.error) {
+        acc[nodeTypes[index]] = result.data;
+        console.log(
+          `canvasDatabaseOperations: ${nodeTypes[index]} node properties:`,
+          result.data
+        );
+      }
+      return acc;
+    },
+    {} as Record<string, any[]>
+  );
+
+  return { data: data[0], nodeData };
 };

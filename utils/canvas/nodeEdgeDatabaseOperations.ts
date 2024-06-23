@@ -125,6 +125,27 @@ export const updateNode = async (
   nodeType: 'note' | 'task' | 'table' | 'calendar' | 'draw'
 ): Promise<{ data?: any; error?: any }> => {
   try {
+    // Fetch current common node properties before update
+    const { data: currentCommonNodeData, error: fetchCommonNodeError } =
+      await supabase
+        .from('common_node_properties')
+        .select()
+        .eq('id', id)
+        .single();
+
+    if (fetchCommonNodeError) {
+      console.error(
+        'nodeEdgeDatabaseOperations: Error fetching common node properties before update:',
+        fetchCommonNodeError
+      );
+      return { error: fetchCommonNodeError };
+    }
+
+    console.log(
+      'nodeEdgeDatabaseOperations: Current common node properties before update:',
+      currentCommonNodeData
+    );
+
     const { data: commonNodeData, error: commonNodeError } = await supabase
       .from('common_node_properties')
       .update(updates)
@@ -140,6 +161,11 @@ export const updateNode = async (
       return { error: commonNodeError };
     }
 
+    console.log(
+      'nodeEdgeDatabaseOperations: Updated common node properties:',
+      commonNodeData
+    );
+
     // Update the specific node type table
     const tableName = `${nodeType}_nodes` as keyof Database['public']['Tables'];
     const { data: specificNodeData, error: specificNodeError } = await supabase
@@ -150,13 +176,24 @@ export const updateNode = async (
       .single();
 
     if (specificNodeError) {
-      console.error(`Error updating ${nodeType} node:`, specificNodeError);
+      console.error(
+        'nodeEdgeDatabaseOperations: Error updating ${nodeType} node:',
+        specificNodeError
+      );
       return { error: specificNodeError };
     }
 
+    console.log(
+      'nodeEdgeDatabaseOperations: Updated ${nodeType} node properties:',
+      specificNodeData
+    );
+
     return { data: { ...commonNodeData, ...specificNodeData } };
   } catch (error) {
-    console.error('Unexpected error updating node:', error);
+    console.error(
+      'nodeEdgeDatabaseOperations: Unexpected error updating node:',
+      error
+    );
     return { error };
   }
 };
