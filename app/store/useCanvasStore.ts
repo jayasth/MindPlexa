@@ -71,6 +71,79 @@ const createStore = <T extends object>(
   return create(devtools(config));
 };
 
+const updateNodeData = (existingNode, data) => {
+  const updatedNode = {
+    ...existingNode,
+    ...data,
+    position: data.position || existingNode.position,
+    data: {
+      ...existingNode.data,
+      ...data.data,
+      backgroundColor:
+        data.data?.backgroundColor || existingNode.data.backgroundColor,
+      textColor: data.data?.textColor || existingNode.data.textColor,
+      tags: data.data?.tags || existingNode.data.tags || [],
+      attachedFiles:
+        data.data?.attachedFiles || existingNode.data.attachedFiles || []
+    }
+  };
+
+  switch (existingNode.type) {
+    case 'note':
+      updatedNode.data = {
+        ...updatedNode.data,
+        ...(data.data as NoteNodeData)
+      };
+      break;
+    case 'task':
+      updatedNode.data = {
+        ...updatedNode.data,
+        ...(data.data as TaskNodeData)
+      };
+      break;
+    case 'table':
+      updatedNode.data = {
+        ...updatedNode.data,
+        ...(data.data as TableNodeData)
+      };
+      break;
+    case 'calendar':
+      updatedNode.data = {
+        ...updatedNode.data,
+        ...(data.data as CalendarNodeData)
+      };
+      break;
+    case 'draw':
+      updatedNode.data = {
+        ...updatedNode.data,
+        ...(data.data as DrawNodeData)
+      };
+      break;
+    // Add more cases for other node types if needed
+    default:
+      break;
+  }
+
+  return updatedNode;
+};
+
+const removeNodeData = async (id, state) => {
+  const nodeToRemove = state.nodes.find((node) => node.id === id);
+  if (nodeToRemove) {
+    const { error } = await deleteNodeInDatabase(id, nodeToRemove.type);
+    if (error) {
+      console.error('Error deleting node from database:', error);
+      return state;
+    }
+  }
+  return {
+    nodes: state.nodes.filter((node) => node.id !== id),
+    edges: state.edges.filter(
+      (edge) => edge.source !== id && edge.target !== id
+    )
+  };
+};
+
 export const useStore = createStore<CanvasState>((set, get) => ({
   nodes: [],
   edges: [],
@@ -179,60 +252,12 @@ export const useStore = createStore<CanvasState>((set, get) => ({
   },
 
   updateNode: async (id, data) => {
+    console.log('Store: Updating node with id:', id, 'and data:', data);
     set(async (state) => {
       const existingNodeIndex = state.nodes.findIndex((node) => node.id === id);
       if (existingNodeIndex !== -1) {
         const existingNode = state.nodes[existingNodeIndex];
-        const updatedNode = {
-          ...existingNode,
-          ...data,
-          position: data.position || existingNode.position,
-          data: {
-            ...existingNode.data,
-            ...data.data,
-            backgroundColor:
-              data.data?.backgroundColor || existingNode.data.backgroundColor,
-            textColor: data.data?.textColor || existingNode.data.textColor,
-            tags: data.data?.tags || existingNode.data.tags || [],
-            attachedFiles:
-              data.data?.attachedFiles || existingNode.data.attachedFiles || []
-          }
-        };
-        switch (existingNode.type) {
-          case 'note':
-            updatedNode.data = {
-              ...updatedNode.data,
-              ...(data.data as NoteNodeData)
-            };
-            break;
-          case 'task':
-            updatedNode.data = {
-              ...updatedNode.data,
-              ...(data.data as TaskNodeData)
-            };
-            break;
-          case 'table':
-            updatedNode.data = {
-              ...updatedNode.data,
-              ...(data.data as TableNodeData)
-            };
-            break;
-          case 'calendar':
-            updatedNode.data = {
-              ...updatedNode.data,
-              ...(data.data as CalendarNodeData)
-            };
-            break;
-          case 'draw':
-            updatedNode.data = {
-              ...updatedNode.data,
-              ...(data.data as DrawNodeData)
-            };
-            break;
-          // Add more cases for other node types if needed
-          default:
-            break;
-        }
+        const updatedNode = updateNodeData(existingNode, data);
 
         const updatedNodes = [...state.nodes];
         updatedNodes[existingNodeIndex] = updatedNode;
@@ -263,20 +288,8 @@ export const useStore = createStore<CanvasState>((set, get) => ({
   removeNode: async (id) => {
     console.log('Store: Removing node with id:', id);
     set(async (state) => {
-      const nodeToRemove = state.nodes.find((node) => node.id === id);
-      if (nodeToRemove) {
-        const { error } = await deleteNodeInDatabase(id, nodeToRemove.type);
-        if (error) {
-          console.error('Error deleting node from database:', error);
-          return state;
-        }
-      }
-      return {
-        nodes: state.nodes.filter((node) => node.id !== id),
-        edges: state.edges.filter(
-          (edge) => edge.source !== id && edge.target !== id
-        )
-      };
+      const updatedState = await removeNodeData(id, state);
+      return updatedState;
     });
   },
 

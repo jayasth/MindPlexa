@@ -17,7 +17,6 @@ import {
 import TagFileContainer from '@/ui/nodes/common/TagFileContainer';
 import {
   handleTitleChange,
-  handleSave,
   handleClose,
   handleDelete,
   colorCombinations,
@@ -295,12 +294,20 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
       <div className={styles.footer}>
         <SaveButton
           onClick={() =>
-            handleSave(data.id, () => {}, {
-              ...data,
-              title,
-              content,
-              tags
-            })
+            updateNode(
+              data.id,
+              {
+                title,
+                tags,
+                attached_files: attachedFiles.map((file) => ({ name: file })),
+                background_color: backgroundColor,
+                text_color: textColor,
+                edit_width: nodeWidth,
+                edit_height: nodeHeight
+              },
+              { content },
+              'note'
+            )
           }
         />
         <DeleteButton onClick={() => handleDelete(data.id, () => {}, 'note')} />

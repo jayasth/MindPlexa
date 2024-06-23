@@ -119,83 +119,8 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
         }
       });
       onNodeResizeStop(id, newSize, node.position);
-      handleSaveChanges({ ...newSize, data: node.data });
     }
   }, [id, node, toggleEditMode, updateNode, onNodeResizeStop]);
-
-  const handleSaveChanges = useCallback(
-    async (newData) => {
-      const updates = { ...newData };
-      let specificUpdates = {};
-
-      switch (node.type) {
-        case 'note':
-          specificUpdates = { content: newData.data.content };
-          break;
-        case 'task':
-          specificUpdates = { tasks: newData.data.tasks };
-          break;
-        case 'table':
-          specificUpdates = {
-            columns: newData.data.columns,
-            rows: newData.data.rows
-          };
-          break;
-        case 'calendar':
-          specificUpdates = {
-            events: newData.data.events,
-            view: newData.data.view
-          };
-          break;
-        case 'draw':
-          specificUpdates = { drawing_data: newData.data.drawingData };
-          break;
-        default:
-          break;
-      }
-
-      const { data: updatedData, error } = await updateNodeInDB(
-        id,
-        updates,
-        specificUpdates,
-        node.type as Exclude<typeof node.type, 'selectionMenu'>
-      );
-      if (error) {
-        console.error('Error updating node in database:', error);
-        return; // Return early if there's an error
-      }
-      if (updatedData) {
-        const validData = {
-          ...updatedData,
-          position:
-            typeof updatedData.position === 'object' &&
-            updatedData.position !== null &&
-            'x' in updatedData.position &&
-            'y' in updatedData.position
-              ? {
-                  x: updatedData.position.x as number,
-                  y: updatedData.position.y as number
-                }
-              : undefined,
-          type: updatedData.type ?? undefined,
-          created_at: updatedData.created_at ?? null,
-          height: updatedData.view_height ?? null,
-          id: updatedData.id.toString(),
-          updated_at: updatedData.updated_at ?? null,
-          width: updatedData.view_width ?? null,
-          view_width: updatedData.view_width ?? null,
-          view_height: updatedData.view_height ?? null,
-          edit_width: updatedData.edit_width ?? null,
-          edit_height: updatedData.edit_height ?? null,
-          draggable: updatedData.draggable ?? true,
-          connectable: updatedData.connectable ?? true,
-          z_index: updatedData.z_index ?? null
-        };
-        updateNode(id, validData);
-      }
-    },
-    [id, node?.type, updateNode]
-  );
 
   const handleDeleteNode = useCallback(async () => {
     if (node.type === 'selectionMenu') {
