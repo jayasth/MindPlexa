@@ -251,81 +251,53 @@ export const saveCanvasState = async (
 
 // Function to fetch the canvas state
 export const fetchCanvas = async (canvasId: string) => {
-  // Check if the canvas ID exists
-  const { data: canvasExists, error: canvasExistsError } = await supabase
-    .from('canvases')
-    .select('id')
-    .eq('id', canvasId)
-    .single();
-
-  if (canvasExistsError) {
-    console.error(
-      'canvasDatabaseOperations: Error checking canvas existence:',
-      canvasExistsError
-    );
-    return { error: 'Error checking canvas existence' };
-  }
-
-  if (!canvasExists) {
-    console.error(
-      'canvasDatabaseOperations: Canvas ID does not exist:',
-      canvasId
-    );
-    return { error: 'Canvas ID does not exist' };
-  }
-
-  // Fetch canvas data along with linked nodes and edges
-  const { data, error } = await supabase
-    .from('canvases')
-    .select(
+  try {
+    const { data, error } = await supabase
+      .from('canvases')
+      .select(
+        `
+        *,
+        node_canvas_link(
+          *,
+          common_node_properties(
+            *,
+            note_nodes(*),
+            task_nodes(*),
+            calendar_nodes(*),
+            table_nodes(*),
+            draw_nodes(*)
+          )
+        ),
+        edges(*)
       `
-      *,
-      node_canvas_link!inner(common_node_properties(*)),
-      edges(*)
-    `
-    )
-    .eq('id', canvasId);
-
-  if (error) {
-    console.error('canvasDatabaseOperations: Error fetching canvas:', error);
-    return { error };
-  }
-
-  if (data.length === 0) {
-    console.log(
-      'canvasDatabaseOperations: No canvas data found for ID:',
-      canvasId
-    );
-    return { data: null };
-  }
-
-  // Fetch specific node data for each node type
-  const nodeTypes = ['note', 'task', 'table', 'calendar', 'draw'];
-  const nodeDataPromises = nodeTypes.map((type) =>
-    supabase
-      .from(`${type}_nodes` as keyof Database['public']['Tables'])
-      .select('*')
-      .in(
-        'common_node_id',
-        data[0].node_canvas_link.map((link) => link.common_node_properties?.id)
       )
-  );
+      .eq('id', canvasId)
+      .single();
 
-  const nodeDataResults = await Promise.all(nodeDataPromises);
-  const nodeData = nodeDataResults.reduce(
-    (acc, result, index) => {
-      if (result.error) {
-        console.error(
-          `Error fetching ${nodeTypes[index]} nodes:`,
-          result.error
-        );
-      } else {
-        acc[nodeTypes[index]] = result.data;
-      }
-      return acc;
-    },
-    {} as Record<string, any[]>
-  );
-
-  return { data: data[0], nodeData };
+    if (error) {
+      console.error('Error fetching canvas:', error);
+      return { data: null, error };
+    }
+    const nodeData = {
+      note: data.node_canvas_link.map(
+        (link) => link.common_node_properties?.note_nodes || []
+      ),
+      task: data.node_canvas_link.map(
+        (link) => link.common_node_properties?.task_nodes || []
+      ),
+      calendar: data.node_canvas_link.map(
+        (link) => link.common_node_properties?.calendar_nodes || []
+      ),
+      table: data.node_canvas_link.map(
+        (link) => link.common_node_properties?.table_nodes || []
+      ),
+      draw: data.node_canvas_link.map(
+        (link) => link.common_node_properties?.draw_nodes || []
+      )
+    };
+    return { data, nodeData, error: null };
+  } catch (error) {
+    console.error('Error fetching canvas:', error);
+    return { data: null, error };
+  }
 };
