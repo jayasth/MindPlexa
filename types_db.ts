@@ -96,7 +96,7 @@ export type Database = {
           tags: string[] | null
           text_color: string | null
           title: string | null
-          type: string | null
+          type: Database["public"]["Enums"]["node_type"] | null
           updated_at: string | null
           view_height: number | null
           view_width: number | null
@@ -118,7 +118,7 @@ export type Database = {
           tags?: string[] | null
           text_color?: string | null
           title?: string | null
-          type?: string | null
+          type?: Database["public"]["Enums"]["node_type"] | null
           updated_at?: string | null
           view_height?: number | null
           view_width?: number | null
@@ -140,7 +140,7 @@ export type Database = {
           tags?: string[] | null
           text_color?: string | null
           title?: string | null
-          type?: string | null
+          type?: Database["public"]["Enums"]["node_type"] | null
           updated_at?: string | null
           view_height?: number | null
           view_width?: number | null
@@ -726,6 +726,13 @@ export type Database = {
       }
     }
     Enums: {
+      node_type:
+        | "note"
+        | "task"
+        | "table"
+        | "calendar"
+        | "draw"
+        | "selection_menu"
       price_interval: "day" | "week" | "month" | "year"
       price_type: "one_time" | "recurring"
       pricing_plan_interval: "day" | "week" | "month" | "year"

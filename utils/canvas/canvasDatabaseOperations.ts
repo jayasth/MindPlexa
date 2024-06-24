@@ -242,21 +242,7 @@ export const saveCanvasState = async (
 
 // Function to fetch the canvas state
 export const fetchCanvas = async (canvasId: string) => {
-  // Check if the canvas ID exists
-  const { data: canvasExists, error: canvasExistsError } = await supabase
-    .from('canvases')
-    .select('id')
-    .eq('id', canvasId)
-    .single();
-
-  if (canvasExistsError) {
-    return { error: 'Error checking canvas existence' };
-  }
-
-  if (!canvasExists) {
-    return { error: 'Canvas ID does not exist' };
-  }
-
+  // ...
   // Fetch canvas data along with linked nodes and edges
   const { data, error } = await supabase
     .from('canvases')
@@ -294,10 +280,6 @@ export const fetchCanvas = async (canvasId: string) => {
     (acc, result, index) => {
       if (!result.error) {
         acc[nodeTypes[index]] = result.data;
-        console.log(
-          `canvasDatabaseOperations: ${nodeTypes[index]} node properties:`,
-          result.data
-        );
       }
       return acc;
     },

@@ -88,10 +88,12 @@ export default function CanvasEditor({ canvasId }) {
     setCanvasId(canvasId);
     // Fetch the canvas data from the database
     const fetchCanvasData = async () => {
-      const { data, error } = await fetchCanvas(canvasId);
+      const { data, nodeData, error } = await fetchCanvas(canvasId);
       if (error) {
         console.error('Error fetching canvas data:', error);
       } else if (data) {
+        console.log('Canvas Editor: Fetched canvas data:', data);
+        console.log('Canvas Editor: Fetched node data:', nodeData);
         const nodes: Node[] = data.node_canvas_link
           .map((link) => {
             const node = link.common_node_properties;
@@ -99,25 +101,18 @@ export default function CanvasEditor({ canvasId }) {
               console.error('Error: node is null');
               return null;
             }
+            const specificNodeData = nodeData[
+              node.type as keyof typeof nodeData
+            ]?.find((n) => n.common_node_id === node.id);
             return {
               id: node.id,
               type: node.type || 'defaultType',
-              position: {
-                x:
-                  typeof node.position === 'object' &&
-                  node.position !== null &&
-                  'x' in node.position
-                    ? (node.position.x as number)
-                    : 0,
-                y:
-                  typeof node.position === 'object' &&
-                  node.position !== null &&
-                  'y' in node.position
-                    ? (node.position.y as number)
-                    : 0
-              },
+              position: node.position
+                ? JSON.parse(node.position as string)
+                : { x: 0, y: 0 },
               data: {
                 ...node,
+                ...specificNodeData,
                 backgroundColor: node.background_color || '#F4F4F4',
                 textColor: node.text_color || '#575757',
                 tags: node.tags || [],
