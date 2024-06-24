@@ -13,9 +13,13 @@ export const findOptimalPosition = (
 
   const getNodeSize = (node: Node) => {
     const dimensions = nodeDimensions[node.type as keyof typeof nodeDimensions];
-    return dimensions
-      ? { width: dimensions.width, height: dimensions.height }
-      : { width: 150, height: 60 };
+    if ('width' in dimensions && 'height' in dimensions) {
+      return { width: dimensions.width, height: dimensions.height };
+    } else if ('viewWidth' in dimensions && 'viewHeight' in dimensions) {
+      return { width: dimensions.viewWidth, height: dimensions.viewHeight };
+    } else {
+      return { width: 150, height: 60 }; // Default size
+    }
   };
 
   let attempts = 0;

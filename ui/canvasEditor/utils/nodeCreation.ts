@@ -1,6 +1,9 @@
 import { Node, XYPosition } from 'reactflow';
-import { getNodeSpecificProperties, nodeDimensions } from './nodeProperties';
-import { findOptimalPosition } from './positioningUtils';
+import {
+  getNodeSpecificProperties,
+  nodeDimensions
+} from '@/ui/canvasEditor/utils/nodeProperties';
+import { findOptimalPosition } from '@/ui/canvasEditor/utils/positioningUtils';
 import { createNode as createNodeInDatabase } from '@/utils/canvas/nodeEdgeDatabaseOperations';
 import { v4 as uuidv4 } from 'uuid';
 

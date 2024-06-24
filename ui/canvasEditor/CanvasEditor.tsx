@@ -32,7 +32,6 @@ import { nanoid } from 'nanoid';
 import { handleTemporaryNodeCreation } from '@/ui/canvasEditor/utils/TemporaryNodeHandler';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 import { fetchCanvas } from '@/utils/canvas/canvasDatabaseOperations';
-import { Database } from '@/types_db';
 
 const nodeOrigin: NodeOrigin = [0.5, 0.5];
 const defaultEdgeOptions = {
