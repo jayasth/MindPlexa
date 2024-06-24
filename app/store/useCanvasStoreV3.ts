@@ -14,6 +14,14 @@ import {
   getNodeSpecificProperties
 } from '@/ui/canvasEditor/utils/nodeProperties';
 import { Tables, TablesInsert } from '@/types_db';
+import { saveCanvasState } from '@/utils/canvas/canvasDatabaseOperations';
+import {
+  updateNode as updateNodeInDB,
+  deleteNode as deleteNodeInDB,
+  createEdge as createEdgeInDB,
+  updateEdge as updateEdgeInDB,
+  deleteEdge as deleteEdgeInDB
+} from '@/utils/canvas/nodeEdgeDatabaseOperations';
 
 interface CanvasState {
   canvasID: string;
@@ -169,96 +177,120 @@ export const useStore = createStore<CanvasState>((set, get) => ({
     });
   },
 
-  updateNode: (id, data) => {
-    set((state) => {
-      const existingNodeIndex = state.nodes.findIndex((node) => node.id === id);
-      if (existingNodeIndex !== -1) {
-        const existingNode = state.nodes[existingNodeIndex];
-        const updatedNode = {
-          ...existingNode,
-          ...data,
-          position: data.position || existingNode.position,
-          data: {
-            ...existingNode.data,
-            ...data.data,
-            backgroundColor:
-              data.data?.backgroundColor || existingNode.data.backgroundColor,
-            textColor: data.data?.textColor || existingNode.data.textColor,
-            tags: data.data?.tags || existingNode.data.tags || [],
-            attachedFiles:
-              data.data?.attachedFiles || existingNode.data.attachedFiles || []
-          }
-        };
-        switch (existingNode.type) {
-          case 'note':
-            updatedNode.data = {
-              ...updatedNode.data,
-              ...(data.data as Tables<'note_nodes'>)
-            };
-            break;
-          case 'task':
-            updatedNode.data = {
-              ...updatedNode.data,
-              ...(data.data as Tables<'task_nodes'>)
-            };
-            break;
-          case 'table':
-            updatedNode.data = {
-              ...updatedNode.data,
-              ...(data.data as Tables<'table_nodes'>)
-            };
-            break;
-          case 'calendar':
-            updatedNode.data = {
-              ...updatedNode.data,
-              ...(data.data as Tables<'calendar_nodes'>)
-            };
-            break;
-          case 'draw':
-            updatedNode.data = {
-              ...updatedNode.data,
-              ...(data.data as Tables<'draw_nodes'>)
-            };
-            break;
-          // Add more cases for other node types if needed
-          default:
-            break;
-        }
+  updateNode: async (id, data) => {
+    const { nodes } = get();
+    const existingNodeIndex = nodes.findIndex((node) => node.id === id);
+    if (existingNodeIndex === -1) {
+      console.error('Store: Node not found:', id);
+      return;
+    }
 
+    const existingNode = nodes[existingNodeIndex];
+    const updatedNode = {
+      ...existingNode,
+      ...data,
+      position: data.position || existingNode.position,
+      data: {
+        ...existingNode.data,
+        ...data.data,
+        backgroundColor:
+          data.data?.backgroundColor || existingNode.data.backgroundColor,
+        textColor: data.data?.textColor || existingNode.data.textColor,
+        tags: data.data?.tags || existingNode.data.tags || [],
+        attachedFiles:
+          data.data?.attachedFiles || existingNode.data.attachedFiles || []
+      }
+    };
+
+    switch (existingNode.type) {
+      case 'note':
+        updatedNode.data = {
+          ...updatedNode.data,
+          ...(data.data as Tables<'note_nodes'>)
+        };
+        break;
+      case 'task':
+        updatedNode.data = {
+          ...updatedNode.data,
+          ...(data.data as Tables<'task_nodes'>)
+        };
+        break;
+      case 'table':
+        updatedNode.data = {
+          ...updatedNode.data,
+          ...(data.data as Tables<'table_nodes'>)
+        };
+        break;
+      case 'calendar':
+        updatedNode.data = {
+          ...updatedNode.data,
+          ...(data.data as Tables<'calendar_nodes'>)
+        };
+        break;
+      case 'draw':
+        updatedNode.data = {
+          ...updatedNode.data,
+          ...(data.data as Tables<'draw_nodes'>)
+        };
+        break;
+      // Add more cases for other node types if needed
+      default:
+        break;
+    }
+
+    // Update the node in the database first
+    try {
+      await updateNodeInDB(
+        id,
+        { ...data, position: undefined },
+        updatedNode.data,
+        existingNode.type
+      );
+      // If successful, update the state
+      set((state) => {
         const updatedNodes = [...state.nodes];
         updatedNodes[existingNodeIndex] = updatedNode;
         state.nodeInternals.set(id, updatedNode);
         return { nodes: updatedNodes };
-      }
-      return state;
-    });
+      });
+    } catch (error) {
+      console.error('Store: Failed to update node in DB:', error);
+    }
   },
 
   addEdge: (edge) => {
     console.log('Store: Adding edge:', edge);
-    set((state) => ({
-      edges: [...state.edges, { ...edge, id: nanoid() }]
-    }));
+    set((state) => {
+      const newEdge = { ...edge, id: nanoid() };
+      createEdgeInDB(newEdge);
+      return { edges: [...state.edges, newEdge] };
+    });
   },
-  removeNode: (id) => {
+  removeNode: async (id) => {
     console.log('Store: Removing node with id:', id);
-    set((state) => ({
-      nodes: state.nodes.filter((node) => node.id !== id),
-      edges: state.edges.filter(
+    set((state) => {
+      const updatedNodes = state.nodes.filter((node) => node.id !== id);
+      const updatedEdges = state.edges.filter(
         (edge) => edge.source !== id && edge.target !== id
-      )
-    }));
+      );
+
+      // Delete the node from the database
+      deleteNodeInDB(
+        id,
+        state.nodes.find((node) => node.id === id)?.type || 'note'
+      );
+
+      return { nodes: updatedNodes, edges: updatedEdges };
+    });
   },
   removeEdge: (id) => {
     console.log('Store: Removing edge with id:', id);
     set((state) => {
       const updatedEdges = state.edges.filter((edge) => edge.id !== id);
-      state.onEdgesChange([
-        {
-          type: 'remove',
-          id: id
-        }
-      ]);
+
+      // Delete the edge from the database
+      deleteEdgeInDB(id);
+
       return { edges: updatedEdges };
     });
   },
@@ -271,6 +303,10 @@ export const useStore = createStore<CanvasState>((set, get) => ({
         }
         return edge;
       });
+
+      // Update the edge in the database
+      updateEdgeInDB(id, data);
+
       return { edges: updatedEdges };
     });
   },
@@ -451,24 +487,14 @@ export const useStore = createStore<CanvasState>((set, get) => ({
     console.log('Store: Setting canvas ID to:', id);
     set(() => ({ canvasID: id }));
   },
-  saveCanvas: () => {
-    const { nodes, edges } = get();
-    const canvasData = {
-      nodes: nodes.map((node) => ({
-        id: node.id,
-        type: node.type,
-        position: node.position,
-        data: node.data
-      })),
-      edges: edges.map((edge) => ({
-        id: edge.id,
-        source: edge.source,
-        target: edge.target,
-        type: edge.type
-      }))
-    };
-    console.log('Store: Saving canvas data:', canvasData);
-    // Here you can add logic to save the canvasData to a server or local storage
+  saveCanvas: async () => {
+    const { nodes, edges, canvasID } = get();
+    try {
+      await saveCanvasState(canvasID, nodes, edges);
+      console.log('Canvas state saved successfully');
+    } catch (error) {
+      console.error('Error saving canvas state:', error);
+    }
   }
 }));
 

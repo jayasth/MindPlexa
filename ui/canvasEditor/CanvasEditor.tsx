@@ -32,6 +32,7 @@ import { nanoid } from 'nanoid';
 import { handleTemporaryNodeCreation } from '@/ui/canvasEditor/utils/TemporaryNodeHandler';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 import { fetchCanvas } from '@/utils/canvas/canvasDatabaseOperations';
+import { Database } from '@/types_db';
 
 const nodeOrigin: NodeOrigin = [0.5, 0.5];
 const defaultEdgeOptions = {
@@ -90,35 +91,50 @@ export default function CanvasEditor({ canvasId }) {
     const fetchCanvasData = async () => {
       const { data, error } = await fetchCanvas(canvasId);
       if (error) {
-        console.error('CanvasEditor: Error fetching canvas data:', error);
-        return;
-      }
-      if (data && data.node_canvas_link) {
-        const nodes = data.node_canvas_link
-          .map((link: any) => {
-            const { common_node_properties } = link;
-            if (!common_node_properties) return null;
-
+        console.error('Error fetching canvas data:', error);
+      } else if (data) {
+        const nodes: Node[] = data.node_canvas_link
+          .map((link) => {
+            const node = link.common_node_properties;
+            if (node === null) {
+              console.error('Error: node is null');
+              return null;
+            }
             return {
-              id: common_node_properties.id,
+              id: node.id,
+              type: node.type || 'defaultType',
               position: {
-                x: common_node_properties.x_position || 0,
-                y: common_node_properties.y_position || 0
+                x:
+                  typeof node.position === 'object' &&
+                  node.position !== null &&
+                  'x' in node.position
+                    ? (node.position.x as number)
+                    : 0,
+                y:
+                  typeof node.position === 'object' &&
+                  node.position !== null &&
+                  'y' in node.position
+                    ? (node.position.y as number)
+                    : 0
               },
-              data: { ...common_node_properties },
-              type: common_node_properties.type || 'defaultType'
+              data: {
+                ...node,
+                backgroundColor: node.background_color || '#F4F4F4',
+                textColor: node.text_color || '#575757',
+                tags: node.tags || [],
+                attachedFiles: node.attached_files || []
+              },
+              width: node.view_width || 200,
+              height: node.view_height || 200
             };
           })
-          .filter((node: Node | null) => node !== null) as Node[];
-
-        const edges = (data.edges || []).map((edge: any) => ({
+          .filter((node) => node !== null) as Node[];
+        const edges: Edge[] = data.edges.map((edge) => ({
           id: edge.id,
-          source: edge.source_node_id,
-          target: edge.target_node_id,
-          type: 'customEdge',
-          data: edge.data
+          source: edge.source_node_id || '',
+          target: edge.target_node_id || '',
+          type: 'customEdge'
         }));
-
         setInitialState(nodes, edges);
       }
     };
