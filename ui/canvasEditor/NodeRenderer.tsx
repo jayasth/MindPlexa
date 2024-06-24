@@ -4,6 +4,7 @@ import { Node as BaseNode } from '@/ui/canvasEditor/nodeTypes';
 import dynamic from 'next/dynamic';
 import { useStore } from '@/app/store/useCanvasStore';
 import { getNodeSpecificProperties } from '@/ui/canvasEditor/utils/nodeProperties';
+import { deleteNode as deleteNodeInDB } from '@/utils/canvas/nodeEdgeDatabaseOperations';
 
 const NoteNodeEdit = dynamic(() => import('@/ui/nodes/noteNode/NoteNodeEdit'), {
   ssr: false
@@ -65,12 +66,13 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
 }) => {
   const node = useStore((state) => state.nodes.find((n) => n.id === id)) as
     | BaseNode
-    | undefined;
+    | undefined; // node might be undefined if it has been deleted
 
   const updateNode = useStore((state) => state.updateNode);
   const removeNode = useStore((state) => state.removeNode);
   const toggleEditMode = useStore((state) => state.toggleEditMode);
 
+  // Determine size based on editing mode
   const size = node?.isEditing
     ? { width: node?.edit_width, height: node?.edit_height }
     : { width: node?.view_width, height: node?.view_height };
@@ -93,14 +95,13 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     }
   }, [node?.isEditing, node?.type, updateNode, id]);
 
+  // Early return if node does not exist
   if (!node) {
     console.log(
       `NodeRenderer: Node with ID ${id} not found, possibly deleted.`
     );
     return null;
   }
-
-  console.log(`NodeRenderer: Node data for ${id}:`, node.data);
 
   const handleEdit = useCallback(() => {
     if (node.type !== 'selectionMenu') {
@@ -118,12 +119,15 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     }
   }, [id, node, toggleEditMode, updateNode, onNodeResizeStop]);
 
-  const handleDeleteNode = useCallback(() => {
+  const handleDeleteNode = useCallback(async () => {
     if (node.type === 'selectionMenu') {
       console.error('Invalid node type: selectionMenu');
       return;
     }
-    removeNode(id);
+    const { error } = await deleteNodeInDB(id, node.type);
+    if (!error) {
+      removeNode(id);
+    }
   }, [id, node?.type, removeNode]);
 
   const commonProps = {

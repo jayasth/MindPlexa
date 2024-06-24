@@ -156,7 +156,11 @@ export const updateNode = async (
         ]
     );
 
-    const { data: commonNodeData, error: commonNodeError } = await supabase
+    const {
+      data: commonNodeData,
+      error: commonNodeError,
+      count: commonNodeCount
+    } = await supabase
       .from('common_node_properties')
       .update(validCommonNodeUpdates)
       .eq('id', id)
@@ -171,6 +175,13 @@ export const updateNode = async (
       return { error: commonNodeError };
     }
 
+    if (commonNodeCount === 0) {
+      console.error(
+        'nodeEdgeDatabaseOperations: No common node found to update'
+      );
+      return { error: 'No common node found to update' };
+    }
+
     console.log(
       'nodeEdgeDatabaseOperations: Updated common node properties:',
       commonNodeData
@@ -178,7 +189,11 @@ export const updateNode = async (
 
     // Update the specific node type table
     const tableName = `${nodeType}_nodes` as keyof Database['public']['Tables'];
-    const { data: specificNodeData, error: specificNodeError } = await supabase
+    const {
+      data: specificNodeData,
+      error: specificNodeError,
+      count: specificNodeCount
+    } = await supabase
       .from(tableName)
       .update(specificUpdates)
       .eq('common_node_id', id)
@@ -191,6 +206,13 @@ export const updateNode = async (
         specificNodeError
       );
       return { error: specificNodeError };
+    }
+
+    if (specificNodeCount === 0) {
+      console.error(
+        `nodeEdgeDatabaseOperations: No ${nodeType} node found to update`
+      );
+      return { error: `No ${nodeType} node found to update` };
     }
 
     console.log(
