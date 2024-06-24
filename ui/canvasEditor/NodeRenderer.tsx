@@ -103,6 +103,8 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     return null;
   }
 
+  console.log(`NodeRenderer: Node data for ${id}:`, node.data);
+
   const handleEdit = useCallback(() => {
     if (node.type !== 'selectionMenu') {
       toggleEditMode(id);

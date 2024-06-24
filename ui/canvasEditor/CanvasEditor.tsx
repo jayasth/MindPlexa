@@ -93,6 +93,7 @@ export default function CanvasEditor({ canvasId }) {
     const fetchCanvasData = async () => {
       const { data, nodeData, error } = await fetchCanvas(canvasId);
       if (error) {
+        console.error('CanvasEditor: Error fetching canvas:', error);
       } else if (data === null) {
         console.log('CanvasEditor: No data found for this canvas.');
       } else if (data) {

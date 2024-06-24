@@ -85,8 +85,8 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
         ...(tempNode.data || {}),
         label: `${nodeType.charAt(0).toUpperCase() + nodeType.slice(1)} Node`
       },
-      width: nodeDimensions[nodeType].width,
-      height: nodeDimensions[nodeType].height
+      width: nodeDimensions[nodeType].viewWidth,
+      height: nodeDimensions[nodeType].viewHeight
     };
 
     const { data, error } = await createNode(newNode);
