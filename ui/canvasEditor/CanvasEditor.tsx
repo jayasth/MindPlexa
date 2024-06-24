@@ -288,15 +288,6 @@ export default function CanvasEditor({ canvasId }) {
     };
   }, [saveCanvas]);
 
-  // Auto-save functionality
-  useEffect(() => {
-    const autoSaveInterval = setInterval(() => {
-      saveCanvas();
-    }, 30000); // Auto-save every 30 seconds
-
-    return () => clearInterval(autoSaveInterval);
-  }, [saveCanvas]);
-
   return (
     <div className="flex h-screen">
       <ReactFlowProvider>

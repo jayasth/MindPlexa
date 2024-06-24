@@ -125,30 +125,40 @@ export const updateNode = async (
   nodeType: 'note' | 'task' | 'table' | 'calendar' | 'draw'
 ): Promise<{ data?: any; error?: any }> => {
   try {
-    // Fetch current common node properties before update
-    const { data: currentCommonNodeData, error: fetchCommonNodeError } =
-      await supabase
-        .from('common_node_properties')
-        .select()
-        .eq('id', id)
-        .single();
+    // Ensure we only update columns that exist in common_node_properties
+    const validCommonNodeUpdates: Partial<
+      Database['public']['Tables']['common_node_properties']['Update']
+    > = {
+      type: updates.type,
+      position: updates.position,
+      view_width: updates.view_width,
+      view_height: updates.view_height,
+      edit_width: updates.edit_width,
+      edit_height: updates.edit_height,
+      background_color: updates.background_color,
+      text_color: updates.text_color,
+      title: updates.title,
+      tags: updates.tags,
+      attached_files: updates.attached_files,
+      is_editing: updates.is_editing,
+      is_temporary: updates.is_temporary,
+      parent_node_id: updates.parent_node_id,
+      z_index: updates.z_index
+    };
 
-    if (fetchCommonNodeError) {
-      console.error(
-        'nodeEdgeDatabaseOperations: Error fetching common node properties before update:',
-        fetchCommonNodeError
-      );
-      return { error: fetchCommonNodeError };
-    }
-
-    console.log(
-      'nodeEdgeDatabaseOperations: Current common node properties before update:',
-      currentCommonNodeData
+    // Remove undefined properties
+    Object.keys(validCommonNodeUpdates).forEach(
+      (key) =>
+        validCommonNodeUpdates[key as keyof typeof validCommonNodeUpdates] ===
+          undefined &&
+        delete validCommonNodeUpdates[
+          key as keyof typeof validCommonNodeUpdates
+        ]
     );
 
     const { data: commonNodeData, error: commonNodeError } = await supabase
       .from('common_node_properties')
-      .update(updates)
+      .update(validCommonNodeUpdates)
       .eq('id', id)
       .select()
       .single();
@@ -177,14 +187,14 @@ export const updateNode = async (
 
     if (specificNodeError) {
       console.error(
-        'nodeEdgeDatabaseOperations: Error updating ${nodeType} node:',
+        `nodeEdgeDatabaseOperations: Error updating ${nodeType} node:`,
         specificNodeError
       );
       return { error: specificNodeError };
     }
 
     console.log(
-      'nodeEdgeDatabaseOperations: Updated ${nodeType} node properties:',
+      `nodeEdgeDatabaseOperations: Updated ${nodeType} node properties:`,
       specificNodeData
     );
 
