@@ -31,7 +31,6 @@ import { useEdgeConnection } from '@/ui/canvasEditor/hooks/useEdgeConnection';
 import { nanoid } from 'nanoid';
 import { handleTemporaryNodeCreation } from '@/ui/canvasEditor/utils/TemporaryNodeHandler';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
-import { fetchCanvas } from '@/utils/canvas/canvasDatabaseOperations';
 
 const nodeOrigin: NodeOrigin = [0.5, 0.5];
 const defaultEdgeOptions = {
@@ -86,44 +85,7 @@ export default function CanvasEditor({ canvasId }) {
 
   useEffect(() => {
     setCanvasId(canvasId);
-    // Fetch the canvas data from the database
-    const fetchCanvasData = async () => {
-      const { data, error } = await fetchCanvas(canvasId);
-      if (error) {
-        console.error('CanvasEditor: Error fetching canvas data:', error);
-        return;
-      }
-      if (data && data.node_canvas_link) {
-        const nodes = data.node_canvas_link
-          .map((link: any) => {
-            const { common_node_properties } = link;
-            if (!common_node_properties) return null;
-
-            return {
-              id: common_node_properties.id,
-              position: {
-                x: common_node_properties.x_position || 0,
-                y: common_node_properties.y_position || 0
-              },
-              data: { ...common_node_properties },
-              type: common_node_properties.type || 'defaultType'
-            };
-          })
-          .filter((node: Node | null) => node !== null) as Node[];
-
-        const edges = (data.edges || []).map((edge: any) => ({
-          id: edge.id,
-          source: edge.source_node_id,
-          target: edge.target_node_id,
-          type: 'customEdge',
-          data: edge.data
-        }));
-
-        setInitialState(nodes, edges);
-      }
-    };
-    fetchCanvasData();
-  }, [canvasId, setCanvasId, setInitialState]);
+  }, [canvasId, setCanvasId]);
 
   useEffect(() => {
     const updateCanvasSize = () => {
