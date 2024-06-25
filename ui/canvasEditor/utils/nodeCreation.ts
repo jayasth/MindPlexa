@@ -136,21 +136,26 @@ export const createNode = async (
 
       // Create edge if there's a parent node
       if (parentNode) {
-        const edgeId = `e-${uuidv4()}`;
+        const edgeId = uuidv4();
         const newEdge = {
           id: edgeId,
           source: parentNode.id,
           target: newNodeWithData.id,
           type: 'customEdge'
         };
-        await createEdge({
-          id: edgeId,
+        const { data: createdEdge, error: edgeError } = await createEdge({
           source_node_id: parentNode.id,
           target_node_id: newNodeWithData.id,
           canvas_id: canvasId
         });
-        // Add the edge to the local state
-        useStore.getState().addEdge(newEdge);
+
+        if (edgeError) {
+          console.error('Error creating edge:', edgeError);
+        } else if (createdEdge) {
+          newEdge.id = createdEdge.id;
+          // Add the edge to the local state
+          useStore.getState().addEdge(newEdge);
+        }
       }
     } else {
       throw new Error('Node creation failed');

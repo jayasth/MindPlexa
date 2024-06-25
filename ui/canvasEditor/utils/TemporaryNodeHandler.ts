@@ -16,7 +16,7 @@ export const handleTemporaryNodeCreation = async (
 ) => {
   console.log('Starting handleTemporaryNodeCreation');
 
-  const temporaryNodeId = `selectionMenu-${uuidv4()}`;
+  const temporaryNodeId = uuidv4();
 
   const temporaryNode: Node = {
     id: temporaryNodeId,
@@ -30,23 +30,27 @@ export const handleTemporaryNodeCreation = async (
             selectedNodeType,
             selectedPosition,
             nodes.filter((n) => n.id !== temporaryNodeId),
-            (newNode) => {
+            async (newNode) => {
               addNode(newNode);
               if (parentNode) {
-                const edgeId = `e-${uuidv4()}`;
-                const newEdge = {
-                  id: edgeId,
-                  source: parentNode.id,
-                  target: newNode.id,
-                  type: 'customEdge'
-                };
-                addEdge(newEdge);
-                createEdge({
-                  id: edgeId,
-                  source_node_id: parentNode.id,
-                  target_node_id: newNode.id,
-                  canvas_id: canvasId
-                });
+                const { data: createdEdge, error: edgeError } =
+                  await createEdge({
+                    source_node_id: parentNode.id,
+                    target_node_id: newNode.id,
+                    canvas_id: canvasId
+                  });
+
+                if (edgeError) {
+                  console.error('Error creating edge:', edgeError);
+                } else if (createdEdge) {
+                  const newEdge = {
+                    id: createdEdge.id,
+                    source: parentNode.id,
+                    target: newNode.id,
+                    type: 'customEdge'
+                  };
+                  addEdge(newEdge);
+                }
               }
             },
             {
@@ -87,24 +91,28 @@ export const handleTemporaryNodeCreation = async (
     true,
     false,
     canvasId,
-    parentNode
+    parentNode,
+    temporaryNodeId
   );
 
   if (parentNode) {
-    const edgeId = `e-${uuidv4()}`;
-    const newEdge = {
-      id: edgeId,
-      source: parentNode.id,
-      target: temporaryNodeId,
-      type: 'customEdge'
-    };
-    addEdge(newEdge);
-    await createEdge({
-      id: edgeId,
+    const { data: createdEdge, error: edgeError } = await createEdge({
       source_node_id: parentNode.id,
       target_node_id: temporaryNodeId,
       canvas_id: canvasId
     });
+
+    if (edgeError) {
+      console.error('Error creating edge:', edgeError);
+    } else if (createdEdge) {
+      const newEdge = {
+        id: createdEdge.id,
+        source: parentNode.id,
+        target: temporaryNodeId,
+        type: 'customEdge'
+      };
+      addEdge(newEdge);
+    }
   }
   console.log('Finished handleTemporaryNodeCreation');
 };

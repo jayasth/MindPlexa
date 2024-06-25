@@ -237,7 +237,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
   addEdge: (edge) => {
     console.log('Store: Adding edge:', edge);
     set((state) => ({
-      edges: [...state.edges, { ...edge, id: uuidv4() }]
+      edges: [...state.edges, edge]
     }));
   },
   removeNode: (id) => {
