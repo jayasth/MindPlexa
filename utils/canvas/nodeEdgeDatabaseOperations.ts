@@ -118,112 +118,58 @@ export const updateNode = async (
   nodeType: Database['public']['Enums']['node_type']
 ): Promise<{ data?: any; error?: any }> => {
   try {
-    // Ensure we only update columns that exist in common_node_properties
-    const validCommonNodeUpdates: Partial<
-      Database['public']['Tables']['common_node_properties']['Update']
-    > = {
-      type: updates.type,
-      position: updates.position,
-      view_width: updates.view_width,
-      view_height: updates.view_height,
-      edit_width: updates.edit_width,
-      edit_height: updates.edit_height,
-      background_color: updates.background_color,
-      text_color: updates.text_color,
-      title: updates.title,
-      tags: updates.tags,
-      attached_files: updates.attached_files,
-      is_editing: updates.is_editing,
-      is_temporary: updates.is_temporary,
-      parent_node_id: updates.parent_node_id,
-      z_index: updates.z_index
-    };
-
-    // Remove undefined properties
-    Object.keys(validCommonNodeUpdates).forEach(
-      (key) =>
-        validCommonNodeUpdates[key as keyof typeof validCommonNodeUpdates] ===
-          undefined &&
-        delete validCommonNodeUpdates[
-          key as keyof typeof validCommonNodeUpdates
-        ]
-    );
-
-    const {
-      data: commonNodeData,
-      error: commonNodeError,
-      count: commonNodeCount
-    } = await supabase
+    // Update common node properties
+    const { data: commonNodeData, error: commonNodeError } = await supabase
       .from('common_node_properties')
-      .update(validCommonNodeUpdates)
+      .update(updates)
       .eq('id', id)
       .select()
       .single();
 
     if (commonNodeError) {
-      console.error(
-        'nodeEdgeDatabaseOperations: Error updating common node properties:',
-        commonNodeError
-      );
+      console.error('Error updating common node properties:', commonNodeError);
       return { error: commonNodeError };
     }
 
-    if (commonNodeCount === 0) {
-      console.error(
-        'nodeEdgeDatabaseOperations: No common node found to update'
-      );
-      return { error: 'No common node found to update' };
-    }
-
-    console.log(
-      'nodeEdgeDatabaseOperations: Updated common node properties:',
-      commonNodeData
-    );
-
-    // Update the specific node type table
-    if (nodeType !== 'selectionMenu') {
+    // If the node type has changed, insert a new record in the specific node table
+    if (updates.type && updates.type !== commonNodeData.type) {
       const tableName =
-        `${nodeType}_nodes` as keyof Database['public']['Tables'];
-      const {
-        data: specificNodeData,
-        error: specificNodeError,
-        count: specificNodeCount
-      } = await supabase
-        .from(tableName)
-        .update(specificUpdates)
-        .eq('common_node_id', id)
-        .select()
-        .single();
+        `${updates.type}_nodes` as keyof Database['public']['Tables'];
+      const { data: specificNodeData, error: specificNodeError } =
+        await supabase
+          .from(tableName)
+          .insert({ common_node_id: id, ...specificUpdates })
+          .select()
+          .single();
 
       if (specificNodeError) {
         console.error(
-          `nodeEdgeDatabaseOperations: Error updating ${nodeType} node:`,
+          `Error inserting ${updates.type} node:`,
           specificNodeError
         );
         return { error: specificNodeError };
       }
 
-      if (specificNodeCount === 0) {
-        console.error(
-          `nodeEdgeDatabaseOperations: No ${nodeType} node found to update`
-        );
-        return { error: `No ${nodeType} node found to update` };
-      }
-
-      console.log(
-        `nodeEdgeDatabaseOperations: Updated ${nodeType} node properties:`,
-        specificNodeData
-      );
-
       return { data: { ...commonNodeData, ...specificNodeData } };
-    } else {
-      return { data: commonNodeData };
     }
+
+    // If the node type hasn't changed, update the existing specific node record
+    const tableName = `${nodeType}_nodes` as keyof Database['public']['Tables'];
+    const { data: specificNodeData, error: specificNodeError } = await supabase
+      .from(tableName)
+      .update(specificUpdates)
+      .eq('common_node_id', id)
+      .select()
+      .single();
+
+    if (specificNodeError) {
+      console.error(`Error updating ${nodeType} node:`, specificNodeError);
+      return { error: specificNodeError };
+    }
+
+    return { data: { ...commonNodeData, ...specificNodeData } };
   } catch (error) {
-    console.error(
-      'nodeEdgeDatabaseOperations: Unexpected error updating node:',
-      error
-    );
+    console.error('Unexpected error updating node:', error);
     return { error };
   }
 };

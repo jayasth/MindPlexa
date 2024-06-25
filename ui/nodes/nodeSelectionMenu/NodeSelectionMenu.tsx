@@ -6,7 +6,7 @@ import { PiNotepadFill } from 'react-icons/pi';
 import { FaTable } from 'react-icons/fa';
 
 import { useStore } from '@/app/store/useCanvasStore';
-import { createNode } from '@/ui/canvasEditor/utils/nodeCreation';
+import { updateNode } from '@/utils/canvas/nodeEdgeDatabaseOperations';
 import styles from './NodeSelectionMenu.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
@@ -41,7 +41,7 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
     addNode,
     nodes,
     addEdge,
-    updateNode,
+    updateNode: updateLocalNode,
     edges,
     removeEdge,
     updateEdge
@@ -83,34 +83,42 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
     );
     console.log('NodeSelectionMenu: Connected edges:', connectedEdges);
 
-    await createNode(
-      nodeType,
-      tempNode.position,
-      nodes,
-      (newNode) => {
-        addNode(newNode);
-        // Update the edges connected to the node
-        connectedEdges.forEach((edge) => {
-          const updatedEdge = {
-            ...edge,
-            source: edge.source === id ? newNode.id : edge.source,
-            target: edge.target === id ? newNode.id : edge.target
-          };
-          addEdge(updatedEdge);
-        });
-      },
-      {
-        width: nodeDimensions[nodeType].viewWidth,
-        height: nodeDimensions[nodeType].viewHeight
-      },
-      false,
-      false,
-      useStore.getState().canvasID,
-      parentNode
+    // Update the existing node in the database
+    const { error } = await updateNode(
+      id,
+      { type: nodeType },
+      { content: '' }, // Add default content for the specific node type
+      nodeType
     );
 
-    // Remove the temporary node
-    removeNode(id);
+    if (error) {
+      console.error('Error updating node:', error);
+      return;
+    }
+
+    // Create a new node object with updated properties
+    const updatedNode = {
+      ...tempNode,
+      type: nodeType,
+      data: {
+        ...tempNode.data,
+        type: nodeType,
+        content: ''
+      }
+    };
+
+    // Update the node in the local state
+    updateLocalNode(id, updatedNode);
+
+    // Update the edges connected to the node
+    connectedEdges.forEach((edge) => {
+      const updatedEdge = {
+        ...edge,
+        source: edge.source === id ? id : edge.source,
+        target: edge.target === id ? id : edge.target
+      };
+      updateEdge(edge.id, updatedEdge);
+    });
 
     console.log('NodeSelectionMenu: Replacement node and edges updated');
   };
