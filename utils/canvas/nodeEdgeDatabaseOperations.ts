@@ -17,7 +17,7 @@ const supabase = createClient();
 // Function to insert a new node
 export const createNode = async (
   canvasId: string,
-  nodeType: 'note' | 'task' | 'table' | 'calendar' | 'draw',
+  nodeType: 'note' | 'task' | 'table' | 'calendar' | 'draw' | 'selection_menu',
   position: { x: number; y: number },
   data: CommonNodeData & {
     viewWidth?: number;
@@ -122,7 +122,7 @@ export const updateNode = async (
     | CalendarNodeData
     | DrawNodeData
   >,
-  nodeType: 'note' | 'task' | 'table' | 'calendar' | 'draw'
+  nodeType: 'note' | 'task' | 'table' | 'calendar' | 'draw' | 'selection_menu'
 ): Promise<{ data?: any; error?: any }> => {
   try {
     // Ensure we only update columns that exist in common_node_properties
@@ -233,7 +233,7 @@ export const updateNode = async (
 // Function to delete a node, updated to handle node_canvas_link and specific node tables
 export const deleteNode = async (
   nodeId: string,
-  nodeType: 'note' | 'task' | 'table' | 'calendar' | 'draw'
+  nodeType: 'note' | 'task' | 'table' | 'calendar' | 'draw' | 'selection_menu'
 ): Promise<{ success?: boolean; error?: any }> => {
   try {
     // Delete the specific node type

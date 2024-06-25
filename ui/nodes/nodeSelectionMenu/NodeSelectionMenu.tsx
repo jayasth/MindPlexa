@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
 import { NodeProps, Handle, Position } from 'reactflow';
+import { nanoid } from 'nanoid';
 
 import { IoList, IoCalendar, IoBrush } from 'react-icons/io5';
 import { PiNotepadFill } from 'react-icons/pi';
@@ -78,9 +79,11 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
       return;
     }
 
+    const newNodeId = nanoid();
     const newNode = {
-      ...tempNode,
+      id: newNodeId,
       type: nodeType,
+      position: tempNode.position,
       data: {
         ...(tempNode.data || {}),
         label: `${nodeType.charAt(0).toUpperCase() + nodeType.slice(1)} Node`
@@ -89,18 +92,33 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
       height: nodeDimensions[nodeType].viewHeight
     };
 
-    const { data, error } = await createNode(newNode);
+    const { data: createdNode, error } = await createNode(
+      useStore.getState().canvasID,
+      nodeType,
+      newNode.position,
+      {
+        ...newNode.data,
+        viewWidth: newNode.width,
+        viewHeight: newNode.height,
+        editWidth: nodeDimensions[nodeType].editWidth,
+        editHeight: nodeDimensions[nodeType].editHeight,
+        parentNodeId: parentNode?.id || null,
+        isTemporary: false,
+        zIndex: 0
+      }
+    );
+
     if (error) {
       console.error('Error creating node:', error);
       return;
     }
 
-    if (!data) {
+    if (!createdNode) {
       console.error('No data returned from createNode');
       return;
     }
 
-    addNode(data); // Update local state with new node from DB
+    addNode(createdNode);
 
     // Update the edges connected to the node
     const connectedEdges = edges.filter(
@@ -111,13 +129,16 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
     connectedEdges.forEach((edge) => {
       const updatedEdge = {
         ...edge,
-        source: edge.source === id ? (data as any).id : edge.source,
-        target: edge.target === id ? (data as any).id : edge.target
+        source: edge.source === id ? newNodeId : edge.source,
+        target: edge.target === id ? newNodeId : edge.target
       };
 
       // Update the edge in the store
       updateEdge(edge.id, updatedEdge);
     });
+
+    // Remove the temporary node
+    removeNode(id);
 
     console.log('NodeSelectionMenu: Replacement node and edges updated');
   };

@@ -135,7 +135,7 @@ export const createNode = async (
         throw new Error('Node creation failed');
       }
     } else {
-      throw new Error('Invalid node type: selectionMenu');
+      callback(newNode);
     }
   } catch (error) {
     console.error('NodeCreation: Error creating new node:', error);
