@@ -1,6 +1,5 @@
 import React, { useRef } from 'react';
 import { NodeProps, Handle, Position } from 'reactflow';
-import { nanoid } from 'nanoid';
 
 import { IoList, IoCalendar, IoBrush } from 'react-icons/io5';
 import { PiNotepadFill } from 'react-icons/pi';

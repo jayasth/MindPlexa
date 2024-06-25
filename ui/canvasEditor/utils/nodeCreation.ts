@@ -6,6 +6,7 @@ import {
 import { findOptimalPosition } from '@/ui/canvasEditor/utils/positioningUtils';
 import { createNode as createNodeInDatabase } from '@/utils/canvas/nodeEdgeDatabaseOperations';
 import { v4 as uuidv4 } from 'uuid';
+import { Database } from '@/types_db';
 
 const setPosition = (x: number, y: number): XYPosition => {
   return { x, y };
@@ -19,7 +20,7 @@ function findNewPosition(
 }
 
 export const createNode = async (
-  nodeType: 'note' | 'task' | 'table' | 'calendar' | 'draw' | 'selectionMenu',
+  nodeType: Database['public']['Enums']['node_type'],
   position: XYPosition,
   nodes: Node<any>[],
   callback: (newNode: Node<any>) => void,
@@ -57,21 +58,15 @@ export const createNode = async (
     ...baseProperties,
     ...getNodeSpecificProperties(nodeType, isEditing),
     view_width:
-      'viewWidth' in nodeDimension
-        ? nodeDimension.viewWidth
-        : nodeDimension.width,
+      'width' in nodeDimension ? nodeDimension.width : nodeDimension.viewWidth,
     view_height:
-      'viewHeight' in nodeDimension
-        ? nodeDimension.viewHeight
-        : nodeDimension.height,
+      'height' in nodeDimension
+        ? nodeDimension.height
+        : nodeDimension.viewHeight,
     edit_width:
-      'editWidth' in nodeDimension
-        ? nodeDimension.editWidth
-        : nodeDimension.width,
+      'editWidth' in nodeDimension ? nodeDimension.editWidth : undefined,
     edit_height:
-      'editHeight' in nodeDimension
-        ? nodeDimension.editHeight
-        : nodeDimension.height
+      'editHeight' in nodeDimension ? nodeDimension.editHeight : undefined
   };
 
   const newNode: Node<any> = {
@@ -82,21 +77,17 @@ export const createNode = async (
     data: {
       ...specificNode,
       view_width:
-        'viewWidth' in nodeDimension
-          ? nodeDimension.viewWidth
-          : nodeDimension.width,
+        'width' in nodeDimension
+          ? nodeDimension.width
+          : nodeDimension.viewWidth,
       view_height:
-        'viewHeight' in nodeDimension
-          ? nodeDimension.viewHeight
-          : nodeDimension.height,
+        'height' in nodeDimension
+          ? nodeDimension.height
+          : nodeDimension.viewHeight,
       edit_width:
-        'editWidth' in nodeDimension
-          ? nodeDimension.editWidth
-          : nodeDimension.width,
+        'editWidth' in nodeDimension ? nodeDimension.editWidth : undefined,
       edit_height:
-        'editHeight' in nodeDimension
-          ? nodeDimension.editHeight
-          : nodeDimension.height
+        'editHeight' in nodeDimension ? nodeDimension.editHeight : undefined
     }
   };
   if (parentNode) {
@@ -107,35 +98,33 @@ export const createNode = async (
   }
 
   try {
-    if (nodeType !== 'selectionMenu') {
-      const newNodeData = {
-        ...newNode.data,
-        z_index: 0
+    const newNodeData = {
+      ...newNode.data,
+      z_index: 0,
+      is_temporary: isTemporary
+    };
+
+    const { data: createdNode, error } = await createNodeInDatabase(
+      canvasId,
+      nodeType,
+      positionAsXYPosition,
+      newNodeData
+    );
+
+    if (error) {
+      console.error('NodeCreation: Database error:', error);
+      throw new Error(error instanceof Error ? error.message : 'Unknown error');
+    }
+
+    if (createdNode) {
+      const newNodeWithData: Node<any> = {
+        ...newNode,
+        data: createdNode
       };
-      const { data: createdNode, error } = await createNodeInDatabase(
-        canvasId,
-        nodeType,
-        positionAsXYPosition,
-        newNodeData
-      );
-      if (error) {
-        console.error('NodeCreation: Database error:', error);
-        throw new Error(
-          error instanceof Error ? error.message : 'Unknown error'
-        );
-      }
-      if (createdNode) {
-        const newNodeWithData: Node<any> = {
-          ...newNode,
-          data: createdNode
-        };
-        callback(newNodeWithData);
-        console.log('nodeCreation: Canvas ID:', canvasId);
-      } else {
-        throw new Error('Node creation failed');
-      }
+      callback(newNodeWithData);
+      console.log('nodeCreation: Canvas ID:', canvasId);
     } else {
-      callback(newNode);
+      throw new Error('Node creation failed');
     }
   } catch (error) {
     console.error('NodeCreation: Error creating new node:', error);

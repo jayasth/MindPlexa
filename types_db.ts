@@ -732,7 +732,7 @@ export type Database = {
         | "table"
         | "calendar"
         | "draw"
-        | "selection_menu"
+        | "selectionMenu"
       price_interval: "day" | "week" | "month" | "year"
       price_type: "one_time" | "recurring"
       pricing_plan_interval: "day" | "week" | "month" | "year"

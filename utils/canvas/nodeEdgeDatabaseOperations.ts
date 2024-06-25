@@ -1,14 +1,6 @@
 import { createClient } from '@/utils/supabase/supabaseClient';
 import { Database } from '@/types_db';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
-import {
-  NoteNodeData,
-  TaskNodeData,
-  TableNodeData,
-  CalendarNodeData,
-  DrawNodeData,
-  CommonNodeData
-} from '@/ui/canvasEditor/utils/nodeDatatypes';
 
 const supabase = createClient();
 
@@ -17,19 +9,10 @@ const supabase = createClient();
 // Function to insert a new node
 export const createNode = async (
   canvasId: string,
-  nodeType: 'note' | 'task' | 'table' | 'calendar' | 'draw' | 'selection_menu',
+  nodeType: Database['public']['Enums']['node_type'],
   position: { x: number; y: number },
-  data: CommonNodeData & {
-    viewWidth?: number;
-    viewHeight?: number;
-    editWidth?: number;
-    editHeight?: number;
-    uniqueData?:
-      | NoteNodeData
-      | TaskNodeData
-      | TableNodeData
-      | CalendarNodeData
-      | DrawNodeData;
+  data: Database['public']['Tables']['common_node_properties']['Insert'] & {
+    uniqueData?: any;
   }
 ): Promise<{ data?: any; error?: any }> => {
   console.log('nodeEdgeDatabaseOperations: createNode called with:', {
@@ -47,19 +30,29 @@ export const createNode = async (
       {
         type: nodeType,
         position: JSON.stringify(position),
-        view_width: data.viewWidth || defaultDimensions.viewWidth,
-        view_height: data.viewHeight || defaultDimensions.viewHeight,
-        edit_width: data.editWidth || defaultDimensions.editWidth,
-        edit_height: data.editHeight || defaultDimensions.editHeight,
-        background_color: data.backgroundColor || '#F4F4F4',
-        text_color: data.textColor || '#575757',
+        view_width:
+          'width' in defaultDimensions
+            ? defaultDimensions.width
+            : defaultDimensions.viewWidth,
+        view_height:
+          'height' in defaultDimensions
+            ? defaultDimensions.height
+            : defaultDimensions.viewHeight,
+        edit_width:
+          'editWidth' in defaultDimensions ? defaultDimensions.editWidth : null,
+        edit_height:
+          'editHeight' in defaultDimensions
+            ? defaultDimensions.editHeight
+            : null,
+        background_color: data.background_color || '#F4F4F4',
+        text_color: data.text_color || '#575757',
         title: data.title,
         tags: data.tags,
-        attached_files: data.attachedFiles,
-        is_editing: data.isEditing,
-        is_temporary: data.isTemporary || false,
-        parent_node_id: data.parentNodeId || null,
-        z_index: data.zIndex || 0
+        attached_files: data.attached_files,
+        is_editing: data.is_editing,
+        is_temporary: data.is_temporary || false,
+        parent_node_id: data.parent_node_id || null,
+        z_index: data.z_index || 0
       };
 
     const { data: commonNodeData, error: commonNodeError } = await supabase
@@ -84,7 +77,7 @@ export const createNode = async (
     }
 
     // Create the specific node type
-    if (nodeType !== 'selection_menu') {
+    if (nodeType !== 'selectionMenu') {
       const specificNodeInsert = {
         common_node_id: commonNodeData.id,
         ...data.uniqueData
@@ -121,14 +114,8 @@ export const updateNode = async (
   updates: Partial<
     Database['public']['Tables']['common_node_properties']['Update']
   >,
-  specificUpdates: Partial<
-    | NoteNodeData
-    | TaskNodeData
-    | TableNodeData
-    | CalendarNodeData
-    | DrawNodeData
-  >,
-  nodeType: 'note' | 'task' | 'table' | 'calendar' | 'draw' | 'selection_menu'
+  specificUpdates: any,
+  nodeType: Database['public']['Enums']['node_type']
 ): Promise<{ data?: any; error?: any }> => {
   try {
     // Ensure we only update columns that exist in common_node_properties
@@ -194,7 +181,7 @@ export const updateNode = async (
     );
 
     // Update the specific node type table
-    if (nodeType !== 'selection_menu') {
+    if (nodeType !== 'selectionMenu') {
       const tableName =
         `${nodeType}_nodes` as keyof Database['public']['Tables'];
       const {
@@ -244,11 +231,11 @@ export const updateNode = async (
 // Function to delete a node, updated to handle node_canvas_link and specific node tables
 export const deleteNode = async (
   nodeId: string,
-  nodeType: 'note' | 'task' | 'table' | 'calendar' | 'draw' | 'selection_menu'
+  nodeType: Database['public']['Enums']['node_type']
 ): Promise<{ success?: boolean; error?: any }> => {
   try {
     // Delete the specific node type
-    if (nodeType !== 'selection_menu') {
+    if (nodeType !== 'selectionMenu') {
       const tableName =
         `${nodeType}_nodes` as keyof Database['public']['Tables'];
       const { error: specificError } = await supabase
