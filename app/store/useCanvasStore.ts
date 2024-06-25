@@ -7,7 +7,7 @@ import {
 import { createNode } from '@/ui/canvasEditor/utils/nodeCreation';
 import { getChildNodePosition } from '@/ui/canvasEditor/utils/getChildNodePosition';
 import { findOptimalPosition } from '@/ui/canvasEditor/utils/positioningUtils';
-import { nanoid } from 'nanoid';
+import { v4 as uuidv4 } from 'uuid';
 import type { Node, Edge, XYPosition } from 'reactflow';
 import {
   nodeDimensions,
@@ -57,7 +57,7 @@ const createStore = <T extends object>(
 };
 
 export const useStore = createStore<CanvasState>((set, get) => ({
-  canvasID: nanoid(),
+  canvasID: uuidv4(),
   nodes: [],
   edges: [],
   domNode: null,
@@ -237,7 +237,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
   addEdge: (edge) => {
     console.log('Store: Adding edge:', edge);
     set((state) => ({
-      edges: [...state.edges, { ...edge, id: nanoid() }]
+      edges: [...state.edges, { ...edge, id: uuidv4() }]
     }));
   },
   removeNode: (id) => {
@@ -300,7 +300,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
     }));
 
     const newNode = {
-      id: nanoid(),
+      id: uuidv4(),
       type: type,
       data: { label: 'New Node' },
       position,
@@ -311,7 +311,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
     };
 
     const newEdge = {
-      id: nanoid(),
+      id: uuidv4(),
       source: parentNode.id,
       target: newNode.id,
       type: 'customEdge'
@@ -358,7 +358,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
     }
 
     const newNode = {
-      id: `selectionMenu-${nanoid()}`,
+      id: `selectionMenu-${uuidv4()}`,
       type: 'selectionMenu',
       position: childNodePosition,
       data: {
@@ -372,7 +372,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
               setEdges((edges) => [
                 ...edges,
                 {
-                  id: `e-${nanoid()}`,
+                  id: `e-${uuidv4()}`,
                   source: parentNode.id,
                   target: newNode.id,
                   type: 'customEdge'
@@ -398,7 +398,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
     setEdges((edges) => [
       ...edges,
       {
-        id: `e-${nanoid()}`,
+        id: `e-${uuidv4()}`,
         source: parentNode.id,
         target: newNode.id,
         type: 'customEdge'

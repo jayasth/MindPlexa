@@ -1,4 +1,4 @@
-import { nanoid } from 'nanoid';
+import { v4 as uuidv4 } from 'uuid';
 import { Node, Edge, XYPosition } from 'reactflow';
 import { createNode } from './nodeCreation';
 import { nodeDimensions } from './nodeProperties';
@@ -15,7 +15,7 @@ export const handleTemporaryNodeCreation = async (
 ) => {
   console.log('Starting handleTemporaryNodeCreation');
 
-  const temporaryNodeId = `selectionMenu-${nanoid()}`;
+  const temporaryNodeId = `selectionMenu-${uuidv4()}`;
 
   const temporaryNode: Node = {
     id: temporaryNodeId,
@@ -32,7 +32,7 @@ export const handleTemporaryNodeCreation = async (
             (newNode) => {
               addNode(newNode);
               if (parentNode) {
-                const edgeId = `e-${nanoid()}`;
+                const edgeId = `e-${uuidv4()}`;
                 addEdge({
                   id: edgeId,
                   source: parentNode.id,
@@ -70,7 +70,7 @@ export const handleTemporaryNodeCreation = async (
   addNode(temporaryNode);
 
   if (parentNode) {
-    const edgeId = `e-${nanoid()}`;
+    const edgeId = `e-${uuidv4()}`;
     addEdge({
       id: edgeId,
       source: parentNode.id,

@@ -28,7 +28,7 @@ import CustomEdge from '@/ui/edges/CustomEdge';
 import NodeSelectionMenu from '@/ui/nodes/nodeSelectionMenu/NodeSelectionMenu';
 import { useStore } from '@/app/store/useCanvasStore';
 import { useEdgeConnection } from '@/ui/canvasEditor/hooks/useEdgeConnection';
-import { nanoid } from 'nanoid';
+import { v4 as uuidv4 } from 'uuid';
 import { handleTemporaryNodeCreation } from '@/ui/canvasEditor/utils/TemporaryNodeHandler';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 import { fetchCanvas } from '@/utils/canvas/canvasDatabaseOperations';
@@ -161,7 +161,7 @@ export default function CanvasEditor({ canvasId }) {
   const handleAddNode = (node) => {
     const newNode = {
       ...node,
-      id: nanoid(),
+      id: uuidv4(),
       position: node.position as XYPosition,
       type: node.type || 'defaultType'
     };
@@ -245,7 +245,7 @@ export default function CanvasEditor({ canvasId }) {
       }
       const newEdge = {
         ...connection,
-        id: `e-${nanoid()}`,
+        id: `e-${uuidv4()}`,
         type: 'customEdge'
       };
       setEdges((eds) => [...eds, newEdge]);

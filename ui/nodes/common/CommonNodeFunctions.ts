@@ -1,5 +1,5 @@
 import { useStore } from '@/app/store/useCanvasStore';
-import { nanoid } from 'nanoid';
+import { v4 as uuidv4 } from 'uuid';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 import {
   updateNode as updateNodeInDatabase,
@@ -326,7 +326,7 @@ export const handleDuplicate = (id: string) => {
     }
 
     const newData = JSON.parse(JSON.stringify(nodeToDuplicate.data));
-    const newId = `${nodeToDuplicate.type}-${nanoid()}`;
+    const newId = `${nodeToDuplicate.type}-${uuidv4()}`;
     newData.id = newId;
 
     if (newData.type === 'text') {

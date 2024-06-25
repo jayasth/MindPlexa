@@ -9,7 +9,6 @@ import { useStore } from '@/app/store/useCanvasStore';
 import { updateNode } from '@/utils/canvas/nodeEdgeDatabaseOperations';
 import styles from './NodeSelectionMenu.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
-import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 
 interface NodeSelectionMenuProps extends NodeProps {
   data: {

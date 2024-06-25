@@ -1,5 +1,5 @@
 import mermaid from 'mermaid';
-import { nanoid } from 'nanoid';
+import { v4 as uuidv4 } from 'uuid';
 import { Node, Edge, MarkerType } from 'reactflow';
 import dagre from 'dagre';
 import {
@@ -146,9 +146,8 @@ const convertToReactFlowElements = (
       y: parseFloat(node.getAttribute('transform')!.split(',')[1]) * 1.2
     };
 
-    const nodeId = `${type}-${nanoid()}`;
-    const { width, height } = nodeDimensions.note;
-
+    const nodeId = `${type}-${uuidv4()}`;
+    const { viewWidth: width, viewHeight: height } = nodeDimensions.note;
     nodes.push({
       id: nodeId,
       type: 'note',
@@ -170,7 +169,6 @@ const convertToReactFlowElements = (
 
     idMap.set(id, nodeId);
   });
-
   mermaidEdges.forEach((edge, index) => {
     const id = edge.getAttribute('id') || `e${index}`;
     const originalSource = edge

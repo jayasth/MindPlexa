@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 import { useStore } from '@/app/store/useCanvasStore';
 import { getChildNodePosition } from '@/ui/canvasEditor/utils/getChildNodePosition';
-import { nanoid } from 'nanoid';
+import { v4 as uuidv4 } from 'uuid';
 import type { XYPosition } from 'reactflow';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 
@@ -56,7 +56,7 @@ export const useEdgeConnection = () => {
           console.log('onConnectEnd: position:', position);
 
           if (position) {
-            const tempNodeId = nanoid();
+            const tempNodeId = uuidv4();
             const tempNode = {
               id: tempNodeId,
               type: 'selectionMenu',
@@ -71,7 +71,7 @@ export const useEdgeConnection = () => {
             addNode(tempNode);
 
             const newEdge = {
-              id: nanoid(),
+              id: uuidv4(),
               source: parentNode.id,
               target: tempNode.id,
               type: 'customEdge'
@@ -87,7 +87,7 @@ export const useEdgeConnection = () => {
 
         if (sourceNode && targetNode) {
           const newEdge = {
-            id: nanoid(),
+            id: uuidv4(),
             source: sourceNode.id,
             target: targetNode,
             type: 'customEdge'

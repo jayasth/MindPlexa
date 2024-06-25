@@ -1,6 +1,6 @@
 import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { nanoid } from 'nanoid';
+import { v4 as uuidv4 } from 'uuid';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -32,7 +32,7 @@ export function extractTitleAndType(input: string): {
       return {
         title,
         type: 'note',
-        id: nanoid(),
+        id: uuidv4(),
         content
       };
     } else {
@@ -40,7 +40,7 @@ export function extractTitleAndType(input: string): {
       return {
         title: 'Untitled',
         type: 'note',
-        id: nanoid(),
+        id: uuidv4(),
         content: 'No description available'
       };
     }
