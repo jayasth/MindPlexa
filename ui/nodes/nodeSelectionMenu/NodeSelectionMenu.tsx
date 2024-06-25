@@ -7,7 +7,7 @@ import { PiNotepadFill } from 'react-icons/pi';
 import { FaTable } from 'react-icons/fa';
 
 import { useStore } from '@/app/store/useCanvasStore';
-import { createNode } from '@/utils/canvas/nodeEdgeDatabaseOperations';
+import { createNode } from '@/ui/canvasEditor/utils/nodeCreation';
 import styles from './NodeSelectionMenu.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
@@ -79,63 +79,36 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
       return;
     }
 
-    const newNodeId = nanoid();
-    const newNode = {
-      id: newNodeId,
-      type: nodeType,
-      position: tempNode.position,
-      data: {
-        ...(tempNode.data || {}),
-        label: `${nodeType.charAt(0).toUpperCase() + nodeType.slice(1)} Node`
-      },
-      width: nodeDimensions[nodeType].viewWidth,
-      height: nodeDimensions[nodeType].viewHeight
-    };
-
-    const { data: createdNode, error } = await createNode(
-      useStore.getState().canvasID,
-      nodeType,
-      newNode.position,
-      {
-        ...newNode.data,
-        viewWidth: newNode.width,
-        viewHeight: newNode.height,
-        editWidth: nodeDimensions[nodeType].editWidth,
-        editHeight: nodeDimensions[nodeType].editHeight,
-        parentNodeId: parentNode?.id || null,
-        isTemporary: false,
-        zIndex: 0
-      }
-    );
-
-    if (error) {
-      console.error('Error creating node:', error);
-      return;
-    }
-
-    if (!createdNode) {
-      console.error('No data returned from createNode');
-      return;
-    }
-
-    addNode(createdNode);
-
-    // Update the edges connected to the node
     const connectedEdges = edges.filter(
       (edge) => edge.source === id || edge.target === id
     );
     console.log('NodeSelectionMenu: Connected edges:', connectedEdges);
 
-    connectedEdges.forEach((edge) => {
-      const updatedEdge = {
-        ...edge,
-        source: edge.source === id ? newNodeId : edge.source,
-        target: edge.target === id ? newNodeId : edge.target
-      };
-
-      // Update the edge in the store
-      updateEdge(edge.id, updatedEdge);
-    });
+    await createNode(
+      nodeType,
+      tempNode.position,
+      nodes,
+      (newNode) => {
+        addNode(newNode);
+        // Update the edges connected to the node
+        connectedEdges.forEach((edge) => {
+          const updatedEdge = {
+            ...edge,
+            source: edge.source === id ? newNode.id : edge.source,
+            target: edge.target === id ? newNode.id : edge.target
+          };
+          addEdge(updatedEdge);
+        });
+      },
+      {
+        width: nodeDimensions[nodeType].viewWidth,
+        height: nodeDimensions[nodeType].viewHeight
+      },
+      false,
+      false,
+      useStore.getState().canvasID,
+      parentNode
+    );
 
     // Remove the temporary node
     removeNode(id);

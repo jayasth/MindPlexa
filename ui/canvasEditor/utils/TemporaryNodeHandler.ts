@@ -3,14 +3,15 @@ import { Node, Edge, XYPosition } from 'reactflow';
 import { createNode } from './nodeCreation';
 import { nodeDimensions } from './nodeProperties';
 
-export const handleTemporaryNodeCreation = (
+export const handleTemporaryNodeCreation = async (
   parentNode: Node | null,
   position: XYPosition,
   nodeType: 'selectionMenu',
   addNode: (node: Node) => void,
   addEdge: (edge: Edge) => void,
   removeNode: (id: string) => void,
-  nodes: Node[]
+  nodes: Node[],
+  canvasId: string
 ) => {
   console.log('Starting handleTemporaryNodeCreation');
 
@@ -21,10 +22,10 @@ export const handleTemporaryNodeCreation = (
     type: nodeType,
     position,
     data: {
-      onSelect: (selectedNodeType, selectedPosition) => {
+      onSelect: async (selectedNodeType, selectedPosition) => {
         removeNode(temporaryNodeId);
-        setTimeout(() => {
-          createNode(
+        setTimeout(async () => {
+          await createNode(
             selectedNodeType,
             selectedPosition,
             nodes.filter((n) => n.id !== temporaryNodeId),
@@ -44,9 +45,10 @@ export const handleTemporaryNodeCreation = (
               width: nodeDimensions['selectionMenu'].width,
               height: nodeDimensions['selectionMenu'].height
             },
+            true,
             false,
-            false,
-            parentNode?.id || ''
+            canvasId,
+            parentNode
           );
         }, 0);
       },

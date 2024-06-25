@@ -276,7 +276,8 @@ export default function CanvasEditor({ canvasId }) {
       addNode,
       addEdge,
       removeNode,
-      nodes
+      nodes,
+      canvasId
     );
   };
 
