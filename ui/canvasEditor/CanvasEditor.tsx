@@ -272,7 +272,7 @@ export default function CanvasEditor({ canvasId }) {
     nodeType: 'selectionMenu'
   ) => {
     handleTemporaryNodeCreation(
-      parentNode as any,
+      parentNode,
       position,
       nodeType,
       addNode,

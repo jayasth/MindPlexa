@@ -1,9 +1,9 @@
 import { useCallback, useRef, useState } from 'react';
 import { useStore } from '@/app/store/useCanvasStore';
 import { getChildNodePosition } from '@/ui/canvasEditor/utils/getChildNodePosition';
-import { v4 as uuidv4 } from 'uuid';
+import { handleTemporaryNodeCreation } from '@/ui/canvasEditor/utils/TemporaryNodeHandler';
 import type { XYPosition } from 'reactflow';
-import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
+import { v4 as uuidv4 } from 'uuid';
 
 export const useEdgeConnection = () => {
   const {
@@ -12,7 +12,9 @@ export const useEdgeConnection = () => {
     screenToFlowPosition,
     addChildNode,
     addEdge,
-    addNode
+    addNode,
+    removeNode,
+    nodes
   } = useStore((state) => ({
     nodes: state.nodes,
     nodeInternals: state.nodeInternals,
@@ -20,7 +22,8 @@ export const useEdgeConnection = () => {
     screenToFlowPosition: state.screenToFlowPosition,
     addChildNode: state.addChildNode,
     addEdge: state.addEdge,
-    addNode: state.addNode
+    addNode: state.addNode,
+    removeNode: state.removeNode
   }));
 
   const connectingNodeId = useRef<string | null>(null);
@@ -56,29 +59,16 @@ export const useEdgeConnection = () => {
           console.log('onConnectEnd: position:', position);
 
           if (position) {
-            const tempNodeId = uuidv4();
-            const tempNode = {
-              id: tempNodeId,
-              type: 'selectionMenu',
+            handleTemporaryNodeCreation(
+              parentNode,
               position,
-              data: {
-                parentNode: parentNode // Add the parent node information
-              },
-              width: nodeDimensions['selectionMenu'].width,
-              height: nodeDimensions['selectionMenu'].height
-            };
-
-            addNode(tempNode);
-
-            const newEdge = {
-              id: uuidv4(),
-              source: parentNode.id,
-              target: tempNode.id,
-              type: 'customEdge'
-            };
-
-            console.log('onConnectEnd: Adding new edge:', newEdge);
-            addEdge(newEdge);
+              'selectionMenu',
+              addNode,
+              addEdge,
+              removeNode,
+              nodes,
+              useStore.getState().canvasID
+            );
           }
         }
       } else if (connectingNodeId.current) {
@@ -105,9 +95,10 @@ export const useEdgeConnection = () => {
       nodeInternals,
       domNode,
       screenToFlowPosition,
-      addChildNode,
+      addNode,
       addEdge,
-      addNode
+      removeNode,
+      nodes
     ]
   );
 

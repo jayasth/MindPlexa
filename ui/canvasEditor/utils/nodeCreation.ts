@@ -6,11 +6,12 @@ import {
 import { findOptimalPosition } from '@/ui/canvasEditor/utils/positioningUtils';
 import {
   createNode as createNodeInDatabase,
-  createEdge as createEdgeInDatabase,
-  updateEdge as updateEdgeInDatabase
+  updateEdge as updateEdgeInDatabase,
+  createEdge
 } from '@/utils/canvas/nodeEdgeDatabaseOperations';
 import { v4 as uuidv4 } from 'uuid';
 import { Database } from '@/types_db';
+import { useStore } from '@/app/store/useCanvasStore';
 
 const setPosition = (x: number, y: number): XYPosition => {
   return { x, y };
@@ -109,7 +110,8 @@ export const createNode = async (
     const newNodeData = {
       ...newNode.data,
       z_index: 0,
-      is_temporary: isTemporary
+      is_temporary: isTemporary,
+      parent_node_id: parentNode ? parentNode.id : null
     };
 
     const { data: createdNode, error } = await createNodeInDatabase(
@@ -131,6 +133,25 @@ export const createNode = async (
       };
       callback(newNodeWithData);
       console.log('nodeCreation: Canvas ID:', canvasId);
+
+      // Create edge if there's a parent node
+      if (parentNode) {
+        const edgeId = `e-${uuidv4()}`;
+        const newEdge = {
+          id: edgeId,
+          source: parentNode.id,
+          target: newNodeWithData.id,
+          type: 'customEdge'
+        };
+        await createEdge({
+          id: edgeId,
+          source_node_id: parentNode.id,
+          target_node_id: newNodeWithData.id,
+          canvas_id: canvasId
+        });
+        // Add the edge to the local state
+        useStore.getState().addEdge(newEdge);
+      }
     } else {
       throw new Error('Node creation failed');
     }

@@ -2,6 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Node, Edge, XYPosition } from 'reactflow';
 import { createNode } from './nodeCreation';
 import { nodeDimensions } from './nodeProperties';
+import { createEdge } from '@/utils/canvas/nodeEdgeDatabaseOperations';
 
 export const handleTemporaryNodeCreation = async (
   parentNode: Node | null,
@@ -33,11 +34,18 @@ export const handleTemporaryNodeCreation = async (
               addNode(newNode);
               if (parentNode) {
                 const edgeId = `e-${uuidv4()}`;
-                addEdge({
+                const newEdge = {
                   id: edgeId,
                   source: parentNode.id,
                   target: newNode.id,
                   type: 'customEdge'
+                };
+                addEdge(newEdge);
+                createEdge({
+                  id: edgeId,
+                  source_node_id: parentNode.id,
+                  target_node_id: newNode.id,
+                  canvas_id: canvasId
                 });
               }
             },
@@ -67,15 +75,35 @@ export const handleTemporaryNodeCreation = async (
     nodeDimensions['selectionMenu']
   );
 
-  addNode(temporaryNode);
+  await createNode(
+    'selectionMenu',
+    position,
+    nodes,
+    addNode,
+    {
+      width: nodeDimensions['selectionMenu'].width,
+      height: nodeDimensions['selectionMenu'].height
+    },
+    true,
+    false,
+    canvasId,
+    parentNode
+  );
 
   if (parentNode) {
     const edgeId = `e-${uuidv4()}`;
-    addEdge({
+    const newEdge = {
       id: edgeId,
       source: parentNode.id,
       target: temporaryNodeId,
       type: 'customEdge'
+    };
+    addEdge(newEdge);
+    await createEdge({
+      id: edgeId,
+      source_node_id: parentNode.id,
+      target_node_id: temporaryNodeId,
+      canvas_id: canvasId
     });
   }
   console.log('Finished handleTemporaryNodeCreation');
