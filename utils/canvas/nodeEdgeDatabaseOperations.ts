@@ -84,25 +84,31 @@ export const createNode = async (
     }
 
     // Create the specific node type
-    const specificNodeInsert = {
-      common_node_id: commonNodeData.id,
-      ...data.uniqueData
-    };
+    if (nodeType !== 'selection_menu') {
+      const specificNodeInsert = {
+        common_node_id: commonNodeData.id,
+        ...data.uniqueData
+      };
 
-    const tableName = `${nodeType}_nodes` as keyof Database['public']['Tables'];
+      const tableName =
+        `${nodeType}_nodes` as keyof Database['public']['Tables'];
 
-    const { data: specificNodeData, error: specificNodeError } = await supabase
-      .from(tableName)
-      .insert([specificNodeInsert])
-      .select()
-      .single();
+      const { data: specificNodeData, error: specificNodeError } =
+        await supabase
+          .from(tableName)
+          .insert([specificNodeInsert])
+          .select()
+          .single();
 
-    if (specificNodeError) {
-      console.error(`Error inserting ${nodeType} node:`, specificNodeError);
-      return { error: specificNodeError };
+      if (specificNodeError) {
+        console.error(`Error inserting ${nodeType} node:`, specificNodeError);
+        return { error: specificNodeError };
+      }
+
+      return { data: { ...commonNodeData, ...specificNodeData } };
+    } else {
+      return { data: commonNodeData };
     }
-
-    return { data: { ...commonNodeData, ...specificNodeData } };
   } catch (error) {
     console.error('Unexpected error creating node:', error);
     return { error };
@@ -188,39 +194,44 @@ export const updateNode = async (
     );
 
     // Update the specific node type table
-    const tableName = `${nodeType}_nodes` as keyof Database['public']['Tables'];
-    const {
-      data: specificNodeData,
-      error: specificNodeError,
-      count: specificNodeCount
-    } = await supabase
-      .from(tableName)
-      .update(specificUpdates)
-      .eq('common_node_id', id)
-      .select()
-      .single();
+    if (nodeType !== 'selection_menu') {
+      const tableName =
+        `${nodeType}_nodes` as keyof Database['public']['Tables'];
+      const {
+        data: specificNodeData,
+        error: specificNodeError,
+        count: specificNodeCount
+      } = await supabase
+        .from(tableName)
+        .update(specificUpdates)
+        .eq('common_node_id', id)
+        .select()
+        .single();
 
-    if (specificNodeError) {
-      console.error(
-        `nodeEdgeDatabaseOperations: Error updating ${nodeType} node:`,
-        specificNodeError
+      if (specificNodeError) {
+        console.error(
+          `nodeEdgeDatabaseOperations: Error updating ${nodeType} node:`,
+          specificNodeError
+        );
+        return { error: specificNodeError };
+      }
+
+      if (specificNodeCount === 0) {
+        console.error(
+          `nodeEdgeDatabaseOperations: No ${nodeType} node found to update`
+        );
+        return { error: `No ${nodeType} node found to update` };
+      }
+
+      console.log(
+        `nodeEdgeDatabaseOperations: Updated ${nodeType} node properties:`,
+        specificNodeData
       );
-      return { error: specificNodeError };
+
+      return { data: { ...commonNodeData, ...specificNodeData } };
+    } else {
+      return { data: commonNodeData };
     }
-
-    if (specificNodeCount === 0) {
-      console.error(
-        `nodeEdgeDatabaseOperations: No ${nodeType} node found to update`
-      );
-      return { error: `No ${nodeType} node found to update` };
-    }
-
-    console.log(
-      `nodeEdgeDatabaseOperations: Updated ${nodeType} node properties:`,
-      specificNodeData
-    );
-
-    return { data: { ...commonNodeData, ...specificNodeData } };
   } catch (error) {
     console.error(
       'nodeEdgeDatabaseOperations: Unexpected error updating node:',
@@ -237,15 +248,18 @@ export const deleteNode = async (
 ): Promise<{ success?: boolean; error?: any }> => {
   try {
     // Delete the specific node type
-    const tableName = `${nodeType}_nodes` as keyof Database['public']['Tables'];
-    const { error: specificError } = await supabase
-      .from(tableName)
-      .delete()
-      .eq('common_node_id', nodeId);
+    if (nodeType !== 'selection_menu') {
+      const tableName =
+        `${nodeType}_nodes` as keyof Database['public']['Tables'];
+      const { error: specificError } = await supabase
+        .from(tableName)
+        .delete()
+        .eq('common_node_id', nodeId);
 
-    if (specificError) {
-      console.error(`Error deleting ${nodeType} node:`, specificError);
-      return { error: specificError };
+      if (specificError) {
+        console.error(`Error deleting ${nodeType} node:`, specificError);
+        return { error: specificError };
+      }
     }
 
     // Delete the common node properties
