@@ -74,7 +74,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
           }
         },
         canvasSize,
-        false, // isTemporary
+        type === 'selectionMenu',
         false, // isEditing
         canvasId
       );

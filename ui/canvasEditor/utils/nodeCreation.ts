@@ -97,6 +97,10 @@ export const createNode = async (
     };
   }
 
+  if (isTemporary) {
+    newNode.data.is_temporary = true;
+  }
+
   try {
     const newNodeData = {
       ...newNode.data,
