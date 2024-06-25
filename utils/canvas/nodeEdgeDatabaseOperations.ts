@@ -131,26 +131,24 @@ export const updateNode = async (
       return { error: commonNodeError };
     }
 
-    // If the node type has changed, insert a new record in the specific node table
+    // If the node type has changed, update the specific node table
     if (updates.type && updates.type !== commonNodeData.type) {
       const tableName =
         `${updates.type}_nodes` as keyof Database['public']['Tables'];
-      const { data: specificNodeData, error: specificNodeError } =
-        await supabase
-          .from(tableName)
-          .insert({ common_node_id: id, ...specificUpdates })
-          .select()
-          .single();
+      const { error: specificNodeError } = await supabase
+        .from(tableName)
+        .update({ common_node_id: id, ...specificUpdates })
+        .eq('common_node_id', id)
+        .select()
+        .single();
 
       if (specificNodeError) {
         console.error(
-          `Error inserting ${updates.type} node:`,
+          `Error updating ${updates.type} node:`,
           specificNodeError
         );
         return { error: specificNodeError };
       }
-
-      return { data: { ...commonNodeData, ...specificNodeData } };
     }
 
     // If the node type hasn't changed, update the existing specific node record

@@ -9,6 +9,8 @@ import { useStore } from '@/app/store/useCanvasStore';
 import { updateNode } from '@/utils/canvas/nodeEdgeDatabaseOperations';
 import styles from './NodeSelectionMenu.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
+import { Database } from '@/types_db';
+import { createClient } from '@/utils/supabase/supabaseClient';
 
 interface NodeSelectionMenuProps extends NodeProps {
   data: {
@@ -43,7 +45,8 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
     updateNode: updateLocalNode,
     edges,
     removeEdge,
-    updateEdge
+    updateEdge,
+    setEdges
   } = useStore((state) => ({
     removeNode: state.removeNode,
     addNode: state.addNode,
@@ -52,7 +55,8 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
     updateNode: state.updateNode,
     edges: state.edges,
     removeEdge: state.removeEdge,
-    updateEdge: state.updateEdge
+    updateEdge: state.updateEdge,
+    setEdges: state.setEdges
   }));
 
   const nodeRef = useRef<HTMLDivElement>(null);
@@ -66,6 +70,8 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
     draw: <IoBrush />
   };
 
+  // ... existing imports ...
+
   const replaceNodeWithType = async (
     nodeType: 'note' | 'task' | 'table' | 'calendar' | 'draw'
   ) => {
@@ -77,49 +83,60 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
       return;
     }
 
-    const connectedEdges = edges.filter(
-      (edge) => edge.source === id || edge.target === id
-    );
-    console.log('NodeSelectionMenu: Connected edges:', connectedEdges);
+    const supabase = createClient();
 
-    // Update the existing node in the database
-    const { error } = await updateNode(
-      id,
-      { type: nodeType },
-      { content: '' }, // Add default content for the specific node type
-      nodeType
-    );
+    // First, update the common node properties
+    const { data: updatedCommonNode, error: commonError } = await supabase
+      .from('common_node_properties')
+      .update({ type: nodeType })
+      .eq('id', id)
+      .select()
+      .single();
 
-    if (error) {
-      console.error('Error updating node:', error);
+    if (commonError) {
+      console.error('Error updating common node properties:', commonError);
       return;
     }
 
-    // Create a new node object with updated properties
+    // Then, insert the specific node type
+    const tableName = `${nodeType}_nodes` as keyof Database['public']['Tables'];
+    const { data: specificNode, error: tableError } = await supabase
+      .from(tableName)
+      .insert([{ common_node_id: id }])
+      .select()
+      .single();
+
+    if (tableError) {
+      console.error('Error inserting specific node:', tableError);
+      return;
+    }
+
+    // Update the local node state
     const updatedNode = {
       ...tempNode,
       type: nodeType,
       data: {
         ...tempNode.data,
-        type: nodeType,
-        content: ''
+        ...updatedCommonNode,
+        ...specificNode
       }
     };
 
-    // Update the node in the local state
     updateLocalNode(id, updatedNode);
 
     // Update the edges connected to the node
-    connectedEdges.forEach((edge) => {
-      const updatedEdge = {
-        ...edge,
-        source: edge.source === id ? id : edge.source,
-        target: edge.target === id ? id : edge.target
-      };
-      updateEdge(edge.id, updatedEdge);
+    const updatedEdges = edges.map((edge) => {
+      if (edge.source === id || edge.target === id) {
+        return {
+          ...edge,
+          source: edge.source === id ? id : edge.source,
+          target: edge.target === id ? id : edge.target
+        };
+      }
+      return edge;
     });
 
-    console.log('NodeSelectionMenu: Replacement node and edges updated');
+    setEdges((prevEdges) => updatedEdges);
   };
 
   return (

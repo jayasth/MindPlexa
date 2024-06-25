@@ -4,7 +4,11 @@ import {
   nodeDimensions
 } from '@/ui/canvasEditor/utils/nodeProperties';
 import { findOptimalPosition } from '@/ui/canvasEditor/utils/positioningUtils';
-import { createNode as createNodeInDatabase } from '@/utils/canvas/nodeEdgeDatabaseOperations';
+import {
+  createNode as createNodeInDatabase,
+  createEdge as createEdgeInDatabase,
+  updateEdge as updateEdgeInDatabase
+} from '@/utils/canvas/nodeEdgeDatabaseOperations';
 import { v4 as uuidv4 } from 'uuid';
 import { Database } from '@/types_db';
 
@@ -133,4 +137,67 @@ export const createNode = async (
   } catch (error) {
     console.error('NodeCreation: Error creating new node:', error);
   }
+};
+
+export const replaceNodeWithType = async (
+  nodeType: 'note' | 'task' | 'table' | 'calendar' | 'draw',
+  id: string,
+  position: XYPosition,
+  edges: any[],
+  setNode: (node: Node) => void,
+  supabase: any
+) => {
+  const existingEdge = edges.find(
+    (edge) => edge.source === id || edge.target === id
+  );
+
+  if (existingEdge) {
+    const updatedEdgeData: Database['public']['Tables']['edges']['Update'] = {
+      source_node_id:
+        existingEdge.source === id ? null : existingEdge.source_node_id,
+      target_node_id:
+        existingEdge.target === id ? null : existingEdge.target_node_id,
+      data: existingEdge.data
+    };
+
+    const { error: edgeError } = await updateEdgeInDatabase(
+      existingEdge.id,
+      updatedEdgeData
+    );
+
+    if (edgeError) {
+      console.error('Error updating edge:', edgeError);
+    }
+  }
+
+  const newNodeInsertData: Database['public']['Tables']['note_nodes']['Insert'] =
+    {
+      content: 'New note content'
+    };
+
+  const { data: newNodeData, error: newNodeError } = await supabase
+    .from(`${nodeType}_nodes`)
+    .insert([newNodeInsertData])
+    .select()
+    .single();
+
+  if (newNodeError) {
+    console.error('Error inserting new node:', newNodeError);
+    return;
+  }
+
+  const updatedNode: Node = {
+    id: id,
+    type: nodeType,
+    position: {
+      x: position.x,
+      y: position.y
+    },
+    data: {
+      ...getNodeSpecificProperties(nodeType, false),
+      ...newNodeData
+    }
+  };
+
+  setNode(updatedNode);
 };
