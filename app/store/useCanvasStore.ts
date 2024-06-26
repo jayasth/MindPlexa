@@ -14,6 +14,10 @@ import {
   getNodeSpecificProperties
 } from '@/ui/canvasEditor/utils/nodeProperties';
 import { Tables, TablesInsert } from '@/types_db';
+import {
+  fetchCanvas,
+  saveCanvasState
+} from '@/utils/canvas/canvasDatabaseOperations';
 
 interface CanvasState {
   canvasID: string;
@@ -48,6 +52,7 @@ interface CanvasState {
   setSelectedNodes: (selectedIds: string[]) => void;
   setCanvasId: (id: string) => void;
   saveCanvas: () => void;
+  loadCanvas: (canvasId: string) => Promise<void>;
 }
 
 const createStore = <T extends object>(
@@ -452,7 +457,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
     set(() => ({ canvasID: id }));
   },
   saveCanvas: () => {
-    const { nodes, edges } = get();
+    const { nodes, edges, canvasID } = get();
     const canvasData = {
       nodes: nodes.map((node) => ({
         id: node.id,
@@ -468,8 +473,82 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       }))
     };
     console.log('Store: Saving canvas data:', canvasData);
-    // Here you can add logic to save the canvasData to a server or local storage
+    saveCanvasState(canvasID, canvasData.nodes, canvasData.edges);
+  },
+  loadCanvas: async (canvasId: string) => {
+    const { setNodes, setEdges, setCanvasId } = get();
+    const { data, error, nodeData } = await fetchCanvas(canvasId);
+    if (error) {
+      console.error('Store: Error fetching canvas:', error);
+      return;
+    }
+    if (data) {
+      setCanvasId(data.id);
+      const nodes = data.node_canvas_link
+        .map((link) => {
+          const commonNode = link.common_node_properties;
+          if (!commonNode) {
+            console.error('Store: Common node properties are null');
+            return null;
+          }
+          const specificNode = nodeData[
+            commonNode.type as keyof typeof nodeData
+          ]?.find((node) => node.common_node_id === commonNode.id);
+          return {
+            id: commonNode.id,
+            type: commonNode.type,
+            position: JSON.parse(commonNode.position as string),
+            data: {
+              ...commonNode,
+              ...specificNode,
+              backgroundColor: commonNode.background_color,
+              textColor: commonNode.text_color,
+              tags: commonNode.tags,
+              attachedFiles: commonNode.attached_files,
+              isEditing: commonNode.is_editing,
+              isTemporary: commonNode.is_temporary,
+              parentNodeId: commonNode.parent_node_id,
+              zIndex: commonNode.z_index
+            }
+          };
+        })
+        .filter(
+          (
+            node
+          ): node is {
+            id: string;
+            type:
+              | 'note'
+              | 'task'
+              | 'table'
+              | 'calendar'
+              | 'draw'
+              | 'selectionMenu';
+            position: any;
+            data: any;
+          } =>
+            node !== null &&
+            node.type !== undefined &&
+            node.type !== null &&
+            (node.type === 'note' ||
+              node.type === 'task' ||
+              node.type === 'table' ||
+              node.type === 'calendar' ||
+              node.type === 'draw' ||
+              node.type === 'selectionMenu')
+        );
+      const edges = data.edges.map((edge) => ({
+        id: edge.id,
+        source: edge.source_node_id,
+        target: edge.target_node_id,
+        type:
+          edge.data && typeof edge.data === 'object' && 'type' in edge.data
+            ? edge.data.type
+            : undefined
+      }));
+      setNodes(nodes);
+      setEdges(edges);
+    }
   }
 }));
-
 export type { CanvasState };
