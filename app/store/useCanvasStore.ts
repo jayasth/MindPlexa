@@ -18,6 +18,13 @@ import {
   fetchCanvas,
   saveCanvasState
 } from '@/utils/canvas/canvasDatabaseOperations';
+import {
+  updateNode as updateNodeInDB,
+  deleteNode as deleteNodeInDB,
+  createEdge as createEdgeInDB,
+  updateEdge as updateEdgeInDB,
+  deleteEdge as deleteEdgeInDB
+} from '@/utils/canvas/nodeEdgeDatabaseOperations';
 
 interface CanvasState {
   canvasID: string;
@@ -27,8 +34,8 @@ interface CanvasState {
   setDomNode: (node: HTMLDivElement | null) => void;
   screenToFlowPosition: (position: { x: number; y: number }) => XYPosition;
   nodeInternals: Map<string, Node>;
-  setNodes: (updater: (nodes: Node[]) => Node[]) => void;
-  setEdges: (updater: (edges: Edge[]) => Edge[]) => void;
+  setNodes: (updater: Node[] | ((nodes: Node[]) => Node[])) => void;
+  setEdges: (updater: Edge[] | ((edges: Edge[]) => Edge[])) => void;
   addNode: (node: Node) => void;
   updateNode: (id: string, data: Partial<Node>) => void;
   addEdge: (edge: Edge) => void;
@@ -78,7 +85,8 @@ export const useStore = createStore<CanvasState>((set, get) => ({
   setNodes: (updater) => {
     console.log('Store: Setting nodes with updater:', updater);
     set((state) => {
-      const updatedNodes = updater(state.nodes);
+      const updatedNodes =
+        typeof updater === 'function' ? updater(state.nodes) : updater;
       state.nodeInternals.clear();
       updatedNodes.forEach((node) => {
         state.nodeInternals.set(node.id, node);
@@ -94,7 +102,9 @@ export const useStore = createStore<CanvasState>((set, get) => ({
   },
   setEdges: (updater) => {
     console.log('Store: Setting edges with updater:', updater);
-    set((state) => ({ edges: updater(state.edges) }));
+    set((state) => ({
+      edges: typeof updater === 'function' ? updater(state.edges) : updater
+    }));
   },
   addNode: (node) => {
     console.log('Store: Adding node:', node);
@@ -174,7 +184,35 @@ export const useStore = createStore<CanvasState>((set, get) => ({
     });
   },
 
-  updateNode: (id, data) => {
+  updateNode: async (id, data) => {
+    const { type, ...commonUpdates } = data;
+    const specificUpdates = data.data;
+
+    // Convert position to JSON string if it exists
+    const updatedCommonUpdates = {
+      ...commonUpdates,
+      position: commonUpdates.position
+        ? JSON.stringify(commonUpdates.position)
+        : undefined
+    };
+
+    if (type) {
+      await updateNodeInDB(
+        id,
+        updatedCommonUpdates,
+        specificUpdates,
+        type as
+          | 'note'
+          | 'task'
+          | 'table'
+          | 'calendar'
+          | 'draw'
+          | 'selectionMenu'
+      );
+    } else {
+      console.error('Node type is undefined');
+      return;
+    }
     set((state) => {
       const existingNodeIndex = state.nodes.findIndex((node) => node.id === id);
       if (existingNodeIndex !== -1) {
@@ -239,13 +277,20 @@ export const useStore = createStore<CanvasState>((set, get) => ({
     });
   },
 
-  addEdge: (edge) => {
+  addEdge: async (edge) => {
+    await createEdgeInDB(edge);
     console.log('Store: Adding edge:', edge);
     set((state) => ({
       edges: [...state.edges, edge]
     }));
   },
-  removeNode: (id) => {
+  removeNode: async (id) => {
+    const nodeToRemove = get().nodes.find((node) => node.id === id);
+    if (!nodeToRemove) {
+      console.error('Store: Node not found for removal:', id);
+      return;
+    }
+    await deleteNodeInDB(id, nodeToRemove.type);
     console.log('Store: Removing node with id:', id);
     set((state) => ({
       nodes: state.nodes.filter((node) => node.id !== id),
@@ -254,7 +299,8 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       )
     }));
   },
-  removeEdge: (id) => {
+  removeEdge: async (id) => {
+    await deleteEdgeInDB(id);
     console.log('Store: Removing edge with id:', id);
     set((state) => {
       const updatedEdges = state.edges.filter((edge) => edge.id !== id);
@@ -267,7 +313,8 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       return { edges: updatedEdges };
     });
   },
-  updateEdge: (id, data) => {
+  updateEdge: async (id, data) => {
+    await updateEdgeInDB(id, data);
     console.log('Store: Updating edge with id:', id, 'and data:', data);
     set((state) => {
       const updatedEdges = state.edges.map((edge) => {

@@ -31,7 +31,6 @@ import { useEdgeConnection } from '@/ui/canvasEditor/hooks/useEdgeConnection';
 import { v4 as uuidv4 } from 'uuid';
 import { handleTemporaryNodeCreation } from '@/ui/canvasEditor/utils/TemporaryNodeHandler';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
-import { fetchCanvas } from '@/utils/canvas/canvasDatabaseOperations';
 
 const nodeOrigin: NodeOrigin = [0.5, 0.5];
 const defaultEdgeOptions = {
@@ -65,7 +64,7 @@ export default function CanvasEditor({ canvasId }) {
     updateNode: updateNodeInStore,
     setCanvasId,
     saveCanvas,
-    setInitialState
+    loadCanvas
   } = useStore((state) => ({
     nodes: state.nodes,
     edges: state.edges,
@@ -81,61 +80,13 @@ export default function CanvasEditor({ canvasId }) {
     updateNode: state.updateNode,
     setCanvasId: state.setCanvasId,
     saveCanvas: state.saveCanvas,
-    setInitialState: state.setInitialState
+    loadCanvas: state.loadCanvas
   }));
 
   useEffect(() => {
     setCanvasId(canvasId);
-    // Fetch the canvas data from the database
-    const fetchCanvasData = async () => {
-      const { data, error } = await fetchCanvas(canvasId);
-      if (error) {
-        console.error('Error fetching canvas data:', error);
-      } else if (data) {
-        const nodes: Node[] = data.node_canvas_link
-          .map((link) => {
-            const node = link.common_node_properties;
-            if (node === null) {
-              console.error('Error: node is null');
-              return null;
-            }
-            // Parse position from JSON
-            const position =
-              typeof node.position === 'string'
-                ? JSON.parse(node.position)
-                : { x: 0, y: 0 };
-            const nodeSpecificData = {};
-            return {
-              id: node.id,
-              type: node.type || 'defaultType',
-              position: {
-                x: position.x,
-                y: position.y
-              },
-              data: {
-                ...node,
-                ...nodeSpecificData,
-                backgroundColor: node.background_color || '#F4F4F4',
-                textColor: node.text_color || '#575757',
-                tags: node.tags || [],
-                attachedFiles: node.attached_files || []
-              },
-              width: node.view_width || 200,
-              height: node.view_height || 200
-            };
-          })
-          .filter((node) => node !== null) as Node[];
-        const edges: Edge[] = data.edges.map((edge) => ({
-          id: edge.id,
-          source: edge.source_node_id || '',
-          target: edge.target_node_id || '',
-          type: 'customEdge'
-        }));
-        setInitialState(nodes, edges);
-      }
-    };
-    fetchCanvasData();
-  }, [canvasId, setCanvasId, setInitialState]);
+    loadCanvas(canvasId);
+  }, [canvasId, setCanvasId, loadCanvas]);
 
   useEffect(() => {
     const updateCanvasSize = () => {
