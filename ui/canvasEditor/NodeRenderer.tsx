@@ -72,6 +72,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
   const [size, setSize] = useState(
     getNodeSpecificProperties(node?.type || 'note', node?.isEditing ?? false)
   );
+  const [isInitialRender, setIsInitialRender] = useState(true);
 
   useEffect(() => {
     if (node && node.type !== 'selectionMenu') {
@@ -82,7 +83,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
   }, [size.width, size.height, node?.type, id]);
 
   useEffect(() => {
-    if (node) {
+    if (node && !isInitialRender) {
       const newSize = getNodeSpecificProperties(node.type, node.isEditing);
       setSize(newSize);
       updateNode(id, {
@@ -98,7 +99,8 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
         `NodeRenderer: Updated size for node ${id}: width = ${newSize.width}, height = ${newSize.height}`
       );
     }
-  }, [node?.isEditing, node?.type, updateNode, id]);
+    setIsInitialRender(false);
+  }, [node?.isEditing, node?.type, updateNode, id, isInitialRender]);
 
   // Early return if node does not exist
   if (!node) {
