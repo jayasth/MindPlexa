@@ -241,7 +241,9 @@ export const saveCanvasState = async (
 };
 
 // Function to fetch the canvas state
-export const fetchCanvas = async (canvasId: string) => {
+export const fetchCanvas = async (
+  canvasId: string
+): Promise<{ data?: any; error?: any; nodeData?: Record<string, any[]> }> => {
   // ...
   // Fetch canvas data along with linked nodes and edges
   const { data, error } = await supabase
@@ -263,16 +265,18 @@ export const fetchCanvas = async (canvasId: string) => {
     return { data: null };
   }
 
+  const canvas = data[0];
+  const commonNodeIds = canvas.node_canvas_link
+    .map((link) => link.common_node_properties?.id)
+    .filter(Boolean);
+
   // Fetch specific node data for each node type
-  const nodeTypes = ['note', 'task', 'table', 'calendar', 'draw'];
+  const nodeTypes = ['note', 'task', 'table', 'calendar', 'draw'] as const;
   const nodeDataPromises = nodeTypes.map((type) =>
     supabase
       .from(`${type}_nodes` as keyof Database['public']['Tables'])
       .select('*')
-      .in(
-        'common_node_id',
-        data[0].node_canvas_link.map((link) => link.common_node_properties?.id)
-      )
+      .in('common_node_id', commonNodeIds)
   );
 
   const nodeDataResults = await Promise.all(nodeDataPromises);
@@ -286,5 +290,5 @@ export const fetchCanvas = async (canvasId: string) => {
     {} as Record<string, any[]>
   );
 
-  return { data: data[0], nodeData };
+  return { data: canvas, nodeData };
 };
