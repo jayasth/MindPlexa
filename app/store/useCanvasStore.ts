@@ -185,21 +185,13 @@ export const useStore = createStore<CanvasState>((set, get) => ({
   },
 
   updateNode: async (id, data) => {
-    const { type, ...commonUpdates } = data;
+    const { type, position, ...commonUpdates } = data;
     const specificUpdates = data.data;
 
-    // Convert position to JSON string if it exists
-    const updatedCommonUpdates = {
-      ...commonUpdates,
-      position: commonUpdates.position
-        ? JSON.stringify(commonUpdates.position)
-        : undefined
-    };
-
-    if (type) {
-      await updateNodeInDB(
+    try {
+      const result = await updateNodeInDB(
         id,
-        updatedCommonUpdates,
+        { ...commonUpdates, position: JSON.stringify(position) },
         specificUpdates,
         type as
           | 'note'
@@ -209,72 +201,48 @@ export const useStore = createStore<CanvasState>((set, get) => ({
           | 'draw'
           | 'selectionMenu'
       );
-    } else {
-      console.error('Store:updateNode: Node type is undefined');
-      return;
-    }
-    set((state) => {
-      const existingNodeIndex = state.nodes.findIndex((node) => node.id === id);
-      if (existingNodeIndex !== -1) {
-        const existingNode = state.nodes[existingNodeIndex];
-        const updatedNode = {
-          ...existingNode,
-          ...data,
-          position: data.position || existingNode.position,
-          data: {
-            ...existingNode.data,
-            ...data.data,
-            backgroundColor:
-              data.data?.backgroundColor || existingNode.data.backgroundColor,
-            textColor: data.data?.textColor || existingNode.data.textColor,
-            tags: data.data?.tags || existingNode.data.tags || [],
-            attachedFiles:
-              data.data?.attachedFiles || existingNode.data.attachedFiles || []
-          }
-        };
-        switch (existingNode.type) {
-          case 'note':
-            updatedNode.data = {
-              ...updatedNode.data,
-              ...(data.data as Tables<'note_nodes'>)
-            };
-            break;
-          case 'task':
-            updatedNode.data = {
-              ...updatedNode.data,
-              ...(data.data as Tables<'task_nodes'>)
-            };
-            break;
-          case 'table':
-            updatedNode.data = {
-              ...updatedNode.data,
-              ...(data.data as Tables<'table_nodes'>)
-            };
-            break;
-          case 'calendar':
-            updatedNode.data = {
-              ...updatedNode.data,
-              ...(data.data as Tables<'calendar_nodes'>)
-            };
-            break;
-          case 'draw':
-            updatedNode.data = {
-              ...updatedNode.data,
-              ...(data.data as Tables<'draw_nodes'>)
-            };
-            break;
-          // Add more cases for other node types if needed
-          default:
-            break;
-        }
-
-        const updatedNodes = [...state.nodes];
-        updatedNodes[existingNodeIndex] = updatedNode;
-        state.nodeInternals.set(id, updatedNode);
-        return { nodes: updatedNodes };
+      if (result.error) {
+        console.error(
+          'Store:updateNode: Error updating node in database:',
+          result.error
+        );
+        return;
       }
-      return state;
-    });
+
+      set((state) => {
+        const existingNodeIndex = state.nodes.findIndex(
+          (node) => node.id === id
+        );
+        if (existingNodeIndex !== -1) {
+          const existingNode = state.nodes[existingNodeIndex];
+          const updatedNode = {
+            ...existingNode,
+            ...data,
+            position: data.position || existingNode.position,
+            data: {
+              ...existingNode.data,
+              ...data.data,
+              backgroundColor:
+                data.data?.backgroundColor || existingNode.data.backgroundColor,
+              textColor: data.data?.textColor || existingNode.data.textColor,
+              tags: data.data?.tags || existingNode.data.tags || [],
+              attachedFiles:
+                data.data?.attachedFiles ||
+                existingNode.data.attachedFiles ||
+                []
+            }
+          };
+
+          const updatedNodes = [...state.nodes];
+          updatedNodes[existingNodeIndex] = updatedNode;
+          state.nodeInternals.set(id, updatedNode);
+          return { nodes: updatedNodes };
+        }
+        return state;
+      });
+    } catch (error) {
+      console.error('Store:updateNode: Unexpected error:', error);
+    }
   },
 
   addEdge: async (edge) => {

@@ -85,7 +85,14 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     if (node) {
       const newSize = getNodeSpecificProperties(node.type, node.isEditing);
       setSize(newSize);
-      updateNode(id, newSize);
+      updateNode(id, {
+        ...newSize,
+        data: {
+          ...node.data,
+          tags: node.data.tags || [],
+          attachedFiles: node.data.attachedFiles || []
+        }
+      });
       console.log(
         `NodeRenderer: Updated size for node ${id}: width = ${newSize.width}, height = ${newSize.height}`
       );
