@@ -67,7 +67,6 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     | BaseNode
     | undefined; // node might be undefined if it has been deleted
 
-  const updateNode = useStore((state) => state.updateNode);
   const toggleEditMode = useStore((state) => state.toggleEditMode);
   const [size, setSize] = useState(
     getNodeSpecificProperties(node?.type || 'note', node?.isEditing ?? false)
@@ -86,21 +85,12 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     if (node && !isInitialRender) {
       const newSize = getNodeSpecificProperties(node.type, node.isEditing);
       setSize(newSize);
-      updateNode(id, {
-        ...newSize,
-        type: node.type,
-        position: node.position,
-        data: {
-          tags: node.data.tags || [],
-          attachedFiles: node.data.attachedFiles || []
-        }
-      });
       console.log(
         `NodeRenderer: Updated size for node ${id}: width = ${newSize.width}, height = ${newSize.height}`
       );
     }
     setIsInitialRender(false);
-  }, [node?.isEditing, node?.type, updateNode, id, isInitialRender]);
+  }, [node?.isEditing, node?.type, id, isInitialRender]);
 
   // Early return if node does not exist
   if (!node) {
@@ -114,15 +104,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     if (node.type !== 'selectionMenu') {
       toggleEditMode(id);
       const newSize = getNodeSpecificProperties(node.type, !node.isEditing);
-      updateNode(id, {
-        ...newSize,
-        type: node.type,
-        position: node.position,
-        data: {
-          tags: node.data.tags || [],
-          attachedFiles: node.data.attachedFiles || []
-        }
-      });
+      setSize(newSize);
       onNodeResizeStop(id, newSize, node.position);
     }
   };
@@ -138,8 +120,10 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     width: size.width,
     height: size.height,
     selected: selected,
-    onLabelChange: (label: string) =>
-      updateNode(id, { data: { ...node.data, label } }),
+    onLabelChange: (label: string) => {
+      // Handle label change without updateNode
+      console.log(`Label changed to: ${label}`);
+    },
     onEdit: handleEdit,
     onNodeResizeStop
   };
