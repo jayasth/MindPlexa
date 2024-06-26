@@ -188,6 +188,29 @@ export const useStore = createStore<CanvasState>((set, get) => ({
     const { type, position, data, ...commonUpdates } = updates;
 
     try {
+      // First, check if the node exists in the database
+      const { data: canvasData, error: fetchError } = await fetchCanvas(
+        get().canvasID
+      );
+      if (fetchError) {
+        console.error(
+          'Store:updateNode: Error fetching canvas data:',
+          fetchError
+        );
+        return;
+      }
+
+      const nodeExists = canvasData?.node_canvas_link?.some(
+        (link) => link.common_node_properties?.id === id
+      );
+      if (!nodeExists) {
+        console.error(
+          'Store:updateNode: Node does not exist in the database:',
+          id
+        );
+        return;
+      }
+
       // Remove height and width from commonUpdates if they exist
       const { height, width, ...filteredCommonUpdates } = commonUpdates;
 
@@ -517,7 +540,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
   },
   // Function to load canvas data
   loadCanvas: async (canvasId: string) => {
-    const { setNodes, setEdges, setCanvasId, setInitialState } = get();
+    const { setNodes, setEdges, setCanvasId } = get();
     const { data, error, nodeData } = await fetchCanvas(canvasId);
     if (error) {
       console.error('Store: Error fetching canvas:', error);
@@ -539,6 +562,17 @@ export const useStore = createStore<CanvasState>((set, get) => ({
                     (n) => n.common_node_id === commonNode.id
                   )) ||
                 {}; // Provide default empty object
+
+              // Log all data values for the node
+              console.log('Store: Node data:', {
+                ...commonNode,
+                ...specificNodeData,
+                backgroundColor: commonNode.background_color || '#F4F4F4',
+                textColor: commonNode.text_color || '#575757',
+                tags: commonNode.tags || [],
+                attachedFiles: commonNode.attached_files || []
+              });
+
               return {
                 // Use the id from the database
                 id: commonNode.id,
@@ -568,10 +602,11 @@ export const useStore = createStore<CanvasState>((set, get) => ({
             type: 'customEdge'
           }))
         : [];
-      setInitialState(nodes, edges);
+      // Set nodes and edges directly without triggering individual updates
+      set({ nodes, edges });
     } else {
       console.log('Store: Initializing blank canvas');
-      setInitialState([], []);
+      set({ nodes: [], edges: [] });
     }
   }
 }));
