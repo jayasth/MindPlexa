@@ -191,16 +191,31 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       // Remove height and width from commonUpdates if they exist
       const { height, width, ...filteredCommonUpdates } = commonUpdates;
 
+      // Prepare common node updates
+      const commonNodeUpdates = {
+        ...filteredCommonUpdates,
+        position: JSON.stringify(position),
+        ...(width && { view_width: width }),
+        ...(height && { view_height: height }),
+        ...(data?.backgroundColor && {
+          background_color: data.backgroundColor
+        }),
+        ...(data?.textColor && { text_color: data.textColor }),
+        ...(data?.tags && { tags: data.tags }),
+        ...(data?.attachedFiles && { attached_files: data.attachedFiles })
+      };
+
+      // Prepare specific node updates
+      const specificNodeUpdates = { ...data };
+      delete specificNodeUpdates.backgroundColor;
+      delete specificNodeUpdates.textColor;
+      delete specificNodeUpdates.tags;
+      delete specificNodeUpdates.attachedFiles;
+
       const result = await updateNodeInDB(
         id,
-        {
-          ...filteredCommonUpdates,
-          position: JSON.stringify(position),
-          // Include view_width and view_height if they were provided
-          ...(width && { view_width: width }),
-          ...(height && { view_height: height })
-        },
-        data, // This should contain only the specific node data
+        commonNodeUpdates,
+        specificNodeUpdates,
         type as
           | 'note'
           | 'task'
@@ -230,7 +245,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
             position: position || existingNode.position,
             data: {
               ...existingNode.data,
-              ...data,
+              ...specificNodeUpdates,
               backgroundColor:
                 data?.backgroundColor || existingNode.data.backgroundColor,
               textColor: data?.textColor || existingNode.data.textColor,
@@ -508,48 +523,54 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       console.error('Store: Error fetching canvas:', error);
       return;
     }
-    if (data && nodeData) {
-      // Add check for nodeData
+    if (data) {
       setCanvasId(data.id);
       const nodes = data.node_canvas_link
-        .map((link) => {
-          const commonNode = link.common_node_properties;
-          if (!commonNode) {
-            console.error('Store: Common node properties are null');
-            return null;
-          }
-          const specificNodeData =
-            nodeData[commonNode.type as keyof typeof nodeData]?.find(
-              (n) => n.common_node_id === commonNode.id
-            ) || {}; // Provide default empty object
-          return {
-            id: commonNode.id,
-            type: commonNode.type,
-            position: JSON.parse(commonNode.position as string),
-            data: {
-              ...commonNode,
-              ...specificNodeData,
-              backgroundColor: commonNode.background_color || '#F4F4F4',
-              textColor: commonNode.text_color || '#575757',
-              tags: commonNode.tags || [],
-              attachedFiles: commonNode.attached_files || []
-            },
-            width: commonNode.view_width || 200,
-            height: commonNode.view_height || 200
-          };
-        })
-        .filter(
-          (node): node is Node => node !== null && node.type !== undefined
-        );
-      const edges = data.edges.map((edge) => ({
-        id: edge.id,
-        source: edge.source_node_id || '',
-        target: edge.target_node_id || '',
-        type: 'customEdge'
-      }));
+        ? data.node_canvas_link
+            .map((link) => {
+              const commonNode = link.common_node_properties;
+              if (!commonNode) {
+                console.error('Store: Common node properties are null');
+                return null;
+              }
+              const specificNodeData =
+                (nodeData &&
+                  nodeData[commonNode.type as keyof typeof nodeData]?.find(
+                    (n) => n.common_node_id === commonNode.id
+                  )) ||
+                {}; // Provide default empty object
+              return {
+                id: commonNode.id,
+                type: commonNode.type,
+                position: JSON.parse(commonNode.position as string),
+                data: {
+                  ...commonNode,
+                  ...specificNodeData,
+                  backgroundColor: commonNode.background_color || '#F4F4F4',
+                  textColor: commonNode.text_color || '#575757',
+                  tags: commonNode.tags || [],
+                  attachedFiles: commonNode.attached_files || []
+                },
+                width: commonNode.view_width || 200,
+                height: commonNode.view_height || 200
+              };
+            })
+            .filter(
+              (node): node is Node => node !== null && node.type !== undefined
+            )
+        : [];
+      const edges = data.edges
+        ? data.edges.map((edge) => ({
+            id: edge.id,
+            source: edge.source_node_id || '',
+            target: edge.target_node_id || '',
+            type: 'customEdge'
+          }))
+        : [];
       setInitialState(nodes, edges);
     } else {
-      console.error('Store: No data or nodeData returned from fetchCanvas');
+      console.log('Store: Initializing blank canvas');
+      setInitialState([], []); // Set empty arrays for nodes and edges
     }
   }
 }));
