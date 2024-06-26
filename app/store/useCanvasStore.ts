@@ -109,7 +109,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
   addNode: (node) => {
     console.log('Store: Adding node:', node);
     if (node.type === undefined) {
-      console.error('Node type is undefined');
+      console.error('Store: Node type is undefined');
       return;
     }
     const nodeProps = getNodeSpecificProperties(node.type, false);
@@ -210,7 +210,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
           | 'selectionMenu'
       );
     } else {
-      console.error('Node type is undefined');
+      console.error('Store:updateNode: Node type is undefined');
       return;
     }
     set((state) => {
@@ -522,8 +522,9 @@ export const useStore = createStore<CanvasState>((set, get) => ({
     console.log('Store: Saving canvas data:', canvasData);
     saveCanvasState(canvasID, canvasData.nodes, canvasData.edges);
   },
+  // Function to load canvas data
   loadCanvas: async (canvasId: string) => {
-    const { setNodes, setEdges, setCanvasId } = get();
+    const { setNodes, setEdges, setCanvasId, setInitialState } = get();
     const { data, error, nodeData } = await fetchCanvas(canvasId);
     if (error) {
       console.error('Store: Error fetching canvas:', error);
@@ -538,63 +539,33 @@ export const useStore = createStore<CanvasState>((set, get) => ({
             console.error('Store: Common node properties are null');
             return null;
           }
-          const specificNode = nodeData[
+          const specificNodeData = nodeData[
             commonNode.type as keyof typeof nodeData
-          ]?.find((node) => node.common_node_id === commonNode.id);
+          ]?.find((n) => n.common_node_id === commonNode.id);
           return {
             id: commonNode.id,
             type: commonNode.type,
             position: JSON.parse(commonNode.position as string),
             data: {
               ...commonNode,
-              ...specificNode,
-              backgroundColor: commonNode.background_color,
-              textColor: commonNode.text_color,
-              tags: commonNode.tags,
-              attachedFiles: commonNode.attached_files,
-              isEditing: commonNode.is_editing,
-              isTemporary: commonNode.is_temporary,
-              parentNodeId: commonNode.parent_node_id,
-              zIndex: commonNode.z_index
-            }
+              ...specificNodeData,
+              backgroundColor: commonNode.background_color || '#F4F4F4',
+              textColor: commonNode.text_color || '#575757',
+              tags: commonNode.tags || [],
+              attachedFiles: commonNode.attached_files || []
+            },
+            width: commonNode.view_width || 200,
+            height: commonNode.view_height || 200
           };
         })
-        .filter(
-          (
-            node
-          ): node is {
-            id: string;
-            type:
-              | 'note'
-              | 'task'
-              | 'table'
-              | 'calendar'
-              | 'draw'
-              | 'selectionMenu';
-            position: any;
-            data: any;
-          } =>
-            node !== null &&
-            node.type !== undefined &&
-            node.type !== null &&
-            (node.type === 'note' ||
-              node.type === 'task' ||
-              node.type === 'table' ||
-              node.type === 'calendar' ||
-              node.type === 'draw' ||
-              node.type === 'selectionMenu')
-        );
+        .filter((node) => node !== null && node.type) as Node[];
       const edges = data.edges.map((edge) => ({
         id: edge.id,
-        source: edge.source_node_id,
-        target: edge.target_node_id,
-        type:
-          edge.data && typeof edge.data === 'object' && 'type' in edge.data
-            ? edge.data.type
-            : undefined
+        source: edge.source_node_id || '',
+        target: edge.target_node_id || '',
+        type: 'customEdge'
       }));
-      setNodes(nodes);
-      setEdges(edges);
+      setInitialState(nodes, edges);
     }
   }
 }));
