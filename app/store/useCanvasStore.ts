@@ -540,6 +540,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
                   )) ||
                 {}; // Provide default empty object
               return {
+                // Use the id from the database
                 id: commonNode.id,
                 type: commonNode.type,
                 position: JSON.parse(commonNode.position as string),
@@ -570,7 +571,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       setInitialState(nodes, edges);
     } else {
       console.log('Store: Initializing blank canvas');
-      setInitialState([], []); // Set empty arrays for nodes and edges
+      setInitialState([], []);
     }
   }
 }));

@@ -6,7 +6,6 @@ import { PiNotepadFill } from 'react-icons/pi';
 import { FaTable } from 'react-icons/fa';
 
 import { useStore } from '@/app/store/useCanvasStore';
-import { updateNode } from '@/utils/canvas/nodeEdgeDatabaseOperations';
 import styles from './NodeSelectionMenu.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 import { Database } from '@/types_db';
@@ -136,7 +135,7 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
       return edge;
     });
 
-    setEdges((prevEdges) => updatedEdges);
+    setEdges(updatedEdges);
   };
 
   return (
