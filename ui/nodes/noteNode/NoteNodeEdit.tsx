@@ -30,7 +30,6 @@ import 'quill/dist/quill.snow.css';
 import { Database } from '@/types_db';
 import { useBackgroundColorChange } from '@/ui/nodes/common/useBackgroundColorChange';
 import { updateNode } from '@/utils/canvas/nodeEdgeDatabaseOperations';
-import { useStore } from '@/app/store/useCanvasStore';
 import { debounce } from 'lodash';
 
 interface NoteNodeEditProps extends NodeProps {
@@ -93,8 +92,6 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     handleBackgroundColorChange(color);
   };
 
-  const { updateNode: updateNodeInStore } = useStore();
-
   useEffect(() => {
     if (
       typeof document !== 'undefined' &&
@@ -143,10 +140,6 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         );
         if (error) {
           console.error('Error updating node:', error);
-        } else {
-          updateNodeInStore(data.id, {
-            data: { ...commonData, ...specificData }
-          });
         }
       } catch (error) {
         console.error('Error updating node:', error);
@@ -177,8 +170,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     textColor,
     nodeWidth,
     nodeHeight,
-    data.id,
-    updateNodeInStore
+    data.id
   ]);
 
   useEffect(() => {
@@ -292,10 +284,6 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
       );
       if (error) {
         console.error('Error saving node:', error);
-      } else {
-        updateNodeInStore(data.id, {
-          data: { ...commonData, ...specificData }
-        });
       }
     } catch (error) {
       console.error('Error saving node:', error);
