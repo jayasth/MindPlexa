@@ -28,8 +28,6 @@ import {
 import Quill from 'quill';
 import 'quill/dist/quill.snow.css';
 import { useBackgroundColorChange } from '@/ui/nodes/common/useBackgroundColorChange';
-import { useStore } from '@/app/store/useCanvasStore';
-import { debounce } from 'lodash';
 
 interface NoteNodeEditProps extends NodeProps {
   data: {
@@ -132,12 +130,6 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     }
   }, [content, data.id]);
 
-  const debouncedUpdateNodeData = useRef(
-    debounce((commonData, specificData) => {
-      updateNodeData(data.id, commonData, specificData);
-    }, 500)
-  ).current;
-
   useEffect(() => {
     const commonData = {
       title,
@@ -151,7 +143,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
 
     const specificData = { content };
 
-    debouncedUpdateNodeData(commonData, specificData);
+    updateNodeData(data.id, commonData, specificData);
   }, [
     title,
     content,
