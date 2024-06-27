@@ -1,10 +1,6 @@
 import { useStore } from '@/app/store/useCanvasStore';
 import { v4 as uuidv4 } from 'uuid';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
-import {
-  updateNode as updateNodeInDatabase,
-  deleteNode as deleteNodeInDatabase
-} from '@/utils/canvas/nodeEdgeDatabaseOperations';
 
 export const getContrastYIQ = (color: string) => {
   let r,
@@ -137,9 +133,14 @@ export const handleChangeColorWithCombination = (
   textColor: string,
   onChangeColor: (color: string) => void
 ) => {
-  const { updateNode } = useStore.getState();
+  const { updateNode, nodeInternals } = useStore.getState();
+  const node = nodeInternals.get(id);
+  if (!node) {
+    console.error(`Node with id ${id} not found`);
+    return;
+  }
   onChangeColor(backgroundColor);
-  updateNode(id, { data: { backgroundColor, textColor } });
+  updateNode(node, { data: { backgroundColor, textColor } });
 };
 
 export const handleTitleChange = (
@@ -147,20 +148,25 @@ export const handleTitleChange = (
   title: string,
   onChangeTitle: (title: string) => void
 ) => {
-  const { updateNode } = useStore.getState();
+  const { updateNode, nodeInternals } = useStore.getState();
+  const node = nodeInternals.get(id);
+  if (!node) {
+    console.error(`Node with id ${id} not found`);
+    return;
+  }
   onChangeTitle(title);
-  updateNode(id, { data: { title } });
+  updateNode(node, { data: { title } });
 };
 
 export const handleSave = (id: string, onSave: () => void, nodeData: any) => {
-  const { updateNode, toggleEditMode } = useStore.getState();
+  const { updateNode, toggleEditMode, nodeInternals } = useStore.getState();
+  const node = nodeInternals.get(id);
+  if (!node) {
+    console.error(`Node with id ${id} not found`);
+    return;
+  }
   onSave();
-  updateNodeInDatabase(
-    id,
-    nodeData,
-    nodeData,
-    nodeData.type as 'note' | 'task' | 'table' | 'calendar' | 'draw'
-  );
+  updateNode(node, nodeData);
   toggleEditMode(id);
 };
 export const handleClose = (
@@ -169,24 +175,25 @@ export const handleClose = (
   title: string,
   content: any
 ) => {
-  const { updateNode, toggleEditMode } = useStore.getState();
-  updateNode(nodeId, { data: { title, content } });
+  const { updateNode, toggleEditMode, nodeInternals } = useStore.getState();
+  const node = nodeInternals.get(nodeId);
+  if (!node) {
+    console.error(`Node with id ${nodeId} not found`);
+    return;
+  }
+  updateNode(node, { data: { title, content } });
   onClose();
   toggleEditMode(nodeId);
 };
 
-export const handleDelete = async (
-  id: string,
-  onDelete: () => void,
-  nodeType: 'note' | 'task' | 'table' | 'calendar' | 'draw'
-) => {
-  const { removeNode, setEdges } = useStore.getState();
+export const handleDelete = (id: string, onDelete: () => void) => {
+  const { removeNode, setEdges, nodeInternals } = useStore.getState();
+  const node = nodeInternals.get(id);
+  if (!node) {
+    console.error(`Node with id ${id} not found`);
+    return;
+  }
   if (window.confirm('Are you sure you want to delete this node?')) {
-    const { error } = await deleteNodeInDatabase(id, nodeType);
-    if (error) {
-      console.error('Error deleting node:', error);
-      return;
-    }
     onDelete();
     removeNode(id);
     setEdges((edges) =>
@@ -200,10 +207,15 @@ export const handleChangeColor = (
   color: string,
   onChangeColor: (color: string) => void
 ) => {
-  const { updateNode } = useStore.getState();
+  const { updateNode, nodeInternals } = useStore.getState();
+  const node = nodeInternals.get(id);
+  if (!node) {
+    console.error(`Node with id ${id} not found`);
+    return;
+  }
   const textColor = getContrastYIQ(color);
   onChangeColor(color);
-  updateNode(id, { data: { backgroundColor: color, textColor } });
+  updateNode(node, { data: { backgroundColor: color, textColor } });
 };
 
 export const handleAddTag = (
@@ -211,8 +223,13 @@ export const handleAddTag = (
   tags: string[],
   onAddTag: (tag: string) => void
 ) => {
-  const { updateNode } = useStore.getState();
-  updateNode(id, { data: { tags } });
+  const { updateNode, nodeInternals } = useStore.getState();
+  const node = nodeInternals.get(id);
+  if (!node) {
+    console.error(`Node with id ${id} not found`);
+    return;
+  }
+  updateNode(node, { data: { tags } });
   tags.forEach((tag) => onAddTag(tag));
 };
 
@@ -221,7 +238,12 @@ export const handleAttachFile = (
   files: (File | string)[],
   callback: () => void
 ) => {
-  const { updateNode } = useStore.getState();
+  const { updateNode, nodeInternals } = useStore.getState();
+  const node = nodeInternals.get(id);
+  if (!node) {
+    console.error(`Node with id ${id} not found`);
+    return;
+  }
   const maxFileSize = 2 * 1024 * 1024; // 2 MB in bytes
   const validFiles = files.filter((file) => {
     if (typeof file === 'string') return true;
@@ -244,7 +266,7 @@ export const handleAttachFile = (
       return;
     }
 
-    updateNode(id, {
+    updateNode(node, {
       data: { attachedFiles: JSON.stringify(allFiles) } // Serialize files
     });
     callback();
@@ -260,18 +282,22 @@ export const handleRemoveAttachedFile = (
   fileToRemove: File | string,
   onRemoveFile: (file: File | string) => void
 ) => {
-  const { updateNode } = useStore.getState();
+  const { updateNode, nodeInternals } = useStore.getState();
+  const node = nodeInternals.get(id);
+  if (!node) {
+    console.error(`Node with id ${id} not found`);
+    return;
+  }
   const existingFiles =
     useStore.getState().nodes.find((n) => n.id === id)?.data?.attachedFiles ||
     [];
   const updatedFiles = existingFiles.filter((file) => file !== fileToRemove);
 
-  updateNode(id, {
+  updateNode(node, {
     data: { attachedFiles: updatedFiles }
   });
   onRemoveFile(fileToRemove);
 };
-
 export const handleDuplicate = (id: string) => {
   const { nodes, addNode, setSelectedNodes } = useStore.getState();
   const nodeToDuplicate = nodes.find((node) => node.id === id);

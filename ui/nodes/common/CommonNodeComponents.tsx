@@ -15,7 +15,7 @@ import styles from '@/ui/nodes/common/CommonNodeStyles.module.css';
 import Input from '@/ui/Input/Input';
 import Button from '@/ui/Button/Button';
 import { handleAttachmentPreview } from '@/ui/nodes/common/CommonNodeFunctions';
-import { updateNode as updateNodeInDatabase } from '@/utils/canvas/nodeEdgeDatabaseOperations';
+import { useStore } from '@/app/store/useCanvasStore';
 
 const ICON_SIZE = 16;
 
@@ -123,10 +123,12 @@ export const FileModal = ({
   onAttachFiles,
   onRemoveFile,
   existingFiles,
-  data
+  nodeId,
+  nodeType
 }) => {
   const [fileUrl, setFileUrl] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const updateNode = useStore((state) => state.updateNode);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -157,12 +159,9 @@ export const FileModal = ({
           return;
         }
         onAttachFiles(allFiles);
-        updateNodeInDatabase(
-          data.id,
-          { attached_files: allFiles },
-          { attachedFiles: allFiles },
-          data.type
-        );
+        updateNode(nodeId, {
+          data: { attachedFiles: allFiles }
+        });
         setFileUrl('');
       } catch (e) {
         alert('Invalid URL');
@@ -172,12 +171,9 @@ export const FileModal = ({
 
   const handleRemoveFile = (fileToRemove: File | string) => {
     const updatedFiles = existingFiles.filter((file) => file !== fileToRemove);
-    updateNodeInDatabase(
-      data.id,
-      { attached_files: updatedFiles },
-      { attachedFiles: updatedFiles },
-      data.type as 'note' | 'task' | 'table' | 'calendar' | 'draw'
-    );
+    updateNode(nodeId, {
+      data: { attachedFiles: updatedFiles }
+    });
     onRemoveFile(fileToRemove);
   };
 

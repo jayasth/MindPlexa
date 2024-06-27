@@ -137,15 +137,14 @@ export default function CanvasEditor({ canvasId }) {
 
   const onNodeResizeStop = useCallback(
     (
-      nodeId: string,
+      node: Node,
       newSize: { width: number; height: number },
       newPosition: { x: number; y: number }
     ) => {
-      updateNodeInStore(nodeId, { ...newSize, position: newPosition });
+      updateNodeInStore(node, { ...newSize, position: newPosition });
     },
     [updateNodeInStore]
   );
-
   const nodeTypes = useMemo(
     () => ({
       note: (props) => (
