@@ -187,6 +187,8 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       const existingNodeIndex = state.nodes.findIndex((node) => node.id === id);
       if (existingNodeIndex !== -1) {
         const existingNode = state.nodes[existingNodeIndex];
+        console.log('Store: Existing Node before update:', existingNode);
+
         const updatedNode = {
           ...existingNode,
           ...data,
@@ -202,6 +204,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
               data.data?.attachedFiles || existingNode.data.attachedFiles || []
           }
         };
+
         switch (existingNode.type) {
           case 'note':
             updatedNode.data = {
@@ -241,6 +244,8 @@ export const useStore = createStore<CanvasState>((set, get) => ({
         const updatedNodes = [...state.nodes];
         updatedNodes[existingNodeIndex] = updatedNode;
         state.nodeInternals.set(id, updatedNode);
+
+        console.log('Store: Updated Node after update:', updatedNode);
         return { nodes: updatedNodes };
       }
       return state;

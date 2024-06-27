@@ -119,6 +119,13 @@ export const updateNode = async (
   nodeType: Database['public']['Enums']['node_type']
 ): Promise<{ data?: any; error?: any }> => {
   try {
+    console.log('nodeEdgeDatabaseOperations: updateNode called with:', {
+      id,
+      updates,
+      specificUpdates,
+      nodeType
+    });
+
     // Update common node properties
     const { data: commonNodeData, error: commonNodeError } = await supabase
       .from('common_node_properties')
@@ -127,8 +134,19 @@ export const updateNode = async (
       .select()
       .single();
 
+    console.log(
+      'nodeEdgeDatabaseOperations: After updating common node properties:',
+      {
+        commonNodeData,
+        commonNodeError
+      }
+    );
+
     if (commonNodeError) {
-      console.error('Error updating common node properties:', commonNodeError);
+      console.error(
+        'nodeEdgeDatabaseOperations: Error updating common node properties:',
+        commonNodeError
+      );
       return { error: commonNodeError };
     }
 
@@ -143,9 +161,16 @@ export const updateNode = async (
         .select()
         .single();
 
+      console.log(
+        'nodeEdgeDatabaseOperations: After updating ${updates.type} node:',
+        {
+          specificNodeError
+        }
+      );
+
       if (specificNodeError) {
         console.error(
-          `Error updating ${updates.type} node:`,
+          'nodeEdgeDatabaseOperations: Error updating ${updates.type} node:',
           specificNodeError
         );
         return { error: specificNodeError };
@@ -161,18 +186,36 @@ export const updateNode = async (
       .select()
       .single();
 
+    console.log(
+      'nodeEdgeDatabaseOperations: After updating ${nodeType} node:',
+      {
+        specificNodeData,
+        specificNodeError
+      }
+    );
+
     if (specificNodeError) {
-      console.error(`Error updating ${nodeType} node:`, specificNodeError);
+      console.error(
+        'nodeEdgeDatabaseOperations: Error updating ${nodeType} node:',
+        specificNodeError
+      );
       return { error: specificNodeError };
     }
 
+    console.log('nodeEdgeDatabaseOperations: Final updated node data:', {
+      ...commonNodeData,
+      ...specificNodeData
+    });
+
     return { data: { ...commonNodeData, ...specificNodeData } };
   } catch (error) {
-    console.error('Unexpected error updating node:', error);
+    console.error(
+      'nodeEdgeDatabaseOperations: Unexpected error updating node:',
+      error
+    );
     return { error };
   }
 };
-
 // Function to delete a node, updated to handle node_canvas_link and specific node tables
 export const deleteNode = async (
   nodeId: string,
