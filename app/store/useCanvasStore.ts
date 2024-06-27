@@ -494,7 +494,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
   // Function to load canvas data
   loadCanvas: async (canvasId: string) => {
     const { setNodes, setEdges, setCanvasId } = get();
-    const { data, error } = await fetchCanvas(canvasId);
+    const { data, error, nodeData } = await fetchCanvas(canvasId);
     if (error) {
       console.error('Store: Error fetching canvas:', error);
       return;
@@ -509,9 +509,9 @@ export const useStore = createStore<CanvasState>((set, get) => ({
                 console.error('Store: Common node properties are null');
                 return null;
               }
-              const specificNodeData = data[`${commonNode.type}_nodes`]?.find(
-                (n) => n.common_node_id === commonNode.id
-              );
+              const specificNodeData = nodeData?.[
+                `${commonNode.type}_nodes`
+              ]?.find((n) => n.common_node_id === commonNode.id);
 
               // Log all data values for the node
               console.log('Store: fetched Node data:', {
