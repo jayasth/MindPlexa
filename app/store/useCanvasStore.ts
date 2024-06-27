@@ -37,7 +37,7 @@ interface CanvasState {
   setNodes: (updater: Node[] | ((nodes: Node[]) => Node[])) => void;
   setEdges: (updater: Edge[] | ((edges: Edge[]) => Edge[])) => void;
   addNode: (node: Node) => void;
-  updateNode: (id: string, data: Partial<Node>) => void;
+  updateNode: (node: Node, updates: Partial<Node>) => void;
   addEdge: (edge: Edge) => void;
   removeNode: (id: string) => void;
   removeEdge: (id: string) => void;
@@ -125,14 +125,14 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       ...node,
       ...nodeProps,
       style: {
-        backgroundColor: (node.data && node.data.backgroundColor) || '#F4F4F4', // Default or specified background color
-        color: textColor // Computed text color
+        backgroundColor: (node.data && node.data.backgroundColor) || '#F4F4F4',
+        color: textColor
       },
       data: {
         ...node.data,
-        backgroundColor: (node.data && node.data.backgroundColor) || '#F4F4F4', // Default or specified background color
-        textColor: textColor, // Computed text color
-        toolbarColor: toolbarColor // Computed toolbar color
+        backgroundColor: (node.data && node.data.backgroundColor) || '#F4F4F4',
+        textColor: textColor,
+        toolbarColor: toolbarColor
       }
     };
 
@@ -167,7 +167,6 @@ export const useStore = createStore<CanvasState>((set, get) => ({
           ...(node.data as TablesInsert<'draw_nodes'>)
         };
         break;
-      // Add more cases for other node types if needed
       default:
         break;
     }
@@ -183,8 +182,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       return { nodes: [...state.nodes, newNode] };
     });
   },
-
-  updateNode: async (id, updates) => {
+  updateNode: async (node, updates) => {
     const { type, position, data, ...commonUpdates } = updates;
 
     try {
@@ -199,14 +197,13 @@ export const useStore = createStore<CanvasState>((set, get) => ({
         );
         return;
       }
-
       const nodeExists = canvasData?.node_canvas_link?.some(
-        (link) => link.common_node_properties?.id === id
+        (link) => link.common_node_properties?.id === node.id
       );
       if (!nodeExists) {
         console.error(
           'Store:updateNode: Node does not exist in the database:',
-          id
+          node.id
         );
         return;
       }
@@ -236,7 +233,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       delete specificNodeUpdates.attachedFiles;
 
       const result = await updateNodeInDB(
-        id,
+        node.id,
         commonNodeUpdates,
         specificNodeUpdates,
         type as
@@ -257,7 +254,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
 
       set((state) => {
         const existingNodeIndex = state.nodes.findIndex(
-          (node) => node.id === id
+          (n) => n.id === node.id
         );
         if (existingNodeIndex !== -1) {
           const existingNode = state.nodes[existingNodeIndex];
@@ -284,7 +281,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
 
           const updatedNodes = [...state.nodes];
           updatedNodes[existingNodeIndex] = updatedNode;
-          state.nodeInternals.set(id, updatedNode);
+          state.nodeInternals.set(node.id, updatedNode);
           return { nodes: updatedNodes };
         }
         return state;

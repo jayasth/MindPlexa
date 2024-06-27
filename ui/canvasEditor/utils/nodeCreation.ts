@@ -129,6 +129,7 @@ export const createNode = async (
     if (createdNode) {
       const newNodeWithData: Node<any> = {
         ...newNode,
+        id: createdNode.id,
         data: createdNode
       };
       callback(newNodeWithData);
