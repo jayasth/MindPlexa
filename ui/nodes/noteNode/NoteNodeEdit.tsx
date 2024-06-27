@@ -27,15 +27,20 @@ import {
 } from '@/ui/nodes/common/CommonNodeFunctions';
 import Quill from 'quill';
 import 'quill/dist/quill.snow.css';
-import { Database } from '@/types_db';
 import { useBackgroundColorChange } from '@/ui/nodes/common/useBackgroundColorChange';
-import { updateNode } from '@/utils/canvas/nodeEdgeDatabaseOperations';
 import { useStore } from '@/app/store/useCanvasStore';
 import { debounce } from 'lodash';
 
 interface NoteNodeEditProps extends NodeProps {
-  data: Database['public']['Tables']['note_nodes']['Row'] &
-    Database['public']['Tables']['common_node_properties']['Row'];
+  data: {
+    id: string;
+    title: string;
+    content: string;
+    background_color: string;
+    text_color: string;
+    tags: string[];
+    attached_files: { name: string }[];
+  };
   width: number;
   height: number;
   selected: boolean;
@@ -45,6 +50,7 @@ interface NoteNodeEditProps extends NodeProps {
     newPosition: { x: number; y: number }
   ) => void;
   position: { x: number; y: number };
+  updateNodeData: (id: string, commonData: any, specificData: any) => void;
 }
 
 const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
@@ -53,7 +59,8 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   height,
   selected,
   onNodeResizeStop,
-  position
+  position,
+  updateNodeData
 }) => {
   const [isSelected, setIsSelected] = useState(selected);
   const [title, setTitle] = useState(data.title || 'Untitled Note');
@@ -65,12 +72,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   const [tags, setTags] = useState<string[]>(data.tags || []);
   const [attachedFiles, setAttachedFiles] = useState<string[]>(
     Array.isArray(data.attached_files)
-      ? data.attached_files.map((file) => {
-          if (typeof file === 'object' && file !== null && 'name' in file) {
-            return file.name as string;
-          }
-          return '';
-        })
+      ? data.attached_files.map((file) => file.name)
       : []
   );
   const [isContainerSelected, setIsContainerSelected] = useState(false);
@@ -92,8 +94,6 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   const onChangeColor = (color: { hex: string }) => {
     handleBackgroundColorChange(color);
   };
-
-  const { updateNode: updateNodeInStore } = useStore();
 
   useEffect(() => {
     if (
@@ -133,24 +133,8 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   }, [content, data.id]);
 
   const debouncedUpdateNodeData = useRef(
-    debounce(async (commonData, specificData) => {
-      try {
-        const { error } = await updateNode(
-          data.id,
-          commonData,
-          specificData,
-          'note'
-        );
-        if (error) {
-          console.error('Error updating node:', error);
-        } else {
-          updateNodeInStore(data.id, {
-            data: { ...commonData, ...specificData }
-          });
-        }
-      } catch (error) {
-        console.error('Error updating node:', error);
-      }
+    debounce((commonData, specificData) => {
+      updateNodeData(data.id, commonData, specificData);
     }, 500)
   ).current;
 
@@ -178,7 +162,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     nodeWidth,
     nodeHeight,
     data.id,
-    updateNodeInStore
+    updateNodeData
   ]);
 
   useEffect(() => {
@@ -235,12 +219,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     setTags(data.tags || []);
     setAttachedFiles(
       Array.isArray(data.attached_files)
-        ? data.attached_files.map((file) => {
-            if (typeof file === 'object' && file !== null && 'name' in file) {
-              return file.name as string;
-            }
-            return '';
-          })
+        ? data.attached_files.map((file) => file.name)
         : []
     );
   }, [data.tags, data.attached_files]);
@@ -270,7 +249,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     color: textColor
   };
 
-  const handleSave = async () => {
+  const handleSave = () => {
     const commonData = {
       title,
       tags,
@@ -283,23 +262,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
 
     const specificData = { content };
 
-    try {
-      const { error } = await updateNode(
-        data.id,
-        commonData,
-        specificData,
-        'note'
-      );
-      if (error) {
-        console.error('Error saving node:', error);
-      } else {
-        updateNodeInStore(data.id, {
-          data: { ...commonData, ...specificData }
-        });
-      }
-    } catch (error) {
-      console.error('Error saving node:', error);
-    }
+    updateNodeData(data.id, commonData, specificData);
   };
 
   return (
@@ -346,7 +309,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
       )}
       <div className={styles.footer}>
         <SaveButton onClick={handleSave} />
-        <DeleteButton onClick={() => handleDelete(data.id, () => {}, 'note')} />
+        <DeleteButton onClick={() => handleDelete(data.id, () => {})} />
         <ChangeColorButton onClick={() => toggleColorPicker()} />
         <AddTagButton onClick={() => setIsTagModalOpen(true)} />
         <AttachFileButton onClick={() => setIsFileModalOpen(true)} />
@@ -382,7 +345,8 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         onAttachFiles={onAttachFiles}
         onRemoveFile={onRemoveFile}
         existingFiles={attachedFiles}
-        data={data}
+        nodeId={data.id}
+        nodeType="note"
       />
     </div>
   );
