@@ -93,7 +93,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     handleBackgroundColorChange(color);
   };
 
-  const updateNodeData = useStore((state) => state.updateNode);
+  const updateNode = useStore((state) => state.updateNode);
 
   useEffect(() => {
     if (
@@ -146,7 +146,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
       height: nodeHeight
     };
 
-    updateNodeData(id, updates);
+    updateNode(id, updates);
   }, [
     id,
     title,
@@ -157,9 +157,8 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     textColor,
     nodeWidth,
     nodeHeight,
-    updateNodeData
+    updateNode
   ]);
-
   useEffect(() => {
     if (quillInstance.current) {
       const toolbar = quillRef.current?.previousSibling as HTMLElement;
@@ -258,7 +257,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
       height: nodeHeight
     };
 
-    updateNodeData(id, updates);
+    updateNode(id, updates);
   };
 
   return (
