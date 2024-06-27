@@ -182,96 +182,69 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       return { nodes: [...state.nodes, newNode] };
     });
   },
-  updateNode: async (node, updates) => {
-    if (!node || !node.id) {
-      console.error('Store:updateNode: Node or node ID is undefined');
-      return;
-    }
+  updateNode: (id, data) => {
+    set((state) => {
+      const existingNodeIndex = state.nodes.findIndex((node) => node.id === id);
+      if (existingNodeIndex !== -1) {
+        const existingNode = state.nodes[existingNodeIndex];
+        const updatedNode = {
+          ...existingNode,
+          ...data,
+          position: data.position || existingNode.position,
+          data: {
+            ...existingNode.data,
+            ...data.data,
+            backgroundColor:
+              data.data?.backgroundColor || existingNode.data.backgroundColor,
+            textColor: data.data?.textColor || existingNode.data.textColor,
+            tags: data.data?.tags || existingNode.data.tags || [],
+            attachedFiles:
+              data.data?.attachedFiles || existingNode.data.attachedFiles || []
+          }
+        };
+        switch (existingNode.type) {
+          case 'note':
+            updatedNode.data = {
+              ...updatedNode.data,
+              ...(data.data as Tables<'note_nodes'>)
+            };
+            break;
+          case 'task':
+            updatedNode.data = {
+              ...updatedNode.data,
+              ...(data.data as Tables<'task_nodes'>)
+            };
+            break;
+          case 'table':
+            updatedNode.data = {
+              ...updatedNode.data,
+              ...(data.data as Tables<'table_nodes'>)
+            };
+            break;
+          case 'calendar':
+            updatedNode.data = {
+              ...updatedNode.data,
+              ...(data.data as Tables<'calendar_nodes'>)
+            };
+            break;
+          case 'draw':
+            updatedNode.data = {
+              ...updatedNode.data,
+              ...(data.data as Tables<'draw_nodes'>)
+            };
+            break;
+          // Add more cases for other node types if needed
+          default:
+            break;
+        }
 
-    const { type, position, data } = updates;
-
-    try {
-      // Log node data before update
-      console.log('Store:updateNode: Node data before update:', {
-        id: node.id,
-        type: node.type,
-        position: node.position,
-        ...node.data
-      });
-
-      // Prepare common node updates
-      const commonNodeUpdates = {
-        position: JSON.stringify(position),
-        background_color: data?.backgroundColor,
-        text_color: data?.textColor,
-        title: data?.title,
-        tags: data?.tags,
-        attached_files: data?.attachedFiles
-      };
-
-      // Prepare specific node updates
-      const specificNodeUpdates = { ...data };
-      delete specificNodeUpdates.backgroundColor;
-      delete specificNodeUpdates.textColor;
-      delete specificNodeUpdates.title;
-      delete specificNodeUpdates.tags;
-      delete specificNodeUpdates.attachedFiles;
-
-      // Update the node in the database
-      const { data: updatedNodeData, error: updateError } =
-        await updateNodeInDB(
-          node.id,
-          commonNodeUpdates,
-          specificNodeUpdates,
-          type as 'note' | 'task' | 'table' | 'calendar' | 'draw'
-        );
-
-      if (updateError) {
-        console.error(
-          'Store:updateNode: Error updating node in database:',
-          updateError
-        );
-        return;
-      }
-
-      // Log node data after update
-      console.log('Store:updateNode: Node data after update:', {
-        id: node.id,
-        type: type,
-        ...commonNodeUpdates,
-        ...specificNodeUpdates
-      });
-      // Update the node in the store
-      set((state) => {
-        const updatedNodes = state.nodes.map((n) =>
-          n.id === node.id
-            ? {
-                ...n,
-                ...updatedNodeData,
-                position: position || n.position,
-                data: {
-                  ...n.data,
-                  ...specificNodeUpdates,
-                  backgroundColor:
-                    data?.backgroundColor || n.data.backgroundColor,
-                  textColor: data?.textColor || n.data.textColor,
-                  title: data?.title || n.data.title,
-                  tags: data?.tags || n.data.tags || [],
-                  attachedFiles:
-                    data?.attachedFiles || n.data.attachedFiles || []
-                }
-              }
-            : n
-        );
-        state.nodeInternals.set(
-          node.id,
-          updatedNodes.find((n) => n.id === node.id)
-        );
+        const updatedNodes = [...state.nodes];
+        updatedNodes[existingNodeIndex] = updatedNode;
+        state.nodeInternals.set(id, updatedNode);
         return { nodes: updatedNodes };
-      });
-    } catch (error) {
-      console.error('Store:updateNode: Unexpected error:', error);
-    }
+      }
+      return state;
+    });
   },
   addEdge: async (edge) => {
     await createEdgeInDB(edge);
