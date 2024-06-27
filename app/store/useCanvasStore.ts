@@ -183,12 +183,24 @@ export const useStore = createStore<CanvasState>((set, get) => ({
     });
   },
   updateNode: async (node, updates) => {
-    const { type, position, data, ...commonUpdates } = updates;
+    if (!node || !node.id) {
+      console.error('Store:updateNode: Node or node ID is undefined');
+      return;
+    }
+
+    const { type, position, data } = updates;
 
     try {
+      // Log node data before update
+      console.log('Store:updateNode: Node data before update:', {
+        id: node.id,
+        type: node.type,
+        position: node.position,
+        ...node.data
+      });
+
       // Prepare common node updates
       const commonNodeUpdates = {
-        ...commonUpdates,
         position: JSON.stringify(position),
         background_color: data?.backgroundColor,
         text_color: data?.textColor,
@@ -201,65 +213,41 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       const specificNodeUpdates = { ...data };
       delete specificNodeUpdates.backgroundColor;
       delete specificNodeUpdates.textColor;
+      delete specificNodeUpdates.title;
       delete specificNodeUpdates.tags;
       delete specificNodeUpdates.attachedFiles;
 
-      const result = await updateNodeInDB(
-        node.id,
-        commonNodeUpdates,
-        specificNodeUpdates,
-        type as
-          | 'note'
-          | 'task'
-          | 'table'
-          | 'calendar'
-          | 'draw'
-          | 'selectionMenu'
-      );
+      // Update the node in the database
+      const { data: updatedNodeData, error: updateError } =
+        await updateNodeInDB(
+          node.id,
+          commonNodeUpdates,
+          specificNodeUpdates,
+          type as 'note' | 'task' | 'table' | 'calendar' | 'draw'
+        );
 
-      if (result.error) {
+      if (updateError) {
         console.error(
           'Store:updateNode: Error updating node in database:',
-          result.error
+          updateError
         );
         return;
       }
 
-      // Fetch updated canvas data
-      const { data: updatedCanvasData, error: fetchError } = await fetchCanvas(
-        get().canvasID
-      );
-
-      if (fetchError) {
-        console.error(
-          'Store:updateNode: Error fetching updated canvas data:',
-          fetchError
-        );
-        return;
-      }
-
-      // Find the updated node in the fetched data
-      const updatedNode = updatedCanvasData?.node_canvas_link?.find(
-        (link) => link.common_node_properties?.id === node.id
-      );
-
-      if (!updatedNode) {
-        console.error(
-          'Store:updateNode: Updated node not found in fetched data'
-        );
-        return;
-      }
-
+      // Log node data after update
+      console.log('Store:updateNode: Node data after update:', {
+        id: node.id,
+        type: type,
+        ...commonNodeUpdates,
+        ...specificNodeUpdates
+      });
       // Update the node in the store
       set((state) => {
         const updatedNodes = state.nodes.map((n) =>
           n.id === node.id
             ? {
                 ...n,
-                ...updatedNode.common_node_properties,
-                ...updatedCanvasData[`${type}_nodes`]?.find(
-                  (specificNode) => specificNode.common_node_id === node.id
-                ),
+                ...updatedNodeData,
                 position: position || n.position,
                 data: {
                   ...n.data,
@@ -267,6 +255,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
                   backgroundColor:
                     data?.backgroundColor || n.data.backgroundColor,
                   textColor: data?.textColor || n.data.textColor,
+                  title: data?.title || n.data.title,
                   tags: data?.tags || n.data.tags || [],
                   attachedFiles:
                     data?.attachedFiles || n.data.attachedFiles || []
@@ -552,7 +541,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
               );
 
               // Log all data values for the node
-              console.log('Store: Node data:', {
+              console.log('Store: fetched Node data:', {
                 ...commonNode,
                 ...specificNodeData,
                 backgroundColor: commonNode.background_color || '#F4F4F4',
