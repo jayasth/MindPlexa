@@ -186,43 +186,15 @@ export const useStore = createStore<CanvasState>((set, get) => ({
     const { type, position, data, ...commonUpdates } = updates;
 
     try {
-      // First, check if the node exists in the database
-      const { data: canvasData, error: fetchError } = await fetchCanvas(
-        get().canvasID
-      );
-      if (fetchError) {
-        console.error(
-          'Store:updateNode: Error fetching canvas data:',
-          fetchError
-        );
-        return;
-      }
-      const nodeExists = canvasData?.node_canvas_link?.some(
-        (link) => link.common_node_properties?.id === node.id
-      );
-      if (!nodeExists) {
-        console.error(
-          'Store:updateNode: Node does not exist in the database:',
-          node.id
-        );
-        return;
-      }
-
-      // Remove height and width from commonUpdates if they exist
-      const { height, width, ...filteredCommonUpdates } = commonUpdates;
-
       // Prepare common node updates
       const commonNodeUpdates = {
-        ...filteredCommonUpdates,
+        ...commonUpdates,
         position: JSON.stringify(position),
-        ...(width && { view_width: width }),
-        ...(height && { view_height: height }),
-        ...(data?.backgroundColor && {
-          background_color: data.backgroundColor
-        }),
-        ...(data?.textColor && { text_color: data.textColor }),
-        ...(data?.tags && { tags: data.tags }),
-        ...(data?.attachedFiles && { attached_files: data.attachedFiles })
+        background_color: data?.backgroundColor,
+        text_color: data?.textColor,
+        title: data?.title,
+        tags: data?.tags,
+        attached_files: data?.attachedFiles
       };
 
       // Prepare specific node updates
@@ -244,6 +216,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
           | 'draw'
           | 'selectionMenu'
       );
+
       if (result.error) {
         console.error(
           'Store:updateNode: Error updating node in database:',
@@ -252,39 +225,60 @@ export const useStore = createStore<CanvasState>((set, get) => ({
         return;
       }
 
-      set((state) => {
-        const existingNodeIndex = state.nodes.findIndex(
-          (n) => n.id === node.id
+      // Fetch updated canvas data
+      const { data: updatedCanvasData, error: fetchError } = await fetchCanvas(
+        get().canvasID
+      );
+
+      if (fetchError) {
+        console.error(
+          'Store:updateNode: Error fetching updated canvas data:',
+          fetchError
         );
-        if (existingNodeIndex !== -1) {
-          const existingNode = state.nodes[existingNodeIndex];
-          const updatedNode = {
-            ...existingNode,
-            ...filteredCommonUpdates,
-            type,
-            position: position || existingNode.position,
-            data: {
-              ...existingNode.data,
-              ...specificNodeUpdates,
-              backgroundColor:
-                data?.backgroundColor || existingNode.data.backgroundColor,
-              textColor: data?.textColor || existingNode.data.textColor,
-              tags: data?.tags || existingNode.data.tags || [],
-              attachedFiles:
-                data?.attachedFiles || existingNode.data.attachedFiles || []
-            }
-          };
+        return;
+      }
 
-          // Update width and height if they were provided
-          if (width) updatedNode.width = width;
-          if (height) updatedNode.height = height;
+      // Find the updated node in the fetched data
+      const updatedNode = updatedCanvasData?.node_canvas_link?.find(
+        (link) => link.common_node_properties?.id === node.id
+      );
 
-          const updatedNodes = [...state.nodes];
-          updatedNodes[existingNodeIndex] = updatedNode;
-          state.nodeInternals.set(node.id, updatedNode);
-          return { nodes: updatedNodes };
-        }
-        return state;
+      if (!updatedNode) {
+        console.error(
+          'Store:updateNode: Updated node not found in fetched data'
+        );
+        return;
+      }
+
+      // Update the node in the store
+      set((state) => {
+        const updatedNodes = state.nodes.map((n) =>
+          n.id === node.id
+            ? {
+                ...n,
+                ...updatedNode.common_node_properties,
+                ...updatedCanvasData[`${type}_nodes`]?.find(
+                  (specificNode) => specificNode.common_node_id === node.id
+                ),
+                position: position || n.position,
+                data: {
+                  ...n.data,
+                  ...specificNodeUpdates,
+                  backgroundColor:
+                    data?.backgroundColor || n.data.backgroundColor,
+                  textColor: data?.textColor || n.data.textColor,
+                  tags: data?.tags || n.data.tags || [],
+                  attachedFiles:
+                    data?.attachedFiles || n.data.attachedFiles || []
+                }
+              }
+            : n
+        );
+        state.nodeInternals.set(
+          node.id,
+          updatedNodes.find((n) => n.id === node.id)
+        );
+        return { nodes: updatedNodes };
       });
     } catch (error) {
       console.error('Store:updateNode: Unexpected error:', error);
@@ -538,7 +532,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
   // Function to load canvas data
   loadCanvas: async (canvasId: string) => {
     const { setNodes, setEdges, setCanvasId } = get();
-    const { data, error, nodeData } = await fetchCanvas(canvasId);
+    const { data, error } = await fetchCanvas(canvasId);
     if (error) {
       console.error('Store: Error fetching canvas:', error);
       return;
@@ -553,12 +547,9 @@ export const useStore = createStore<CanvasState>((set, get) => ({
                 console.error('Store: Common node properties are null');
                 return null;
               }
-              const specificNodeData =
-                (nodeData &&
-                  nodeData[commonNode.type as keyof typeof nodeData]?.find(
-                    (n) => n.common_node_id === commonNode.id
-                  )) ||
-                {}; // Provide default empty object
+              const specificNodeData = data[`${commonNode.type}_nodes`]?.find(
+                (n) => n.common_node_id === commonNode.id
+              );
 
               // Log all data values for the node
               console.log('Store: Node data:', {
@@ -571,7 +562,6 @@ export const useStore = createStore<CanvasState>((set, get) => ({
               });
 
               return {
-                // Use the id from the database
                 id: commonNode.id,
                 type: commonNode.type,
                 position: JSON.parse(commonNode.position as string),
@@ -599,7 +589,6 @@ export const useStore = createStore<CanvasState>((set, get) => ({
             type: 'customEdge'
           }))
         : [];
-      // Set nodes and edges directly without triggering individual updates
       set({ nodes, edges });
     } else {
       console.log('Store: Initializing blank canvas');
