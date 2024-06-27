@@ -28,10 +28,11 @@ import {
 import Quill from 'quill';
 import 'quill/dist/quill.snow.css';
 import { useBackgroundColorChange } from '@/ui/nodes/common/useBackgroundColorChange';
+import { useStore } from '@/app/store/useCanvasStore';
 
 interface NoteNodeEditProps extends NodeProps {
+  id: string;
   data: {
-    id: string;
     title: string;
     content: string;
     background_color: string;
@@ -48,17 +49,16 @@ interface NoteNodeEditProps extends NodeProps {
     newPosition: { x: number; y: number }
   ) => void;
   position: { x: number; y: number };
-  updateNodeData: (id: string, commonData: any, specificData: any) => void;
 }
 
 const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
+  id,
   data,
   width,
   height,
   selected,
   onNodeResizeStop,
-  position,
-  updateNodeData
+  position
 }) => {
   const [isSelected, setIsSelected] = useState(selected);
   const [title, setTitle] = useState(data.title || 'Untitled Note');
@@ -84,7 +84,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   const quillInstance = useRef<Quill | null>(null);
 
   const handleBackgroundColorChange = useBackgroundColorChange(
-    data.id,
+    id,
     setBackgroundColor,
     setTextColor
   );
@@ -92,6 +92,8 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   const onChangeColor = (color: { hex: string }) => {
     handleBackgroundColorChange(color);
   };
+
+  const updateNodeData = useStore((state) => state.updateNode);
 
   useEffect(() => {
     if (
@@ -128,23 +130,25 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         quillInstance.current.root.innerHTML = content;
       }
     }
-  }, [content, data.id]);
+  }, [content]);
 
   useEffect(() => {
-    const commonData = {
-      title,
-      tags,
-      attached_files: attachedFiles.map((file) => ({ name: file })),
-      background_color: backgroundColor,
-      text_color: textColor,
-      edit_width: nodeWidth,
-      edit_height: nodeHeight
+    const updates = {
+      data: {
+        title,
+        content,
+        tags,
+        attached_files: attachedFiles.map((file) => ({ name: file })),
+        background_color: backgroundColor,
+        text_color: textColor
+      },
+      width: nodeWidth,
+      height: nodeHeight
     };
 
-    const specificData = { content };
-
-    updateNodeData(data.id, commonData, specificData);
+    updateNodeData(id, updates);
   }, [
+    id,
     title,
     content,
     tags,
@@ -153,7 +157,6 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     textColor,
     nodeWidth,
     nodeHeight,
-    data.id,
     updateNodeData
   ]);
 
@@ -179,19 +182,19 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   }, [backgroundColor, textColor]);
 
   const onChangeTitle = (newTitle: string) => {
-    handleTitleChange(data.id, newTitle, setTitle);
+    handleTitleChange(id, newTitle, setTitle);
   };
 
   const onAddTag = (newTags: string[]) => {
     const uniqueTags = Array.from(new Set([...tags, ...newTags]));
     setTags(uniqueTags);
-    handleAddTag(data.id, uniqueTags, () => {});
+    handleAddTag(id, uniqueTags, () => {});
   };
 
   const onRemoveTag = (tagToRemove: string) => {
     const updatedTags = tags.filter((tag) => tag !== tagToRemove);
     setTags(updatedTags);
-    handleAddTag(data.id, updatedTags, () => {});
+    handleAddTag(id, updatedTags, () => {});
   };
 
   const onAttachFiles = (files: string[]) => {
@@ -199,7 +202,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   };
 
   const onRemoveFile = (fileToRemove: string) => {
-    handleRemoveAttachedFile(data.id, fileToRemove, () => {});
+    handleRemoveAttachedFile(id, fileToRemove, () => {});
   };
 
   useEffect(() => {
@@ -219,7 +222,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   const handleResize = (event, { width, height }) => {
     setNodeWidth(width);
     setNodeHeight(height);
-    onNodeResizeStop(data.id, { width, height }, position);
+    onNodeResizeStop(id, { width, height }, position);
   };
 
   const handleContainerClick = () => {
@@ -242,19 +245,20 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   };
 
   const handleSave = () => {
-    const commonData = {
-      title,
-      tags,
-      attached_files: attachedFiles.map((file) => ({ name: file })),
-      background_color: backgroundColor,
-      text_color: textColor,
-      edit_width: nodeWidth,
-      edit_height: nodeHeight
+    const updates = {
+      data: {
+        title,
+        content,
+        tags,
+        attached_files: attachedFiles.map((file) => ({ name: file })),
+        background_color: backgroundColor,
+        text_color: textColor
+      },
+      width: nodeWidth,
+      height: nodeHeight
     };
 
-    const specificData = { content };
-
-    updateNodeData(data.id, commonData, specificData);
+    updateNodeData(id, updates);
   };
 
   return (
@@ -281,7 +285,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
           style={{ color: textColor }}
         />
         <CloseButton
-          onClick={() => handleClose(data.id, () => {}, title, content)}
+          onClick={() => handleClose(id, () => {}, title, content)}
         />
       </div>
       <div
@@ -301,11 +305,11 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
       )}
       <div className={styles.footer}>
         <SaveButton onClick={handleSave} />
-        <DeleteButton onClick={() => handleDelete(data.id, () => {})} />
+        <DeleteButton onClick={() => handleDelete(id, () => {})} />
         <ChangeColorButton onClick={() => toggleColorPicker()} />
         <AddTagButton onClick={() => setIsTagModalOpen(true)} />
         <AttachFileButton onClick={() => setIsFileModalOpen(true)} />
-        <DuplicateButton onClick={() => handleDuplicate(data.id)} />
+        <DuplicateButton onClick={() => handleDuplicate(id)} />
         <ColorPickerModal
           isOpen={isColorPickerVisible}
           onClose={() => setIsColorPickerVisible(false)}
@@ -337,7 +341,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         onAttachFiles={onAttachFiles}
         onRemoveFile={onRemoveFile}
         existingFiles={attachedFiles}
-        nodeId={data.id}
+        nodeId={id}
         nodeType="note"
       />
     </div>
