@@ -493,34 +493,40 @@ export const useStore = createStore<CanvasState>((set, get) => ({
   },
   // Function to load canvas data
   loadCanvas: async (canvasId: string) => {
-    const { setNodes, setEdges, setCanvasId } = get();
-    const { data, error, nodeData } = await fetchCanvas(canvasId);
-    if (error) {
-      console.error('Store: Error fetching canvas:', error);
-      return;
-    }
+    const { data, nodeData } = await fetchCanvas(canvasId);
+
     if (data) {
-      setCanvasId(data.id);
       const nodes = data.node_canvas_link
         ? data.node_canvas_link
             .map((link) => {
               const commonNode = link.common_node_properties;
-              if (!commonNode) {
-                console.error('Store: Common node properties are null');
-                return null;
-              }
-              const specificNodeData = nodeData?.[
-                `${commonNode.type}_nodes`
-              ]?.find((n) => n.common_node_id === commonNode.id);
+              if (!commonNode) return null;
 
-              // Log all data values for the node
-              console.log('Store: fetched Node data:', {
-                ...commonNode,
-                ...specificNodeData,
-                backgroundColor: commonNode.background_color || '#F4F4F4',
-                textColor: commonNode.text_color || '#575757',
-                tags: commonNode.tags || [],
-                attachedFiles: commonNode.attached_files || []
+              const specificNodeData = nodeData?.[commonNode.type]?.find(
+                (node) => node.common_node_id === commonNode.id
+              );
+
+              console.log('Store: Common Node Properties:', {
+                id: commonNode.id,
+                type: commonNode.type,
+                position: commonNode.position,
+                view_width: commonNode.view_width,
+                view_height: commonNode.view_height,
+                edit_width: commonNode.edit_width,
+                edit_height: commonNode.edit_height,
+                background_color: commonNode.background_color,
+                text_color: commonNode.text_color,
+                title: commonNode.title,
+                tags: commonNode.tags,
+                attached_files: commonNode.attached_files,
+                is_editing: commonNode.is_editing,
+                is_temporary: commonNode.is_temporary,
+                parent_node_id: commonNode.parent_node_id,
+                z_index: commonNode.z_index,
+                created_at: commonNode.created_at,
+                updated_at: commonNode.updated_at,
+                connectable: commonNode.connectable,
+                draggable: commonNode.draggable
               });
 
               return {

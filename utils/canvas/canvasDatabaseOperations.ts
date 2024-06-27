@@ -244,7 +244,6 @@ export const saveCanvasState = async (
 export const fetchCanvas = async (
   canvasId: string
 ): Promise<{ data?: any; error?: any; nodeData?: Record<string, any[]> }> => {
-  // ...
   // Fetch canvas data along with linked nodes and edges
   const { data, error } = await supabase
     .from('canvases')
@@ -289,6 +288,38 @@ export const fetchCanvas = async (
     },
     {} as Record<string, any[]>
   );
-
+  console.log('canvasDatabaseOperations: Complete node data fetched:', {
+    canvas,
+    commonNodeProperties: canvas.node_canvas_link
+      .map((link) => {
+        if (link.common_node_properties) {
+          return {
+            id: link.common_node_properties.id,
+            type: link.common_node_properties.type,
+            position: link.common_node_properties.position,
+            view_width: link.common_node_properties.view_width,
+            view_height: link.common_node_properties.view_height,
+            edit_width: link.common_node_properties.edit_width,
+            edit_height: link.common_node_properties.edit_height,
+            background_color: link.common_node_properties.background_color,
+            text_color: link.common_node_properties.text_color,
+            title: link.common_node_properties.title,
+            tags: link.common_node_properties.tags,
+            attached_files: link.common_node_properties.attached_files,
+            is_editing: link.common_node_properties.is_editing,
+            is_temporary: link.common_node_properties.is_temporary,
+            parent_node_id: link.common_node_properties.parent_node_id,
+            z_index: link.common_node_properties.z_index,
+            created_at: link.common_node_properties.created_at,
+            updated_at: link.common_node_properties.updated_at,
+            connectable: link.common_node_properties.connectable,
+            draggable: link.common_node_properties.draggable
+          };
+        }
+        return null;
+      })
+      .filter((props): props is NonNullable<typeof props> => props !== null),
+    nodeData
+  }); // Logging all node data including all fields from common_node_properties
   return { data: canvas, nodeData };
 };
