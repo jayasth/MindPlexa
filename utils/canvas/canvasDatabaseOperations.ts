@@ -236,10 +236,10 @@ export const saveCanvasState = async (
 
     return { success: true };
   } catch (error) {
+    console.error('Error in saveCanvasState:', error);
     return { error };
   }
 };
-
 // Function to fetch the canvas state
 export const fetchCanvas = async (
   canvasId: string

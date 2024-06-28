@@ -559,37 +559,30 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       return;
     }
 
-    // Log node details before saving
-    nodes.forEach((node) => {
-      console.log(
-        `Store: Node before saving - ID: ${node.id}, Type: ${node.type}, Data:`,
-        node.data
-      );
-    });
-
     // Prepare canvas data for saving
     const canvasData = {
       nodes: nodes.map((node) => ({
         id: node.id,
         type: node.type,
         position: JSON.stringify(node.position), // Convert position to JSON string
-        title: node.data.title,
-        tags: node.data.tags,
-        attached_files: node.data.attachedFiles,
-        background_color: node.data.backgroundColor,
-        text_color: node.data.textColor,
-        view_width: node.data.viewWidth,
-        view_height: node.data.viewHeight,
-        edit_width: node.data.editWidth,
-        edit_height: node.data.editHeight,
-        is_editing: node.data.isEditing,
-        is_temporary: node.data.isTemporary,
-        parent_node_id: node.data.parentNodeId,
-        z_index: node.data.zIndex,
-        created_at: node.data.createdAt,
-        updated_at: node.data.updatedAt,
-        connectable: node.data.connectable,
-        draggable: node.data.draggable
+        title: node.data?.title || '',
+        tags: node.data?.tags || [],
+        attached_files: node.data?.attachedFiles || [],
+        background_color: node.data?.backgroundColor || '#F4F4F4',
+        text_color: node.data?.textColor || '#575757',
+        view_width: node.width || 0,
+        view_height: node.height || 0,
+        edit_width: node.data?.editWidth || null,
+        edit_height: node.data?.editHeight || null,
+        is_editing: node.isEditing || false,
+        is_temporary: node.data?.isTemporary || false,
+        parent_node_id: node.data?.parentNodeId || null,
+        z_index: node.zIndex || 0,
+        created_at: node.data?.createdAt || new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        connectable: node.connectable !== false,
+        draggable: node.draggable !== false,
+        uniqueData: node.data?.uniqueData || {}
       })),
       edges: edges.map((edge) => ({
         id: edge.id,
@@ -599,7 +592,10 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       }))
     };
 
-    console.log('Store: Saving canvas data:', canvasData);
+    console.log(
+      'Store: Saving canvas data:',
+      JSON.stringify(canvasData, null, 2)
+    );
 
     // Use saveCanvasState from canvasDatabaseOperations.ts to save the entire canvas state
     const result = await saveCanvasState(
@@ -613,21 +609,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       return;
     }
 
-    // Update local state with the new node data, including parsing the position back to an object
-    set((state) => ({
-      nodes: state.nodes.map((node) => ({
-        ...node,
-        position: JSON.parse(node.position) // Parse position back to an object
-      }))
-    }));
-
-    // Log node details after saving
-    canvasData.nodes.forEach((node) => {
-      console.log(
-        `Store: Node after saving - ID: ${node.id}, Type: ${node.type}, Data:`,
-        node.data
-      );
-    });
+    console.log('Store: Canvas data saved successfully');
   },
   // Function to load canvas data
   loadCanvas: async (canvasId: string) => {
