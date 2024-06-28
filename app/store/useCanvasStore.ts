@@ -438,14 +438,65 @@ export const useStore = createStore<CanvasState>((set, get) => ({
   onNodesChange: (changes) => {
     console.log('Store: Applying node changes:', changes);
     set((state) => {
-      const updatedNodes = state.nodes.map((node) => {
-        const change = changes.find((change) => change.id === node.id);
-        if (change) {
-          return { ...node, ...change };
-        }
-        return node;
+      const updatedNodes = state.nodes
+        .map((node) => {
+          const change = changes.find((c) => c.id === node.id);
+          if (change) {
+            switch (change.type) {
+              case 'position':
+                return {
+                  ...node,
+                  position: change.position
+                };
+              case 'dimensions':
+                return {
+                  ...node,
+                  width: change.dimensions.width,
+                  height: change.dimensions.height
+                };
+              case 'select':
+                return {
+                  ...node,
+                  selected: change.selected
+                };
+              case 'remove':
+                // Handle node removal separately
+                return null;
+              default:
+                // For other types of changes, merge the change into the node
+                return { ...node, ...change };
+            }
+          }
+          return node;
+        })
+        .filter(Boolean); // Remove null entries (deleted nodes)
+
+      // Handle removed nodes
+      const removedNodes = changes
+        .filter((c) => c.type === 'remove')
+        .map((c) => c.id);
+      removedNodes.forEach((id) => {
+        // Remove the node from nodeInternals
+        state.nodeInternals.delete(id);
+        // Remove any edges connected to this node
+        state.edges = state.edges.filter(
+          (edge) => edge.source !== id && edge.target !== id
+        );
       });
-      return { nodes: updatedNodes };
+
+      // Debounce saveCanvas call
+      if (state.saveCanvasTimeout) {
+        clearTimeout(state.saveCanvasTimeout);
+      }
+      state.saveCanvasTimeout = setTimeout(() => {
+        state.saveCanvas();
+      }, 1000); // Debounce for 1 second
+
+      return {
+        nodes: updatedNodes,
+        edges: state.edges,
+        nodeInternals: state.nodeInternals
+      };
     });
   },
   onEdgesChange: (changes) => {
