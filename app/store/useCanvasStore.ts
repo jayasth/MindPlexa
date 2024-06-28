@@ -141,39 +141,20 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       }
     };
 
-    switch (node.type) {
-      case 'note':
-        newNode.data = {
-          ...newNode.data,
-          ...(node.data as TablesInsert<'note_nodes'>)
-        };
-        break;
-      case 'task':
-        newNode.data = {
-          ...newNode.data,
-          ...(node.data as TablesInsert<'task_nodes'>)
-        };
-        break;
-      case 'table':
-        newNode.data = {
-          ...newNode.data,
-          ...(node.data as TablesInsert<'table_nodes'>)
-        };
-        break;
-      case 'calendar':
-        newNode.data = {
-          ...newNode.data,
-          ...(node.data as TablesInsert<'calendar_nodes'>)
-        };
-        break;
-      case 'draw':
-        newNode.data = {
-          ...newNode.data,
-          ...(node.data as TablesInsert<'draw_nodes'>)
-        };
-        break;
-      default:
-        break;
+    const nodeTypeMapping = {
+      note: 'note_nodes',
+      task: 'task_nodes',
+      table: 'table_nodes',
+      calendar: 'calendar_nodes',
+      draw: 'draw_nodes'
+    };
+
+    const tableName = nodeTypeMapping[node.type];
+    if (tableName) {
+      newNode.data = {
+        ...newNode.data,
+        ...(node.data as TablesInsert<typeof tableName>)
+      };
     }
 
     console.log('Store: New node with position and dimensions:', newNode);
@@ -450,11 +431,12 @@ export const useStore = createStore<CanvasState>((set, get) => ({
             console.log(`Store: Node ${node.id} change detected:`, change);
             switch (change.type) {
               case 'position':
-                return { ...node, position: change.position };
+                return { ...node, position: change.position || node.position };
               case 'dimensions':
                 // Only update dimensions if they actually changed and the node is editable
                 if (
                   node.isEditing &&
+                  change.dimensions &&
                   (change.dimensions.width !== node.width ||
                     change.dimensions.height !== node.height)
                 ) {

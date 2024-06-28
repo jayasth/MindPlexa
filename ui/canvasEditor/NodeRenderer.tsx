@@ -101,10 +101,10 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     size.height
   ]);
 
-  // Early return if node does not exist
-  if (!node) {
+  // Early return if node does not exist or position is undefined
+  if (!node || !node.position) {
     console.log(
-      `NodeRenderer: Node with ID ${id} not found, possibly deleted.`
+      `NodeRenderer: Node with ID ${id} not found or has invalid position.`
     );
     return null;
   }
