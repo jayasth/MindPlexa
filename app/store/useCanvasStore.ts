@@ -665,8 +665,9 @@ export const useStore = createStore<CanvasState>((set, get) => ({
                   tags: commonNode.tags || [],
                   attachedFiles: commonNode.attached_files || []
                 },
-                width: commonNode.view_width || 200,
-                height: commonNode.view_height || 200
+                width: commonNode.view_width || 80,
+                height: commonNode.view_height || 150,
+                isEditing: commonNode.is_editing || false
               };
             })
             .filter(
