@@ -178,68 +178,54 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       return { nodes: [...state.nodes, newNode] };
     });
   },
-  updateNode: (id, data) => {
+  updateNode: async (node: Node, updates: Partial<Node>) => {
     set((state) => {
-      const existingNodeIndex = state.nodes.findIndex((node) => node.id === id);
+      const existingNodeIndex = state.nodes.findIndex((n) => n.id === node.id);
       if (existingNodeIndex !== -1) {
         const existingNode = state.nodes[existingNodeIndex];
         console.log('Store: Existing Node before update:', existingNode);
 
         const updatedNode = {
           ...existingNode,
-          ...data,
-          position: data.position || existingNode.position,
+          ...updates,
+          position: updates.position || existingNode.position,
           data: {
             ...existingNode.data,
-            ...data.data,
+            ...updates.data,
             backgroundColor:
-              data.data?.backgroundColor || existingNode.data.backgroundColor,
-            textColor: data.data?.textColor || existingNode.data.textColor,
-            tags: data.data?.tags || existingNode.data.tags || [],
+              updates.data?.backgroundColor ||
+              existingNode.data.backgroundColor,
+            textColor: updates.data?.textColor || existingNode.data.textColor,
+            tags: updates.data?.tags || existingNode.data.tags || [],
             attachedFiles:
-              data.data?.attachedFiles || existingNode.data.attachedFiles || []
+              updates.data?.attachedFiles ||
+              existingNode.data.attachedFiles ||
+              []
           }
         };
 
-        switch (existingNode.type) {
-          case 'note':
-            updatedNode.data = {
-              ...updatedNode.data,
-              ...(data.data as Tables<'note_nodes'>)
-            };
-            break;
-          case 'task':
-            updatedNode.data = {
-              ...updatedNode.data,
-              ...(data.data as Tables<'task_nodes'>)
-            };
-            break;
-          case 'table':
-            updatedNode.data = {
-              ...updatedNode.data,
-              ...(data.data as Tables<'table_nodes'>)
-            };
-            break;
-          case 'calendar':
-            updatedNode.data = {
-              ...updatedNode.data,
-              ...(data.data as Tables<'calendar_nodes'>)
-            };
-            break;
-          case 'draw':
-            updatedNode.data = {
-              ...updatedNode.data,
-              ...(data.data as Tables<'draw_nodes'>)
-            };
-            break;
-          // Add more cases for other node types if needed
-          default:
-            break;
-        }
+        console.log(
+          'Store: Updated Node before calling updateNodeInDB:',
+          updatedNode
+        );
 
         const updatedNodes = [...state.nodes];
         updatedNodes[existingNodeIndex] = updatedNode;
-        state.nodeInternals.set(id, updatedNode);
+        state.nodeInternals.set(node.id, updatedNode);
+
+        // Update node in the database
+        updateNodeInDB(
+          node.id,
+          updatedNode.data,
+          updatedNode.data,
+          updatedNode.type
+        )
+          .then(() => {
+            console.log('Store: Node updated in database:', updatedNode);
+          })
+          .catch((error) => {
+            console.error('Store: Error updating node in database:', error);
+          });
 
         console.log('Store: Updated Node after update:', updatedNode);
         return { nodes: updatedNodes };
