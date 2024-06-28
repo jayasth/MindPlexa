@@ -434,10 +434,21 @@ export const useStore = createStore<CanvasState>((set, get) => ({
   onNodesChange: (changes) => {
     console.log('Store: onNodesChange :', changes);
     set((state) => {
+      if (
+        state.isLoading ||
+        (state.nodes.length === 0 && state.edges.length === 0)
+      ) {
+        console.log(
+          'Store: Skipping onNodesChange due to loading or empty canvas'
+        );
+        return state;
+      }
+
       const updatedNodes = state.nodes
         .map((node) => {
           const change = changes.find((c) => c.id === node.id);
           if (change) {
+            console.log(`Store: Node ${node.id} change detected:`, change);
             switch (change.type) {
               case 'position':
                 return { ...node, position: change.position };
