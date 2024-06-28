@@ -202,7 +202,8 @@ export const useStore = createStore<CanvasState>((set, get) => ({
           | undefined
       };
 
-      const { data, error } = await updateNodeInDB(
+      // Update the node in the database
+      const { data: updatedNode, error } = await updateNodeInDB(
         id,
         updatesWithPosition,
         specificUpdates,
@@ -214,14 +215,23 @@ export const useStore = createStore<CanvasState>((set, get) => ({
           | 'draw'
           | 'selectionMenu'
       );
+
       if (error) {
         console.error('useCanvasStore: Error updating node:', error);
         return;
       }
+
+      // Update the local state with the new node data
       set((state) => ({
         nodes: state.nodes.map((node) =>
           node.id === id
-            ? { ...node, ...data, position: JSON.parse(data.position) }
+            ? {
+                ...node,
+                ...updatedNode,
+                position: updatedNode.position
+                  ? JSON.parse(updatedNode.position)
+                  : node.position
+              }
             : node
         )
       }));

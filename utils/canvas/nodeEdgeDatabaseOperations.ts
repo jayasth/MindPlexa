@@ -162,7 +162,7 @@ export const updateNode = async (
         );
         return { error: newNodeError };
       }
-    } else {
+    } else if (nodeType !== 'selectionMenu') {
       // Update existing node-specific data
       const tableName =
         `${nodeType}_nodes` as keyof Database['public']['Tables'];
