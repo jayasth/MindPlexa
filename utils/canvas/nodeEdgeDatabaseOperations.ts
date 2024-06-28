@@ -109,20 +109,18 @@ export const createNode = async (
   }
 };
 
-// Function to update an existing node
-type NodeSpecificUpdates =
-  | { type: 'note'; content: string }
-  | { type: 'task'; tasks: any[] }
-  | { type: 'table'; columns: any[]; rows: any[] }
-  | { type: 'draw'; drawing_data: string }
-  | { type: 'calendar'; events: any[] };
-
 export const updateNode = async (
   id: string,
   updates: Partial<
     Database['public']['Tables']['common_node_properties']['Update']
   >,
-  specificUpdates: NodeSpecificUpdates,
+  specificUpdates: Partial<
+    | Database['public']['Tables']['note_nodes']['Update']
+    | Database['public']['Tables']['task_nodes']['Update']
+    | Database['public']['Tables']['calendar_nodes']['Update']
+    | Database['public']['Tables']['table_nodes']['Update']
+    | Database['public']['Tables']['draw_nodes']['Update']
+  >,
   nodeType: Database['public']['Enums']['node_type']
 ): Promise<{ data?: any; error?: any }> => {
   try {
