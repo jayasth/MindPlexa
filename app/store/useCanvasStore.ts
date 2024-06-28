@@ -573,7 +573,23 @@ export const useStore = createStore<CanvasState>((set, get) => ({
         id: node.id,
         type: node.type,
         position: JSON.stringify(node.position), // Convert position to JSON string
-        data: node.data
+        title: node.data.title,
+        tags: node.data.tags,
+        attached_files: node.data.attachedFiles,
+        background_color: node.data.backgroundColor,
+        text_color: node.data.textColor,
+        view_width: node.data.viewWidth,
+        view_height: node.data.viewHeight,
+        edit_width: node.data.editWidth,
+        edit_height: node.data.editHeight,
+        is_editing: node.data.isEditing,
+        is_temporary: node.data.isTemporary,
+        parent_node_id: node.data.parentNodeId,
+        z_index: node.data.zIndex,
+        created_at: node.data.createdAt,
+        updated_at: node.data.updatedAt,
+        connectable: node.data.connectable,
+        draggable: node.data.draggable
       })),
       edges: edges.map((edge) => ({
         id: edge.id,
@@ -653,10 +669,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
 
               let position;
               try {
-                position =
-                  typeof commonNode.position === 'string'
-                    ? JSON.parse(commonNode.position)
-                    : commonNode.position;
+                position = JSON.parse(commonNode.position); // Always parse as JSON string
               } catch (error) {
                 console.error('Error parsing position JSON:', error);
                 position = { x: 200, y: 200 }; // Default position if parsing fails
@@ -668,7 +681,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
                 typeof position.x !== 'number' ||
                 typeof position.y !== 'number'
               ) {
-                position = { x: 0, y: 0 }; // Default position if invalid
+                position = { x: 200, y: 200 }; // Default position if invalid
               }
 
               return {
