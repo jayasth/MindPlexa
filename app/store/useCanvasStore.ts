@@ -1,9 +1,5 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import {
-  applyNodeChanges,
-  applyEdgeChanges
-} from '@/ui/canvasEditor/utils/canvasUtils';
 import { createNode } from '@/ui/canvasEditor/utils/nodeCreation';
 import { getChildNodePosition } from '@/ui/canvasEditor/utils/getChildNodePosition';
 import { findOptimalPosition } from '@/ui/canvasEditor/utils/positioningUtils';
@@ -442,15 +438,28 @@ export const useStore = createStore<CanvasState>((set, get) => ({
   onNodesChange: (changes) => {
     console.log('Store: Applying node changes:', changes);
     set((state) => {
-      const updatedNodes = applyNodeChanges(changes, state.nodes);
+      const updatedNodes = state.nodes.map((node) => {
+        const change = changes.find((change) => change.id === node.id);
+        if (change) {
+          return { ...node, ...change };
+        }
+        return node;
+      });
       return { nodes: updatedNodes };
     });
   },
   onEdgesChange: (changes) => {
     console.log('Applying edge changes:', changes);
-    set((state) => ({
-      edges: applyEdgeChanges(changes, state.edges)
-    }));
+    set((state) => {
+      const updatedEdges = state.edges.map((edge) => {
+        const change = changes.find((change) => change.id === edge.id);
+        if (change) {
+          return { ...edge, ...change };
+        }
+        return edge;
+      });
+      return { edges: updatedEdges };
+    });
   },
   toggleEditMode: (nodeId: string) => {
     console.log(`Store: Toggling edit mode for node ${nodeId}`);

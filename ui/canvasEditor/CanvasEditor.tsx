@@ -20,8 +20,7 @@ import Toolbar from '@/ui/toolbar/Toolbar';
 import AIAssistanceModal from '@/ui/ai/generator/AIGeneratorModal';
 import {
   handleDownload,
-  handleShare,
-  applyEdgeChanges
+  handleShare
 } from '@/ui/canvasEditor/utils/canvasUtils';
 import NodeRenderer from '@/ui/canvasEditor/NodeRenderer';
 import CustomEdge from '@/ui/edges/CustomEdge';
@@ -210,7 +209,18 @@ export default function CanvasEditor({ canvasId }) {
         if (changes[0].type === 'remove') {
           return eds.filter((e) => e.id !== changes[0].id);
         }
-        return applyEdgeChanges(changes, eds);
+        return eds.map((edge) => {
+          const change = changes.find((c) => c.id === edge.id);
+          if (change) {
+            return {
+              ...edge,
+              source: change.source || edge.source,
+              target: change.target || edge.target,
+              style: { ...edge.style, ...change.style }
+            };
+          }
+          return edge;
+        });
       });
     },
     [setEdges]
