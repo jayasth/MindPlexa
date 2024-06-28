@@ -442,11 +442,19 @@ export const useStore = createStore<CanvasState>((set, get) => ({
               case 'position':
                 return { ...node, position: change.position };
               case 'dimensions':
-                return {
-                  ...node,
-                  width: change.dimensions.width,
-                  height: change.dimensions.height
-                };
+                // Only update dimensions if they actually changed and the node is editable
+                if (
+                  node.isEditing &&
+                  (change.dimensions.width !== node.width ||
+                    change.dimensions.height !== node.height)
+                ) {
+                  return {
+                    ...node,
+                    width: change.dimensions.width,
+                    height: change.dimensions.height
+                  };
+                }
+                return node;
               case 'select':
                 return { ...node, selected: change.selected };
               case 'remove':
@@ -641,7 +649,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
                     : commonNode.position;
               } catch (error) {
                 console.error('Error parsing position JSON:', error);
-                position = { x: 0, y: 0 }; // Default position if parsing fails
+                position = { x: 200, y: 200 }; // Default position if parsing fails
               }
 
               // Ensure position is defined and has x and y properties
@@ -667,7 +675,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
                 },
                 width: commonNode.view_width || 80,
                 height: commonNode.view_height || 150,
-                isEditing: commonNode.is_editing || false
+                isEditing: false // Set isEditing to false by default
               };
             })
             .filter(

@@ -84,13 +84,22 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
   useEffect(() => {
     if (node && !isInitialRender) {
       const newSize = getNodeSpecificProperties(node.type, node.isEditing);
-      setSize(newSize);
-      console.log(
-        `NodeRenderer: Updated size for node ${id}: width = ${newSize.width}, height = ${newSize.height}`
-      );
+      if (newSize.width !== size.width || newSize.height !== size.height) {
+        setSize(newSize);
+        console.log(
+          `NodeRenderer: Updated size for node ${id}: width = ${newSize.width}, height = ${newSize.height}`
+        );
+      }
     }
     setIsInitialRender(false);
-  }, [node?.isEditing, node?.type, id, isInitialRender]);
+  }, [
+    node?.isEditing,
+    node?.type,
+    id,
+    isInitialRender,
+    size.width,
+    size.height
+  ]);
 
   // Early return if node does not exist
   if (!node) {
