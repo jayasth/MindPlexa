@@ -432,7 +432,6 @@ export const useStore = createStore<CanvasState>((set, get) => ({
     set(() => ({ menuPosition: position }));
   },
   onNodesChange: (changes) => {
-    console.log('Store: onNodesChange :', changes);
     set((state) => {
       if (
         state.isLoading ||
