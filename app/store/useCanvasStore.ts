@@ -61,6 +61,8 @@ interface CanvasState {
   setCanvasId: (id: string) => void;
   saveCanvas: () => void;
   loadCanvas: (canvasId: string) => Promise<void>;
+  isLoading: boolean;
+  lastLoadTime: number;
 }
 
 const createStore = <T extends object>(
@@ -83,6 +85,8 @@ export const useStore = createStore<CanvasState>((set, get) => ({
   nodeInternals: new Map(),
   showNodeSelectionMenu: false,
   menuPosition: null,
+  isLoading: false,
+  lastLoadTime: 0,
   setNodes: (updater) => {
     console.log('Store: Setting nodes with updater:', updater);
     set((state) => {
@@ -428,7 +432,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
     set(() => ({ menuPosition: position }));
   },
   onNodesChange: (changes) => {
-    console.log('Store: Applying node changes:', changes);
+    console.log('Store: onNodesChange :', changes);
     set((state) => {
       const updatedNodes = state.nodes
         .map((node) => {
@@ -436,10 +440,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
           if (change) {
             switch (change.type) {
               case 'position':
-                return {
-                  ...node,
-                  position: change.position
-                };
+                return { ...node, position: change.position };
               case 'dimensions':
                 return {
                   ...node,
@@ -447,34 +448,30 @@ export const useStore = createStore<CanvasState>((set, get) => ({
                   height: change.dimensions.height
                 };
               case 'select':
-                return {
-                  ...node,
-                  selected: change.selected
-                };
+                return { ...node, selected: change.selected };
               case 'remove':
-                // Handle node removal separately
                 return null;
               default:
-                // For other types of changes, merge the change into the node
                 return { ...node, ...change };
             }
           }
           return node;
         })
-        .filter(Boolean); // Remove null entries (deleted nodes)
+        .filter(Boolean);
 
-      // Handle removed nodes
-      const removedNodes = changes
+      const removedNodeIds = changes
         .filter((c) => c.type === 'remove')
         .map((c) => c.id);
-      removedNodes.forEach((id) => {
-        // Remove the node from nodeInternals
+
+      removedNodeIds.forEach((id) => {
         state.nodeInternals.delete(id);
-        // Remove any edges connected to this node
-        state.edges = state.edges.filter(
-          (edge) => edge.source !== id && edge.target !== id
-        );
       });
+
+      const updatedEdges = state.edges.filter(
+        (edge) =>
+          !removedNodeIds.includes(edge.source) &&
+          !removedNodeIds.includes(edge.target)
+      );
 
       // Debounce saveCanvas call
       if (state.saveCanvasTimeout) {
@@ -482,17 +479,17 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       }
       state.saveCanvasTimeout = setTimeout(() => {
         state.saveCanvas();
-      }, 1000); // Debounce for 1 second
+      }, 1000);
 
       return {
         nodes: updatedNodes,
-        edges: state.edges,
+        edges: updatedEdges,
         nodeInternals: state.nodeInternals
       };
     });
   },
   onEdgesChange: (changes) => {
-    console.log('Applying edge changes:', changes);
+    console.log('Store: onEdgesChange :', changes);
     set((state) => {
       const updatedEdges = state.edges.map((edge) => {
         const change = changes.find((change) => change.id === edge.id);
@@ -529,13 +526,29 @@ export const useStore = createStore<CanvasState>((set, get) => ({
     console.log('Store: Setting canvas ID to:', id);
     set(() => ({ canvasID: id }));
   },
-  saveCanvas: () => {
-    const { nodes, edges, canvasID } = get();
+  saveCanvas: async () => {
+    const { nodes, edges, canvasID, isLoading, lastLoadTime } = get();
+
+    // Prevent saving if we're still loading or if it's too soon after loading
+    if (isLoading || Date.now() - lastLoadTime < 2000) {
+      console.log('Store: Skipping save due to recent load or ongoing loading');
+      return;
+    }
+
+    // Log node details before saving
+    nodes.forEach((node) => {
+      console.log(
+        `Store: Node before saving - ID: ${node.id}, Type: ${node.type}, Data:`,
+        node.data
+      );
+    });
+
+    // Prepare canvas data for saving
     const canvasData = {
       nodes: nodes.map((node) => ({
         id: node.id,
         type: node.type,
-        position: node.position,
+        position: JSON.stringify(node.position), // Convert position to JSON string
         data: node.data
       })),
       edges: edges.map((edge) => ({
@@ -545,8 +558,36 @@ export const useStore = createStore<CanvasState>((set, get) => ({
         type: edge.type
       }))
     };
+
     console.log('Store: Saving canvas data:', canvasData);
-    saveCanvasState(canvasID, canvasData.nodes, canvasData.edges);
+
+    // Use saveCanvasState from canvasDatabaseOperations.ts to save the entire canvas state
+    const result = await saveCanvasState(
+      canvasID,
+      canvasData.nodes,
+      canvasData.edges
+    );
+
+    if (result.error) {
+      console.error('Store: Error saving canvas data:', result.error);
+      return;
+    }
+
+    // Update local state with the new node data, including parsing the position back to an object
+    set((state) => ({
+      nodes: state.nodes.map((node) => ({
+        ...node,
+        position: JSON.parse(node.position) // Parse position back to an object
+      }))
+    }));
+
+    // Log node details after saving
+    canvasData.nodes.forEach((node) => {
+      console.log(
+        `Store: Node after saving - ID: ${node.id}, Type: ${node.type}, Data:`,
+        node.data
+      );
+    });
   },
   // Function to load canvas data
   loadCanvas: async (canvasId: string) => {
@@ -563,7 +604,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
                 (node) => node.common_node_id === commonNode.id
               );
 
-              console.log('Store: Common Node Properties:', {
+              console.log('Store: loadCanvas fetched :', {
                 id: commonNode.id,
                 type: commonNode.type,
                 position: commonNode.position,
