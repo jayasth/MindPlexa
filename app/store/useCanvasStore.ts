@@ -529,9 +529,15 @@ export const useStore = createStore<CanvasState>((set, get) => ({
   saveCanvas: async () => {
     const { nodes, edges, canvasID, isLoading, lastLoadTime } = get();
 
-    // Prevent saving if we're still loading or if it's too soon after loading
-    if (isLoading || Date.now() - lastLoadTime < 2000) {
-      console.log('Store: Skipping save due to recent load or ongoing loading');
+    // Prevent saving if we're still loading, if it's too soon after loading, or if the canvas is empty
+    if (
+      isLoading ||
+      Date.now() - lastLoadTime < 2000 ||
+      (nodes.length === 0 && edges.length === 0)
+    ) {
+      console.log(
+        'Store: Skipping save due to recent load, ongoing loading, or empty canvas'
+      );
       return;
     }
 
