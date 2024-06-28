@@ -140,7 +140,12 @@ export default function CanvasEditor({ canvasId }) {
       newSize: { width: number; height: number },
       newPosition: { x: number; y: number }
     ) => {
-      updateNodeInStore(node, { ...newSize, position: newPosition });
+      updateNodeInStore(
+        node.id,
+        { ...newSize, position: newPosition },
+        {},
+        node.type || 'defaultType'
+      );
     },
     [updateNodeInStore]
   );
@@ -181,7 +186,7 @@ export default function CanvasEditor({ canvasId }) {
 
   const onNodeDragStop = useCallback(
     (event, node) => {
-      updateNodeInStore(node.id, { position: node.position });
+      updateNodeInStore(node.id, { position: node.position }, {}, node.type);
     },
     [updateNodeInStore]
   );

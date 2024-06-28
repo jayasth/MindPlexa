@@ -33,7 +33,12 @@ interface CanvasState {
   setNodes: (updater: Node[] | ((nodes: Node[]) => Node[])) => void;
   setEdges: (updater: Edge[] | ((edges: Edge[]) => Edge[])) => void;
   addNode: (node: Node) => void;
-  updateNode: (node: Node, updates: Partial<Node>) => void;
+  updateNode: (
+    id: string,
+    updates: Partial<Node>,
+    specificUpdates: any,
+    nodeType: string
+  ) => Promise<void>;
   addEdge: (edge: Edge) => void;
   removeNode: (id: string) => void;
   removeEdge: (id: string) => void;
@@ -178,74 +183,51 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       return { nodes: [...state.nodes, newNode] };
     });
   },
-  updateNode: (id, data) => {
-    set((state) => {
-      const existingNodeIndex = state.nodes.findIndex((node) => node.id === id);
-      if (existingNodeIndex !== -1) {
-        const existingNode = state.nodes[existingNodeIndex];
-        console.log('Store: Existing Node before update:', existingNode);
+  updateNode: async (id, updates, specificUpdates, nodeType) => {
+    try {
+      // Convert position to JSON string if it exists
+      const updatesWithPosition = {
+        ...updates,
+        position: updates.position
+          ? JSON.stringify(updates.position)
+          : undefined,
+        type: updates.type as
+          | 'note'
+          | 'task'
+          | 'table'
+          | 'calendar'
+          | 'draw'
+          | 'selectionMenu'
+          | null
+          | undefined
+      };
 
-        const updatedNode = {
-          ...existingNode,
-          ...data,
-          position: data.position || existingNode.position,
-          data: {
-            ...existingNode.data,
-            ...data.data,
-            backgroundColor:
-              data.data?.backgroundColor || existingNode.data.backgroundColor,
-            textColor: data.data?.textColor || existingNode.data.textColor,
-            tags: data.data?.tags || existingNode.data.tags || [],
-            attachedFiles:
-              data.data?.attachedFiles || existingNode.data.attachedFiles || []
-          }
-        };
-
-        switch (existingNode.type) {
-          case 'note':
-            updatedNode.data = {
-              ...updatedNode.data,
-              ...(data.data as Tables<'note_nodes'>)
-            };
-            break;
-          case 'task':
-            updatedNode.data = {
-              ...updatedNode.data,
-              ...(data.data as Tables<'task_nodes'>)
-            };
-            break;
-          case 'table':
-            updatedNode.data = {
-              ...updatedNode.data,
-              ...(data.data as Tables<'table_nodes'>)
-            };
-            break;
-          case 'calendar':
-            updatedNode.data = {
-              ...updatedNode.data,
-              ...(data.data as Tables<'calendar_nodes'>)
-            };
-            break;
-          case 'draw':
-            updatedNode.data = {
-              ...updatedNode.data,
-              ...(data.data as Tables<'draw_nodes'>)
-            };
-            break;
-          // Add more cases for other node types if needed
-          default:
-            break;
-        }
-
-        const updatedNodes = [...state.nodes];
-        updatedNodes[existingNodeIndex] = updatedNode;
-        state.nodeInternals.set(id, updatedNode);
-
-        console.log('Store: Updated Node after update:', updatedNode);
-        return { nodes: updatedNodes };
+      const { data, error } = await updateNodeInDB(
+        id,
+        updatesWithPosition,
+        specificUpdates,
+        nodeType as
+          | 'note'
+          | 'task'
+          | 'table'
+          | 'calendar'
+          | 'draw'
+          | 'selectionMenu'
+      );
+      if (error) {
+        console.error('useCanvasStore: Error updating node:', error);
+        return;
       }
-      return state;
-    });
+      set((state) => ({
+        nodes: state.nodes.map((node) =>
+          node.id === id
+            ? { ...node, ...data, position: JSON.parse(data.position) }
+            : node
+        )
+      }));
+    } catch (error) {
+      console.error('useCanvasStore: Unexpected error updating node:', error);
+    }
   },
   addEdge: async (edge) => {
     await createEdgeInDB(edge);
@@ -594,10 +576,30 @@ export const useStore = createStore<CanvasState>((set, get) => ({
                 draggable: commonNode.draggable
               });
 
+              let position;
+              try {
+                position =
+                  typeof commonNode.position === 'string'
+                    ? JSON.parse(commonNode.position)
+                    : commonNode.position;
+              } catch (error) {
+                console.error('Error parsing position JSON:', error);
+                position = { x: 0, y: 0 }; // Default position if parsing fails
+              }
+
+              // Ensure position is defined and has x and y properties
+              if (
+                !position ||
+                typeof position.x !== 'number' ||
+                typeof position.y !== 'number'
+              ) {
+                position = { x: 0, y: 0 }; // Default position if invalid
+              }
+
               return {
                 id: commonNode.id,
                 type: commonNode.type,
-                position: JSON.parse(commonNode.position as string),
+                position,
                 data: {
                   ...commonNode,
                   ...specificNodeData,
