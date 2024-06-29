@@ -109,14 +109,8 @@ export default function CanvasEditor({ canvasId }) {
   };
 
   const handleAddNode = (node) => {
-    const newNode = {
-      ...node,
-      id: uuidv4(),
-      position: node.position as XYPosition,
-      type: node.type || 'defaultType'
-    };
-    console.log('CanvasEditor: Adding new node:', newNode);
-    addNode(newNode);
+    console.log('CanvasEditor: Adding new node:', node);
+    addNode(node);
     setTimeout(() => {
       reactFlowInstance.current?.fitView({
         padding: 0.2,
@@ -127,6 +121,7 @@ export default function CanvasEditor({ canvasId }) {
       });
     }, 100);
   };
+
   const edgeTypes = useMemo(
     () => ({
       customEdge: (props) => <CustomEdge {...props} />

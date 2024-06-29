@@ -130,7 +130,15 @@ export const createNode = async (
       const newNodeWithData: Node<any> = {
         ...newNode,
         id: createdNode.id,
-        data: createdNode
+        position: positionAsXYPosition,
+        data: {
+          ...createdNode,
+          backgroundColor: createdNode.background_color || '#F4F4F4',
+          textColor: createdNode.text_color || '#575757',
+          width: createdNode.view_width,
+          height: createdNode.view_height,
+          isEditing: false
+        }
       };
       callback(newNodeWithData);
       console.log('nodeCreation: Canvas ID:', canvasId);

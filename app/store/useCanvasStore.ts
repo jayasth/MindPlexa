@@ -113,60 +113,9 @@ export const useStore = createStore<CanvasState>((set, get) => ({
   },
   addNode: (node) => {
     console.log('Store: Adding node:', node);
-    if (node.type === undefined) {
-      console.error('Store: Node type is undefined');
-      return;
-    }
-    const nodeProps = getNodeSpecificProperties(node.type, false);
-    const textColor =
-      node.data && node.data.backgroundColor
-        ? parseInt(node.data.backgroundColor.replace('#', ''), 16) >
-          0xffffff / 2
-          ? '#575757'
-          : '#F4F4F4'
-        : '#575757';
-    const toolbarColor = textColor === '#575757' ? '#F4F4F4' : '#575757';
-    const newNode = {
-      ...node,
-      ...nodeProps,
-      style: {
-        backgroundColor: (node.data && node.data.backgroundColor) || '#F4F4F4',
-        color: textColor
-      },
-      data: {
-        ...node.data,
-        backgroundColor: (node.data && node.data.backgroundColor) || '#F4F4F4',
-        textColor: textColor,
-        toolbarColor: toolbarColor
-      }
-    };
-
-    const nodeTypeMapping = {
-      note: 'note_nodes',
-      task: 'task_nodes',
-      table: 'table_nodes',
-      calendar: 'calendar_nodes',
-      draw: 'draw_nodes'
-    };
-
-    const tableName = nodeTypeMapping[node.type];
-    if (tableName) {
-      newNode.data = {
-        ...newNode.data,
-        ...(node.data as TablesInsert<typeof tableName>)
-      };
-    }
-
-    console.log('Store: New node with position and dimensions:', newNode);
-    set((state) => {
-      const canvasSize = {
-        width: state.domNode?.clientWidth || 1000,
-        height: state.domNode?.clientHeight || 800
-      };
-      newNode.position = findOptimalPosition(state.nodes, canvasSize);
-      state.nodeInternals.set(newNode.id, newNode);
-      return { nodes: [...state.nodes, newNode] };
-    });
+    set((state) => ({
+      nodes: [...state.nodes, node]
+    }));
   },
   updateNode: async (id, updates, specificUpdates, nodeType) => {
     try {
