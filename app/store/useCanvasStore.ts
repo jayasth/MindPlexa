@@ -170,6 +170,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
   },
   updateNode: async (id, updates, specificUpdates, nodeType) => {
     try {
+      // Convert position to JSON string if it exists
       const updatesWithPosition = {
         ...updates,
         position: updates.position
@@ -186,6 +187,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
           | undefined
       };
 
+      // Update the node in the database
       const { data: updatedNode, error } = await updateNodeInDB(
         id,
         updatesWithPosition,
@@ -204,6 +206,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
         return;
       }
 
+      // Update the local state with the new node data
       set((state) => ({
         nodes: state.nodes.map((node) =>
           node.id === id
@@ -212,11 +215,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
                 ...updatedNode,
                 position: updatedNode.position
                   ? JSON.parse(updatedNode.position)
-                  : node.position,
-                data: {
-                  ...node.data,
-                  ...updatedNode.data
-                }
+                  : node.position
               }
             : node
         )
@@ -546,12 +545,29 @@ export const useStore = createStore<CanvasState>((set, get) => ({
 
     // Prepare canvas data for saving
     const canvasData = {
-      nodes: nodes.map((node) => {
-        console.log(`Store: Data for node ${node.id}:`, node.data);
-        return {
-          ...node.data
-        };
-      }),
+      nodes: nodes.map((node) => ({
+        id: node.id,
+        type: node.type,
+        position: JSON.stringify(node.position), // Convert position to JSON string
+        title: node.data?.title || '',
+        tags: node.data?.tags || [],
+        attached_files: node.data?.attachedFiles || [],
+        background_color: node.data?.backgroundColor || '#F4F4F4',
+        text_color: node.data?.textColor || '#575757',
+        view_width: node.width || 0,
+        view_height: node.height || 0,
+        edit_width: node.data?.editWidth || null,
+        edit_height: node.data?.editHeight || null,
+        is_editing: node.isEditing || false,
+        is_temporary: node.data?.isTemporary || false,
+        parent_node_id: node.data?.parentNodeId || null,
+        z_index: node.zIndex || 0,
+        created_at: node.data?.createdAt || new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        connectable: node.connectable !== false,
+        draggable: node.draggable !== false,
+        uniqueData: node.data?.uniqueData || {}
+      })),
       edges: edges.map((edge) => ({
         id: edge.id,
         source: edge.source,
@@ -597,45 +613,71 @@ export const useStore = createStore<CanvasState>((set, get) => ({
               const commonNode = link.common_node_properties;
               if (!commonNode) return null;
 
-              const nodeType = commonNode.type;
-              const specificNodeData = nodeData?.[nodeType]?.find(
+              const specificNodeData = nodeData?.[commonNode.type]?.find(
                 (node) => node.common_node_id === commonNode.id
               );
 
+              console.log('Store: loadCanvas fetched :', {
+                id: commonNode.id,
+                type: commonNode.type,
+                position: commonNode.position,
+                view_width: commonNode.view_width,
+                view_height: commonNode.view_height,
+                edit_width: commonNode.edit_width,
+                edit_height: commonNode.edit_height,
+                background_color: commonNode.background_color,
+                text_color: commonNode.text_color,
+                title: commonNode.title,
+                tags: commonNode.tags,
+                attached_files: commonNode.attached_files,
+                is_editing: commonNode.is_editing,
+                is_temporary: commonNode.is_temporary,
+                parent_node_id: commonNode.parent_node_id,
+                z_index: commonNode.z_index,
+                created_at: commonNode.created_at,
+                updated_at: commonNode.updated_at,
+                connectable: commonNode.connectable,
+                draggable: commonNode.draggable
+              });
+
               let position;
               try {
-                position = JSON.parse(commonNode.position);
+                position = JSON.parse(commonNode.position); // Always parse as JSON string
               } catch (error) {
                 console.error('Error parsing position JSON:', error);
-                position = { x: 200, y: 200 };
+                position = { x: 200, y: 200 }; // Default position if parsing fails
               }
 
+              // Ensure position is defined and has x and y properties
               if (
                 !position ||
                 typeof position.x !== 'number' ||
                 typeof position.y !== 'number'
               ) {
-                position = { x: 200, y: 200 };
+                position = { x: 200, y: 200 }; // Default position if invalid
               }
 
               return {
                 id: commonNode.id,
-                type: nodeType,
+                type: commonNode.type,
                 position,
                 data: {
                   ...commonNode,
-                  ...specificNodeData
+                  ...specificNodeData,
+                  backgroundColor: commonNode.background_color || '#F4F4F4',
+                  textColor: commonNode.text_color || '#575757',
+                  tags: commonNode.tags || [],
+                  attachedFiles: commonNode.attached_files || []
                 },
                 width: commonNode.view_width || 80,
                 height: commonNode.view_height || 150,
-                isEditing: false
+                isEditing: false // Set isEditing to false by default
               };
             })
             .filter(
               (node): node is Node => node !== null && node.type !== undefined
             )
         : [];
-
       const edges = data.edges
         ? data.edges.map((edge) => ({
             id: edge.id,
@@ -644,11 +686,10 @@ export const useStore = createStore<CanvasState>((set, get) => ({
             type: 'customEdge'
           }))
         : [];
-
-      set({ nodes, edges, lastLoadTime: Date.now(), isLoading: false });
+      set({ nodes, edges });
     } else {
       console.log('Store: Initializing blank canvas');
-      set({ nodes: [], edges: [], lastLoadTime: Date.now(), isLoading: false });
+      set({ nodes: [], edges: [] });
     }
   }
 }));
