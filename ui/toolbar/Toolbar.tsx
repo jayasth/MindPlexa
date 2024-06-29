@@ -67,6 +67,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
         nodes,
         (node) => {
           addNode(node);
+          console.log('Toolbar: Node Data:', node);
           if (reactFlowInstance && nodes.length === 0) {
             reactFlowInstance.setCenter(node.position.x, node.position.y, {
               zoom: 1

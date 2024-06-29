@@ -32,6 +32,7 @@ export const handleTemporaryNodeCreation = async (
             nodes.filter((n) => n.id !== temporaryNodeId),
             async (newNode) => {
               addNode(newNode);
+              console.log('TemporaryNodeHandler: Node added:', newNode);
               if (parentNode) {
                 const { data: createdEdge, error: edgeError } =
                   await createEdge({
@@ -50,6 +51,7 @@ export const handleTemporaryNodeCreation = async (
                     type: 'customEdge'
                   };
                   addEdge(newEdge);
+                  console.log('TemporaryNodeHandler: Edge created:', newEdge);
                 }
               }
             },
@@ -83,7 +85,10 @@ export const handleTemporaryNodeCreation = async (
     'selectionMenu',
     position,
     nodes,
-    addNode,
+    (newNode) => {
+      addNode(newNode);
+      console.log('TemporaryNodeHandler: Node added:', newNode);
+    },
     {
       width: nodeDimensions['selectionMenu'].width,
       height: nodeDimensions['selectionMenu'].height
@@ -112,6 +117,7 @@ export const handleTemporaryNodeCreation = async (
         type: 'customEdge'
       };
       addEdge(newEdge);
+      console.log('TemporaryNodeHandler: Edge created:', newEdge);
     }
   }
   console.log('Finished handleTemporaryNodeCreation');

@@ -121,7 +121,7 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
       }
     };
 
-    updateLocalNode(id, updatedNode);
+    updateLocalNode(id, updatedNode, specificNode, nodeType);
 
     // Update the edges connected to the node
     const updatedEdges = edges.map((edge) => {
