@@ -206,6 +206,9 @@ export const useStore = createStore<CanvasState>((set, get) => ({
         return;
       }
 
+      // Log the updated node data
+      console.log('useCanvasStore: Updated node data:', updatedNode);
+
       // Update the local state with the new node data
       set((state) => ({
         nodes: state.nodes.map((node) =>
@@ -215,7 +218,11 @@ export const useStore = createStore<CanvasState>((set, get) => ({
                 ...updatedNode,
                 position: updatedNode.position
                   ? JSON.parse(updatedNode.position)
-                  : node.position
+                  : node.position,
+                data: {
+                  ...node.data,
+                  ...updatedNode.data
+                }
               }
             : node
         )
@@ -570,31 +577,37 @@ export const useStore = createStore<CanvasState>((set, get) => ({
         };
 
         let specificData = {};
+        let tableName = '';
         switch (node.type) {
           case 'note':
             specificData = {
               noteData: node.data?.noteData || {}
             };
+            tableName = 'note_nodes';
             break;
           case 'task':
             specificData = {
               taskData: node.data?.taskData || {}
             };
+            tableName = 'task_nodes';
             break;
           case 'calendar':
             specificData = {
               calendarData: node.data?.calendarData || {}
             };
+            tableName = 'calendar_nodes';
             break;
           case 'table':
             specificData = {
               tableData: node.data?.tableData || {}
             };
+            tableName = 'table_nodes';
             break;
           case 'draw':
             specificData = {
               drawData: node.data?.drawData || {}
             };
+            tableName = 'draw_nodes';
             break;
           default:
             break;
@@ -618,7 +631,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
     // Use saveCanvasState from canvasDatabaseOperations.ts to save the entire canvas state
     const result = await saveCanvasState(
       canvasID,
-      canvasData.nodes,
+      canvasData.nodes.map(({ tableName, ...node }) => node),
       canvasData.edges
     );
 
@@ -674,7 +687,8 @@ export const useStore = createStore<CanvasState>((set, get) => ({
                   created_at: commonNode.created_at,
                   updated_at: commonNode.updated_at,
                   connectable: commonNode.connectable,
-                  draggable: commonNode.draggable
+                  draggable: commonNode.draggable,
+                  specificNodeData
                 });
 
                 let position;

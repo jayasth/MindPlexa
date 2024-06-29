@@ -293,6 +293,11 @@ export const saveCanvasState = async (
       return { error: createEdgesError };
     }
 
+    console.log('canvasDatabaseOperations: Complete node data saved:', {
+      nodes,
+      edges
+    });
+
     return { success: true };
   } catch (error) {
     console.error('Error in saveCanvasState:', error);

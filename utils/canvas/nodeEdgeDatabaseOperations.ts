@@ -182,7 +182,7 @@ export const updateNode = async (
       // Insert new node-specific data
       const newTableName =
         `${updates.type}_nodes` as keyof Database['public']['Tables'];
-      const { error: newNodeError } = await supabase
+      const { data: newNodeData, error: newNodeError } = await supabase
         .from(newTableName)
         .insert({ common_node_id: id, ...specificUpdates })
         .select()
@@ -195,6 +195,13 @@ export const updateNode = async (
         );
         return { error: newNodeError };
       }
+
+      console.log(`Updated node data:`, {
+        commonNodeData,
+        newNodeData
+      });
+
+      return { data: { ...commonNodeData, ...newNodeData } };
     } else if (nodeType !== 'selectionMenu') {
       // Update existing node-specific data
       const tableName =
@@ -212,8 +219,17 @@ export const updateNode = async (
         return { error: specificNodeError };
       }
 
+      console.log(`Updated node data:`, {
+        commonNodeData,
+        specificNodeData
+      });
+
       return { data: { ...commonNodeData, ...specificNodeData } };
     }
+
+    console.log(`Updated node data:`, {
+      commonNodeData
+    });
 
     return { data: commonNodeData };
   } catch (error) {
@@ -221,7 +237,6 @@ export const updateNode = async (
     return { error };
   }
 };
-
 // Function to delete a node, updated to handle node_canvas_link and specific node tables
 export const deleteNode = async (
   nodeId: string,
