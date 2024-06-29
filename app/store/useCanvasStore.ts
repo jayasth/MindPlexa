@@ -598,98 +598,105 @@ export const useStore = createStore<CanvasState>((set, get) => ({
   // Function to load canvas data
   loadCanvas: async (canvasId: string) => {
     set({ isLoading: true });
-    const { data, nodeData, error } = await fetchCanvas(canvasId);
+    console.log(`Store: Starting to load canvas with ID: ${canvasId}`);
+    try {
+      const { data, nodeData, error } = await fetchCanvas(canvasId);
 
-    if (error) {
-      console.error('Store: Error fetching canvas data:', error);
+      if (error) {
+        console.error('Store: Error fetching canvas data:', error);
+        set({ isLoading: false });
+        return;
+      }
+
+      if (data && data.node_canvas_link && data.node_canvas_link.length > 0) {
+        console.log('Store: Loading existing canvas data');
+        const nodes = data.node_canvas_link
+          ? data.node_canvas_link
+              .map((link) => {
+                const commonNode = link.common_node_properties;
+                if (!commonNode) return null;
+
+                const specificNodeData = nodeData?.[commonNode.type]?.find(
+                  (node) => node.common_node_id === commonNode.id
+                );
+
+                console.log('Store: loadCanvas fetched :', {
+                  id: commonNode.id,
+                  type: commonNode.type,
+                  position: commonNode.position,
+                  view_width: commonNode.view_width,
+                  view_height: commonNode.view_height,
+                  edit_width: commonNode.edit_width,
+                  edit_height: commonNode.edit_height,
+                  background_color: commonNode.background_color,
+                  text_color: commonNode.text_color,
+                  title: commonNode.title,
+                  tags: commonNode.tags,
+                  attached_files: commonNode.attached_files,
+                  is_editing: commonNode.is_editing,
+                  is_temporary: commonNode.is_temporary,
+                  parent_node_id: commonNode.parent_node_id,
+                  z_index: commonNode.z_index,
+                  created_at: commonNode.created_at,
+                  updated_at: commonNode.updated_at,
+                  connectable: commonNode.connectable,
+                  draggable: commonNode.draggable
+                });
+
+                let position;
+                try {
+                  position = JSON.parse(commonNode.position); // Always parse as JSON string
+                } catch (error) {
+                  console.error('Error parsing position JSON:', error);
+                  position = { x: 200, y: 200 }; // Default position if parsing fails
+                }
+
+                // Ensure position is defined and has x and y properties
+                if (
+                  !position ||
+                  typeof position.x !== 'number' ||
+                  typeof position.y !== 'number'
+                ) {
+                  position = { x: 200, y: 200 }; // Default position if invalid
+                }
+
+                return {
+                  id: commonNode.id,
+                  type: commonNode.type,
+                  position,
+                  data: {
+                    ...commonNode,
+                    ...specificNodeData,
+                    backgroundColor: commonNode.background_color || '#F4F4F4',
+                    textColor: commonNode.text_color || '#575757',
+                    tags: commonNode.tags || [],
+                    attachedFiles: commonNode.attached_files || []
+                  },
+                  width: commonNode.view_width || 80,
+                  height: commonNode.view_height || 150,
+                  isEditing: false // Set isEditing to false by default
+                };
+              })
+              .filter(
+                (node): node is Node => node !== null && node.type !== undefined
+              )
+          : [];
+        const edges = data.edges
+          ? data.edges.map((edge) => ({
+              id: edge.id,
+              source: edge.source_node_id || '',
+              target: edge.target_node_id || '',
+              type: 'customEdge'
+            }))
+          : [];
+        set({ nodes, edges, isLoading: false });
+      } else {
+        console.log('Store: Initializing new blank canvas');
+        set({ nodes: [], edges: [], isLoading: false });
+      }
+    } catch (error) {
+      console.error('Store: Error loading canvas:', error);
       set({ isLoading: false });
-      return;
-    }
-
-    if (data) {
-      const nodes = data.node_canvas_link
-        ? data.node_canvas_link
-            .map((link) => {
-              const commonNode = link.common_node_properties;
-              if (!commonNode) return null;
-
-              const specificNodeData = nodeData?.[commonNode.type]?.find(
-                (node) => node.common_node_id === commonNode.id
-              );
-
-              console.log('Store: loadCanvas fetched :', {
-                id: commonNode.id,
-                type: commonNode.type,
-                position: commonNode.position,
-                view_width: commonNode.view_width,
-                view_height: commonNode.view_height,
-                edit_width: commonNode.edit_width,
-                edit_height: commonNode.edit_height,
-                background_color: commonNode.background_color,
-                text_color: commonNode.text_color,
-                title: commonNode.title,
-                tags: commonNode.tags,
-                attached_files: commonNode.attached_files,
-                is_editing: commonNode.is_editing,
-                is_temporary: commonNode.is_temporary,
-                parent_node_id: commonNode.parent_node_id,
-                z_index: commonNode.z_index,
-                created_at: commonNode.created_at,
-                updated_at: commonNode.updated_at,
-                connectable: commonNode.connectable,
-                draggable: commonNode.draggable
-              });
-
-              let position;
-              try {
-                position = JSON.parse(commonNode.position); // Always parse as JSON string
-              } catch (error) {
-                console.error('Error parsing position JSON:', error);
-                position = { x: 200, y: 200 }; // Default position if parsing fails
-              }
-
-              // Ensure position is defined and has x and y properties
-              if (
-                !position ||
-                typeof position.x !== 'number' ||
-                typeof position.y !== 'number'
-              ) {
-                position = { x: 200, y: 200 }; // Default position if invalid
-              }
-
-              return {
-                id: commonNode.id,
-                type: commonNode.type,
-                position,
-                data: {
-                  ...commonNode,
-                  ...specificNodeData,
-                  backgroundColor: commonNode.background_color || '#F4F4F4',
-                  textColor: commonNode.text_color || '#575757',
-                  tags: commonNode.tags || [],
-                  attachedFiles: commonNode.attached_files || []
-                },
-                width: commonNode.view_width || 80,
-                height: commonNode.view_height || 150,
-                isEditing: false // Set isEditing to false by default
-              };
-            })
-            .filter(
-              (node): node is Node => node !== null && node.type !== undefined
-            )
-        : [];
-      const edges = data.edges
-        ? data.edges.map((edge) => ({
-            id: edge.id,
-            source: edge.source_node_id || '',
-            target: edge.target_node_id || '',
-            type: 'customEdge'
-          }))
-        : [];
-      set({ nodes, edges });
-    } else {
-      console.log('Store: Initializing blank canvas');
-      set({ nodes: [], edges: [] });
     }
   }
 }));
