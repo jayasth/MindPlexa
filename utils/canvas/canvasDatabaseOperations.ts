@@ -173,29 +173,113 @@ export const saveCanvasState = async (
   canvasId: string,
   nodes: (Database['public']['Tables']['common_node_properties']['Insert'] & {
     type: string;
-    uniqueData?: any;
+    noteData?: Database['public']['Tables']['note_nodes']['Insert'];
+    taskData?: Database['public']['Tables']['task_nodes']['Insert'];
+    calendarData?: Database['public']['Tables']['calendar_nodes']['Insert'];
+    tableData?: Database['public']['Tables']['table_nodes']['Insert'];
+    drawData?: Database['public']['Tables']['draw_nodes']['Insert'];
   })[],
   edges: Database['public']['Tables']['edges']['Insert'][]
 ) => {
   try {
     // Upsert nodes
     for (const node of nodes) {
-      const { id, type, uniqueData, ...commonProperties } = node;
+      const {
+        id,
+        type,
+        noteData,
+        taskData,
+        calendarData,
+        tableData,
+        drawData,
+        ...commonProperties
+      } = node;
+
       console.log('canvasDatabaseOperations: Node properties before upsert:', {
         id,
         type,
-        uniqueData,
+        noteData,
+        taskData,
+        calendarData,
+        tableData,
+        drawData,
         ...commonProperties
       });
-      const { error: updateNodeError } = await updateNode(
-        id!,
-        commonProperties,
-        uniqueData,
-        type as 'note' | 'task' | 'table' | 'calendar' | 'draw'
-      );
 
-      if (updateNodeError) {
-        return { error: updateNodeError };
+      // Determine specific data based on node type
+      let specificData;
+      let tableName;
+      switch (type) {
+        case 'note':
+          specificData = noteData;
+          tableName = 'note_nodes';
+          break;
+        case 'task':
+          specificData = taskData;
+          tableName = 'task_nodes';
+          break;
+        case 'calendar':
+          specificData = calendarData;
+          tableName = 'calendar_nodes';
+          break;
+        case 'table':
+          specificData = tableData;
+          tableName = 'table_nodes';
+          break;
+        case 'draw':
+          specificData = drawData;
+          tableName = 'draw_nodes';
+          break;
+        default:
+          specificData = {};
+          tableName = '';
+      }
+
+      // Upsert common node properties
+      const { data: commonNodeData, error: commonNodeError } = await supabase
+        .from('common_node_properties')
+        .upsert([{ id, ...commonProperties }])
+        .select()
+        .single();
+
+      if (commonNodeError) {
+        console.error(
+          'Error upserting common node properties:',
+          commonNodeError
+        );
+        return { error: commonNodeError };
+      }
+
+      // Upsert specific node data
+      if (tableName) {
+        const { error: specificNodeError } = await supabase
+          .from(tableName)
+          .upsert([{ common_node_id: commonNodeData.id, ...specificData }]);
+
+        if (specificNodeError) {
+          console.error(`Error upserting ${type} node:`, specificNodeError);
+          return { error: specificNodeError };
+        }
+      }
+
+      // Link node to canvas if not already linked
+      const { data: existingLinkData, error: existingLinkError } =
+        await supabase
+          .from('node_canvas_link')
+          .select('node_id')
+          .eq('canvas_id', canvasId)
+          .eq('node_id', commonNodeData.id)
+          .single();
+
+      if (!existingLinkData && !existingLinkError) {
+        const { error: linkError } = await supabase
+          .from('node_canvas_link')
+          .insert({ node_id: commonNodeData.id, canvas_id: canvasId });
+
+        if (linkError) {
+          console.error('Error linking node to canvas:', linkError);
+          return { error: linkError };
+        }
       }
     }
 
@@ -205,33 +289,8 @@ export const saveCanvasState = async (
       .upsert(edges);
 
     if (createEdgesError) {
+      console.error('Error upserting edges:', createEdgesError);
       return { error: createEdgesError };
-    }
-
-    // Link nodes to the canvas if not already linked
-    const existingLinks = await supabase
-      .from('node_canvas_link')
-      .select('node_id')
-      .eq('canvas_id', canvasId);
-
-    const existingNodeIds = new Set(
-      existingLinks.data ? existingLinks.data.map((link) => link.node_id) : []
-    );
-    const newLinks = nodes
-      .filter((node) => node.id !== undefined && !existingNodeIds.has(node.id))
-      .map((node) => ({
-        node_id: node.id!,
-        canvas_id: canvasId
-      }));
-
-    if (newLinks.length > 0) {
-      const { error: linkError } = await supabase
-        .from('node_canvas_link')
-        .insert(newLinks);
-
-      if (linkError) {
-        return { error: linkError };
-      }
     }
 
     return { success: true };

@@ -13,7 +13,11 @@ export const createNode = async (
   nodeType: Database['public']['Enums']['node_type'],
   position: { x: number; y: number },
   data: Database['public']['Tables']['common_node_properties']['Insert'] & {
-    uniqueData?: any;
+    noteData?: Database['public']['Tables']['note_nodes']['Insert'];
+    taskData?: Database['public']['Tables']['task_nodes']['Insert'];
+    calendarData?: Database['public']['Tables']['calendar_nodes']['Insert'];
+    tableData?: Database['public']['Tables']['table_nodes']['Insert'];
+    drawData?: Database['public']['Tables']['draw_nodes']['Insert'];
   }
 ): Promise<{ data?: any; error?: any }> => {
   console.log('nodeEdgeDatabaseOperations: createNode called with:', {
@@ -79,10 +83,41 @@ export const createNode = async (
 
     // Create the specific node type
     if (nodeType !== 'selectionMenu') {
-      const specificNodeInsert = {
-        common_node_id: commonNodeData.id,
-        ...data.uniqueData
-      };
+      let specificNodeInsert;
+      switch (nodeType) {
+        case 'note':
+          specificNodeInsert = {
+            common_node_id: commonNodeData.id,
+            ...data.noteData
+          };
+          break;
+        case 'task':
+          specificNodeInsert = {
+            common_node_id: commonNodeData.id,
+            ...data.taskData
+          };
+          break;
+        case 'calendar':
+          specificNodeInsert = {
+            common_node_id: commonNodeData.id,
+            ...data.calendarData
+          };
+          break;
+        case 'table':
+          specificNodeInsert = {
+            common_node_id: commonNodeData.id,
+            ...data.tableData
+          };
+          break;
+        case 'draw':
+          specificNodeInsert = {
+            common_node_id: commonNodeData.id,
+            ...data.drawData
+          };
+          break;
+        default:
+          throw new Error(`Unsupported node type: ${nodeType}`);
+      }
 
       const tableName =
         `${nodeType}_nodes` as keyof Database['public']['Tables'];

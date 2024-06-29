@@ -545,29 +545,63 @@ export const useStore = createStore<CanvasState>((set, get) => ({
 
     // Prepare canvas data for saving
     const canvasData = {
-      nodes: nodes.map((node) => ({
-        id: node.id,
-        type: node.type,
-        position: JSON.stringify(node.position), // Convert position to JSON string
-        title: node.data?.title || '',
-        tags: node.data?.tags || [],
-        attached_files: node.data?.attachedFiles || [],
-        background_color: node.data?.backgroundColor || '#F4F4F4',
-        text_color: node.data?.textColor || '#575757',
-        view_width: node.width || 0,
-        view_height: node.height || 0,
-        edit_width: node.data?.editWidth || null,
-        edit_height: node.data?.editHeight || null,
-        is_editing: node.isEditing || false,
-        is_temporary: node.data?.isTemporary || false,
-        parent_node_id: node.data?.parentNodeId || null,
-        z_index: node.zIndex || 0,
-        created_at: node.data?.createdAt || new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        connectable: node.connectable !== false,
-        draggable: node.draggable !== false,
-        uniqueData: node.data?.uniqueData || {}
-      })),
+      nodes: nodes.map((node) => {
+        const commonProperties = {
+          id: node.id,
+          type: node.type,
+          position: JSON.stringify(node.position), // Convert position to JSON string
+          title: node.data?.title || '',
+          tags: node.data?.tags || [],
+          attached_files: node.data?.attachedFiles || [],
+          background_color: node.data?.backgroundColor || '#F4F4F4',
+          text_color: node.data?.textColor || '#575757',
+          view_width: node.width || 0,
+          view_height: node.height || 0,
+          edit_width: node.data?.editWidth || null,
+          edit_height: node.data?.editHeight || null,
+          is_editing: node.isEditing || false,
+          is_temporary: node.data?.isTemporary || false,
+          parent_node_id: node.data?.parentNodeId || null,
+          z_index: node.zIndex || 0,
+          created_at: node.data?.createdAt || new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          connectable: node.connectable !== false,
+          draggable: node.draggable !== false
+        };
+
+        let specificData = {};
+        switch (node.type) {
+          case 'note':
+            specificData = {
+              noteData: node.data?.noteData || {}
+            };
+            break;
+          case 'task':
+            specificData = {
+              taskData: node.data?.taskData || {}
+            };
+            break;
+          case 'calendar':
+            specificData = {
+              calendarData: node.data?.calendarData || {}
+            };
+            break;
+          case 'table':
+            specificData = {
+              tableData: node.data?.tableData || {}
+            };
+            break;
+          case 'draw':
+            specificData = {
+              drawData: node.data?.drawData || {}
+            };
+            break;
+          default:
+            break;
+        }
+
+        return { ...commonProperties, ...specificData };
+      }),
       edges: edges.map((edge) => ({
         id: edge.id,
         source: edge.source,
