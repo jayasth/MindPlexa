@@ -159,21 +159,30 @@ export const FileModal = ({
           return;
         }
         onAttachFiles(allFiles);
-        updateNode(nodeId, {
-          data: { attachedFiles: allFiles }
-        });
+        updateNode(
+          nodeId,
+          {
+            data: { attachedFiles: allFiles }
+          },
+          {},
+          nodeType
+        );
         setFileUrl('');
       } catch (e) {
         alert('Invalid URL');
       }
     }
   };
-
   const handleRemoveFile = (fileToRemove: File | string) => {
     const updatedFiles = existingFiles.filter((file) => file !== fileToRemove);
-    updateNode(nodeId, {
-      data: { attachedFiles: updatedFiles }
-    });
+    updateNode(
+      nodeId,
+      {
+        data: { attachedFiles: updatedFiles }
+      },
+      {},
+      nodeType
+    );
     onRemoveFile(fileToRemove);
   };
 

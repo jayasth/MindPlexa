@@ -170,7 +170,6 @@ export const useStore = createStore<CanvasState>((set, get) => ({
   },
   updateNode: async (id, updates, specificUpdates, nodeType) => {
     try {
-      // Convert position to JSON string if it exists
       const updatesWithPosition = {
         ...updates,
         position: updates.position
@@ -187,7 +186,6 @@ export const useStore = createStore<CanvasState>((set, get) => ({
           | undefined
       };
 
-      // Update the node in the database
       const { data: updatedNode, error } = await updateNodeInDB(
         id,
         updatesWithPosition,
@@ -206,7 +204,6 @@ export const useStore = createStore<CanvasState>((set, get) => ({
         return;
       }
 
-      // Update the local state with the new node data
       set((state) => ({
         nodes: state.nodes.map((node) =>
           node.id === id
@@ -218,21 +215,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
                   : node.position,
                 data: {
                   ...node.data,
-                  ...updatedNode.data,
-                  attachedFiles:
-                    updatedNode.data.attached_files || node.data.attachedFiles,
-                  backgroundColor:
-                    updatedNode.data.background_color ||
-                    node.data.backgroundColor,
-                  textColor: updatedNode.data.text_color || node.data.textColor,
-                  tags: updatedNode.data.tags || node.data.tags,
-                  parentNodeId:
-                    updatedNode.data.parent_node_id || node.data.parentNodeId,
-                  zIndex: updatedNode.data.z_index || node.data.zIndex,
-                  isTemporary:
-                    updatedNode.data.is_temporary || node.data.isTemporary,
-                  createdAt: updatedNode.data.created_at || node.data.createdAt,
-                  updatedAt: updatedNode.data.updated_at || node.data.updatedAt
+                  ...updatedNode.data
                 }
               }
             : node
@@ -564,27 +547,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       nodes: nodes.map((node) => {
         console.log(`Store: Data for node ${node.id}:`, node.data);
         return {
-          id: node.id,
-          type: node.type,
-          position: JSON.stringify(node.position), // Convert position to JSON string
-          title: node.data?.title || '',
-          tags: node.data?.tags || [],
-          attached_files: node.data?.attachedFiles || [],
-          background_color: node.data?.backgroundColor || '#F4F4F4',
-          text_color: node.data?.textColor || '#575757',
-          view_width: node.width || 0,
-          view_height: node.height || 0,
-          edit_width: node.data?.editWidth || null,
-          edit_height: node.data?.editHeight || null,
-          is_editing: node.isEditing || false,
-          is_temporary: node.data?.isTemporary || false,
-          parent_node_id: node.data?.parentNodeId || null,
-          z_index: node.zIndex || 0,
-          created_at: node.data?.createdAt || new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          connectable: node.connectable !== false,
-          draggable: node.draggable !== false,
-          ...node.data // Spread the rest of the node data
+          ...node.data
         };
       }),
       edges: edges.map((edge) => ({
@@ -616,6 +579,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
   },
   // Function to load canvas data
   loadCanvas: async (canvasId: string) => {
+    set({ isLoading: true });
     const { data, nodeData } = await fetchCanvas(canvasId);
 
     if (data) {
@@ -698,10 +662,10 @@ export const useStore = createStore<CanvasState>((set, get) => ({
             type: 'customEdge'
           }))
         : [];
-      set({ nodes, edges });
+      set({ nodes, edges, lastLoadTime: Date.now(), isLoading: false });
     } else {
       console.log('Store: Initializing blank canvas');
-      set({ nodes: [], edges: [] });
+      set({ nodes: [], edges: [], lastLoadTime: Date.now(), isLoading: false });
     }
   }
 }));

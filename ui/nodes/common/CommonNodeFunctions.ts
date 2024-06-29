@@ -135,12 +135,12 @@ export const handleChangeColorWithCombination = (
 ) => {
   const { updateNode, nodeInternals } = useStore.getState();
   const node = nodeInternals.get(id);
-  if (!node) {
-    console.error(`Node with id ${id} not found`);
+  if (!node || !node.type) {
+    console.error(`Node with id ${id} not found or node type is undefined`);
     return;
   }
   onChangeColor(backgroundColor);
-  updateNode(node, { data: { backgroundColor, textColor } });
+  updateNode(node.id, { data: { backgroundColor, textColor } }, {}, node.type);
 };
 
 export const handleTitleChange = (
@@ -150,23 +150,23 @@ export const handleTitleChange = (
 ) => {
   const { updateNode, nodeInternals } = useStore.getState();
   const node = nodeInternals.get(id);
-  if (!node) {
-    console.error(`Node with id ${id} not found`);
+  if (!node || !node.type) {
+    console.error(`Node with id ${id} not found or node type is undefined`);
     return;
   }
   onChangeTitle(title);
-  updateNode(node, { data: { title } });
+  updateNode(node.id, { data: { title } }, {}, node.type);
 };
 
 export const handleSave = (id: string, onSave: () => void, nodeData: any) => {
   const { updateNode, toggleEditMode, nodeInternals } = useStore.getState();
   const node = nodeInternals.get(id);
-  if (!node) {
-    console.error(`Node with id ${id} not found`);
+  if (!node || !node.type) {
+    console.error(`Node with id ${id} not found or node type is undefined`);
     return;
   }
   onSave();
-  updateNode(node, nodeData);
+  updateNode(node.id, nodeData, {}, node.type);
   toggleEditMode(id);
 };
 export const handleClose = (
@@ -177,20 +177,19 @@ export const handleClose = (
 ) => {
   const { updateNode, toggleEditMode, nodeInternals } = useStore.getState();
   const node = nodeInternals.get(nodeId);
-  if (!node) {
-    console.error(`Node with id ${nodeId} not found`);
+  if (!node || !node.type) {
+    console.error(`Node with id ${nodeId} not found or node type is undefined`);
     return;
   }
-  updateNode(node, { data: { title, content } });
+  updateNode(node.id, { data: { title, content } }, {}, node.type);
   onClose();
   toggleEditMode(nodeId);
 };
-
 export const handleDelete = (id: string, onDelete: () => void) => {
   const { removeNode, setEdges, nodeInternals } = useStore.getState();
   const node = nodeInternals.get(id);
-  if (!node) {
-    console.error(`Node with id ${id} not found`);
+  if (!node || !node.type) {
+    console.error(`Node with id ${id} not found or node type is undefined`);
     return;
   }
   if (window.confirm('Are you sure you want to delete this node?')) {
@@ -201,7 +200,6 @@ export const handleDelete = (id: string, onDelete: () => void) => {
     );
   }
 };
-
 export const handleChangeColor = (
   id: string,
   color: string,
@@ -209,13 +207,18 @@ export const handleChangeColor = (
 ) => {
   const { updateNode, nodeInternals } = useStore.getState();
   const node = nodeInternals.get(id);
-  if (!node) {
-    console.error(`Node with id ${id} not found`);
+  if (!node || !node.type) {
+    console.error(`Node with id ${id} not found or node type is undefined`);
     return;
   }
   const textColor = getContrastYIQ(color);
   onChangeColor(color);
-  updateNode(node, { data: { backgroundColor: color, textColor } });
+  updateNode(
+    node.id,
+    { data: { backgroundColor: color, textColor } },
+    {},
+    node.type
+  );
 };
 
 export const handleAddTag = (
@@ -225,11 +228,11 @@ export const handleAddTag = (
 ) => {
   const { updateNode, nodeInternals } = useStore.getState();
   const node = nodeInternals.get(id);
-  if (!node) {
-    console.error(`Node with id ${id} not found`);
+  if (!node || !node.type) {
+    console.error(`Node with id ${id} not found or node type is undefined`);
     return;
   }
-  updateNode(node, { data: { tags } });
+  updateNode(node.id, { data: { tags } }, {}, node.type);
   tags.forEach((tag) => onAddTag(tag));
 };
 
@@ -240,8 +243,8 @@ export const handleAttachFile = (
 ) => {
   const { updateNode, nodeInternals } = useStore.getState();
   const node = nodeInternals.get(id);
-  if (!node) {
-    console.error(`Node with id ${id} not found`);
+  if (!node || !node.type) {
+    console.error(`Node with id ${id} not found or node type is undefined`);
     return;
   }
   const maxFileSize = 2 * 1024 * 1024; // 2 MB in bytes
@@ -266,9 +269,14 @@ export const handleAttachFile = (
       return;
     }
 
-    updateNode(node, {
-      data: { attachedFiles: JSON.stringify(allFiles) } // Serialize files
-    });
+    updateNode(
+      node.id,
+      {
+        data: { attachedFiles: JSON.stringify(allFiles) } // Serialize files
+      },
+      {},
+      node.type
+    );
     callback();
   } else {
     alert(
@@ -284,8 +292,8 @@ export const handleRemoveAttachedFile = (
 ) => {
   const { updateNode, nodeInternals } = useStore.getState();
   const node = nodeInternals.get(id);
-  if (!node) {
-    console.error(`Node with id ${id} not found`);
+  if (!node || !node.type) {
+    console.error(`Node with id ${id} not found or node type is undefined`);
     return;
   }
   const existingFiles =
@@ -293,9 +301,14 @@ export const handleRemoveAttachedFile = (
     [];
   const updatedFiles = existingFiles.filter((file) => file !== fileToRemove);
 
-  updateNode(node, {
-    data: { attachedFiles: updatedFiles }
-  });
+  updateNode(
+    node.id,
+    {
+      data: { attachedFiles: updatedFiles }
+    },
+    {},
+    node.type
+  );
   onRemoveFile(fileToRemove);
 };
 export const handleDuplicate = (id: string) => {
