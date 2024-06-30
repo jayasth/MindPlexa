@@ -96,44 +96,53 @@ export const createNode = async (
       'nodeCreation: Creating node in database with data:',
       newNodeData
     );
-
-    const { data: createdNode, error: nodeError } = await createNodeInDatabase(
+    const { data: createdNode, error } = await createNodeInDatabase(
       canvasId,
       nodeType,
       positionAsXYPosition,
       newNodeData
     );
 
-    if (nodeError) {
-      console.error('nodeCreation: Error creating node:', nodeError);
-      return;
+    if (error) {
+      console.error('nodeCreation: Database error:', error);
+      throw new Error(error instanceof Error ? error.message : 'Unknown error');
     }
 
     if (createdNode) {
-      newNode.id = createdNode.id;
-      newNode.data.id = createdNode.id;
-      newNode.data.common_node_id = createdNode.common_node_id;
+      const newNodeWithData: Node<any> = {
+        ...newNode,
+        id: createdNode.id,
+        position: positionAsXYPosition,
+        data: {
+          ...createdNode,
+          backgroundColor: createdNode.background_color || '#F4F4F4',
+          textColor: createdNode.text_color || '#575757',
+          isEditing: false
+        }
+      };
+      callback(newNodeWithData);
+      console.log('nodeCreation: Node created with ID:', createdNode.id);
 
-      callback(newNode);
-      console.log('nodeCreation: Node created with ID:', newNode.id);
-
+      // Create edge if there's a parent node
       if (parentNode) {
+        const edgeId = uuidv4();
         const newEdge = {
-          id: uuidv4(),
+          id: edgeId,
           source: parentNode.id,
-          target: newNode.id,
+          target: newNodeWithData.id,
           type: 'customEdge'
         };
         console.log('nodeCreation: Creating edge with data:', newEdge);
         const { data: createdEdge, error: edgeError } = await createEdge({
           source_node_id: parentNode.id,
-          target_node_id: newNode.id,
+          target_node_id: newNodeWithData.id,
           canvas_id: canvasId
         });
 
         if (edgeError) {
           console.error('nodeCreation: Error creating edge:', edgeError);
         } else if (createdEdge) {
+          newEdge.id = createdEdge.id;
           // Add the edge to the local state
           useStore.getState().addEdge(newEdge);
           console.log('nodeCreation: Edge created with ID:', createdEdge.id);
