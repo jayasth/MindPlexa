@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   MdOutlineKeyboardDoubleArrowLeft,
   MdOutlineKeyboardDoubleArrowRight
@@ -49,41 +49,44 @@ const Toolbar: React.FC<ToolbarProps> = ({
   const addNode = useStore((state) => state.addNode);
   const nodes = useStore((state) => state.nodes);
 
-  const handleAddNode = async (
-    type: 'note' | 'task' | 'table' | 'calendar' | 'draw' | 'selectionMenu'
-  ) => {
-    try {
-      const canvasSize = {
-        width: window.innerWidth,
-        height: window.innerHeight
-      };
+  const handleAddNode = useCallback(
+    async (
+      type: 'note' | 'task' | 'table' | 'calendar' | 'draw' | 'selectionMenu'
+    ) => {
+      try {
+        const canvasSize = {
+          width: window.innerWidth,
+          height: window.innerHeight
+        };
 
-      const position = findOptimalPosition(nodes, canvasSize);
-      const nodeProps = getNodeSpecificProperties(type, false);
+        const position = findOptimalPosition(nodes, canvasSize);
+        const nodeProps = getNodeSpecificProperties(type, false);
 
-      await createNode(
-        type,
-        position,
-        nodes,
-        (node) => {
-          addNode(node);
-          console.log('Toolbar: Node added to database:', node);
-          if (reactFlowInstance && nodes.length === 0) {
-            reactFlowInstance.setCenter(node.position.x, node.position.y, {
-              zoom: 1
-            });
-          }
-        },
-        canvasSize,
-        type === 'selectionMenu',
-        false, // isEditing
-        canvasId
-      );
-      console.log('Toolbar: Canvas ID:', canvasId);
-    } catch (error) {
-      console.error(`Failed to add node of type ${type}:`, error);
-    }
-  };
+        await createNode(
+          type,
+          position,
+          nodes,
+          (node) => {
+            addNode(node);
+            console.log('Toolbar: Node added to database:', node);
+            if (reactFlowInstance && nodes.length === 0) {
+              reactFlowInstance.setCenter(node.position.x, node.position.y, {
+                zoom: 1
+              });
+            }
+          },
+          canvasSize,
+          type === 'selectionMenu',
+          false, // isEditing
+          canvasId
+        );
+        console.log('Toolbar: Canvas ID:', canvasId);
+      } catch (error) {
+        console.error(`Failed to add node of type ${type}:`, error);
+      }
+    },
+    [addNode, canvasId, nodes, reactFlowInstance]
+  );
 
   const toggleToolbar = () => {
     setIsOpen(!isOpen);

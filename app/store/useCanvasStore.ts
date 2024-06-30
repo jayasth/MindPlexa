@@ -63,6 +63,7 @@ interface CanvasState {
   loadCanvas: (canvasId: string) => Promise<void>;
   isLoading: boolean;
   lastLoadTime: number;
+  saveCanvasTimeout?: NodeJS.Timeout;
 }
 
 const createStore = <T extends object>(
