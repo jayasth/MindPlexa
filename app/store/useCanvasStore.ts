@@ -525,28 +525,52 @@ export const useStore = createStore<CanvasState>((set, get) => ({
     }
 
     const canvasData = {
-      common_node_properties: nodes.map((node) => ({
-        id: node.id,
-        type: node.type,
-        position: JSON.stringify(node.position),
-        title: node.data?.title || '',
-        tags: node.data?.tags || [],
-        attached_files: node.data?.attachedFiles || [],
-        background_color: node.data?.backgroundColor || '#F4F4F4',
-        text_color: node.data?.textColor || '#575757',
-        view_width: node.width || 0,
-        view_height: node.height || 0,
-        edit_width: node.data?.editWidth || null,
-        edit_height: node.data?.editHeight || null,
-        is_editing: node.isEditing || false,
-        is_temporary: node.data?.isTemporary || false,
-        parent_node_id: node.data?.parentNodeId || null,
-        z_index: node.zIndex || 0,
-        created_at: node.data?.createdAt || new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        connectable: node.connectable !== false,
-        draggable: node.draggable !== false
-      })),
+      common_node_properties: nodes.map((node) => {
+        console.log('Store: saveCanvas common_node_properties:', {
+          id: node.id,
+          type: node.type,
+          position: node.position,
+          title: node.data?.title,
+          tags: node.data?.tags,
+          attached_files: node.data?.attachedFiles,
+          background_color: node.data?.backgroundColor,
+          text_color: node.data?.textColor,
+          view_width: node.width,
+          view_height: node.height,
+          edit_width: node.data?.editWidth,
+          edit_height: node.data?.editHeight,
+          is_editing: node.isEditing,
+          is_temporary: node.data?.isTemporary,
+          parent_node_id: node.data?.parentNodeId,
+          z_index: node.zIndex,
+          created_at: node.data?.createdAt,
+          updated_at: new Date().toISOString(),
+          connectable: node.connectable,
+          draggable: node.draggable
+        });
+        return {
+          id: node.id,
+          type: node.type,
+          position: JSON.stringify(node.position),
+          title: node.data?.title || '',
+          tags: node.data?.tags || [],
+          attached_files: node.data?.attachedFiles || [],
+          background_color: node.data?.backgroundColor || '#F4F4F4',
+          text_color: node.data?.textColor || '#575757',
+          view_width: node.width || 0,
+          view_height: node.height || 0,
+          edit_width: node.data?.editWidth || null,
+          edit_height: node.data?.editHeight || null,
+          is_editing: node.isEditing || false,
+          is_temporary: node.data?.isTemporary || false,
+          parent_node_id: node.data?.parentNodeId || null,
+          z_index: node.zIndex || 0,
+          created_at: node.data?.createdAt || new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          connectable: node.connectable !== false,
+          draggable: node.draggable !== false
+        };
+      }),
       node_specific_data: nodes
         .map((node) => {
           switch (node.type) {
@@ -589,10 +613,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       }))
     };
 
-    console.log(
-      'Store: Saving canvas data:',
-      JSON.stringify(canvasData, null, 2)
-    );
+    console.log('Store: saveCanvas full canvasData:', canvasData);
 
     const result = await saveCanvasState(
       canvasID,
