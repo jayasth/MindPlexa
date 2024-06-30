@@ -64,7 +64,7 @@ export const useEdgeConnection = () => {
               position,
               'selectionMenu',
               (newNode) => {
-                console.log('onConnectEnd Node created:', newNode);
+                console.log('useEdgeConnection: Node created:', newNode);
                 addNode(newNode);
               },
               addEdge,
@@ -90,7 +90,6 @@ export const useEdgeConnection = () => {
           addEdge(newEdge);
         }
       }
-
       setParentNode(null);
       connectingNodeId.current = null;
     },

@@ -61,17 +61,7 @@ export const createNode = async (
 
   const specificNode = {
     ...baseProperties,
-    ...getNodeSpecificProperties(nodeType, isEditing),
-    view_width:
-      'width' in nodeDimension ? nodeDimension.width : nodeDimension.viewWidth,
-    view_height:
-      'height' in nodeDimension
-        ? nodeDimension.height
-        : nodeDimension.viewHeight,
-    edit_width:
-      'editWidth' in nodeDimension ? nodeDimension.editWidth : undefined,
-    edit_height:
-      'editHeight' in nodeDimension ? nodeDimension.editHeight : undefined
+    ...getNodeSpecificProperties(nodeType, isEditing)
   };
 
   const newNode: Node<any> = {
@@ -80,19 +70,7 @@ export const createNode = async (
     type: baseProperties.type || '',
     position: positionAsXYPosition,
     data: {
-      ...specificNode,
-      view_width:
-        'width' in nodeDimension
-          ? nodeDimension.width
-          : nodeDimension.viewWidth,
-      view_height:
-        'height' in nodeDimension
-          ? nodeDimension.height
-          : nodeDimension.viewHeight,
-      edit_width:
-        'editWidth' in nodeDimension ? nodeDimension.editWidth : undefined,
-      edit_height:
-        'editHeight' in nodeDimension ? nodeDimension.editHeight : undefined
+      ...specificNode
     }
   };
   if (parentNode) {
@@ -114,6 +92,10 @@ export const createNode = async (
       parent_node_id: parentNode ? parentNode.id : null
     };
 
+    console.log(
+      'nodeCreation: Creating node in database with data:',
+      newNodeData
+    );
     const { data: createdNode, error } = await createNodeInDatabase(
       canvasId,
       nodeType,
@@ -122,7 +104,7 @@ export const createNode = async (
     );
 
     if (error) {
-      console.error('NodeCreation: Database error:', error);
+      console.error('nodeCreation: Database error:', error);
       throw new Error(error instanceof Error ? error.message : 'Unknown error');
     }
 
@@ -135,13 +117,11 @@ export const createNode = async (
           ...createdNode,
           backgroundColor: createdNode.background_color || '#F4F4F4',
           textColor: createdNode.text_color || '#575757',
-          width: createdNode.view_width,
-          height: createdNode.view_height,
           isEditing: false
         }
       };
       callback(newNodeWithData);
-      console.log('nodeCreation: Canvas ID:', canvasId);
+      console.log('nodeCreation: Node created with ID:', createdNode.id);
 
       // Create edge if there's a parent node
       if (parentNode) {
@@ -152,6 +132,7 @@ export const createNode = async (
           target: newNodeWithData.id,
           type: 'customEdge'
         };
+        console.log('nodeCreation: Creating edge with data:', newEdge);
         const { data: createdEdge, error: edgeError } = await createEdge({
           source_node_id: parentNode.id,
           target_node_id: newNodeWithData.id,
@@ -159,18 +140,19 @@ export const createNode = async (
         });
 
         if (edgeError) {
-          console.error('Error creating edge:', edgeError);
+          console.error('nodeCreation: Error creating edge:', edgeError);
         } else if (createdEdge) {
           newEdge.id = createdEdge.id;
           // Add the edge to the local state
           useStore.getState().addEdge(newEdge);
+          console.log('nodeCreation: Edge created with ID:', createdEdge.id);
         }
       }
     } else {
-      throw new Error('Node creation failed');
+      throw new Error('nodeCreation: Node creation failed');
     }
   } catch (error) {
-    console.error('NodeCreation: Error creating new node:', error);
+    console.error('nodeCreation: Error creating new node:', error);
   }
 };
 
@@ -195,13 +177,14 @@ export const replaceNodeWithType = async (
       data: existingEdge.data
     };
 
+    console.log('nodeCreation: Updating edge with ID:', existingEdge.id);
     const { error: edgeError } = await updateEdgeInDatabase(
       existingEdge.id,
       updatedEdgeData
     );
 
     if (edgeError) {
-      console.error('Error updating edge:', edgeError);
+      console.error('nodeCreation: Error updating edge:', edgeError);
     }
   }
 
@@ -210,6 +193,7 @@ export const replaceNodeWithType = async (
       content: 'New note content'
     };
 
+  console.log('nodeCreation: Inserting new node with data:', newNodeInsertData);
   const { data: newNodeData, error: newNodeError } = await supabase
     .from(`${nodeType}_nodes`)
     .insert([newNodeInsertData])
@@ -217,7 +201,7 @@ export const replaceNodeWithType = async (
     .single();
 
   if (newNodeError) {
-    console.error('Error inserting new node:', newNodeError);
+    console.error('nodeCreation: Error inserting new node:', newNodeError);
     return;
   }
 
@@ -234,5 +218,6 @@ export const replaceNodeWithType = async (
     }
   };
 
+  console.log('nodeCreation: Node replaced with new type:', nodeType);
   setNode(updatedNode);
 };

@@ -108,9 +108,10 @@ export default function CanvasEditor({ canvasId }) {
     setShowAIAssistanceModal(false);
   };
 
-  const handleAddNode = (node) => {
+  const handleAddNode = async (node) => {
     console.log('CanvasEditor: Adding new node:', node);
-    addNode(node);
+    await addNode(node);
+    console.log('CanvasEditor: Node added to database:', node);
     setTimeout(() => {
       reactFlowInstance.current?.fitView({
         padding: 0.2,

@@ -71,6 +71,11 @@ export const createNode = async (
       return { error: commonNodeError };
     }
 
+    console.log(
+      'nodeEdgeDatabaseOperations: Common node created:',
+      commonNodeData
+    );
+
     // Link node to canvas
     const { error: linkError } = await supabase
       .from('node_canvas_link')
@@ -80,6 +85,11 @@ export const createNode = async (
       console.error('Error linking node to canvas:', linkError);
       return { error: linkError };
     }
+
+    console.log('nodeEdgeDatabaseOperations: Node linked to canvas:', {
+      node_id: commonNodeData.id,
+      canvas_id: canvasId
+    });
 
     // Create the specific node type
     if (nodeType !== 'selectionMenu') {
@@ -134,6 +144,11 @@ export const createNode = async (
         return { error: specificNodeError };
       }
 
+      console.log(
+        `nodeEdgeDatabaseOperations: ${nodeType} node created:`,
+        specificNodeData
+      );
+
       return { data: { ...commonNodeData, ...specificNodeData } };
     } else {
       return { data: commonNodeData };
@@ -143,7 +158,6 @@ export const createNode = async (
     return { error };
   }
 };
-
 export const updateNode = async (
   id: string,
   updates: Partial<

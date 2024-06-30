@@ -334,6 +334,12 @@ export const useStore = createStore<CanvasState>((set, get) => ({
                   type: 'customEdge'
                 }
               ]);
+              console.log('Store: Edge created:', {
+                id: `e-${uuidv4()}`,
+                source: parentNode.id,
+                target: newNode.id,
+                type: 'customEdge'
+              });
             },
             { width: 0, height: 0 },
             false,
@@ -361,6 +367,12 @@ export const useStore = createStore<CanvasState>((set, get) => ({
         type: 'customEdge'
       }
     ]);
+    console.log('Store: Edge created:', {
+      id: `e-${uuidv4()}`,
+      source: parentNode.id,
+      target: newNode.id,
+      type: 'customEdge'
+    });
   },
   setShowNodeSelectionMenu: (show) => {
     console.log('Store: Setting show node selection menu to:', show);
