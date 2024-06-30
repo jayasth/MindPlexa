@@ -199,9 +199,45 @@ export const updateNode = async (
       // Insert new node-specific data
       const newTableName =
         `${updates.type}_nodes` as keyof Database['public']['Tables'];
+      const newSpecificInsert = { common_node_id: id };
+
+      switch (updates.type) {
+        case 'note':
+          newSpecificInsert['content'] =
+            (
+              specificUpdates as Database['public']['Tables']['note_nodes']['Insert']
+            ).content || '';
+          break;
+        case 'task':
+          newSpecificInsert['tasks'] =
+            (
+              specificUpdates as Database['public']['Tables']['task_nodes']['Insert']
+            ).tasks || [];
+          break;
+        case 'calendar':
+          // Add calendar-specific fields if any
+          break;
+        case 'table':
+          newSpecificInsert['columns'] =
+            (
+              specificUpdates as Database['public']['Tables']['table_nodes']['Insert']
+            ).columns || [];
+          newSpecificInsert['rows'] =
+            (
+              specificUpdates as Database['public']['Tables']['table_nodes']['Insert']
+            ).rows || [];
+          break;
+        case 'draw':
+          newSpecificInsert['drawing_data'] =
+            (
+              specificUpdates as Database['public']['Tables']['draw_nodes']['Insert']
+            ).drawing_data || '';
+          break;
+      }
+
       const { data: newNodeData, error: newNodeError } = await supabase
         .from(newTableName)
-        .insert({ common_node_id: id, ...specificUpdates })
+        .insert(newSpecificInsert)
         .select()
         .single();
 

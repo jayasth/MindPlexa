@@ -133,8 +133,6 @@ export const useStore = createStore<CanvasState>((set, get) => ({
           | 'calendar'
           | 'draw'
           | 'selectionMenu'
-          | null
-          | undefined
       };
 
       // Update the node in the database
@@ -171,8 +169,23 @@ export const useStore = createStore<CanvasState>((set, get) => ({
                   : node.position,
                 data: {
                   ...node.data,
-                  ...updatedNode.data
-                }
+                  ...updatedNode,
+                  title: updatedNode.title,
+                  tags: updatedNode.tags,
+                  attachedFiles: updatedNode.attached_files,
+                  backgroundColor: updatedNode.background_color,
+                  textColor: updatedNode.text_color,
+                  editWidth: updatedNode.edit_width,
+                  editHeight: updatedNode.edit_height
+                },
+                width: updatedNode.view_width,
+                height: updatedNode.view_height,
+                isEditing: updatedNode.is_editing,
+                isTemporary: updatedNode.is_temporary,
+                parentNodeId: updatedNode.parent_node_id,
+                zIndex: updatedNode.z_index,
+                connectable: updatedNode.connectable ?? true,
+                draggable: updatedNode.draggable ?? true
               }
             : node
         )
