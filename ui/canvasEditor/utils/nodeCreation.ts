@@ -6,8 +6,8 @@ import {
 import { findOptimalPosition } from '@/ui/canvasEditor/utils/positioningUtils';
 import {
   createNode as createNodeInDatabase,
-  updateEdge as updateEdgeInDatabase,
-  createEdge
+  createEdge,
+  updateEdge as updateEdgeInDatabase
 } from '@/utils/canvas/nodeEdgeDatabaseOperations';
 import { v4 as uuidv4 } from 'uuid';
 import { Database } from '@/types_db';
@@ -48,8 +48,8 @@ export const createNode = async (
   const defaultProperties = {
     draggable: true,
     connectable: true,
-    backgroundColor: '#F4F4F4',
-    textColor: '#575757'
+    background_color: '#F4F4F4',
+    text_color: '#575757'
   };
 
   const baseProperties: Partial<Node<any>> = {
@@ -89,7 +89,11 @@ export const createNode = async (
       ...newNode.data,
       z_index: 0,
       is_temporary: isTemporary,
-      parent_node_id: parentNode ? parentNode.id : null
+      parent_node_id: parentNode ? parentNode.id : null,
+      background_color: defaultProperties.background_color,
+      text_color: defaultProperties.text_color,
+      is_editing: isEditing,
+      ...nodeDimension
     };
 
     console.log(
@@ -115,9 +119,9 @@ export const createNode = async (
         position: positionAsXYPosition,
         data: {
           ...createdNode,
-          backgroundColor: createdNode.background_color || '#F4F4F4',
-          textColor: createdNode.text_color || '#575757',
-          isEditing: false
+          backgroundColor: createdNode.background_color,
+          textColor: createdNode.text_color,
+          isEditing: createdNode.is_editing
         }
       };
       callback(newNodeWithData);
@@ -157,23 +161,21 @@ export const createNode = async (
 };
 
 export const replaceNodeWithType = async (
-  nodeType: 'note' | 'task' | 'table' | 'calendar' | 'draw',
+  nodeType: Database['public']['Enums']['node_type'],
   id: string,
   position: XYPosition,
   edges: any[],
   setNode: (node: Node) => void,
-  supabase: any
+  canvasId: string
 ) => {
   const existingEdge = edges.find(
     (edge) => edge.source === id || edge.target === id
   );
 
   if (existingEdge) {
-    const updatedEdgeData: Database['public']['Tables']['edges']['Update'] = {
-      source_node_id:
-        existingEdge.source === id ? null : existingEdge.source_node_id,
-      target_node_id:
-        existingEdge.target === id ? null : existingEdge.target_node_id,
+    const updatedEdgeData = {
+      source_node_id: existingEdge.source === id ? null : existingEdge.source,
+      target_node_id: existingEdge.target === id ? null : existingEdge.target,
       data: existingEdge.data
     };
 
@@ -187,37 +189,43 @@ export const replaceNodeWithType = async (
       console.error('nodeCreation: Error updating edge:', edgeError);
     }
   }
-
-  const newNodeInsertData: Database['public']['Tables']['note_nodes']['Insert'] =
-    {
-      content: 'New note content'
-    };
-
-  console.log('nodeCreation: Inserting new node with data:', newNodeInsertData);
-  const { data: newNodeData, error: newNodeError } = await supabase
-    .from(`${nodeType}_nodes`)
-    .insert([newNodeInsertData])
-    .select()
-    .single();
-
-  if (newNodeError) {
-    console.error('nodeCreation: Error inserting new node:', newNodeError);
-    return;
-  }
-
-  const updatedNode: Node = {
-    id: id,
+  const commonNodeProperties = {
     type: nodeType,
     position: {
       x: position.x,
       y: position.y
     },
-    data: {
-      ...getNodeSpecificProperties(nodeType, false),
-      ...newNodeData
-    }
+    is_editing: false
   };
 
-  console.log('nodeCreation: Node replaced with new type:', nodeType);
-  setNode(updatedNode);
+  console.log('nodeCreation: Updating node with data:', commonNodeProperties);
+  const { data: updatedNode, error: updateError } = await createNodeInDatabase(
+    canvasId,
+    nodeType,
+    {
+      x: position.x,
+      y: position.y
+    },
+    commonNodeProperties
+  );
+
+  if (updateError) {
+    console.error('nodeCreation: Error updating node:', updateError);
+    return;
+  }
+
+  if (updatedNode) {
+    const newNode: Node = {
+      id: id,
+      type: nodeType,
+      position: position,
+      data: {
+        ...getNodeSpecificProperties(nodeType, false),
+        ...updatedNode
+      }
+    };
+
+    console.log('nodeCreation: Node replaced with new type:', nodeType);
+    setNode(newNode);
+  }
 };

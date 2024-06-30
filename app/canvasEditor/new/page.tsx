@@ -24,6 +24,10 @@ export default function NewCanvasPage() {
     router.push('/workspace/canvases');
   };
 
+  const handleCreateCanvas = async () => {
+    await createCanvas(canvasTitle, setIsModalOpen, router);
+  };
+
   return (
     <>
       {isModalOpen && (
@@ -46,12 +50,7 @@ export default function NewCanvasPage() {
               />
             </div>
             <div className={styles.actions}>
-              <Button
-                variant="submit"
-                onClick={() =>
-                  createCanvas(canvasTitle, setIsModalOpen, router)
-                }
-              >
+              <Button variant="submit" onClick={handleCreateCanvas}>
                 Create
               </Button>
             </div>

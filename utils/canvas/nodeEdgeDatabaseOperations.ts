@@ -33,6 +33,7 @@ export const createNode = async (
     // Create a common node first
     const commonNodeInsert: Database['public']['Tables']['common_node_properties']['Insert'] =
       {
+        id: uuidv4(),
         type: nodeType,
         position: JSON.stringify(position),
         view_width:
@@ -97,30 +98,35 @@ export const createNode = async (
       switch (nodeType) {
         case 'note':
           specificNodeInsert = {
+            id: uuidv4(),
             common_node_id: commonNodeData.id,
             ...data.noteData
           };
           break;
         case 'task':
           specificNodeInsert = {
+            id: uuidv4(),
             common_node_id: commonNodeData.id,
             ...data.taskData
           };
           break;
         case 'calendar':
           specificNodeInsert = {
+            id: uuidv4(),
             common_node_id: commonNodeData.id,
             ...data.calendarData
           };
           break;
         case 'table':
           specificNodeInsert = {
+            id: uuidv4(),
             common_node_id: commonNodeData.id,
             ...data.tableData
           };
           break;
         case 'draw':
           specificNodeInsert = {
+            id: uuidv4(),
             common_node_id: commonNodeData.id,
             ...data.drawData
           };
@@ -158,6 +164,7 @@ export const createNode = async (
     return { error };
   }
 };
+
 export const updateNode = async (
   id: string,
   updates: Partial<
@@ -199,7 +206,10 @@ export const updateNode = async (
       // Insert new node-specific data
       const newTableName =
         `${updates.type}_nodes` as keyof Database['public']['Tables'];
-      const newSpecificInsert = { common_node_id: id };
+      const newSpecificInsert = {
+        id: uuidv4(),
+        common_node_id: id
+      };
 
       switch (updates.type) {
         case 'note':
@@ -297,6 +307,7 @@ export const updateNode = async (
     return { error };
   }
 };
+
 // Function to delete a node, updated to handle node_canvas_link and specific node tables
 export const deleteNode = async (
   nodeId: string,
@@ -365,8 +376,6 @@ export const createEdge = async (
   }
   return { data: { id: data.id } };
 };
-
-// ... rest of the file remains the same
 
 // Function to update an existing edge
 export const updateEdge = async (

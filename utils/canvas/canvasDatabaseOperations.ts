@@ -1,7 +1,7 @@
 import { createClient } from '@/utils/supabase/supabaseClient';
 import { Database } from '@/types_db';
 import { useRouter } from 'next/navigation';
-import { updateNode } from '@/utils/canvas/nodeEdgeDatabaseOperations';
+import { v4 as uuidv4 } from 'uuid';
 
 const supabase = createClient();
 
@@ -16,7 +16,7 @@ export const createCanvas = async (
   if (canvasTitle.trim() !== '') {
     const insertResponse = await supabase
       .from('canvases')
-      .insert({ name: canvasTitle });
+      .insert({ id: uuidv4(), name: canvasTitle });
 
     const { data, error } = await supabase
       .from('canvases')
@@ -256,7 +256,7 @@ export const saveCanvasState = async (
       if (tableName && specificData) {
         const { error: specificNodeUpsertError } = await supabase
           .from(tableName)
-          .upsert({ common_node_id: id, ...specificData });
+          .upsert({ id: uuidv4(), common_node_id: id, ...specificData });
 
         if (specificNodeUpsertError) {
           console.error(
@@ -281,7 +281,9 @@ export const saveCanvasState = async (
     // Upsert edges
     const { error: edgesUpsertError } = await supabase
       .from('edges')
-      .upsert(edges.map((edge) => ({ ...edge, canvas_id: canvasId })));
+      .upsert(
+        edges.map((edge) => ({ id: uuidv4(), ...edge, canvas_id: canvasId }))
+      );
 
     if (edgesUpsertError) {
       console.error('Error upserting edges:', edgesUpsertError);
@@ -300,6 +302,7 @@ export const saveCanvasState = async (
     return { error };
   }
 };
+
 // Function to fetch the canvas state
 export const fetchCanvas = async (
   canvasId: string
