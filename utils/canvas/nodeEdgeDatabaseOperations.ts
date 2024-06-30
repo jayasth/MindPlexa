@@ -182,7 +182,10 @@ export const updateNode = async (
       .single();
 
     if (commonNodeError) {
-      console.error('Error updating common node properties:', commonNodeError);
+      console.error(
+        'nodeEdgeDatabaseOperations: Error updating common node properties:',
+        commonNodeError
+      );
       return { error: commonNodeError };
     }
 
@@ -204,7 +207,7 @@ export const updateNode = async (
 
       if (newNodeError) {
         console.error(
-          `Error inserting new ${updates.type} node:`,
+          `nodeEdgeDatabaseOperations: Error inserting new ${updates.type} node:`,
           newNodeError
         );
         return { error: newNodeError };
@@ -229,7 +232,10 @@ export const updateNode = async (
           .single();
 
       if (specificNodeError) {
-        console.error(`Error updating ${nodeType} node:`, specificNodeError);
+        console.error(
+          `nodeEdgeDatabaseOperations: Error updating ${nodeType} node:`,
+          specificNodeError
+        );
         return { error: specificNodeError };
       }
 
@@ -241,13 +247,17 @@ export const updateNode = async (
       return { data: { ...commonNodeData, ...specificNodeData } };
     }
 
-    console.log(`Updated node data:`, {
+    console.log(
+      `nodeEdgeDatabaseOperations: Updated node data:`,
       commonNodeData
-    });
+    );
 
     return { data: commonNodeData };
   } catch (error) {
-    console.error('Unexpected error updating node:', error);
+    console.error(
+      'nodeEdgeDatabaseOperations: Unexpected error updating node:',
+      error
+    );
     return { error };
   }
 };
