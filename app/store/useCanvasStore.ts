@@ -500,7 +500,6 @@ export const useStore = createStore<CanvasState>((set, get) => ({
   saveCanvas: async () => {
     const { nodes, edges, canvasID, isLoading, lastLoadTime } = get();
 
-    // Prevent saving if we're still loading, if it's too soon after loading, or if the canvas is empty
     if (
       isLoading ||
       Date.now() - lastLoadTime < 2000 ||
@@ -512,13 +511,12 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       return;
     }
 
-    // Prepare canvas data for saving
     const canvasData = {
       nodes: nodes.map((node) => {
         const commonProperties = {
           id: node.id,
           type: node.type,
-          position: JSON.stringify(node.position), // Convert position to JSON string
+          position: JSON.stringify(node.position),
           title: node.data?.title || '',
           tags: node.data?.tags || [],
           attached_files: node.data?.attachedFiles || [],
@@ -543,31 +541,26 @@ export const useStore = createStore<CanvasState>((set, get) => ({
         switch (node.type) {
           case 'note':
             specificData = {
-              noteData: node.data?.noteData || {}
+              content: node.data?.noteData?.content || ''
             };
             tableName = 'note_nodes';
             break;
           case 'task':
             specificData = {
-              taskData: node.data?.taskData || {}
+              tasks: JSON.stringify(node.data?.taskData || {})
             };
             tableName = 'task_nodes';
             break;
-          case 'calendar':
-            specificData = {
-              calendarData: node.data?.calendarData || {}
-            };
-            tableName = 'calendar_nodes';
-            break;
           case 'table':
             specificData = {
-              tableData: node.data?.tableData || {}
+              columns: JSON.stringify(node.data?.tableData?.columns || []),
+              rows: JSON.stringify(node.data?.tableData?.rows || [])
             };
             tableName = 'table_nodes';
             break;
           case 'draw':
             specificData = {
-              drawData: node.data?.drawData || {}
+              drawing_data: JSON.stringify(node.data?.drawData || '')
             };
             tableName = 'draw_nodes';
             break;
@@ -575,13 +568,14 @@ export const useStore = createStore<CanvasState>((set, get) => ({
             break;
         }
 
-        return { ...commonProperties, ...specificData };
+        return { ...commonProperties, specificData, tableName };
       }),
       edges: edges.map((edge) => ({
         id: edge.id,
-        source: edge.source,
-        target: edge.target,
-        type: edge.type
+        source_node_id: edge.source,
+        target_node_id: edge.target,
+        canvas_id: canvasID,
+        data: JSON.stringify(edge.data || {})
       }))
     };
 
@@ -590,10 +584,14 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       JSON.stringify(canvasData, null, 2)
     );
 
-    // Use saveCanvasState from canvasDatabaseOperations.ts to save the entire canvas state
     const result = await saveCanvasState(
       canvasID,
-      canvasData.nodes.map(({ tableName, ...node }) => node),
+      canvasData.nodes.map(
+        ({ tableName, specificData, ...commonProperties }) => ({
+          ...commonProperties,
+          ...(tableName !== '' ? { [tableName]: specificData } : {})
+        })
+      ),
       canvasData.edges
     );
 
