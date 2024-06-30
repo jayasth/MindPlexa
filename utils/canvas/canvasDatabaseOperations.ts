@@ -211,7 +211,20 @@ export const saveCanvasState = async (
         ...commonProperties
       });
 
-      // Determine specific data based on node type
+      // Upsert common node properties
+      const { error: commonNodeUpsertError } = await supabase
+        .from('common_node_properties')
+        .upsert({ id, ...commonProperties });
+
+      if (commonNodeUpsertError) {
+        console.error(
+          'Error upserting common node properties:',
+          commonNodeUpsertError
+        );
+        return { error: commonNodeUpsertError };
+      }
+
+      // Upsert specific node data based on type
       let specificData;
       let tableName;
       switch (type) {
@@ -236,139 +249,49 @@ export const saveCanvasState = async (
           tableName = 'draw_nodes';
           break;
         default:
-          specificData = {};
-          tableName = '';
+          console.error('Unknown node type:', type);
+          continue;
       }
 
-      // Check if the common node already exists
-      const { data: existingCommonNode, error: commonNodeCheckError } =
-        await supabase
-          .from('common_node_properties')
-          .select('id')
-          .eq('id', id)
-          .single();
+      if (tableName && specificData) {
+        const { error: specificNodeUpsertError } = await supabase
+          .from(tableName)
+          .upsert({ common_node_id: id, ...specificData });
 
-      if (commonNodeCheckError && commonNodeCheckError.code !== 'PGRST116') {
-        console.error(
-          'Error checking common node existence:',
-          commonNodeCheckError
-        );
-        return { error: commonNodeCheckError };
-      }
-
-      if (existingCommonNode) {
-        // Update common node properties
-        const { error: commonNodeUpdateError } = await supabase
-          .from('common_node_properties')
-          .update(commonProperties)
-          .eq('id', id);
-
-        if (commonNodeUpdateError) {
+        if (specificNodeUpsertError) {
           console.error(
-            'Error updating common node properties:',
-            commonNodeUpdateError
+            `Error upserting ${type} node:`,
+            specificNodeUpsertError
           );
-          return { error: commonNodeUpdateError };
-        }
-      } else {
-        // Insert common node properties
-        const { error: commonNodeInsertError } = await supabase
-          .from('common_node_properties')
-          .insert([{ id, ...commonProperties }]);
-
-        if (commonNodeInsertError) {
-          console.error(
-            'Error inserting common node properties:',
-            commonNodeInsertError
-          );
-          return { error: commonNodeInsertError };
+          return { error: specificNodeUpsertError };
         }
       }
 
-      // Check if the specific node data already exists
-      if (tableName) {
-        const { data: existingSpecificNode, error: specificNodeCheckError } =
-          await supabase
-            .from(tableName)
-            .select('common_node_id')
-            .eq('common_node_id', id)
-            .single();
+      // Upsert node_canvas_link
+      const { error: linkUpsertError } = await supabase
+        .from('node_canvas_link')
+        .upsert({ node_id: id, canvas_id: canvasId });
 
-        if (
-          specificNodeCheckError &&
-          specificNodeCheckError.code !== 'PGRST116'
-        ) {
-          console.error(
-            `Error checking ${type} node existence:`,
-            specificNodeCheckError
-          );
-          return { error: specificNodeCheckError };
-        }
-
-        if (existingSpecificNode) {
-          // Update specific node data
-          const { error: specificNodeUpdateError } = await supabase
-            .from(tableName)
-            .update(specificData)
-            .eq('common_node_id', id);
-
-          if (specificNodeUpdateError) {
-            console.error(
-              `Error updating ${type} node:`,
-              specificNodeUpdateError
-            );
-            return { error: specificNodeUpdateError };
-          }
-        } else {
-          // Insert specific node data
-          const { error: specificNodeInsertError } = await supabase
-            .from(tableName)
-            .insert([{ common_node_id: id, ...specificData }]);
-
-          if (specificNodeInsertError) {
-            console.error(
-              `Error inserting ${type} node:`,
-              specificNodeInsertError
-            );
-            return { error: specificNodeInsertError };
-          }
-        }
-      }
-
-      // Link node to canvas if not already linked
-      const { data: existingLinkData, error: existingLinkError } =
-        await supabase
-          .from('node_canvas_link')
-          .select('node_id')
-          .eq('canvas_id', canvasId)
-          .eq('node_id', id)
-          .single();
-
-      if (!existingLinkData && !existingLinkError) {
-        const { error: linkError } = await supabase
-          .from('node_canvas_link')
-          .insert({ node_id: id, canvas_id: canvasId });
-
-        if (linkError) {
-          console.error('Error linking node to canvas:', linkError);
-          return { error: linkError };
-        }
+      if (linkUpsertError) {
+        console.error('Error upserting node_canvas_link:', linkUpsertError);
+        return { error: linkUpsertError };
       }
     }
 
     // Upsert edges
-    const { error: createEdgesError } = await supabase
+    const { error: edgesUpsertError } = await supabase
       .from('edges')
-      .upsert(edges);
+      .upsert(edges.map((edge) => ({ ...edge, canvas_id: canvasId })));
 
-    if (createEdgesError) {
-      console.error('Error upserting edges:', createEdgesError);
-      return { error: createEdgesError };
+    if (edgesUpsertError) {
+      console.error('Error upserting edges:', edgesUpsertError);
+      return { error: edgesUpsertError };
     }
 
-    console.log('canvasDatabaseOperations: Complete node data saved:', {
-      nodes,
-      edges
+    console.log('canvasDatabaseOperations: Complete canvas state saved:', {
+      canvasId,
+      nodesCount: nodes.length,
+      edgesCount: edges.length
     });
 
     return { success: true };

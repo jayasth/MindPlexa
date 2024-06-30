@@ -512,64 +512,61 @@ export const useStore = createStore<CanvasState>((set, get) => ({
     }
 
     const canvasData = {
-      nodes: nodes.map((node) => {
-        const commonProperties = {
-          id: node.id,
-          type: node.type,
-          position: JSON.stringify(node.position),
-          title: node.data?.title || '',
-          tags: node.data?.tags || [],
-          attached_files: node.data?.attachedFiles || [],
-          background_color: node.data?.backgroundColor || '#F4F4F4',
-          text_color: node.data?.textColor || '#575757',
-          view_width: node.width || 0,
-          view_height: node.height || 0,
-          edit_width: node.data?.editWidth || null,
-          edit_height: node.data?.editHeight || null,
-          is_editing: node.isEditing || false,
-          is_temporary: node.data?.isTemporary || false,
-          parent_node_id: node.data?.parentNodeId || null,
-          z_index: node.zIndex || 0,
-          created_at: node.data?.createdAt || new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          connectable: node.connectable !== false,
-          draggable: node.draggable !== false
-        };
-
-        let specificData = {};
-        let tableName = '';
-        switch (node.type) {
-          case 'note':
-            specificData = {
-              content: node.data?.noteData?.content || ''
-            };
-            tableName = 'note_nodes';
-            break;
-          case 'task':
-            specificData = {
-              tasks: JSON.stringify(node.data?.taskData || {})
-            };
-            tableName = 'task_nodes';
-            break;
-          case 'table':
-            specificData = {
-              columns: JSON.stringify(node.data?.tableData?.columns || []),
-              rows: JSON.stringify(node.data?.tableData?.rows || [])
-            };
-            tableName = 'table_nodes';
-            break;
-          case 'draw':
-            specificData = {
-              drawing_data: JSON.stringify(node.data?.drawData || '')
-            };
-            tableName = 'draw_nodes';
-            break;
-          default:
-            break;
-        }
-
-        return { ...commonProperties, specificData, tableName };
-      }),
+      common_node_properties: nodes.map((node) => ({
+        id: node.id,
+        type: node.type,
+        position: JSON.stringify(node.position),
+        title: node.data?.title || '',
+        tags: node.data?.tags || [],
+        attached_files: node.data?.attachedFiles || [],
+        background_color: node.data?.backgroundColor || '#F4F4F4',
+        text_color: node.data?.textColor || '#575757',
+        view_width: node.width || 0,
+        view_height: node.height || 0,
+        edit_width: node.data?.editWidth || null,
+        edit_height: node.data?.editHeight || null,
+        is_editing: node.isEditing || false,
+        is_temporary: node.data?.isTemporary || false,
+        parent_node_id: node.data?.parentNodeId || null,
+        z_index: node.zIndex || 0,
+        created_at: node.data?.createdAt || new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        connectable: node.connectable !== false,
+        draggable: node.draggable !== false
+      })),
+      node_specific_data: nodes
+        .map((node) => {
+          switch (node.type) {
+            case 'note':
+              return {
+                common_node_id: node.id,
+                content: node.data?.noteData?.content || ''
+              };
+            case 'task':
+              return {
+                common_node_id: node.id,
+                tasks: JSON.stringify(node.data?.taskData || {})
+              };
+            case 'table':
+              return {
+                common_node_id: node.id,
+                columns: JSON.stringify(node.data?.tableData?.columns || []),
+                rows: JSON.stringify(node.data?.tableData?.rows || [])
+              };
+            case 'draw':
+              return {
+                common_node_id: node.id,
+                drawing_data: JSON.stringify(node.data?.drawData || '')
+              };
+            default:
+              return null;
+          }
+        })
+        .filter(Boolean),
+      node_canvas_link: nodes.map((node) => ({
+        common_node_id: node.id,
+        canvas_id: canvasID
+      })),
       edges: edges.map((edge) => ({
         id: edge.id,
         source_node_id: edge.source,
@@ -586,15 +583,9 @@ export const useStore = createStore<CanvasState>((set, get) => ({
 
     const result = await saveCanvasState(
       canvasID,
-      canvasData.nodes.map(
-        ({ tableName, specificData, ...commonProperties }) => ({
-          ...commonProperties,
-          ...(tableName !== '' ? { [tableName]: specificData } : {})
-        })
-      ),
+      canvasData.common_node_properties,
       canvasData.edges
     );
-
     if (result.error) {
       console.error('Store: Error saving canvas data:', result.error);
       return;
