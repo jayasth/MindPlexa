@@ -195,6 +195,11 @@ export const saveCanvasState = async (
         ...commonProperties
       } = node;
 
+      if (!id) {
+        console.error('Node ID is undefined');
+        continue;
+      }
+
       console.log('canvasDatabaseOperations: Node properties before upsert:', {
         id,
         type,
@@ -235,30 +240,98 @@ export const saveCanvasState = async (
           tableName = '';
       }
 
-      // Upsert common node properties
-      const { data: commonNodeData, error: commonNodeError } = await supabase
-        .from('common_node_properties')
-        .upsert([{ id, ...commonProperties }])
-        .select()
-        .single();
+      // Check if the common node already exists
+      const { data: existingCommonNode, error: commonNodeCheckError } =
+        await supabase
+          .from('common_node_properties')
+          .select('id')
+          .eq('id', id)
+          .single();
 
-      if (commonNodeError) {
+      if (commonNodeCheckError && commonNodeCheckError.code !== 'PGRST116') {
         console.error(
-          'Error upserting common node properties:',
-          commonNodeError
+          'Error checking common node existence:',
+          commonNodeCheckError
         );
-        return { error: commonNodeError };
+        return { error: commonNodeCheckError };
       }
 
-      // Upsert specific node data
-      if (tableName) {
-        const { error: specificNodeError } = await supabase
-          .from(tableName)
-          .upsert([{ common_node_id: commonNodeData.id, ...specificData }]);
+      if (existingCommonNode) {
+        // Update common node properties
+        const { error: commonNodeUpdateError } = await supabase
+          .from('common_node_properties')
+          .update(commonProperties)
+          .eq('id', id);
 
-        if (specificNodeError) {
-          console.error(`Error upserting ${type} node:`, specificNodeError);
-          return { error: specificNodeError };
+        if (commonNodeUpdateError) {
+          console.error(
+            'Error updating common node properties:',
+            commonNodeUpdateError
+          );
+          return { error: commonNodeUpdateError };
+        }
+      } else {
+        // Insert common node properties
+        const { error: commonNodeInsertError } = await supabase
+          .from('common_node_properties')
+          .insert([{ id, ...commonProperties }]);
+
+        if (commonNodeInsertError) {
+          console.error(
+            'Error inserting common node properties:',
+            commonNodeInsertError
+          );
+          return { error: commonNodeInsertError };
+        }
+      }
+
+      // Check if the specific node data already exists
+      if (tableName) {
+        const { data: existingSpecificNode, error: specificNodeCheckError } =
+          await supabase
+            .from(tableName)
+            .select('common_node_id')
+            .eq('common_node_id', id)
+            .single();
+
+        if (
+          specificNodeCheckError &&
+          specificNodeCheckError.code !== 'PGRST116'
+        ) {
+          console.error(
+            `Error checking ${type} node existence:`,
+            specificNodeCheckError
+          );
+          return { error: specificNodeCheckError };
+        }
+
+        if (existingSpecificNode) {
+          // Update specific node data
+          const { error: specificNodeUpdateError } = await supabase
+            .from(tableName)
+            .update(specificData)
+            .eq('common_node_id', id);
+
+          if (specificNodeUpdateError) {
+            console.error(
+              `Error updating ${type} node:`,
+              specificNodeUpdateError
+            );
+            return { error: specificNodeUpdateError };
+          }
+        } else {
+          // Insert specific node data
+          const { error: specificNodeInsertError } = await supabase
+            .from(tableName)
+            .insert([{ common_node_id: id, ...specificData }]);
+
+          if (specificNodeInsertError) {
+            console.error(
+              `Error inserting ${type} node:`,
+              specificNodeInsertError
+            );
+            return { error: specificNodeInsertError };
+          }
         }
       }
 
@@ -268,13 +341,13 @@ export const saveCanvasState = async (
           .from('node_canvas_link')
           .select('node_id')
           .eq('canvas_id', canvasId)
-          .eq('node_id', commonNodeData.id)
+          .eq('node_id', id)
           .single();
 
       if (!existingLinkData && !existingLinkError) {
         const { error: linkError } = await supabase
           .from('node_canvas_link')
-          .insert({ node_id: commonNodeData.id, canvas_id: canvasId });
+          .insert({ node_id: id, canvas_id: canvasId });
 
         if (linkError) {
           console.error('Error linking node to canvas:', linkError);
