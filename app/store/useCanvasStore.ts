@@ -2,14 +2,13 @@ import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { createNode } from '@/ui/canvasEditor/utils/nodeCreation';
 import { getChildNodePosition } from '@/ui/canvasEditor/utils/getChildNodePosition';
-import { findOptimalPosition } from '@/ui/canvasEditor/utils/positioningUtils';
 import { v4 as uuidv4 } from 'uuid';
 import type { Node, Edge, XYPosition } from 'reactflow';
 import {
   nodeDimensions,
   getNodeSpecificProperties
 } from '@/ui/canvasEditor/utils/nodeProperties';
-import { Tables, TablesInsert } from '@/types_db';
+import { Database } from '@/types_db';
 import {
   fetchCanvas,
   saveCanvasState
@@ -126,13 +125,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
         position: updates.position
           ? JSON.stringify(updates.position)
           : undefined,
-        type: updates.type as
-          | 'note'
-          | 'task'
-          | 'table'
-          | 'calendar'
-          | 'draw'
-          | 'selectionMenu'
+        type: updates.type as Database['public']['Enums']['node_type']
       };
 
       // Update the node in the database
@@ -140,13 +133,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
         id,
         updatesWithPosition,
         specificUpdates,
-        nodeType as
-          | 'note'
-          | 'task'
-          | 'table'
-          | 'calendar'
-          | 'draw'
-          | 'selectionMenu'
+        nodeType as Database['public']['Enums']['node_type']
       );
 
       if (error) {
@@ -163,29 +150,32 @@ export const useStore = createStore<CanvasState>((set, get) => ({
           node.id === id
             ? {
                 ...node,
-                ...updatedNode,
-                position: updatedNode.position
-                  ? JSON.parse(updatedNode.position)
+                ...updatedNode.commonNodeProperties,
+                position: updatedNode.commonNodeProperties.position
+                  ? JSON.parse(updatedNode.commonNodeProperties.position)
                   : node.position,
                 data: {
                   ...node.data,
-                  ...updatedNode,
-                  title: updatedNode.title,
-                  tags: updatedNode.tags,
-                  attachedFiles: updatedNode.attached_files,
-                  backgroundColor: updatedNode.background_color,
-                  textColor: updatedNode.text_color,
-                  editWidth: updatedNode.edit_width,
-                  editHeight: updatedNode.edit_height
+                  ...updatedNode.specificNodeProperties,
+                  title: updatedNode.commonNodeProperties.title,
+                  tags: updatedNode.commonNodeProperties.tags,
+                  attachedFiles:
+                    updatedNode.commonNodeProperties.attached_files,
+                  backgroundColor:
+                    updatedNode.commonNodeProperties.background_color,
+                  textColor: updatedNode.commonNodeProperties.text_color,
+                  editWidth: updatedNode.commonNodeProperties.edit_width,
+                  editHeight: updatedNode.commonNodeProperties.edit_height
                 },
-                width: updatedNode.view_width,
-                height: updatedNode.view_height,
-                isEditing: updatedNode.is_editing,
-                isTemporary: updatedNode.is_temporary,
-                parentNodeId: updatedNode.parent_node_id,
-                zIndex: updatedNode.z_index,
-                connectable: updatedNode.connectable ?? true,
-                draggable: updatedNode.draggable ?? true
+                width: updatedNode.commonNodeProperties.view_width,
+                height: updatedNode.commonNodeProperties.view_height,
+                isEditing: updatedNode.commonNodeProperties.is_editing,
+                isTemporary: updatedNode.commonNodeProperties.is_temporary,
+                parentNodeId: updatedNode.commonNodeProperties.parent_node_id,
+                zIndex: updatedNode.commonNodeProperties.z_index,
+                connectable:
+                  updatedNode.commonNodeProperties.connectable ?? true,
+                draggable: updatedNode.commonNodeProperties.draggable ?? true
               }
             : node
         )

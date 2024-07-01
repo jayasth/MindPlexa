@@ -180,6 +180,14 @@ export const updateNode = async (
   nodeType: Database['public']['Enums']['node_type']
 ): Promise<{ data?: any; error?: any }> => {
   try {
+    console.log(
+      'nodeEdgeDatabaseOperations: Updating node with the following details:'
+    );
+    console.log('Node ID:', id);
+    console.log('Node Type:', nodeType);
+    console.log('Common Updates:', JSON.stringify(updates, null, 2));
+    console.log('Specific Updates:', JSON.stringify(specificUpdates, null, 2));
+
     // Update common node properties
     const { data: commonNodeData, error: commonNodeError } = await supabase
       .from('common_node_properties')
@@ -196,79 +204,16 @@ export const updateNode = async (
       return { error: commonNodeError };
     }
 
-    // Handle node type change
-    if (updates.type && updates.type !== nodeType) {
-      // Delete old node-specific data
-      const oldTableName =
-        `${nodeType}_nodes` as keyof Database['public']['Tables'];
-      await supabase.from(oldTableName).delete().eq('common_node_id', id);
+    console.log(
+      'nodeEdgeDatabaseOperations: Common node properties updated successfully:',
+      commonNodeData
+    );
 
-      // Insert new node-specific data
-      const newTableName =
-        `${updates.type}_nodes` as keyof Database['public']['Tables'];
-      const newSpecificInsert = {
-        id: uuidv4(),
-        common_node_id: id
-      };
-
-      switch (updates.type) {
-        case 'note':
-          newSpecificInsert['content'] =
-            (
-              specificUpdates as Database['public']['Tables']['note_nodes']['Insert']
-            ).content || '';
-          break;
-        case 'task':
-          newSpecificInsert['tasks'] =
-            (
-              specificUpdates as Database['public']['Tables']['task_nodes']['Insert']
-            ).tasks || [];
-          break;
-        case 'calendar':
-          // Add calendar-specific fields if any
-          break;
-        case 'table':
-          newSpecificInsert['columns'] =
-            (
-              specificUpdates as Database['public']['Tables']['table_nodes']['Insert']
-            ).columns || [];
-          newSpecificInsert['rows'] =
-            (
-              specificUpdates as Database['public']['Tables']['table_nodes']['Insert']
-            ).rows || [];
-          break;
-        case 'draw':
-          newSpecificInsert['drawing_data'] =
-            (
-              specificUpdates as Database['public']['Tables']['draw_nodes']['Insert']
-            ).drawing_data || '';
-          break;
-      }
-
-      const { data: newNodeData, error: newNodeError } = await supabase
-        .from(newTableName)
-        .insert(newSpecificInsert)
-        .select()
-        .single();
-
-      if (newNodeError) {
-        console.error(
-          `nodeEdgeDatabaseOperations: Error inserting new ${updates.type} node:`,
-          newNodeError
-        );
-        return { error: newNodeError };
-      }
-
-      console.log(`Updated node data:`, {
-        commonNodeData,
-        newNodeData
-      });
-
-      return { data: { ...commonNodeData, ...newNodeData } };
-    } else if (nodeType !== 'selectionMenu') {
-      // Update existing node-specific data
+    // Update specific node properties if not a selectionMenu node
+    if (nodeType !== 'selectionMenu') {
       const tableName =
         `${nodeType}_nodes` as keyof Database['public']['Tables'];
+
       const { data: specificNodeData, error: specificNodeError } =
         await supabase
           .from(tableName)
@@ -285,18 +230,13 @@ export const updateNode = async (
         return { error: specificNodeError };
       }
 
-      console.log(`Updated node data:`, {
-        commonNodeData,
+      console.log(
+        `nodeEdgeDatabaseOperations: ${nodeType} node updated successfully:`,
         specificNodeData
-      });
+      );
 
       return { data: { ...commonNodeData, ...specificNodeData } };
     }
-
-    console.log(
-      `nodeEdgeDatabaseOperations: Updated node data:`,
-      commonNodeData
-    );
 
     return { data: commonNodeData };
   } catch (error) {
