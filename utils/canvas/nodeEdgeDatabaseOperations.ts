@@ -185,8 +185,7 @@ export const createNode = async (
 };
 
 export const updateNode = async (
-  commonNodeId: string,
-  specificNodeId: string | null,
+  id: string,
   updates: Partial<
     Database['public']['Tables']['common_node_properties']['Update']
   >,
@@ -203,8 +202,7 @@ export const updateNode = async (
     console.log(
       'nodeEdgeDatabaseOperations: Updating node with the following details:'
     );
-    console.log('Common Node ID:', commonNodeId);
-    console.log('Specific Node ID:', specificNodeId);
+    console.log('Node ID:', id);
     console.log('Node Type:', nodeType);
     console.log('Common Updates:', JSON.stringify(updates, null, 2));
     console.log('Specific Updates:', JSON.stringify(specificUpdates, null, 2));
@@ -213,7 +211,7 @@ export const updateNode = async (
     const { data: commonNodeData, error: commonNodeError } = await supabase
       .from('common_node_properties')
       .update(updates)
-      .eq('id', commonNodeId)
+      .eq('id', id)
       .select()
       .single();
 
@@ -230,8 +228,8 @@ export const updateNode = async (
       commonNodeData
     );
 
-    // Update specific node properties if not a selectionMenu node and specificNodeId is provided
-    if (nodeType !== 'selectionMenu' && specificNodeId) {
+    // Update specific node properties if not a selectionMenu node
+    if (nodeType !== 'selectionMenu') {
       const tableName =
         `${nodeType}_nodes` as keyof Database['public']['Tables'];
 
@@ -239,7 +237,7 @@ export const updateNode = async (
         await supabase
           .from(tableName)
           .update(specificUpdates)
-          .eq('id', specificNodeId)
+          .eq('common_node_id', id)
           .select()
           .single();
 
