@@ -3,7 +3,6 @@ import { NodeProps } from 'reactflow';
 import { Node as BaseNode } from '@/ui/canvasEditor/nodeTypes';
 import dynamic from 'next/dynamic';
 import { useStore } from '@/app/store/useCanvasStore';
-import { getNodeSpecificProperties } from '@/ui/canvasEditor/utils/nodeProperties';
 
 const NoteNodeEdit = dynamic(() => import('@/ui/nodes/noteNode/NoteNodeEdit'), {
   ssr: false
@@ -65,13 +64,17 @@ const NodeRenderer: React.FC<NodeRendererProps> = React.memo(
 
     const toggleEditMode = useStore((state) => state.toggleEditMode);
     const updateNode = useStore((state) => state.updateNode);
-    const [size, setSize] = useState(() =>
-      getNodeSpecificProperties(node?.type || 'note', node?.isEditing ?? false)
-    );
+    const [size, setSize] = useState(() => ({
+      width: node?.isEditing ? node?.data.edit_width : node?.data.view_width,
+      height: node?.isEditing ? node?.data.edit_height : node?.data.view_height
+    }));
 
     useEffect(() => {
       if (node && node.type !== 'selectionMenu') {
-        const newSize = getNodeSpecificProperties(node.type, node.isEditing);
+        const newSize = {
+          width: node.isEditing ? node.data.edit_width : node.data.view_width,
+          height: node.isEditing ? node.data.edit_height : node.data.view_height
+        };
         if (newSize.width !== size.width || newSize.height !== size.height) {
           setSize(newSize);
           onNodeResizeStop(id, newSize, node.position);
@@ -79,7 +82,10 @@ const NodeRenderer: React.FC<NodeRendererProps> = React.memo(
       }
     }, [
       node?.isEditing,
-      node?.type,
+      node?.data.edit_width,
+      node?.data.edit_height,
+      node?.data.view_width,
+      node?.data.view_height,
       id,
       size.width,
       size.height,
@@ -96,7 +102,12 @@ const NodeRenderer: React.FC<NodeRendererProps> = React.memo(
     const handleEdit = () => {
       if (node.type !== 'selectionMenu') {
         toggleEditMode(id);
-        const newSize = getNodeSpecificProperties(node.type, !node.isEditing);
+        const newSize = {
+          width: !node.isEditing ? node.data.edit_width : node.data.view_width,
+          height: !node.isEditing
+            ? node.data.edit_height
+            : node.data.view_height
+        };
         setSize(newSize);
         onNodeResizeStop(id, newSize, node.position);
       }

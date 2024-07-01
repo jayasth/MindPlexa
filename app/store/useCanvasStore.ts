@@ -4,10 +4,7 @@ import { createNode } from '@/ui/canvasEditor/utils/nodeCreation';
 import { getChildNodePosition } from '@/ui/canvasEditor/utils/getChildNodePosition';
 import { v4 as uuidv4 } from 'uuid';
 import type { Node, Edge, XYPosition } from 'reactflow';
-import {
-  nodeDimensions,
-  getNodeSpecificProperties
-} from '@/ui/canvasEditor/utils/nodeProperties';
+import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 import { Database } from '@/types_db';
 import {
   fetchCanvas,
