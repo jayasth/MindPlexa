@@ -516,6 +516,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
   saveCanvas: async () => {
     const { nodes, edges, canvasID, isLoading, lastLoadTime } = get();
 
+    // Skip saving if loading, recently loaded, or canvas is empty
     if (
       isLoading ||
       Date.now() - lastLoadTime < 2000 ||
@@ -527,53 +528,38 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       return;
     }
 
+    // Check if there are any changes to save
+    const hasChanges =
+      nodes.some((node) => node.data?.isModified) ||
+      edges.some((edge) => edge.data?.isModified);
+    if (!hasChanges) {
+      console.log('Store: No changes detected, skipping save');
+      return;
+    }
+
     const canvasData = {
-      common_node_properties: nodes.map((node) => {
-        console.log('Store: saveCanvas common_node_properties:', {
-          id: node.id,
-          type: node.type,
-          position: node.position,
-          title: node.data?.title,
-          tags: node.data?.tags,
-          attached_files: node.data?.attachedFiles,
-          background_color: node.data?.backgroundColor,
-          text_color: node.data?.textColor,
-          view_width: node.width,
-          view_height: node.height,
-          edit_width: node.data?.editWidth,
-          edit_height: node.data?.editHeight,
-          is_editing: node.isEditing,
-          is_temporary: node.data?.isTemporary,
-          parent_node_id: node.data?.parentNodeId,
-          z_index: node.zIndex,
-          created_at: node.data?.createdAt,
-          updated_at: new Date().toISOString(),
-          connectable: node.connectable,
-          draggable: node.draggable
-        });
-        return {
-          id: node.id,
-          type: node.type,
-          position: JSON.stringify(node.position),
-          title: node.data?.title || '',
-          tags: node.data?.tags || [],
-          attached_files: node.data?.attachedFiles || [],
-          background_color: node.data?.backgroundColor || '#F4F4F4',
-          text_color: node.data?.textColor || '#575757',
-          view_width: node.width || 0,
-          view_height: node.height || 0,
-          edit_width: node.data?.editWidth || null,
-          edit_height: node.data?.editHeight || null,
-          is_editing: node.isEditing || false,
-          is_temporary: node.data?.isTemporary || false,
-          parent_node_id: node.data?.parentNodeId || null,
-          z_index: node.zIndex || 0,
-          created_at: node.data?.createdAt || new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          connectable: node.connectable !== false,
-          draggable: node.draggable !== false
-        };
-      }),
+      common_node_properties: nodes.map((node) => ({
+        id: node.id,
+        type: node.type,
+        position: JSON.stringify(node.position),
+        title: node.data?.title || '',
+        tags: node.data?.tags || [],
+        attached_files: node.data?.attachedFiles || [],
+        background_color: node.data?.backgroundColor || '#F4F4F4',
+        text_color: node.data?.textColor || '#575757',
+        view_width: node.width || 0,
+        view_height: node.height || 0,
+        edit_width: node.data?.editWidth || null,
+        edit_height: node.data?.editHeight || null,
+        is_editing: node.isEditing || false,
+        is_temporary: node.data?.isTemporary || false,
+        parent_node_id: node.data?.parentNodeId || null,
+        z_index: node.zIndex || 0,
+        created_at: node.data?.createdAt || new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        connectable: node.connectable !== false,
+        draggable: node.draggable !== false
+      })),
       node_specific_data: nodes
         .map((node) => {
           switch (node.type) {
