@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef
+} from 'react';
 import { NodeProps } from 'reactflow';
 import { Node as BaseNode } from '@/ui/canvasEditor/nodeTypes';
 import dynamic from 'next/dynamic';
@@ -60,6 +66,8 @@ const NodeRenderer: React.FC<NodeRendererProps> = React.memo(
       height: node?.isEditing ? node?.data.edit_height : node?.data.view_height
     }));
 
+    const isInitialRender = useRef(true);
+
     useEffect(() => {
       if (node && node.type !== 'selectionMenu') {
         const newSize = {
@@ -68,13 +76,16 @@ const NodeRenderer: React.FC<NodeRendererProps> = React.memo(
         };
         if (newSize.width !== size.width || newSize.height !== size.height) {
           setSize(newSize);
-          onNodeResizeStop(id, newSize, node.position);
+          if (!isInitialRender.current) {
+            onNodeResizeStop(id, newSize, node.position);
+          }
         }
       }
+      isInitialRender.current = false;
     }, [node, id, size, onNodeResizeStop]);
 
     const handleEdit = useCallback(() => {
-      if (node && node.type !== 'selectionMenu') {
+      if (node && node.type !== 'selectionMenu' && !isInitialRender.current) {
         toggleEditMode(id);
         const newSize = {
           width: !node.isEditing ? node.data.edit_width : node.data.view_width,
