@@ -2,10 +2,14 @@ import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { createNode } from '@/ui/canvasEditor/utils/nodeCreation';
 import { getChildNodePosition } from '@/ui/canvasEditor/utils/getChildNodePosition';
+import { findOptimalPosition } from '@/ui/canvasEditor/utils/positioningUtils';
 import { v4 as uuidv4 } from 'uuid';
 import type { Node, Edge, XYPosition } from 'reactflow';
-import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
-import { Database } from '@/types_db';
+import {
+  nodeDimensions,
+  getNodeSpecificProperties
+} from '@/ui/canvasEditor/utils/nodeProperties';
+import { Tables, TablesInsert } from '@/types_db';
 import {
   fetchCanvas,
   saveCanvasState
@@ -116,19 +120,33 @@ export const useStore = createStore<CanvasState>((set, get) => ({
   },
   updateNode: async (id, updates, specificUpdates, nodeType) => {
     try {
+      // Convert position to JSON string if it exists
       const updatesWithPosition = {
         ...updates,
         position: updates.position
           ? JSON.stringify(updates.position)
           : undefined,
-        type: updates.type as Database['public']['Enums']['node_type']
+        type: updates.type as
+          | 'note'
+          | 'task'
+          | 'table'
+          | 'calendar'
+          | 'draw'
+          | 'selectionMenu'
       };
 
+      // Update the node in the database
       const { data: updatedNode, error } = await updateNodeInDB(
         id,
         updatesWithPosition,
         specificUpdates,
-        nodeType as Database['public']['Enums']['node_type']
+        nodeType as
+          | 'note'
+          | 'task'
+          | 'table'
+          | 'calendar'
+          | 'draw'
+          | 'selectionMenu'
       );
 
       if (error) {
@@ -136,8 +154,10 @@ export const useStore = createStore<CanvasState>((set, get) => ({
         return;
       }
 
+      // Log the updated node data
       console.log('useCanvasStore: Updated node data:', updatedNode);
 
+      // Update the local state with the new node data
       set((state) => ({
         nodes: state.nodes.map((node) =>
           node.id === id
@@ -400,6 +420,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
               case 'position':
                 return { ...node, position: change.position || node.position };
               case 'dimensions':
+                // Only update dimensions if they actually changed and the node is editable
                 if (
                   node.isEditing &&
                   change.dimensions &&
@@ -439,6 +460,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
           !removedNodeIds.includes(edge.target)
       );
 
+      // Debounce saveCanvas call
       if (state.saveCanvasTimeout) {
         clearTimeout(state.saveCanvasTimeout);
       }
@@ -489,10 +511,10 @@ export const useStore = createStore<CanvasState>((set, get) => ({
   },
   setCanvasId: (id) => {
     console.log('Store: Setting canvas ID to:', id);
-    set(() => ({ canvasId: id }));
+    set(() => ({ canvasID: id }));
   },
   saveCanvas: async () => {
-    const { nodes, edges, canvasId, isLoading, lastLoadTime } = get();
+    const { nodes, edges, canvasID, isLoading, lastLoadTime } = get();
 
     if (
       isLoading ||
@@ -505,13 +527,108 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       return;
     }
 
-    // Simplified version for testing
-    console.log('Store: Simulating canvas save (no actual data saved)');
+    const canvasData = {
+      common_node_properties: nodes.map((node) => {
+        console.log('Store: saveCanvas common_node_properties:', {
+          id: node.id,
+          type: node.type,
+          position: node.position,
+          title: node.data?.title,
+          tags: node.data?.tags,
+          attached_files: node.data?.attachedFiles,
+          background_color: node.data?.backgroundColor,
+          text_color: node.data?.textColor,
+          view_width: node.width,
+          view_height: node.height,
+          edit_width: node.data?.editWidth,
+          edit_height: node.data?.editHeight,
+          is_editing: node.isEditing,
+          is_temporary: node.data?.isTemporary,
+          parent_node_id: node.data?.parentNodeId,
+          z_index: node.zIndex,
+          created_at: node.data?.createdAt,
+          updated_at: new Date().toISOString(),
+          connectable: node.connectable,
+          draggable: node.draggable
+        });
+        return {
+          id: node.id,
+          type: node.type,
+          position: JSON.stringify(node.position),
+          title: node.data?.title || '',
+          tags: node.data?.tags || [],
+          attached_files: node.data?.attachedFiles || [],
+          background_color: node.data?.backgroundColor || '#F4F4F4',
+          text_color: node.data?.textColor || '#575757',
+          view_width: node.width || 0,
+          view_height: node.height || 0,
+          edit_width: node.data?.editWidth || null,
+          edit_height: node.data?.editHeight || null,
+          is_editing: node.isEditing || false,
+          is_temporary: node.data?.isTemporary || false,
+          parent_node_id: node.data?.parentNodeId || null,
+          z_index: node.zIndex || 0,
+          created_at: node.data?.createdAt || new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          connectable: node.connectable !== false,
+          draggable: node.draggable !== false
+        };
+      }),
+      node_specific_data: nodes
+        .map((node) => {
+          switch (node.type) {
+            case 'note':
+              return {
+                common_node_id: node.id,
+                content: node.data?.noteData?.content || ''
+              };
+            case 'task':
+              return {
+                common_node_id: node.id,
+                tasks: JSON.stringify(node.data?.taskData || {})
+              };
+            case 'table':
+              return {
+                common_node_id: node.id,
+                columns: JSON.stringify(node.data?.tableData?.columns || []),
+                rows: JSON.stringify(node.data?.tableData?.rows || [])
+              };
+            case 'draw':
+              return {
+                common_node_id: node.id,
+                drawing_data: JSON.stringify(node.data?.drawData || '')
+              };
+            default:
+              return null;
+          }
+        })
+        .filter(Boolean),
+      node_canvas_link: nodes.map((node) => ({
+        common_node_id: node.id,
+        canvas_id: canvasID
+      })),
+      edges: edges.map((edge) => ({
+        id: edge.id,
+        source_node_id: edge.source,
+        target_node_id: edge.target,
+        canvas_id: canvasID,
+        data: JSON.stringify(edge.data || {})
+      }))
+    };
 
-    // Wait for a short time to simulate an asynchronous operation
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    console.log('Store: saveCanvas full canvasData:', canvasData);
 
-    console.log('Store: Canvas data "saved" successfully');
+    const result = await saveCanvasState(
+      canvasID,
+      canvasData.common_node_properties,
+      canvasData.edges
+    );
+    if (result.error) {
+      console.error('Store: Error saving canvas data:', result.error);
+      return;
+    }
+
+    console.log('Store: Canvas data saved successfully');
   },
   // Function to load canvas data
   loadCanvas: async (canvasId: string) => {
