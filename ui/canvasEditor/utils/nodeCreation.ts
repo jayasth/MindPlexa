@@ -48,8 +48,8 @@ export const createNode = async (
   const defaultProperties = {
     draggable: true,
     connectable: true,
-    background_color: '#F4F4F4',
-    text_color: '#575757'
+    backgroundColor: '#F4F4F4',
+    textColor: '#575757'
   };
 
   const baseProperties: Partial<Node<any>> = {
@@ -81,18 +81,18 @@ export const createNode = async (
   }
 
   if (isTemporary) {
-    newNode.data.is_temporary = true;
+    newNode.data.isTemporary = true;
   }
 
   try {
     const newNodeData = {
       ...newNode.data,
-      z_index: 0,
-      is_temporary: isTemporary,
-      parent_node_id: parentNode ? parentNode.id : null,
-      background_color: defaultProperties.background_color,
-      text_color: defaultProperties.text_color,
-      is_editing: isEditing,
+      zIndex: 0,
+      isTemporary: isTemporary,
+      parentNodeId: parentNode ? parentNode.id : null,
+      backgroundColor: defaultProperties.backgroundColor,
+      textColor: defaultProperties.textColor,
+      isEditing: isEditing,
       ...nodeDimension
     };
 
@@ -174,8 +174,8 @@ export const replaceNodeWithType = async (
 
   if (existingEdge) {
     const updatedEdgeData = {
-      source_node_id: existingEdge.source === id ? null : existingEdge.source,
-      target_node_id: existingEdge.target === id ? null : existingEdge.target,
+      sourceNodeId: existingEdge.source === id ? null : existingEdge.source,
+      targetNodeId: existingEdge.target === id ? null : existingEdge.target,
       data: existingEdge.data
     };
 
@@ -195,7 +195,7 @@ export const replaceNodeWithType = async (
       x: position.x,
       y: position.y
     },
-    is_editing: false
+    isEditing: false
   };
 
   console.log('nodeCreation: Updating node with data:', commonNodeProperties);

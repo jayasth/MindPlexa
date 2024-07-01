@@ -151,11 +151,11 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     const commonData = {
       title,
       tags,
-      attached_files: attachedFiles.map((file) => ({ name: file })),
-      background_color: backgroundColor,
-      text_color: textColor,
-      edit_width: nodeWidth,
-      edit_height: nodeHeight
+      attachedFiles: attachedFiles.map((file) => ({ name: file })),
+      backgroundColor,
+      textColor,
+      editWidth: nodeWidth,
+      editHeight: nodeHeight
     };
 
     const specificData = { content };
@@ -266,11 +266,11 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     const commonData = {
       title,
       tags,
-      attached_files: attachedFiles.map((file) => ({ name: file })),
-      background_color: backgroundColor,
-      text_color: textColor,
-      edit_width: nodeWidth,
-      edit_height: nodeHeight
+      attachedFiles: attachedFiles.map((file) => ({ name: file })),
+      backgroundColor,
+      textColor,
+      editWidth: nodeWidth,
+      editHeight: nodeHeight
     };
 
     const specificData = { content };

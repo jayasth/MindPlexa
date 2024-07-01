@@ -119,7 +119,6 @@ export const useStore = createStore<CanvasState>((set, get) => ({
   },
   updateNode: async (id, updates, specificUpdates, nodeType) => {
     try {
-      // Convert position to JSON string if it exists
       const updatesWithPosition = {
         ...updates,
         position: updates.position
@@ -128,7 +127,6 @@ export const useStore = createStore<CanvasState>((set, get) => ({
         type: updates.type as Database['public']['Enums']['node_type']
       };
 
-      // Update the node in the database
       const { data: updatedNode, error } = await updateNodeInDB(
         id,
         updatesWithPosition,
@@ -141,10 +139,8 @@ export const useStore = createStore<CanvasState>((set, get) => ({
         return;
       }
 
-      // Log the updated node data
       console.log('useCanvasStore: Updated node data:', updatedNode);
 
-      // Update the local state with the new node data
       set((state) => ({
         nodes: state.nodes.map((node) =>
           node.id === id
@@ -407,7 +403,6 @@ export const useStore = createStore<CanvasState>((set, get) => ({
               case 'position':
                 return { ...node, position: change.position || node.position };
               case 'dimensions':
-                // Only update dimensions if they actually changed and the node is editable
                 if (
                   node.isEditing &&
                   change.dimensions &&
@@ -447,7 +442,6 @@ export const useStore = createStore<CanvasState>((set, get) => ({
           !removedNodeIds.includes(edge.target)
       );
 
-      // Debounce saveCanvas call
       if (state.saveCanvasTimeout) {
         clearTimeout(state.saveCanvasTimeout);
       }
@@ -498,10 +492,10 @@ export const useStore = createStore<CanvasState>((set, get) => ({
   },
   setCanvasId: (id) => {
     console.log('Store: Setting canvas ID to:', id);
-    set(() => ({ canvasID: id }));
+    set(() => ({ canvasId: id }));
   },
   saveCanvas: async () => {
-    const { nodes, edges, canvasID, isLoading, lastLoadTime } = get();
+    const { nodes, edges, canvasId, isLoading, lastLoadTime } = get();
 
     if (
       isLoading ||
@@ -551,21 +545,21 @@ export const useStore = createStore<CanvasState>((set, get) => ({
                   id: commonNode.id,
                   type: commonNode.type,
                   position: commonNode.position,
-                  view_width: commonNode.view_width,
-                  view_height: commonNode.view_height,
-                  edit_width: commonNode.edit_width,
-                  edit_height: commonNode.edit_height,
-                  background_color: commonNode.background_color,
-                  text_color: commonNode.text_color,
+                  viewWidth: commonNode.view_width,
+                  viewHeight: commonNode.view_height,
+                  editWidth: commonNode.edit_width,
+                  editHeight: commonNode.edit_height,
+                  backgroundColor: commonNode.background_color,
+                  textColor: commonNode.text_color,
                   title: commonNode.title,
                   tags: commonNode.tags,
-                  attached_files: commonNode.attached_files,
-                  is_editing: commonNode.is_editing,
-                  is_temporary: commonNode.is_temporary,
-                  parent_node_id: commonNode.parent_node_id,
-                  z_index: commonNode.z_index,
-                  created_at: commonNode.created_at,
-                  updated_at: commonNode.updated_at,
+                  attachedFiles: commonNode.attached_files,
+                  isEditing: commonNode.is_editing,
+                  isTemporary: commonNode.is_temporary,
+                  parentNodeId: commonNode.parent_node_id,
+                  zIndex: commonNode.z_index,
+                  createdAt: commonNode.created_at,
+                  updatedAt: commonNode.updated_at,
                   connectable: commonNode.connectable,
                   draggable: commonNode.draggable,
                   specificNodeData
