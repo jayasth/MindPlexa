@@ -59,6 +59,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = React.memo(
     const node = useStore(
       useCallback((state) => state.nodes.find((n) => n.id === id), [id])
     ) as BaseNode | undefined;
+    console.log('NodeRenderer: Node details:', node);
     const toggleEditMode = useStore((state) => state.toggleEditMode);
 
     const [size, setSize] = useState(() => ({

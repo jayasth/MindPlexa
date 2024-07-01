@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NodeProps, Handle, Position } from 'reactflow';
 import { useStore } from '@/app/store/useCanvasStore';
 import styles from './NoteNodeView.module.css';
@@ -8,6 +8,7 @@ import { FaEdit } from 'react-icons/fa';
 interface NoteNodeViewProps extends NodeProps {
   data: {
     id: string;
+    commonNodeId: string;
     title?: string;
     content?: string;
     backgroundColor?: string;
@@ -18,8 +19,13 @@ interface NoteNodeViewProps extends NodeProps {
 }
 
 const NoteNodeView: React.FC<NoteNodeViewProps> = ({ data, width, height }) => {
-  const { title, content, id, backgroundColor, textColor } = data;
+  const { id, commonNodeId, title, content, backgroundColor, textColor } = data;
   const toggleEditMode = useStore((state) => state.toggleEditMode);
+
+  useEffect(() => {
+    console.log('NoteNodeView: Note-specific ID:', id);
+    console.log('NoteNodeView: Common Node ID:', commonNodeId);
+  }, [id, commonNodeId]);
 
   return (
     <div className={styles.noteNode} style={{ width, height, backgroundColor }}>
@@ -30,7 +36,7 @@ const NoteNodeView: React.FC<NoteNodeViewProps> = ({ data, width, height }) => {
         <div
           className={styles.editButton}
           style={{ color: textColor }}
-          onClick={() => toggleEditMode(data.id)}
+          onClick={() => toggleEditMode(commonNodeId)}
         >
           <FaEdit />
         </div>

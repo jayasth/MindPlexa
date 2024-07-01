@@ -135,6 +135,13 @@ export const useStore = createStore<CanvasState>((set, get) => ({
           | 'selectionMenu'
       };
 
+      // Log the node details before update
+      const nodeBeforeUpdate = get().nodes.find((node) => node.id === id);
+      console.log(
+        'useCanvasStore: Node details before update:',
+        nodeBeforeUpdate
+      );
+
       // Update the node in the database
       const { data: updatedNode, error } = await updateNodeInDB(
         id,
@@ -689,14 +696,14 @@ export const useStore = createStore<CanvasState>((set, get) => ({
                   data: {
                     ...commonNode,
                     ...specificNodeData,
-                    backgroundColor: commonNode.background_color || '#F4F4F4',
-                    textColor: commonNode.text_color || '#575757',
-                    tags: commonNode.tags || [],
-                    attachedFiles: commonNode.attached_files || []
+                    backgroundColor: commonNode.background_color,
+                    textColor: commonNode.text_color,
+                    tags: commonNode.tags,
+                    attachedFiles: commonNode.attached_files
                   },
-                  width: commonNode.view_width || 80,
-                  height: commonNode.view_height || 150,
-                  isEditing: false // Set isEditing to false by default
+                  width: commonNode.view_width,
+                  height: commonNode.view_height,
+                  isEditing: commonNode.is_editing
                 };
               })
               .filter(

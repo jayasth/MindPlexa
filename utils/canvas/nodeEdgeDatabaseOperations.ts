@@ -95,38 +95,44 @@ export const createNode = async (
     // Create the specific node type
     if (nodeType !== 'selectionMenu') {
       let specificNodeInsert;
+      let specificNodeId;
       switch (nodeType) {
         case 'note':
+          specificNodeId = uuidv4();
           specificNodeInsert = {
-            id: uuidv4(),
+            id: specificNodeId,
             common_node_id: commonNodeData.id,
             ...data.noteData
           };
           break;
         case 'task':
+          specificNodeId = uuidv4();
           specificNodeInsert = {
-            id: uuidv4(),
+            id: specificNodeId,
             common_node_id: commonNodeData.id,
             ...data.taskData
           };
           break;
         case 'calendar':
+          specificNodeId = uuidv4();
           specificNodeInsert = {
-            id: uuidv4(),
+            id: specificNodeId,
             common_node_id: commonNodeData.id,
             ...data.calendarData
           };
           break;
         case 'table':
+          specificNodeId = uuidv4();
           specificNodeInsert = {
-            id: uuidv4(),
+            id: specificNodeId,
             common_node_id: commonNodeData.id,
             ...data.tableData
           };
           break;
         case 'draw':
+          specificNodeId = uuidv4();
           specificNodeInsert = {
-            id: uuidv4(),
+            id: specificNodeId,
             common_node_id: commonNodeData.id,
             ...data.drawData
           };
@@ -155,9 +161,22 @@ export const createNode = async (
         specificNodeData
       );
 
-      return { data: { ...commonNodeData, ...specificNodeData } };
+      return {
+        data: {
+          ...commonNodeData,
+          ...specificNodeData,
+          id: specificNodeId, // Note-specific ID
+          commonNodeId: commonNodeData.id // Common node ID
+        }
+      };
     } else {
-      return { data: commonNodeData };
+      return {
+        data: {
+          ...commonNodeData,
+          id: commonNodeData.id, // For selectionMenu, use common node ID for both
+          commonNodeId: commonNodeData.id
+        }
+      };
     }
   } catch (error) {
     console.error('Unexpected error creating node:', error);
@@ -166,7 +185,8 @@ export const createNode = async (
 };
 
 export const updateNode = async (
-  id: string,
+  commonNodeId: string,
+  specificNodeId: string | null,
   updates: Partial<
     Database['public']['Tables']['common_node_properties']['Update']
   >,
@@ -183,7 +203,8 @@ export const updateNode = async (
     console.log(
       'nodeEdgeDatabaseOperations: Updating node with the following details:'
     );
-    console.log('Node ID:', id);
+    console.log('Common Node ID:', commonNodeId);
+    console.log('Specific Node ID:', specificNodeId);
     console.log('Node Type:', nodeType);
     console.log('Common Updates:', JSON.stringify(updates, null, 2));
     console.log('Specific Updates:', JSON.stringify(specificUpdates, null, 2));
@@ -192,7 +213,7 @@ export const updateNode = async (
     const { data: commonNodeData, error: commonNodeError } = await supabase
       .from('common_node_properties')
       .update(updates)
-      .eq('id', id)
+      .eq('id', commonNodeId)
       .select()
       .single();
 
@@ -209,8 +230,8 @@ export const updateNode = async (
       commonNodeData
     );
 
-    // Update specific node properties if not a selectionMenu node
-    if (nodeType !== 'selectionMenu') {
+    // Update specific node properties if not a selectionMenu node and specificNodeId is provided
+    if (nodeType !== 'selectionMenu' && specificNodeId) {
       const tableName =
         `${nodeType}_nodes` as keyof Database['public']['Tables'];
 
@@ -218,7 +239,7 @@ export const updateNode = async (
         await supabase
           .from(tableName)
           .update(specificUpdates)
-          .eq('common_node_id', id)
+          .eq('id', specificNodeId)
           .select()
           .single();
 
