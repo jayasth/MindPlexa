@@ -524,108 +524,13 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       return;
     }
 
-    const canvasData = {
-      common_node_properties: nodes.map((node) => {
-        console.log('Store: saveCanvas common_node_properties:', {
-          id: node.id,
-          type: node.type,
-          position: node.position,
-          title: node.data?.title,
-          tags: node.data?.tags,
-          attached_files: node.data?.attachedFiles,
-          background_color: node.data?.backgroundColor,
-          text_color: node.data?.textColor,
-          view_width: node.width,
-          view_height: node.height,
-          edit_width: node.data?.editWidth,
-          edit_height: node.data?.editHeight,
-          is_editing: node.isEditing,
-          is_temporary: node.data?.isTemporary,
-          parent_node_id: node.data?.parentNodeId,
-          z_index: node.zIndex,
-          created_at: node.data?.createdAt,
-          updated_at: new Date().toISOString(),
-          connectable: node.connectable,
-          draggable: node.draggable
-        });
-        return {
-          id: node.id,
-          type: node.type,
-          position: JSON.stringify(node.position),
-          title: node.data?.title || '',
-          tags: node.data?.tags || [],
-          attached_files: node.data?.attachedFiles || [],
-          background_color: node.data?.backgroundColor || '#F4F4F4',
-          text_color: node.data?.textColor || '#575757',
-          view_width: node.width || 0,
-          view_height: node.height || 0,
-          edit_width: node.data?.editWidth || null,
-          edit_height: node.data?.editHeight || null,
-          is_editing: node.isEditing || false,
-          is_temporary: node.data?.isTemporary || false,
-          parent_node_id: node.data?.parentNodeId || null,
-          z_index: node.zIndex || 0,
-          created_at: node.data?.createdAt || new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          connectable: node.connectable !== false,
-          draggable: node.draggable !== false
-        };
-      }),
-      node_specific_data: nodes
-        .map((node) => {
-          switch (node.type) {
-            case 'note':
-              return {
-                common_node_id: node.id,
-                content: node.data?.noteData?.content || ''
-              };
-            case 'task':
-              return {
-                common_node_id: node.id,
-                tasks: JSON.stringify(node.data?.taskData || {})
-              };
-            case 'table':
-              return {
-                common_node_id: node.id,
-                columns: JSON.stringify(node.data?.tableData?.columns || []),
-                rows: JSON.stringify(node.data?.tableData?.rows || [])
-              };
-            case 'draw':
-              return {
-                common_node_id: node.id,
-                drawing_data: JSON.stringify(node.data?.drawData || '')
-              };
-            default:
-              return null;
-          }
-        })
-        .filter(Boolean),
-      node_canvas_link: nodes.map((node) => ({
-        common_node_id: node.id,
-        canvas_id: canvasID
-      })),
-      edges: edges.map((edge) => ({
-        id: edge.id,
-        source_node_id: edge.source,
-        target_node_id: edge.target,
-        canvas_id: canvasID,
-        data: JSON.stringify(edge.data || {})
-      }))
-    };
+    // Simplified version for testing
+    console.log('Store: Simulating canvas save (no actual data saved)');
 
-    console.log('Store: saveCanvas full canvasData:', canvasData);
+    // Wait for a short time to simulate an asynchronous operation
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
-    const result = await saveCanvasState(
-      canvasID,
-      canvasData.common_node_properties,
-      canvasData.edges
-    );
-    if (result.error) {
-      console.error('Store: Error saving canvas data:', result.error);
-      return;
-    }
-
-    console.log('Store: Canvas data saved successfully');
+    console.log('Store: Canvas data "saved" successfully');
   },
   // Function to load canvas data
   loadCanvas: async (canvasId: string) => {
