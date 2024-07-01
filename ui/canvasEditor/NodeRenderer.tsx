@@ -61,9 +61,10 @@ const NodeRenderer: React.FC<NodeRendererProps> = React.memo(
   ({ data, selected, id, onNodeResizeStop }) => {
     const node = useStore((state) => state.nodes.find((n) => n.id === id)) as
       | BaseNode
-      | undefined; // node might be undefined if it has been deleted
+      | undefined;
 
     const toggleEditMode = useStore((state) => state.toggleEditMode);
+    const updateNode = useStore((state) => state.updateNode);
     const [size, setSize] = useState(() =>
       getNodeSpecificProperties(node?.type || 'note', node?.isEditing ?? false)
     );
@@ -85,7 +86,6 @@ const NodeRenderer: React.FC<NodeRendererProps> = React.memo(
       onNodeResizeStop
     ]);
 
-    // Early return if node does not exist or position is undefined
     if (!node || !node.position) {
       console.log(
         `NodeRenderer: Node with ID ${id} not found or has invalid position.`
@@ -103,8 +103,8 @@ const NodeRenderer: React.FC<NodeRendererProps> = React.memo(
     };
 
     const commonProps = {
-      draggable: true,
-      connectable: true,
+      draggable: node.draggable ?? true,
+      connectable: node.connectable ?? true,
       onDelete: () => console.log(`Delete ${node.type}`),
       onChangeColor: () => console.log('Change Color'),
       onResize: () => console.log('Resize Node'),
@@ -133,9 +133,14 @@ const NodeRenderer: React.FC<NodeRendererProps> = React.memo(
       const { view, edit } = nodeComponents[node.type];
       const NodeComponent = node.isEditing ? edit : view;
 
-      console.log(
-        `NodeRenderer: Rendering ${node.type} with background color: ${node.data.backgroundColor}, text color: ${node.data.textColor}`
-      );
+      console.log('NodeRenderer: Node data:', {
+        id: node.id,
+        type: node.type,
+        data: node.data,
+        position: node.position,
+        isEditing: node.isEditing,
+        size: size
+      });
 
       return (
         <NodeComponent
@@ -146,8 +151,18 @@ const NodeRenderer: React.FC<NodeRendererProps> = React.memo(
             ...node.data,
             width: size.width,
             height: size.height,
-            backgroundColor: node.data.backgroundColor,
-            textColor: node.data.textColor
+            backgroundColor: node.data.background_color,
+            textColor: node.data.text_color,
+            editWidth: node.data.edit_width,
+            editHeight: node.data.edit_height,
+            viewWidth: node.data.view_width,
+            viewHeight: node.data.view_height,
+            position: node.position,
+            isEditing: node.isEditing,
+            parentNodeId: node.data.parent_node_id,
+            zIndex: node.data.z_index,
+            tags: node.data.tags,
+            attachedFiles: node.data.attached_files
           }}
           selected={selected}
           onNodeResizeStop={onNodeResizeStop}
