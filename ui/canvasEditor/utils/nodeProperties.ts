@@ -57,43 +57,42 @@ export const nodeDimensions: NodeDimensionTypes = {
   selectionMenu: { width: 200, height: 50 }
 };
 
-export const getNodeSpecificProperties = (
+export const getNodeDimensions = (
   nodeType: string,
-  isEditing: boolean
+  isEditing: boolean,
+  isMobile: boolean
 ) => {
   const dimensions = nodeDimensions[nodeType];
   if (!dimensions) {
     console.warn(`Unknown node type: ${nodeType}`);
-    return { width: 100, height: 100, draggable: true, connectable: true };
+    return { width: 100, height: 100 };
   }
 
-  const baseProperties = {
-    draggable: true,
-    connectable: true
-  };
-
-  if ('editWidth' in dimensions && 'editHeight' in dimensions) {
-    const isMobile = window.innerWidth <= 768; // Adjust the breakpoint as needed
+  if (isEditing) {
     return {
-      ...baseProperties,
-      width: isEditing
-        ? isMobile
-          ? dimensions.mobileEditWidth
-          : dimensions.editWidth
-        : dimensions.viewWidth,
-      height: isEditing
-        ? isMobile
-          ? dimensions.mobileEditHeight
-          : dimensions.editHeight
-        : dimensions.viewHeight,
-      isEditing: isEditing
+      width: isMobile ? dimensions.mobileEditWidth : dimensions.editWidth,
+      height: isMobile ? dimensions.mobileEditHeight : dimensions.editHeight
     };
   } else {
     return {
-      ...baseProperties,
-      width: dimensions.width,
-      height: dimensions.height,
-      isEditing: isEditing
+      width: dimensions.viewWidth,
+      height: dimensions.viewHeight
     };
   }
+};
+
+export const getNodeSpecificProperties = (
+  nodeType: string,
+  isEditing: boolean
+) => {
+  const isMobile = window.innerWidth <= 768; // Adjust the breakpoint as needed
+  const { width, height } = getNodeDimensions(nodeType, isEditing, isMobile);
+
+  return {
+    width,
+    height,
+    draggable: true,
+    connectable: true,
+    isEditing: isEditing
+  };
 };

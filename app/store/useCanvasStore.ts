@@ -408,7 +408,14 @@ export const useStore = createStore<CanvasState>((set, get) => ({
           if (change) {
             switch (change.type) {
               case 'position':
-                return { ...node, position: change.position || node.position };
+                if (
+                  change.position &&
+                  (change.position.x !== node.position.x ||
+                    change.position.y !== node.position.y)
+                ) {
+                  return { ...node, position: change.position };
+                }
+                return node;
               case 'dimensions':
                 if (node.isEditing && change.dimensions) {
                   return {

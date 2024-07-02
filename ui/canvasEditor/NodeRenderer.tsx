@@ -64,7 +64,9 @@ const NodeRenderer: React.FC<NodeRendererProps> = React.memo(
 
     const [size, setSize] = useState(() => ({
       width: node?.isEditing ? node?.data.edit_width : node?.data.view_width,
-      height: node?.isEditing ? node?.data.edit_height : node?.data.view_height
+      height: node?.isEditing ? node?.data.edit_height : node?.data.view_height,
+      x: node?.position.x,
+      y: node?.position.y
     }));
 
     const isInitialRender = useRef(true);
@@ -75,8 +77,14 @@ const NodeRenderer: React.FC<NodeRendererProps> = React.memo(
           width: node.isEditing ? node.data.edit_width : node.data.view_width,
           height: node.isEditing ? node.data.edit_height : node.data.view_height
         };
-        if (newSize.width !== size.width || newSize.height !== size.height) {
-          setSize(newSize);
+        if (
+          newSize.width !== size.width ||
+          newSize.height !== size.height ||
+          node.position.x !== size.x ||
+          node.position.y !== size.y
+        ) {
+          console.log('Dimension change detected, updating size state.');
+          setSize({ ...newSize, x: node.position.x, y: node.position.y });
           if (!isInitialRender.current) {
             onNodeResizeStop(id, newSize, node.position);
           }
@@ -94,7 +102,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = React.memo(
             ? node.data.edit_height
             : node.data.view_height
         };
-        setSize(newSize);
+        setSize({ ...newSize, x: node.position.x, y: node.position.y });
         onNodeResizeStop(id, newSize, node.position);
       }
     }, [node, id, toggleEditMode, onNodeResizeStop]);
