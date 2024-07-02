@@ -120,18 +120,27 @@ export const useStore = createStore<CanvasState>((set, get) => ({
   },
   updateNode: async (id, updates, specificUpdates, nodeType) => {
     try {
+      const updatesWithPosition = {
+        ...updates,
+        position: updates.position
+          ? JSON.stringify(updates.position)
+          : undefined,
+        type: nodeType
+      };
+
+      const nodeBeforeUpdate = get().nodes.find((node) => node.id === id);
+      console.log(
+        'useCanvasStore: Node details before update:',
+        nodeBeforeUpdate
+      );
+
       const { data: updatedNode, error } = await updateNodeInDB(
         id,
-        {
-          ...updates,
-          position: updates.position
-            ? JSON.stringify(updates.position)
-            : undefined,
-          type: nodeType
-        },
+        updatesWithPosition,
         specificUpdates,
         nodeType
       );
+
       if (error) {
         console.error('useCanvasStore: Error updating node:', error);
         return;
@@ -146,7 +155,9 @@ export const useStore = createStore<CanvasState>((set, get) => ({
                 ...node,
                 ...updatedNode,
                 position: updatedNode.position
-                  ? JSON.parse(updatedNode.position)
+                  ? typeof updatedNode.position === 'string'
+                    ? JSON.parse(updatedNode.position)
+                    : updatedNode.position
                   : node.position,
                 data: {
                   ...node.data,
@@ -435,14 +446,18 @@ export const useStore = createStore<CanvasState>((set, get) => ({
                     updateNodeInDB(
                       node.id,
                       {
-                        edit_width: width,
-                        edit_height: height
+                        view_width: change.dimensions.width,
+                        view_height: change.dimensions.height,
+                        edit_width: change.dimensions.width,
+                        edit_height: change.dimensions.height
                       },
                       {},
                       node.type
                     );
                     return {
                       ...node,
+                      width: change.dimensions.width,
+                      height: change.dimensions.height,
                       data: {
                         ...node.data,
                         editWidth: width,
@@ -452,8 +467,8 @@ export const useStore = createStore<CanvasState>((set, get) => ({
                       }
                     };
                   }
+                  return node;
                 }
-                return node;
               case 'select':
                 return { ...node, selected: change.selected };
               case 'remove':
@@ -465,7 +480,6 @@ export const useStore = createStore<CanvasState>((set, get) => ({
           return node;
         })
         .filter(Boolean);
-
       const removedNodeIds = changes
         .filter((c) => c.type === 'remove')
         .map((c) => c.id);
@@ -575,7 +589,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       nodes: nodes.map((node) => ({
         id: node.id,
         type: node.type,
-        position: node.position,
+        position: JSON.stringify(node.position),
         title: node.data?.title || '',
         background_color: node.data?.backgroundColor || '#F4F4F4',
         text_color: node.data?.textColor || '#575757',
@@ -677,7 +691,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
 
             let position;
             try {
-              position = node.position;
+              position = JSON.parse(node.position);
             } catch (error) {
               console.error('Error parsing position JSON:', error);
               position = { x: 200, y: 200 };

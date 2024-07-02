@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/supabaseClient';
 import { Database } from '@/types_db';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
+import { v4 as uuidv4 } from 'uuid';
 
 const supabase = createClient();
 
@@ -218,7 +219,7 @@ export const updateNode = async (
     // Update node properties
     const { data: nodeData, error: nodeError } = await supabase
       .from('nodes')
-      .update(safeUpdates)
+      .update(updates)
       .eq('id', id)
       .select()
       .single();
@@ -331,6 +332,7 @@ export const deleteNode = async (
 export const createEdge = async (
   edge: Omit<Database['public']['Tables']['edges']['Insert'], 'id'>
 ): Promise<{ data?: { id: string }; error?: any }> => {
+  const edgeWithId = { ...edge, id: uuidv4() };
   const { data, error } = await supabase
     .from('edges')
     .insert([edge])
