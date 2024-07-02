@@ -54,6 +54,17 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   onNodeResizeStop,
   position
 }) => {
+  console.log('NoteNodeEdit: Node details:', {
+    id: data.id,
+    title: data.title,
+    content: data.content,
+    backgroundColor: data.background_color,
+    textColor: data.text_color,
+    width,
+    height,
+    position
+  });
+
   const [isSelected, setIsSelected] = useState(selected);
   const [title, setTitle] = useState(data.title || 'Untitled Note');
   const [content, setContent] = useState(data.content || '');

@@ -160,8 +160,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = React.memo(
             {...commonProps}
             onEdit={handleEdit}
             data={{
-              ...node,
-              ...node.data,
+              id: node.id,
               width: size.width,
               height: size.height,
               backgroundColor: node.data.background_color,
