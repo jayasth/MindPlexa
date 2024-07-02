@@ -34,7 +34,7 @@ import { debounce } from 'lodash';
 
 interface NoteNodeEditProps extends NodeProps {
   data: Database['public']['Tables']['note_nodes']['Row'] &
-    Database['public']['Tables']['common_node_properties']['Row'];
+    Database['public']['Tables']['nodes']['Row'];
   width: number;
   height: number;
   selected: boolean;
@@ -61,17 +61,8 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     data.background_color || '#F4F4F4'
   );
   const [textColor, setTextColor] = useState(data.text_color || '#575757');
-  const [tags, setTags] = useState<string[]>(data.tags || []);
-  const [attachedFiles, setAttachedFiles] = useState<string[]>(
-    Array.isArray(data.attached_files)
-      ? data.attached_files.map((file) => {
-          if (typeof file === 'object' && file !== null && 'name' in file) {
-            return file.name as string;
-          }
-          return '';
-        })
-      : []
-  );
+  const [tags, setTags] = useState<string[]>([]);
+  const [attachedFiles, setAttachedFiles] = useState<string[]>([]);
   const [isContainerSelected, setIsContainerSelected] = useState(false);
   const [nodeWidth, setNodeWidth] = useState(width);
   const [nodeHeight, setNodeHeight] = useState(height);
@@ -150,8 +141,6 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   useEffect(() => {
     const commonData = {
       title,
-      tags,
-      attachedFiles: attachedFiles.map((file) => ({ name: file })),
       backgroundColor,
       textColor,
       editWidth: nodeWidth,
@@ -164,8 +153,6 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   }, [
     title,
     content,
-    tags,
-    attachedFiles,
     backgroundColor,
     textColor,
     nodeWidth,
@@ -223,20 +210,6 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     setNodeHeight(height);
   }, [width, height]);
 
-  useEffect(() => {
-    setTags(data.tags || []);
-    setAttachedFiles(
-      Array.isArray(data.attached_files)
-        ? data.attached_files.map((file) => {
-            if (typeof file === 'object' && file !== null && 'name' in file) {
-              return file.name as string;
-            }
-            return '';
-          })
-        : []
-    );
-  }, [data.tags, data.attached_files]);
-
   const handleResize = (event, { width, height }) => {
     setNodeWidth(width);
     setNodeHeight(height);
@@ -265,8 +238,6 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   const handleSave = async () => {
     const commonData = {
       title,
-      tags,
-      attachedFiles: attachedFiles.map((file) => ({ name: file })),
       backgroundColor,
       textColor,
       editWidth: nodeWidth,

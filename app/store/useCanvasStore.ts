@@ -9,7 +9,7 @@ import {
   nodeDimensions,
   getNodeSpecificProperties
 } from '@/ui/canvasEditor/utils/nodeProperties';
-import { Tables, TablesInsert } from '@/types_db';
+import { Tables, TablesInsert, Database } from '@/types_db';
 import {
   fetchCanvas,
   saveCanvasState
@@ -37,7 +37,7 @@ interface CanvasState {
     id: string,
     updates: Partial<Node>,
     specificUpdates: any,
-    nodeType: string
+    nodeType: Database['public']['Enums']['node_type']
   ) => Promise<void>;
   addEdge: (edge: Edge) => void;
   removeNode: (id: string) => void;
@@ -48,7 +48,7 @@ interface CanvasState {
   createChildNodeFromDrag: (
     parentNode: Node,
     position: XYPosition,
-    type: string
+    type: Database['public']['Enums']['node_type']
   ) => void;
   showNodeSelectionMenu: boolean;
   setShowNodeSelectionMenu: (show: boolean) => void;
@@ -120,40 +120,25 @@ export const useStore = createStore<CanvasState>((set, get) => ({
   },
   updateNode: async (id, updates, specificUpdates, nodeType) => {
     try {
-      // Convert position to JSON string if it exists
       const updatesWithPosition = {
         ...updates,
         position: updates.position
           ? JSON.stringify(updates.position)
           : undefined,
-        type: updates.type as
-          | 'note'
-          | 'task'
-          | 'table'
-          | 'calendar'
-          | 'draw'
-          | 'selectionMenu'
+        type: nodeType
       };
 
-      // Log the node details before update
       const nodeBeforeUpdate = get().nodes.find((node) => node.id === id);
       console.log(
         'useCanvasStore: Node details before update:',
         nodeBeforeUpdate
       );
 
-      // Update the node in the database
       const { data: updatedNode, error } = await updateNodeInDB(
         id,
         updatesWithPosition,
         specificUpdates,
-        nodeType as
-          | 'note'
-          | 'task'
-          | 'table'
-          | 'calendar'
-          | 'draw'
-          | 'selectionMenu'
+        nodeType
       );
 
       if (error) {
@@ -161,41 +146,33 @@ export const useStore = createStore<CanvasState>((set, get) => ({
         return;
       }
 
-      // Log the updated node data
       console.log('useCanvasStore: Updated node data:', updatedNode);
 
-      // Update the local state with the new node data
       set((state) => ({
         nodes: state.nodes.map((node) =>
           node.id === id
             ? {
                 ...node,
-                ...updatedNode.commonNodeProperties,
-                position: updatedNode.commonNodeProperties.position
-                  ? JSON.parse(updatedNode.commonNodeProperties.position)
+                ...updatedNode,
+                position: updatedNode.position
+                  ? JSON.parse(updatedNode.position)
                   : node.position,
                 data: {
                   ...node.data,
-                  ...updatedNode.specificNodeProperties,
-                  title: updatedNode.commonNodeProperties.title,
-                  tags: updatedNode.commonNodeProperties.tags,
-                  attachedFiles:
-                    updatedNode.commonNodeProperties.attached_files,
-                  backgroundColor:
-                    updatedNode.commonNodeProperties.background_color,
-                  textColor: updatedNode.commonNodeProperties.text_color,
-                  editWidth: updatedNode.commonNodeProperties.edit_width,
-                  editHeight: updatedNode.commonNodeProperties.edit_height
+                  ...updatedNode,
+                  backgroundColor: updatedNode.background_color,
+                  textColor: updatedNode.text_color,
+                  editWidth: updatedNode.edit_width,
+                  editHeight: updatedNode.edit_height,
+                  mobileEditWidth: updatedNode.mobile_edit_width,
+                  mobileEditHeight: updatedNode.mobile_edit_height
                 },
-                width: updatedNode.commonNodeProperties.view_width,
-                height: updatedNode.commonNodeProperties.view_height,
-                isEditing: updatedNode.commonNodeProperties.is_editing,
-                isTemporary: updatedNode.commonNodeProperties.is_temporary,
-                parentNodeId: updatedNode.commonNodeProperties.parent_node_id,
-                zIndex: updatedNode.commonNodeProperties.z_index,
-                connectable:
-                  updatedNode.commonNodeProperties.connectable ?? true,
-                draggable: updatedNode.commonNodeProperties.draggable ?? true
+                width: updatedNode.view_width,
+                height: updatedNode.view_height,
+                isEditing: updatedNode.is_editing,
+                isTemporary: updatedNode.is_temporary,
+                parentNodeId: updatedNode.parent_node_id,
+                zIndex: updatedNode.z_index
               }
             : node
         )
@@ -275,7 +252,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       type
     );
     set((state) => ({
-      nodes: state.nodes.filter((node) => node.type !== 'selectionMenu')
+      nodes: state.nodes.filter((node) => node.type !== 'selection_menu')
     }));
 
     const newNode = {
@@ -337,8 +314,8 @@ export const useStore = createStore<CanvasState>((set, get) => ({
     }
 
     const newNode = {
-      id: `selectionMenu-${uuidv4()}`,
-      type: 'selectionMenu',
+      id: `selection_menu-${uuidv4()}`,
+      type: 'selection_menu' as Database['public']['Enums']['node_type'],
       position: childNodePosition,
       data: {
         onSelect: (selectedNodeType, selectedPosition) => {
@@ -376,8 +353,8 @@ export const useStore = createStore<CanvasState>((set, get) => ({
         parentNode: parentNode,
         isTemporary: true
       },
-      width: nodeDimensions['selectionMenu'].width,
-      height: nodeDimensions['selectionMenu'].height
+      width: nodeDimensions['selection_menu'].width,
+      height: nodeDimensions['selection_menu'].height
     };
 
     addNode(newNode);
@@ -545,50 +522,52 @@ export const useStore = createStore<CanvasState>((set, get) => ({
     }
 
     const canvasData = {
-      common_node_properties: nodes.map((node) => ({
+      nodes: nodes.map((node) => ({
         id: node.id,
         type: node.type,
         position: JSON.stringify(node.position),
         title: node.data?.title || '',
-        tags: node.data?.tags || [],
-        attached_files: node.data?.attachedFiles || [],
         background_color: node.data?.backgroundColor || '#F4F4F4',
         text_color: node.data?.textColor || '#575757',
         view_width: node.width || 0,
         view_height: node.height || 0,
         edit_width: node.data?.editWidth || null,
         edit_height: node.data?.editHeight || null,
+        mobile_edit_width: node.data?.mobileEditWidth || null,
+        mobile_edit_height: node.data?.mobileEditHeight || null,
         is_editing: node.isEditing || false,
         is_temporary: node.data?.isTemporary || false,
         parent_node_id: node.data?.parentNodeId || null,
-        z_index: node.zIndex || 0,
-        created_at: node.data?.createdAt || new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        connectable: node.connectable !== false,
-        draggable: node.draggable !== false
+        z_index: node.zIndex || 0
       })),
       node_specific_data: nodes
         .map((node) => {
           switch (node.type) {
             case 'note':
               return {
-                common_node_id: node.id,
+                node_id: node.id,
                 content: node.data?.noteData?.content || ''
               };
             case 'task':
               return {
-                common_node_id: node.id,
+                node_id: node.id,
                 tasks: JSON.stringify(node.data?.taskData || {})
               };
             case 'table':
               return {
-                common_node_id: node.id,
+                node_id: node.id,
                 columns: JSON.stringify(node.data?.tableData?.columns || []),
                 rows: JSON.stringify(node.data?.tableData?.rows || [])
               };
+            case 'calendar':
+              return {
+                node_id: node.id,
+                events: JSON.stringify(node.data?.calendarData?.events || []),
+                view: node.data?.calendarData?.view || 'month'
+              };
             case 'draw':
               return {
-                common_node_id: node.id,
+                node_id: node.id,
                 drawing_data: JSON.stringify(node.data?.drawData || '')
               };
             default:
@@ -597,15 +576,14 @@ export const useStore = createStore<CanvasState>((set, get) => ({
         })
         .filter(Boolean),
       node_canvas_link: nodes.map((node) => ({
-        common_node_id: node.id,
+        node_id: node.id,
         canvas_id: canvasID
       })),
       edges: edges.map((edge) => ({
         id: edge.id,
         source_node_id: edge.source,
         target_node_id: edge.target,
-        canvas_id: canvasID,
-        data: JSON.stringify(edge.data || {})
+        canvas_id: canvasID
       }))
     };
 
@@ -613,7 +591,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
 
     const result = await saveCanvasState(
       canvasID,
-      canvasData.common_node_properties,
+      canvasData.nodes,
       canvasData.edges
     );
     if (result.error) {
@@ -639,77 +617,41 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       if (data && data.node_canvas_link && data.node_canvas_link.length > 0) {
         console.log('Store: Loading existing canvas data');
         const nodes = data.node_canvas_link
-          ? data.node_canvas_link
-              .map((link) => {
-                const commonNode = link.common_node_properties;
-                if (!commonNode) return null;
+          .map((link) => {
+            const node = link.nodes;
+            if (!node) return null;
 
-                const specificNodeData = nodeData?.[commonNode.type]?.find(
-                  (node) => node.common_node_id === commonNode.id
-                );
+            const specificNodeData = nodeData?.[node.type]?.find(
+              (specificNode) => specificNode.node_id === node.id
+            );
 
-                console.log('Store: loadCanvas fetched :', {
-                  id: commonNode.id,
-                  type: commonNode.type,
-                  position: commonNode.position,
-                  viewWidth: commonNode.view_width,
-                  viewHeight: commonNode.view_height,
-                  editWidth: commonNode.edit_width,
-                  editHeight: commonNode.edit_height,
-                  backgroundColor: commonNode.background_color,
-                  textColor: commonNode.text_color,
-                  title: commonNode.title,
-                  tags: commonNode.tags,
-                  attachedFiles: commonNode.attached_files,
-                  isEditing: commonNode.is_editing,
-                  isTemporary: commonNode.is_temporary,
-                  parentNodeId: commonNode.parent_node_id,
-                  zIndex: commonNode.z_index,
-                  createdAt: commonNode.created_at,
-                  updatedAt: commonNode.updated_at,
-                  connectable: commonNode.connectable,
-                  draggable: commonNode.draggable,
-                  specificNodeData
-                });
+            let position;
+            try {
+              position = JSON.parse(node.position);
+            } catch (error) {
+              console.error('Error parsing position JSON:', error);
+              position = { x: 200, y: 200 };
+            }
 
-                let position;
-                try {
-                  position = JSON.parse(commonNode.position); // Always parse as JSON string
-                } catch (error) {
-                  console.error('Error parsing position JSON:', error);
-                  position = { x: 200, y: 200 }; // Default position if parsing fails
-                }
+            return {
+              id: node.id,
+              type: node.type,
+              position,
+              data: {
+                ...node,
+                ...specificNodeData,
+                backgroundColor: node.background_color,
+                textColor: node.text_color
+              },
+              width: node.view_width,
+              height: node.view_height,
+              isEditing: node.is_editing
+            };
+          })
+          .filter(
+            (node): node is Node => node !== null && node.type !== undefined
+          );
 
-                // Ensure position is defined and has x and y properties
-                if (
-                  !position ||
-                  typeof position.x !== 'number' ||
-                  typeof position.y !== 'number'
-                ) {
-                  position = { x: 200, y: 200 }; // Default position if invalid
-                }
-
-                return {
-                  id: commonNode.id,
-                  type: commonNode.type,
-                  position,
-                  data: {
-                    ...commonNode,
-                    ...specificNodeData,
-                    backgroundColor: commonNode.background_color,
-                    textColor: commonNode.text_color,
-                    tags: commonNode.tags,
-                    attachedFiles: commonNode.attached_files
-                  },
-                  width: commonNode.view_width,
-                  height: commonNode.view_height,
-                  isEditing: commonNode.is_editing
-                };
-              })
-              .filter(
-                (node): node is Node => node !== null && node.type !== undefined
-              )
-          : [];
         const edges = data.edges
           ? data.edges.map((edge) => ({
               id: edge.id,

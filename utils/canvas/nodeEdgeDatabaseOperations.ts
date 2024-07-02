@@ -12,7 +12,7 @@ export const createNode = async (
   canvasId: string,
   nodeType: Database['public']['Enums']['node_type'],
   position: { x: number; y: number },
-  data: Database['public']['Tables']['common_node_properties']['Insert'] & {
+  data: Database['public']['Tables']['nodes']['Insert'] & {
     noteData?: Database['public']['Tables']['note_nodes']['Insert'];
     taskData?: Database['public']['Tables']['task_nodes']['Insert'];
     calendarData?: Database['public']['Tables']['calendar_nodes']['Insert'];
@@ -30,57 +30,51 @@ export const createNode = async (
     // Get default dimensions from nodeProperties
     const defaultDimensions = nodeDimensions[nodeType];
 
-    // Create a common node first
-    const commonNodeInsert: Database['public']['Tables']['common_node_properties']['Insert'] =
-      {
-        id: uuidv4(),
-        type: nodeType,
-        position: JSON.stringify(position),
-        view_width:
-          'width' in defaultDimensions
-            ? defaultDimensions.width
-            : defaultDimensions.viewWidth,
-        view_height:
-          'height' in defaultDimensions
-            ? defaultDimensions.height
-            : defaultDimensions.viewHeight,
-        edit_width:
-          'editWidth' in defaultDimensions ? defaultDimensions.editWidth : null,
-        edit_height:
-          'editHeight' in defaultDimensions
-            ? defaultDimensions.editHeight
-            : null,
-        background_color: data.background_color || '#F4F4F4',
-        text_color: data.text_color || '#575757',
-        title: data.title,
-        tags: data.tags,
-        attached_files: data.attached_files,
-        is_editing: data.is_editing,
-        is_temporary: data.is_temporary || false,
-        parent_node_id: data.parent_node_id || null,
-        z_index: data.z_index || 0
-      };
+    // Create a node
+    const nodeInsert: Database['public']['Tables']['nodes']['Insert'] = {
+      id: uuidv4(),
+      type: nodeType,
+      position: JSON.stringify(position),
+      view_width: defaultDimensions.viewWidth,
+      view_height: defaultDimensions.viewHeight,
+      edit_width:
+        'editWidth' in defaultDimensions ? defaultDimensions.editWidth : null,
+      edit_height:
+        'editHeight' in defaultDimensions ? defaultDimensions.editHeight : null,
+      mobile_edit_width:
+        'mobileEditWidth' in defaultDimensions
+          ? defaultDimensions.mobileEditWidth
+          : null,
+      mobile_edit_height:
+        'mobileEditHeight' in defaultDimensions
+          ? defaultDimensions.mobileEditHeight
+          : null,
+      background_color: data.background_color || '#F4F4F4',
+      text_color: data.text_color || '#575757',
+      title: data.title,
+      is_editing: data.is_editing,
+      is_temporary: data.is_temporary || false,
+      parent_node_id: data.parent_node_id || null,
+      z_index: data.z_index || 0
+    };
 
-    const { data: commonNodeData, error: commonNodeError } = await supabase
-      .from('common_node_properties')
-      .insert([commonNodeInsert])
+    const { data: nodeData, error: nodeError } = await supabase
+      .from('nodes')
+      .insert([nodeInsert])
       .select()
       .single();
 
-    if (commonNodeError) {
-      console.error('Error inserting common node:', commonNodeError);
-      return { error: commonNodeError };
+    if (nodeError) {
+      console.error('Error inserting node:', nodeError);
+      return { error: nodeError };
     }
 
-    console.log(
-      'nodeEdgeDatabaseOperations: Common node created:',
-      commonNodeData
-    );
+    console.log('nodeEdgeDatabaseOperations: Node created:', nodeData);
 
     // Link node to canvas
     const { error: linkError } = await supabase
       .from('node_canvas_link')
-      .insert({ node_id: commonNodeData.id, canvas_id: canvasId });
+      .insert({ node_id: nodeData.id, canvas_id: canvasId });
 
     if (linkError) {
       console.error('Error linking node to canvas:', linkError);
@@ -88,12 +82,12 @@ export const createNode = async (
     }
 
     console.log('nodeEdgeDatabaseOperations: Node linked to canvas:', {
-      node_id: commonNodeData.id,
+      node_id: nodeData.id,
       canvas_id: canvasId
     });
 
     // Create the specific node type
-    if (nodeType !== 'selectionMenu') {
+    if (nodeType !== 'selection_menu') {
       let specificNodeInsert;
       let specificNodeId;
       switch (nodeType) {
@@ -101,7 +95,7 @@ export const createNode = async (
           specificNodeId = uuidv4();
           specificNodeInsert = {
             id: specificNodeId,
-            common_node_id: commonNodeData.id,
+            node_id: nodeData.id,
             ...data.noteData
           };
           break;
@@ -109,7 +103,7 @@ export const createNode = async (
           specificNodeId = uuidv4();
           specificNodeInsert = {
             id: specificNodeId,
-            common_node_id: commonNodeData.id,
+            node_id: nodeData.id,
             ...data.taskData
           };
           break;
@@ -117,7 +111,7 @@ export const createNode = async (
           specificNodeId = uuidv4();
           specificNodeInsert = {
             id: specificNodeId,
-            common_node_id: commonNodeData.id,
+            node_id: nodeData.id,
             ...data.calendarData
           };
           break;
@@ -125,7 +119,7 @@ export const createNode = async (
           specificNodeId = uuidv4();
           specificNodeInsert = {
             id: specificNodeId,
-            common_node_id: commonNodeData.id,
+            node_id: nodeData.id,
             ...data.tableData
           };
           break;
@@ -133,7 +127,7 @@ export const createNode = async (
           specificNodeId = uuidv4();
           specificNodeInsert = {
             id: specificNodeId,
-            common_node_id: commonNodeData.id,
+            node_id: nodeData.id,
             ...data.drawData
           };
           break;
@@ -163,18 +157,18 @@ export const createNode = async (
 
       return {
         data: {
-          ...commonNodeData,
+          ...nodeData,
           ...specificNodeData,
-          id: specificNodeId, // Note-specific ID
-          commonNodeId: commonNodeData.id // Common node ID
+          id: specificNodeId,
+          nodeId: nodeData.id
         }
       };
     } else {
       return {
         data: {
-          ...commonNodeData,
-          id: commonNodeData.id, // For selectionMenu, use common node ID for both
-          commonNodeId: commonNodeData.id
+          ...nodeData,
+          id: nodeData.id,
+          nodeId: nodeData.id
         }
       };
     }
@@ -186,9 +180,7 @@ export const createNode = async (
 
 export const updateNode = async (
   id: string,
-  updates: Partial<
-    Database['public']['Tables']['common_node_properties']['Update']
-  >,
+  updates: Partial<Database['public']['Tables']['nodes']['Update']>,
   specificUpdates: Partial<
     | Database['public']['Tables']['note_nodes']['Update']
     | Database['public']['Tables']['task_nodes']['Update']
@@ -204,32 +196,32 @@ export const updateNode = async (
     );
     console.log('Node ID:', id);
     console.log('Node Type:', nodeType);
-    console.log('Common Updates:', JSON.stringify(updates, null, 2));
+    console.log('Node Updates:', JSON.stringify(updates, null, 2));
     console.log('Specific Updates:', JSON.stringify(specificUpdates, null, 2));
 
-    // Update common node properties
-    const { data: commonNodeData, error: commonNodeError } = await supabase
-      .from('common_node_properties')
+    // Update node properties
+    const { data: nodeData, error: nodeError } = await supabase
+      .from('nodes')
       .update(updates)
       .eq('id', id)
       .select()
       .single();
 
-    if (commonNodeError) {
+    if (nodeError) {
       console.error(
-        'nodeEdgeDatabaseOperations: Error updating common node properties:',
-        commonNodeError
+        'nodeEdgeDatabaseOperations: Error updating node properties:',
+        nodeError
       );
-      return { error: commonNodeError };
+      return { error: nodeError };
     }
 
     console.log(
-      'nodeEdgeDatabaseOperations: Common node properties updated successfully:',
-      commonNodeData
+      'nodeEdgeDatabaseOperations: Node properties updated successfully:',
+      nodeData
     );
 
-    // Update specific node properties if not a selectionMenu node
-    if (nodeType !== 'selectionMenu') {
+    // Update specific node properties if not a selection_menu node
+    if (nodeType !== 'selection_menu') {
       const tableName =
         `${nodeType}_nodes` as keyof Database['public']['Tables'];
 
@@ -237,7 +229,7 @@ export const updateNode = async (
         await supabase
           .from(tableName)
           .update(specificUpdates)
-          .eq('common_node_id', id)
+          .eq('node_id', id)
           .select()
           .single();
 
@@ -254,10 +246,10 @@ export const updateNode = async (
         specificNodeData
       );
 
-      return { data: { ...commonNodeData, ...specificNodeData } };
+      return { data: { ...nodeData, ...specificNodeData } };
     }
 
-    return { data: commonNodeData };
+    return { data: nodeData };
   } catch (error) {
     console.error(
       'nodeEdgeDatabaseOperations: Unexpected error updating node:',
@@ -274,13 +266,13 @@ export const deleteNode = async (
 ): Promise<{ success?: boolean; error?: any }> => {
   try {
     // Delete the specific node type
-    if (nodeType !== 'selectionMenu') {
+    if (nodeType !== 'selection_menu') {
       const tableName =
         `${nodeType}_nodes` as keyof Database['public']['Tables'];
       const { error: specificError } = await supabase
         .from(tableName)
         .delete()
-        .eq('common_node_id', nodeId);
+        .eq('node_id', nodeId);
 
       if (specificError) {
         console.error(`Error deleting ${nodeType} node:`, specificError);
@@ -288,15 +280,15 @@ export const deleteNode = async (
       }
     }
 
-    // Delete the common node properties
-    const { error: commonError } = await supabase
-      .from('common_node_properties')
+    // Delete the node
+    const { error: nodeError } = await supabase
+      .from('nodes')
       .delete()
       .eq('id', nodeId);
 
-    if (commonError) {
-      console.error('Error deleting common node properties:', commonError);
-      return { error: commonError };
+    if (nodeError) {
+      console.error('Error deleting node:', nodeError);
+      return { error: nodeError };
     }
 
     // Remove links from node_canvas_link

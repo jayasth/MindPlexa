@@ -86,7 +86,7 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
 
     // First, update the common node properties
     const { data: updatedCommonNode, error: commonError } = await supabase
-      .from('common_node_properties')
+      .from('nodes')
       .update({ type: nodeType })
       .eq('id', id)
       .select()
@@ -101,7 +101,7 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
     const tableName = `${nodeType}_nodes` as keyof Database['public']['Tables'];
     const { data: specificNode, error: tableError } = await supabase
       .from(tableName)
-      .insert([{ common_node_id: id }])
+      .insert([{ node_id: id }])
       .select()
       .single();
 

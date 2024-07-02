@@ -105,7 +105,7 @@ export const deleteCanvasWithNodes = async (
     // Delete non-shared nodes from specific node tables
     for (const nodeId of nonSharedNodeIds) {
       const { data: nodeData, error: nodeError } = await client
-        .from('common_node_properties')
+        .from('nodes')
         .select('type')
         .eq('id', nodeId)
         .single();
@@ -120,20 +120,20 @@ export const deleteCanvasWithNodes = async (
       const { error: deleteError } = await client
         .from(tableName)
         .delete()
-        .eq('common_node_id', nodeId);
+        .eq('node_id', nodeId);
 
       if (deleteError) {
         throw deleteError;
       }
 
-      // Delete the common node properties
-      const { error: commonError } = await client
-        .from('common_node_properties')
+      // Delete the node
+      const { error: nodeDeleteError } = await client
+        .from('nodes')
         .delete()
         .eq('id', nodeId);
 
-      if (commonError) {
-        throw commonError;
+      if (nodeDeleteError) {
+        throw nodeDeleteError;
       }
     }
 
@@ -171,7 +171,7 @@ export const deleteCanvasWithNodes = async (
 // Function to save the canvas state
 export const saveCanvasState = async (
   canvasId: string,
-  nodes: (Database['public']['Tables']['common_node_properties']['Insert'] & {
+  nodes: (Database['public']['Tables']['nodes']['Insert'] & {
     type: string;
     noteData?: Database['public']['Tables']['note_nodes']['Insert'];
     taskData?: Database['public']['Tables']['task_nodes']['Insert'];
@@ -192,7 +192,7 @@ export const saveCanvasState = async (
         calendarData,
         tableData,
         drawData,
-        ...commonProperties
+        ...nodeProperties
       } = node;
 
       if (!id) {
@@ -208,20 +208,17 @@ export const saveCanvasState = async (
         calendarData,
         tableData,
         drawData,
-        ...commonProperties
+        ...nodeProperties
       });
 
-      // Upsert common node properties
-      const { error: commonNodeUpsertError } = await supabase
-        .from('common_node_properties')
-        .upsert({ id, ...commonProperties });
+      // Upsert node properties
+      const { error: nodeUpsertError } = await supabase
+        .from('nodes')
+        .upsert({ id, type, ...nodeProperties });
 
-      if (commonNodeUpsertError) {
-        console.error(
-          'Error upserting common node properties:',
-          commonNodeUpsertError
-        );
-        return { error: commonNodeUpsertError };
+      if (nodeUpsertError) {
+        console.error('Error upserting node:', nodeUpsertError);
+        return { error: nodeUpsertError };
       }
 
       // Upsert specific node data based on type
@@ -248,6 +245,9 @@ export const saveCanvasState = async (
           specificData = drawData;
           tableName = 'draw_nodes';
           break;
+        case 'selection_menu':
+          // No specific data for selection_menu
+          break;
         default:
           console.error('Unknown node type:', type);
           continue;
@@ -256,7 +256,7 @@ export const saveCanvasState = async (
       if (tableName && specificData) {
         const { error: specificNodeUpsertError } = await supabase
           .from(tableName)
-          .upsert({ id: uuidv4(), common_node_id: id, ...specificData });
+          .upsert({ id: uuidv4(), node_id: id, ...specificData });
 
         if (specificNodeUpsertError) {
           console.error(
@@ -313,7 +313,7 @@ export const fetchCanvas = async (
     .select(
       `
       *,
-      node_canvas_link!inner(common_node_properties(*)),
+      node_canvas_link!inner(nodes(*)),
       edges(*)
     `
     )
@@ -328,8 +328,8 @@ export const fetchCanvas = async (
   }
 
   const canvas = data[0];
-  const commonNodeIds = canvas.node_canvas_link
-    .map((link) => link.common_node_properties?.id)
+  const nodeIds = canvas.node_canvas_link
+    .map((link) => link.nodes?.id)
     .filter(Boolean);
 
   // Fetch specific node data for each node type
@@ -338,7 +338,7 @@ export const fetchCanvas = async (
     supabase
       .from(`${type}_nodes` as keyof Database['public']['Tables'])
       .select('*')
-      .in('common_node_id', commonNodeIds)
+      .in('node_id', nodeIds)
   );
 
   const nodeDataResults = await Promise.all(nodeDataPromises);
@@ -353,36 +353,34 @@ export const fetchCanvas = async (
   );
   console.log('canvasDatabaseOperations: Complete node data fetched:', {
     canvas,
-    commonNodeProperties: canvas.node_canvas_link
+    nodes: canvas.node_canvas_link
       .map((link) => {
-        if (link.common_node_properties) {
+        if (link.nodes) {
           return {
-            id: link.common_node_properties.id,
-            type: link.common_node_properties.type,
-            position: link.common_node_properties.position,
-            viewWidth: link.common_node_properties.view_width,
-            viewHeight: link.common_node_properties.view_height,
-            editWidth: link.common_node_properties.edit_width,
-            editHeight: link.common_node_properties.edit_height,
-            backgroundColor: link.common_node_properties.background_color,
-            textColor: link.common_node_properties.text_color,
-            title: link.common_node_properties.title,
-            tags: link.common_node_properties.tags,
-            attachedFiles: link.common_node_properties.attached_files,
-            isEditing: link.common_node_properties.is_editing,
-            isTemporary: link.common_node_properties.is_temporary,
-            parentNodeId: link.common_node_properties.parent_node_id,
-            zIndex: link.common_node_properties.z_index,
-            createdAt: link.common_node_properties.created_at,
-            updatedAt: link.common_node_properties.updated_at,
-            connectable: link.common_node_properties.connectable,
-            draggable: link.common_node_properties.draggable
+            id: link.nodes.id,
+            type: link.nodes.type,
+            position: link.nodes.position,
+            viewWidth: link.nodes.view_width,
+            viewHeight: link.nodes.view_height,
+            editWidth: link.nodes.edit_width,
+            editHeight: link.nodes.edit_height,
+            mobileEditWidth: link.nodes.mobile_edit_width,
+            mobileEditHeight: link.nodes.mobile_edit_height,
+            backgroundColor: link.nodes.background_color,
+            textColor: link.nodes.text_color,
+            title: link.nodes.title,
+            isEditing: link.nodes.is_editing,
+            isTemporary: link.nodes.is_temporary,
+            parentNodeId: link.nodes.parent_node_id,
+            zIndex: link.nodes.z_index,
+            createdAt: link.nodes.created_at,
+            updatedAt: link.nodes.updated_at
           };
         }
         return null;
       })
       .filter((props): props is NonNullable<typeof props> => props !== null),
     nodeData
-  }); // Logging all node data including all fields from common_node_properties
+  }); // Logging all node data including all fields from nodes table
   return { data: canvas, nodeData };
 };

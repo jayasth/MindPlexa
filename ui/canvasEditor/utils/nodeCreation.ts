@@ -30,7 +30,7 @@ export const createNode = async (
   nodes: Node<any>[],
   callback: (newNode: Node<any>) => void,
   canvasSize: { width: number; height: number },
-  isTemporary = nodeType === 'selectionMenu',
+  isTemporary = nodeType === 'selection_menu',
   isEditing = false,
   canvasId: string,
   parentNode?: Node<any> | null,
@@ -46,8 +46,6 @@ export const createNode = async (
   const nodeId = temporaryNodeId || uuidv4();
 
   const defaultProperties = {
-    draggable: true,
-    connectable: true,
     backgroundColor: '#F4F4F4',
     textColor: '#575757'
   };
