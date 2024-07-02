@@ -34,7 +34,7 @@ export const createNode = async (
     const nodeInsert: Database['public']['Tables']['nodes']['Insert'] = {
       id: uuidv4(),
       type: nodeType,
-      position: JSON.stringify(position),
+      position: position,
       view_width: defaultDimensions.viewWidth,
       view_height: defaultDimensions.viewHeight,
       edit_width:

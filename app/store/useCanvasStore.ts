@@ -419,7 +419,12 @@ export const useStore = createStore<CanvasState>((set, get) => ({
                 return node;
               case 'dimensions':
                 if (node.isEditing && change.dimensions) {
-                  const { editWidth, editHeight, mobileEditWidth, mobileEditHeight } = node.data;
+                  const {
+                    editWidth,
+                    editHeight,
+                    mobileEditWidth,
+                    mobileEditHeight
+                  } = node.data;
                   const { width, height } = change.dimensions;
                   if (
                     width !== editWidth ||
@@ -571,7 +576,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       nodes: nodes.map((node) => ({
         id: node.id,
         type: node.type,
-        position: JSON.stringify(node.position),
+        position: node.position,
         title: node.data?.title || '',
         background_color: node.data?.backgroundColor || '#F4F4F4',
         text_color: node.data?.textColor || '#575757',
