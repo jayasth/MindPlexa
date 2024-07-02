@@ -1,4 +1,11 @@
-import React, { useState, useEffect, useRef, CSSProperties } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  CSSProperties,
+  useMemo,
+  useCallback
+} from 'react';
 import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
 import styles from './NoteNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
@@ -90,11 +97,14 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     setTextColor
   );
 
-  const onChangeColor = (color: { hex: string }) => {
-    handleBackgroundColorChange(color);
-  };
+  const onChangeColor = useCallback(
+    (color: { hex: string }) => {
+      handleBackgroundColorChange(color);
+    },
+    [handleBackgroundColorChange]
+  );
 
-  useEffect(() => {
+  const initializeQuill = useCallback(() => {
     if (
       typeof document !== 'undefined' &&
       quillRef.current &&
@@ -129,25 +139,35 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         quillInstance.current.root.innerHTML = content;
       }
     }
-  }, [content, data.id]);
+  }, [content]);
 
-  const debouncedUpdateNodeData = useRef(
-    debounce(async (commonData, specificData) => {
-      try {
-        const { error } = await updateNode(
-          data.id,
-          commonData,
-          specificData,
-          'note'
-        );
-        if (error) {
+  const debouncedUpdateNodeData = useMemo(
+    () =>
+      debounce(async (commonData, specificData) => {
+        try {
+          const { error } = await updateNode(
+            data.id,
+            commonData,
+            specificData,
+            'note'
+          );
+          if (error) {
+            console.error('Error updating node:', error);
+          }
+        } catch (error) {
           console.error('Error updating node:', error);
         }
-      } catch (error) {
-        console.error('Error updating node:', error);
-      }
-    }, 500)
-  ).current;
+      }, 500),
+    [data.id]
+  );
+
+  useEffect(() => {
+    initializeQuill();
+
+    return () => {
+      debouncedUpdateNodeData.cancel();
+    };
+  }, [initializeQuill, debouncedUpdateNodeData]);
 
   useEffect(() => {
     const commonData = {
@@ -168,7 +188,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     textColor,
     nodeWidth,
     nodeHeight,
-    data.id
+    debouncedUpdateNodeData
   ]);
 
   useEffect(() => {
@@ -192,61 +212,79 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     }
   }, [backgroundColor, textColor]);
 
-  const onChangeTitle = (newTitle: string) => {
-    handleTitleChange(data.id, newTitle, setTitle);
-  };
+  const onChangeTitle = useCallback(
+    (newTitle: string) => {
+      handleTitleChange(data.id, newTitle, setTitle);
+    },
+    [data.id]
+  );
 
-  const onAddTag = (newTags: string[]) => {
-    const uniqueTags = Array.from(new Set([...tags, ...newTags]));
-    setTags(uniqueTags);
-    handleAddTag(data.id, uniqueTags, () => {});
-  };
+  const onAddTag = useCallback(
+    (newTags: string[]) => {
+      const uniqueTags = Array.from(new Set([...tags, ...newTags]));
+      setTags(uniqueTags);
+      handleAddTag(data.id, uniqueTags, () => {});
+    },
+    [data.id, tags]
+  );
 
-  const onRemoveTag = (tagToRemove: string) => {
-    const updatedTags = tags.filter((tag) => tag !== tagToRemove);
-    setTags(updatedTags);
-    handleAddTag(data.id, updatedTags, () => {});
-  };
+  const onRemoveTag = useCallback(
+    (tagToRemove: string) => {
+      const updatedTags = tags.filter((tag) => tag !== tagToRemove);
+      setTags(updatedTags);
+      handleAddTag(data.id, updatedTags, () => {});
+    },
+    [data.id, tags]
+  );
 
-  const onAttachFiles = (files: string[]) => {
+  const onAttachFiles = useCallback((files: string[]) => {
     setAttachedFiles(files);
-  };
+  }, []);
 
-  const onRemoveFile = (fileToRemove: string) => {
-    handleRemoveAttachedFile(data.id, fileToRemove, () => {});
-  };
+  const onRemoveFile = useCallback(
+    (fileToRemove: string) => {
+      handleRemoveAttachedFile(data.id, fileToRemove, () => {});
+    },
+    [data.id]
+  );
 
   useEffect(() => {
     setNodeWidth(width);
     setNodeHeight(height);
   }, [width, height]);
 
-  const handleResize = (event, { width, height }) => {
-    setNodeWidth(width);
-    setNodeHeight(height);
-    onNodeResizeStop(data.id, { width, height }, position);
-  };
+  const handleResize = useCallback(
+    (event, { width, height }) => {
+      setNodeWidth(width);
+      setNodeHeight(height);
+      onNodeResizeStop(data.id, { width, height }, position);
+    },
+    [data.id, onNodeResizeStop, position]
+  );
 
-  const handleContainerClick = () => {
+  const handleContainerClick = useCallback(() => {
     setIsContainerSelected(true);
-  };
+  }, []);
 
-  const handleContainerBlur = () => {
+  const handleContainerBlur = useCallback(() => {
     setIsContainerSelected(false);
-  };
+  }, []);
 
-  const toggleColorPicker = () => {
-    setIsColorPickerVisible(!isColorPickerVisible);
-  };
+  const toggleColorPicker = useCallback(() => {
+    setIsColorPickerVisible((prev) => !prev);
+  }, []);
 
-  const customStyles: CSSProperties = {
-    width: nodeWidth,
-    height: nodeHeight,
-    backgroundColor,
-    color: textColor
-  };
+  const customStyles: CSSProperties = useMemo(
+    () => ({
+      width: nodeWidth,
+      height: nodeHeight,
+      backgroundColor,
+      color: textColor
+    }),
+    [nodeWidth, nodeHeight, backgroundColor, textColor]
+  );
 
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     const commonData = {
       title,
       backgroundColor,
@@ -270,7 +308,29 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     } catch (error) {
       console.error('Error saving node:', error);
     }
-  };
+  }, [
+    data.id,
+    title,
+    backgroundColor,
+    textColor,
+    nodeWidth,
+    nodeHeight,
+    content
+  ]);
+
+  const memoizedTagFileContainer = useMemo(
+    () => (
+      <TagFileContainer
+        tags={tags}
+        attachedFiles={attachedFiles}
+        onRemoveTag={onRemoveTag}
+        onRemoveFile={onRemoveFile}
+        textColor={textColor}
+        handleAttachmentPreview={handleAttachmentPreview}
+      />
+    ),
+    [tags, attachedFiles, onRemoveTag, onRemoveFile, textColor]
+  );
 
   return (
     <div
@@ -304,20 +364,12 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         className={`${styles.noteContent} nowheel nodrag`}
         style={{ color: textColor }}
       />
-      {(tags.length > 0 || attachedFiles.length > 0) && (
-        <TagFileContainer
-          tags={tags}
-          attachedFiles={attachedFiles}
-          onRemoveTag={onRemoveTag}
-          onRemoveFile={onRemoveFile}
-          textColor={textColor}
-          handleAttachmentPreview={handleAttachmentPreview}
-        />
-      )}
+      {(tags.length > 0 || attachedFiles.length > 0) &&
+        memoizedTagFileContainer}
       <div className={styles.footer}>
         <SaveButton onClick={handleSave} />
         <DeleteButton onClick={() => handleDelete(data.id, () => {})} />
-        <ChangeColorButton onClick={() => toggleColorPicker()} />
+        <ChangeColorButton onClick={toggleColorPicker} />
         <AddTagButton onClick={() => setIsTagModalOpen(true)} />
         <AttachFileButton onClick={() => setIsFileModalOpen(true)} />
         <DuplicateButton onClick={() => handleDuplicate(data.id)} />
@@ -359,4 +411,4 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   );
 };
 
-export default NoteNodeEdit;
+export default React.memo(NoteNodeEdit);

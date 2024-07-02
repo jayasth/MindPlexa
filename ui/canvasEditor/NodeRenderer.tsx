@@ -69,7 +69,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = React.memo(
       y: node?.position.y
     }));
 
-    const isInitialRender = useRef(true);
+    const [isInitialRender, setIsInitialRender] = useState(true);
 
     useEffect(() => {
       if (node && node.type !== 'selectionMenu') {
@@ -89,16 +89,16 @@ const NodeRenderer: React.FC<NodeRendererProps> = React.memo(
             node.position
           );
           setSize({ ...newSize, x: node.position.x, y: node.position.y });
-          if (!isInitialRender.current) {
+          if (!isInitialRender) {
             onNodeResizeStop(id, newSize, node.position);
           }
         }
       }
-      isInitialRender.current = false;
-    }, [node, id, size, onNodeResizeStop]);
+      setIsInitialRender(false);
+    }, [node, id, size, onNodeResizeStop, isInitialRender]);
 
     const handleEdit = useCallback(() => {
-      if (node && node.type !== 'selectionMenu' && !isInitialRender.current) {
+      if (node && node.type !== 'selectionMenu' && !isInitialRender) {
         toggleEditMode(id);
         const newSize = {
           width: !node.isEditing ? node.data.edit_width : node.data.view_width,
@@ -109,7 +109,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = React.memo(
         setSize({ ...newSize, x: node.position.x, y: node.position.y });
         onNodeResizeStop(id, newSize, node.position);
       }
-    }, [node, id, toggleEditMode, onNodeResizeStop]);
+    }, [node, id, toggleEditMode, onNodeResizeStop, isInitialRender]);
 
     const commonProps = useMemo(
       () => ({
@@ -184,12 +184,11 @@ const NodeRenderer: React.FC<NodeRendererProps> = React.memo(
       }
 
       return null;
-    }, [node, commonProps, selected, onNodeResizeStop]);
+    }, [node, commonProps, selected, onNodeResizeStop, handleEdit, id, size]);
 
     return nodeComponent;
   },
   (prevProps, nextProps) => {
-    // Custom comparison function to determine if re-render is necessary
     return (
       prevProps.id === nextProps.id &&
       prevProps.selected === nextProps.selected &&

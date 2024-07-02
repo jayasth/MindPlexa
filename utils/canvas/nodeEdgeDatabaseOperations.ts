@@ -27,12 +27,15 @@ export const createNode = async (
     data
   });
   try {
+    // Use the provided ID instead of generating a new one
+    const nodeId = data.id || uuidv4();
+
     // Get default dimensions from nodeProperties
     const defaultDimensions = nodeDimensions[nodeType];
 
     // Create a node
     const nodeInsert: Database['public']['Tables']['nodes']['Insert'] = {
-      id: data.id, // Use the provided ID instead of generating a new one
+      id: nodeId,
       type: nodeType,
       position: position,
       view_width: defaultDimensions.viewWidth,
@@ -74,7 +77,7 @@ export const createNode = async (
     // Link node to canvas
     const { error: linkError } = await supabase
       .from('node_canvas_link')
-      .insert({ node_id: nodeData.id, canvas_id: canvasId });
+      .insert({ node_id: nodeId, canvas_id: canvasId });
 
     if (linkError) {
       console.error('Error linking node to canvas:', linkError);
@@ -82,48 +85,47 @@ export const createNode = async (
     }
 
     console.log('nodeEdgeDatabaseOperations: Node linked to canvas:', {
-      node_id: nodeData.id,
+      node_id: nodeId,
       canvas_id: canvasId
     });
 
     // Create the specific node type
     if (nodeType !== 'selection_menu') {
       let specificNodeInsert;
-      let specificNodeId = uuidv4(); // Generate a new UUID for the specific node
 
       switch (nodeType) {
         case 'note':
           specificNodeInsert = {
-            id: specificNodeId,
-            node_id: nodeData.id,
+            id: uuidv4(),
+            node_id: nodeId,
             ...data.noteData
           };
           break;
         case 'task':
           specificNodeInsert = {
-            id: specificNodeId,
-            node_id: nodeData.id,
+            id: uuidv4(),
+            node_id: nodeId,
             ...data.taskData
           };
           break;
         case 'calendar':
           specificNodeInsert = {
-            id: specificNodeId,
-            node_id: nodeData.id,
+            id: uuidv4(),
+            node_id: nodeId,
             ...data.calendarData
           };
           break;
         case 'table':
           specificNodeInsert = {
-            id: specificNodeId,
-            node_id: nodeData.id,
+            id: uuidv4(),
+            node_id: nodeId,
             ...data.tableData
           };
           break;
         case 'draw':
           specificNodeInsert = {
-            id: specificNodeId,
-            node_id: nodeData.id,
+            id: uuidv4(),
+            node_id: nodeId,
             ...data.drawData
           };
           break;
@@ -155,16 +157,16 @@ export const createNode = async (
         data: {
           ...nodeData,
           ...specificNodeData,
-          id: specificNodeId,
-          nodeId: nodeData.id
+          id: nodeId,
+          nodeId: nodeId
         }
       };
     } else {
       return {
         data: {
           ...nodeData,
-          id: nodeData.id,
-          nodeId: nodeData.id
+          id: nodeId,
+          nodeId: nodeId
         }
       };
     }
