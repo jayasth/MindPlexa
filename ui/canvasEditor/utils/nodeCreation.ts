@@ -96,10 +96,6 @@ export const createNode = async (
       ...nodeDimension
     };
 
-    console.log(
-      'nodeCreation: Creating node in database with data:',
-      newNodeData
-    );
     const { data: createdNode, error } = await createNodeInDatabase(
       canvasId,
       nodeType,
@@ -113,6 +109,10 @@ export const createNode = async (
     }
 
     if (createdNode) {
+      console.log(
+        'nodeCreation: Creating node in database with data:',
+        createdNode
+      );
       const newNodeWithData: Node<any> = {
         ...newNode,
         id: createdNode.id,

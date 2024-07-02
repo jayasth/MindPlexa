@@ -89,7 +89,8 @@ export const createNode = async (
     // Create the specific node type
     if (nodeType !== 'selection_menu') {
       let specificNodeInsert;
-      let specificNodeId = nodeData.id; // Use the same ID as the main node
+      let specificNodeId = uuidv4(); // Generate a new UUID for the specific node
+
       switch (nodeType) {
         case 'note':
           specificNodeInsert = {
@@ -335,7 +336,7 @@ export const createEdge = async (
   const edgeWithId = { ...edge, id: uuidv4() };
   const { data, error } = await supabase
     .from('edges')
-    .insert([edge])
+    .insert([edgeWithId])
     .select()
     .single();
   if (error) {

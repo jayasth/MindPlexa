@@ -691,7 +691,10 @@ export const useStore = createStore<CanvasState>((set, get) => ({
 
             let position;
             try {
-              position = JSON.parse(node.position);
+              position =
+                typeof node.position === 'string'
+                  ? JSON.parse(node.position)
+                  : node.position;
             } catch (error) {
               console.error('Error parsing position JSON:', error);
               position = { x: 200, y: 200 };
