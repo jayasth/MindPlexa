@@ -155,7 +155,9 @@ export const useStore = createStore<CanvasState>((set, get) => ({
                 ...node,
                 ...updatedNode,
                 position: updatedNode.position
-                  ? JSON.parse(updatedNode.position)
+                  ? typeof updatedNode.position === 'string'
+                    ? JSON.parse(updatedNode.position)
+                    : updatedNode.position
                   : node.position,
                 data: {
                   ...node.data,
@@ -413,11 +415,30 @@ export const useStore = createStore<CanvasState>((set, get) => ({
                   (change.position.x !== node.position.x ||
                     change.position.y !== node.position.y)
                 ) {
+                  // Immediately update the database
+                  updateNodeInDB(
+                    node.id,
+                    { position: JSON.stringify(change.position) },
+                    {},
+                    node.type
+                  );
                   return { ...node, position: change.position };
                 }
                 return node;
               case 'dimensions':
                 if (node.isEditing && change.dimensions) {
+                  // Immediately update the database
+                  updateNodeInDB(
+                    node.id,
+                    {
+                      view_width: change.dimensions.width,
+                      view_height: change.dimensions.height,
+                      edit_width: change.dimensions.width,
+                      edit_height: change.dimensions.height
+                    },
+                    {},
+                    node.type
+                  );
                   return {
                     ...node,
                     width: change.dimensions.width,
@@ -483,17 +504,32 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       return { edges: updatedEdges };
     });
   },
-  toggleEditMode: (nodeId: string) => {
+  toggleEditMode: async (nodeId: string) => {
     console.log(`Store: Toggling edit mode for node ${nodeId}`);
-    set((state) => ({
-      nodes: state.nodes.map((node) => {
-        if (node.id === nodeId) {
-          console.log(`Store: Before toggling, isEditing is ${node.isEditing}`);
-          return { ...node, isEditing: !node.isEditing };
-        }
-        return node;
-      })
-    }));
+    const node = get().nodes.find((n) => n.id === nodeId);
+    if (!node) {
+      console.error(`Store: Node ${nodeId} not found`);
+      return;
+    }
+    const newIsEditing = !node.isEditing;
+    try {
+      await updateNodeInDB(
+        nodeId,
+        { is_editing: newIsEditing },
+        {},
+        node.type as Database['public']['Enums']['node_type']
+      );
+      set((state) => ({
+        nodes: state.nodes.map((n) =>
+          n.id === nodeId ? { ...n, isEditing: newIsEditing } : n
+        )
+      }));
+    } catch (error) {
+      console.error(
+        `Store: Error toggling edit mode for node ${nodeId}:`,
+        error
+      );
+    }
   },
   setSelectedNodes: (selectedIds) => {
     console.log('Store: Setting selected nodes:', selectedIds);
