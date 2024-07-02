@@ -1,7 +1,6 @@
 import { createClient } from '@/utils/supabase/supabaseClient';
 import { Database } from '@/types_db';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
-import { v4 as uuidv4 } from 'uuid';
 
 const supabase = createClient();
 
@@ -32,7 +31,7 @@ export const createNode = async (
 
     // Create a node
     const nodeInsert: Database['public']['Tables']['nodes']['Insert'] = {
-      id: uuidv4(),
+      id: data.id, // Use the provided ID instead of generating a new one
       type: nodeType,
       position: position,
       view_width: defaultDimensions.viewWidth,
@@ -89,10 +88,9 @@ export const createNode = async (
     // Create the specific node type
     if (nodeType !== 'selection_menu') {
       let specificNodeInsert;
-      let specificNodeId;
+      let specificNodeId = nodeData.id; // Use the same ID as the main node
       switch (nodeType) {
         case 'note':
-          specificNodeId = uuidv4();
           specificNodeInsert = {
             id: specificNodeId,
             node_id: nodeData.id,
@@ -100,7 +98,6 @@ export const createNode = async (
           };
           break;
         case 'task':
-          specificNodeId = uuidv4();
           specificNodeInsert = {
             id: specificNodeId,
             node_id: nodeData.id,
@@ -108,7 +105,6 @@ export const createNode = async (
           };
           break;
         case 'calendar':
-          specificNodeId = uuidv4();
           specificNodeInsert = {
             id: specificNodeId,
             node_id: nodeData.id,
@@ -116,7 +112,6 @@ export const createNode = async (
           };
           break;
         case 'table':
-          specificNodeId = uuidv4();
           specificNodeInsert = {
             id: specificNodeId,
             node_id: nodeData.id,
@@ -124,7 +119,6 @@ export const createNode = async (
           };
           break;
         case 'draw':
-          specificNodeId = uuidv4();
           specificNodeInsert = {
             id: specificNodeId,
             node_id: nodeData.id,
@@ -337,10 +331,9 @@ export const deleteNode = async (
 export const createEdge = async (
   edge: Omit<Database['public']['Tables']['edges']['Insert'], 'id'>
 ): Promise<{ data?: { id: string }; error?: any }> => {
-  const edgeWithId = { ...edge, id: uuidv4() };
   const { data, error } = await supabase
     .from('edges')
-    .insert([edgeWithId])
+    .insert([edge])
     .select()
     .single();
   if (error) {

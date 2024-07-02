@@ -36,14 +36,15 @@ export const createNode = async (
   parentNode?: Node<any> | null,
   temporaryNodeId?: string
 ): Promise<void> => {
+  // Generate a single UUID for the node
+  const nodeId = temporaryNodeId || uuidv4();
+
   const nodeDimension = nodeDimensions[nodeType];
   const availablePosition = findNewPosition(nodes, canvasSize);
   const positionAsXYPosition: XYPosition = setPosition(
     availablePosition.x,
     availablePosition.y
   );
-
-  const nodeId = temporaryNodeId || uuidv4();
 
   const defaultProperties = {
     backgroundColor: '#F4F4F4',
@@ -84,6 +85,7 @@ export const createNode = async (
 
   try {
     const newNodeData = {
+      id: nodeId, // Use the generated nodeId
       ...newNode.data,
       zIndex: 0,
       isTemporary: isTemporary,
