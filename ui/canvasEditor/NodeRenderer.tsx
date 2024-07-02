@@ -131,47 +131,59 @@ const NodeRenderer: React.FC<NodeRendererProps> = React.memo(
       []
     );
 
-    if (!node || !node.position) {
-      console.log(
-        `NodeRenderer: Node with ID ${id} not found or has invalid position.`
-      );
+    const nodeComponent = useMemo(() => {
+      if (!node || !node.position) {
+        console.log(
+          `NodeRenderer: Node with ID ${id} not found or has invalid position.`
+        );
+        return null;
+      }
+
+      if (node.type in nodeComponents) {
+        const { view, edit } = nodeComponents[node.type];
+        const NodeComponent = node.isEditing ? edit : view;
+
+        return (
+          <NodeComponent
+            {...commonProps}
+            onEdit={handleEdit}
+            data={{
+              ...node,
+              ...node.data,
+              width: size.width,
+              height: size.height,
+              backgroundColor: node.data.background_color,
+              textColor: node.data.text_color,
+              editWidth: node.data.edit_width,
+              editHeight: node.data.edit_height,
+              viewWidth: node.data.view_width,
+              viewHeight: node.data.view_height,
+              position: node.position,
+              isEditing: node.isEditing,
+              parentNodeId: node.data.parent_node_id,
+              zIndex: node.data.z_index,
+              tags: node.data.tags,
+              attachedFiles: node.data.attached_files
+            }}
+            selected={selected}
+            onNodeResizeStop={onNodeResizeStop}
+            {...(node.isEditing && { selected: selected })}
+          />
+        );
+      }
+
       return null;
-    }
+    }, [node, commonProps, selected, onNodeResizeStop]);
 
-    if (node.type in nodeComponents) {
-      const { view, edit } = nodeComponents[node.type];
-      const NodeComponent = node.isEditing ? edit : view;
-
-      return (
-        <NodeComponent
-          {...commonProps}
-          onEdit={handleEdit}
-          data={{
-            ...node,
-            ...node.data,
-            width: size.width,
-            height: size.height,
-            backgroundColor: node.data.background_color,
-            textColor: node.data.text_color,
-            editWidth: node.data.edit_width,
-            editHeight: node.data.edit_height,
-            viewWidth: node.data.view_width,
-            viewHeight: node.data.view_height,
-            position: node.position,
-            isEditing: node.isEditing,
-            parentNodeId: node.data.parent_node_id,
-            zIndex: node.data.z_index,
-            tags: node.data.tags,
-            attachedFiles: node.data.attached_files
-          }}
-          selected={selected}
-          onNodeResizeStop={onNodeResizeStop}
-          {...(node.isEditing && { selected: selected })}
-        />
-      );
-    }
-
-    return null;
+    return nodeComponent;
+  },
+  (prevProps, nextProps) => {
+    // Custom comparison function to determine if re-render is necessary
+    return (
+      prevProps.id === nextProps.id &&
+      prevProps.selected === nextProps.selected &&
+      JSON.stringify(prevProps.data) === JSON.stringify(nextProps.data)
+    );
   }
 );
 

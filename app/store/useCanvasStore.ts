@@ -395,26 +395,31 @@ export const useStore = createStore<CanvasState>((set, get) => ({
         return state;
       }
 
+      changes.forEach((change) => {
+        console.log(
+          `Store: Node ${change.id} change of type '${change.type}' detected:`,
+          change
+        );
+      });
+
       const updatedNodes = state.nodes
         .map((node) => {
           const change = changes.find((c) => c.id === node.id);
           if (change) {
-            console.log(`Store: Node ${node.id} change detected:`, change);
             switch (change.type) {
               case 'position':
                 return { ...node, position: change.position || node.position };
               case 'dimensions':
-                // Only update dimensions if they actually changed and the node is editable
-                if (
-                  node.isEditing &&
-                  change.dimensions &&
-                  (change.dimensions.width !== node.width ||
-                    change.dimensions.height !== node.height)
-                ) {
+                if (node.isEditing && change.dimensions) {
                   return {
                     ...node,
                     width: change.dimensions.width,
-                    height: change.dimensions.height
+                    height: change.dimensions.height,
+                    data: {
+                      ...node.data,
+                      editWidth: change.dimensions.width,
+                      editHeight: change.dimensions.height
+                    }
                   };
                 }
                 return node;
@@ -444,13 +449,12 @@ export const useStore = createStore<CanvasState>((set, get) => ({
           !removedNodeIds.includes(edge.target)
       );
 
-      // Debounce saveCanvas call
-      if (state.saveCanvasTimeout) {
-        clearTimeout(state.saveCanvasTimeout);
-      }
-      state.saveCanvasTimeout = setTimeout(() => {
+      // Only save if there are actual changes
+      const hasChanges =
+        JSON.stringify(updatedNodes) !== JSON.stringify(state.nodes);
+      if (hasChanges) {
         state.saveCanvas();
-      }, 1000);
+      }
 
       return {
         nodes: updatedNodes,
