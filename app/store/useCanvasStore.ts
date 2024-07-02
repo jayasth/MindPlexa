@@ -443,12 +443,12 @@ export const useStore = createStore<CanvasState>((set, get) => ({
                     );
                     return {
                       ...node,
-                      width: width,
-                      height: height,
                       data: {
                         ...node.data,
                         editWidth: width,
-                        editHeight: height
+                        editHeight: height,
+                        mobileEditWidth: width,
+                        mobileEditHeight: height
                       }
                     };
                   }
