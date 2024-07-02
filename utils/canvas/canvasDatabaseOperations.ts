@@ -254,9 +254,24 @@ export const saveCanvasState = async (
       }
 
       if (tableName && specificData) {
+        const { data: existingData, error: fetchError } = await supabase
+          .from(tableName)
+          .select('id')
+          .eq('node_id', id)
+          .single();
+
+        if (fetchError && fetchError.code !== 'PGRST116') {
+          console.error(`Error fetching existing ${type} node:`, fetchError);
+          return { error: fetchError };
+        }
+
+        const upsertData = existingData
+          ? { id: existingData.id, node_id: id, ...specificData }
+          : { id: uuidv4(), node_id: id, ...specificData };
+
         const { error: specificNodeUpsertError } = await supabase
           .from(tableName)
-          .upsert({ id: uuidv4(), node_id: id, ...specificData });
+          .upsert(upsertData);
 
         if (specificNodeUpsertError) {
           console.error(
@@ -302,7 +317,6 @@ export const saveCanvasState = async (
     return { error };
   }
 };
-
 // Function to fetch the canvas state
 export const fetchCanvas = async (
   canvasId: string
