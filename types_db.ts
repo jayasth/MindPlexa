@@ -11,29 +11,29 @@ export type Database = {
     Tables: {
       calendar_nodes: {
         Row: {
-          common_node_id: string | null
           events: Json | null
           id: string
+          node_id: string | null
           view: string | null
         }
         Insert: {
-          common_node_id?: string | null
           events?: Json | null
           id?: string
+          node_id?: string | null
           view?: string | null
         }
         Update: {
-          common_node_id?: string | null
           events?: Json | null
           id?: string
+          node_id?: string | null
           view?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "calendar_nodes_common_node_id_fkey"
-            columns: ["common_node_id"]
+            foreignKeyName: "calendar_nodes_node_id_fkey"
+            columns: ["node_id"]
             isOneToOne: true
-            referencedRelation: "common_node_properties"
+            referencedRelation: "nodes"
             referencedColumns: ["id"]
           },
         ]
@@ -79,83 +79,6 @@ export type Database = {
           },
         ]
       }
-      common_node_properties: {
-        Row: {
-          attached_files: Json | null
-          background_color: string | null
-          connectable: boolean | null
-          created_at: string | null
-          draggable: boolean | null
-          edit_height: number | null
-          edit_width: number | null
-          id: string
-          is_editing: boolean | null
-          is_temporary: boolean | null
-          parent_node_id: string | null
-          position: Json | null
-          tags: string[] | null
-          text_color: string | null
-          title: string | null
-          type: Database["public"]["Enums"]["node_type"] | null
-          updated_at: string | null
-          view_height: number | null
-          view_width: number | null
-          z_index: number | null
-        }
-        Insert: {
-          attached_files?: Json | null
-          background_color?: string | null
-          connectable?: boolean | null
-          created_at?: string | null
-          draggable?: boolean | null
-          edit_height?: number | null
-          edit_width?: number | null
-          id?: string
-          is_editing?: boolean | null
-          is_temporary?: boolean | null
-          parent_node_id?: string | null
-          position?: Json | null
-          tags?: string[] | null
-          text_color?: string | null
-          title?: string | null
-          type?: Database["public"]["Enums"]["node_type"] | null
-          updated_at?: string | null
-          view_height?: number | null
-          view_width?: number | null
-          z_index?: number | null
-        }
-        Update: {
-          attached_files?: Json | null
-          background_color?: string | null
-          connectable?: boolean | null
-          created_at?: string | null
-          draggable?: boolean | null
-          edit_height?: number | null
-          edit_width?: number | null
-          id?: string
-          is_editing?: boolean | null
-          is_temporary?: boolean | null
-          parent_node_id?: string | null
-          position?: Json | null
-          tags?: string[] | null
-          text_color?: string | null
-          title?: string | null
-          type?: Database["public"]["Enums"]["node_type"] | null
-          updated_at?: string | null
-          view_height?: number | null
-          view_width?: number | null
-          z_index?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "common_node_properties_parent_node_id_fkey"
-            columns: ["parent_node_id"]
-            isOneToOne: false
-            referencedRelation: "common_node_properties"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       customers: {
         Row: {
           id: string
@@ -181,26 +104,26 @@ export type Database = {
       }
       draw_nodes: {
         Row: {
-          common_node_id: string | null
           drawing_data: string | null
           id: string
+          node_id: string | null
         }
         Insert: {
-          common_node_id?: string | null
           drawing_data?: string | null
           id?: string
+          node_id?: string | null
         }
         Update: {
-          common_node_id?: string | null
           drawing_data?: string | null
           id?: string
+          node_id?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "draw_nodes_common_node_id_fkey"
-            columns: ["common_node_id"]
+            foreignKeyName: "draw_nodes_node_id_fkey"
+            columns: ["node_id"]
             isOneToOne: true
-            referencedRelation: "common_node_properties"
+            referencedRelation: "nodes"
             referencedColumns: ["id"]
           },
         ]
@@ -245,14 +168,14 @@ export type Database = {
             foreignKeyName: "edges_source_node_id_fkey"
             columns: ["source_node_id"]
             isOneToOne: false
-            referencedRelation: "common_node_properties"
+            referencedRelation: "nodes"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "edges_target_node_id_fkey"
             columns: ["target_node_id"]
             isOneToOne: false
-            referencedRelation: "common_node_properties"
+            referencedRelation: "nodes"
             referencedColumns: ["id"]
           },
         ]
@@ -287,6 +210,38 @@ export type Database = {
         }
         Relationships: []
       }
+      node_attachments: {
+        Row: {
+          created_at: string | null
+          id: string
+          node_id: string
+          type: string
+          url: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          node_id: string
+          type: string
+          url: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          node_id?: string
+          type?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "node_attachments_node_id_fkey"
+            columns: ["node_id"]
+            isOneToOne: false
+            referencedRelation: "nodes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       node_canvas_link: {
         Row: {
           canvas_id: string
@@ -312,33 +267,162 @@ export type Database = {
             foreignKeyName: "node_canvas_link_node_id_fkey"
             columns: ["node_id"]
             isOneToOne: false
-            referencedRelation: "common_node_properties"
+            referencedRelation: "nodes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      node_history: {
+        Row: {
+          created_at: string | null
+          data: Json
+          id: string
+          node_id: string
+          version: number
+        }
+        Insert: {
+          created_at?: string | null
+          data: Json
+          id?: string
+          node_id: string
+          version: number
+        }
+        Update: {
+          created_at?: string | null
+          data?: Json
+          id?: string
+          node_id?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "node_history_node_id_fkey"
+            columns: ["node_id"]
+            isOneToOne: false
+            referencedRelation: "nodes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      node_tags: {
+        Row: {
+          node_id: string
+          tag: string
+        }
+        Insert: {
+          node_id: string
+          tag: string
+        }
+        Update: {
+          node_id?: string
+          tag?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "node_tags_node_id_fkey"
+            columns: ["node_id"]
+            isOneToOne: false
+            referencedRelation: "nodes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      nodes: {
+        Row: {
+          background_color: string | null
+          created_at: string | null
+          edit_height: number | null
+          edit_width: number | null
+          id: string
+          is_editing: boolean | null
+          is_temporary: boolean | null
+          mobile_edit_height: number | null
+          mobile_edit_width: number | null
+          parent_node_id: string | null
+          position: Json | null
+          text_color: string | null
+          title: string | null
+          type: Database["public"]["Enums"]["node_type"] | null
+          updated_at: string | null
+          version: number
+          view_height: number | null
+          view_width: number | null
+          z_index: number | null
+        }
+        Insert: {
+          background_color?: string | null
+          created_at?: string | null
+          edit_height?: number | null
+          edit_width?: number | null
+          id?: string
+          is_editing?: boolean | null
+          is_temporary?: boolean | null
+          mobile_edit_height?: number | null
+          mobile_edit_width?: number | null
+          parent_node_id?: string | null
+          position?: Json | null
+          text_color?: string | null
+          title?: string | null
+          type?: Database["public"]["Enums"]["node_type"] | null
+          updated_at?: string | null
+          version?: number
+          view_height?: number | null
+          view_width?: number | null
+          z_index?: number | null
+        }
+        Update: {
+          background_color?: string | null
+          created_at?: string | null
+          edit_height?: number | null
+          edit_width?: number | null
+          id?: string
+          is_editing?: boolean | null
+          is_temporary?: boolean | null
+          mobile_edit_height?: number | null
+          mobile_edit_width?: number | null
+          parent_node_id?: string | null
+          position?: Json | null
+          text_color?: string | null
+          title?: string | null
+          type?: Database["public"]["Enums"]["node_type"] | null
+          updated_at?: string | null
+          version?: number
+          view_height?: number | null
+          view_width?: number | null
+          z_index?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "common_node_properties_parent_node_id_fkey"
+            columns: ["parent_node_id"]
+            isOneToOne: false
+            referencedRelation: "nodes"
             referencedColumns: ["id"]
           },
         ]
       }
       note_nodes: {
         Row: {
-          common_node_id: string | null
           content: string | null
           id: string
+          node_id: string | null
         }
         Insert: {
-          common_node_id?: string | null
           content?: string | null
           id?: string
+          node_id?: string | null
         }
         Update: {
-          common_node_id?: string | null
           content?: string | null
           id?: string
+          node_id?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "note_nodes_common_node_id_fkey"
-            columns: ["common_node_id"]
+            foreignKeyName: "note_nodes_node_id_fkey"
+            columns: ["node_id"]
             isOneToOne: true
-            referencedRelation: "common_node_properties"
+            referencedRelation: "nodes"
             referencedColumns: ["id"]
           },
         ]
@@ -575,54 +659,54 @@ export type Database = {
       table_nodes: {
         Row: {
           columns: Json | null
-          common_node_id: string | null
           id: string
+          node_id: string | null
           rows: Json | null
         }
         Insert: {
           columns?: Json | null
-          common_node_id?: string | null
           id?: string
+          node_id?: string | null
           rows?: Json | null
         }
         Update: {
           columns?: Json | null
-          common_node_id?: string | null
           id?: string
+          node_id?: string | null
           rows?: Json | null
         }
         Relationships: [
           {
-            foreignKeyName: "table_nodes_common_node_id_fkey"
-            columns: ["common_node_id"]
+            foreignKeyName: "table_nodes_node_id_fkey"
+            columns: ["node_id"]
             isOneToOne: true
-            referencedRelation: "common_node_properties"
+            referencedRelation: "nodes"
             referencedColumns: ["id"]
           },
         ]
       }
       task_nodes: {
         Row: {
-          common_node_id: string | null
           id: string
+          node_id: string | null
           tasks: Json | null
         }
         Insert: {
-          common_node_id?: string | null
           id?: string
+          node_id?: string | null
           tasks?: Json | null
         }
         Update: {
-          common_node_id?: string | null
           id?: string
+          node_id?: string | null
           tasks?: Json | null
         }
         Relationships: [
           {
-            foreignKeyName: "task_nodes_common_node_id_fkey"
-            columns: ["common_node_id"]
+            foreignKeyName: "task_nodes_node_id_fkey"
+            columns: ["node_id"]
             isOneToOne: true
-            referencedRelation: "common_node_properties"
+            referencedRelation: "nodes"
             referencedColumns: ["id"]
           },
         ]
@@ -732,7 +816,7 @@ export type Database = {
         | "table"
         | "calendar"
         | "draw"
-        | "selectionMenu"
+        | "selection_menu"
       price_interval: "day" | "week" | "month" | "year"
       price_type: "one_time" | "recurring"
       pricing_plan_interval: "day" | "week" | "month" | "year"

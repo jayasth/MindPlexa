@@ -1,492 +1,176 @@
 [
   {
-    "table_name": "canvases",
-    "columns": [
-      {
-        "column_name": "content",
-        "data_type": "text",
-        "is_nullable": "YES",
-        "default": "None",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      },
-      {
-        "column_name": "created_at",
-        "data_type": "timestamp with time zone",
-        "is_nullable": "YES",
-        "default": "now()",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      },
-      {
-        "column_name": "description",
-        "data_type": "text",
-        "is_nullable": "YES",
-        "default": "None",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      },
-      {
-        "column_name": "id",
-        "data_type": "uuid",
-        "is_nullable": "NO",
-        "default": "gen_random_uuid()",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      },
-      {
-        "column_name": "name",
-        "data_type": "text",
-        "is_nullable": "NO",
-        "default": "None",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      },
-      {
-        "column_name": "nodes",
-        "data_type": "jsonb",
-        "is_nullable": "YES",
-        "default": "None",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      },
-      {
-        "column_name": "updated_at",
-        "data_type": "timestamp with time zone",
-        "is_nullable": "YES",
-        "default": "now()",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      },
-      {
-        "column_name": "user_id",
-        "data_type": "uuid",
-        "is_nullable": "YES",
-        "default": "None",
-        "foreign_key": "canvases_user_id_fkey",
-        "references_table": "users",
-        "references_column": "id"
-      }
-    ]
+    "table_structure": "Table: calendar_nodes, Column: id, Type: uuid, Nullable: NO, Default: gen_random_uuid()"
   },
   {
-    "table_name": "common_node_properties",
-    "columns": [
-      {
-        "column_name": "attached_files",
-        "data_type": "jsonb",
-        "is_nullable": "YES",
-        "default": "None",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      },
-      {
-        "column_name": "background_color",
-        "data_type": "character varying",
-        "is_nullable": "YES",
-        "default": "None",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      },
-      {
-        "column_name": "connectable",
-        "data_type": "boolean",
-        "is_nullable": "YES",
-        "default": "true",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      },
-      {
-        "column_name": "created_at",
-        "data_type": "timestamp with time zone",
-        "is_nullable": "YES",
-        "default": "now()",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      },
-      {
-        "column_name": "draggable",
-        "data_type": "boolean",
-        "is_nullable": "YES",
-        "default": "true",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      },
-      {
-        "column_name": "edit_height",
-        "data_type": "integer",
-        "is_nullable": "YES",
-        "default": "None",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      },
-      {
-        "column_name": "edit_width",
-        "data_type": "integer",
-        "is_nullable": "YES",
-        "default": "None",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      },
-      {
-        "column_name": "id",
-        "data_type": "uuid",
-        "is_nullable": "NO",
-        "default": "gen_random_uuid()",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      },
-      {
-        "column_name": "is_editing",
-        "data_type": "boolean",
-        "is_nullable": "YES",
-        "default": "None",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      },
-      {
-        "column_name": "is_temporary",
-        "data_type": "boolean",
-        "is_nullable": "YES",
-        "default": "false",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      },
-      {
-        "column_name": "parent_node_id",
-        "data_type": "uuid",
-        "is_nullable": "YES",
-        "default": "None",
-        "foreign_key": "common_node_properties_parent_node_id_fkey",
-        "references_table": "common_node_properties",
-        "references_column": "id"
-      },
-      {
-        "column_name": "position",
-        "data_type": "jsonb",
-        "is_nullable": "YES",
-        "default": "None",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      },
-      {
-        "column_name": "tags",
-        "data_type": "ARRAY",
-        "is_nullable": "YES",
-        "default": "None",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      },
-      {
-        "column_name": "text_color",
-        "data_type": "character varying",
-        "is_nullable": "YES",
-        "default": "None",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      },
-      {
-        "column_name": "title",
-        "data_type": "character varying",
-        "is_nullable": "YES",
-        "default": "None",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      },
-      {
-        "column_name": "type",
-        "data_type": "USER-DEFINED",
-        "is_nullable": "YES",
-        "default": "None",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      },
-      {
-        "column_name": "updated_at",
-        "data_type": "timestamp with time zone",
-        "is_nullable": "YES",
-        "default": "now()",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      },
-      {
-        "column_name": "view_height",
-        "data_type": "integer",
-        "is_nullable": "YES",
-        "default": "None",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      },
-      {
-        "column_name": "view_width",
-        "data_type": "integer",
-        "is_nullable": "YES",
-        "default": "None",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      },
-      {
-        "column_name": "z_index",
-        "data_type": "integer",
-        "is_nullable": "YES",
-        "default": "0",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      }
-    ]
+    "table_structure": "Table: calendar_nodes, Column: node_id, Type: uuid, Nullable: YES, Default: None"
   },
   {
-    "table_name": "draw_nodes",
-    "columns": [
-      {
-        "column_name": "common_node_id",
-        "data_type": "uuid",
-        "is_nullable": "YES",
-        "default": "None",
-        "foreign_key": "draw_nodes_common_node_id_fkey",
-        "references_table": "common_node_properties",
-        "references_column": "id"
-      },
-      {
-        "column_name": "drawing_data",
-        "data_type": "text",
-        "is_nullable": "YES",
-        "default": "None",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      },
-      {
-        "column_name": "id",
-        "data_type": "uuid",
-        "is_nullable": "NO",
-        "default": "gen_random_uuid()",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      }
-    ]
+    "table_structure": "Table: calendar_nodes, Column: events, Type: jsonb, Nullable: YES, Default: None"
   },
   {
-    "table_name": "edges",
-    "columns": [
-      {
-        "column_name": "canvas_id",
-        "data_type": "uuid",
-        "is_nullable": "YES",
-        "default": "None",
-        "foreign_key": "edges_canvas_id_fkey",
-        "references_table": "canvases",
-        "references_column": "id"
-      },
-      {
-        "column_name": "created_at",
-        "data_type": "timestamp with time zone",
-        "is_nullable": "YES",
-        "default": "now()",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      },
-      {
-        "column_name": "data",
-        "data_type": "jsonb",
-        "is_nullable": "YES",
-        "default": "None",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      },
-      {
-        "column_name": "id",
-        "data_type": "uuid",
-        "is_nullable": "NO",
-        "default": "gen_random_uuid()",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      },
-      {
-        "column_name": "source_node_id",
-        "data_type": "uuid",
-        "is_nullable": "YES",
-        "default": "None",
-        "foreign_key": "edges_source_node_id_fkey",
-        "references_table": "common_node_properties",
-        "references_column": "id"
-      },
-      {
-        "column_name": "target_node_id",
-        "data_type": "uuid",
-        "is_nullable": "YES",
-        "default": "None",
-        "foreign_key": "edges_target_node_id_fkey",
-        "references_table": "common_node_properties",
-        "references_column": "id"
-      },
-      {
-        "column_name": "updated_at",
-        "data_type": "timestamp with time zone",
-        "is_nullable": "YES",
-        "default": "now()",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      }
-    ]
+    "table_structure": "Table: calendar_nodes, Column: view, Type: character varying, Nullable: YES, Default: None"
   },
   {
-    "table_name": "node_canvas_link",
-    "columns": [
-      {
-        "column_name": "canvas_id",
-        "data_type": "uuid",
-        "is_nullable": "NO",
-        "default": "None",
-        "foreign_key": "node_canvas_link_canvas_id_fkey",
-        "references_table": "canvases",
-        "references_column": "id"
-      },
-      {
-        "column_name": "node_id",
-        "data_type": "uuid",
-        "is_nullable": "NO",
-        "default": "None",
-        "foreign_key": "node_canvas_link_node_id_fkey",
-        "references_table": "common_node_properties",
-        "references_column": "id"
-      }
-    ]
+    "table_structure": "Table: canvases, Column: id, Type: uuid, Nullable: NO, Default: gen_random_uuid()"
   },
   {
-    "table_name": "note_nodes",
-    "columns": [
-      {
-        "column_name": "common_node_id",
-        "data_type": "uuid",
-        "is_nullable": "YES",
-        "default": "None",
-        "foreign_key": "note_nodes_common_node_id_fkey",
-        "references_table": "common_node_properties",
-        "references_column": "id"
-      },
-      {
-        "column_name": "content",
-        "data_type": "text",
-        "is_nullable": "YES",
-        "default": "None",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      },
-      {
-        "column_name": "id",
-        "data_type": "uuid",
-        "is_nullable": "NO",
-        "default": "gen_random_uuid()",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      }
-    ]
+    "table_structure": "Table: canvases, Column: name, Type: text, Nullable: NO, Default: None"
   },
   {
-    "table_name": "table_nodes",
-    "columns": [
-      {
-        "column_name": "columns",
-        "data_type": "jsonb",
-        "is_nullable": "YES",
-        "default": "None",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      },
-      {
-        "column_name": "common_node_id",
-        "data_type": "uuid",
-        "is_nullable": "YES",
-        "default": "None",
-        "foreign_key": "table_nodes_common_node_id_fkey",
-        "references_table": "common_node_properties",
-        "references_column": "id"
-      },
-      {
-        "column_name": "id",
-        "data_type": "uuid",
-        "is_nullable": "NO",
-        "default": "gen_random_uuid()",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      },
-      {
-        "column_name": "rows",
-        "data_type": "jsonb",
-        "is_nullable": "YES",
-        "default": "None",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      }
-    ]
+    "table_structure": "Table: canvases, Column: description, Type: text, Nullable: YES, Default: None"
   },
   {
-    "table_name": "task_nodes",
-    "columns": [
-      {
-        "column_name": "common_node_id",
-        "data_type": "uuid",
-        "is_nullable": "YES",
-        "default": "None",
-        "foreign_key": "task_nodes_common_node_id_fkey",
-        "references_table": "common_node_properties",
-        "references_column": "id"
-      },
-      {
-        "column_name": "id",
-        "data_type": "uuid",
-        "is_nullable": "NO",
-        "default": "gen_random_uuid()",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      },
-      {
-        "column_name": "tasks",
-        "data_type": "jsonb",
-        "is_nullable": "YES",
-        "default": "None",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      }
-    ]
+    "table_structure": "Table: canvases, Column: content, Type: text, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: canvases, Column: created_at, Type: timestamp with time zone, Nullable: YES, Default: now()"
+  },
+  {
+    "table_structure": "Table: canvases, Column: updated_at, Type: timestamp with time zone, Nullable: YES, Default: now()"
+  },
+  {
+    "table_structure": "Table: canvases, Column: user_id, Type: uuid, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: canvases, Column: nodes, Type: jsonb, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: draw_nodes, Column: id, Type: uuid, Nullable: NO, Default: gen_random_uuid()"
+  },
+  {
+    "table_structure": "Table: draw_nodes, Column: node_id, Type: uuid, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: draw_nodes, Column: drawing_data, Type: text, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: node_attachments, Column: id, Type: uuid, Nullable: NO, Default: gen_random_uuid()"
+  },
+  {
+    "table_structure": "Table: node_attachments, Column: node_id, Type: uuid, Nullable: NO, Default: None"
+  },
+  {
+    "table_structure": "Table: node_attachments, Column: url, Type: character varying, Nullable: NO, Default: None"
+  },
+  {
+    "table_structure": "Table: node_attachments, Column: type, Type: character varying, Nullable: NO, Default: None"
+  },
+  {
+    "table_structure": "Table: node_attachments, Column: created_at, Type: timestamp with time zone, Nullable: YES, Default: now()"
+  },
+  {
+    "table_structure": "Table: node_canvas_link, Column: node_id, Type: uuid, Nullable: NO, Default: None"
+  },
+  {
+    "table_structure": "Table: node_canvas_link, Column: canvas_id, Type: uuid, Nullable: NO, Default: None"
+  },
+  {
+    "table_structure": "Table: node_history, Column: id, Type: uuid, Nullable: NO, Default: gen_random_uuid()"
+  },
+  {
+    "table_structure": "Table: node_history, Column: node_id, Type: uuid, Nullable: NO, Default: None"
+  },
+  {
+    "table_structure": "Table: node_history, Column: version, Type: integer, Nullable: NO, Default: None"
+  },
+  {
+    "table_structure": "Table: node_history, Column: data, Type: jsonb, Nullable: NO, Default: None"
+  },
+  {
+    "table_structure": "Table: node_history, Column: created_at, Type: timestamp with time zone, Nullable: YES, Default: now()"
+  },
+  {
+    "table_structure": "Table: node_tags, Column: node_id, Type: uuid, Nullable: NO, Default: None"
+  },
+  {
+    "table_structure": "Table: node_tags, Column: tag, Type: character varying, Nullable: NO, Default: None"
+  },
+  {
+    "table_structure": "Table: nodes, Column: id, Type: uuid, Nullable: NO, Default: gen_random_uuid()"
+  },
+  {
+    "table_structure": "Table: nodes, Column: type, Type: USER-DEFINED, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: nodes, Column: title, Type: character varying, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: nodes, Column: background_color, Type: character varying, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: nodes, Column: text_color, Type: character varying, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: nodes, Column: is_editing, Type: boolean, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: nodes, Column: position, Type: jsonb, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: nodes, Column: created_at, Type: timestamp with time zone, Nullable: YES, Default: now()"
+  },
+  {
+    "table_structure": "Table: nodes, Column: updated_at, Type: timestamp with time zone, Nullable: YES, Default: now()"
+  },
+  {
+    "table_structure": "Table: nodes, Column: is_temporary, Type: boolean, Nullable: YES, Default: false"
+  },
+  {
+    "table_structure": "Table: nodes, Column: parent_node_id, Type: uuid, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: nodes, Column: view_width, Type: integer, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: nodes, Column: view_height, Type: integer, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: nodes, Column: edit_width, Type: integer, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: nodes, Column: edit_height, Type: integer, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: nodes, Column: z_index, Type: integer, Nullable: YES, Default: 0"
+  },
+  {
+    "table_structure": "Table: nodes, Column: version, Type: integer, Nullable: NO, Default: 1"
+  },
+  {
+    "table_structure": "Table: nodes, Column: mobile_edit_width, Type: integer, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: nodes, Column: mobile_edit_height, Type: integer, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: note_nodes, Column: id, Type: uuid, Nullable: NO, Default: gen_random_uuid()"
+  },
+  {
+    "table_structure": "Table: note_nodes, Column: node_id, Type: uuid, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: note_nodes, Column: content, Type: text, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: table_nodes, Column: id, Type: uuid, Nullable: NO, Default: gen_random_uuid()"
+  },
+  {
+    "table_structure": "Table: table_nodes, Column: node_id, Type: uuid, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: table_nodes, Column: columns, Type: jsonb, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: table_nodes, Column: rows, Type: jsonb, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: task_nodes, Column: id, Type: uuid, Nullable: NO, Default: gen_random_uuid()"
+  },
+  {
+    "table_structure": "Table: task_nodes, Column: node_id, Type: uuid, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: task_nodes, Column: tasks, Type: jsonb, Nullable: YES, Default: None"
   }
 ]
