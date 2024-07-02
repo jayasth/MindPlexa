@@ -21,6 +21,8 @@ const NoteNodeView: React.FC<NoteNodeViewProps> = ({ data, width, height }) => {
   const { title, content, id, backgroundColor, textColor } = data;
   const toggleEditMode = useStore((state) => state.toggleEditMode);
 
+  console.log('NOteNodeView: Node ID:', id);
+
   return (
     <div className={styles.noteNode} style={{ width, height, backgroundColor }}>
       <div className={styles.header}>

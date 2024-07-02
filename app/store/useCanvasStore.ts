@@ -120,23 +120,15 @@ export const useStore = createStore<CanvasState>((set, get) => ({
   },
   updateNode: async (id, updates, specificUpdates, nodeType) => {
     try {
-      const updatesWithPosition = {
-        ...updates,
-        position: updates.position
-          ? JSON.stringify(updates.position)
-          : undefined,
-        type: nodeType
-      };
-
-      const nodeBeforeUpdate = get().nodes.find((node) => node.id === id);
-      console.log(
-        'useCanvasStore: Node details before update:',
-        nodeBeforeUpdate
-      );
-
       const { data: updatedNode, error } = await updateNodeInDB(
         id,
-        updatesWithPosition,
+        {
+          ...updates,
+          position: updates.position
+            ? JSON.stringify(updates.position)
+            : undefined,
+          type: nodeType
+        },
         specificUpdates,
         nodeType
       );
@@ -155,9 +147,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
                 ...node,
                 ...updatedNode,
                 position: updatedNode.position
-                  ? typeof updatedNode.position === 'string'
-                    ? JSON.parse(updatedNode.position)
-                    : updatedNode.position
+                  ? JSON.parse(updatedNode.position)
                   : node.position,
                 data: {
                   ...node.data,
