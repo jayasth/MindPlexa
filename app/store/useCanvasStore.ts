@@ -112,11 +112,11 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       edges: typeof updater === 'function' ? updater(state.edges) : updater
     }));
   },
-  addNode: (node) => {
-    console.log('Store: Adding node:', node);
+  addNode: (node: Node) => {
     set((state) => ({
       nodes: [...state.nodes, node]
     }));
+    console.log('Store: Node added:', node);
   },
   updateNode: async (id, updates, specificUpdates, nodeType) => {
     try {

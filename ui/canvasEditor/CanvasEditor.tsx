@@ -83,8 +83,10 @@ export default function CanvasEditor({ canvasId }) {
   }));
 
   useEffect(() => {
-    setCanvasId(canvasId);
-    loadCanvas(canvasId);
+    if (canvasId) {
+      setCanvasId(canvasId);
+      loadCanvas(canvasId);
+    }
   }, [canvasId, setCanvasId, loadCanvas]);
 
   useEffect(() => {
@@ -136,11 +138,19 @@ export default function CanvasEditor({ canvasId }) {
       newSize: { width: number; height: number },
       newPosition: { x: number; y: number }
     ) => {
+      const nodeType =
+        (node.type as
+          | 'note'
+          | 'task'
+          | 'table'
+          | 'calendar'
+          | 'draw'
+          | 'selection_menu') || 'defaultType';
       updateNodeInStore(
         node.id,
         { ...newSize, position: newPosition },
         {},
-        node.type || 'defaultType'
+        nodeType
       );
     },
     [updateNodeInStore]
