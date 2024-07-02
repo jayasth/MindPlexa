@@ -199,10 +199,32 @@ export const updateNode = async (
     console.log('Node Updates:', JSON.stringify(updates, null, 2));
     console.log('Specific Updates:', JSON.stringify(specificUpdates, null, 2));
 
+    // Get default dimensions from nodeProperties
+    const defaultDimensions = nodeDimensions[nodeType];
+
+    // Ensure we're not updating view dimensions
+    const safeUpdates = { ...updates };
+    delete safeUpdates.view_width;
+    delete safeUpdates.view_height;
+
+    // Only update edit dimensions if they're different from the defaults
+    if (
+      safeUpdates.edit_width &&
+      safeUpdates.edit_width === defaultDimensions.editWidth
+    ) {
+      delete safeUpdates.edit_width;
+    }
+    if (
+      safeUpdates.edit_height &&
+      safeUpdates.edit_height === defaultDimensions.editHeight
+    ) {
+      delete safeUpdates.edit_height;
+    }
+
     // Update node properties
     const { data: nodeData, error: nodeError } = await supabase
       .from('nodes')
-      .update(updates)
+      .update(safeUpdates)
       .eq('id', id)
       .select()
       .single();

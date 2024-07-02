@@ -154,10 +154,12 @@ export const useStore = createStore<CanvasState>((set, get) => ({
                   ...updatedNode,
                   backgroundColor: updatedNode.background_color,
                   textColor: updatedNode.text_color,
-                  editWidth: updatedNode.edit_width,
-                  editHeight: updatedNode.edit_height,
-                  mobileEditWidth: updatedNode.mobile_edit_width,
-                  mobileEditHeight: updatedNode.mobile_edit_height
+                  editWidth: updatedNode.edit_width || node.data.editWidth,
+                  editHeight: updatedNode.edit_height || node.data.editHeight,
+                  mobileEditWidth:
+                    updatedNode.mobile_edit_width || node.data.mobileEditWidth,
+                  mobileEditHeight:
+                    updatedNode.mobile_edit_height || node.data.mobileEditHeight
                 },
                 width: updatedNode.view_width,
                 height: updatedNode.view_height,
@@ -417,28 +419,35 @@ export const useStore = createStore<CanvasState>((set, get) => ({
                 return node;
               case 'dimensions':
                 if (node.isEditing && change.dimensions) {
-                  // Immediately update the database
-                  updateNodeInDB(
-                    node.id,
-                    {
-                      view_width: change.dimensions.width,
-                      view_height: change.dimensions.height,
-                      edit_width: change.dimensions.width,
-                      edit_height: change.dimensions.height
-                    },
-                    {},
-                    node.type
-                  );
-                  return {
-                    ...node,
-                    width: change.dimensions.width,
-                    height: change.dimensions.height,
-                    data: {
-                      ...node.data,
-                      editWidth: change.dimensions.width,
-                      editHeight: change.dimensions.height
-                    }
-                  };
+                  const { editWidth, editHeight, mobileEditWidth, mobileEditHeight } = node.data;
+                  const { width, height } = change.dimensions;
+                  if (
+                    width !== editWidth ||
+                    height !== editHeight ||
+                    width !== mobileEditWidth ||
+                    height !== mobileEditHeight
+                  ) {
+                    // Immediately update the database
+                    updateNodeInDB(
+                      node.id,
+                      {
+                        edit_width: width,
+                        edit_height: height
+                      },
+                      {},
+                      node.type
+                    );
+                    return {
+                      ...node,
+                      width: width,
+                      height: height,
+                      data: {
+                        ...node.data,
+                        editWidth: width,
+                        editHeight: height
+                      }
+                    };
+                  }
                 }
                 return node;
               case 'select':
