@@ -26,7 +26,7 @@ import { getNodeSpecificProperties } from '@/ui/canvasEditor/utils/nodePropertie
 import styles from './Toolbar.module.css';
 
 interface ToolbarProps {
-  canvasId: string; // Add this line
+  canvasId: string;
   onUndo: () => void;
   onRedo: () => void;
   onShare: () => void;
@@ -63,12 +63,12 @@ const Toolbar: React.FC<ToolbarProps> = ({
         const nodeProps = getNodeSpecificProperties(type, false);
 
         await createNode(
-          type,
+          type === 'selectionMenu' ? 'selection_menu' : type,
           position,
           nodes,
           (node) => {
             addNode(node);
-            console.log('Toolbar: Node added to database:', node);
+            console.log('Toolbar: Node created:', node);
             if (reactFlowInstance && nodes.length === 0) {
               reactFlowInstance.setCenter(node.position.x, node.position.y, {
                 zoom: 1
@@ -80,9 +80,8 @@ const Toolbar: React.FC<ToolbarProps> = ({
           false, // isEditing
           canvasId
         );
-        console.log('Toolbar: Canvas ID:', canvasId);
       } catch (error) {
-        console.error(`Failed to add node of type ${type}:`, error);
+        console.error(`Failed to create node of type ${type}:`, error);
       }
     },
     [addNode, canvasId, nodes, reactFlowInstance]

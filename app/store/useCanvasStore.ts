@@ -132,7 +132,6 @@ export const useStore = createStore<CanvasState>((set, get) => ({
         specificUpdates,
         nodeType
       );
-
       if (error) {
         console.error('useCanvasStore: Error updating node:', error);
         return;
@@ -678,7 +677,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
 
             let position;
             try {
-              position = JSON.parse(node.position);
+              position = node.position;
             } catch (error) {
               console.error('Error parsing position JSON:', error);
               position = { x: 200, y: 200 };
