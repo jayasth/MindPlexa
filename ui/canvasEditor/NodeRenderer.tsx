@@ -83,7 +83,11 @@ const NodeRenderer: React.FC<NodeRendererProps> = React.memo(
           node.position.x !== size.x ||
           node.position.y !== size.y
         ) {
-          console.log('Dimension change detected, updating size state.');
+          console.log(
+            'NodeRenderer: Size or position change detected:',
+            newSize,
+            node.position
+          );
           setSize({ ...newSize, x: node.position.x, y: node.position.y });
           if (!isInitialRender.current) {
             onNodeResizeStop(id, newSize, node.position);
