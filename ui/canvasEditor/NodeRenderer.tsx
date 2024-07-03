@@ -1,14 +1,9 @@
-import React, {
-  useState,
-  useEffect,
-  useCallback,
-  useMemo,
-  useRef
-} from 'react';
+import React, { useState, useEffect } from 'react';
 import { NodeProps } from 'reactflow';
 import { Node as BaseNode } from '@/ui/canvasEditor/nodeTypes';
 import dynamic from 'next/dynamic';
 import { useStore } from '@/app/store/useCanvasStore';
+import { getNodeSpecificProperties } from '@/ui/canvasEditor/utils/nodeProperties';
 
 const NoteNodeEdit = dynamic(() => import('@/ui/nodes/noteNode/NoteNodeEdit'), {
   ssr: false
@@ -18,11 +13,15 @@ const TaskNodeEdit = dynamic(() => import('@/ui/nodes/taskNode/TaskNodeEdit'), {
 });
 const TableNodeEdit = dynamic(
   () => import('@/ui/nodes/tableNode/TableNodeEdit'),
-  { ssr: false }
+  {
+    ssr: false
+  }
 );
 const CalendarNodeEdit = dynamic(
   () => import('@/ui/nodes/calendarNode/CalendarNodeEdit'),
-  { ssr: false }
+  {
+    ssr: false
+  }
 );
 const DrawNodeEdit = dynamic(() => import('@/ui/nodes/drawNode/DrawNodeEdit'), {
   ssr: false
@@ -36,11 +35,15 @@ const TaskNodeView = dynamic(() => import('@/ui/nodes/taskNode/TaskNodeView'), {
 });
 const TableNodeView = dynamic(
   () => import('@/ui/nodes/tableNode/TableNodeView'),
-  { ssr: false }
+  {
+    ssr: false
+  }
 );
 const CalendarNodeView = dynamic(
   () => import('@/ui/nodes/calendarNode/CalendarNodeView'),
-  { ssr: false }
+  {
+    ssr: false
+  }
 );
 const DrawNodeView = dynamic(() => import('@/ui/nodes/drawNode/DrawNodeView'), {
   ssr: false
@@ -54,149 +57,119 @@ interface NodeRendererProps extends NodeProps {
   ) => void;
 }
 
-const NodeRenderer: React.FC<NodeRendererProps> = React.memo(
-  ({ data, selected, id, onNodeResizeStop }) => {
-    const node = useStore(
-      useCallback((state) => state.nodes.find((n) => n.id === id), [id])
-    ) as BaseNode | undefined;
-    console.log('NodeRenderer: Node details:', node);
-    const toggleEditMode = useStore((state) => state.toggleEditMode);
+const NodeRenderer: React.FC<NodeRendererProps> = ({
+  data,
+  selected,
+  id,
+  onNodeResizeStop
+}) => {
+  const node = useStore((state) => state.nodes.find((n) => n.id === id)) as
+    | BaseNode
+    | undefined; // node might be undefined if it has been deleted
 
-    const [size, setSize] = useState(() => ({
-      width: node?.isEditing ? node?.data.edit_width : node?.data.view_width,
-      height: node?.isEditing ? node?.data.edit_height : node?.data.view_height,
-      x: node?.position.x,
-      y: node?.position.y
-    }));
+  const updateNode = useStore((state) => state.updateNode);
+  const toggleEditMode = useStore((state) => state.toggleEditMode);
+  const [size, setSize] = useState(
+    getNodeSpecificProperties(node?.type || 'note', node?.isEditing ?? false)
+  );
 
-    const [isInitialRender, setIsInitialRender] = useState(true);
+  useEffect(() => {
+    if (node && node.type !== 'selectionMenu') {
+      console.log(
+        `NodeRenderer: Node ${id} type ${node.type}: width = ${size.width}, height = ${size.height}`
+      );
+    }
+  }, [size.width, size.height, node?.type, id]);
 
-    useEffect(() => {
-      if (node && node.type !== 'selectionMenu') {
-        const newSize = {
-          width: node.isEditing ? node.data.edit_width : node.data.view_width,
-          height: node.isEditing ? node.data.edit_height : node.data.view_height
-        };
-        if (
-          newSize.width !== size.width ||
-          newSize.height !== size.height ||
-          node.position.x !== size.x ||
-          node.position.y !== size.y
-        ) {
-          console.log(
-            'NodeRenderer: Size or position change detected:',
-            newSize,
-            node.position
-          );
-          setSize({ ...newSize, x: node.position.x, y: node.position.y });
-          if (!isInitialRender) {
-            onNodeResizeStop(id, newSize, node.position);
-          }
+  useEffect(() => {
+    if (node) {
+      const newSize = getNodeSpecificProperties(node.type, node.isEditing);
+      setSize(newSize);
+      updateNode(id, newSize);
+      console.log(
+        `NodeRenderer: Updated size for node ${id}: width = ${newSize.width}, height = ${newSize.height}`
+      );
+    }
+  }, [node?.isEditing, node?.type, updateNode, id]);
+
+  // Early return if node does not exist
+  if (!node) {
+    console.log(
+      `NodeRenderer: Node with ID ${id} not found, possibly deleted.`
+    );
+    return null;
+  }
+
+  const handleEdit = () => {
+    if (node.type !== 'selectionMenu') {
+      toggleEditMode(id);
+      const newSize = getNodeSpecificProperties(node.type, !node.isEditing);
+      updateNode(id, {
+        ...newSize,
+        data: {
+          ...node.data,
+          tags: node.data.tags || [],
+          attachedFiles: node.data.attachedFiles || []
         }
-      }
-      setIsInitialRender(false);
-    }, [node, id, size, onNodeResizeStop, isInitialRender]);
+      });
+      onNodeResizeStop(id, newSize, node.position);
+    }
+  };
 
-    const handleEdit = useCallback(() => {
-      if (node && node.type !== 'selectionMenu' && !isInitialRender) {
-        toggleEditMode(id);
-        const newSize = {
-          width: !node.isEditing ? node.data.edit_width : node.data.view_width,
-          height: !node.isEditing
-            ? node.data.edit_height
-            : node.data.view_height
-        };
-        setSize({ ...newSize, x: node.position.x, y: node.position.y });
-        onNodeResizeStop(id, newSize, node.position);
-      }
-    }, [node, id, toggleEditMode, onNodeResizeStop, isInitialRender]);
+  const commonProps = {
+    draggable: true,
+    connectable: true,
+    onDelete: () => console.log(`Delete ${node.type}`),
+    onChangeColor: () => console.log('Change Color'),
+    onResize: () => console.log('Resize Node'),
+    onTag: () => console.log('Tag Node'),
+    onAttach: () => console.log('Attach File'),
+    width: size.width,
+    height: size.height,
+    selected: selected,
+    onLabelChange: (label: string) =>
+      updateNode(id, { data: { ...node.data, label } }),
+    onEdit: handleEdit,
+    onNodeResizeStop
+  };
 
-    const commonProps = useMemo(
-      () => ({
-        draggable: node?.draggable ?? true,
-        connectable: node?.connectable ?? true,
-        onDelete: () => console.log(`Delete ${node?.type}`),
-        onChangeColor: () => console.log('Change Color'),
-        onResize: () => console.log('Resize Node'),
-        onTag: () => console.log('Tag Node'),
-        onAttach: () => console.log('Attach File'),
-        width: size.width,
-        height: size.height,
-        selected: selected,
-        onLabelChange: (label: string) => {
-          console.log(`Label changed to: ${label}`);
-        },
-        onEdit: handleEdit,
-        onNodeResizeStop
-      }),
-      [node, size, selected, handleEdit, onNodeResizeStop]
+  const nodeComponents = {
+    note: { view: NoteNodeView, edit: NoteNodeEdit },
+    task: { view: TaskNodeView, edit: TaskNodeEdit },
+    table: { view: TableNodeView, edit: TableNodeEdit },
+    calendar: { view: CalendarNodeView, edit: CalendarNodeEdit },
+    draw: { view: DrawNodeView, edit: DrawNodeEdit }
+  };
+
+  if (node.type in nodeComponents) {
+    const { view, edit } = nodeComponents[node.type];
+    const NodeComponent = node.isEditing ? edit : view;
+
+    console.log(
+      `NodeRenderer: Rendering ${node.type} with background color: ${node.data.backgroundColor}, text color: ${node.data.textColor}`
     );
 
-    const nodeComponents = useMemo(
-      () => ({
-        note: { view: NoteNodeView, edit: NoteNodeEdit },
-        task: { view: TaskNodeView, edit: TaskNodeEdit },
-        table: { view: TableNodeView, edit: TableNodeEdit },
-        calendar: { view: CalendarNodeView, edit: CalendarNodeEdit },
-        draw: { view: DrawNodeView, edit: DrawNodeEdit }
-      }),
-      []
-    );
-
-    const nodeComponent = useMemo(() => {
-      if (!node || !node.position) {
-        console.log(
-          `NodeRenderer: Node with ID ${id} not found or has invalid position.`
-        );
-        return null;
-      }
-
-      if (node.type in nodeComponents) {
-        const { view, edit } = nodeComponents[node.type];
-        const NodeComponent = node.isEditing ? edit : view;
-
-        return (
-          <NodeComponent
-            {...commonProps}
-            onEdit={handleEdit}
-            data={{
-              id: node.id,
-              width: size.width,
-              height: size.height,
-              backgroundColor: node.data.background_color,
-              textColor: node.data.text_color,
-              editWidth: node.data.edit_width,
-              editHeight: node.data.edit_height,
-              viewWidth: node.data.view_width,
-              viewHeight: node.data.view_height,
-              position: node.position,
-              isEditing: node.isEditing,
-              parentNodeId: node.data.parent_node_id,
-              zIndex: node.data.z_index,
-              tags: node.data.tags,
-              attachedFiles: node.data.attached_files
-            }}
-            selected={selected}
-            onNodeResizeStop={onNodeResizeStop}
-            {...(node.isEditing && { selected: selected })}
-          />
-        );
-      }
-
-      return null;
-    }, [node, commonProps, selected, onNodeResizeStop, handleEdit, id, size]);
-
-    return nodeComponent;
-  },
-  (prevProps, nextProps) => {
     return (
-      prevProps.id === nextProps.id &&
-      prevProps.selected === nextProps.selected &&
-      JSON.stringify(prevProps.data) === JSON.stringify(nextProps.data)
+      <NodeComponent
+        {...commonProps}
+        onEdit={handleEdit}
+        data={{
+          ...node,
+          ...node.data,
+          width: size.width,
+          height: size.height,
+          backgroundColor: node.data.backgroundColor,
+          textColor: node.data.textColor,
+          id: node.id
+        }}
+        selected={selected}
+        onNodeResizeStop={onNodeResizeStop}
+        {...(node.isEditing && { selected: selected })}
+      />
     );
   }
-);
 
-NodeRenderer.displayName = 'NodeRenderer';
+  return null;
+};
 
 export default NodeRenderer;

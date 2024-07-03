@@ -450,7 +450,6 @@ export const useStore = createStore<CanvasState>((set, get) => ({
         .map((node) => {
           const change = changes.find((c) => c.id === node.id);
           if (change) {
-            console.log('Store: Full node data before change:', node);
             switch (change.type) {
               case 'position':
                 if (
@@ -469,7 +468,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
                 }
                 return node;
               case 'dimensions':
-                if (node.is_editing && change.dimensions) {
+                if (node.isEditing && change.dimensions) {
                   const {
                     editWidth,
                     editHeight,
@@ -700,9 +699,6 @@ export const useStore = createStore<CanvasState>((set, get) => ({
         set({ isLoading: false });
         return;
       }
-
-      console.log('Store: Fetched data:', data);
-      console.log('Store: Fetched nodeData:', nodeData);
 
       if (data && data.node_canvas_link && data.node_canvas_link.length > 0) {
         console.log('Store: Loading existing canvas data');
