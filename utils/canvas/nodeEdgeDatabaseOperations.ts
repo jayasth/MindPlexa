@@ -222,7 +222,7 @@ export const updateNode = async (
     // Update node properties
     const { data: nodeData, error: nodeError } = await supabase
       .from('nodes')
-      .update(updates)
+      .update(safeUpdates)
       .eq('id', id)
       .select()
       .single();

@@ -207,31 +207,31 @@ export const useStore = createStore<CanvasState>((set, get) => ({
           case 'note':
             updatedNode.data = {
               ...updatedNode.data,
-              ...(data.data as Tables<'note_nodes'>)
+              ...(data.data as TablesInsert<'note_nodes'>)
             };
             break;
           case 'task':
             updatedNode.data = {
               ...updatedNode.data,
-              ...(data.data as Tables<'task_nodes'>)
+              ...(data.data as TablesInsert<'task_nodes'>)
             };
             break;
           case 'table':
             updatedNode.data = {
               ...updatedNode.data,
-              ...(data.data as Tables<'table_nodes'>)
+              ...(data.data as TablesInsert<'table_nodes'>)
             };
             break;
           case 'calendar':
             updatedNode.data = {
               ...updatedNode.data,
-              ...(data.data as Tables<'calendar_nodes'>)
+              ...(data.data as TablesInsert<'calendar_nodes'>)
             };
             break;
           case 'draw':
             updatedNode.data = {
               ...updatedNode.data,
-              ...(data.data as Tables<'draw_nodes'>)
+              ...(data.data as TablesInsert<'draw_nodes'>)
             };
             break;
           // Add more cases for other node types if needed
@@ -734,13 +734,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
                 ...node,
                 ...specificNodeData,
                 backgroundColor: node.background_color,
-                textColor: node.text_color,
-                editWidth: node.edit_width,
-                editHeight: node.edit_height,
-                mobileEditWidth: node.mobile_edit_width,
-                mobileEditHeight: node.mobile_edit_height,
-                isTemporary: node.is_temporary,
-                parentNodeId: node.parent_node_id
+                textColor: node.text_color
               },
               width: node.view_width,
               height: node.view_height,
