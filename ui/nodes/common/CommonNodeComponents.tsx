@@ -123,8 +123,7 @@ export const FileModal = ({
   onAttachFiles,
   onRemoveFile,
   existingFiles,
-  nodeId,
-  nodeType
+  nodeId
 }) => {
   const [fileUrl, setFileUrl] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -159,14 +158,9 @@ export const FileModal = ({
           return;
         }
         onAttachFiles(allFiles);
-        updateNode(
-          nodeId,
-          {
-            data: { attachedFiles: allFiles }
-          },
-          {},
-          nodeType
-        );
+        updateNode(nodeId, {
+          data: { attachedFiles: allFiles }
+        });
         setFileUrl('');
       } catch (e) {
         alert('Invalid URL');
@@ -175,14 +169,9 @@ export const FileModal = ({
   };
   const handleRemoveFile = (fileToRemove: File | string) => {
     const updatedFiles = existingFiles.filter((file) => file !== fileToRemove);
-    updateNode(
-      nodeId,
-      {
-        data: { attachedFiles: updatedFiles }
-      },
-      {},
-      nodeType
-    );
+    updateNode(nodeId, {
+      data: { attachedFiles: updatedFiles }
+    });
     onRemoveFile(fileToRemove);
   };
 

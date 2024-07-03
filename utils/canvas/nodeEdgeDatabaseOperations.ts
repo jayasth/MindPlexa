@@ -201,7 +201,9 @@ export const updateNode = async (
     const defaultDimensions = nodeDimensions[nodeType];
 
     // Ensure we're not updating view dimensions
-    const safeUpdates = { ...updates };
+    const safeUpdates: Partial<
+      Database['public']['Tables']['nodes']['Update']
+    > = { ...updates };
     delete safeUpdates.view_width;
     delete safeUpdates.view_height;
 
@@ -217,6 +219,11 @@ export const updateNode = async (
       safeUpdates.edit_height === defaultDimensions.editHeight
     ) {
       delete safeUpdates.edit_height;
+    }
+
+    // Ensure position is stored as JSONB
+    if (safeUpdates.position && typeof safeUpdates.position === 'object') {
+      safeUpdates.position = JSON.stringify(safeUpdates.position);
     }
 
     // Update node properties
@@ -245,10 +252,34 @@ export const updateNode = async (
       const tableName =
         `${nodeType}_nodes` as keyof Database['public']['Tables'];
 
+      // Ensure specific updates match the table structure
+      const safeSpecificUpdates: any = { ...specificUpdates };
+
+      if (nodeType === 'note' && 'content' in safeSpecificUpdates) {
+        safeSpecificUpdates.content = String(safeSpecificUpdates.content);
+      } else if (nodeType === 'task' && 'tasks' in safeSpecificUpdates) {
+        safeSpecificUpdates.tasks = JSON.stringify(safeSpecificUpdates.tasks);
+      } else if (nodeType === 'calendar' && 'events' in safeSpecificUpdates) {
+        safeSpecificUpdates.events = JSON.stringify(safeSpecificUpdates.events);
+      } else if (nodeType === 'table') {
+        if ('columns' in safeSpecificUpdates) {
+          safeSpecificUpdates.columns = JSON.stringify(
+            safeSpecificUpdates.columns
+          );
+        }
+        if ('rows' in safeSpecificUpdates) {
+          safeSpecificUpdates.rows = JSON.stringify(safeSpecificUpdates.rows);
+        }
+      } else if (nodeType === 'draw' && 'drawing_data' in safeSpecificUpdates) {
+        safeSpecificUpdates.drawing_data = String(
+          safeSpecificUpdates.drawing_data
+        );
+      }
+
       const { data: specificNodeData, error: specificNodeError } =
         await supabase
           .from(tableName)
-          .update(specificUpdates)
+          .update(safeSpecificUpdates)
           .eq('node_id', id)
           .select()
           .single();

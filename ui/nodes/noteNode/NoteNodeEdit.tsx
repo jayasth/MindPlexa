@@ -172,10 +172,10 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   useEffect(() => {
     const commonData = {
       title,
-      backgroundColor,
-      textColor,
-      editWidth: nodeWidth,
-      editHeight: nodeHeight
+      background_color: backgroundColor,
+      text_color: textColor,
+      edit_width: nodeWidth,
+      edit_height: nodeHeight
     };
 
     const specificData = { content };
@@ -287,10 +287,10 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   const handleSave = useCallback(async () => {
     const commonData = {
       title,
-      backgroundColor,
-      textColor,
-      editWidth: nodeWidth,
-      editHeight: nodeHeight
+      background_color: backgroundColor,
+      text_color: textColor,
+      edit_width: nodeWidth,
+      edit_height: nodeHeight
     };
 
     const specificData = { content };
@@ -405,7 +405,6 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         onRemoveFile={onRemoveFile}
         existingFiles={attachedFiles}
         nodeId={data.id}
-        nodeType="note"
       />
     </div>
   );

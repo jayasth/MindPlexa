@@ -1,7 +1,6 @@
 import { useStore } from '@/app/store/useCanvasStore';
 import { v4 as uuidv4 } from 'uuid';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
-import { Database } from '@/types_db';
 
 export const getContrastYIQ = (color: string) => {
   let r,
@@ -141,12 +140,7 @@ export const handleChangeColorWithCombination = (
     return;
   }
   onChangeColor(backgroundColor);
-  updateNode(
-    node.id,
-    { data: { backgroundColor, textColor } },
-    {},
-    node.type as Database['public']['Enums']['node_type']
-  );
+  updateNode(node.id, { data: { backgroundColor, textColor } });
 };
 
 export const handleTitleChange = (
@@ -161,12 +155,7 @@ export const handleTitleChange = (
     return;
   }
   onChangeTitle(title);
-  updateNode(
-    node.id,
-    { data: { title } },
-    {},
-    node.type as Database['public']['Enums']['node_type']
-  );
+  updateNode(node.id, { data: { title } });
 };
 
 export const handleSave = (id: string, onSave: () => void, nodeData: any) => {
@@ -177,12 +166,7 @@ export const handleSave = (id: string, onSave: () => void, nodeData: any) => {
     return;
   }
   onSave();
-  updateNode(
-    node.id,
-    nodeData,
-    {},
-    node.type as Database['public']['Enums']['node_type']
-  );
+  updateNode(node.id, nodeData);
   toggleEditMode(id);
 };
 export const handleClose = (
@@ -197,12 +181,7 @@ export const handleClose = (
     console.error(`Node with id ${nodeId} not found or node type is undefined`);
     return;
   }
-  updateNode(
-    node.id,
-    { data: { title, content } },
-    {},
-    node.type as Database['public']['Enums']['node_type']
-  );
+  updateNode(node.id, { data: { title, content } });
   onClose();
   toggleEditMode(nodeId);
 };
@@ -234,12 +213,7 @@ export const handleChangeColor = (
   }
   const textColor = getContrastYIQ(color);
   onChangeColor(color);
-  updateNode(
-    node.id,
-    { data: { backgroundColor: color, textColor } },
-    {},
-    node.type as Database['public']['Enums']['node_type']
-  );
+  updateNode(node.id, { data: { backgroundColor: color, textColor } });
 };
 
 export const handleAddTag = (
@@ -253,12 +227,7 @@ export const handleAddTag = (
     console.error(`Node with id ${id} not found or node type is undefined`);
     return;
   }
-  updateNode(
-    node.id,
-    { data: { tags } },
-    {},
-    node.type as Database['public']['Enums']['node_type']
-  );
+  updateNode(node.id, { data: { tags } });
   tags.forEach((tag) => onAddTag(tag));
 };
 
@@ -295,14 +264,9 @@ export const handleAttachFile = (
       return;
     }
 
-    updateNode(
-      node.id,
-      {
-        data: { attachedFiles: JSON.stringify(allFiles) } // Serialize files
-      },
-      {},
-      node.type as Database['public']['Enums']['node_type']
-    );
+    updateNode(node.id, {
+      data: { attachedFiles: JSON.stringify(allFiles) } // Serialize files
+    });
     callback();
   } else {
     alert(
@@ -327,14 +291,9 @@ export const handleRemoveAttachedFile = (
     [];
   const updatedFiles = existingFiles.filter((file) => file !== fileToRemove);
 
-  updateNode(
-    node.id,
-    {
-      data: { attachedFiles: updatedFiles }
-    },
-    {},
-    node.type as Database['public']['Enums']['node_type']
-  );
+  updateNode(node.id, {
+    data: { attachedFiles: updatedFiles }
+  });
   onRemoveFile(fileToRemove);
 };
 export const handleDuplicate = (id: string) => {

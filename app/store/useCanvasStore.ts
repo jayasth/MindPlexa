@@ -186,7 +186,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
     });
   },
 
-  updateNode: (id, data) => {
+  updateNode: async (id, data) => {
     set((state) => {
       const existingNodeIndex = state.nodes.findIndex((node) => node.id === id);
       if (existingNodeIndex !== -1) {
@@ -203,41 +203,65 @@ export const useStore = createStore<CanvasState>((set, get) => ({
             textColor: data.data?.textColor || existingNode.data.textColor
           }
         };
+
+        // Prepare updates for the nodes table
+        const nodeUpdates: Partial<
+          Database['public']['Tables']['nodes']['Update']
+        > = {
+          position: JSON.stringify(updatedNode.position),
+          background_color: updatedNode.data.backgroundColor,
+          text_color: updatedNode.data.textColor,
+          title: updatedNode.data.title,
+          is_editing: updatedNode.data.isEditing,
+          z_index: updatedNode.data.zIndex,
+          edit_width: updatedNode.data.editWidth,
+          edit_height: updatedNode.data.editHeight,
+          mobile_edit_width: updatedNode.data.mobileEditWidth,
+          mobile_edit_height: updatedNode.data.mobileEditHeight
+        };
+
+        // Prepare updates for the specific node type table
+        let specificUpdates: any = {};
         switch (existingNode.type) {
           case 'note':
-            updatedNode.data = {
-              ...updatedNode.data,
-              ...(data.data as TablesInsert<'note_nodes'>)
+            specificUpdates = {
+              content: updatedNode.data.content
             };
             break;
           case 'task':
-            updatedNode.data = {
-              ...updatedNode.data,
-              ...(data.data as TablesInsert<'task_nodes'>)
+            specificUpdates = {
+              tasks: JSON.stringify(updatedNode.data.tasks)
             };
             break;
           case 'table':
-            updatedNode.data = {
-              ...updatedNode.data,
-              ...(data.data as TablesInsert<'table_nodes'>)
+            specificUpdates = {
+              columns: JSON.stringify(updatedNode.data.columns),
+              rows: JSON.stringify(updatedNode.data.rows)
             };
             break;
           case 'calendar':
-            updatedNode.data = {
-              ...updatedNode.data,
-              ...(data.data as TablesInsert<'calendar_nodes'>)
+            specificUpdates = {
+              events: JSON.stringify(updatedNode.data.events),
+              view: updatedNode.data.view
             };
             break;
           case 'draw':
-            updatedNode.data = {
-              ...updatedNode.data,
-              ...(data.data as TablesInsert<'draw_nodes'>)
+            specificUpdates = {
+              drawing_data: updatedNode.data.drawingData
             };
             break;
-          // Add more cases for other node types if needed
           default:
             break;
         }
+
+        // Update the node in the database
+        updateNodeInDB(id, nodeUpdates, specificUpdates, existingNode.type)
+          .then(() => {
+            console.log('Node updated successfully in the database');
+          })
+          .catch((error) => {
+            console.error('Error updating node in the database:', error);
+          });
 
         const updatedNodes = [...state.nodes];
         updatedNodes[existingNodeIndex] = updatedNode;
@@ -471,17 +495,17 @@ export const useStore = createStore<CanvasState>((set, get) => ({
               case 'dimensions':
                 if (node.is_editing && change.dimensions) {
                   const {
-                    editWidth,
-                    editHeight,
-                    mobileEditWidth,
-                    mobileEditHeight
+                    edit_width,
+                    edit_height,
+                    mobile_edit_width,
+                    mobile_edit_height
                   } = node.data;
                   const { width, height } = change.dimensions;
                   if (
-                    width !== editWidth ||
-                    height !== editHeight ||
-                    width !== mobileEditWidth ||
-                    height !== mobileEditHeight
+                    width !== edit_width ||
+                    height !== edit_height ||
+                    width !== mobile_edit_width ||
+                    height !== mobile_edit_height
                   ) {
                     // Immediately update the database
                     updateNodeInDB(
@@ -499,10 +523,10 @@ export const useStore = createStore<CanvasState>((set, get) => ({
                       ...node,
                       data: {
                         ...node.data,
-                        editWidth: width,
-                        editHeight: height,
-                        mobileEditWidth: width,
-                        mobileEditHeight: height
+                        edit_width: width,
+                        edit_height: height,
+                        mobile_edit_width: width,
+                        mobile_edit_height: height
                       }
                     };
                   }
@@ -616,16 +640,16 @@ export const useStore = createStore<CanvasState>((set, get) => ({
         title: node.data?.title || '',
         background_color: node.data?.backgroundColor || '#F4F4F4',
         text_color: node.data?.textColor || '#575757',
-        view_width: node.width || 0,
-        view_height: node.height || 0,
-        edit_width: node.data?.editWidth || null,
-        edit_height: node.data?.editHeight || null,
-        mobile_edit_width: node.data?.mobileEditWidth || null,
-        mobile_edit_height: node.data?.mobileEditHeight || null,
-        is_editing: node.isEditing || false,
-        is_temporary: node.data?.isTemporary || false,
-        parent_node_id: node.data?.parentNodeId || null,
-        z_index: node.zIndex || 0
+        view_width: node.width || 80,
+        view_height: node.height || 150,
+        edit_width: node.data?.edit_width || null,
+        edit_height: node.data?.edit_height || null,
+        mobile_edit_width: node.data?.mobile_edit_width || null,
+        mobile_edit_height: node.data?.mobile_edit_height || null,
+        is_editing: node.is_editing || false,
+        is_temporary: node.data?.is_temporary || false,
+        parent_node_id: node.data?.parent_node_id || null,
+        z_index: node.z_index || 0
       })),
       node_specific_data: nodes
         .map((node) => {
@@ -638,7 +662,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
             case 'task':
               return {
                 node_id: node.id,
-                tasks: JSON.stringify(node.data?.taskData || {})
+                tasks: JSON.stringify(node.data?.taskData?.tasks || [])
               };
             case 'table':
               return {
@@ -655,7 +679,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
             case 'draw':
               return {
                 node_id: node.id,
-                drawing_data: JSON.stringify(node.data?.drawData || '')
+                drawing_data: node.data?.drawData?.drawing_data || ''
               };
             default:
               return null;
