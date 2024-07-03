@@ -734,7 +734,13 @@ export const useStore = createStore<CanvasState>((set, get) => ({
                 ...node,
                 ...specificNodeData,
                 backgroundColor: node.background_color,
-                textColor: node.text_color
+                textColor: node.text_color,
+                editWidth: node.edit_width,
+                editHeight: node.edit_height,
+                mobileEditWidth: node.mobile_edit_width,
+                mobileEditHeight: node.mobile_edit_height,
+                isTemporary: node.is_temporary,
+                parentNodeId: node.parent_node_id
               },
               width: node.view_width,
               height: node.view_height,
