@@ -93,7 +93,9 @@ export const createNode = async (
       backgroundColor: defaultProperties.backgroundColor,
       textColor: defaultProperties.textColor,
       isEditing: isEditing,
-      ...nodeDimension
+      ...nodeDimension,
+      viewWidth: nodeDimensions.selection_menu.width,
+      viewHeight: nodeDimensions.selection_menu.height
     };
 
     // Handle selection_menu type dimensions
@@ -127,7 +129,8 @@ export const createNode = async (
           ...createdNode,
           backgroundColor: createdNode.background_color,
           textColor: createdNode.text_color,
-          isEditing: createdNode.is_editing
+          isEditing: createdNode.is_editing,
+          isTemporary: createdNode.is_temporary
         }
       };
       callback(newNodeWithData);

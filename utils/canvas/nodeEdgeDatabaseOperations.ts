@@ -44,9 +44,13 @@ export const createNode = async (
       type: nodeType,
       position: position,
       view_width:
-        'viewWidth' in defaultDimensions ? defaultDimensions.viewWidth : null,
+        'viewWidth' in defaultDimensions
+          ? defaultDimensions.viewWidth
+          : defaultDimensions.width,
       view_height:
-        'viewHeight' in defaultDimensions ? defaultDimensions.viewHeight : null,
+        'viewHeight' in defaultDimensions
+          ? defaultDimensions.viewHeight
+          : defaultDimensions.height,
       edit_width:
         'editWidth' in defaultDimensions ? defaultDimensions.editWidth : null,
       edit_height:
@@ -63,7 +67,8 @@ export const createNode = async (
       text_color: data.text_color || '#575757',
       title: data.title,
       is_editing: data.is_editing || false,
-      is_temporary: data.is_temporary || false,
+      is_temporary:
+        nodeType === 'selection_menu' ? true : data.is_temporary || false,
       parent_node_id: data.parent_node_id || null,
       z_index: data.z_index || 0
     };

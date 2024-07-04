@@ -82,7 +82,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
   }, [node?.isEditing, node?.type, updateNode, id]);
 
   const handleEdit = () => {
-    if (node && node.type !== 'selectionMenu') {
+    if (node && node.type !== 'selection_menu') {
       toggleEditMode(id);
       const newSize = getNodeSpecificProperties(node.type, !node.isEditing);
       updateNode(id, {
