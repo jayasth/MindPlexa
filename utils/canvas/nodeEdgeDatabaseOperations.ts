@@ -34,7 +34,8 @@ export const createNode = async (
     const defaultDimensions = nodeDimensions[nodeType];
 
     if (!defaultDimensions) {
-      throw new Error(`Unsupported node type: ${nodeType}`);
+      console.warn(`Unsupported node type: ${nodeType}`);
+      return { error: `Unsupported node type: ${nodeType}` };
     }
 
     // Create a node
@@ -134,7 +135,8 @@ export const createNode = async (
           };
           break;
         default:
-          throw new Error(`Unsupported node type: ${nodeType}`);
+          console.warn(`Unsupported node type: ${nodeType}`);
+          return { error: `Unsupported node type: ${nodeType}` };
       }
 
       const tableName =
