@@ -148,7 +148,8 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     const NodeComponent = node.isEditing ? edit : view;
 
     console.log(
-      `NodeRenderer: Rendering ${node.type} with background color: ${node.data.backgroundColor}, text color: ${node.data.textColor}`
+      `NodeRenderer: Rendering ${node.type} with full node data:`,
+      JSON.stringify(node, null, 2)
     );
 
     return (
