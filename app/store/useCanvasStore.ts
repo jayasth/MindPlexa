@@ -474,7 +474,11 @@ export const useStore = createStore<CanvasState>((set, get) => ({
         .map((node) => {
           const change = changes.find((c) => c.id === node.id);
           if (change) {
-            console.log('Store: Full node data before change:', node);
+            console.log(
+              'Store: Full node data before change:',
+              JSON.stringify(node, null, 2)
+            );
+            let updatedNode = { ...node };
             switch (change.type) {
               case 'position':
                 // Ignore position changes during initial state loading
@@ -493,9 +497,9 @@ export const useStore = createStore<CanvasState>((set, get) => ({
                     {},
                     node.type
                   );
-                  return { ...node, position: change.position };
+                  updatedNode = { ...node, position: change.position };
                 }
-                return node;
+                break;
               case 'dimensions':
                 // Ignore dimension changes during initial state loading
                 if (state.isLoading) {
@@ -527,7 +531,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
                       {},
                       node.type
                     );
-                    return {
+                    updatedNode = {
                       ...node,
                       data: {
                         ...node.data,
@@ -538,15 +542,21 @@ export const useStore = createStore<CanvasState>((set, get) => ({
                       }
                     };
                   }
-                  return node;
                 }
+                break;
               case 'select':
-                return { ...node, selected: change.selected };
+                updatedNode = { ...node, selected: change.selected };
+                break;
               case 'remove':
                 return null;
               default:
-                return { ...node, ...change };
+                updatedNode = { ...node, ...change };
             }
+            console.log(
+              'Store: Full node data after change:',
+              JSON.stringify(updatedNode, null, 2)
+            );
+            return updatedNode;
           }
           return node;
         })
