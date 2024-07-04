@@ -38,8 +38,14 @@ export const createNode = async (
       id: nodeId,
       type: nodeType,
       position: position,
-      view_width: defaultDimensions.viewWidth,
-      view_height: defaultDimensions.viewHeight,
+      view_width:
+        nodeType === 'selection_menu'
+          ? defaultDimensions.width
+          : defaultDimensions.viewWidth,
+      view_height:
+        nodeType === 'selection_menu'
+          ? defaultDimensions.height
+          : defaultDimensions.viewHeight,
       edit_width:
         'editWidth' in defaultDimensions ? defaultDimensions.editWidth : null,
       edit_height:
