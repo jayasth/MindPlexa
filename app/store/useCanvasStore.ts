@@ -208,7 +208,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
         const nodeUpdates: Partial<
           Database['public']['Tables']['nodes']['Update']
         > = {
-          position: JSON.stringify(updatedNode.position),
+          position: updatedNode.position, // Update with valid JSON object
           background_color: updatedNode.data.backgroundColor,
           text_color: updatedNode.data.textColor,
           title: updatedNode.data.title,
@@ -271,7 +271,6 @@ export const useStore = createStore<CanvasState>((set, get) => ({
       return state;
     });
   },
-
   addEdge: (edge) => {
     console.log('Store: Adding edge:', edge);
     set((state) => ({

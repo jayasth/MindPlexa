@@ -80,7 +80,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
         `NodeRenderer: Node ${id} type ${node.type}: width = ${size.width}, height = ${size.height}`
       );
     }
-  }, [size.width, size.height, node?.type, id]);
+  }, [node?.type, id]);
 
   // Only update size when node enters or exits edit mode
   useEffect(() => {
