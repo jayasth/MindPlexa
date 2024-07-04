@@ -43,8 +43,10 @@ export const createNode = async (
       id: nodeId,
       type: nodeType,
       position: position,
-      view_width: defaultDimensions.viewWidth,
-      view_height: defaultDimensions.viewHeight,
+      view_width:
+        'viewWidth' in defaultDimensions ? defaultDimensions.viewWidth : null,
+      view_height:
+        'viewHeight' in defaultDimensions ? defaultDimensions.viewHeight : null,
       edit_width:
         'editWidth' in defaultDimensions ? defaultDimensions.editWidth : null,
       edit_height:
@@ -216,12 +218,14 @@ export const updateNode = async (
     // Only update edit dimensions if they're different from the defaults
     if (
       safeUpdates.edit_width &&
+      'editWidth' in defaultDimensions &&
       safeUpdates.edit_width === defaultDimensions.editWidth
     ) {
       delete safeUpdates.edit_width;
     }
     if (
       safeUpdates.edit_height &&
+      'editHeight' in defaultDimensions &&
       safeUpdates.edit_height === defaultDimensions.editHeight
     ) {
       delete safeUpdates.edit_height;

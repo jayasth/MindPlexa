@@ -2,7 +2,7 @@ import type { Json } from '@/types_db';
 
 export interface Node {
   id: string;
-  type: 'note' | 'task' | 'table' | 'calendar' | 'draw' | 'selectionMenu';
+  type: 'note' | 'task' | 'table' | 'calendar' | 'draw' | 'selection_menu';
   position: { x: number; y: number };
   data: any;
   view_width: number;

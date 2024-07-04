@@ -96,10 +96,10 @@ export const createNode = async (
       ...nodeDimension
     };
 
-    // Handle selectionMenu type dimensions
+    // Handle selection_menu type dimensions
     if (nodeType === 'selection_menu') {
-      newNodeData.width = nodeDimensions.selectionMenu.width;
-      newNodeData.height = nodeDimensions.selectionMenu.height;
+      newNodeData.width = nodeDimensions.selection_menu.width;
+      newNodeData.height = nodeDimensions.selection_menu.height;
     }
 
     const { data: createdNode, error } = await createNodeInDatabase(

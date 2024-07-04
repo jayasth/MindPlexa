@@ -138,20 +138,14 @@ export default function CanvasEditor({ canvasId }) {
       newSize: { width: number; height: number },
       newPosition: { x: number; y: number }
     ) => {
-      const nodeType =
-        (node.type as
-          | 'note'
-          | 'task'
-          | 'table'
-          | 'calendar'
-          | 'draw'
-          | 'selection_menu') || 'defaultType';
-      updateNodeInStore(
-        node.id,
-        { ...newSize, position: newPosition },
-        {},
-        nodeType
-      );
+      const nodeType = node.type as
+        | 'note'
+        | 'task'
+        | 'table'
+        | 'calendar'
+        | 'draw'
+        | 'selection_menu';
+      updateNodeInStore(node.id, { ...newSize, position: newPosition });
     },
     [updateNodeInStore]
   );
@@ -172,11 +166,11 @@ export default function CanvasEditor({ canvasId }) {
       draw: (props) => (
         <NodeRenderer {...props} onNodeResizeStop={onNodeResizeStop} />
       ),
-      selectionMenu: (props) => (
+      selection_menu: (props) => (
         <NodeSelectionMenu
           {...props}
-          width={nodeDimensions['selectionMenu'].width}
-          height={nodeDimensions['selectionMenu'].height}
+          width={nodeDimensions['selection_menu'].width}
+          height={nodeDimensions['selection_menu'].height}
         />
       )
     }),
@@ -192,7 +186,7 @@ export default function CanvasEditor({ canvasId }) {
 
   const onNodeDragStop = useCallback(
     (event, node) => {
-      updateNodeInStore(node.id, { position: node.position }, {}, node.type);
+      updateNodeInStore(node.id, { position: node.position });
     },
     [updateNodeInStore]
   );
@@ -240,7 +234,7 @@ export default function CanvasEditor({ canvasId }) {
   const handleTemporaryNodeCreationWithStore = (
     parentNode: Node | null,
     position: XYPosition,
-    nodeType: 'selectionMenu'
+    nodeType: 'selection_menu'
   ) => {
     handleTemporaryNodeCreation(
       parentNode,
@@ -306,7 +300,7 @@ export default function CanvasEditor({ canvasId }) {
                 handleTemporaryNodeCreationWithStore(
                   parentNode,
                   childNodePosition,
-                  'selectionMenu'
+                  'selection_menu'
                 );
               }
             }}

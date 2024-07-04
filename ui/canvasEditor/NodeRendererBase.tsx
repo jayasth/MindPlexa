@@ -74,7 +74,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
   );
 
   useEffect(() => {
-    if (node && node.type !== 'selectionMenu') {
+    if (node && node.type !== 'selection_menu') {
       console.log(
         `NodeRenderer: Node ${id} type ${node.type}: width = ${size.width}, height = ${size.height}`
       );
@@ -101,7 +101,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
   }
 
   const handleEdit = () => {
-    if (node.type !== 'selectionMenu') {
+    if (node.type !== 'selection_menu') {
       toggleEditMode(id);
       const newSize = getNodeSpecificProperties(node.type, !node.isEditing);
       updateNode(id, {

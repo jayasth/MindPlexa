@@ -7,7 +7,7 @@ import { createEdge } from '@/utils/canvas/nodeEdgeDatabaseOperations';
 export const handleTemporaryNodeCreation = async (
   parentNode: Node | null,
   position: XYPosition,
-  nodeType: 'selectionMenu',
+  nodeType: 'selection_menu',
   addNode: (node: Node) => void,
   addEdge: (edge: Edge) => void,
   removeNode: (id: string) => void,
@@ -56,8 +56,8 @@ export const handleTemporaryNodeCreation = async (
               }
             },
             {
-              width: nodeDimensions['selectionMenu'].width,
-              height: nodeDimensions['selectionMenu'].height
+              width: nodeDimensions['selection_menu'].width,
+              height: nodeDimensions['selection_menu'].height
             },
             true,
             false,
@@ -72,17 +72,17 @@ export const handleTemporaryNodeCreation = async (
       parentNode: parentNode,
       isTemporary: true
     },
-    width: nodeDimensions['selectionMenu'].width,
-    height: nodeDimensions['selectionMenu'].height
+    width: nodeDimensions['selection_menu'].width,
+    height: nodeDimensions['selection_menu'].height
   };
 
   console.log(
     'TemporaryNodeHandler: Node dimensions: ',
-    nodeDimensions['selectionMenu']
+    nodeDimensions['selection_menu']
   );
 
   await createNode(
-    'selectionMenu',
+    'selection_menu',
     position,
     nodes,
     (newNode) => {
@@ -90,8 +90,8 @@ export const handleTemporaryNodeCreation = async (
       console.log('TemporaryNodeHandler: Node added:', newNode);
     },
     {
-      width: nodeDimensions['selectionMenu'].width,
-      height: nodeDimensions['selectionMenu'].height
+      width: nodeDimensions['selection_menu'].width,
+      height: nodeDimensions['selection_menu'].height
     },
     true,
     false,

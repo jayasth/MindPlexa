@@ -62,7 +62,7 @@ export const useEdgeConnection = () => {
             handleTemporaryNodeCreation(
               parentNode,
               position,
-              'selectionMenu',
+              'selection_menu',
               (newNode) => {
                 console.log('useEdgeConnection: Node created:', newNode);
                 addNode(newNode);
