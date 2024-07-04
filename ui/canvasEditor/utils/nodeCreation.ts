@@ -85,7 +85,7 @@ export const createNode = async (
 
   try {
     const newNodeData = {
-      id: nodeId, // Use the generated nodeId
+      id: nodeId,
       ...newNode.data,
       zIndex: 0,
       isTemporary: isTemporary,
@@ -98,8 +98,8 @@ export const createNode = async (
 
     // Handle selection_menu type dimensions
     if (nodeType === 'selection_menu') {
-      newNodeData.width = nodeDimensions.selection_menu.width;
-      newNodeData.height = nodeDimensions.selection_menu.height;
+      newNodeData.viewWidth = nodeDimensions.selection_menu.width;
+      newNodeData.viewHeight = nodeDimensions.selection_menu.height;
     }
 
     const { data: createdNode, error } = await createNodeInDatabase(
