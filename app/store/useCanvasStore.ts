@@ -451,7 +451,7 @@ export const useStore = createStore<CanvasState>((set, get) => ({
     console.log('Setting menu position to:', position);
     set(() => ({ menuPosition: position }));
   },
-  onNodesChange: (changes) => {
+  onNodesChange: (changes: any) => {
     set((state) => {
       if (
         state.isLoading ||
@@ -477,6 +477,10 @@ export const useStore = createStore<CanvasState>((set, get) => ({
             console.log('Store: Full node data before change:', node);
             switch (change.type) {
               case 'position':
+                // Ignore position changes during initial state loading
+                if (state.isLoading) {
+                  return node;
+                }
                 if (
                   change.position &&
                   (change.position.x !== node.position.x ||
@@ -493,6 +497,10 @@ export const useStore = createStore<CanvasState>((set, get) => ({
                 }
                 return node;
               case 'dimensions':
+                // Ignore dimension changes during initial state loading
+                if (state.isLoading) {
+                  return node;
+                }
                 if (node.is_editing && change.dimensions) {
                   const {
                     edit_width,

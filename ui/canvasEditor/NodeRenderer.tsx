@@ -81,16 +81,16 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     }
   }, [size.width, size.height, node?.type, id]);
 
+  // Only update size when node is in edit mode
   useEffect(() => {
-    if (node) {
+    if (node && node.isEditing) {
       const newSize = getNodeSpecificProperties(node.type, node.isEditing);
       setSize(newSize);
-      updateNode(id, newSize);
       console.log(
         `NodeRenderer: Updated size for node ${id}: width = ${newSize.width}, height = ${newSize.height}`
       );
     }
-  }, [node?.isEditing, node?.type, updateNode, id]);
+  }, [node?.isEditing, node?.type, id]);
 
   // Early return if node does not exist
   if (!node) {
