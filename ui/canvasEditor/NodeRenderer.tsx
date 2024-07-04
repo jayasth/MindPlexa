@@ -72,6 +72,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
   const [size, setSize] = useState(
     getNodeSpecificProperties(node?.type || 'note', node?.isEditing ?? false)
   );
+  const [isEditing, setIsEditing] = useState(node?.isEditing ?? false); // Track edit mode separately
 
   useEffect(() => {
     if (node && node.type !== 'selectionMenu') {
@@ -81,16 +82,17 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     }
   }, [size.width, size.height, node?.type, id]);
 
-  // Only update size when node is in edit mode
+  // Only update size when node enters or exits edit mode
   useEffect(() => {
-    if (node && node.isEditing) {
+    if (node && isEditing !== node.isEditing) {
       const newSize = getNodeSpecificProperties(node.type, node.isEditing);
       setSize(newSize);
+      setIsEditing(node.isEditing);
       console.log(
         `NodeRenderer: Updated size for node ${id}: width = ${newSize.width}, height = ${newSize.height}`
       );
     }
-  }, [node?.isEditing, node?.type, id]);
+  }, [node?.isEditing, node?.type, id, isEditing]);
 
   // Early return if node does not exist
   if (!node) {

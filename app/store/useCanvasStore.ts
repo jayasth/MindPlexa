@@ -513,11 +513,12 @@ export const useStore = createStore<CanvasState>((set, get) => ({
                     mobile_edit_height
                   } = node.data;
                   const { width, height } = change.dimensions;
+                  const threshold = 1; // 1 pixel threshold
                   if (
-                    width !== edit_width ||
-                    height !== edit_height ||
-                    width !== mobile_edit_width ||
-                    height !== mobile_edit_height
+                    Math.abs(width - edit_width) > threshold ||
+                    Math.abs(height - edit_height) > threshold ||
+                    Math.abs(width - mobile_edit_width) > threshold ||
+                    Math.abs(height - mobile_edit_height) > threshold
                   ) {
                     // Immediately update the database
                     updateNodeInDB(
