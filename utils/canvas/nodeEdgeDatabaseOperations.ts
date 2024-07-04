@@ -33,19 +33,17 @@ export const createNode = async (
     // Get default dimensions from nodeProperties
     const defaultDimensions = nodeDimensions[nodeType];
 
+    if (!defaultDimensions) {
+      throw new Error(`Unsupported node type: ${nodeType}`);
+    }
+
     // Create a node
     const nodeInsert: Database['public']['Tables']['nodes']['Insert'] = {
       id: nodeId,
       type: nodeType,
       position: position,
-      view_width:
-        nodeType === 'selection_menu'
-          ? defaultDimensions.width
-          : defaultDimensions.viewWidth,
-      view_height:
-        nodeType === 'selection_menu'
-          ? defaultDimensions.height
-          : defaultDimensions.viewHeight,
+      view_width: defaultDimensions.viewWidth,
+      view_height: defaultDimensions.viewHeight,
       edit_width:
         'editWidth' in defaultDimensions ? defaultDimensions.editWidth : null,
       edit_height:

@@ -78,7 +78,9 @@ const Toolbar: React.FC<ToolbarProps> = ({
           canvasSize,
           type === 'selectionMenu',
           false, // isEditing
-          canvasId
+          canvasId,
+          undefined, // parentNode
+          undefined // temporaryNodeId
         );
       } catch (error) {
         console.error(`Failed to create node of type ${type}:`, error);
