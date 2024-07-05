@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { NodeProps } from 'reactflow';
 import { Node as BaseNode } from '@/ui/canvasEditor/nodeTypes';
 import dynamic from 'next/dynamic';
@@ -118,39 +118,50 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     }
   };
 
-  const commonProps = {
-    draggable: true,
-    connectable: true,
-    onDelete: () => console.log(`Delete ${node.type}`),
-    onChangeColor: () => console.log('Change Color'),
-    onResize: () => console.log('Resize Node'),
-    onTag: () => console.log('Tag Node'),
-    onAttach: () => console.log('Attach File'),
-    width: size.width,
-    height: size.height,
-    selected: selected,
-    onLabelChange: (label: string) =>
-      updateNode(id, { data: { ...node.data, label } }),
-    onEdit: handleEdit,
-    onNodeResizeStop
-  };
+  const commonProps = useMemo(
+    () => ({
+      draggable: true,
+      connectable: true,
+      onDelete: () => console.log(`Delete ${node.type}`),
+      onChangeColor: () => console.log('Change Color'),
+      onResize: () => console.log('Resize Node'),
+      onTag: () => console.log('Tag Node'),
+      onAttach: () => console.log('Attach File'),
+      width: size.width,
+      height: size.height,
+      selected: selected,
+      onLabelChange: (label: string) =>
+        updateNode(id, { data: { ...node.data, label } }),
+      onEdit: handleEdit,
+      onNodeResizeStop
+    }),
+    [
+      size.width,
+      size.height,
+      selected,
+      id,
+      node.data,
+      handleEdit,
+      onNodeResizeStop
+    ]
+  );
 
-  const nodeComponents = {
-    note: { view: NoteNodeView, edit: NoteNodeEdit },
-    task: { view: TaskNodeView, edit: TaskNodeEdit },
-    table: { view: TableNodeView, edit: TableNodeEdit },
-    calendar: { view: CalendarNodeView, edit: CalendarNodeEdit },
-    draw: { view: DrawNodeView, edit: DrawNodeEdit }
-  };
+  const nodeComponents = useMemo(
+    () => ({
+      note: { view: NoteNodeView, edit: NoteNodeEdit },
+      task: { view: TaskNodeView, edit: TaskNodeEdit },
+      table: { view: TableNodeView, edit: TableNodeEdit },
+      calendar: { view: CalendarNodeView, edit: CalendarNodeEdit },
+      draw: { view: DrawNodeView, edit: DrawNodeEdit }
+    }),
+    []
+  );
 
   if (node.type in nodeComponents) {
     const { view, edit } = nodeComponents[node.type];
     const NodeComponent = node.isEditing ? edit : view;
 
-    console.log(
-      `NodeRenderer: Rendering ${node.type} with full node data:`,
-      JSON.stringify(node, null, 2)
-    );
+    console.log(`NodeRenderer: Rendering node with ID: ${id}`);
 
     return (
       <NodeComponent
