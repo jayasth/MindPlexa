@@ -12,7 +12,7 @@ import {
 import { findOptimalPosition } from '@/ui/canvasEditor/utils/positioningUtils';
 import { getChildNodePosition } from '@/ui/canvasEditor/utils/getChildNodePosition';
 import type { Node, XYPosition } from 'reactflow';
-import type { Database, Tables, TablesInsert } from '@/types_db';
+import type { Database } from '@/types_db';
 
 interface NodeState {
   nodes: Node[];
@@ -72,6 +72,7 @@ const useNodeStore = create<NodeState>()(
         };
         newNode.position = findOptimalPosition(state.nodes, canvasSize);
         state.nodeInternals.set(newNode.id, newNode);
+        console.log('useNodeStore: Node added', newNode);
         return { nodes: [...state.nodes, newNode] };
       });
     },
@@ -145,6 +146,7 @@ const useNodeStore = create<NodeState>()(
           );
 
           state.nodeInternals.set(id, updatedNode);
+          console.log('useNodeStore: Node updated', updatedNode);
           return {
             nodes: [
               ...state.nodes.slice(0, existingNodeIndex),
@@ -165,6 +167,7 @@ const useNodeStore = create<NodeState>()(
             nodeToRemove.type as 'note' | 'task' | 'table' | 'calendar' | 'draw'
           );
           state.nodeInternals.delete(id);
+          console.log('useNodeStore: Node removed', nodeToRemove);
           return { nodes: state.nodes.filter((node) => node.id !== id) };
         }
         return state;
@@ -176,6 +179,7 @@ const useNodeStore = create<NodeState>()(
           typeof updater === 'function' ? updater(state.nodes) : updater;
         state.nodeInternals.clear();
         updatedNodes.forEach((node) => state.nodeInternals.set(node.id, node));
+        console.log('useNodeStore: Nodes set', updatedNodes);
         return { nodes: updatedNodes };
       });
     },
@@ -184,6 +188,7 @@ const useNodeStore = create<NodeState>()(
         nodes,
         nodeInternals: new Map(nodes.map((node) => [node.id, node]))
       });
+      console.log('useNodeStore: Initial state set', nodes);
     },
     toggleEditMode: (nodeId) => {
       set((state) => {
@@ -197,6 +202,7 @@ const useNodeStore = create<NodeState>()(
             }
           };
           state.nodeInternals.set(nodeId, updatedNode);
+          console.log('useNodeStore: Edit mode toggled', updatedNode);
           return {
             nodes: state.nodes.map((n) => (n.id === nodeId ? updatedNode : n))
           };
@@ -211,6 +217,7 @@ const useNodeStore = create<NodeState>()(
           selected: selectedIds.includes(node.id)
         }));
         updatedNodes.forEach((node) => state.nodeInternals.set(node.id, node));
+        console.log('useNodeStore: Nodes selected', updatedNodes);
         return { nodes: updatedNodes };
       });
     },
@@ -230,13 +237,17 @@ const useNodeStore = create<NodeState>()(
       setNodes((nodes) => [
         ...nodes.filter((node) => node.type !== 'selection_menu')
       ]);
+      console.log('useNodeStore: Child node added', newNode);
     },
     createChildNodeFromDrag: (parentNode, position, nodeType) => {
       const { addNode, setNodes, removeNode } = get();
+      const dummyElement = document.createElement('div');
+      dummyElement.style.width = '1000px';
+      dummyElement.style.height = '800px';
       const childNodePosition = getChildNodePosition(
-        position,
+        { clientX: position.x, clientY: position.y } as MouseEvent,
         parentNode,
-        { clientWidth: 1000, clientHeight: 800 },
+        dummyElement,
         (pos) => pos
       );
       if (!childNodePosition) {
@@ -260,8 +271,15 @@ const useNodeStore = create<NodeState>()(
             };
             addNode(createdNode);
             removeNode(newNode.id);
+            console.log(
+              'useNodeStore: Child node created from drag',
+              createdNode
+            );
           },
-          onClose: () => removeNode(newNode.id),
+          onClose: () => {
+            removeNode(newNode.id);
+            console.log('useNodeStore: Selection menu closed', newNode);
+          },
           parentNode: parentNode,
           isTemporary: true
         },
@@ -269,6 +287,7 @@ const useNodeStore = create<NodeState>()(
         height: nodeDimensions['selection_menu'].height
       };
       addNode(newNode);
+      console.log('useNodeStore: Selection menu node added', newNode);
     },
     onNodesChange: (changes) => {
       set((state) => {
@@ -338,12 +357,14 @@ const useNodeStore = create<NodeState>()(
                   updatedNode = { ...node, ...change };
               }
               state.nodeInternals.set(updatedNode.id, updatedNode);
+              console.log('useNodeStore: Node changed', updatedNode);
               return updatedNode;
             }
             return node;
           })
           .filter(Boolean) as Node[];
 
+        console.log('useNodeStore: Nodes updated', updatedNodes);
         return { nodes: updatedNodes };
       });
     }

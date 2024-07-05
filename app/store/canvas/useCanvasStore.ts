@@ -5,10 +5,10 @@ import {
   fetchCanvas,
   saveCanvasState
 } from '@/utils/canvas/canvasDatabaseOperations';
-import type { Node, Edge, XYPosition } from 'reactflow';
+import type { Node } from 'reactflow';
 import useNodeStore from '../nodes/useNodeStore';
 import useEdgeStore from '../edges/useEdgeStore';
-import useUIStore from '../ui/useUIStore';
+//import useUIStore from '../ui/useUIStore';
 
 interface CanvasState {
   canvasID: string;
@@ -37,7 +37,7 @@ const useCanvasStore = create<CanvasState>()(
         (nodes.length === 0 && edges.length === 0)
       ) {
         console.log(
-          'Store: Skipping save due to recent load, ongoing loading, or empty canvas'
+          'useCanvasStore: Skipping save due to recent load, ongoing loading, or empty canvas'
         );
         return;
       }
@@ -46,7 +46,7 @@ const useCanvasStore = create<CanvasState>()(
         nodes.some((node) => node.data?.isModified) ||
         edges.some((edge) => edge.data?.isModified);
       if (!hasChanges) {
-        console.log('Store: No changes detected, skipping save');
+        console.log('useCanvasStore: No changes detected, skipping save');
         return;
       }
 
@@ -77,17 +77,22 @@ const useCanvasStore = create<CanvasState>()(
         }))
       };
 
+      console.log('useCanvasStore: Node data before save:', canvasData.nodes);
+
       const result = await saveCanvasState(
         canvasID,
         canvasData.nodes as any,
         canvasData.edges
       );
       if (result.error) {
-        console.error('Store: Error saving canvas data:', result.error);
+        console.error(
+          'useCanvasStore: Error saving canvas data:',
+          result.error
+        );
         return;
       }
 
-      console.log('Store: Canvas data saved successfully');
+      console.log('useCanvasStore: Canvas data saved successfully');
     },
     loadCanvas: async (canvasId: string) => {
       set({ isLoading: true });
@@ -95,7 +100,7 @@ const useCanvasStore = create<CanvasState>()(
         const { data, nodeData, error } = await fetchCanvas(canvasId);
 
         if (error) {
-          console.error('Store: Error fetching canvas data:', error);
+          console.error('useCanvasStore: Error fetching canvas data:', error);
           set({ isLoading: false });
           return;
         }
@@ -140,6 +145,8 @@ const useCanvasStore = create<CanvasState>()(
               (node): node is Node => node !== null && node.type !== undefined
             );
 
+          console.log('useCanvasStore: Node data after load:', nodes);
+
           const edges = data.edges
             ? data.edges.map((edge) => ({
                 id: edge.id,
@@ -158,7 +165,7 @@ const useCanvasStore = create<CanvasState>()(
           set({ isLoading: false, lastLoadTime: Date.now() });
         }
       } catch (error) {
-        console.error('Store: Error loading canvas:', error);
+        console.error('useCanvasStore: Error loading canvas:', error);
         set({ isLoading: false });
       }
     },
