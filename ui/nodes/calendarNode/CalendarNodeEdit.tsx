@@ -3,7 +3,7 @@ import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
 import { Calendar, momentLocalizer, Views } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import { useStore } from '@/app/store/useCanvasStore';
+import { useStore } from '@/app/store/canvas/useCanvasStore';
 import styles from './CalendarNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 import EventModal from '@/ui/nodes/calendarNode/EventModal';

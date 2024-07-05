@@ -15,7 +15,7 @@ import styles from '@/ui/nodes/common/CommonNodeStyles.module.css';
 import Input from '@/ui/Input/Input';
 import Button from '@/ui/Button/Button';
 import { handleAttachmentPreview } from '@/ui/nodes/common/CommonNodeFunctions';
-import { useStore } from '@/app/store/useCanvasStore';
+import { useStore } from '@/app/store/canvas/useCanvasStore';
 
 const ICON_SIZE = 16;
 

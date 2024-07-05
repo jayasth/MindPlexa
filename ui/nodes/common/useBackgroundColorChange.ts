@@ -1,4 +1,4 @@
-import { useStore } from '@/app/store/useCanvasStore';
+import { useStore } from '@/app/store/canvas/useCanvasStore';
 import {
   getContrastYIQ,
   colorCombinations,

@@ -1,4 +1,4 @@
-import { useStore } from '@/app/store/useCanvasStore';
+import { useStore } from '@/app/store/canvas/useCanvasStore';
 import { v4 as uuidv4 } from 'uuid';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 

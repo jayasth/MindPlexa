@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, CSSProperties } from 'react';
 import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
-import { useStore } from '@/app/store/useCanvasStore';
+import { useStore } from '@/app/store/canvas/useCanvasStore';
 import styles from './TaskNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 import {

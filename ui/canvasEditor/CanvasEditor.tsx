@@ -25,7 +25,7 @@ import {
 import NodeRenderer from '@/ui/canvasEditor/NodeRenderer';
 import CustomEdge from '@/ui/edges/CustomEdge';
 import NodeSelectionMenu from '@/ui/nodes/nodeSelectionMenu/NodeSelectionMenu';
-import { useStore } from '@/app/store/useCanvasStore';
+import { useStore } from '@/app/store/canvas/useCanvasStore';
 import { useEdgeConnection } from '@/ui/canvasEditor/hooks/useEdgeConnection';
 import { v4 as uuidv4 } from 'uuid';
 import { handleTemporaryNodeCreation } from '@/ui/canvasEditor/utils/TemporaryNodeHandler';

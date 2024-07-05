@@ -7,7 +7,7 @@ import React, {
 } from 'react';
 import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
 import { AgGridReact } from 'ag-grid-react';
-import { useStore } from '@/app/store/useCanvasStore';
+import { useStore } from '@/app/store/canvas/useCanvasStore';
 import styles from '@/ui/nodes/tableNode/styles/TableNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 import {

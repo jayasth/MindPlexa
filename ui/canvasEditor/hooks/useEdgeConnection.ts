@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
-import { useStore } from '@/app/store/useCanvasStore';
+import { useStore } from '@/app/store/canvas/useCanvasStore';
 import { getChildNodePosition } from '@/ui/canvasEditor/utils/getChildNodePosition';
 import { handleTemporaryNodeCreation } from '@/ui/canvasEditor/utils/TemporaryNodeHandler';
 import type { XYPosition } from 'reactflow';

@@ -6,7 +6,7 @@ import React, {
   useCallback
 } from 'react';
 import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
-import { useStore } from '@/app/store/useCanvasStore';
+import { useStore } from '@/app/store/canvas/useCanvasStore';
 import styles from './DrawNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 

@@ -11,7 +11,7 @@ import {
 } from '@/utils/canvas/nodeEdgeDatabaseOperations';
 import { v4 as uuidv4 } from 'uuid';
 import { Database } from '@/types_db';
-import { useStore } from '@/app/store/useCanvasStore';
+import { useStore } from '@/app/store/canvas/useCanvasStore';
 
 const setPosition = (x: number, y: number): XYPosition => {
   return { x, y };

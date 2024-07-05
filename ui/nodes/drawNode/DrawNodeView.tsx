@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { NodeProps, Handle, Position } from 'reactflow';
-import { useStore } from '@/app/store/useCanvasStore';
+import { useStore } from '@/app/store/canvas/useCanvasStore';
 import styles from './DrawNodeView.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 import { FaEdit } from 'react-icons/fa';

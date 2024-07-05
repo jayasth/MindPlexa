@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Edge, Node } from 'reactflow';
 import { useCompletion } from 'ai/react';
 import { parseMermaidCode } from '@/ui/ai/generator/mermaidGeneratorUtils';
-import { useStore } from '@/app/store/useCanvasStore';
+import { useStore } from '@/app/store/canvas/useCanvasStore';
 import Button from '@/ui/Button/Button';
 import ConfirmIntegrationModal from '@/ui/ai/generator/ConfirmIntegrationModal';
 import { findOptimalPosition } from '@/ui/canvasEditor/utils/positioningUtils'; // Updated import

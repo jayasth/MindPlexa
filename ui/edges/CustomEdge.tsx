@@ -7,7 +7,7 @@ import {
   useReactFlow
 } from 'reactflow';
 import styles from '@/ui/edges/CustomEdgeStyles.module.css';
-import { useStore } from '@/app/store/useCanvasStore'; // Import useStore
+import { useStore } from '@/app/store/canvas/useCanvasStore'; // Import useStore
 
 const CustomEdge = ({
   id,

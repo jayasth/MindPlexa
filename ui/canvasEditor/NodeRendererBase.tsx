@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { NodeProps } from 'reactflow';
 import { Node as BaseNode } from '@/ui/canvasEditor/nodeTypes';
 import dynamic from 'next/dynamic';
-import { useStore } from '@/app/store/useCanvasStore';
+import { useStore } from '@/app/store/canvas/useCanvasStore';
 import { getNodeSpecificProperties } from '@/ui/canvasEditor/utils/nodeProperties';
 
 const NoteNodeEdit = dynamic(() => import('@/ui/nodes/noteNode/NoteNodeEdit'), {

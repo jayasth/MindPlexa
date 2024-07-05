@@ -28,7 +28,7 @@ import {
 import Quill from 'quill';
 import 'quill/dist/quill.snow.css';
 import { useBackgroundColorChange } from '@/ui/nodes/common/useBackgroundColorChange';
-import { useStore } from '@/app/store/useCanvasStore';
+import { useStore } from '@/app/store/canvas/useCanvasStore';
 
 interface NoteNodeEditProps extends NodeProps {
   id: string;

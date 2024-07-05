@@ -19,7 +19,7 @@ import { PiNotepadFill } from 'react-icons/pi';
 import { FaTable } from 'react-icons/fa6';
 
 import Link from 'next/link';
-import { useStore } from '@/app/store/useCanvasStore';
+import { useStore } from '@/app/store/canvas/useCanvasStore';
 import { createNode } from '@/ui/canvasEditor/utils/nodeCreation';
 import { findOptimalPosition } from '@/ui/canvasEditor/utils/positioningUtils';
 import { getNodeSpecificProperties } from '@/ui/canvasEditor/utils/nodeProperties';

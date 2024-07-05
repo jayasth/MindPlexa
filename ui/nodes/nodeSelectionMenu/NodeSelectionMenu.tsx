@@ -5,7 +5,7 @@ import { IoList, IoCalendar, IoBrush } from 'react-icons/io5';
 import { PiNotepadFill } from 'react-icons/pi';
 import { FaTable } from 'react-icons/fa';
 
-import { useStore } from '@/app/store/useCanvasStore';
+import { useStore } from '@/app/store/canvas/useCanvasStore';
 import styles from './NodeSelectionMenu.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 import { Database } from '@/types_db';
