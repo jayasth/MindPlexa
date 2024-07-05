@@ -303,6 +303,9 @@ const useNodeStore = create<NodeState>()(
                     (change.position.x !== node.position.x ||
                       change.position.y !== node.position.y)
                   ) {
+                    console.log(
+                      `useNodeStore: Node position changed for node ${node.id} from (${node.position.x}, ${node.position.y}) to (${change.position.x}, ${change.position.y})`
+                    );
                     updateNodeInDB(
                       node.id,
                       { position: JSON.stringify(change.position) },
@@ -320,6 +323,9 @@ const useNodeStore = create<NodeState>()(
                 case 'dimensions':
                   if (node.data.isEditing && change.dimensions) {
                     const { width, height } = change.dimensions;
+                    console.log(
+                      `useNodeStore: Node dimensions changed for node ${node.id} from (width: ${node.data.edit_width}, height: ${node.data.edit_height}) to (width: ${width}, height: ${height})`
+                    );
                     updateNodeInDB(
                       node.id,
                       {
@@ -349,11 +355,18 @@ const useNodeStore = create<NodeState>()(
                   }
                   break;
                 case 'select':
+                  console.log(
+                    `useNodeStore: Node selection changed for node ${node.id} from ${node.selected} to ${change.selected}`
+                  );
                   updatedNode = { ...node, selected: change.selected };
                   break;
                 case 'remove':
+                  console.log(`useNodeStore: Node removed with id ${node.id}`);
                   return null;
                 default:
+                  console.log(
+                    `useNodeStore: Node changed for node ${node.id} with change type ${change.type}`
+                  );
                   updatedNode = { ...node, ...change };
               }
               state.nodeInternals.set(updatedNode.id, updatedNode);
