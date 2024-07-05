@@ -3,8 +3,7 @@ import { devtools } from 'zustand/middleware';
 import { v4 as uuidv4 } from 'uuid';
 import {
   updateNode as updateNodeInDB,
-  deleteNode as deleteNodeInDB,
-  createNode as createNodeInDB
+  deleteNode as deleteNodeInDB
 } from '@/utils/canvas/nodeEdgeDatabaseOperations';
 import {
   getNodeSpecificProperties,
@@ -75,23 +74,6 @@ const useNodeStore = create<NodeState>()(
         state.nodeInternals.set(newNode.id, newNode);
         return { nodes: [...state.nodes, newNode] };
       });
-
-      if (newNode.type) {
-        createNodeInDB(
-          newNode.id,
-          newNode.type as
-            | 'note'
-            | 'task'
-            | 'table'
-            | 'calendar'
-            | 'draw'
-            | 'selection_menu',
-          newNode.position,
-          newNode.data
-        );
-      } else {
-        console.error('Node type is undefined. Node creation failed.');
-      }
     },
     updateNode: (id, data) => {
       set((state) => {
