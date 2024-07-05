@@ -7,52 +7,30 @@ import {
 } from '@/utils/canvas/canvasDatabaseOperations';
 import type { Node, Edge, XYPosition } from 'reactflow';
 import { findOptimalPosition } from '@/ui/canvasEditor/utils/positioningUtils';
+import useNodeStore from '../nodes/useNodeStore';
+import useEdgeStore from '../edges/useEdgeStore';
+import useUIStore from '../ui/useUIStore';
 
 interface CanvasState {
   canvasID: string;
-  nodes: Node[];
-  edges: Edge[];
-  domNode: HTMLDivElement | null;
-  setDomNode: (node: HTMLDivElement | null) => void;
-  screenToFlowPosition: (position: { x: number; y: number }) => XYPosition;
-  setNodes: (updater: Node[] | ((nodes: Node[]) => Node[])) => void;
-  setEdges: (updater: Edge[] | ((edges: Edge[]) => Edge[])) => void;
-  setInitialState: (nodes: Node[], edges: Edge[]) => void;
   setCanvasId: (id: string) => void;
-  saveCanvas: () => void;
+  saveCanvas: () => Promise<void>;
   loadCanvas: (canvasId: string) => Promise<void>;
   isLoading: boolean;
   lastLoadTime: number;
+  saveCanvasTimeout?: NodeJS.Timeout;
 }
 
 const useCanvasStore = create<CanvasState>()(
   devtools((set, get) => ({
     canvasID: uuidv4(),
-    nodes: [],
-    edges: [],
-    domNode: null,
     isLoading: false,
     lastLoadTime: 0,
-    setDomNode: (node) => set({ domNode: node }),
-    screenToFlowPosition: (position) => position,
-    setNodes: (updater) => {
-      set((state) => {
-        const updatedNodes =
-          typeof updater === 'function' ? updater(state.nodes) : updater;
-        return { nodes: updatedNodes };
-      });
-    },
-    setEdges: (updater) => {
-      set((state) => ({
-        edges: typeof updater === 'function' ? updater(state.edges) : updater
-      }));
-    },
-    setInitialState: (nodes, edges) => {
-      set(() => ({ nodes, edges }));
-    },
     setCanvasId: (id) => set({ canvasID: id }),
     saveCanvas: async () => {
-      const { nodes, edges, canvasID, isLoading, lastLoadTime } = get();
+      const { canvasID, isLoading, lastLoadTime } = get();
+      const nodes = useNodeStore.getState().nodes;
+      const edges = useEdgeStore.getState().edges;
 
       if (
         isLoading ||
@@ -87,30 +65,22 @@ const useCanvasStore = create<CanvasState>()(
           edit_height: node.data?.edit_height || null,
           mobile_edit_width: node.data?.mobile_edit_width || null,
           mobile_edit_height: node.data?.mobile_edit_height || null,
-          isEditing: node.data?.isEditing || false,
-          isTemporary: node.data?.isTemporary || false,
-          parentNodeId: node.data?.parentNodeId || null,
-          zIndex: node.data?.zIndex || 0
+          is_editing: node.data?.isEditing || false,
+          is_temporary: node.data?.isTemporary || false,
+          parent_node_id: node.data?.parentNodeId || null,
+          z_index: node.data?.zIndex || 0
         })),
         edges: edges.map((edge) => ({
           id: edge.id,
-          sourceNodeId: edge.source,
-          targetNodeId: edge.target,
-          canvasId: canvasID
+          source_node_id: edge.source,
+          target_node_id: edge.target,
+          canvas_id: canvasID
         }))
       };
+
       const result = await saveCanvasState(
         canvasID,
-        canvasData.nodes.map((node) => ({
-          ...node,
-          type: node.type as
-            | 'note'
-            | 'task'
-            | 'table'
-            | 'calendar'
-            | 'draw'
-            | 'selection_menu'
-        })),
+        canvasData.nodes as any,
         canvasData.edges
       );
       if (result.error) {
@@ -179,20 +149,21 @@ const useCanvasStore = create<CanvasState>()(
                 type: 'customEdge'
               }))
             : [];
-          set({ nodes, edges, isLoading: false, lastLoadTime: Date.now() });
+
+          useNodeStore.getState().setNodes(nodes);
+          useEdgeStore.getState().setEdges(edges);
+          set({ isLoading: false, lastLoadTime: Date.now() });
         } else {
-          set({
-            nodes: [],
-            edges: [],
-            isLoading: false,
-            lastLoadTime: Date.now()
-          });
+          useNodeStore.getState().setNodes([]);
+          useEdgeStore.getState().setEdges([]);
+          set({ isLoading: false, lastLoadTime: Date.now() });
         }
       } catch (error) {
         console.error('Store: Error loading canvas:', error);
         set({ isLoading: false });
       }
-    }
+    },
+    saveCanvasTimeout: undefined
   }))
 );
 

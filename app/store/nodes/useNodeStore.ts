@@ -162,65 +162,71 @@ const useNodeStore = create<NodeState>()(
             existingNode.type as 'note' | 'task' | 'table' | 'calendar' | 'draw'
           );
 
-          const updatedNodes = [...state.nodes];
-          updatedNodes[existingNodeIndex] = updatedNode;
           state.nodeInternals.set(id, updatedNode);
-          return { nodes: updatedNodes };
+          return {
+            nodes: [
+              ...state.nodes.slice(0, existingNodeIndex),
+              updatedNode,
+              ...state.nodes.slice(existingNodeIndex + 1)
+            ]
+          };
         }
         return state;
       });
     },
     removeNode: (id) => {
       set((state) => {
-        const updatedNodes = state.nodes.filter((node) => node.id !== id);
-        state.nodeInternals.delete(id);
-        return { nodes: updatedNodes };
+        const nodeToRemove = state.nodes.find((node) => node.id === id);
+        if (nodeToRemove) {
+          deleteNodeInDB(
+            id,
+            nodeToRemove.type as 'note' | 'task' | 'table' | 'calendar' | 'draw'
+          );
+          state.nodeInternals.delete(id);
+          return { nodes: state.nodes.filter((node) => node.id !== id) };
+        }
+        return state;
       });
-      deleteNodeInDB(id, 'note'); // Assuming 'note' is the table name
     },
     setNodes: (updater) => {
       set((state) => {
         const updatedNodes =
           typeof updater === 'function' ? updater(state.nodes) : updater;
         state.nodeInternals.clear();
-        updatedNodes.forEach((node) => {
-          state.nodeInternals.set(node.id, node);
-        });
+        updatedNodes.forEach((node) => state.nodeInternals.set(node.id, node));
         return { nodes: updatedNodes };
       });
     },
     setInitialState: (nodes) => {
-      set(() => ({
-        nodes,
-        nodeInternals: new Map(nodes.map((node) => [node.id, node]))
-      }));
+      set({ nodes });
     },
     toggleEditMode: (nodeId) => {
-      set((state) => ({
-        nodes: state.nodes.map((node) => {
-          if (node.id === nodeId) {
-            const updatedNode = {
-              ...node,
-              data: { ...node.data, isEditing: !node.data.isEditing }
-            };
-            state.nodeInternals.set(nodeId, updatedNode);
-            return updatedNode;
-          }
-          return node;
-        })
-      }));
-    },
-    setSelectedNodes: (selectedIds) => {
-      set((state) => ({
-        nodes: state.nodes.map((node) => {
+      set((state) => {
+        const node = state.nodes.find((n) => n.id === nodeId);
+        if (node) {
           const updatedNode = {
             ...node,
-            selected: selectedIds.includes(node.id)
+            data: {
+              ...node.data,
+              isEditing: !node.data?.isEditing
+            }
           };
-          state.nodeInternals.set(node.id, updatedNode);
-          return updatedNode;
-        })
-      }));
+          state.nodeInternals.set(nodeId, updatedNode);
+          return {
+            nodes: state.nodes.map((n) => (n.id === nodeId ? updatedNode : n))
+          };
+        }
+        return state;
+      });
+    },
+    setSelectedNodes: (selectedIds) => {
+      set((state) => {
+        const updatedNodes = state.nodes.map((node) => ({
+          ...node,
+          selected: selectedIds.includes(node.id)
+        }));
+        return { nodes: updatedNodes };
+      });
     },
     addChildNode: (parentNode, position, type) => {
       const { addNode, setNodes } = get();
@@ -256,10 +262,7 @@ const useNodeStore = create<NodeState>()(
         type: 'selection_menu',
         position: childNodePosition,
         data: {
-          onSelect: (
-            selectedNodeType: string,
-            selectedPosition: XYPosition
-          ) => {
+          onSelect: (selectedNodeType, selectedPosition) => {
             const createdNode = {
               id: uuidv4(),
               type: selectedNodeType,
