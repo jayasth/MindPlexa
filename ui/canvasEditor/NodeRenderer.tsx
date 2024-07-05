@@ -2,7 +2,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { NodeProps } from 'reactflow';
 import { Node as BaseNode } from '@/ui/canvasEditor/nodeTypes';
 import dynamic from 'next/dynamic';
-import { useStore } from '@/app/store/canvas/useCanvasStore';
+import useNodeStore from '@/app/store/nodes/useNodeStore';
+import useUIStore from '@/app/store/ui/useUIStore';
 import { getNodeSpecificProperties } from '@/ui/canvasEditor/utils/nodeProperties';
 
 const NoteNodeEdit = dynamic(() => import('@/ui/nodes/noteNode/NoteNodeEdit'), {
@@ -63,42 +64,34 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
   id,
   onNodeResizeStop
 }) => {
-  const node = useStore((state) => state.nodes.find((n) => n.id === id)) as
+  const node = useNodeStore((state) => state.nodes.find((n) => n.id === id)) as
     | BaseNode
-    | undefined; // node might be undefined if it has been deleted
+    | undefined;
 
-  const updateNode = useStore((state) => state.updateNode);
-  const toggleEditMode = useStore((state) => state.toggleEditMode);
+  const updateNode = useNodeStore((state) => state.updateNode);
+  const toggleEditMode = useNodeStore((state) => state.toggleEditMode);
   const [size, setSize] = useState(
     getNodeSpecificProperties(node?.type || 'note', node?.isEditing ?? false)
   );
-  const [isEditing, setIsEditing] = useState(node?.isEditing ?? false); // Track edit mode separately
+  const [isEditing, setIsEditing] = useState(node?.isEditing ?? false);
 
   useEffect(() => {
     if (node && node.type !== 'selection_menu') {
-      console.log(
-        `NodeRenderer: Node ${id} type ${node.type}: width = ${size.width}, height = ${size.height}`
-      );
+      console.log(`NodeRenderer: Node ID: ${id}`);
     }
   }, [node?.type, id]);
 
-  // Only update size when node enters or exits edit mode
   useEffect(() => {
     if (node && isEditing !== node.isEditing) {
       const newSize = getNodeSpecificProperties(node.type, node.isEditing);
       setSize(newSize);
       setIsEditing(node.isEditing);
-      console.log(
-        `NodeRenderer: Updated size for node ${id}: width = ${newSize.width}, height = ${newSize.height}`
-      );
+      console.log(`NodeRenderer: Node ID: ${id}`);
     }
   }, [node?.isEditing, node?.type, id, isEditing]);
 
-  // Early return if node does not exist
   if (!node) {
-    console.log(
-      `NodeRenderer: Node with ID ${id} not found, possibly deleted.`
-    );
+    console.log(`NodeRenderer: Node ID: ${id}`);
     return null;
   }
 
@@ -122,11 +115,11 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     () => ({
       draggable: true,
       connectable: true,
-      onDelete: () => console.log(`Delete ${node.type}`),
-      onChangeColor: () => console.log('Change Color'),
-      onResize: () => console.log('Resize Node'),
-      onTag: () => console.log('Tag Node'),
-      onAttach: () => console.log('Attach File'),
+      onDelete: () => console.log(`Node ID: ${id}`),
+      onChangeColor: () => console.log(`Node ID: ${id}`),
+      onResize: () => console.log(`Node ID: ${id}`),
+      onTag: () => console.log(`Node ID: ${id}`),
+      onAttach: () => console.log(`Node ID: ${id}`),
       width: size.width,
       height: size.height,
       selected: selected,
@@ -161,7 +154,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     const { view, edit } = nodeComponents[node.type];
     const NodeComponent = node.isEditing ? edit : view;
 
-    console.log(`NodeRenderer: Rendering node with ID: ${id}`);
+    console.log(`NodeRenderer: Node ID: ${id}`);
 
     return (
       <NodeComponent

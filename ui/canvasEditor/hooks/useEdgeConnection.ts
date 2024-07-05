@@ -1,30 +1,24 @@
 import { useCallback, useRef, useState } from 'react';
-import { useStore } from '@/app/store/canvas/useCanvasStore';
+import {
+  useNodeStore,
+  useEdgeStore,
+  useUIStore,
+  useCanvasStore
+} from '@/app/store';
 import { getChildNodePosition } from '@/ui/canvasEditor/utils/getChildNodePosition';
 import { handleTemporaryNodeCreation } from '@/ui/canvasEditor/utils/TemporaryNodeHandler';
 import type { XYPosition } from 'reactflow';
 import { v4 as uuidv4 } from 'uuid';
 
 export const useEdgeConnection = () => {
-  const {
-    nodeInternals,
-    domNode,
-    screenToFlowPosition,
-    addChildNode,
-    addEdge,
-    addNode,
-    removeNode,
-    nodes
-  } = useStore((state) => ({
-    nodes: state.nodes,
-    nodeInternals: state.nodeInternals,
-    domNode: state.domNode,
-    screenToFlowPosition: state.screenToFlowPosition,
-    addChildNode: state.addChildNode,
-    addEdge: state.addEdge,
-    addNode: state.addNode,
-    removeNode: state.removeNode
-  }));
+  const { nodes, nodeInternals, addNode, removeNode, addChildNode } =
+    useNodeStore();
+
+  const { addEdge } = useEdgeStore();
+
+  const { domNode, screenToFlowPosition } = useUIStore();
+
+  const { canvasID } = useCanvasStore();
 
   const connectingNodeId = useRef<string | null>(null);
   const [parentNode, setParentNode] = useState(null);
@@ -70,7 +64,7 @@ export const useEdgeConnection = () => {
               addEdge,
               removeNode,
               nodes,
-              useStore.getState().canvasID
+              canvasID
             );
           }
         }
@@ -100,7 +94,8 @@ export const useEdgeConnection = () => {
       addNode,
       addEdge,
       removeNode,
-      nodes
+      nodes,
+      canvasID
     ]
   );
   return {

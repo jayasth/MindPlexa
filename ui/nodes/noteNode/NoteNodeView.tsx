@@ -1,6 +1,6 @@
 import React from 'react';
 import { NodeProps, Handle, Position } from 'reactflow';
-import { useStore } from '@/app/store/canvas/useCanvasStore';
+import { useNodeStore } from '@/app/store';
 import styles from './NoteNodeView.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 import { FaEdit } from 'react-icons/fa';
@@ -19,9 +19,9 @@ interface NoteNodeViewProps extends NodeProps {
 
 const NoteNodeView: React.FC<NoteNodeViewProps> = ({ data, width, height }) => {
   const { title, content, id, backgroundColor, textColor } = data;
-  const toggleEditMode = useStore((state) => state.toggleEditMode);
+  const toggleEditMode = useNodeStore((state) => state.toggleEditMode);
 
-  console.log('NOteNodeView: Node ID:', data.id);
+  console.log('NoteNodeView: Node ID:', data.id);
 
   return (
     <div className={styles.noteNode} style={{ width, height, backgroundColor }}>
@@ -32,7 +32,7 @@ const NoteNodeView: React.FC<NoteNodeViewProps> = ({ data, width, height }) => {
         <div
           className={styles.editButton}
           style={{ color: textColor }}
-          onClick={() => toggleEditMode(data.id)}
+          onClick={() => toggleEditMode(id)}
         >
           <FaEdit />
         </div>

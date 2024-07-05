@@ -19,16 +19,34 @@ interface UIState {
 const useUIStore = create<UIState>()(
   devtools((set) => ({
     showNodeSelectionMenu: false,
-    setShowNodeSelectionMenu: (show) => set({ showNodeSelectionMenu: show }),
+    setShowNodeSelectionMenu: (show) => {
+      console.log('Store: Setting show node selection menu to:', show);
+      set({ showNodeSelectionMenu: show });
+    },
     menuPosition: null,
-    setMenuPosition: (position) => set({ menuPosition: position }),
+    setMenuPosition: (position) => {
+      console.log('Setting menu position to:', position);
+      set({ menuPosition: position });
+    },
     domNode: null,
-    setDomNode: (node) => set({ domNode: node }),
-    screenToFlowPosition: (position) => position,
+    setDomNode: (node) => {
+      console.log('Store: Setting DOM node');
+      set({ domNode: node });
+    },
+    screenToFlowPosition: (position) => {
+      console.log('Store: Converting screen to flow position:', position);
+      return position;
+    },
     isLoading: false,
-    setIsLoading: (loading) => set({ isLoading: loading }),
+    setIsLoading: (loading) => {
+      console.log('Store: Setting isLoading to:', loading);
+      set({ isLoading: loading });
+    },
     lastLoadTime: 0,
-    setLastLoadTime: (time) => set({ lastLoadTime: time })
+    setLastLoadTime: (time) => {
+      console.log('Store: Setting lastLoadTime to:', time);
+      set({ lastLoadTime: time });
+    }
   }))
 );
 

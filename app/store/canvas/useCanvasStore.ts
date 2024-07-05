@@ -6,7 +6,6 @@ import {
   saveCanvasState
 } from '@/utils/canvas/canvasDatabaseOperations';
 import type { Node, Edge, XYPosition } from 'reactflow';
-import { findOptimalPosition } from '@/ui/canvasEditor/utils/positioningUtils';
 import useNodeStore from '../nodes/useNodeStore';
 import useEdgeStore from '../edges/useEdgeStore';
 import useUIStore from '../ui/useUIStore';

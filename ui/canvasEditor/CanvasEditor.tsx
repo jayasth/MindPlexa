@@ -25,7 +25,10 @@ import {
 import NodeRenderer from '@/ui/canvasEditor/NodeRenderer';
 import CustomEdge from '@/ui/edges/CustomEdge';
 import NodeSelectionMenu from '@/ui/nodes/nodeSelectionMenu/NodeSelectionMenu';
-import { useStore } from '@/app/store/canvas/useCanvasStore';
+import useNodeStore from '@/app/store/nodes/useNodeStore';
+import useEdgeStore from '@/app/store/edges/useEdgeStore';
+import useUIStore from '@/app/store/ui/useUIStore';
+import useCanvasStore from '@/app/store/canvas/useCanvasStore';
 import { useEdgeConnection } from '@/ui/canvasEditor/hooks/useEdgeConnection';
 import { v4 as uuidv4 } from 'uuid';
 import { handleTemporaryNodeCreation } from '@/ui/canvasEditor/utils/TemporaryNodeHandler';
@@ -50,37 +53,19 @@ export default function CanvasEditor({ canvasId }) {
 
   const {
     nodes,
-    edges,
     setNodes,
-    setEdges,
     onNodesChange,
     addNode,
-    setDomNode,
-    domNode,
-    nodeInternals,
     removeNode,
-    addEdge,
     updateNode: updateNodeInStore,
-    setCanvasId,
-    saveCanvas,
-    loadCanvas
-  } = useStore((state) => ({
-    nodes: state.nodes,
-    edges: state.edges,
-    setNodes: state.setNodes,
-    setEdges: state.setEdges,
-    onNodesChange: state.onNodesChange,
-    addNode: state.addNode,
-    setDomNode: state.setDomNode,
-    domNode: state.domNode,
-    nodeInternals: state.nodeInternals,
-    removeNode: state.removeNode,
-    addEdge: state.addEdge,
-    updateNode: state.updateNode,
-    setCanvasId: state.setCanvasId,
-    saveCanvas: state.saveCanvas,
-    loadCanvas: state.loadCanvas
-  }));
+    setSelectedNodes
+  } = useNodeStore();
+
+  const { edges, setEdges, addEdge, onEdgesChange } = useEdgeStore();
+
+  const { setDomNode, domNode, isLoading, setIsLoading } = useUIStore();
+
+  const { canvasID, setCanvasId, saveCanvas, loadCanvas } = useCanvasStore();
 
   useEffect(() => {
     if (canvasId) {
@@ -177,12 +162,15 @@ export default function CanvasEditor({ canvasId }) {
     [parentNode, childNodePosition, onNodeResizeStop]
   );
 
-  const onSelectionChange = useCallback((elements) => {
-    if (Array.isArray(elements)) {
-      const selectedIds = elements.map((el) => el.id);
-      useStore.getState().setSelectedNodes(selectedIds);
-    }
-  }, []);
+  const onSelectionChange = useCallback(
+    (elements) => {
+      if (Array.isArray(elements)) {
+        const selectedIds = elements.map((el) => el.id);
+        setSelectedNodes(selectedIds);
+      }
+    },
+    [setSelectedNodes]
+  );
 
   const onNodeDragStop = useCallback(
     (event, node) => {
@@ -202,33 +190,10 @@ export default function CanvasEditor({ canvasId }) {
         id: `e-${uuidv4()}`,
         type: 'customEdge'
       };
-      setEdges((eds) => [...eds, newEdge]);
+      addEdge(newEdge);
       reactFlowInstance.current?.fitView({ padding: 0.2 });
     },
-    [setEdges]
-  );
-
-  const onEdgesChange = useCallback(
-    (changes) => {
-      setEdges((eds) => {
-        if (changes[0].type === 'remove') {
-          return eds.filter((e) => e.id !== changes[0].id);
-        }
-        return eds.map((edge) => {
-          const change = changes.find((c) => c.id === edge.id);
-          if (change) {
-            return {
-              ...edge,
-              source: change.source || edge.source,
-              target: change.target || edge.target,
-              style: { ...edge.style, ...change.style }
-            };
-          }
-          return edge;
-        });
-      });
-    },
-    [setEdges]
+    [addEdge]
   );
 
   const handleTemporaryNodeCreationWithStore = (
@@ -244,7 +209,7 @@ export default function CanvasEditor({ canvasId }) {
       addEdge,
       removeNode,
       nodes,
-      canvasId
+      canvasID
     );
   };
 
@@ -257,7 +222,7 @@ export default function CanvasEditor({ canvasId }) {
       console.log('CanvasEditor: Setting domNode');
       setDomNode(reactFlowWrapper.current);
     }
-  }, [reactFlowWrapper.current, domNode]);
+  }, [reactFlowWrapper.current, domNode, setDomNode]);
 
   // Save the canvas state when the component unmounts
   useEffect(() => {
@@ -277,7 +242,6 @@ export default function CanvasEditor({ canvasId }) {
             onShare={() => handleShare({ nodes, edges })}
             onDownload={() => handleDownload({ nodes, edges })}
             onGenerateMindmap={handleOpenAIAssistanceModal}
-            addNode={handleAddNode}
             reactFlowInstance={reactFlowInstance.current}
           />
         </div>
@@ -315,7 +279,7 @@ export default function CanvasEditor({ canvasId }) {
             fitViewOptions={{ padding: 0.2 }}
             onInit={(instance) => {
               reactFlowInstance.current = instance;
-              useStore.getState().setDomNode(reactFlowWrapper.current);
+              setDomNode(reactFlowWrapper.current);
             }}
           >
             <Background color="#aaa" gap={16} />

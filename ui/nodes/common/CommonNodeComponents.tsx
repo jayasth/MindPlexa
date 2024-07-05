@@ -15,7 +15,7 @@ import styles from '@/ui/nodes/common/CommonNodeStyles.module.css';
 import Input from '@/ui/Input/Input';
 import Button from '@/ui/Button/Button';
 import { handleAttachmentPreview } from '@/ui/nodes/common/CommonNodeFunctions';
-import { useStore } from '@/app/store/canvas/useCanvasStore';
+import useNodeStore from '@/app/store/nodes/useNodeStore';
 
 const ICON_SIZE = 16;
 
@@ -127,7 +127,7 @@ export const FileModal = ({
 }) => {
   const [fileUrl, setFileUrl] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const updateNode = useStore((state) => state.updateNode);
+  const updateNode = useNodeStore((state) => state.updateNode);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {

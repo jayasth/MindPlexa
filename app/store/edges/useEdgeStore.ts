@@ -58,13 +58,20 @@ const useEdgeStore = create<EdgeState>()(
     },
     onEdgesChange: (changes) => {
       set((state) => {
-        const updatedEdges = state.edges.map((edge) => {
-          const change = changes.find((change) => change.id === edge.id);
-          if (change) {
-            return { ...edge, ...change };
-          }
-          return edge;
-        });
+        const updatedEdges = state.edges
+          .map((edge) => {
+            const change = changes.find((change) => change.id === edge.id);
+            if (change) {
+              switch (change.type) {
+                case 'remove':
+                  return null;
+                default:
+                  return { ...edge, ...change };
+              }
+            }
+            return edge;
+          })
+          .filter(Boolean);
         return { edges: updatedEdges };
       });
     }

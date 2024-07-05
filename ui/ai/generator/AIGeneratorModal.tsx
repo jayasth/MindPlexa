@@ -2,10 +2,15 @@ import React, { useState } from 'react';
 import { Edge, Node } from 'reactflow';
 import { useCompletion } from 'ai/react';
 import { parseMermaidCode } from '@/ui/ai/generator/mermaidGeneratorUtils';
-import { useStore } from '@/app/store/canvas/useCanvasStore';
+import {
+  useNodeStore,
+  useEdgeStore,
+  useUIStore,
+  useCanvasStore
+} from '@/app/store';
 import Button from '@/ui/Button/Button';
 import ConfirmIntegrationModal from '@/ui/ai/generator/ConfirmIntegrationModal';
-import { findOptimalPosition } from '@/ui/canvasEditor/utils/positioningUtils'; // Updated import
+import { findOptimalPosition } from '@/ui/canvasEditor/utils/positioningUtils';
 import styles from '@/ui/ai/generator/AIGeneratorModal.module.css';
 
 interface AIAssistanceModalProps {
@@ -20,10 +25,10 @@ const AIAssistanceModal: React.FC<AIAssistanceModalProps> = ({ onClose }) => {
   const { completion, input, handleInputChange, handleSubmit, isLoading } =
     useCompletion();
 
-  const { setNodes, setEdges } = useStore((state) => ({
-    setNodes: state.setNodes,
-    setEdges: state.setEdges
-  }));
+  const { setNodes } = useNodeStore();
+  const { setEdges } = useEdgeStore();
+  const { isLoading: uiIsLoading, setIsLoading } = useUIStore();
+  const { canvasID } = useCanvasStore();
 
   const handleTopicChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setTopic(e.target.value);
@@ -32,6 +37,7 @@ const AIAssistanceModal: React.FC<AIAssistanceModalProps> = ({ onClose }) => {
 
   const handleGenerateMindmap = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsLoading(true);
 
     try {
       const response = await fetch('/api/completion', {
@@ -69,7 +75,7 @@ const AIAssistanceModal: React.FC<AIAssistanceModalProps> = ({ onClose }) => {
       });
 
       // Check if there are existing nodes on the canvas before setting new nodes
-      const existingNodes = useStore.getState().nodes;
+      const existingNodes = useNodeStore.getState().nodes;
 
       if (existingNodes.length > 0) {
         setGeneratedNodes(updatedNodes);
@@ -82,15 +88,17 @@ const AIAssistanceModal: React.FC<AIAssistanceModalProps> = ({ onClose }) => {
     } catch (error) {
       console.error('AIGeneratorModal: Error generating mindmap:', error);
       // Handle error state
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleConfirmIntegration = (newNodes, newEdges) => {
     const canvasSize = { width: window.innerWidth, height: window.innerHeight };
     const optimalPosition = findOptimalPosition(
-      useStore.getState().nodes,
+      useNodeStore.getState().nodes,
       canvasSize
-    ); // Updated function call
+    );
 
     const offsetNodes = newNodes.map((node) => {
       const title = node.data?.title || 'Untitled';
@@ -137,10 +145,10 @@ const AIAssistanceModal: React.FC<AIAssistanceModalProps> = ({ onClose }) => {
               <Button
                 className={styles.iconButton}
                 type="submit"
-                disabled={isLoading}
+                disabled={uiIsLoading}
                 variant="slim"
               >
-                {isLoading ? 'Generating' : 'Generate'}
+                {uiIsLoading ? 'Generating' : 'Generate'}
               </Button>
               <Button
                 className={styles.iconButton}

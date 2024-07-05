@@ -19,7 +19,12 @@ import { PiNotepadFill } from 'react-icons/pi';
 import { FaTable } from 'react-icons/fa6';
 
 import Link from 'next/link';
-import { useStore } from '@/app/store/canvas/useCanvasStore';
+import {
+  useNodeStore,
+  useEdgeStore,
+  useUIStore,
+  useCanvasStore
+} from '@/app/store';
 import { createNode } from '@/ui/canvasEditor/utils/nodeCreation';
 import { findOptimalPosition } from '@/ui/canvasEditor/utils/positioningUtils';
 import { getNodeSpecificProperties } from '@/ui/canvasEditor/utils/nodeProperties';
@@ -31,7 +36,6 @@ interface ToolbarProps {
   onRedo: () => void;
   onShare: () => void;
   onDownload: () => void;
-  addNode: (node: Node) => void;
   reactFlowInstance: any;
   onGenerateMindmap: () => void;
 }
@@ -46,8 +50,12 @@ const Toolbar: React.FC<ToolbarProps> = ({
   onGenerateMindmap
 }) => {
   const [isOpen, setIsOpen] = useState(true);
-  const addNode = useStore((state) => state.addNode);
-  const nodes = useStore((state) => state.nodes);
+  const addNode = useNodeStore((state) => state.addNode);
+  const nodes = useNodeStore((state) => state.nodes);
+  const setCanvasId = useCanvasStore((state) => state.setCanvasId);
+  const screenToFlowPosition = useUIStore(
+    (state) => state.screenToFlowPosition
+  );
 
   const handleAddNode = useCallback(
     async (
@@ -70,7 +78,8 @@ const Toolbar: React.FC<ToolbarProps> = ({
             addNode(node);
             console.log('Toolbar: Node created:', node);
             if (reactFlowInstance && nodes.length === 0) {
-              reactFlowInstance.setCenter(node.position.x, node.position.y, {
+              const flowPosition = screenToFlowPosition(node.position);
+              reactFlowInstance.setCenter(flowPosition.x, flowPosition.y, {
                 zoom: 1
               });
             }
@@ -86,7 +95,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
         console.error(`Failed to create node of type ${type}:`, error);
       }
     },
-    [addNode, canvasId, nodes, reactFlowInstance]
+    [addNode, canvasId, nodes, reactFlowInstance, screenToFlowPosition]
   );
 
   const toggleToolbar = () => {

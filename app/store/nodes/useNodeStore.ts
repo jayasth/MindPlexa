@@ -198,7 +198,10 @@ const useNodeStore = create<NodeState>()(
       });
     },
     setInitialState: (nodes) => {
-      set({ nodes });
+      set({
+        nodes,
+        nodeInternals: new Map(nodes.map((node) => [node.id, node]))
+      });
     },
     toggleEditMode: (nodeId) => {
       set((state) => {
@@ -225,6 +228,7 @@ const useNodeStore = create<NodeState>()(
           ...node,
           selected: selectedIds.includes(node.id)
         }));
+        updatedNodes.forEach((node) => state.nodeInternals.set(node.id, node));
         return { nodes: updatedNodes };
       });
     },
@@ -233,7 +237,7 @@ const useNodeStore = create<NodeState>()(
       const newNode = {
         id: uuidv4(),
         type: type,
-        data: { label: 'New Node' },
+        data: { label: 'New Node', parentId: parentNode.id },
         position,
         style: {
           backgroundColor: '#F4F4F4',
@@ -262,12 +266,15 @@ const useNodeStore = create<NodeState>()(
         type: 'selection_menu',
         position: childNodePosition,
         data: {
-          onSelect: (selectedNodeType, selectedPosition) => {
+          onSelect: (
+            selectedNodeType: string,
+            selectedPosition: XYPosition
+          ) => {
             const createdNode = {
               id: uuidv4(),
               type: selectedNodeType,
               position: selectedPosition,
-              data: { label: 'New Node' }
+              data: { label: 'New Node', parentId: parentNode.id }
             };
             addNode(createdNode);
             removeNode(newNode.id);

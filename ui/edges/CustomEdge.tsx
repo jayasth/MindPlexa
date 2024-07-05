@@ -3,11 +3,10 @@ import {
   BaseEdge,
   EdgeLabelRenderer,
   EdgeProps,
-  getBezierPath,
-  useReactFlow
+  getBezierPath
 } from 'reactflow';
 import styles from '@/ui/edges/CustomEdgeStyles.module.css';
-import { useStore } from '@/app/store/canvas/useCanvasStore'; // Import useStore
+import { useEdgeStore } from '@/app/store';
 
 const CustomEdge = ({
   id,
@@ -30,10 +29,12 @@ const CustomEdge = ({
     targetPosition
   });
 
+  const removeEdge = useEdgeStore((state) => state.removeEdge);
+
   const onEdgeClick = () => {
     console.log('onEdgeClick called with id:', id);
     onDelete?.(id);
-    useStore.getState().removeEdge(id);
+    removeEdge(id);
   };
 
   return (

@@ -11,7 +11,10 @@ import {
 } from '@/utils/canvas/nodeEdgeDatabaseOperations';
 import { v4 as uuidv4 } from 'uuid';
 import { Database } from '@/types_db';
-import { useStore } from '@/app/store/canvas/useCanvasStore';
+import useNodeStore from '@/app/store/nodes/useNodeStore';
+import useEdgeStore from '@/app/store/edges/useEdgeStore';
+import useUIStore from '@/app/store/ui/useUIStore';
+import useCanvasStore from '@/app/store/canvas/useCanvasStore';
 
 const setPosition = (x: number, y: number): XYPosition => {
   return { x, y };
@@ -36,7 +39,6 @@ export const createNode = async (
   parentNode?: Node<any> | null,
   temporaryNodeId?: string
 ): Promise<void> => {
-  // Generate a single UUID for the node
   const nodeId = temporaryNodeId || uuidv4();
 
   const nodeDimension = nodeDimensions[nodeType];
@@ -98,7 +100,6 @@ export const createNode = async (
       viewHeight: nodeDimensions.selection_menu.height
     };
 
-    // Handle selection_menu type dimensions
     if (nodeType === 'selection_menu') {
       newNodeData.viewWidth = nodeDimensions.selection_menu.width;
       newNodeData.viewHeight = nodeDimensions.selection_menu.height;
@@ -136,7 +137,6 @@ export const createNode = async (
       callback(newNodeWithData);
       console.log('nodeCreation: Node created with ID:', createdNode.id);
 
-      // Create edge if there's a parent node
       if (parentNode) {
         const edgeId = uuidv4();
         const newEdge = {
@@ -156,8 +156,7 @@ export const createNode = async (
           console.error('nodeCreation: Error creating edge:', edgeError);
         } else if (createdEdge) {
           newEdge.id = createdEdge.id;
-          // Add the edge to the local state
-          useStore.getState().addEdge(newEdge);
+          useEdgeStore.getState().addEdge(newEdge);
           console.log('nodeCreation: Edge created with ID:', createdEdge.id);
         }
       }
