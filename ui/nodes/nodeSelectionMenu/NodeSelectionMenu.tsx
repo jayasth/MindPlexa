@@ -57,8 +57,8 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
   };
 
   useEffect(() => {
-    console.log('NodeSelectionMenu: Node ID:', id);
-  }, [id]);
+    console.log('NodeSelectionMenu: Node ID:', data.id);
+  }, [data.id]);
 
   // ... existing imports ...
 
@@ -66,7 +66,7 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
     nodeType: 'note' | 'task' | 'table' | 'calendar' | 'draw'
   ) => {
     console.log('NodeSelectionMenu: Replacing node with type: ', nodeType);
-    const tempNode = nodes.find((n) => n.id === id);
+    const tempNode = nodes.find((n) => n.id === data.id);
 
     if (!tempNode) {
       console.error('Temporary node not found');
@@ -79,7 +79,7 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
     const { data: updatedCommonNode, error: commonError } = await supabase
       .from('nodes')
       .update({ type: nodeType })
-      .eq('id', id)
+      .eq('id', data.id)
       .select()
       .single();
 
@@ -92,7 +92,7 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
     const tableName = `${nodeType}_nodes` as keyof Database['public']['Tables'];
     const { data: specificNode, error: tableError } = await supabase
       .from(tableName)
-      .insert([{ node_id: id }])
+      .insert([{ node_id: data.id }])
       .select()
       .single();
 
@@ -112,15 +112,15 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
       }
     };
 
-    updateLocalNode(id, updatedNode);
+    updateLocalNode(data.id, updatedNode);
 
     // Update the edges connected to the node
     const updatedEdges = edges.map((edge) => {
-      if (edge.source === id || edge.target === id) {
+      if (edge.source === data.id || edge.target === data.id) {
         return {
           ...edge,
-          source: edge.source === id ? id : edge.source,
-          target: edge.target === id ? id : edge.target
+          source: edge.source === data.id ? data.id : edge.source,
+          target: edge.target === data.id ? data.id : edge.target
         };
       }
       return edge;

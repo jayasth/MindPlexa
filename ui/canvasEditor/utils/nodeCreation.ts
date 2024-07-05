@@ -121,7 +121,7 @@ export const createNode = async (
       );
       const newNodeWithData: Node<any> = {
         ...newNode,
-        id: createdNode.id,
+        id: nodeId,
         position: positionAsXYPosition,
         data: {
           ...createdNode,
@@ -132,7 +132,7 @@ export const createNode = async (
         }
       };
       callback(newNodeWithData);
-      console.log('nodeCreation: Node created with ID:', createdNode.id);
+      console.log('nodeCreation: Node created with ID:', nodeId);
 
       if (parentNode) {
         const edgeId = uuidv4();
