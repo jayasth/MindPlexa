@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NodeProps } from 'reactflow';
 import { Node as BaseNode } from '@/ui/canvasEditor/nodeTypes';
 import dynamic from 'next/dynamic';
 import useNodeStore from '@/app/store/nodes/useNodeStore';
-import useUIStore from '@/app/store/ui/useUIStore';
 import { getNodeSpecificProperties } from '@/ui/canvasEditor/utils/nodeProperties';
 
 const NoteNodeEdit = dynamic(() => import('@/ui/nodes/noteNode/NoteNodeEdit'), {
@@ -76,12 +75,6 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
   const [isEditing, setIsEditing] = useState(node?.isEditing ?? false);
 
   useEffect(() => {
-    if (node && node.type !== 'selection_menu') {
-      console.log(`NodeRenderer: Node ID: ${id}`);
-    }
-  }, [node?.type, id]);
-
-  useEffect(() => {
     if (node && isEditing !== node.isEditing) {
       const newSize = getNodeSpecificProperties(node.type, node.isEditing);
       setSize(newSize);
@@ -111,44 +104,30 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     }
   };
 
-  const commonProps = useMemo(
-    () => ({
-      draggable: true,
-      connectable: true,
-      onDelete: () => console.log(`Node ID: ${id}`),
-      onChangeColor: () => console.log(`Node ID: ${id}`),
-      onResize: () => console.log(`Node ID: ${id}`),
-      onTag: () => console.log(`Node ID: ${id}`),
-      onAttach: () => console.log(`Node ID: ${id}`),
-      width: size.width,
-      height: size.height,
-      selected: selected,
-      onLabelChange: (label: string) =>
-        updateNode(id, { data: { ...node.data, label } }),
-      onEdit: handleEdit,
-      onNodeResizeStop
-    }),
-    [
-      size.width,
-      size.height,
-      selected,
-      id,
-      node.data,
-      handleEdit,
-      onNodeResizeStop
-    ]
-  );
+  const commonProps = {
+    draggable: true,
+    connectable: true,
+    onDelete: () => console.log(`Node ID: ${id}`),
+    onChangeColor: () => console.log(`Node ID: ${id}`),
+    onResize: () => console.log(`Node ID: ${id}`),
+    onTag: () => console.log(`Node ID: ${id}`),
+    onAttach: () => console.log(`Node ID: ${id}`),
+    width: size.width,
+    height: size.height,
+    selected: selected,
+    onLabelChange: (label: string) =>
+      updateNode(id, { data: { ...node.data, label } }),
+    onEdit: handleEdit,
+    onNodeResizeStop
+  };
 
-  const nodeComponents = useMemo(
-    () => ({
-      note: { view: NoteNodeView, edit: NoteNodeEdit },
-      task: { view: TaskNodeView, edit: TaskNodeEdit },
-      table: { view: TableNodeView, edit: TableNodeEdit },
-      calendar: { view: CalendarNodeView, edit: CalendarNodeEdit },
-      draw: { view: DrawNodeView, edit: DrawNodeEdit }
-    }),
-    []
-  );
+  const nodeComponents = {
+    note: { view: NoteNodeView, edit: NoteNodeEdit },
+    task: { view: TaskNodeView, edit: TaskNodeEdit },
+    table: { view: TableNodeView, edit: TableNodeEdit },
+    calendar: { view: CalendarNodeView, edit: CalendarNodeEdit },
+    draw: { view: DrawNodeView, edit: DrawNodeEdit }
+  };
 
   if (node.type in nodeComponents) {
     const { view, edit } = nodeComponents[node.type];

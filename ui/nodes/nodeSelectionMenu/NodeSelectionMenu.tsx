@@ -1,16 +1,11 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { NodeProps, Handle, Position } from 'reactflow';
 
 import { IoList, IoCalendar, IoBrush } from 'react-icons/io5';
 import { PiNotepadFill } from 'react-icons/pi';
 import { FaTable } from 'react-icons/fa';
 
-import {
-  useNodeStore,
-  useEdgeStore,
-  useUIStore,
-  useCanvasStore
-} from '@/app/store';
+import { useNodeStore, useEdgeStore } from '@/app/store';
 import styles from './NodeSelectionMenu.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 import { Database } from '@/types_db';
@@ -60,6 +55,10 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
     calendar: <IoCalendar />,
     draw: <IoBrush />
   };
+
+  useEffect(() => {
+    console.log('NodeSelectionMenu: Node ID:', id);
+  }, [id]);
 
   // ... existing imports ...
 

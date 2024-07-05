@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { NodeProps } from 'reactflow';
 import { Node as BaseNode } from '@/ui/canvasEditor/nodeTypes';
 import dynamic from 'next/dynamic';
-import { useStore } from '@/app/store/canvas/useCanvasStore';
+import useNodeStore from '@/app/store/nodes/useNodeStore';
+import useUIStore from '@/app/store/ui/useUIStore';
 import { getNodeSpecificProperties } from '@/ui/canvasEditor/utils/nodeProperties';
 
 const NoteNodeEdit = dynamic(() => import('@/ui/nodes/noteNode/NoteNodeEdit'), {
@@ -63,12 +64,12 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
   id,
   onNodeResizeStop
 }) => {
-  const node = useStore((state) => state.nodes.find((n) => n.id === id)) as
+  const node = useNodeStore((state) => state.nodes.find((n) => n.id === id)) as
     | BaseNode
     | undefined; // node might be undefined if it has been deleted
 
-  const updateNode = useStore((state) => state.updateNode);
-  const toggleEditMode = useStore((state) => state.toggleEditMode);
+  const updateNode = useNodeStore((state) => state.updateNode);
+  const toggleEditMode = useNodeStore((state) => state.toggleEditMode);
   const [size, setSize] = useState(
     getNodeSpecificProperties(node?.type || 'note', node?.isEditing ?? false)
   );
