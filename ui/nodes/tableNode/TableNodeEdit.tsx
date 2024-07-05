@@ -7,7 +7,8 @@ import React, {
 } from 'react';
 import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
 import { AgGridReact } from 'ag-grid-react';
-import { useStore } from '@/app/store/canvas/useCanvasStore';
+import useNodeStore from '@/app/store/nodes/useNodeStore';
+import useUIStore from '@/app/store/ui/useUIStore';
 import styles from '@/ui/nodes/tableNode/styles/TableNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 import {
@@ -127,7 +128,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   } | null>(null);
   const [cellContextMenuParams, setCellContextMenuParams] = useState<any>(null);
 
-  const updateNode = useStore((state) => state.updateNode);
+  const updateNode = useNodeStore((state) => state.updateNode);
   const tableRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<any>(null);
 

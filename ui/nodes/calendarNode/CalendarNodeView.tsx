@@ -1,6 +1,6 @@
 import React from 'react';
 import { NodeProps, Handle, Position } from 'reactflow';
-import { useStore } from '@/app/store/canvas/useCanvasStore';
+import { useNodeStore, useUIStore } from '@/app/store';
 import styles from './CalendarNodeView.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 import { FaEdit } from 'react-icons/fa';
@@ -23,7 +23,8 @@ const CalendarNodeView: React.FC<CalendarNodeViewProps> = ({
   height
 }) => {
   const { title, events, id, backgroundColor, textColor } = data;
-  const toggleEditMode = useStore((state) => state.toggleEditMode);
+  const toggleEditMode = useNodeStore((state) => state.toggleEditMode);
+  const isLoading = useUIStore((state) => state.isLoading);
 
   return (
     <div
@@ -43,7 +44,9 @@ const CalendarNodeView: React.FC<CalendarNodeViewProps> = ({
         </div>
       </div>
       <div className={styles.contentPreview} style={{ color: textColor }}>
-        {events && events.length > 0 ? (
+        {isLoading ? (
+          <span className={styles.loading}>Loading...</span>
+        ) : events && events.length > 0 ? (
           <ul>
             {events.map((event, index) => (
               <li key={index}>{event.title}</li>

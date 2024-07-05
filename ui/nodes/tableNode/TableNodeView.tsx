@@ -1,6 +1,6 @@
 import React from 'react';
 import { NodeProps, Handle, Position } from 'reactflow';
-import { useStore } from '@/app/store/canvas/useCanvasStore';
+import { useNodeStore, useUIStore } from '@/app/store';
 import styles from '@/ui/nodes/tableNode/styles/TableNodeView.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 import { FaEdit } from 'react-icons/fa';
@@ -23,11 +23,16 @@ const TableNodeView: React.FC<TableNodeViewProps> = ({
   height
 }) => {
   const { title, content, id, backgroundColor, textColor } = data;
-  const toggleEditMode = useStore((state) => state.toggleEditMode);
+  const toggleEditMode = useNodeStore((state) => state.toggleEditMode);
+  const isLoading = useUIStore((state) => state.isLoading);
 
   console.log(
     `TableNodeView: backgroundColor = ${backgroundColor}, textColor = ${textColor}`
   );
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div

@@ -3,7 +3,7 @@ import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
 import { Calendar, momentLocalizer, Views } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import { useStore } from '@/app/store/canvas/useCanvasStore';
+import { useNodeStore, useUIStore, useCanvasStore } from '@/app/store';
 import styles from './CalendarNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 import EventModal from '@/ui/nodes/calendarNode/EventModal';
@@ -82,12 +82,14 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
   const [isTagModalOpen, setIsTagModalOpen] = useState(false);
   const [isFileModalOpen, setIsFileModalOpen] = useState(false);
 
-  const updateNode = useStore((state) => state.updateNode);
+  const updateNode = useNodeStore((state) => state.updateNode);
+  const saveCanvas = useCanvasStore((state) => state.saveCanvas);
 
   useEffect(() => {
     updateNode(data.id, {
       data: { events, title, tags, attachedFiles, backgroundColor, textColor }
     });
+    saveCanvas();
   }, [
     events,
     title,
@@ -96,6 +98,7 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
     backgroundColor,
     textColor,
     updateNode,
+    saveCanvas,
     data.id
   ]);
 
@@ -315,7 +318,7 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
         onAttachFiles={onAttachFiles}
         onRemoveFile={onRemoveFile}
         existingFiles={attachedFiles}
-        data={data}
+        nodeId={data.id}
       />
       {isModalOpen && (
         <EventModal

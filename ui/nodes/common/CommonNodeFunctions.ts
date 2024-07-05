@@ -1,4 +1,4 @@
-import { useStore } from '@/app/store/canvas/useCanvasStore';
+import { useNodeStore, useEdgeStore } from '@/app/store';
 import { v4 as uuidv4 } from 'uuid';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 
@@ -133,14 +133,9 @@ export const handleChangeColorWithCombination = (
   textColor: string,
   onChangeColor: (color: string) => void
 ) => {
-  const { updateNode, nodeInternals } = useStore.getState();
-  const node = nodeInternals.get(id);
-  if (!node || !node.type) {
-    console.error(`Node with id ${id} not found or node type is undefined`);
-    return;
-  }
+  const { updateNode } = useNodeStore.getState();
   onChangeColor(backgroundColor);
-  updateNode(node.id, { data: { backgroundColor, textColor } });
+  updateNode(id, { data: { backgroundColor, textColor } });
 };
 
 export const handleTitleChange = (
@@ -148,50 +143,33 @@ export const handleTitleChange = (
   title: string,
   onChangeTitle: (title: string) => void
 ) => {
-  const { updateNode, nodeInternals } = useStore.getState();
-  const node = nodeInternals.get(id);
-  if (!node || !node.type) {
-    console.error(`Node with id ${id} not found or node type is undefined`);
-    return;
-  }
+  const { updateNode } = useNodeStore.getState();
   onChangeTitle(title);
-  updateNode(node.id, { data: { title } });
+  updateNode(id, { data: { title } });
 };
 
 export const handleSave = (id: string, onSave: () => void, nodeData: any) => {
-  const { updateNode, toggleEditMode, nodeInternals } = useStore.getState();
-  const node = nodeInternals.get(id);
-  if (!node || !node.type) {
-    console.error(`Node with id ${id} not found or node type is undefined`);
-    return;
-  }
+  const { updateNode, toggleEditMode } = useNodeStore.getState();
   onSave();
-  updateNode(node.id, nodeData);
+  updateNode(id, nodeData);
   toggleEditMode(id);
 };
+
 export const handleClose = (
   nodeId: string,
   onClose: () => void,
   title: string,
   content: any
 ) => {
-  const { updateNode, toggleEditMode, nodeInternals } = useStore.getState();
-  const node = nodeInternals.get(nodeId);
-  if (!node || !node.type) {
-    console.error(`Node with id ${nodeId} not found or node type is undefined`);
-    return;
-  }
-  updateNode(node.id, { data: { title, content } });
+  const { updateNode, toggleEditMode } = useNodeStore.getState();
+  updateNode(nodeId, { data: { title, content } });
   onClose();
   toggleEditMode(nodeId);
 };
+
 export const handleDelete = (id: string, onDelete: () => void) => {
-  const { removeNode, setEdges, nodeInternals } = useStore.getState();
-  const node = nodeInternals.get(id);
-  if (!node || !node.type) {
-    console.error(`Node with id ${id} not found or node type is undefined`);
-    return;
-  }
+  const { removeNode } = useNodeStore.getState();
+  const { setEdges } = useEdgeStore.getState();
   if (window.confirm('Are you sure you want to delete this node?')) {
     onDelete();
     removeNode(id);
@@ -200,20 +178,16 @@ export const handleDelete = (id: string, onDelete: () => void) => {
     );
   }
 };
+
 export const handleChangeColor = (
   id: string,
   color: string,
   onChangeColor: (color: string) => void
 ) => {
-  const { updateNode, nodeInternals } = useStore.getState();
-  const node = nodeInternals.get(id);
-  if (!node || !node.type) {
-    console.error(`Node with id ${id} not found or node type is undefined`);
-    return;
-  }
+  const { updateNode } = useNodeStore.getState();
   const textColor = getContrastYIQ(color);
   onChangeColor(color);
-  updateNode(node.id, { data: { backgroundColor: color, textColor } });
+  updateNode(id, { data: { backgroundColor: color, textColor } });
 };
 
 export const handleAddTag = (
@@ -221,13 +195,8 @@ export const handleAddTag = (
   tags: string[],
   onAddTag: (tag: string) => void
 ) => {
-  const { updateNode, nodeInternals } = useStore.getState();
-  const node = nodeInternals.get(id);
-  if (!node || !node.type) {
-    console.error(`Node with id ${id} not found or node type is undefined`);
-    return;
-  }
-  updateNode(node.id, { data: { tags } });
+  const { updateNode } = useNodeStore.getState();
+  updateNode(id, { data: { tags } });
   tags.forEach((tag) => onAddTag(tag));
 };
 
@@ -236,12 +205,7 @@ export const handleAttachFile = (
   files: (File | string)[],
   callback: () => void
 ) => {
-  const { updateNode, nodeInternals } = useStore.getState();
-  const node = nodeInternals.get(id);
-  if (!node || !node.type) {
-    console.error(`Node with id ${id} not found or node type is undefined`);
-    return;
-  }
+  const { updateNode } = useNodeStore.getState();
   const maxFileSize = 2 * 1024 * 1024; // 2 MB in bytes
   const validFiles = files.filter((file) => {
     if (typeof file === 'string') return true;
@@ -255,8 +219,8 @@ export const handleAttachFile = (
 
   if (validFiles.length > 0) {
     const existingFiles =
-      useStore.getState().nodes.find((n) => n.id === id)?.data?.attachedFiles ||
-      [];
+      useNodeStore.getState().nodes.find((n) => n.id === id)?.data
+        ?.attachedFiles || [];
     const allFiles = [...existingFiles, ...validFiles];
 
     if (allFiles.length > 10) {
@@ -264,7 +228,7 @@ export const handleAttachFile = (
       return;
     }
 
-    updateNode(node.id, {
+    updateNode(id, {
       data: { attachedFiles: JSON.stringify(allFiles) } // Serialize files
     });
     callback();
@@ -280,24 +244,20 @@ export const handleRemoveAttachedFile = (
   fileToRemove: File | string,
   onRemoveFile: (file: File | string) => void
 ) => {
-  const { updateNode, nodeInternals } = useStore.getState();
-  const node = nodeInternals.get(id);
-  if (!node || !node.type) {
-    console.error(`Node with id ${id} not found or node type is undefined`);
-    return;
-  }
+  const { updateNode } = useNodeStore.getState();
   const existingFiles =
-    useStore.getState().nodes.find((n) => n.id === id)?.data?.attachedFiles ||
-    [];
+    useNodeStore.getState().nodes.find((n) => n.id === id)?.data
+      ?.attachedFiles || [];
   const updatedFiles = existingFiles.filter((file) => file !== fileToRemove);
 
-  updateNode(node.id, {
+  updateNode(id, {
     data: { attachedFiles: updatedFiles }
   });
   onRemoveFile(fileToRemove);
 };
+
 export const handleDuplicate = (id: string) => {
-  const { nodes, addNode, setSelectedNodes } = useStore.getState();
+  const { nodes, addNode, setSelectedNodes } = useNodeStore.getState();
   const nodeToDuplicate = nodes.find((node) => node.id === id);
   if (nodeToDuplicate) {
     const nodeDimension =

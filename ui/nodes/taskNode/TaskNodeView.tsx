@@ -1,6 +1,6 @@
 import React from 'react';
 import { NodeProps, Handle, Position } from 'reactflow';
-import { useStore } from '@/app/store/canvas/useCanvasStore';
+import { useNodeStore, useUIStore } from '@/app/store';
 import styles from './TaskNodeView.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 import { FaEdit } from 'react-icons/fa';
@@ -19,7 +19,12 @@ interface TaskNodeViewProps extends NodeProps {
 
 const TaskNodeView: React.FC<TaskNodeViewProps> = ({ data, width, height }) => {
   const { title, tasks, id, backgroundColor, textColor } = data;
-  const toggleEditMode = useStore((state) => state.toggleEditMode);
+  const toggleEditMode = useNodeStore((state) => state.toggleEditMode);
+  const isLoading = useUIStore((state) => state.isLoading);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className={styles.taskNode} style={{ width, height, backgroundColor }}>

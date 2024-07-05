@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, CSSProperties } from 'react';
 import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
-import { useStore } from '@/app/store/canvas/useCanvasStore';
+import { useNodeStore, useUIStore } from '@/app/store';
 import styles from './TaskNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 import {
@@ -88,7 +88,8 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
   const [newTaskText, setNewTaskText] = useState('');
   const [showCompletedTasks, setShowCompletedTasks] = useState(true);
 
-  const updateNode = useStore((state) => state.updateNode);
+  const updateNode = useNodeStore((state) => state.updateNode);
+  const { screenToFlowPosition } = useUIStore();
   const colorPickerRef = useRef<HTMLDivElement>(null);
 
   const handleBackgroundColorChange = useBackgroundColorChange(

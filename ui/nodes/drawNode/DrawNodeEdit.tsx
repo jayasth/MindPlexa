@@ -6,7 +6,7 @@ import React, {
   useCallback
 } from 'react';
 import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
-import { useStore } from '@/app/store/canvas/useCanvasStore';
+import { useNodeStore, useUIStore, useCanvasStore } from '@/app/store';
 import styles from './DrawNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 
@@ -149,7 +149,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
 
   const { undo, redo, history, canUndo, canRedo } = useHistory();
 
-  const updateNode = useStore((state) => state.updateNode);
+  const updateNode = useNodeStore((state) => state.updateNode);
   const sizePickerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -373,7 +373,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         onAttachFiles={onAttachFiles}
         onRemoveFile={onRemoveFile}
         existingFiles={attachedFiles}
-        data={data}
+        nodeId={data.id}
       />
     </div>
   );
