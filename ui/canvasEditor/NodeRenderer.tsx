@@ -134,20 +134,24 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     table: { view: TableNodeView, edit: TableNodeEdit },
     calendar: { view: CalendarNodeView, edit: CalendarNodeEdit },
     draw: { view: DrawNodeView, edit: DrawNodeEdit },
-    selection_menu: { view: NodeSelectionMenu }
+    selection_menu: { view: NodeSelectionMenu, edit: NodeSelectionMenu }
   };
 
   if (node.type in nodeComponents) {
     const componentInfo = nodeComponents[node.type];
     let NodeComponent;
 
-    if ('edit' in componentInfo && node.isEditing) {
+    if (
+      'edit' in componentInfo &&
+      node.isEditing &&
+      node.type !== 'selection_menu'
+    ) {
       NodeComponent = componentInfo.edit;
     } else {
       NodeComponent = componentInfo.view;
     }
 
-    console.log(`NodeRenderer: Node ID: ${id}`);
+    console.log(`NodeRenderer: Rendering node ID: ${id}, type: ${node.type}`);
 
     return (
       <NodeComponent
@@ -163,11 +167,13 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
         }}
         selected={selected}
         onNodeResizeStop={onNodeResizeStop}
-        {...(node.isEditing && { selected: selected })}
+        {...(node.isEditing &&
+          node.type !== 'selection_menu' && { selected: selected })}
       />
     );
   }
 
+  console.log(`NodeRenderer: Unrecognized node type for ID: ${id}`);
   return null;
 };
 
