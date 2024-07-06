@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { NodeProps, Handle, Position } from 'reactflow';
-
+import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 import { IoList, IoCalendar, IoBrush } from 'react-icons/io5';
 import { PiNotepadFill } from 'react-icons/pi';
 import { FaTable } from 'react-icons/fa';
@@ -61,8 +61,6 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
     console.log('NodeSelectionMenu: Node ID:', data.id);
   }, [data.id]);
 
-  // ... existing imports ...
-
   const replaceNodeWithType = async (
     nodeType: 'note' | 'task' | 'table' | 'calendar' | 'draw'
   ) => {
@@ -79,7 +77,7 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
     // First, update the common node properties
     const { data: updatedCommonNode, error: commonError } = await supabase
       .from('nodes')
-      .update({ type: nodeType })
+      .update({ type: nodeType, is_temporary: false })
       .eq('id', data.id)
       .select()
       .single();
@@ -103,13 +101,21 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
     }
 
     // Update the local node state
+    const nodeDimension = nodeDimensions[nodeType];
     const updatedNode = {
       ...tempNode,
       type: nodeType,
       data: {
         ...tempNode.data,
         ...updatedCommonNode,
-        ...specificNode
+        ...specificNode,
+        view_width: nodeDimension.viewWidth,
+        view_height: nodeDimension.viewHeight,
+        edit_width: nodeDimension.editWidth,
+        edit_height: nodeDimension.editHeight,
+        mobile_edit_width: nodeDimension.mobileEditWidth,
+        mobile_edit_height: nodeDimension.mobileEditHeight,
+        isTemporary: false
       }
     };
     updateLocalNode(data.id, updatedNode, canvasID);

@@ -168,19 +168,12 @@ export const replaceNodeWithType = async (
     position: JSON.stringify(position),
     is_editing: false,
     is_temporary: false,
-    ...('viewWidth' in nodeDimension
-      ? {
-          view_width: nodeDimension.viewWidth,
-          view_height: nodeDimension.viewHeight,
-          edit_width: nodeDimension.editWidth,
-          edit_height: nodeDimension.editHeight,
-          mobile_edit_width: nodeDimension.mobileEditWidth,
-          mobile_edit_height: nodeDimension.mobileEditHeight
-        }
-      : {
-          width: nodeDimension.width,
-          height: nodeDimension.height
-        })
+    view_width: 'viewWidth' in nodeDimension ? nodeDimension.viewWidth : nodeDimension.width,
+    view_height: 'viewHeight' in nodeDimension ? nodeDimension.viewHeight : nodeDimension.height,
+    edit_width: 'editWidth' in nodeDimension ? nodeDimension.editWidth : null,
+    edit_height: 'editHeight' in nodeDimension ? nodeDimension.editHeight : null,
+    mobile_edit_width: 'mobileEditWidth' in nodeDimension ? nodeDimension.mobileEditWidth : null,
+    mobile_edit_height: 'mobileEditHeight' in nodeDimension ? nodeDimension.mobileEditHeight : null
   };
   console.log('nodeCreation: Updating node with data:', newNodeData);
   const { data: updatedNode, error: updateError } = await createNodeInDatabase(
