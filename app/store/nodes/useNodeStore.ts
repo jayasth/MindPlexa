@@ -277,7 +277,8 @@ const useNodeStore = create<NodeState>()(
               data: { label: 'New Node', parentId: parentNode.id }
             };
             await addNode(createdNode, canvasId);
-            removeNode(newNode.id, canvasId);
+            await removeNode(newNode.id, canvasId);
+            setNodes((nodes) => nodes.filter((node) => node.id !== newNode.id));
             console.log(
               'useNodeStore: Child node created from drag',
               createdNode
@@ -285,6 +286,7 @@ const useNodeStore = create<NodeState>()(
           },
           onClose: () => {
             removeNode(newNode.id, canvasId);
+            setNodes((nodes) => nodes.filter((node) => node.id !== newNode.id));
             console.log('useNodeStore: Selection menu closed', newNode);
           },
           parentNode: parentNode,
@@ -294,6 +296,10 @@ const useNodeStore = create<NodeState>()(
         height: nodeDimensions['selection_menu'].height
       };
       await addNode(newNode, canvasId);
+      setNodes((nodes) => [
+        ...nodes.filter((node) => node.type !== 'selection_menu'),
+        newNode // Include the newly created selection_menu node
+      ]);
       console.log('useNodeStore: Selection menu node added', newNode);
     },
     onNodesChange: async (changes) => {

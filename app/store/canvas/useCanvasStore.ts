@@ -132,7 +132,7 @@ const useCanvasStore = create<CanvasState>()(
 
               return {
                 id: node.id,
-                type: node.type,
+                type: node.type || 'note', // Provide a default type if undefined
                 position,
                 data: {
                   ...node,
@@ -145,9 +145,9 @@ const useCanvasStore = create<CanvasState>()(
                 isEditing: node.is_editing
               };
             })
-            .filter(
-              (node): node is Node => node !== null && node.type !== undefined
-            );
+            .filter((node): node is Node => node !== null);
+
+          console.log('useCanvasStore: Nodes after processing:', nodes);
 
           const edges = data.edges
             ? data.edges.map((edge) => ({
