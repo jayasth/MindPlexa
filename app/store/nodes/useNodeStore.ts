@@ -81,6 +81,16 @@ const useNodeStore = create<NodeState>()(
         console.log('useNodeStore: Node added', newNode);
         return { nodes: [...state.nodes, newNode] };
       });
+
+      // Ensure selection_menu node is displayed immediately
+      if (node.type === 'selection_menu') {
+        set((state) => {
+          const updatedNodes = state.nodes.map((n) =>
+            n.id === newNode.id ? { ...n, isVisible: true } : n
+          );
+          return { nodes: updatedNodes };
+        });
+      }
     },
     updateNode: async (id, data) => {
       set((state) => {

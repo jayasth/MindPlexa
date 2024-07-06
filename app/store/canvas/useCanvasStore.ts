@@ -105,7 +105,11 @@ const useCanvasStore = create<CanvasState>()(
           return;
         }
 
+        console.log('useCanvasStore: Fetched data:', data);
+        console.log('useCanvasStore: Fetched nodeData:', nodeData);
+
         if (data && data.node_canvas_link && data.node_canvas_link.length > 0) {
+          console.log('useCanvasStore: Loading existing canvas data');
           const nodes = data.node_canvas_link
             .map((link) => {
               const node = link.nodes;
@@ -145,8 +149,6 @@ const useCanvasStore = create<CanvasState>()(
               (node): node is Node => node !== null && node.type !== undefined
             );
 
-          console.log('useCanvasStore: Node data after load:', nodes);
-
           const edges = data.edges
             ? data.edges.map((edge) => ({
                 id: edge.id,
@@ -156,10 +158,13 @@ const useCanvasStore = create<CanvasState>()(
               }))
             : [];
 
+          console.log('useCanvasStore: Edge data after load:', edges);
+
           useNodeStore.getState().setNodes(nodes);
           useEdgeStore.getState().setEdges(edges);
           set({ isLoading: false, lastLoadTime: Date.now() });
         } else {
+          console.log('useCanvasStore: Initializing new blank canvas');
           useNodeStore.getState().setNodes([]);
           useEdgeStore.getState().setEdges([]);
           set({ isLoading: false, lastLoadTime: Date.now() });
