@@ -56,7 +56,6 @@ const useNodeStore = create<NodeState>()(
       const newNode = {
         ...node,
         ...nodeProps,
-        id: uuidv4(),
         style: {
           backgroundColor:
             (node.data && node.data.backgroundColor) || '#F4F4F4',
@@ -72,11 +71,6 @@ const useNodeStore = create<NodeState>()(
       };
 
       set((state) => {
-        const canvasSize = {
-          width: 1000,
-          height: 800
-        };
-        newNode.position = findOptimalPosition(state.nodes, canvasSize);
         state.nodeInternals.set(newNode.id, newNode);
         console.log('useNodeStore: Node added', newNode);
         return { nodes: [...state.nodes, newNode] };
