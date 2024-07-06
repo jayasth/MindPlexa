@@ -13,9 +13,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Database } from '@/types_db';
 import useEdgeStore from '@/app/store/edges/useEdgeStore';
 
-const setPosition = (x: number, y: number): XYPosition => {
-  return { x, y };
-};
+const setPosition = (x: number, y: number): XYPosition => ({ x, y });
 
 function findNewPosition(
   nodes: Node<any>[],
@@ -37,71 +35,47 @@ export const createNode = async (
   temporaryNodeId?: string
 ): Promise<void> => {
   const nodeId = temporaryNodeId || uuidv4();
-
   const nodeDimension = nodeDimensions[nodeType];
-  const availablePosition = findNewPosition(nodes, canvasSize);
-  const positionAsXYPosition: XYPosition = setPosition(
-    availablePosition.x,
-    availablePosition.y
-  );
+  const positionAsXYPosition = findNewPosition(nodes, canvasSize);
 
   const defaultProperties = {
     backgroundColor: '#F4F4F4',
     textColor: '#575757'
   };
 
-  const baseProperties: Partial<Node<any>> = {
+  const newNodeData = {
     id: nodeId,
     type: nodeType,
-    position: positionAsXYPosition,
-    ...defaultProperties
+    position: JSON.stringify(positionAsXYPosition),
+    background_color: defaultProperties.backgroundColor,
+    text_color: defaultProperties.textColor,
+    is_editing: isEditing,
+    is_temporary: isTemporary,
+    parent_node_id: parentNode ? parentNode.id : null,
+    z_index: 0,
+    view_width:
+      'width' in nodeDimension ? nodeDimension.width : nodeDimension.viewWidth,
+    view_height:
+      'height' in nodeDimension
+        ? nodeDimension.height
+        : nodeDimension.viewHeight,
+    edit_width: 'editWidth' in nodeDimension ? nodeDimension.editWidth : null,
+    edit_height:
+      'editHeight' in nodeDimension ? nodeDimension.editHeight : null,
+    mobile_edit_width:
+      'mobileEditWidth' in nodeDimension ? nodeDimension.mobileEditWidth : null,
+    mobile_edit_height:
+      'mobileEditHeight' in nodeDimension
+        ? nodeDimension.mobileEditHeight
+        : null
   };
 
-  const specificNode = {
-    ...baseProperties,
-    ...getNodeSpecificProperties(nodeType, isEditing)
-  };
-
-  const newNode: Node<any> = {
-    ...specificNode,
-    id: baseProperties.id || '',
-    type: baseProperties.type || '',
-    position: positionAsXYPosition,
-    data: {
-      ...specificNode
-    }
-  };
-  if (parentNode) {
-    newNode.data = {
-      ...newNode.data,
-      parentNode: parentNode
-    };
-  }
-
-  if (isTemporary) {
-    newNode.data.isTemporary = true;
+  if (nodeType === 'selection_menu') {
+    newNodeData.view_width = nodeDimensions.selection_menu.width;
+    newNodeData.view_height = nodeDimensions.selection_menu.height;
   }
 
   try {
-    const newNodeData = {
-      id: nodeId,
-      ...newNode.data,
-      zIndex: 0,
-      isTemporary: isTemporary,
-      parentNodeId: parentNode ? parentNode.id : null,
-      backgroundColor: defaultProperties.backgroundColor,
-      textColor: defaultProperties.textColor,
-      isEditing: isEditing,
-      ...nodeDimension,
-      viewWidth: nodeDimensions.selection_menu.width,
-      viewHeight: nodeDimensions.selection_menu.height
-    };
-
-    if (nodeType === 'selection_menu') {
-      newNodeData.viewWidth = nodeDimensions.selection_menu.width;
-      newNodeData.viewHeight = nodeDimensions.selection_menu.height;
-    }
-
     const { data: createdNode, error } = await createNodeInDatabase(
       canvasId,
       nodeType,
@@ -115,44 +89,38 @@ export const createNode = async (
     }
 
     if (createdNode) {
-      console.log(
-        'nodeCreation: Creating node in database with data:',
-        createdNode
-      );
-      const newNodeWithData: Node<any> = {
-        ...newNode,
+      console.log('nodeCreation: Node created with data:', createdNode);
+      const newNode: Node<any> = {
         id: nodeId,
+        type: nodeType,
         position: positionAsXYPosition,
         data: {
           ...createdNode,
           backgroundColor: createdNode.background_color,
           textColor: createdNode.text_color,
-          isEditing: createdNode.is_editing,
-          isTemporary: createdNode.is_temporary
+          isTemporary: createdNode.is_temporary,
+          ...getNodeSpecificProperties(nodeType, isEditing)
         }
       };
-      callback(newNodeWithData);
-      console.log('nodeCreation: Node created with ID:', nodeId);
-
+      callback(newNode);
       if (parentNode) {
         const edgeId = uuidv4();
         const newEdge = {
           id: edgeId,
           source: parentNode.id,
-          target: newNodeWithData.id,
+          target: newNode.id,
           type: 'customEdge'
         };
         console.log('nodeCreation: Creating edge with data:', newEdge);
         const { data: createdEdge, error: edgeError } = await createEdge({
           source_node_id: parentNode.id,
-          target_node_id: newNodeWithData.id,
+          target_node_id: newNode.id,
           canvas_id: canvasId
         });
 
         if (edgeError) {
           console.error('nodeCreation: Error creating edge:', edgeError);
         } else if (createdEdge) {
-          newEdge.id = createdEdge.id;
           useEdgeStore.getState().addEdge(newEdge);
           console.log('nodeCreation: Edge created with ID:', createdEdge.id);
         }
@@ -179,9 +147,8 @@ export const replaceNodeWithType = async (
 
   if (existingEdge) {
     const updatedEdgeData = {
-      sourceNodeId: existingEdge.source === id ? null : existingEdge.source,
-      targetNodeId: existingEdge.target === id ? null : existingEdge.target,
-      data: existingEdge.data
+      source_node_id: existingEdge.source === id ? null : existingEdge.source,
+      target_node_id: existingEdge.target === id ? null : existingEdge.target
     };
 
     console.log('nodeCreation: Updating edge with ID:', existingEdge.id);
@@ -194,24 +161,32 @@ export const replaceNodeWithType = async (
       console.error('nodeCreation: Error updating edge:', edgeError);
     }
   }
-  const commonNodeProperties = {
-    type: nodeType,
-    position: {
-      x: position.x,
-      y: position.y
-    },
-    isEditing: false
-  };
 
-  console.log('nodeCreation: Updating node with data:', commonNodeProperties);
+  const nodeDimension = nodeDimensions[nodeType];
+  const newNodeData = {
+    type: nodeType,
+    position: JSON.stringify(position),
+    is_editing: false,
+    ...('viewWidth' in nodeDimension
+      ? {
+          view_width: nodeDimension.viewWidth,
+          view_height: nodeDimension.viewHeight,
+          edit_width: nodeDimension.editWidth,
+          edit_height: nodeDimension.editHeight,
+          mobile_edit_width: nodeDimension.mobileEditWidth,
+          mobile_edit_height: nodeDimension.mobileEditHeight
+        }
+      : {
+          width: nodeDimension.width,
+          height: nodeDimension.height
+        })
+  };
+  console.log('nodeCreation: Updating node with data:', newNodeData);
   const { data: updatedNode, error: updateError } = await createNodeInDatabase(
     canvasId,
     nodeType,
-    {
-      x: position.x,
-      y: position.y
-    },
-    commonNodeProperties
+    position,
+    newNodeData
   );
 
   if (updateError) {
@@ -225,8 +200,8 @@ export const replaceNodeWithType = async (
       type: nodeType,
       position: position,
       data: {
-        ...getNodeSpecificProperties(nodeType, false),
-        ...updatedNode
+        ...updatedNode,
+        ...getNodeSpecificProperties(nodeType, false)
       }
     };
 

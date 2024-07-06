@@ -76,7 +76,7 @@ const useNodeStore = create<NodeState>()(
         return { nodes: [...state.nodes, newNode] };
       });
     },
-    updateNode: (id, data) => {
+    updateNode: async (id, data) => {
       set((state) => {
         const existingNodeIndex = state.nodes.findIndex(
           (node) => node.id === id
@@ -289,7 +289,7 @@ const useNodeStore = create<NodeState>()(
       addNode(newNode);
       console.log('useNodeStore: Selection menu node added', newNode);
     },
-    onNodesChange: (changes) => {
+    onNodesChange: async (changes) => {
       set((state) => {
         const updatedNodes = state.nodes
           .map((node) => {

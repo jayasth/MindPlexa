@@ -200,18 +200,7 @@ export const saveCanvasState = async (
         continue;
       }
 
-      console.log('canvasDatabaseOperations: Node properties before upsert:', {
-        id,
-        type,
-        noteData,
-        taskData,
-        calendarData,
-        tableData,
-        drawData,
-        ...nodeProperties
-      });
-
-      // Upsert node properties
+      // Upsert node properties in 'nodes' table
       const { error: nodeUpsertError } = await supabase
         .from('nodes')
         .upsert({ id, type, ...nodeProperties });
@@ -317,84 +306,82 @@ export const saveCanvasState = async (
     return { error };
   }
 };
+
 // Function to fetch the canvas state
 export const fetchCanvas = async (
   canvasId: string
 ): Promise<{ data?: any; error?: any; nodeData?: Record<string, any[]> }> => {
-  // Fetch canvas data along with linked nodes and edges
-  const { data, error } = await supabase
-    .from('canvases')
-    .select(
+  try {
+    // Fetch canvas data along with linked nodes and edges
+    const { data, error } = await supabase
+      .from('canvases')
+      .select(
+        `
+        *,
+        node_canvas_link!inner(nodes(*)),
+        edges(*)
       `
-      *,
-      node_canvas_link!inner(nodes(*)),
-      edges(*)
-    `
-    )
-    .eq('id', canvasId);
+      )
+      .eq('id', canvasId);
 
-  if (error) {
-    return { error };
-  }
+    if (error) {
+      return { error };
+    }
 
-  if (data.length === 0) {
-    return { data: null };
-  }
+    if (data.length === 0) {
+      return { data: null };
+    }
 
-  const canvas = data[0];
-  const nodeIds = canvas.node_canvas_link
-    .map((link) => link.nodes?.id)
-    .filter(Boolean);
+    const canvas = data[0];
+    const nodeIds = canvas.node_canvas_link
+      .map((link) => link.nodes?.id)
+      .filter(Boolean);
 
-  // Fetch specific node data for each node type
-  const nodeTypes = ['note', 'task', 'table', 'calendar', 'draw'] as const;
-  const nodeDataPromises = nodeTypes.map((type) =>
-    supabase
-      .from(`${type}_nodes` as keyof Database['public']['Tables'])
-      .select('*')
-      .in('node_id', nodeIds)
-  );
+    // Fetch specific node data for each node type
+    const nodeTypes = ['note', 'task', 'table', 'calendar', 'draw'] as const;
+    const nodeDataPromises = nodeTypes.map((type) =>
+      supabase
+        .from(`${type}_nodes` as keyof Database['public']['Tables'])
+        .select('*')
+        .in('node_id', nodeIds)
+    );
 
-  const nodeDataResults = await Promise.all(nodeDataPromises);
-  const nodeData = nodeDataResults.reduce(
-    (acc, result, index) => {
-      if (!result.error) {
-        acc[nodeTypes[index]] = result.data;
-      }
-      return acc;
-    },
-    {} as Record<string, any[]>
-  );
-  console.log('canvasDatabaseOperations: Complete node data fetched:', {
-    canvas,
-    nodes: canvas.node_canvas_link
+    const nodeDataResults = await Promise.all(nodeDataPromises);
+    const nodeData = nodeDataResults.reduce(
+      (acc, result, index) => {
+        if (!result.error) {
+          acc[nodeTypes[index]] = result.data;
+        }
+        return acc;
+      },
+      {} as Record<string, any[]>
+    );
+
+    // Combine node data from 'nodes' table and specific node tables
+    const nodes = canvas.node_canvas_link
       .map((link) => {
         if (link.nodes) {
+          const specificNodeData = nodeData[
+            link.nodes?.type as keyof typeof nodeData
+          ]?.find((data) => data.node_id === link.nodes?.id);
           return {
-            id: link.nodes.id,
-            type: link.nodes.type,
-            position: link.nodes.position,
-            viewWidth: link.nodes.view_width,
-            viewHeight: link.nodes.view_height,
-            editWidth: link.nodes.edit_width,
-            editHeight: link.nodes.edit_height,
-            mobileEditWidth: link.nodes.mobile_edit_width,
-            mobileEditHeight: link.nodes.mobile_edit_height,
-            backgroundColor: link.nodes.background_color,
-            textColor: link.nodes.text_color,
-            title: link.nodes.title,
-            isEditing: link.nodes.is_editing,
-            isTemporary: link.nodes.is_temporary,
-            parentNodeId: link.nodes.parent_node_id,
-            zIndex: link.nodes.z_index,
-            createdAt: link.nodes.created_at,
-            updatedAt: link.nodes.updated_at
+            ...link.nodes,
+            ...specificNodeData
           };
         }
         return null;
       })
-      .filter((props): props is NonNullable<typeof props> => props !== null),
-    nodeData
-  }); // Logging all node data including all fields from nodes table
-  return { data: canvas, nodeData };
+      .filter((node): node is NonNullable<typeof node> => node !== null);
+
+    console.log('canvasDatabaseOperations: Complete canvas state fetched:', {
+      canvas,
+      nodes,
+      edges: canvas.edges
+    });
+
+    return { data: { ...canvas, nodes }, nodeData };
+  } catch (error) {
+    console.error('Error in fetchCanvas:', error);
+    return { error };
+  }
 };
