@@ -75,7 +75,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
           position,
           nodes,
           (node) => {
-            addNode(node);
+            addNode(node, canvasId);
             console.log('Toolbar: Node created:', node);
             if (reactFlowInstance && nodes.length === 0) {
               const flowPosition = screenToFlowPosition(node.position);
