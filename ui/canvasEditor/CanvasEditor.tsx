@@ -95,9 +95,9 @@ export default function CanvasEditor({ canvasId }) {
     setShowAIAssistanceModal(false);
   };
 
-  const handleAddNode = async (node) => {
+  const handleAddNode = async (node, position) => {
     console.log('CanvasEditor: Adding new node:', node);
-    await addNode(node);
+    await addNode(node, position);
     console.log('CanvasEditor: Node added to database:', node);
     setTimeout(() => {
       reactFlowInstance.current?.fitView({
@@ -130,7 +130,11 @@ export default function CanvasEditor({ canvasId }) {
         | 'calendar'
         | 'draw'
         | 'selection_menu';
-      updateNodeInStore(node.id, { ...newSize, position: newPosition });
+      updateNodeInStore(
+        node.id,
+        { ...newSize, position: newPosition },
+        node.data.canvasId
+      );
     },
     [updateNodeInStore]
   );
@@ -174,7 +178,11 @@ export default function CanvasEditor({ canvasId }) {
 
   const onNodeDragStop = useCallback(
     (event, node) => {
-      updateNodeInStore(node.id, { position: node.position });
+      updateNodeInStore(
+        node.id,
+        { position: node.position },
+        node.data.canvasId
+      );
     },
     [updateNodeInStore]
   );
@@ -205,14 +213,13 @@ export default function CanvasEditor({ canvasId }) {
       parentNode,
       position,
       nodeType,
-      addNode,
+      (node) => addNode(node, canvasID),
       addEdge,
-      removeNode,
+      (id) => removeNode(id, canvasID),
       nodes,
       canvasID
     );
   };
-
   useEffect(() => {
     console.log(
       'CanvasEditor: ReactFlowWrapper ref:',
@@ -253,7 +260,7 @@ export default function CanvasEditor({ canvasId }) {
           <ReactFlow
             nodes={nodes}
             edges={edges}
-            onNodesChange={onNodesChange}
+            onNodesChange={(changes) => onNodesChange(changes, canvasId)}
             onEdgesChange={onEdgesChange}
             onConnect={handleConnect}
             onConnectStart={onConnectStart}
