@@ -4,6 +4,7 @@ import { Node as BaseNode } from '@/ui/canvasEditor/nodeTypes';
 import dynamic from 'next/dynamic';
 import useNodeStore from '@/app/store/nodes/useNodeStore';
 import { getNodeSpecificProperties } from '@/ui/canvasEditor/utils/nodeProperties';
+import useCanvasStore from '@/app/store/canvas/useCanvasStore';
 
 const NoteNodeEdit = dynamic(() => import('@/ui/nodes/noteNode/NoteNodeEdit'), {
   ssr: false
@@ -69,6 +70,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
 
   const updateNode = useNodeStore((state) => state.updateNode);
   const toggleEditMode = useNodeStore((state) => state.toggleEditMode);
+  const canvasId = useCanvasStore((state) => state.canvasID);
   const [size, setSize] = useState(
     getNodeSpecificProperties(node?.type || 'note', node?.isEditing ?? false)
   );
@@ -92,14 +94,18 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     if (node.type !== 'selection_menu') {
       toggleEditMode(id);
       const newSize = getNodeSpecificProperties(node.type, !node.isEditing);
-      updateNode(id, {
-        ...newSize,
-        data: {
-          ...node.data,
-          tags: node.data.tags || [],
-          attachedFiles: node.data.attachedFiles || []
-        }
-      });
+      updateNode(
+        id,
+        {
+          ...newSize,
+          data: {
+            ...node.data,
+            tags: node.data.tags || [],
+            attachedFiles: node.data.attachedFiles || []
+          }
+        },
+        canvasId
+      );
       onNodeResizeStop(id, newSize, node.position);
     }
   };
@@ -116,7 +122,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     height: size.height,
     selected: selected,
     onLabelChange: (label: string) =>
-      updateNode(id, { data: { ...node.data, label } }),
+      updateNode(id, { data: { ...node.data, label } }, canvasId),
     onEdit: handleEdit,
     onNodeResizeStop
   };
