@@ -7,7 +7,8 @@ import { findOptimalPosition } from '@/ui/canvasEditor/utils/positioningUtils';
 import {
   createNode as createNodeInDatabase,
   createEdge,
-  updateEdge as updateEdgeInDatabase
+  updateEdge as updateEdgeInDatabase,
+  updateNode
 } from '@/utils/canvas/nodeEdgeDatabaseOperations';
 import { v4 as uuidv4 } from 'uuid';
 import { Database } from '@/types_db';
@@ -141,46 +142,37 @@ export const replaceNodeWithType = async (
   setNode: (node: Node) => void,
   canvasId: string
 ) => {
-  const existingEdge = edges.find(
-    (edge) => edge.source === id || edge.target === id
-  );
-
-  if (existingEdge) {
-    const updatedEdgeData = {
-      source_node_id: existingEdge.source === id ? null : existingEdge.source,
-      target_node_id: existingEdge.target === id ? null : existingEdge.target
-    };
-
-    console.log('nodeCreation: Updating edge with ID:', existingEdge.id);
-    const { error: edgeError } = await updateEdgeInDatabase(
-      existingEdge.id,
-      updatedEdgeData
-    );
-
-    if (edgeError) {
-      console.error('nodeCreation: Error updating edge:', edgeError);
-    }
-  }
-
   const nodeDimension = nodeDimensions[nodeType];
   const newNodeData = {
     type: nodeType,
     position: JSON.stringify(position),
     is_editing: false,
     is_temporary: false,
-    view_width: 'viewWidth' in nodeDimension ? nodeDimension.viewWidth : nodeDimension.width,
-    view_height: 'viewHeight' in nodeDimension ? nodeDimension.viewHeight : nodeDimension.height,
+    view_width:
+      'viewWidth' in nodeDimension
+        ? nodeDimension.viewWidth
+        : nodeDimension.width,
+    view_height:
+      'viewHeight' in nodeDimension
+        ? nodeDimension.viewHeight
+        : nodeDimension.height,
     edit_width: 'editWidth' in nodeDimension ? nodeDimension.editWidth : null,
-    edit_height: 'editHeight' in nodeDimension ? nodeDimension.editHeight : null,
-    mobile_edit_width: 'mobileEditWidth' in nodeDimension ? nodeDimension.mobileEditWidth : null,
-    mobile_edit_height: 'mobileEditHeight' in nodeDimension ? nodeDimension.mobileEditHeight : null
+    edit_height:
+      'editHeight' in nodeDimension ? nodeDimension.editHeight : null,
+    mobile_edit_width:
+      'mobileEditWidth' in nodeDimension ? nodeDimension.mobileEditWidth : null,
+    mobile_edit_height:
+      'mobileEditHeight' in nodeDimension
+        ? nodeDimension.mobileEditHeight
+        : null
   };
+
   console.log('nodeCreation: Updating node with data:', newNodeData);
-  const { data: updatedNode, error: updateError } = await createNodeInDatabase(
-    canvasId,
-    nodeType,
-    position,
-    newNodeData
+  const { data: updatedNode, error: updateError } = await updateNode(
+    id,
+    newNodeData,
+    {},
+    nodeType
   );
 
   if (updateError) {

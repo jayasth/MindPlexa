@@ -148,28 +148,33 @@ export const updateNode = async (
   const defaultDimensions = nodeDimensions[nodeType];
   const safeUpdates: Partial<Database['public']['Tables']['nodes']['Update']> =
     { ...updates };
-  delete safeUpdates.view_width;
-  delete safeUpdates.view_height;
 
-  if (
-    safeUpdates.edit_width &&
-    'editWidth' in defaultDimensions &&
-    safeUpdates.edit_width === defaultDimensions.editWidth
-  ) {
-    delete safeUpdates.edit_width;
+  // Handle dimensions
+  if ('viewWidth' in defaultDimensions) {
+    safeUpdates.view_width = defaultDimensions.viewWidth;
   }
-  if (
-    safeUpdates.edit_height &&
-    'editHeight' in defaultDimensions &&
-    safeUpdates.edit_height === defaultDimensions.editHeight
-  ) {
-    delete safeUpdates.edit_height;
+  if ('viewHeight' in defaultDimensions) {
+    safeUpdates.view_height = defaultDimensions.viewHeight;
+  }
+  if ('editWidth' in defaultDimensions) {
+    safeUpdates.edit_width = defaultDimensions.editWidth;
+  }
+  if ('editHeight' in defaultDimensions) {
+    safeUpdates.edit_height = defaultDimensions.editHeight;
+  }
+  if ('mobileEditWidth' in defaultDimensions) {
+    safeUpdates.mobile_edit_width = defaultDimensions.mobileEditWidth;
+  }
+  if ('mobileEditHeight' in defaultDimensions) {
+    safeUpdates.mobile_edit_height = defaultDimensions.mobileEditHeight;
   }
 
+  // Handle position
   if (safeUpdates.position && typeof safeUpdates.position === 'object') {
     safeUpdates.position = JSON.stringify(safeUpdates.position);
   }
 
+  // Update node in the nodes table
   const { data: nodeData, error: nodeError } = await supabase
     .from('nodes')
     .update(safeUpdates)
@@ -184,10 +189,12 @@ export const updateNode = async (
 
   console.log('Node properties updated:', nodeData);
 
+  // Handle specific node type updates
   if (nodeType !== 'selection_menu') {
     const tableName = `${nodeType}_nodes` as keyof Database['public']['Tables'];
     const safeSpecificUpdates: any = { ...specificUpdates };
 
+    // Handle specific node type data
     if (nodeType === 'note' && 'content' in safeSpecificUpdates) {
       safeSpecificUpdates.content = String(safeSpecificUpdates.content);
     } else if (nodeType === 'task' && 'tasks' in safeSpecificUpdates) {
@@ -209,16 +216,41 @@ export const updateNode = async (
       );
     }
 
-    const { data: specificNodeData, error: specificNodeError } = await supabase
+    // Check if the specific node already exists
+    const { data: existingNode, error: existingNodeError } = await supabase
       .from(tableName)
-      .update(safeSpecificUpdates)
-      .eq('node_id', id)
       .select()
+      .eq('node_id', id)
       .single();
 
-    if (specificNodeError) {
-      console.error(`Error updating ${nodeType} node:`, specificNodeError);
-      return { error: specificNodeError };
+    let specificNodeData;
+    if (existingNode) {
+      // Update existing specific node
+      const { data, error: updateError } = await supabase
+        .from(tableName)
+        .update(safeSpecificUpdates)
+        .eq('node_id', id)
+        .select()
+        .single();
+
+      if (updateError) {
+        console.error(`Error updating ${nodeType} node:`, updateError);
+        return { error: updateError };
+      }
+      specificNodeData = data;
+    } else {
+      // Insert new specific node
+      const { data, error: insertError } = await supabase
+        .from(tableName)
+        .insert({ node_id: id, ...safeSpecificUpdates })
+        .select()
+        .single();
+
+      if (insertError) {
+        console.error(`Error inserting ${nodeType} node:`, insertError);
+        return { error: insertError };
+      }
+      specificNodeData = data;
     }
 
     console.log(`${nodeType} node updated:`, specificNodeData);
@@ -228,7 +260,6 @@ export const updateNode = async (
 
   return { data: nodeData };
 };
-
 export const deleteNode = async (
   nodeId: string,
   nodeType: Database['public']['Enums']['node_type']
