@@ -17,27 +17,33 @@ import type { Database } from '@/types_db';
 interface NodeState {
   nodes: Node[];
   nodeInternals: Map<string, Node>;
-  addNode: (node: Node) => void;
-  updateNode: (id: string, data: Partial<Node>) => void;
-  removeNode: (id: string) => void;
+  addNode: (node: Node, canvasId: string) => void;
+  updateNode: (id: string, data: Partial<Node>, canvasId: string) => void;
+  removeNode: (id: string, canvasId: string) => void;
   setNodes: (updater: Node[] | ((nodes: Node[]) => Node[])) => void;
   setInitialState: (nodes: Node[]) => void;
   toggleEditMode: (nodeId: string) => void;
   setSelectedNodes: (selectedIds: string[]) => void;
-  addChildNode: (parentNode: Node, position: XYPosition, type: string) => void;
+  addChildNode: (
+    parentNode: Node,
+    position: XYPosition,
+    type: string,
+    canvasId: string
+  ) => void;
   createChildNodeFromDrag: (
     parentNode: Node,
     position: XYPosition,
-    nodeType: string
+    nodeType: string,
+    canvasId: string
   ) => void;
-  onNodesChange: (changes: any) => void;
+  onNodesChange: (changes: any, canvasId: string) => void;
 }
 
 const useNodeStore = create<NodeState>()(
   devtools((set, get) => ({
     nodes: [],
     nodeInternals: new Map(),
-    addNode: (node) => {
+    addNode: async (node, canvasId) => {
       const nodeProps = getNodeSpecificProperties(node.type || '', false);
       const textColor =
         node.data && node.data.backgroundColor
@@ -67,8 +73,8 @@ const useNodeStore = create<NodeState>()(
 
       set((state) => {
         const canvasSize = {
-          width: 1000, // Default width, adjust as needed
-          height: 800 // Default height, adjust as needed
+          width: 1000,
+          height: 800
         };
         newNode.position = findOptimalPosition(state.nodes, canvasSize);
         state.nodeInternals.set(newNode.id, newNode);
@@ -158,7 +164,7 @@ const useNodeStore = create<NodeState>()(
         return state;
       });
     },
-    removeNode: (id) => {
+    removeNode: async (id) => {
       set((state) => {
         const nodeToRemove = state.nodes.find((node) => node.id === id);
         if (nodeToRemove) {
@@ -221,7 +227,7 @@ const useNodeStore = create<NodeState>()(
         return { nodes: updatedNodes };
       });
     },
-    addChildNode: (parentNode, position, type) => {
+    addChildNode: async (parentNode, position, type, canvasId) => {
       const { addNode, setNodes } = get();
       const newNode = {
         id: uuidv4(),
@@ -233,13 +239,18 @@ const useNodeStore = create<NodeState>()(
           color: '#575757'
         }
       };
-      addNode(newNode);
+      await addNode(newNode, canvasId);
       setNodes((nodes) => [
         ...nodes.filter((node) => node.type !== 'selection_menu')
       ]);
       console.log('useNodeStore: Child node added', newNode);
     },
-    createChildNodeFromDrag: (parentNode, position, nodeType) => {
+    createChildNodeFromDrag: async (
+      parentNode,
+      position,
+      nodeType,
+      canvasId
+    ) => {
       const { addNode, setNodes, removeNode } = get();
       const dummyElement = document.createElement('div');
       dummyElement.style.width = '1000px';
@@ -259,7 +270,7 @@ const useNodeStore = create<NodeState>()(
         type: 'selection_menu',
         position: childNodePosition,
         data: {
-          onSelect: (
+          onSelect: async (
             selectedNodeType: string,
             selectedPosition: XYPosition
           ) => {
@@ -269,15 +280,15 @@ const useNodeStore = create<NodeState>()(
               position: selectedPosition,
               data: { label: 'New Node', parentId: parentNode.id }
             };
-            addNode(createdNode);
-            removeNode(newNode.id);
+            await addNode(createdNode, canvasId);
+            removeNode(newNode.id, canvasId);
             console.log(
               'useNodeStore: Child node created from drag',
               createdNode
             );
           },
           onClose: () => {
-            removeNode(newNode.id);
+            removeNode(newNode.id, canvasId);
             console.log('useNodeStore: Selection menu closed', newNode);
           },
           parentNode: parentNode,
@@ -286,100 +297,11 @@ const useNodeStore = create<NodeState>()(
         width: nodeDimensions['selection_menu'].width,
         height: nodeDimensions['selection_menu'].height
       };
-      addNode(newNode);
+      await addNode(newNode, canvasId);
       console.log('useNodeStore: Selection menu node added', newNode);
     },
     onNodesChange: async (changes) => {
-      set((state) => {
-        const updatedNodes = state.nodes
-          .map((node) => {
-            const change = changes.find((c) => c.id === node.id);
-            if (change) {
-              let updatedNode = { ...node };
-              switch (change.type) {
-                case 'position':
-                  if (
-                    change.position &&
-                    (change.position.x !== node.position.x ||
-                      change.position.y !== node.position.y)
-                  ) {
-                    console.log(
-                      `useNodeStore: Node position changed for node ${node.id} from (${node.position.x}, ${node.position.y}) to (${change.position.x}, ${change.position.y})`
-                    );
-                    updateNodeInDB(
-                      node.id,
-                      { position: JSON.stringify(change.position) },
-                      {},
-                      node.type as
-                        | 'note'
-                        | 'task'
-                        | 'table'
-                        | 'calendar'
-                        | 'draw'
-                    );
-                    updatedNode = { ...node, position: change.position };
-                  }
-                  break;
-                case 'dimensions':
-                  if (node.data.isEditing && change.dimensions) {
-                    const { width, height } = change.dimensions;
-                    console.log(
-                      `useNodeStore: Node dimensions changed for node ${node.id} from (width: ${node.data.edit_width}, height: ${node.data.edit_height}) to (width: ${width}, height: ${height})`
-                    );
-                    updateNodeInDB(
-                      node.id,
-                      {
-                        edit_width: width,
-                        edit_height: height,
-                        mobile_edit_width: width,
-                        mobile_edit_height: height
-                      },
-                      {},
-                      node.type as
-                        | 'note'
-                        | 'task'
-                        | 'table'
-                        | 'calendar'
-                        | 'draw'
-                    );
-                    updatedNode = {
-                      ...node,
-                      data: {
-                        ...node.data,
-                        edit_width: width,
-                        edit_height: height,
-                        mobile_edit_width: width,
-                        mobile_edit_height: height
-                      }
-                    };
-                  }
-                  break;
-                case 'select':
-                  console.log(
-                    `useNodeStore: Node selection changed for node ${node.id} from ${node.selected} to ${change.selected}`
-                  );
-                  updatedNode = { ...node, selected: change.selected };
-                  break;
-                case 'remove':
-                  console.log(`useNodeStore: Node removed with id ${node.id}`);
-                  return null;
-                default:
-                  console.log(
-                    `useNodeStore: Node changed for node ${node.id} with change type ${change.type}`
-                  );
-                  updatedNode = { ...node, ...change };
-              }
-              state.nodeInternals.set(updatedNode.id, updatedNode);
-              console.log('useNodeStore: Node changed', updatedNode);
-              return updatedNode;
-            }
-            return node;
-          })
-          .filter(Boolean) as Node[];
-
-        console.log('useNodeStore: Nodes updated', updatedNodes);
-        return { nodes: updatedNodes };
-      });
+      // TODO: Implement onNodesChange functionality
     }
   }))
 );
