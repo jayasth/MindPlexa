@@ -5,7 +5,7 @@ import { IoList, IoCalendar, IoBrush } from 'react-icons/io5';
 import { PiNotepadFill } from 'react-icons/pi';
 import { FaTable } from 'react-icons/fa';
 
-import { useNodeStore, useEdgeStore } from '@/app/store';
+import { useNodeStore, useEdgeStore, useCanvasStore } from '@/app/store';
 import styles from './NodeSelectionMenu.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 import { Database } from '@/types_db';
@@ -44,6 +44,7 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
   } = useNodeStore();
 
   const { addEdge, edges, removeEdge, updateEdge, setEdges } = useEdgeStore();
+  const { canvasID } = useCanvasStore();
 
   const nodeRef = useRef<HTMLDivElement>(null);
 
@@ -111,8 +112,7 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
         ...specificNode
       }
     };
-
-    updateLocalNode(data.id, updatedNode);
+    updateLocalNode(data.id, updatedNode, canvasID);
 
     // Update the edges connected to the node
     const updatedEdges = edges.map((edge) => {

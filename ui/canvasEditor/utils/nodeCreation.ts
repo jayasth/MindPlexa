@@ -167,6 +167,7 @@ export const replaceNodeWithType = async (
     type: nodeType,
     position: JSON.stringify(position),
     is_editing: false,
+    is_temporary: false,
     ...('viewWidth' in nodeDimension
       ? {
           view_width: nodeDimension.viewWidth,
