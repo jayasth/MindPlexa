@@ -112,31 +112,32 @@ const useNodeStore = create<NodeState>()(
             mobile_edit_width: updatedNode.data.mobileEditWidth,
             mobile_edit_height: updatedNode.data.mobileEditHeight
           };
-
           let specificUpdates: any = {};
           switch (existingNode.type) {
             case 'note':
-              specificUpdates = { content: updatedNode.data.content };
+              specificUpdates = { content: updatedNode.data.content || '' };
               break;
             case 'task':
               specificUpdates = {
-                tasks: JSON.stringify(updatedNode.data.tasks)
+                tasks: JSON.stringify(updatedNode.data.tasks || [])
               };
               break;
             case 'table':
               specificUpdates = {
-                columns: JSON.stringify(updatedNode.data.columns),
-                rows: JSON.stringify(updatedNode.data.rows)
+                columns: JSON.stringify(updatedNode.data.columns || []),
+                rows: JSON.stringify(updatedNode.data.rows || [])
               };
               break;
             case 'calendar':
               specificUpdates = {
-                events: JSON.stringify(updatedNode.data.events),
-                view: updatedNode.data.view
+                events: JSON.stringify(updatedNode.data.events || []),
+                view: updatedNode.data.view || 'month'
               };
               break;
             case 'draw':
-              specificUpdates = { drawing_data: updatedNode.data.drawingData };
+              specificUpdates = {
+                drawing_data: updatedNode.data.drawingData || ''
+              };
               break;
           }
 
