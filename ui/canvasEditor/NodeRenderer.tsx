@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic';
 import useNodeStore from '@/app/store/nodes/useNodeStore';
 import { getNodeSpecificProperties } from '@/ui/canvasEditor/utils/nodeProperties';
 import useCanvasStore from '@/app/store/canvas/useCanvasStore';
+import NodeSelectionMenu from '@/ui/nodes/nodeSelectionMenu/NodeSelectionMenu';
 
 const NoteNodeEdit = dynamic(() => import('@/ui/nodes/noteNode/NoteNodeEdit'), {
   ssr: false
@@ -132,19 +133,25 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     task: { view: TaskNodeView, edit: TaskNodeEdit },
     table: { view: TableNodeView, edit: TableNodeEdit },
     calendar: { view: CalendarNodeView, edit: CalendarNodeEdit },
-    draw: { view: DrawNodeView, edit: DrawNodeEdit }
+    draw: { view: DrawNodeView, edit: DrawNodeEdit },
+    selection_menu: { view: NodeSelectionMenu }
   };
 
   if (node.type in nodeComponents) {
-    const { view, edit } = nodeComponents[node.type];
-    const NodeComponent = node.isEditing ? edit : view;
+    const componentInfo = nodeComponents[node.type];
+    let NodeComponent;
+
+    if ('edit' in componentInfo && node.isEditing) {
+      NodeComponent = componentInfo.edit;
+    } else {
+      NodeComponent = componentInfo.view;
+    }
 
     console.log(`NodeRenderer: Node ID: ${id}`);
 
     return (
       <NodeComponent
         {...commonProps}
-        onEdit={handleEdit}
         data={{
           ...node,
           ...node.data,
