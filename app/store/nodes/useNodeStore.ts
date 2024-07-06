@@ -301,7 +301,23 @@ const useNodeStore = create<NodeState>()(
       console.log('useNodeStore: Selection menu node added', newNode);
     },
     onNodesChange: async (changes) => {
-      // TODO: Implement onNodesChange functionality
+      set((state) => {
+        const updatedNodes = state.nodes.map((node) => {
+          const change = changes.find((change) => change.id === node.id);
+          if (change) {
+            switch (change.type) {
+              case 'position':
+                return { ...node, position: change.position };
+              case 'resize':
+                return { ...node, width: change.width, height: change.height };
+              default:
+                return node;
+            }
+          }
+          return node;
+        });
+        return { nodes: updatedNodes };
+      });
     }
   }))
 );
