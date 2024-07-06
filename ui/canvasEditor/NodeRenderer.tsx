@@ -173,7 +173,9 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     );
   }
 
-  console.log(`NodeRenderer: Unrecognized node type for ID: ${id}`);
+  console.log(
+    `NodeRenderer: Unrecognized node type for ID: ${id}, type: ${node.type}`
+  );
   return null;
 };
 
