@@ -6,28 +6,12 @@ export const findOptimalPosition = (
   canvasSize: { width: number; height: number }
 ): XYPosition => {
   const padding = 100;
-
-  if (nodes.length === 0) {
-    return {
-      x: canvasSize.width / 2,
-      y: canvasSize.height / 2
-    };
-  }
-
-  // Sort nodes by z-index in descending order
-  const sortedNodes = [...nodes].sort(
-    (a, b) => (b.data?.zIndex || 0) - (a.data?.zIndex || 0)
-  );
-
-  // Try to find a position near the highest z-index node
-  const highestNode = sortedNodes[0];
-  let position = {
-    x: highestNode.position.x + padding,
-    y: highestNode.position.y + padding
+  let initialPosition = {
+    x: canvasSize.width / 2,
+    y: canvasSize.height / 2
   };
-
-  let attempts = 0;
-  const maxAttempts = 100;
+  let lastNodePosition =
+    nodes.length > 0 ? nodes[nodes.length - 1].position : initialPosition;
 
   const getNodeSize = (node: Node) => {
     const dimensions = nodeDimensions[node.type as keyof typeof nodeDimensions];
@@ -40,8 +24,12 @@ export const findOptimalPosition = (
     }
   };
 
+  let attempts = 0;
+  const maxAttempts = 100;
+  let position = { ...lastNodePosition };
+
   while (
-    sortedNodes.some((node) => {
+    nodes.some((node) => {
       const nodeSize = getNodeSize(node);
       return (
         Math.abs(node.position.x - position.x) < nodeSize.width + padding &&
@@ -61,15 +49,16 @@ export const findOptimalPosition = (
 
     if (
       position.x < padding ||
-      position.x + getNodeSize(highestNode).width > canvasSize.width
+      position.x + getNodeSize(nodes[nodes.length - 1]).width > canvasSize.width
     ) {
-      position.x = highestNode.position.x + padding * randomDirectionX;
+      position.x = lastNodePosition.x + padding * randomDirectionX;
     }
     if (
       position.y < padding ||
-      position.y + getNodeSize(highestNode).height > canvasSize.height
+      position.y + getNodeSize(nodes[nodes.length - 1]).height >
+        canvasSize.height
     ) {
-      position.y = highestNode.position.y + padding * randomDirectionY;
+      position.y = lastNodePosition.y + padding * randomDirectionY;
     }
     attempts++;
   }
@@ -78,7 +67,7 @@ export const findOptimalPosition = (
     console.error(
       'Failed to find optimal position: Canvas might be full or too crowded.'
     );
-    return { x: canvasSize.width / 2, y: canvasSize.height / 2 };
+    return { x: -1, y: -1 };
   }
 
   return position;
