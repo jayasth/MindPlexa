@@ -23,7 +23,7 @@ export const findOptimalPosition = (
   };
 
   let attempts = 0;
-  const maxAttempts = 100; // Limit the number of attempts to prevent infinite loops
+  const maxAttempts = 100;
   let position = { ...lastNodePosition };
 
   while (
@@ -65,7 +65,7 @@ export const findOptimalPosition = (
     console.error(
       'Failed to find optimal position: Canvas might be full or too crowded.'
     );
-    return { x: -1, y: -1 }; // Return an error position if no suitable position is found
+    return { x: -1, y: -1 };
   }
 
   return position;

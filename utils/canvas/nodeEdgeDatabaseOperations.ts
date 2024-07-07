@@ -19,7 +19,12 @@ export const createNode = async (
     drawData?: Database['public']['Tables']['draw_nodes']['Insert'];
   }
 ): Promise<{ data?: any; error?: any }> => {
-  console.log('Creating node:', { canvasId, nodeType, position, data });
+  console.log('NodeEdgeDatabaseOperations: Creating node:', {
+    canvasId,
+    nodeType,
+    position,
+    data
+  });
 
   const nodeId = data.id || uuidv4();
   const defaultDimensions = nodeDimensions[nodeType];
