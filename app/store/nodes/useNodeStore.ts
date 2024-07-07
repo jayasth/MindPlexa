@@ -304,23 +304,88 @@ const useNodeStore = create<NodeState>()(
       ]);
       console.log('useNodeStore: Selection menu node added', newNode);
     },
-    onNodesChange: async (changes) => {
+    onNodesChange: async (changes, canvasId) => {
       set((state) => {
         const updatedNodes = state.nodes.map((node) => {
           const change = changes.find((change) => change.id === node.id);
           if (change) {
+            let updatedNode = { ...node };
             switch (change.type) {
               case 'position':
-                return { ...node, position: change.position };
-              case 'resize':
-                return { ...node, width: change.width, height: change.height };
-              default:
-                return node;
+                updatedNode = { ...updatedNode, position: change.position };
+                break;
+              case 'dimensions':
+                updatedNode = {
+                  ...updatedNode,
+                  width: change.dimensions.width,
+                  height: change.dimensions.height
+                };
+                break;
+              case 'data':
+                updatedNode = { ...updatedNode, data: { ...node.data, ...change.data } };
+                break;
+              case 'style':
+                updatedNode = { ...updatedNode, style: { ...node.style, ...change.style } };
+                break;
             }
+
+            // Prepare updates for database
+            const nodeUpdates: Partial<Database['public']['Tables']['nodes']['Update']> = {
+              position: JSON.stringify(updatedNode.position),
+              view_width: updatedNode.width,
+              view_height: updatedNode.height,
+              background_color: updatedNode.data?.backgroundColor,
+              text_color: updatedNode.data?.textColor,
+              title: updatedNode.data?.title,
+              is_editing: updatedNode.data?.isEditing,
+              z_index: updatedNode.data?.zIndex
+            };
+
+            // Prepare specific updates based on node type
+            let specificUpdates: any = {};
+            switch (updatedNode.type) {
+              case 'note':
+                specificUpdates = { content: updatedNode.data?.content || '' };
+                break;
+              case 'task':
+                specificUpdates = { tasks: JSON.stringify(updatedNode.data?.tasks || []) };
+                break;
+              case 'table':
+                specificUpdates = {
+                  columns: JSON.stringify(updatedNode.data?.columns || []),
+                  rows: JSON.stringify(updatedNode.data?.rows || [])
+                };
+                break;
+              case 'calendar':
+                specificUpdates = {
+                  events: JSON.stringify(updatedNode.data?.events || []),
+                  view: updatedNode.data?.view || 'month'
+                };
+                break;
+              case 'draw':
+                specificUpdates = { drawing_data: updatedNode.data?.drawingData || '' };
+                break;
+            }
+
+            // Update node in database
+            updateNodeInDB(
+              updatedNode.id,
+              nodeUpdates,
+              specificUpdates,
+              updatedNode.type as Database['public']['Enums']['node_type']
+            );
+
+            return updatedNode;
           }
           return node;
         });
-        return { nodes: updatedNodes };
+
+        // Update nodeInternals
+        const updatedNodeInternals = new Map(state.nodeInternals);
+        updatedNodes.forEach(node => updatedNodeInternals.set(node.id, node));
+
+        console.log('useNodeStore: Nodes updated', updatedNodes);
+        return { nodes: updatedNodes, nodeInternals: updatedNodeInternals };
       });
     }
   }))
