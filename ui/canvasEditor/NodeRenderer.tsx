@@ -177,11 +177,10 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
           height: size.height,
           backgroundColor: node.data.backgroundColor,
           textColor: node.data.textColor,
-          id: node.id
+          id: node.id,
+          isTemporary: node.data.isTemporary
         }}
         selected={selected}
-        {...(node.type !== 'selection_menu' &&
-          node.isEditing && { selected: selected })}
       />
     );
   }

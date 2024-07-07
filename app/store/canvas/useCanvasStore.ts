@@ -135,6 +135,8 @@ const useCanvasStore = create<CanvasState>()(
             const node = link.nodes;
             if (!node) return;
 
+            console.log('useCanvasStore: Processing node:', node);
+
             let specificNodeData = {};
             if (node.type !== 'selection_menu') {
               specificNodeData =
@@ -156,24 +158,21 @@ const useCanvasStore = create<CanvasState>()(
 
             const newNode = {
               id: node.id,
-              type: node.type || 'note', // Provide a default type if undefined
+              type: node.type,
               position,
               data: {
                 ...node,
                 ...specificNodeData,
                 backgroundColor: node.background_color,
-                textColor: node.text_color
+                textColor: node.text_color,
+                isTemporary: node.is_temporary
               },
               width: node.view_width,
               height: node.view_height,
               isEditing: node.is_editing
             };
 
-            if (!nodeMap.has(node.id)) {
-              nodeMap.set(node.id, newNode);
-            } else {
-              console.warn(`Duplicate node found with id: ${node.id}`);
-            }
+            nodeMap.set(node.id, newNode);
           });
 
           const nodes = Array.from(nodeMap.values());

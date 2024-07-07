@@ -242,6 +242,8 @@ export default function CanvasEditor({ canvasId }) {
     };
   }, [saveCanvas]);
 
+  console.log('CanvasEditor: Nodes passed to ReactFlow:', nodes);
+
   return (
     <div className="flex h-screen">
       <ReactFlowProvider>
