@@ -43,6 +43,7 @@ const useNodeStore = create<NodeState>()(
     nodes: [],
     nodeInternals: new Map(),
     addNode: async (node, canvasId) => {
+      console.log('useNodeStore: Adding node', node);
       const nodeProps = getNodeSpecificProperties(node.type || '', false);
       const textColor =
         node.data && node.data.backgroundColor
@@ -77,6 +78,19 @@ const useNodeStore = create<NodeState>()(
         console.log('useNodeStore: Updated state', updatedNodes);
         return { nodes: updatedNodes, nodeInternals: updatedNodeInternals };
       });
+
+      // Handle 'selection_menu' type specifically
+      if (node.type === 'selection_menu') {
+        set((state) => {
+          const updatedNodes = state.nodes.filter(
+            (n) => n.type !== 'selection_menu'
+          );
+          const updatedNodeInternals = new Map(state.nodeInternals);
+          updatedNodeInternals.delete(node.id);
+          console.log('useNodeStore: Removed previous selection_menu nodes');
+          return { nodes: updatedNodes, nodeInternals: updatedNodeInternals };
+        });
+      }
     },
     updateNode: async (id, data) => {
       set((state) => {
@@ -322,15 +336,23 @@ const useNodeStore = create<NodeState>()(
                 };
                 break;
               case 'data':
-                updatedNode = { ...updatedNode, data: { ...node.data, ...change.data } };
+                updatedNode = {
+                  ...updatedNode,
+                  data: { ...node.data, ...change.data }
+                };
                 break;
               case 'style':
-                updatedNode = { ...updatedNode, style: { ...node.style, ...change.style } };
+                updatedNode = {
+                  ...updatedNode,
+                  style: { ...node.style, ...change.style }
+                };
                 break;
             }
 
             // Prepare updates for database
-            const nodeUpdates: Partial<Database['public']['Tables']['nodes']['Update']> = {
+            const nodeUpdates: Partial<
+              Database['public']['Tables']['nodes']['Update']
+            > = {
               position: JSON.stringify(updatedNode.position),
               view_width: updatedNode.width,
               view_height: updatedNode.height,
@@ -348,7 +370,9 @@ const useNodeStore = create<NodeState>()(
                 specificUpdates = { content: updatedNode.data?.content || '' };
                 break;
               case 'task':
-                specificUpdates = { tasks: JSON.stringify(updatedNode.data?.tasks || []) };
+                specificUpdates = {
+                  tasks: JSON.stringify(updatedNode.data?.tasks || [])
+                };
                 break;
               case 'table':
                 specificUpdates = {
@@ -363,7 +387,9 @@ const useNodeStore = create<NodeState>()(
                 };
                 break;
               case 'draw':
-                specificUpdates = { drawing_data: updatedNode.data?.drawingData || '' };
+                specificUpdates = {
+                  drawing_data: updatedNode.data?.drawingData || ''
+                };
                 break;
             }
 
@@ -382,7 +408,7 @@ const useNodeStore = create<NodeState>()(
 
         // Update nodeInternals
         const updatedNodeInternals = new Map(state.nodeInternals);
-        updatedNodes.forEach(node => updatedNodeInternals.set(node.id, node));
+        updatedNodes.forEach((node) => updatedNodeInternals.set(node.id, node));
 
         console.log('useNodeStore: Nodes updated', updatedNodes);
         return { nodes: updatedNodes, nodeInternals: updatedNodeInternals };

@@ -65,6 +65,8 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
   id,
   onNodeResizeStop
 }) => {
+  console.log('NodeRenderer: Received node', { id, type: data.type, data });
+
   const node = useNodeStore((state) => state.nodes.find((n) => n.id === id)) as
     | BaseNode
     | undefined;
@@ -134,7 +136,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     table: { view: TableNodeView, edit: TableNodeEdit },
     calendar: { view: CalendarNodeView, edit: CalendarNodeEdit },
     draw: { view: DrawNodeView, edit: DrawNodeEdit },
-    selection_menu: { view: NodeSelectionMenu, edit: NodeSelectionMenu }
+    selection_menu: { view: NodeSelectionMenu }
   };
 
   if (node.type in nodeComponents) {
