@@ -93,6 +93,22 @@ const useCanvasStore = create<CanvasState>()(
       }
 
       console.log('useCanvasStore: Canvas data saved successfully');
+
+      // Update local state after saving
+      useNodeStore.getState().setNodes(nodes.map(node => ({
+        ...node,
+        data: {
+          ...node.data,
+          isModified: false
+        }
+      })));
+      useEdgeStore.getState().setEdges(edges.map(edge => ({
+        ...edge,
+        data: {
+          ...edge.data,
+          isModified: false
+        }
+      })));
     },
     loadCanvas: async (canvasId: string) => {
       set({ isLoading: true });

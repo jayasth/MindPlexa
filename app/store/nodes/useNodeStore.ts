@@ -72,10 +72,11 @@ const useNodeStore = create<NodeState>()(
 
       set((state) => {
         const updatedNodes = [...state.nodes, newNode];
-        state.nodeInternals.set(newNode.id, newNode);
+        const updatedNodeInternals = new Map(state.nodeInternals);
+        updatedNodeInternals.set(newNode.id, newNode);
         console.log('useNodeStore: Node added', newNode);
         console.log('useNodeStore: Updated state', updatedNodes);
-        return { nodes: updatedNodes };
+        return { nodes: updatedNodes, nodeInternals: updatedNodeInternals };
       });
     },
     updateNode: async (id, data) => {
