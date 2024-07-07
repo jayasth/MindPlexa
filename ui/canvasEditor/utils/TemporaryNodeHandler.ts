@@ -23,7 +23,16 @@ export const handleTemporaryNodeCreation = async (
     type: nodeType,
     position,
     data: {
-      onSelect: async (selectedNodeType, selectedPosition) => {
+      onSelect: async (
+        selectedNodeType:
+          | 'selection_menu'
+          | 'note'
+          | 'task'
+          | 'table'
+          | 'calendar'
+          | 'draw',
+        selectedPosition
+      ) => {
         removeNode(temporaryNodeId);
         setTimeout(async () => {
           await createNode(
@@ -62,7 +71,7 @@ export const handleTemporaryNodeCreation = async (
             true,
             false,
             canvasId,
-            parentNode
+            parentNode ? parentNode : undefined
           );
         }, 0);
       },
@@ -96,8 +105,7 @@ export const handleTemporaryNodeCreation = async (
     true,
     false,
     canvasId,
-    parentNode,
-    temporaryNodeId
+    parentNode ? parentNode : undefined
   );
 
   if (parentNode) {

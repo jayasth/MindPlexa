@@ -204,22 +204,26 @@ export default function CanvasEditor({ canvasId }) {
     [addEdge]
   );
 
-  const handleTemporaryNodeCreationWithStore = (
-    parentNode: Node | null,
-    position: XYPosition,
-    nodeType: 'selection_menu'
-  ) => {
-    handleTemporaryNodeCreation(
-      parentNode,
-      position,
-      nodeType,
-      (node) => addNode(node, canvasID),
-      addEdge,
-      (id) => removeNode(id, canvasID),
-      nodes,
-      canvasID
-    );
-  };
+  const handleTemporaryNodeCreationWithStore = useCallback(
+    (
+      parentNode: Node | null,
+      position: XYPosition,
+      nodeType: 'selection_menu'
+    ) => {
+      handleTemporaryNodeCreation(
+        parentNode,
+        position,
+        nodeType,
+        (node) => addNode(node, canvasID),
+        addEdge,
+        (id) => removeNode(id, canvasID),
+        nodes,
+        canvasID
+      );
+    },
+    [addNode, addEdge, removeNode, nodes, canvasID]
+  );
+
   useEffect(() => {
     console.log(
       'CanvasEditor: ReactFlowWrapper ref:',
