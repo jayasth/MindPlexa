@@ -80,16 +80,22 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
   const [isEditing, setIsEditing] = useState(node?.isEditing ?? false);
 
   useEffect(() => {
-    if (node && isEditing !== node.isEditing) {
-      const newSize = getNodeSpecificProperties(node.type, node.isEditing);
-      setSize(newSize);
-      setIsEditing(node.isEditing);
-      console.log(`NodeRenderer: Node ID: ${id}`);
+    if (node) {
+      console.log(
+        `NodeRenderer: Node ID: ${id}, Type: ${node.type}, IsEditing: ${node.isEditing}`
+      );
+      if (isEditing !== node.isEditing) {
+        const newSize = getNodeSpecificProperties(node.type, node.isEditing);
+        setSize(newSize);
+        setIsEditing(node.isEditing);
+      }
+    } else {
+      console.log(`NodeRenderer: Node not found, ID: ${id}`);
     }
-  }, [node, node?.isEditing, node?.type, id, isEditing]);
+  }, [node, id, isEditing]);
 
   if (!node) {
-    console.log(`NodeRenderer: Node ID: ${id}`);
+    console.log(`NodeRenderer: Node not found, ID: ${id}`);
     return null;
   }
 
@@ -116,19 +122,26 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
   const commonProps = {
     draggable: true,
     connectable: true,
-    onDelete: () => console.log(`Node ID: ${id}`),
-    onChangeColor: () => console.log(`Node ID: ${id}`),
-    onResize: () => console.log(`Node ID: ${id}`),
-    onTag: () => console.log(`Node ID: ${id}`),
-    onAttach: () => console.log(`Node ID: ${id}`),
+    onDelete: () =>
+      console.log(`Delete action for Node ID: ${id}, Type: ${node.type}`),
+    onChangeColor: () =>
+      console.log(`Change color action for Node ID: ${id}, Type: ${node.type}`),
+    onResize: () =>
+      console.log(`Resize action for Node ID: ${id}, Type: ${node.type}`),
+    onTag: () =>
+      console.log(`Tag action for Node ID: ${id}, Type: ${node.type}`),
+    onAttach: () =>
+      console.log(`Attach action for Node ID: ${id}, Type: ${node.type}`),
     width: size.width,
     height: size.height,
     selected: selected,
     onLabelChange: (label: string) =>
       updateNode(id, { data: { ...node.data, label } }, canvasId),
     onEdit: handleEdit,
-    onNodeResizeStop
+    onNodeResizeStop:
+      node.type !== 'selection_menu' ? onNodeResizeStop : undefined
   };
+
   const nodeComponents = {
     note: { view: NoteNodeView, edit: NoteNodeEdit },
     task: { view: TaskNodeView, edit: TaskNodeEdit },
@@ -151,7 +164,9 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
       NodeComponent = componentInfo.view;
     }
 
-    console.log(`NodeRenderer: Rendering node ID: ${id}, type: ${node.type}`);
+    console.log(
+      `NodeRenderer: Rendering node ID: ${id}, Type: ${node.type}, IsEditing: ${node.isEditing}`
+    );
 
     return (
       <NodeComponent
@@ -165,7 +180,6 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
           id: node.id
         }}
         selected={selected}
-        onNodeResizeStop={onNodeResizeStop}
         {...(node.type !== 'selection_menu' &&
           node.isEditing && { selected: selected })}
       />
@@ -173,7 +187,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
   }
 
   console.log(
-    `NodeRenderer: Unrecognized node type for ID: ${id}, type: ${node.type}`
+    `NodeRenderer: Unrecognized node type for ID: ${id}, Type: ${node.type}`
   );
   return null;
 };

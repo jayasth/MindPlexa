@@ -81,6 +81,7 @@ const useNodeStore = create<NodeState>()(
 
       // Handle 'selection_menu' type specifically
       if (node.type === 'selection_menu') {
+        console.log('useNodeStore: Adding selection_menu node', node);
         set((state) => {
           const updatedNodes = state.nodes.filter(
             (n) => n.type !== 'selection_menu'
@@ -202,11 +203,11 @@ const useNodeStore = create<NodeState>()(
       });
     },
     setInitialState: (nodes) => {
+      console.log('useNodeStore: Setting initial state', nodes);
       set({
         nodes,
         nodeInternals: new Map(nodes.map((node) => [node.id, node]))
       });
-      console.log('useNodeStore: Initial state set', nodes);
     },
     toggleEditMode: (nodeId) => {
       set((state) => {
