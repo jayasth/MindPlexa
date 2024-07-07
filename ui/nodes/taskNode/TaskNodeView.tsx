@@ -41,7 +41,7 @@ const TaskNodeView: React.FC<TaskNodeViewProps> = ({ data, width, height }) => {
         </div>
       </div>
       <div className={styles.taskList} style={{ color: textColor }}>
-        {tasks && tasks.length > 0 ? (
+        {Array.isArray(tasks) && tasks.length > 0 ? (
           tasks.map((task) => (
             <div key={task.id} className={styles.taskItem}>
               <input type="checkbox" checked={task.completed} readOnly />
