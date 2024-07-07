@@ -129,7 +129,6 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     onEdit: handleEdit,
     onNodeResizeStop
   };
-
   const nodeComponents = {
     note: { view: NoteNodeView, edit: NoteNodeEdit },
     task: { view: TaskNodeView, edit: TaskNodeEdit },
@@ -140,14 +139,13 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
   };
 
   if (node.type in nodeComponents) {
-    const componentInfo = nodeComponents[node.type];
+    const componentInfo =
+      nodeComponents[node.type as keyof typeof nodeComponents];
     let NodeComponent;
 
-    if (
-      'edit' in componentInfo &&
-      node.isEditing &&
-      node.type !== 'selection_menu'
-    ) {
+    if (node.type === 'selection_menu') {
+      NodeComponent = componentInfo.view;
+    } else if ('edit' in componentInfo && node.isEditing) {
       NodeComponent = componentInfo.edit;
     } else {
       NodeComponent = componentInfo.view;
@@ -159,7 +157,6 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
       <NodeComponent
         {...commonProps}
         data={{
-          ...node,
           ...node.data,
           width: size.width,
           height: size.height,
@@ -169,8 +166,8 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
         }}
         selected={selected}
         onNodeResizeStop={onNodeResizeStop}
-        {...(node.isEditing &&
-          node.type !== 'selection_menu' && { selected: selected })}
+        {...(node.type !== 'selection_menu' &&
+          node.isEditing && { selected: selected })}
       />
     );
   }

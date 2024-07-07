@@ -324,84 +324,116 @@ const useNodeStore = create<NodeState>()(
           const change = changes.find((change) => change.id === node.id);
           if (change) {
             let updatedNode = { ...node };
+            let hasChanges = false;
+
             switch (change.type) {
               case 'position':
-                updatedNode = { ...updatedNode, position: change.position };
+                if (
+                  JSON.stringify(updatedNode.position) !==
+                  JSON.stringify(change.position)
+                ) {
+                  updatedNode = { ...updatedNode, position: change.position };
+                  hasChanges = true;
+                }
                 break;
               case 'dimensions':
-                updatedNode = {
-                  ...updatedNode,
-                  width: change.dimensions.width,
-                  height: change.dimensions.height
-                };
+                if (
+                  updatedNode.width !== change.dimensions.width ||
+                  updatedNode.height !== change.dimensions.height
+                ) {
+                  updatedNode = {
+                    ...updatedNode,
+                    width: change.dimensions.width,
+                    height: change.dimensions.height
+                  };
+                  hasChanges = true;
+                }
                 break;
               case 'data':
-                updatedNode = {
-                  ...updatedNode,
-                  data: { ...node.data, ...change.data }
-                };
+                if (
+                  JSON.stringify(updatedNode.data) !==
+                  JSON.stringify(change.data)
+                ) {
+                  updatedNode = {
+                    ...updatedNode,
+                    data: { ...node.data, ...change.data }
+                  };
+                  hasChanges = true;
+                }
                 break;
               case 'style':
-                updatedNode = {
-                  ...updatedNode,
-                  style: { ...node.style, ...change.style }
-                };
+                if (
+                  JSON.stringify(updatedNode.style) !==
+                  JSON.stringify(change.style)
+                ) {
+                  updatedNode = {
+                    ...updatedNode,
+                    style: { ...node.style, ...change.style }
+                  };
+                  hasChanges = true;
+                }
                 break;
             }
 
-            // Prepare updates for database
-            const nodeUpdates: Partial<
-              Database['public']['Tables']['nodes']['Update']
-            > = {
-              position: JSON.stringify(updatedNode.position),
-              view_width: updatedNode.width,
-              view_height: updatedNode.height,
-              background_color: updatedNode.data?.backgroundColor,
-              text_color: updatedNode.data?.textColor,
-              title: updatedNode.data?.title,
-              is_editing: updatedNode.data?.isEditing,
-              z_index: updatedNode.data?.zIndex
-            };
+            if (hasChanges) {
+              // Prepare updates for database
+              const nodeUpdates: Partial<
+                Database['public']['Tables']['nodes']['Update']
+              > = {
+                position: JSON.stringify(updatedNode.position),
+                view_width: updatedNode.width,
+                view_height: updatedNode.height,
+                background_color: updatedNode.data?.backgroundColor,
+                text_color: updatedNode.data?.textColor,
+                title: updatedNode.data?.title,
+                is_editing: updatedNode.data?.isEditing,
+                z_index: updatedNode.data?.zIndex
+              };
 
-            // Prepare specific updates based on node type
-            let specificUpdates: any = {};
-            switch (updatedNode.type) {
-              case 'note':
-                specificUpdates = { content: updatedNode.data?.content || '' };
-                break;
-              case 'task':
-                specificUpdates = {
-                  tasks: JSON.stringify(updatedNode.data?.tasks || [])
-                };
-                break;
-              case 'table':
-                specificUpdates = {
-                  columns: JSON.stringify(updatedNode.data?.columns || []),
-                  rows: JSON.stringify(updatedNode.data?.rows || [])
-                };
-                break;
-              case 'calendar':
-                specificUpdates = {
-                  events: JSON.stringify(updatedNode.data?.events || []),
-                  view: updatedNode.data?.view || 'month'
-                };
-                break;
-              case 'draw':
-                specificUpdates = {
-                  drawing_data: updatedNode.data?.drawingData || ''
-                };
-                break;
+              // Prepare specific updates based on node type
+              let specificUpdates: any = {};
+              switch (updatedNode.type) {
+                case 'note':
+                  specificUpdates = {
+                    content: updatedNode.data?.content || ''
+                  };
+                  break;
+                case 'task':
+                  specificUpdates = {
+                    tasks: JSON.stringify(updatedNode.data?.tasks || [])
+                  };
+                  break;
+                case 'table':
+                  specificUpdates = {
+                    columns: JSON.stringify(updatedNode.data?.columns || []),
+                    rows: JSON.stringify(updatedNode.data?.rows || [])
+                  };
+                  break;
+                case 'calendar':
+                  specificUpdates = {
+                    events: JSON.stringify(updatedNode.data?.events || []),
+                    view: updatedNode.data?.view || 'month'
+                  };
+                  break;
+                case 'draw':
+                  specificUpdates = {
+                    drawing_data: updatedNode.data?.drawingData || ''
+                  };
+                  break;
+              }
+
+              // Update node in database only if it's not a selection_menu
+              if (updatedNode.type !== 'selection_menu') {
+                updateNodeInDB(
+                  updatedNode.id,
+                  nodeUpdates,
+                  specificUpdates,
+                  updatedNode.type as Database['public']['Enums']['node_type']
+                );
+              }
+
+              return updatedNode;
             }
-
-            // Update node in database
-            updateNodeInDB(
-              updatedNode.id,
-              nodeUpdates,
-              specificUpdates,
-              updatedNode.type as Database['public']['Enums']['node_type']
-            );
-
-            return updatedNode;
           }
           return node;
         });

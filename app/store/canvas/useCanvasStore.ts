@@ -135,9 +135,13 @@ const useCanvasStore = create<CanvasState>()(
             const node = link.nodes;
             if (!node) return;
 
-            const specificNodeData = nodeData?.[node.type]?.find(
-              (specificNode) => specificNode.node_id === node.id
-            );
+            let specificNodeData = {};
+            if (node.type !== 'selection_menu') {
+              specificNodeData =
+                nodeData?.[node.type]?.find(
+                  (specificNode) => specificNode.node_id === node.id
+                ) || {};
+            }
 
             let position;
             try {
