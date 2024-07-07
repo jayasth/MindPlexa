@@ -6,7 +6,8 @@ import {
   useCanvasStore
 } from '@/app/store';
 import { getChildNodePosition } from '@/ui/canvasEditor/utils/getChildNodePosition';
-import { handleTemporaryNodeCreation } from '@/ui/canvasEditor/utils/TemporaryNodeHandler';
+import { createNode } from '@/ui/canvasEditor/utils/nodeCreation';
+import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 import type { XYPosition } from 'reactflow';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -53,18 +54,32 @@ export const useEdgeConnection = () => {
           console.log('onConnectEnd: position:', position);
 
           if (position) {
-            handleTemporaryNodeCreation(
-              parentNode,
-              position,
+            createNode(
               'selection_menu',
+              position,
+              nodes,
               (newNode) => {
                 console.log('useEdgeConnection: Node created:', newNode);
-                addNode(newNode);
+                addNode(newNode, canvasID);
+                if (parentNode) {
+                  const newEdge = {
+                    id: uuidv4(),
+                    source: parentNode.id,
+                    target: newNode.id,
+                    type: 'customEdge'
+                  };
+                  addEdge(newEdge);
+                  console.log('useEdgeConnection: Edge created:', newEdge);
+                }
               },
-              addEdge,
-              removeNode,
-              nodes,
-              canvasID
+              {
+                width: nodeDimensions['selection_menu'].width,
+                height: nodeDimensions['selection_menu'].height
+              },
+              true,
+              false,
+              canvasID,
+              parentNode
             );
           }
         }
@@ -93,7 +108,6 @@ export const useEdgeConnection = () => {
       screenToFlowPosition,
       addNode,
       addEdge,
-      removeNode,
       nodes,
       canvasID
     ]
