@@ -14,6 +14,8 @@ interface UIState {
   setIsLoading: (loading: boolean) => void;
   lastLoadTime: number;
   setLastLoadTime: (time: number) => void;
+  canvasSize: { width: number; height: number };
+  setCanvasSize: (size: { width: number; height: number }) => void;
 }
 
 const useUIStore = create<UIState>()(
@@ -46,6 +48,11 @@ const useUIStore = create<UIState>()(
     setLastLoadTime: (time) => {
       console.log('Store: Setting lastLoadTime to:', time);
       set({ lastLoadTime: time });
+    },
+    canvasSize: { width: 0, height: 0 },
+    setCanvasSize: (size) => {
+      console.log('Store: Setting canvas size to:', size);
+      set({ canvasSize: size });
     }
   }))
 );

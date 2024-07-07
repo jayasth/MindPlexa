@@ -23,10 +23,24 @@ const useEdgeStore = create<EdgeState>()(
     addEdge: (edge) => {
       const newEdge = { ...edge, id: uuidv4() };
       set((state) => ({ edges: [...state.edges, newEdge] }));
+      console.log('useEdgeStore: Creating edge:', {
+        id: newEdge.id,
+        source: newEdge.source,
+        target: newEdge.target,
+        sourceHandle: newEdge.sourceHandle,
+        targetHandle: newEdge.targetHandle,
+        type: newEdge.type,
+        data: newEdge.data
+      });
       createEdgeInDB(newEdge)
-        .then(() => console.log('Edge added successfully to the database'))
+        .then(() =>
+          console.log('useEdgeStore: Edge added successfully to the database')
+        )
         .catch((error) =>
-          console.error('Error adding edge to the database:', error)
+          console.error(
+            'useEdgeStore: Error adding edge to the database:',
+            error
+          )
         );
     },
     updateEdge: (id, data) => {
@@ -36,9 +50,14 @@ const useEdgeStore = create<EdgeState>()(
         )
       }));
       updateEdgeInDB(id, data)
-        .then(() => console.log('Edge updated successfully in the database'))
+        .then(() =>
+          console.log('useEdgeStore: Edge updated successfully in the database')
+        )
         .catch((error) =>
-          console.error('Error updating edge in the database:', error)
+          console.error(
+            'useEdgeStore: Error updating edge in the database:',
+            error
+          )
         );
     },
     removeEdge: (id) => {
@@ -46,9 +65,16 @@ const useEdgeStore = create<EdgeState>()(
         edges: state.edges.filter((edge) => edge.id !== id)
       }));
       deleteEdgeInDB(id)
-        .then(() => console.log('Edge removed successfully from the database'))
+        .then(() =>
+          console.log(
+            'useEdgeStore: Edge removed successfully from the database'
+          )
+        )
         .catch((error) =>
-          console.error('Error removing edge from the database:', error)
+          console.error(
+            'useEdgeStore: Error removing edge from the database:',
+            error
+          )
         );
     },
     setEdges: (updater) => {

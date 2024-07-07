@@ -39,6 +39,12 @@ export const createNode = async (
   const nodeDimension = nodeDimensions[nodeType];
   const positionAsXYPosition = findNewPosition(nodes, canvasSize);
 
+  // Use canvas center if findNewPosition returns (-1, -1)
+  const finalPosition =
+    positionAsXYPosition.x === -1 && positionAsXYPosition.y === -1
+      ? { x: canvasSize.width / 2, y: canvasSize.height / 2 }
+      : positionAsXYPosition;
+
   const defaultProperties = {
     backgroundColor: '#F4F4F4',
     textColor: '#575757'
@@ -47,7 +53,7 @@ export const createNode = async (
   const newNodeData = {
     id: nodeId,
     type: nodeType,
-    position: JSON.stringify(positionAsXYPosition),
+    position: JSON.stringify(finalPosition),
     background_color: defaultProperties.backgroundColor,
     text_color: defaultProperties.textColor,
     is_editing: isEditing,
@@ -80,7 +86,7 @@ export const createNode = async (
     const { data: createdNode, error } = await createNodeInDatabase(
       canvasId,
       nodeType,
-      positionAsXYPosition,
+      finalPosition,
       newNodeData
     );
 
@@ -94,7 +100,7 @@ export const createNode = async (
       const newNode: Node<any> = {
         id: nodeId,
         type: nodeType,
-        position: positionAsXYPosition,
+        position: finalPosition,
         data: {
           ...createdNode,
           backgroundColor: createdNode.background_color,
