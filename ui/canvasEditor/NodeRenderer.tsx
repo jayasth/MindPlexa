@@ -84,7 +84,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
       setIsEditing(node.isEditing);
       console.log(`NodeRenderer: Node ID: ${id}`);
     }
-  }, [node?.isEditing, node?.type, id, isEditing, node]);
+  }, [node, node?.isEditing, node?.type, id, isEditing]);
 
   if (!node) {
     console.log(`NodeRenderer: Node ID: ${id}`);

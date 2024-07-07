@@ -9,7 +9,6 @@ import {
   getNodeSpecificProperties,
   nodeDimensions
 } from '@/ui/canvasEditor/utils/nodeProperties';
-import { findOptimalPosition } from '@/ui/canvasEditor/utils/positioningUtils';
 import { getChildNodePosition } from '@/ui/canvasEditor/utils/getChildNodePosition';
 import type { Node, XYPosition } from 'reactflow';
 import type { Database } from '@/types_db';
@@ -156,7 +155,8 @@ const useNodeStore = create<NodeState>()(
               ...state.nodes.slice(0, existingNodeIndex),
               updatedNode,
               ...state.nodes.slice(existingNodeIndex + 1)
-            ]
+            ],
+            nodeInternals: new Map(state.nodeInternals).set(id, updatedNode)
           };
         }
         return state;

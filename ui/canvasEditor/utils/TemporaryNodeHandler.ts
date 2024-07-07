@@ -108,6 +108,10 @@ export const handleTemporaryNodeCreation = async (
     parentNode ? parentNode : undefined
   );
 
+  // Ensure the temporary node is added to the local state
+  addNode(temporaryNode);
+  console.log('TemporaryNodeHandler: Temporary node added:', temporaryNode);
+
   if (parentNode) {
     const { data: createdEdge, error: edgeError } = await createEdge({
       source_node_id: parentNode.id,

@@ -8,7 +8,6 @@ import {
 import type { Node } from 'reactflow';
 import useNodeStore from '../nodes/useNodeStore';
 import useEdgeStore from '../edges/useEdgeStore';
-//import useUIStore from '../ui/useUIStore';
 
 interface CanvasState {
   canvasID: string;
@@ -95,20 +94,24 @@ const useCanvasStore = create<CanvasState>()(
       console.log('useCanvasStore: Canvas data saved successfully');
 
       // Update local state after saving
-      useNodeStore.getState().setNodes(nodes.map(node => ({
-        ...node,
-        data: {
-          ...node.data,
-          isModified: false
-        }
-      })));
-      useEdgeStore.getState().setEdges(edges.map(edge => ({
-        ...edge,
-        data: {
-          ...edge.data,
-          isModified: false
-        }
-      })));
+      useNodeStore.getState().setNodes(
+        nodes.map((node) => ({
+          ...node,
+          data: {
+            ...node.data,
+            isModified: false
+          }
+        }))
+      );
+      useEdgeStore.getState().setEdges(
+        edges.map((edge) => ({
+          ...edge,
+          data: {
+            ...edge.data,
+            isModified: false
+          }
+        }))
+      );
     },
     loadCanvas: async (canvasId: string) => {
       set({ isLoading: true });
@@ -177,11 +180,13 @@ const useCanvasStore = create<CanvasState>()(
           console.log('useCanvasStore: Edge data after load:', edges);
 
           useNodeStore.getState().setNodes(nodes);
+          useNodeStore.getState().setInitialState(nodes);
           useEdgeStore.getState().setEdges(edges);
           set({ isLoading: false, lastLoadTime: Date.now() });
         } else {
           console.log('useCanvasStore: Initializing new blank canvas');
           useNodeStore.getState().setNodes([]);
+          useNodeStore.getState().setInitialState([]);
           useEdgeStore.getState().setEdges([]);
           set({ isLoading: false, lastLoadTime: Date.now() });
         }
