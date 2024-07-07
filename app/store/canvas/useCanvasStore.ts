@@ -129,42 +129,50 @@ const useCanvasStore = create<CanvasState>()(
 
         if (data && data.node_canvas_link && data.node_canvas_link.length > 0) {
           console.log('useCanvasStore: Loading existing canvas data');
-          const nodes = data.node_canvas_link
-            .map((link) => {
-              const node = link.nodes;
-              if (!node) return null;
+          const nodeMap = new Map<string, Node>();
 
-              const specificNodeData = nodeData?.[node.type]?.find(
-                (specificNode) => specificNode.node_id === node.id
-              );
+          data.node_canvas_link.forEach((link) => {
+            const node = link.nodes;
+            if (!node) return;
 
-              let position;
-              try {
-                position =
-                  typeof node.position === 'string'
-                    ? JSON.parse(node.position)
-                    : node.position;
-              } catch (error) {
-                console.error('Error parsing position JSON:', error);
-                position = { x: 200, y: 200 };
-              }
+            const specificNodeData = nodeData?.[node.type]?.find(
+              (specificNode) => specificNode.node_id === node.id
+            );
 
-              return {
-                id: node.id,
-                type: node.type || 'note', // Provide a default type if undefined
-                position,
-                data: {
-                  ...node,
-                  ...specificNodeData,
-                  backgroundColor: node.background_color,
-                  textColor: node.text_color
-                },
-                width: node.view_width,
-                height: node.view_height,
-                isEditing: node.is_editing
-              };
-            })
-            .filter((node): node is Node => node !== null);
+            let position;
+            try {
+              position =
+                typeof node.position === 'string'
+                  ? JSON.parse(node.position)
+                  : node.position;
+            } catch (error) {
+              console.error('Error parsing position JSON:', error);
+              position = { x: 200, y: 200 };
+            }
+
+            const newNode = {
+              id: node.id,
+              type: node.type || 'note', // Provide a default type if undefined
+              position,
+              data: {
+                ...node,
+                ...specificNodeData,
+                backgroundColor: node.background_color,
+                textColor: node.text_color
+              },
+              width: node.view_width,
+              height: node.view_height,
+              isEditing: node.is_editing
+            };
+
+            if (!nodeMap.has(node.id)) {
+              nodeMap.set(node.id, newNode);
+            } else {
+              console.warn(`Duplicate node found with id: ${node.id}`);
+            }
+          });
+
+          const nodes = Array.from(nodeMap.values());
 
           console.log('useCanvasStore: Nodes after processing:', nodes);
 
