@@ -16,6 +16,8 @@ export const getChildNodePosition = (
   const clientX = isTouchEvent ? event.touches[0].clientX : event.clientX;
   const clientY = isTouchEvent ? event.touches[0].clientY : event.clientY;
 
+  console.log('getChildNodePosition: Event coordinates:', { clientX, clientY });
+
   // Get the zoom level and pan offset from the domNode
   const reactFlowBounds = domNode.getBoundingClientRect();
   const zoomLevel = reactFlowBounds.width / domNode.offsetWidth;
@@ -25,6 +27,16 @@ export const getChildNodePosition = (
   // Adjust the mouse event coordinates based on the zoom level and pan offset
   const adjustedClientX = (clientX - reactFlowBounds.left) / zoomLevel + panX;
   const adjustedClientY = (clientY - reactFlowBounds.top) / zoomLevel + panY;
+
+  console.log('getChildNodePosition: Adjusted coordinates:', {
+    adjustedClientX,
+    adjustedClientY
+  });
+  console.log(
+    'getChildNodePosition: Parent node position:',
+    parentNode.position
+  );
+  console.log('getChildNodePosition: DOM node bounds:', reactFlowBounds);
 
   const flowPosition = screenToFlowPosition({
     x: adjustedClientX,

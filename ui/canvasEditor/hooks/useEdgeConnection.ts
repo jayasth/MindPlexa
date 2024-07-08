@@ -51,7 +51,12 @@ export const useEdgeConnection = () => {
             domNode,
             screenToFlowPosition
           );
-          console.log('onConnectEnd: position:', position);
+          console.log('onConnectEnd: Calculated position:', position);
+
+          if (position.x === -1 && position.y === -1) {
+            console.error('Failed to calculate valid position');
+            return;
+          }
 
           if (position) {
             createNode(
@@ -91,7 +96,7 @@ export const useEdgeConnection = () => {
           const newEdge = {
             id: uuidv4(),
             source: sourceNode.id,
-            target: targetNode,
+            target: targetNode.id,
             type: 'customEdge'
           };
 
