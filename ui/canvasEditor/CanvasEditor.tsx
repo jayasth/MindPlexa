@@ -68,11 +68,11 @@ export default function CanvasEditor({ canvasId }) {
   const { canvasID, setCanvasId, saveCanvas, loadCanvas } = useCanvasStore();
 
   useEffect(() => {
-    if (canvasId) {
+    if (canvasId && !isLoading) {
       setCanvasId(canvasId);
       loadCanvas(canvasId);
     }
-  }, [canvasId, setCanvasId, loadCanvas]);
+  }, [canvasId, setCanvasId, loadCanvas, isLoading]);
 
   useEffect(() => {
     const updateCanvasSize = () => {
@@ -225,15 +225,11 @@ export default function CanvasEditor({ canvasId }) {
   );
 
   useEffect(() => {
-    console.log(
-      'CanvasEditor: ReactFlowWrapper ref:',
-      reactFlowWrapper.current
-    );
     if (reactFlowWrapper.current && !domNode) {
       console.log('CanvasEditor: Setting domNode');
       setDomNode(reactFlowWrapper.current);
     }
-  }, [reactFlowWrapper.current, domNode, setDomNode]);
+  }, [domNode, setDomNode]);
 
   // Save the canvas state when the component unmounts
   useEffect(() => {
@@ -292,7 +288,10 @@ export default function CanvasEditor({ canvasId }) {
             fitViewOptions={{ padding: 0.2 }}
             onInit={(instance) => {
               reactFlowInstance.current = instance;
-              setDomNode(reactFlowWrapper.current);
+              if (reactFlowWrapper.current && !domNode) {
+                console.log('CanvasEditor: Setting domNode');
+                setDomNode(reactFlowWrapper.current);
+              }
             }}
           >
             <Background color="#aaa" gap={16} />

@@ -19,7 +19,7 @@ interface UIState {
 }
 
 const useUIStore = create<UIState>()(
-  devtools((set) => ({
+  devtools((set, get) => ({
     showNodeSelectionMenu: false,
     setShowNodeSelectionMenu: (show) => {
       console.log('Store: Setting show node selection menu to:', show);
@@ -32,6 +32,7 @@ const useUIStore = create<UIState>()(
     },
     domNode: null,
     setDomNode: (node) => {
+      if (!node || get().domNode) return;
       console.log('Store: Setting DOM node');
       set({ domNode: node });
     },

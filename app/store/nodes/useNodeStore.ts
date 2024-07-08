@@ -203,6 +203,7 @@ const useNodeStore = create<NodeState>()(
       });
     },
     setInitialState: (nodes) => {
+      if (get().nodes.length > 0) return;
       console.log('useNodeStore: Setting initial state', nodes);
       set({
         nodes,

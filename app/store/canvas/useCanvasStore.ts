@@ -26,6 +26,7 @@ const useCanvasStore = create<CanvasState>()(
     lastLoadTime: 0,
     setCanvasId: (id) => set({ canvasID: id }),
     saveCanvas: async () => {
+      if (get().isLoading || get().saveCanvasTimeout) return;
       const { canvasID, isLoading, lastLoadTime } = get();
       const nodes = useNodeStore.getState().nodes;
       const edges = useEdgeStore.getState().edges;
@@ -114,6 +115,7 @@ const useCanvasStore = create<CanvasState>()(
       );
     },
     loadCanvas: async (canvasId: string) => {
+      if (get().isLoading) return;
       set({ isLoading: true });
       try {
         const { data, nodeData, error } = await fetchCanvas(canvasId);
