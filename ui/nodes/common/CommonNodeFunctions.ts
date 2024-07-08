@@ -131,27 +131,34 @@ export const handleChangeColorWithCombination = (
   id: string,
   backgroundColor: string,
   textColor: string,
-  onChangeColor: (color: string) => void
+  onChangeColor: (color: string) => void,
+  canvasId: string
 ) => {
   const { updateNode } = useNodeStore.getState();
   onChangeColor(backgroundColor);
-  updateNode(id, { data: { backgroundColor, textColor } });
+  updateNode(id, { data: { backgroundColor, textColor } }, canvasId);
 };
 
 export const handleTitleChange = (
   id: string,
   title: string,
-  onChangeTitle: (title: string) => void
+  onChangeTitle: (title: string) => void,
+  canvasId: string
 ) => {
   const { updateNode } = useNodeStore.getState();
   onChangeTitle(title);
-  updateNode(id, { data: { title } });
+  updateNode(id, { data: { title } }, canvasId);
 };
 
-export const handleSave = (id: string, onSave: () => void, nodeData: any) => {
+export const handleSave = (
+  id: string,
+  onSave: () => void,
+  nodeData: any,
+  canvasId: string
+) => {
   const { updateNode, toggleEditMode } = useNodeStore.getState();
   onSave();
-  updateNode(id, nodeData);
+  updateNode(id, nodeData, canvasId);
   toggleEditMode(id);
 };
 
@@ -159,20 +166,25 @@ export const handleClose = (
   nodeId: string,
   onClose: () => void,
   title: string,
-  content: any
+  content: any,
+  canvasId: string
 ) => {
   const { updateNode, toggleEditMode } = useNodeStore.getState();
-  updateNode(nodeId, { data: { title, content } });
+  updateNode(nodeId, { data: { title, content } }, canvasId);
   onClose();
   toggleEditMode(nodeId);
 };
 
-export const handleDelete = (id: string, onDelete: () => void) => {
+export const handleDelete = (
+  id: string,
+  onDelete: () => void,
+  canvasId: string
+) => {
   const { removeNode } = useNodeStore.getState();
   const { setEdges } = useEdgeStore.getState();
   if (window.confirm('Are you sure you want to delete this node?')) {
     onDelete();
-    removeNode(id);
+    removeNode(id, canvasId);
     setEdges((edges) =>
       edges.filter((edge) => edge.source !== id && edge.target !== id)
     );
@@ -182,28 +194,31 @@ export const handleDelete = (id: string, onDelete: () => void) => {
 export const handleChangeColor = (
   id: string,
   color: string,
-  onChangeColor: (color: string) => void
+  onChangeColor: (color: string) => void,
+  canvasId: string
 ) => {
   const { updateNode } = useNodeStore.getState();
   const textColor = getContrastYIQ(color);
   onChangeColor(color);
-  updateNode(id, { data: { backgroundColor: color, textColor } });
+  updateNode(id, { data: { backgroundColor: color, textColor } }, canvasId);
 };
 
 export const handleAddTag = (
   id: string,
   tags: string[],
-  onAddTag: (tag: string) => void
+  onAddTag: (tag: string) => void,
+  canvasId: string
 ) => {
   const { updateNode } = useNodeStore.getState();
-  updateNode(id, { data: { tags } });
+  updateNode(id, { data: { tags } }, canvasId);
   tags.forEach((tag) => onAddTag(tag));
 };
 
 export const handleAttachFile = (
   id: string,
   files: (File | string)[],
-  callback: () => void
+  callback: () => void,
+  canvasId: string
 ) => {
   const { updateNode } = useNodeStore.getState();
   const maxFileSize = 2 * 1024 * 1024; // 2 MB in bytes
@@ -228,9 +243,13 @@ export const handleAttachFile = (
       return;
     }
 
-    updateNode(id, {
-      data: { attachedFiles: JSON.stringify(allFiles) } // Serialize files
-    });
+    updateNode(
+      id,
+      {
+        data: { attachedFiles: JSON.stringify(allFiles) } // Serialize files
+      },
+      canvasId
+    );
     callback();
   } else {
     alert(
@@ -242,7 +261,8 @@ export const handleAttachFile = (
 export const handleRemoveAttachedFile = (
   id: string,
   fileToRemove: File | string,
-  onRemoveFile: (file: File | string) => void
+  onRemoveFile: (file: File | string) => void,
+  canvasId: string
 ) => {
   const { updateNode } = useNodeStore.getState();
   const existingFiles =
@@ -250,13 +270,17 @@ export const handleRemoveAttachedFile = (
       ?.attachedFiles || [];
   const updatedFiles = existingFiles.filter((file) => file !== fileToRemove);
 
-  updateNode(id, {
-    data: { attachedFiles: updatedFiles }
-  });
+  updateNode(
+    id,
+    {
+      data: { attachedFiles: updatedFiles }
+    },
+    canvasId
+  );
   onRemoveFile(fileToRemove);
 };
 
-export const handleDuplicate = (id: string) => {
+export const handleDuplicate = (id: string, canvasId: string) => {
   const { nodes, addNode, setSelectedNodes } = useNodeStore.getState();
   const nodeToDuplicate = nodes.find((node) => node.id === id);
   if (nodeToDuplicate) {
@@ -337,7 +361,7 @@ export const handleDuplicate = (id: string) => {
       position: newPosition,
       data: newData
     };
-    addNode(newNode);
+    addNode(newNode, canvasId);
     setSelectedNodes([newNode.id]);
   }
 };

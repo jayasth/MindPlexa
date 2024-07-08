@@ -16,6 +16,7 @@ import Input from '@/ui/Input/Input';
 import Button from '@/ui/Button/Button';
 import { handleAttachmentPreview } from '@/ui/nodes/common/CommonNodeFunctions';
 import useNodeStore from '@/app/store/nodes/useNodeStore';
+import useCanvasStore from '@/app/store/canvas/useCanvasStore';
 
 const ICON_SIZE = 16;
 
@@ -128,6 +129,7 @@ export const FileModal = ({
   const [fileUrl, setFileUrl] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const updateNode = useNodeStore((state) => state.updateNode);
+  const canvasID = useCanvasStore((state) => state.canvasID);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -158,9 +160,13 @@ export const FileModal = ({
           return;
         }
         onAttachFiles(allFiles);
-        updateNode(nodeId, {
-          data: { attachedFiles: allFiles }
-        });
+        updateNode(
+          nodeId,
+          {
+            data: { attachedFiles: allFiles }
+          },
+          canvasID
+        );
         setFileUrl('');
       } catch (e) {
         alert('Invalid URL');
@@ -169,9 +175,13 @@ export const FileModal = ({
   };
   const handleRemoveFile = (fileToRemove: File | string) => {
     const updatedFiles = existingFiles.filter((file) => file !== fileToRemove);
-    updateNode(nodeId, {
-      data: { attachedFiles: updatedFiles }
-    });
+    updateNode(
+      nodeId,
+      {
+        data: { attachedFiles: updatedFiles }
+      },
+      canvasID
+    );
     onRemoveFile(fileToRemove);
   };
 
