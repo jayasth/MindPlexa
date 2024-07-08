@@ -6,7 +6,7 @@ import {
   useCanvasStore
 } from '@/app/store';
 import { getChildNodePosition } from '@/ui/canvasEditor/utils/getChildNodePosition';
-import { createNode } from '@/ui/canvasEditor/utils/nodeCreation';
+import { handleTemporaryNodeCreation } from '@/ui/canvasEditor/utils/TemporaryNodeHandler';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 import type { XYPosition } from 'reactflow';
 import { v4 as uuidv4 } from 'uuid';
@@ -31,40 +31,6 @@ export const useEdgeConnection = () => {
     connectingNodeId.current = node.nodeId || '';
     setParentNode(node);
   }, []);
-
-  const createNodeAndEdge = useCallback(
-    (nodeType, position, parentNodeId) => {
-      createNode(
-        nodeType,
-        position,
-        nodes,
-        (newNode) => {
-          console.log('useEdgeConnection: Node created:', newNode);
-          addNode(newNode, canvasID);
-          if (parentNodeId) {
-            const newEdge = {
-              id: uuidv4(),
-              source: parentNodeId,
-              target: newNode.id,
-              type: 'customEdge',
-              data: { canvasId: canvasID }
-            };
-            addEdge(newEdge);
-            console.log('useEdgeConnection: Edge created:', newEdge);
-          }
-        },
-        {
-          width: nodeDimensions[nodeType].width,
-          height: nodeDimensions[nodeType].height
-        },
-        true,
-        false,
-        canvasID,
-        nodeInternals.get(parentNodeId)
-      );
-    },
-    [nodes, addNode, addEdge, canvasID, nodeInternals]
-  );
 
   const onConnectEnd = useCallback(
     (event) => {
@@ -93,7 +59,16 @@ export const useEdgeConnection = () => {
           }
 
           if (position) {
-            createNodeAndEdge('selection_menu', position, parentNode.id);
+            handleTemporaryNodeCreation(
+              parentNode,
+              position,
+              'selection_menu',
+              addNode,
+              addEdge,
+              (id) => removeNode(id, canvasID),
+              nodes,
+              canvasID
+            );
           }
         }
       } else if (connectingNodeId.current) {
@@ -120,8 +95,10 @@ export const useEdgeConnection = () => {
       nodeInternals,
       domNode,
       screenToFlowPosition,
-      createNodeAndEdge,
+      addNode,
       addEdge,
+      removeNode,
+      nodes,
       canvasID
     ]
   );
