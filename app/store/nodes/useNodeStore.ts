@@ -113,19 +113,18 @@ const useNodeStore = create<NodeState>()(
               break;
           }
 
-          if (existingNode.type !== 'selection_menu') {
-            updateNodeInDB(
-              id,
-              nodeUpdates,
-              specificUpdates,
-              existingNode.type as
-                | 'note'
-                | 'task'
-                | 'table'
-                | 'calendar'
-                | 'draw'
-            );
-          }
+          updateNodeInDB(
+            id,
+            nodeUpdates,
+            specificUpdates,
+            existingNode.type as
+              | 'note'
+              | 'task'
+              | 'table'
+              | 'calendar'
+              | 'draw'
+              | 'selection_menu'
+          );
 
           state.nodeInternals.set(id, updatedNode);
           console.log('useNodeStore: Node updated', updatedNode);
@@ -145,17 +144,16 @@ const useNodeStore = create<NodeState>()(
       set((state) => {
         const nodeToRemove = state.nodes.find((node) => node.id === id);
         if (nodeToRemove) {
-          if (nodeToRemove.type !== 'selection_menu') {
-            deleteNodeInDB(
-              id,
-              nodeToRemove.type as
-                | 'note'
-                | 'task'
-                | 'table'
-                | 'calendar'
-                | 'draw'
-            );
-          }
+          deleteNodeInDB(
+            id,
+            nodeToRemove.type as
+              | 'note'
+              | 'task'
+              | 'table'
+              | 'calendar'
+              | 'draw'
+              | 'selection_menu'
+          );
           state.nodeInternals.delete(id);
           console.log('useNodeStore: Node removed', nodeToRemove);
           return { nodes: state.nodes.filter((node) => node.id !== id) };
@@ -348,7 +346,7 @@ const useNodeStore = create<NodeState>()(
                 break;
             }
 
-            if (hasChanges && updatedNode.type !== 'selection_menu') {
+            if (hasChanges) {
               // Prepare updates for database
               const nodeUpdates: Partial<
                 Database['public']['Tables']['nodes']['Update']
