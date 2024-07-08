@@ -238,7 +238,12 @@ export default function CanvasEditor({ canvasId }) {
     };
   }, [saveCanvas]);
 
-  console.log('CanvasEditor: Nodes passed to ReactFlow:', nodes);
+  // Only log when nodes actually change
+  useEffect(() => {
+    if (nodes.length > 0) {
+      console.log('CanvasEditor: Nodes passed to ReactFlow:', nodes);
+    }
+  }, [nodes]);
 
   return (
     <div className="flex h-screen">
