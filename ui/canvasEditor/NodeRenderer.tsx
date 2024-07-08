@@ -75,19 +75,25 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
   const toggleEditMode = useNodeStore((state) => state.toggleEditMode);
   const canvasId = useCanvasStore((state) => state.canvasID);
   const [size, setSize] = useState(
-    getNodeSpecificProperties(node?.type || 'note', node?.isEditing ?? false)
+    getNodeSpecificProperties(
+      node?.type || 'note',
+      node?.data?.isEditing ?? false
+    )
   );
-  const [isEditing, setIsEditing] = useState(node?.isEditing ?? false);
+  const [isEditing, setIsEditing] = useState(node?.data?.isEditing ?? false);
 
   useEffect(() => {
     if (node) {
       console.log(
-        `NodeRenderer: Node ID: ${id}, Type: ${node.type}, IsEditing: ${node.isEditing}`
+        `NodeRenderer: Node ID: ${id}, Type: ${node.type}, IsEditing: ${node.data?.isEditing}`
       );
-      if (isEditing !== node.isEditing) {
-        const newSize = getNodeSpecificProperties(node.type, node.isEditing);
+      if (isEditing !== node.data?.isEditing) {
+        const newSize = getNodeSpecificProperties(
+          node.type,
+          node.data?.isEditing
+        );
         setSize(newSize);
-        setIsEditing(node.isEditing);
+        setIsEditing(node.data?.isEditing);
       }
     } else {
       console.log(`NodeRenderer: Node not found, ID: ${id}`);
@@ -102,13 +108,17 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
   const handleEdit = () => {
     if (node.type !== 'selection_menu') {
       toggleEditMode(id);
-      const newSize = getNodeSpecificProperties(node.type, !node.isEditing);
+      const newSize = getNodeSpecificProperties(
+        node.type,
+        !node.data?.isEditing
+      );
       updateNode(
         id,
         {
           ...newSize,
           data: {
             ...node.data,
+            isEditing: !node.data?.isEditing,
             tags: node.data.tags || [],
             attachedFiles: node.data.attachedFiles || []
           }
@@ -158,14 +168,14 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
 
     if (node.type === 'selection_menu') {
       NodeComponent = componentInfo.view;
-    } else if ('edit' in componentInfo && node.isEditing) {
+    } else if ('edit' in componentInfo && node.data?.isEditing) {
       NodeComponent = componentInfo.edit;
     } else {
       NodeComponent = componentInfo.view;
     }
 
     console.log(
-      `NodeRenderer: Rendering node ID: ${id}, Type: ${node.type}, IsEditing: ${node.isEditing}`
+      `NodeRenderer: Rendering node ID: ${id}, Type: ${node.type}, IsEditing: ${node.data?.isEditing}`
     );
 
     return (
