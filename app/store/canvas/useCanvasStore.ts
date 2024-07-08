@@ -166,11 +166,11 @@ const useCanvasStore = create<CanvasState>()(
                   ...specificNodeData,
                   backgroundColor: node.background_color,
                   textColor: node.text_color,
-                  isTemporary: node.is_temporary
+                  isTemporary: node.is_temporary,
+                  isEditing: node.is_editing
                 },
                 width: node.view_width,
-                height: node.view_height,
-                isEditing: node.is_editing
+                height: node.view_height
               };
             })
             .filter((node): node is Node => node !== null);
