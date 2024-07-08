@@ -43,55 +43,11 @@ const useNodeStore = create<NodeState>()(
     nodes: [],
     nodeInternals: new Map(),
     addNode: async (node, canvasId) => {
-      console.log('useNodeStore: Adding node', node);
-      const nodeProps = getNodeSpecificProperties(node.type || '', false);
-      const textColor =
-        node.data && node.data.backgroundColor
-          ? parseInt(node.data.backgroundColor.replace('#', ''), 16) >
-            0xffffff / 2
-            ? '#575757'
-            : '#F4F4F4'
-          : '#575757';
-      const toolbarColor = textColor === '#575757' ? '#F4F4F4' : '#575757';
-      const newNode = {
-        ...node,
-        ...nodeProps,
-        style: {
-          backgroundColor:
-            (node.data && node.data.backgroundColor) || '#F4F4F4',
-          color: textColor
-        },
-        data: {
-          ...node.data,
-          backgroundColor:
-            (node.data && node.data.backgroundColor) || '#F4F4F4',
-          textColor: textColor,
-          toolbarColor: toolbarColor
-        }
-      };
-
-      set((state) => {
-        const updatedNodes = [...state.nodes, newNode];
-        const updatedNodeInternals = new Map(state.nodeInternals);
-        updatedNodeInternals.set(newNode.id, newNode);
-        console.log('useNodeStore: Node added', newNode);
-        console.log('useNodeStore: Updated state', updatedNodes);
-        return { nodes: updatedNodes, nodeInternals: updatedNodeInternals };
-      });
-
-      // Handle 'selection_menu' type specifically
-      if (node.type === 'selection_menu') {
-        console.log('useNodeStore: Adding selection_menu node', node);
-        set((state) => {
-          const updatedNodes = state.nodes.filter(
-            (n) => n.type !== 'selection_menu'
-          );
-          const updatedNodeInternals = new Map(state.nodeInternals);
-          updatedNodeInternals.delete(node.id);
-          console.log('useNodeStore: Removed previous selection_menu nodes');
-          return { nodes: updatedNodes, nodeInternals: updatedNodeInternals };
-        });
-      }
+      set((state) => ({
+        nodes: [...state.nodes, node],
+        nodeInternals: new Map(state.nodeInternals).set(node.id, node)
+      }));
+      console.log('useNodeStore: Node added', node);
     },
     updateNode: async (id, data) => {
       set((state) => {

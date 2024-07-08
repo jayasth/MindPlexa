@@ -8,7 +8,7 @@ export const handleTemporaryNodeCreation = async (
   parentNode: Node | null,
   position: XYPosition,
   nodeType: 'selection_menu',
-  addNode: (node: Node) => void,
+  addNode: (node: Node, canvasId: string) => void,
   addEdge: (edge: Edge) => void,
   removeNode: (id: string) => void,
   nodes: Node[],
@@ -40,7 +40,7 @@ export const handleTemporaryNodeCreation = async (
             selectedPosition,
             nodes.filter((n) => n.id !== temporaryNodeId),
             async (newNode) => {
-              addNode(newNode);
+              addNode(newNode, canvasId);
               console.log('TemporaryNodeHandler: Node added:', newNode);
               if (parentNode) {
                 const { data: createdEdge, error: edgeError } =
@@ -95,7 +95,7 @@ export const handleTemporaryNodeCreation = async (
     position,
     nodes,
     (newNode) => {
-      addNode(newNode);
+      addNode(newNode, canvasId);
       console.log('TemporaryNodeHandler: Node added:', newNode);
     },
     {
@@ -107,10 +107,6 @@ export const handleTemporaryNodeCreation = async (
     canvasId,
     parentNode ? parentNode : undefined
   );
-
-  // Ensure the temporary node is added to the local state
-  addNode(temporaryNode);
-  console.log('TemporaryNodeHandler: Temporary node added:', temporaryNode);
 
   if (parentNode) {
     const { data: createdEdge, error: edgeError } = await createEdge({
