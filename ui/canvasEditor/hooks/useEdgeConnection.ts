@@ -7,7 +7,7 @@ import {
 } from '@/app/store';
 import { getChildNodePosition } from '@/ui/canvasEditor/utils/getChildNodePosition';
 import { handleTemporaryNodeCreation } from '@/ui/canvasEditor/utils/TemporaryNodeHandler';
-import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
+
 import type { XYPosition } from 'reactflow';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -64,7 +64,6 @@ export const useEdgeConnection = () => {
               position,
               'selection_menu',
               addNode,
-              addEdge,
               (id) => removeNode(id, canvasID),
               nodes,
               canvasID

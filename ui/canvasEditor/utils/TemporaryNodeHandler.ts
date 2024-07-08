@@ -1,15 +1,13 @@
 import { v4 as uuidv4 } from 'uuid';
-import { Node, Edge, XYPosition } from 'reactflow';
+import { Node, XYPosition } from 'reactflow';
 import { createNode } from './nodeCreation';
 import { nodeDimensions } from './nodeProperties';
-import { createEdge } from '@/utils/canvas/nodeEdgeDatabaseOperations';
 
 export const handleTemporaryNodeCreation = async (
   parentNode: Node | null,
   position: XYPosition,
   nodeType: 'selection_menu',
   addNode: (node: Node, canvasId: string) => void,
-  addEdge: (edge: Edge) => void,
   removeNode: (id: string) => void,
   nodes: Node[],
   canvasId: string
@@ -43,25 +41,7 @@ export const handleTemporaryNodeCreation = async (
               addNode(newNode, canvasId);
               console.log('TemporaryNodeHandler: Node added:', newNode);
               if (parentNode) {
-                const { data: createdEdge, error: edgeError } =
-                  await createEdge({
-                    source_node_id: parentNode.id,
-                    target_node_id: newNode.id,
-                    canvas_id: canvasId
-                  });
-
-                if (edgeError) {
-                  console.error('Error creating edge:', edgeError);
-                } else if (createdEdge) {
-                  const newEdge = {
-                    id: createdEdge.id,
-                    source: parentNode.id,
-                    target: newNode.id,
-                    type: 'customEdge'
-                  };
-                  addEdge(newEdge);
-                  console.log('TemporaryNodeHandler: Edge created:', newEdge);
-                }
+                // Edge creation logic removed as per instructions
               }
             },
             {
@@ -108,25 +88,5 @@ export const handleTemporaryNodeCreation = async (
     parentNode ? parentNode : undefined
   );
 
-  if (parentNode) {
-    const { data: createdEdge, error: edgeError } = await createEdge({
-      source_node_id: parentNode.id,
-      target_node_id: temporaryNodeId,
-      canvas_id: canvasId
-    });
-
-    if (edgeError) {
-      console.error('Error creating edge:', edgeError);
-    } else if (createdEdge) {
-      const newEdge = {
-        id: createdEdge.id,
-        source: parentNode.id,
-        target: temporaryNodeId,
-        type: 'customEdge'
-      };
-      addEdge(newEdge);
-      console.log('TemporaryNodeHandler: Edge created:', newEdge);
-    }
-  }
   console.log('Finished handleTemporaryNodeCreation');
 };
