@@ -252,7 +252,6 @@ export default function CanvasEditor({ canvasId }) {
           position,
           nodeType,
           (node) => addNode(node, canvasID),
-          addEdge,
           (id) => removeNode(id, canvasID),
           nodes,
           canvasID
