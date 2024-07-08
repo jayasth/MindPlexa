@@ -95,20 +95,32 @@ export default function CanvasEditor({ canvasId }) {
     setShowAIAssistanceModal(false);
   };
 
-  const handleAddNode = async (node, position) => {
-    console.log('CanvasEditor: Adding new node:', node);
-    await addNode(node, position);
-    console.log('CanvasEditor: Node added to database:', node);
-    setTimeout(() => {
-      reactFlowInstance.current?.fitView({
-        padding: 0.2,
-        includeHiddenNodes: false
-      });
-      reactFlowInstance.current?.setCenter(node.position.x, node.position.y, {
-        duration: 500
-      });
-    }, 100);
-  };
+  const handleAddNode = useCallback(
+    async (node, position) => {
+      try {
+        console.log('CanvasEditor: Adding new node:', node);
+        await addNode(node, position);
+        console.log('CanvasEditor: Node added to database:', node);
+        setTimeout(() => {
+          reactFlowInstance.current?.fitView({
+            padding: 0.2,
+            includeHiddenNodes: false
+          });
+          reactFlowInstance.current?.setCenter(
+            node.position.x,
+            node.position.y,
+            {
+              duration: 500
+            }
+          );
+        }, 100);
+      } catch (error) {
+        console.error('Failed to add node:', error);
+        // Optionally, show an error message to the user
+      }
+    },
+    [addNode]
+  );
 
   const edgeTypes = useMemo(
     () => ({
@@ -123,21 +135,27 @@ export default function CanvasEditor({ canvasId }) {
       newSize: { width: number; height: number },
       newPosition: { x: number; y: number }
     ) => {
-      const nodeType = node.type as
-        | 'note'
-        | 'task'
-        | 'table'
-        | 'calendar'
-        | 'draw'
-        | 'selection_menu';
-      updateNodeInStore(
-        node.id,
-        { ...newSize, position: newPosition },
-        node.data.canvasId
-      );
+      try {
+        const nodeType = node.type as
+          | 'note'
+          | 'task'
+          | 'table'
+          | 'calendar'
+          | 'draw'
+          | 'selection_menu';
+        updateNodeInStore(
+          node.id,
+          { ...newSize, position: newPosition },
+          node.data.canvasId
+        );
+      } catch (error) {
+        console.error('Failed to update node on resize:', error);
+        // Optionally, show an error message to the user
+      }
     },
     [updateNodeInStore]
   );
+
   const nodeTypes = useMemo(
     () => ({
       note: (props) => (
@@ -168,9 +186,13 @@ export default function CanvasEditor({ canvasId }) {
 
   const onSelectionChange = useCallback(
     (elements) => {
-      if (Array.isArray(elements)) {
-        const selectedIds = elements.map((el) => el.id);
-        setSelectedNodes(selectedIds);
+      try {
+        if (Array.isArray(elements)) {
+          const selectedIds = elements.map((el) => el.id);
+          setSelectedNodes(selectedIds);
+        }
+      } catch (error) {
+        console.error('Failed to update selection:', error);
       }
     },
     [setSelectedNodes]
@@ -178,30 +200,41 @@ export default function CanvasEditor({ canvasId }) {
 
   const onNodeDragStop = useCallback(
     (event, node) => {
-      updateNodeInStore(
-        node.id,
-        { position: node.position },
-        node.data.canvasId
-      );
+      try {
+        updateNodeInStore(
+          node.id,
+          { position: node.position },
+          node.data.canvasId
+        );
+      } catch (error) {
+        console.error('Failed to update node position:', error);
+      }
     },
     [updateNodeInStore]
   );
 
   const handleConnect = useCallback(
     (connection) => {
-      if (!connection.source || !connection.target) {
-        console.error('CanvasEditor: Incomplete connection data:', connection);
-        return;
+      try {
+        if (!connection.source || !connection.target) {
+          console.error(
+            'CanvasEditor: Incomplete connection data:',
+            connection
+          );
+          return;
+        }
+        const newEdge = {
+          ...connection,
+          id: `e-${uuidv4()}`,
+          type: 'customEdge',
+          source: connection.source,
+          target: connection.target
+        };
+        addEdge(newEdge);
+        reactFlowInstance.current?.fitView({ padding: 0.2 });
+      } catch (error) {
+        console.error('Failed to create edge:', error);
       }
-      const newEdge = {
-        ...connection,
-        id: `e-${uuidv4()}`,
-        type: 'customEdge',
-        source: connection.source,
-        target: connection.target
-      };
-      addEdge(newEdge);
-      reactFlowInstance.current?.fitView({ padding: 0.2 });
     },
     [addEdge]
   );
@@ -212,16 +245,20 @@ export default function CanvasEditor({ canvasId }) {
       position: XYPosition,
       nodeType: 'selection_menu'
     ) => {
-      handleTemporaryNodeCreation(
-        parentNode,
-        position,
-        nodeType,
-        (node) => addNode(node, canvasID),
-        addEdge,
-        (id) => removeNode(id, canvasID),
-        nodes,
-        canvasID
-      );
+      try {
+        handleTemporaryNodeCreation(
+          parentNode,
+          position,
+          nodeType,
+          (node) => addNode(node, canvasID),
+          addEdge,
+          (id) => removeNode(id, canvasID),
+          nodes,
+          canvasID
+        );
+      } catch (error) {
+        console.error('Failed to create temporary node:', error);
+      }
     },
     [addNode, addEdge, removeNode, nodes, canvasID]
   );
@@ -233,14 +270,16 @@ export default function CanvasEditor({ canvasId }) {
     }
   }, [domNode, setDomNode]);
 
-  // Save the canvas state when the component unmounts
   useEffect(() => {
     return () => {
-      saveCanvas();
+      try {
+        saveCanvas();
+      } catch (error) {
+        console.error('Failed to save canvas on unmount:', error);
+      }
     };
   }, [saveCanvas]);
 
-  // Only log when nodes actually change
   useEffect(() => {
     if (nodes.length > 0) {
       console.log('CanvasEditor: Nodes passed to ReactFlow:', nodes);

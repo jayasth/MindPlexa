@@ -32,6 +32,40 @@ export const useEdgeConnection = () => {
     setParentNode(node);
   }, []);
 
+  const createNodeAndEdge = useCallback(
+    (nodeType, position, parentNodeId) => {
+      createNode(
+        nodeType,
+        position,
+        nodes,
+        (newNode) => {
+          console.log('useEdgeConnection: Node created:', newNode);
+          addNode(newNode, canvasID);
+          if (parentNodeId) {
+            const newEdge = {
+              id: uuidv4(),
+              source: parentNodeId,
+              target: newNode.id,
+              type: 'customEdge',
+              data: { canvasId: canvasID }
+            };
+            addEdge(newEdge);
+            console.log('useEdgeConnection: Edge created:', newEdge);
+          }
+        },
+        {
+          width: nodeDimensions[nodeType].width,
+          height: nodeDimensions[nodeType].height
+        },
+        true,
+        false,
+        canvasID,
+        nodeInternals.get(parentNodeId)
+      );
+    },
+    [nodes, addNode, addEdge, canvasID, nodeInternals]
+  );
+
   const onConnectEnd = useCallback(
     (event) => {
       const targetIsPane = (event.target as Element).classList.contains(
@@ -59,33 +93,7 @@ export const useEdgeConnection = () => {
           }
 
           if (position) {
-            createNode(
-              'selection_menu',
-              position,
-              nodes,
-              (newNode) => {
-                console.log('useEdgeConnection: Node created:', newNode);
-                addNode(newNode, canvasID);
-                if (parentNode) {
-                  const newEdge = {
-                    id: uuidv4(),
-                    source: parentNode.id,
-                    target: newNode.id,
-                    type: 'customEdge'
-                  };
-                  addEdge(newEdge);
-                  console.log('useEdgeConnection: Edge created:', newEdge);
-                }
-              },
-              {
-                width: nodeDimensions['selection_menu'].width,
-                height: nodeDimensions['selection_menu'].height
-              },
-              true,
-              false,
-              canvasID,
-              parentNode
-            );
+            createNodeAndEdge('selection_menu', position, parentNode.id);
           }
         }
       } else if (connectingNodeId.current) {
@@ -96,8 +104,9 @@ export const useEdgeConnection = () => {
           const newEdge = {
             id: uuidv4(),
             source: sourceNode.id,
-            target: targetNode.id,
-            type: 'customEdge'
+            target: targetNode,
+            type: 'customEdge',
+            data: { canvasId: canvasID }
           };
 
           console.log('onConnectEnd: Adding new edge between nodes:', newEdge);
@@ -111,9 +120,8 @@ export const useEdgeConnection = () => {
       nodeInternals,
       domNode,
       screenToFlowPosition,
-      addNode,
+      createNodeAndEdge,
       addEdge,
-      nodes,
       canvasID
     ]
   );

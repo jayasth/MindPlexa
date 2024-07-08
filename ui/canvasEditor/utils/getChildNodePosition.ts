@@ -8,8 +8,7 @@ export const getChildNodePosition = (
   screenToFlowPosition: (position: { x: number; y: number }) => XYPosition
 ): XYPosition => {
   if (!domNode || !parentNode || !parentNode.position) {
-    console.error('getChildNodePosition: Missing required parameters');
-    return { x: 0, y: 0 };
+    throw new Error('getChildNodePosition: Missing required parameters');
   }
 
   const isTouchEvent = 'touches' in event;
