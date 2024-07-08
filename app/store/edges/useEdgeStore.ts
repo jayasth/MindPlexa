@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import { v4 as uuidv4 } from 'uuid';
 import {
   createEdge as createEdgeInDB,
   updateEdge as updateEdgeInDB,
@@ -21,19 +20,10 @@ const useEdgeStore = create<EdgeState>()(
   devtools((set, get) => ({
     edges: [],
     addEdge: async (edge) => {
-      const newEdge = { ...edge, id: uuidv4() };
-      set((state) => ({ edges: [...state.edges, newEdge] }));
-      console.log('useEdgeStore: Creating edge:', {
-        id: newEdge.id,
-        source: newEdge.source,
-        target: newEdge.target,
-        sourceHandle: newEdge.sourceHandle,
-        targetHandle: newEdge.targetHandle,
-        type: newEdge.type,
-        data: newEdge.data
-      });
+      set((state) => ({ edges: [...state.edges, edge] }));
+      console.log('useEdgeStore: Creating edge:', edge);
       try {
-        const { error } = await createEdgeInDB(newEdge);
+        const { error } = await createEdgeInDB(edge);
         if (error) {
           console.error(
             'useEdgeStore: Error adding edge to the database:',

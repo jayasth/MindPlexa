@@ -227,8 +227,9 @@ export default function CanvasEditor({ canvasId }) {
           ...connection,
           id: `e-${uuidv4()}`,
           type: 'customEdge',
-          source: connection.source,
-          target: connection.target
+          source_node_id: connection.source,
+          target_node_id: connection.target,
+          canvas_id: canvasID
         };
         addEdge(newEdge);
         reactFlowInstance.current?.fitView({ padding: 0.2 });
@@ -236,7 +237,7 @@ export default function CanvasEditor({ canvasId }) {
         console.error('Failed to create edge:', error);
       }
     },
-    [addEdge]
+    [addEdge, canvasID]
   );
 
   const handleTemporaryNodeCreationWithStore = useCallback(
