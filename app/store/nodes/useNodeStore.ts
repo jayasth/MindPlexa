@@ -5,10 +5,7 @@ import {
   updateNode as updateNodeInDB,
   deleteNode as deleteNodeInDB
 } from '@/utils/canvas/nodeEdgeDatabaseOperations';
-import {
-  getNodeSpecificProperties,
-  nodeDimensions
-} from '@/ui/canvasEditor/utils/nodeProperties';
+import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 import { getChildNodePosition } from '@/ui/canvasEditor/utils/getChildNodePosition';
 import type { Node, XYPosition } from 'reactflow';
 import type { Database } from '@/types_db';
@@ -49,7 +46,7 @@ const useNodeStore = create<NodeState>()(
       }));
       console.log('useNodeStore: Node added', node);
     },
-    updateNode: async (id, data) => {
+    updateNode: async (id, data, canvasId) => {
       set((state) => {
         const existingNodeIndex = state.nodes.findIndex(
           (node) => node.id === id
@@ -112,12 +109,19 @@ const useNodeStore = create<NodeState>()(
               break;
           }
 
-          updateNodeInDB(
-            id,
-            nodeUpdates,
-            specificUpdates,
-            existingNode.type as 'note' | 'task' | 'table' | 'calendar' | 'draw'
-          );
+          if (existingNode.type !== 'selection_menu') {
+            updateNodeInDB(
+              id,
+              nodeUpdates,
+              specificUpdates,
+              existingNode.type as
+                | 'note'
+                | 'task'
+                | 'table'
+                | 'calendar'
+                | 'draw'
+            );
+          }
 
           state.nodeInternals.set(id, updatedNode);
           console.log('useNodeStore: Node updated', updatedNode);
@@ -133,14 +137,21 @@ const useNodeStore = create<NodeState>()(
         return state;
       });
     },
-    removeNode: async (id) => {
+    removeNode: async (id, canvasId) => {
       set((state) => {
         const nodeToRemove = state.nodes.find((node) => node.id === id);
         if (nodeToRemove) {
-          deleteNodeInDB(
-            id,
-            nodeToRemove.type as 'note' | 'task' | 'table' | 'calendar' | 'draw'
-          );
+          if (nodeToRemove.type !== 'selection_menu') {
+            deleteNodeInDB(
+              id,
+              nodeToRemove.type as
+                | 'note'
+                | 'task'
+                | 'table'
+                | 'calendar'
+                | 'draw'
+            );
+          }
           state.nodeInternals.delete(id);
           console.log('useNodeStore: Node removed', nodeToRemove);
           return { nodes: state.nodes.filter((node) => node.id !== id) };
@@ -333,7 +344,7 @@ const useNodeStore = create<NodeState>()(
                 break;
             }
 
-            if (hasChanges) {
+            if (hasChanges && updatedNode.type !== 'selection_menu') {
               // Prepare updates for database
               const nodeUpdates: Partial<
                 Database['public']['Tables']['nodes']['Update']
@@ -380,18 +391,16 @@ const useNodeStore = create<NodeState>()(
                   break;
               }
 
-              // Update node in database only if it's not a selection_menu
-              if (updatedNode.type !== 'selection_menu') {
-                updateNodeInDB(
-                  updatedNode.id,
-                  nodeUpdates,
-                  specificUpdates,
-                  updatedNode.type as Database['public']['Enums']['node_type']
-                );
-              }
-
-              return updatedNode;
+              // Update node in database
+              updateNodeInDB(
+                updatedNode.id,
+                nodeUpdates,
+                specificUpdates,
+                updatedNode.type as Database['public']['Enums']['node_type']
+              );
             }
+
+            return updatedNode;
           }
           return node;
         });

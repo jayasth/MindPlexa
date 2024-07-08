@@ -196,7 +196,9 @@ export default function CanvasEditor({ canvasId }) {
       const newEdge = {
         ...connection,
         id: `e-${uuidv4()}`,
-        type: 'customEdge'
+        type: 'customEdge',
+        source: connection.source,
+        target: connection.target
       };
       addEdge(newEdge);
       reactFlowInstance.current?.fitView({ padding: 0.2 });

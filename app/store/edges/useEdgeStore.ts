@@ -20,7 +20,7 @@ interface EdgeState {
 const useEdgeStore = create<EdgeState>()(
   devtools((set, get) => ({
     edges: [],
-    addEdge: (edge) => {
+    addEdge: async (edge) => {
       const newEdge = { ...edge, id: uuidv4() };
       set((state) => ({ edges: [...state.edges, newEdge] }));
       console.log('useEdgeStore: Creating edge:', {
@@ -32,50 +32,70 @@ const useEdgeStore = create<EdgeState>()(
         type: newEdge.type,
         data: newEdge.data
       });
-      createEdgeInDB(newEdge)
-        .then(() =>
-          console.log('useEdgeStore: Edge added successfully to the database')
-        )
-        .catch((error) =>
+      try {
+        const { error } = await createEdgeInDB(newEdge);
+        if (error) {
           console.error(
             'useEdgeStore: Error adding edge to the database:',
             error
-          )
+          );
+        } else {
+          console.log('useEdgeStore: Edge added successfully to the database');
+        }
+      } catch (error) {
+        console.error(
+          'useEdgeStore: Error adding edge to the database:',
+          error
         );
+      }
     },
-    updateEdge: (id, data) => {
+    updateEdge: async (id, data) => {
       set((state) => ({
         edges: state.edges.map((edge) =>
           edge.id === id ? { ...edge, ...data } : edge
         )
       }));
-      updateEdgeInDB(id, data)
-        .then(() =>
-          console.log('useEdgeStore: Edge updated successfully in the database')
-        )
-        .catch((error) =>
+      try {
+        const { error } = await updateEdgeInDB(id, data);
+        if (error) {
           console.error(
             'useEdgeStore: Error updating edge in the database:',
             error
-          )
+          );
+        } else {
+          console.log(
+            'useEdgeStore: Edge updated successfully in the database'
+          );
+        }
+      } catch (error) {
+        console.error(
+          'useEdgeStore: Error updating edge in the database:',
+          error
         );
+      }
     },
-    removeEdge: (id) => {
+    removeEdge: async (id) => {
       set((state) => ({
         edges: state.edges.filter((edge) => edge.id !== id)
       }));
-      deleteEdgeInDB(id)
-        .then(() =>
-          console.log(
-            'useEdgeStore: Edge removed successfully from the database'
-          )
-        )
-        .catch((error) =>
+      try {
+        const { error } = await deleteEdgeInDB(id);
+        if (error) {
           console.error(
             'useEdgeStore: Error removing edge from the database:',
             error
-          )
+          );
+        } else {
+          console.log(
+            'useEdgeStore: Edge removed successfully from the database'
+          );
+        }
+      } catch (error) {
+        console.error(
+          'useEdgeStore: Error removing edge from the database:',
+          error
         );
+      }
     },
     setEdges: (updater) => {
       set((state) => ({

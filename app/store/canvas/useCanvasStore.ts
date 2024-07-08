@@ -27,17 +27,16 @@ const useCanvasStore = create<CanvasState>()(
     setCanvasId: (id) => set({ canvasID: id }),
     saveCanvas: async () => {
       if (get().isLoading || get().saveCanvasTimeout) return;
-      const { canvasID, isLoading, lastLoadTime } = get();
+      const { canvasID, lastLoadTime } = get();
       const nodes = useNodeStore.getState().nodes;
       const edges = useEdgeStore.getState().edges;
 
       if (
-        isLoading ||
         Date.now() - lastLoadTime < 2000 ||
         (nodes.length === 0 && edges.length === 0)
       ) {
         console.log(
-          'useCanvasStore: Skipping save due to recent load, ongoing loading, or empty canvas'
+          'useCanvasStore: Skipping save due to recent load or empty canvas'
         );
         return;
       }
@@ -67,7 +66,8 @@ const useCanvasStore = create<CanvasState>()(
           is_editing: node.data?.isEditing || false,
           is_temporary: node.data?.isTemporary || false,
           parent_node_id: node.data?.parentNodeId || null,
-          z_index: node.data?.zIndex || 0
+          z_index: node.data?.zIndex || 0,
+          [node.type + 'Data']: node.data?.[node.type + 'Data'] || {}
         })),
         edges: edges.map((edge) => ({
           id: edge.id,
@@ -131,53 +131,49 @@ const useCanvasStore = create<CanvasState>()(
 
         if (data && data.node_canvas_link && data.node_canvas_link.length > 0) {
           console.log('useCanvasStore: Loading existing canvas data');
-          const nodeMap = new Map<string, Node>();
+          const nodes = data.node_canvas_link
+            .map((link) => {
+              const node = link.nodes;
+              if (!node) return null;
 
-          data.node_canvas_link.forEach((link) => {
-            const node = link.nodes;
-            if (!node) return;
+              console.log('useCanvasStore: Processing node:', node);
 
-            console.log('useCanvasStore: Processing node:', node);
+              let specificNodeData = {};
+              if (node.type !== 'selection_menu') {
+                specificNodeData =
+                  nodeData?.[node.type]?.find(
+                    (specificNode) => specificNode.node_id === node.id
+                  ) || {};
+              }
 
-            let specificNodeData = {};
-            if (node.type !== 'selection_menu') {
-              specificNodeData =
-                nodeData?.[node.type]?.find(
-                  (specificNode) => specificNode.node_id === node.id
-                ) || {};
-            }
+              let position;
+              try {
+                position =
+                  typeof node.position === 'string'
+                    ? JSON.parse(node.position)
+                    : node.position;
+              } catch (error) {
+                console.error('Error parsing position JSON:', error);
+                position = { x: 200, y: 200 };
+              }
 
-            let position;
-            try {
-              position =
-                typeof node.position === 'string'
-                  ? JSON.parse(node.position)
-                  : node.position;
-            } catch (error) {
-              console.error('Error parsing position JSON:', error);
-              position = { x: 200, y: 200 };
-            }
-
-            const newNode = {
-              id: node.id,
-              type: node.type,
-              position,
-              data: {
-                ...node,
-                ...specificNodeData,
-                backgroundColor: node.background_color,
-                textColor: node.text_color,
-                isTemporary: node.is_temporary
-              },
-              width: node.view_width,
-              height: node.view_height,
-              isEditing: node.is_editing
-            };
-
-            nodeMap.set(node.id, newNode);
-          });
-
-          const nodes = Array.from(nodeMap.values());
+              return {
+                id: node.id,
+                type: node.type,
+                position,
+                data: {
+                  ...node,
+                  ...specificNodeData,
+                  backgroundColor: node.background_color,
+                  textColor: node.text_color,
+                  isTemporary: node.is_temporary
+                },
+                width: node.view_width,
+                height: node.view_height,
+                isEditing: node.is_editing
+              };
+            })
+            .filter((node): node is Node => node !== null);
 
           console.log('useCanvasStore: Nodes after processing:', nodes);
 
