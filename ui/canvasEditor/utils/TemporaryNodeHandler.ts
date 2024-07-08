@@ -40,9 +40,6 @@ export const handleTemporaryNodeCreation = async (
             async (newNode) => {
               addNode(newNode, canvasId);
               console.log('TemporaryNodeHandler: Node added:', newNode);
-              if (parentNode) {
-                // Edge creation logic removed as per instructions
-              }
             },
             {
               width: nodeDimensions['selection_menu'].width,
