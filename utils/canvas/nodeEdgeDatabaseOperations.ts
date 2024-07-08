@@ -318,7 +318,15 @@ export const createEdge = async (
   const edgeWithId = { ...edge, id: uuidv4() };
   const { data, error } = await supabase
     .from('edges')
-    .insert([edgeWithId])
+    .insert([
+      {
+        id: edgeWithId.id,
+        source_node_id: edgeWithId.source_node_id,
+        target_node_id: edgeWithId.target_node_id,
+        canvas_id: edgeWithId.canvas_id
+        // Add any other fields that are in your edges table
+      }
+    ])
     .select()
     .single();
 
@@ -339,7 +347,12 @@ export const updateEdge = async (
 
   const { data, error } = await supabase
     .from('edges')
-    .update(updates)
+    .update({
+      source_node_id: updates.source_node_id,
+      target_node_id: updates.target_node_id,
+      canvas_id: updates.canvas_id
+      // Add any other fields that are in your edges table
+    })
     .eq('id', id)
     .select()
     .single();

@@ -112,6 +112,7 @@ export const useEdgeConnection = () => {
       canvasID
     ]
   );
+
   return {
     onConnectStart,
     onConnectEnd,

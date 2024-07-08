@@ -6,21 +6,25 @@ export const getChildNodePosition = (
   parentNode: Node,
   domNode: HTMLElement,
   screenToFlowPosition: (position: { x: number; y: number }) => XYPosition
-): XYPosition | null => {
+): XYPosition => {
   if (!domNode || !parentNode || !parentNode.position) {
-    return null;
+    console.error('getChildNodePosition: Missing required parameters');
+    return { x: 0, y: 0 };
   }
 
   const isTouchEvent = 'touches' in event;
   const clientX = isTouchEvent ? event.touches[0].clientX : event.clientX;
   const clientY = isTouchEvent ? event.touches[0].clientY : event.clientY;
 
-  // Get the zoom level from the domNode
-  const zoomLevel = domNode.getBoundingClientRect().width / domNode.offsetWidth;
+  // Get the zoom level and pan offset from the domNode
+  const reactFlowBounds = domNode.getBoundingClientRect();
+  const zoomLevel = reactFlowBounds.width / domNode.offsetWidth;
+  const panX = (reactFlowBounds.left - domNode.offsetLeft) / zoomLevel;
+  const panY = (reactFlowBounds.top - domNode.offsetTop) / zoomLevel;
 
-  // Adjust the mouse event coordinates based on the zoom level
-  const adjustedClientX = clientX / zoomLevel;
-  const adjustedClientY = clientY / zoomLevel;
+  // Adjust the mouse event coordinates based on the zoom level and pan offset
+  const adjustedClientX = (clientX - reactFlowBounds.left) / zoomLevel + panX;
+  const adjustedClientY = (clientY - reactFlowBounds.top) / zoomLevel + panY;
 
   const flowPosition = screenToFlowPosition({
     x: adjustedClientX,
