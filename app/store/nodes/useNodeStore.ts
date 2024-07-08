@@ -13,9 +13,13 @@ import type { Database } from '@/types_db';
 interface NodeState {
   nodes: Node[];
   nodeInternals: Map<string, Node>;
-  addNode: (node: Node, canvasId: string) => void;
-  updateNode: (id: string, data: Partial<Node>, canvasId: string) => void;
-  removeNode: (id: string, canvasId: string) => void;
+  addNode: (node: Node, canvasId: string) => Promise<void>;
+  updateNode: (
+    id: string,
+    data: Partial<Node>,
+    canvasId: string
+  ) => Promise<void>;
+  removeNode: (id: string, canvasId: string) => Promise<void>;
   setNodes: (updater: Node[] | ((nodes: Node[]) => Node[])) => void;
   setInitialState: (nodes: Node[]) => void;
   toggleEditMode: (nodeId: string) => void;
@@ -25,14 +29,14 @@ interface NodeState {
     position: XYPosition,
     type: string,
     canvasId: string
-  ) => void;
+  ) => Promise<void>;
   createChildNodeFromDrag: (
     parentNode: Node,
     position: XYPosition,
     nodeType: string,
     canvasId: string
-  ) => void;
-  onNodesChange: (changes: any, canvasId: string) => void;
+  ) => Promise<void>;
+  onNodesChange: (changes: any, canvasId: string) => Promise<void>;
 }
 
 const useNodeStore = create<NodeState>()(
