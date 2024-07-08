@@ -174,11 +174,7 @@ export default function CanvasEditor({ canvasId }) {
         <NodeRenderer {...props} onNodeResizeStop={onNodeResizeStop} />
       ),
       selection_menu: (props) => (
-        <NodeSelectionMenu
-          {...props}
-          width={nodeDimensions['selection_menu'].width}
-          height={nodeDimensions['selection_menu'].height}
-        />
+        <NodeRenderer {...props} onNodeResizeStop={onNodeResizeStop} />
       )
     }),
     [parentNode, childNodePosition, onNodeResizeStop]
