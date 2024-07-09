@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import {
   fetchCanvas,
   saveCanvasState
-} from '@/utils/canvas/canvasDatabaseOperations';
+} from '@/utils/canvas/canvasService';
 import type { Node } from 'reactflow';
 import useNodeStore from '../nodes/useNodeStore';
 import useEdgeStore from '../edges/useEdgeStore';

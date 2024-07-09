@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createCanvas } from '@/utils/canvas/canvasDatabaseOperations';
+import { createCanvas } from '@/utils/canvas/canvasService';
 import { Modal } from 'react-responsive-modal';
 import 'react-responsive-modal/styles.css';
 import Button from '@/ui/Button/Button';

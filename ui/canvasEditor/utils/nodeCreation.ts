@@ -9,7 +9,7 @@ import {
   createEdge,
   updateEdge as updateEdgeInDatabase,
   updateNode
-} from '@/utils/canvas/nodeEdgeDatabaseOperations';
+} from '@/utils/canvas/nodeEdgeService';
 import { v4 as uuidv4 } from 'uuid';
 import { Database } from '@/types_db';
 import useEdgeStore from '@/app/store/edges/useEdgeStore';

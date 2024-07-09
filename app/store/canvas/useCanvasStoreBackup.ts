@@ -14,14 +14,14 @@ import { Tables, TablesInsert, Database } from '@/types_db';
 import {
   fetchCanvas,
   saveCanvasState
-} from '@/utils/canvas/canvasDatabaseOperations';
+} from '@/utils/canvas/canvasService';
 import {
   updateNode as updateNodeInDB,
   deleteNode as deleteNodeInDB,
   createEdge as createEdgeInDB,
   updateEdge as updateEdgeInDB,
   deleteEdge as deleteEdgeInDB
-} from '@/utils/canvas/nodeEdgeDatabaseOperations';
+} from '@/utils/canvas/nodeEdgeService';
 
 interface CanvasState {
   canvasID: string;

@@ -10,7 +10,7 @@ import { MdAddCircleOutline } from 'react-icons/md';
 import {
   deleteCanvas,
   deleteCanvasWithNodes
-} from '@/utils/canvas/canvasDatabaseOperations';
+} from '@/utils/canvas/canvasService';
 import DeleteCanvasModal from '@/ui/Modal/DeleteCanvasModal';
 
 type Canvas = Tables<'canvases'>;

@@ -4,7 +4,7 @@ import {
   createEdge as createEdgeInDB,
   updateEdge as updateEdgeInDB,
   deleteEdge as deleteEdgeInDB
-} from '@/utils/canvas/nodeEdgeDatabaseOperations';
+} from '@/utils/canvas/nodeEdgeService';
 import type { Edge } from 'reactflow';
 
 interface EdgeState {
