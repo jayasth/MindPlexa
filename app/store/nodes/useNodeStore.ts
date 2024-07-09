@@ -325,8 +325,8 @@ const useNodeStore = create<NodeState>()(
             parentNode: parentNode,
             isTemporary: true
           },
-          width: nodeDimensions['selection_menu'].width,
-          height: nodeDimensions['selection_menu'].height
+          viewWidth: nodeDimensions['selection_menu'].width,
+          viewHeight: nodeDimensions['selection_menu'].height
         };
         await addNode(newNode, canvasId);
         setNodes((nodes) => [
@@ -400,18 +400,19 @@ const useNodeStore = create<NodeState>()(
                     }
                     break;
                 }
-
                 if (hasChanges) {
                   // Prepare updates for database
                   const nodeUpdates = {
                     position: JSON.stringify(updatedNode.position),
-                    viewWidth: updatedNode.width,
-                    viewHeight: updatedNode.height,
                     backgroundColor: updatedNode.data?.backgroundColor,
                     textColor: updatedNode.data?.textColor,
                     title: updatedNode.data?.title,
                     isEditing: updatedNode.data?.isEditing,
-                    zIndex: updatedNode.data?.zIndex
+                    zIndex: updatedNode.data?.zIndex,
+                    editWidth: updatedNode.data?.editWidth,
+                    editHeight: updatedNode.data?.editHeight,
+                    mobileEditWidth: updatedNode.data?.mobileEditWidth,
+                    mobileEditHeight: updatedNode.data?.mobileEditHeight
                   };
 
                   // Prepare specific updates based on node type
