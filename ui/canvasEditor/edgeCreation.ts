@@ -16,7 +16,7 @@ export const useEdgeConnection = () => {
   const { nodes, nodeInternals, addNode, removeNode, addChildNode } =
     useNodeStore();
 
-  const { addEdge } = useEdgeStore();
+  const { addEdge, removeEdge, updateEdge } = useEdgeStore();
 
   const { domNode, screenToFlowPosition } = useUIStore();
 
@@ -60,11 +60,29 @@ export const useEdgeConnection = () => {
           }
 
           if (position) {
+            const temporaryNodeId = uuidv4();
+
             handleTemporaryNodeCreation(
               parentNode,
               position,
               'selection_menu',
-              addNode,
+              (node, canvasId) => {
+                addNode(node, canvasId);
+                // Create the edge after the temporary node is added
+                const newEdge = {
+                  id: uuidv4(),
+                  source: parentNode.id,
+                  target: node.id,
+                  type: 'customEdge',
+                  data: { canvas_id: canvasId }
+                };
+                addEdge(newEdge);
+                createEdge({
+                  source_node_id: parentNode.id,
+                  target_node_id: node.id,
+                  canvas_id: canvasId
+                });
+              },
               (id) => removeNode(id, canvasID),
               nodes,
               canvasID
@@ -81,34 +99,41 @@ export const useEdgeConnection = () => {
             source: sourceNode.id,
             target: targetNode,
             type: 'customEdge',
-            data: { canvasId: canvasID }
+            data: { canvas_id: canvasID }
           };
 
           console.log('onConnectEnd: Adding new edge between nodes:', newEdge);
           addEdge(newEdge);
 
           try {
-            const { error } = await createEdge({
+            const { data: createdEdge, error } = await createEdge({
               source_node_id: sourceNode.id,
               target_node_id: targetNode,
               canvas_id: canvasID
             });
 
-            if (error) {
+            if (error || !createdEdge) {
               console.error(
                 'onConnectEnd: Error creating edge in database:',
                 error
               );
+              // Remove the edge from the store if there was an error
+              removeEdge(newEdge.id);
             } else {
               console.log(
-                'onConnectEnd: Edge created successfully in database'
+                'onConnectEnd: Edge created successfully in database',
+                createdEdge
               );
+              // Update the edge in the store with the ID from the database
+              updateEdge(newEdge.id, { id: createdEdge.id });
             }
           } catch (error) {
             console.error(
               'onConnectEnd: Unexpected error creating edge in database:',
               error
             );
+            // Remove the edge from the store if there was an error
+            removeEdge(newEdge.id);
           }
         }
       }
@@ -121,6 +146,8 @@ export const useEdgeConnection = () => {
       screenToFlowPosition,
       addNode,
       addEdge,
+      removeEdge,
+      updateEdge,
       removeNode,
       nodes,
       canvasID

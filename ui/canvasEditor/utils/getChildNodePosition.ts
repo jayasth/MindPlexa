@@ -53,9 +53,15 @@ export const getChildNodePosition = (
     childNodeHeight
   );
 
-  // Position the child node at the exact location where the mouse was released
-  const childNodeX = flowPosition.x - childNodeWidth / 2;
-  const childNodeY = flowPosition.y - childNodeHeight / 2;
+  // Position the child node relative to the parent node position
+  const childNodeX =
+    parentNode.position.x +
+    (flowPosition.x - parentNode.position.x) -
+    childNodeWidth / 2;
+  const childNodeY =
+    parentNode.position.y +
+    (flowPosition.y - parentNode.position.y) -
+    childNodeHeight / 2;
 
   return { x: childNodeX, y: childNodeY };
 };
