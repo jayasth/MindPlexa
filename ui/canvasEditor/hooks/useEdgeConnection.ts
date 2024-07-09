@@ -6,7 +6,7 @@ import {
   useCanvasStore
 } from '@/app/store';
 import { getChildNodePosition } from '@/ui/canvasEditor/utils/getChildNodePosition';
-import { handleTemporaryNodeCreation } from '@/ui/canvasEditor/utils/TemporaryNodeHandler';
+import { handleTemporaryNodeCreation } from '@/ui/canvasEditor/utils/nodeCreation';
 
 import type { XYPosition } from 'reactflow';
 import { v4 as uuidv4 } from 'uuid';

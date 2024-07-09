@@ -38,21 +38,12 @@ export const deleteCanvas = async (
   canvasId: string,
   setCanvases: (canvases: any) => void
 ) => {
-  // First, remove all links to this canvas in node_canvas_link
-  const { error: linkError } = await supabase
-    .from('node_canvas_link')
-    .delete()
-    .eq('canvas_id', canvasId);
+  const { error: linkError } = await deleteCanvasLinks(canvasId);
 
   if (linkError) {
-    console.error(
-      'CanvasDatabaseOperations: Error deleting canvas links:',
-      linkError
-    );
     return { error: linkError };
   }
 
-  // Then, delete the canvas itself
   const { error } = await supabase.from('canvases').delete().eq('id', canvasId);
 
   if (error) {
@@ -71,84 +62,25 @@ export const deleteCanvasWithNodes = async (
   canvasId: string,
   setCanvases: (canvases: any) => void
 ) => {
-  const client = supabase;
-
   try {
-    // Fetch linked nodes
-    const { data: linkedNodes, error: linkError } = await client
-      .from('node_canvas_link')
-      .select('node_id')
-      .eq('canvas_id', canvasId);
-
-    if (linkError) {
-      throw linkError;
-    }
-
+    const linkedNodes = await fetchLinkedNodes(canvasId);
     const nodeIds = linkedNodes.map((link) => link.node_id);
 
-    // Filter out shared nodes
-    const { data: sharedNodes, error: sharedError } = await client
-      .from('node_canvas_link')
-      .select('node_id')
-      .in('node_id', nodeIds)
-      .neq('canvas_id', canvasId);
-
-    if (sharedError) {
-      throw sharedError;
-    }
-
+    const sharedNodes = await fetchSharedNodes(nodeIds);
     const sharedNodeIds = sharedNodes.map((node) => node.node_id);
     const nonSharedNodeIds = nodeIds.filter(
       (nodeId) => !sharedNodeIds.includes(nodeId)
     );
 
-    // Delete non-shared nodes from specific node tables
-    for (const nodeId of nonSharedNodeIds) {
-      const { data: nodeData, error: nodeError } = await client
-        .from('nodes')
-        .select('type')
-        .eq('id', nodeId)
-        .single();
+    await deleteNonSharedNodes(nonSharedNodeIds);
 
-      if (nodeError) {
-        throw nodeError;
-      }
-
-      const nodeType = nodeData.type;
-      const tableName =
-        `${nodeType}_nodes` as keyof Database['public']['Tables'];
-      const { error: deleteError } = await client
-        .from(tableName)
-        .delete()
-        .eq('node_id', nodeId);
-
-      if (deleteError) {
-        throw deleteError;
-      }
-
-      // Delete the node
-      const { error: nodeDeleteError } = await client
-        .from('nodes')
-        .delete()
-        .eq('id', nodeId);
-
-      if (nodeDeleteError) {
-        throw nodeDeleteError;
-      }
-    }
-
-    // Remove links from node_canvas_link
-    const { error: linkDeleteError } = await client
-      .from('node_canvas_link')
-      .delete()
-      .eq('canvas_id', canvasId);
+    const { error: linkDeleteError } = await deleteCanvasLinks(canvasId);
 
     if (linkDeleteError) {
       throw linkDeleteError;
     }
 
-    // Finally, delete the canvas itself
-    const { error: canvasError } = await client
+    const { error: canvasError } = await supabase
       .from('canvases')
       .delete()
       .eq('id', canvasId);
@@ -182,117 +114,8 @@ export const saveCanvasState = async (
   edges: Database['public']['Tables']['edges']['Insert'][]
 ) => {
   try {
-    // Upsert nodes
-    for (const node of nodes) {
-      const {
-        id,
-        type,
-        noteData,
-        taskData,
-        calendarData,
-        tableData,
-        drawData,
-        ...nodeProperties
-      } = node;
-
-      if (!id) {
-        console.error('Node ID is undefined');
-        continue;
-      }
-
-      // Upsert node properties in 'nodes' table
-      const { error: nodeUpsertError } = await supabase
-        .from('nodes')
-        .upsert({ id, type, ...nodeProperties });
-
-      if (nodeUpsertError) {
-        console.error('Error upserting node:', nodeUpsertError);
-        return { error: nodeUpsertError };
-      }
-
-      // Upsert specific node data based on type
-      let specificData;
-      let tableName;
-      switch (type) {
-        case 'note':
-          specificData = noteData;
-          tableName = 'note_nodes';
-          break;
-        case 'task':
-          specificData = taskData;
-          tableName = 'task_nodes';
-          break;
-        case 'calendar':
-          specificData = calendarData;
-          tableName = 'calendar_nodes';
-          break;
-        case 'table':
-          specificData = tableData;
-          tableName = 'table_nodes';
-          break;
-        case 'draw':
-          specificData = drawData;
-          tableName = 'draw_nodes';
-          break;
-        case 'selection_menu':
-          // No specific data for selection_menu
-          break;
-        default:
-          console.error('Unknown node type:', type);
-          continue;
-      }
-
-      if (tableName && specificData) {
-        const { data: existingData, error: fetchError } = await supabase
-          .from(tableName)
-          .select('id')
-          .eq('node_id', id)
-          .single();
-
-        if (fetchError && fetchError.code !== 'PGRST116') {
-          console.error(`Error fetching existing ${type} node:`, fetchError);
-          return { error: fetchError };
-        }
-
-        const upsertData = existingData
-          ? { id: existingData.id, node_id: id, ...specificData }
-          : { id: uuidv4(), node_id: id, ...specificData };
-
-        const { error: specificNodeUpsertError } = await supabase
-          .from(tableName)
-          .upsert(upsertData);
-
-        if (specificNodeUpsertError) {
-          console.error(
-            `Error upserting ${type} node:`,
-            specificNodeUpsertError
-          );
-          return { error: specificNodeUpsertError };
-        }
-      }
-
-      // Upsert node_canvas_link
-      const { error: linkUpsertError } = await supabase
-        .from('node_canvas_link')
-        .upsert({ node_id: id, canvas_id: canvasId });
-
-      if (linkUpsertError) {
-        console.error('Error upserting node_canvas_link:', linkUpsertError);
-        return { error: linkUpsertError };
-      }
-    }
-
-    // Upsert edges
-    const { error: edgesUpsertError } = await supabase
-      .from('edges')
-      .upsert(
-        edges.map((edge) => ({ id: uuidv4(), ...edge, canvas_id: canvasId }))
-      );
-
-    if (edgesUpsertError) {
-      console.error('Error upserting edges:', edgesUpsertError);
-      return { error: edgesUpsertError };
-    }
+    await upsertNodes(canvasId, nodes);
+    await upsertEdges(canvasId, edges);
 
     console.log('canvasDatabaseOperations: Complete canvas state saved:', {
       canvasId,
@@ -312,7 +135,6 @@ export const fetchCanvas = async (
   canvasId: string
 ): Promise<{ data?: any; error?: any; nodeData?: Record<string, any[]> }> => {
   try {
-    // Fetch canvas data along with linked nodes and edges
     const { data, error } = await supabase
       .from('canvases')
       .select(
@@ -337,27 +159,8 @@ export const fetchCanvas = async (
       .map((link) => link.nodes?.id)
       .filter(Boolean);
 
-    // Fetch specific node data for each node type
-    const nodeTypes = ['note', 'task', 'table', 'calendar', 'draw'] as const;
-    const nodeDataPromises = nodeTypes.map((type) =>
-      supabase
-        .from(`${type}_nodes` as keyof Database['public']['Tables'])
-        .select('*')
-        .in('node_id', nodeIds)
-    );
+    const nodeData = await fetchSpecificNodeData(nodeIds as string[]);
 
-    const nodeDataResults = await Promise.all(nodeDataPromises);
-    const nodeData = nodeDataResults.reduce(
-      (acc, result, index) => {
-        if (!result.error) {
-          acc[nodeTypes[index]] = result.data;
-        }
-        return acc;
-      },
-      {} as Record<string, any[]>
-    );
-
-    // Combine node data from 'nodes' table and specific node tables
     const nodes = canvas.node_canvas_link
       .map((link) => {
         if (link.nodes) {
@@ -384,4 +187,218 @@ export const fetchCanvas = async (
     console.error('Error in fetchCanvas:', error);
     return { error };
   }
+};
+
+// Helper functions
+const deleteCanvasLinks = async (canvasId: string) => {
+  const { error } = await supabase
+    .from('node_canvas_link')
+    .delete()
+    .eq('canvas_id', canvasId);
+  if (error) {
+    console.error('Error deleting canvas links:', error);
+  }
+  return { error };
+};
+
+const fetchLinkedNodes = async (canvasId: string) => {
+  const { data, error } = await supabase
+    .from('node_canvas_link')
+    .select('node_id')
+    .eq('canvas_id', canvasId);
+  if (error) {
+    console.error('Error fetching linked nodes:', error);
+    throw error;
+  }
+  return data;
+};
+
+const fetchSharedNodes = async (nodeIds: string[]) => {
+  const { data, error } = await supabase
+    .from('node_canvas_link')
+    .select('node_id')
+    .in('node_id', nodeIds);
+  if (error) {
+    console.error('Error fetching shared nodes:', error);
+    throw error;
+  }
+  return data;
+};
+
+const deleteNonSharedNodes = async (nodeIds: string[]) => {
+  for (const nodeId of nodeIds) {
+    const { data: nodeData, error: nodeError } = await supabase
+      .from('nodes')
+      .select('type')
+      .eq('id', nodeId)
+      .single();
+
+    if (nodeError) {
+      console.error('Error fetching node type:', nodeError);
+      throw nodeError;
+    }
+
+    const nodeType = nodeData.type;
+    const tableName = `${nodeType}_nodes` as keyof Database['public']['Tables'];
+    const { error: deleteError } = await supabase
+      .from(tableName)
+      .delete()
+      .eq('node_id', nodeId);
+
+    if (deleteError) {
+      console.error(`Error deleting ${nodeType} node:`, deleteError);
+      throw deleteError;
+    }
+
+    const { error: nodeDeleteError } = await supabase
+      .from('nodes')
+      .delete()
+      .eq('id', nodeId);
+
+    if (nodeDeleteError) {
+      console.error('Error deleting node:', nodeDeleteError);
+      throw nodeDeleteError;
+    }
+  }
+};
+
+const upsertNodes = async (
+  canvasId: string,
+  nodes: (Database['public']['Tables']['nodes']['Insert'] & {
+    type: string;
+    noteData?: Database['public']['Tables']['note_nodes']['Insert'];
+    taskData?: Database['public']['Tables']['task_nodes']['Insert'];
+    calendarData?: Database['public']['Tables']['calendar_nodes']['Insert'];
+    tableData?: Database['public']['Tables']['table_nodes']['Insert'];
+    drawData?: Database['public']['Tables']['draw_nodes']['Insert'];
+  })[]
+) => {
+  for (const node of nodes) {
+    const {
+      id,
+      type,
+      noteData,
+      taskData,
+      calendarData,
+      tableData,
+      drawData,
+      ...nodeProperties
+    } = node;
+
+    if (!id) {
+      console.error('Node ID is undefined');
+      continue;
+    }
+
+    const { error: nodeUpsertError } = await supabase
+      .from('nodes')
+      .upsert({ id, type, ...nodeProperties });
+
+    if (nodeUpsertError) {
+      console.error('Error upserting node:', nodeUpsertError);
+      throw nodeUpsertError;
+    }
+
+    let specificData;
+    let tableName;
+    switch (type) {
+      case 'note':
+        specificData = noteData;
+        tableName = 'note_nodes';
+        break;
+      case 'task':
+        specificData = taskData;
+        tableName = 'task_nodes';
+        break;
+      case 'calendar':
+        specificData = calendarData;
+        tableName = 'calendar_nodes';
+        break;
+      case 'table':
+        specificData = tableData;
+        tableName = 'table_nodes';
+        break;
+      case 'draw':
+        specificData = drawData;
+        tableName = 'draw_nodes';
+        break;
+      case 'selection_menu':
+        break;
+      default:
+        console.error('Unknown node type:', type);
+        continue;
+    }
+
+    if (tableName && specificData) {
+      const { data: existingData, error: fetchError } = await supabase
+        .from(tableName)
+        .select('id')
+        .eq('node_id', id)
+        .single();
+
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        console.error(`Error fetching existing ${type} node:`, fetchError);
+        throw fetchError;
+      }
+
+      const upsertData = existingData
+        ? { id: existingData.id, node_id: id, ...specificData }
+        : { id: uuidv4(), node_id: id, ...specificData };
+
+      const { error: specificNodeUpsertError } = await supabase
+        .from(tableName)
+        .upsert(upsertData);
+
+      if (specificNodeUpsertError) {
+        console.error(`Error upserting ${type} node:`, specificNodeUpsertError);
+        throw specificNodeUpsertError;
+      }
+    }
+
+    const { error: linkUpsertError } = await supabase
+      .from('node_canvas_link')
+      .upsert({ node_id: id, canvas_id: canvasId });
+
+    if (linkUpsertError) {
+      console.error('Error upserting node_canvas_link:', linkUpsertError);
+      throw linkUpsertError;
+    }
+  }
+};
+
+const upsertEdges = async (
+  canvasId: string,
+  edges: Database['public']['Tables']['edges']['Insert'][]
+) => {
+  const { error: edgesUpsertError } = await supabase
+    .from('edges')
+    .upsert(
+      edges.map((edge) => ({ id: uuidv4(), ...edge, canvas_id: canvasId }))
+    );
+
+  if (edgesUpsertError) {
+    console.error('Error upserting edges:', edgesUpsertError);
+    throw edgesUpsertError;
+  }
+};
+
+const fetchSpecificNodeData = async (nodeIds: string[]) => {
+  const nodeTypes = ['note', 'task', 'table', 'calendar', 'draw'] as const;
+  const nodeDataPromises = nodeTypes.map((type) =>
+    supabase
+      .from(`${type}_nodes` as keyof Database['public']['Tables'])
+      .select('*')
+      .in('node_id', nodeIds)
+  );
+
+  const nodeDataResults = await Promise.all(nodeDataPromises);
+  return nodeDataResults.reduce(
+    (acc, result, index) => {
+      if (!result.error) {
+        acc[nodeTypes[index]] = result.data;
+      }
+      return acc;
+    },
+    {} as Record<string, any[]>
+  );
 };

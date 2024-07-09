@@ -7,6 +7,53 @@ const supabase = createClient();
 
 /* Node related functions */
 
+const insertNode = async (
+  nodeInsert: Database['public']['Tables']['nodes']['Insert']
+) => {
+  return await supabase.from('nodes').insert([nodeInsert]).select().single();
+};
+
+const linkNodeToCanvas = async (nodeId: string, canvasId: string) => {
+  return await supabase
+    .from('node_canvas_link')
+    .insert({ node_id: nodeId, canvas_id: canvasId });
+};
+
+const insertSpecificNode = async (
+  tableName: keyof Database['public']['Tables'],
+  specificNodeInsert: any
+) => {
+  return await supabase
+    .from(tableName)
+    .insert([specificNodeInsert])
+    .select()
+    .single();
+};
+
+const updateNodeInTable = async (
+  tableName: keyof Database['public']['Tables'],
+  updates: any,
+  id: string
+) => {
+  return await supabase
+    .from(tableName)
+    .update(updates)
+    .eq('node_id', id)
+    .select()
+    .single();
+};
+
+const deleteNodeFromTable = async (
+  tableName: keyof Database['public']['Tables'],
+  nodeId: string
+) => {
+  return await supabase.from(tableName).delete().eq('node_id', nodeId);
+};
+
+const deleteNodeLink = async (nodeId: string) => {
+  return await supabase.from('node_canvas_link').delete().eq('node_id', nodeId);
+};
+
 export const createNode = async (
   canvasId: string,
   nodeType: Database['public']['Enums']['node_type'],
@@ -19,7 +66,7 @@ export const createNode = async (
     drawData?: Database['public']['Tables']['draw_nodes']['Insert'];
   }
 ): Promise<{ data?: any; error?: any }> => {
-  console.log('NodeEdgeDatabaseOperations: Creating node:', {
+  console.log('NodeEdgeService: Creating node:', {
     canvasId,
     nodeType,
     position,
@@ -30,10 +77,7 @@ export const createNode = async (
   const defaultDimensions = nodeDimensions[nodeType];
 
   if (!defaultDimensions) {
-    console.warn(
-      'NodeEdgeDatabaseOperations: Unsupported node type:',
-      nodeType
-    );
+    console.warn('NodeEdgeService: Unsupported node type:', nodeType);
     return { error: `Unsupported node type: ${nodeType}` };
   }
 
@@ -71,35 +115,23 @@ export const createNode = async (
     z_index: data.z_index || 0
   };
 
-  const { data: nodeData, error: nodeError } = await supabase
-    .from('nodes')
-    .insert([nodeInsert])
-    .select()
-    .single();
+  const { data: nodeData, error: nodeError } = await insertNode(nodeInsert);
 
   if (nodeError) {
-    console.error(
-      'NodeEdgeDatabaseOperations: Error inserting node:',
-      nodeError
-    );
+    console.error('NodeEdgeService: Error inserting node:', nodeError);
     return { error: nodeError };
   }
 
-  console.log('NodeEdgeDatabaseOperations: Node created:', nodeData);
+  console.log('NodeEdgeService: Node created:', nodeData);
 
-  const { error: linkError } = await supabase
-    .from('node_canvas_link')
-    .insert({ node_id: nodeId, canvas_id: canvasId });
+  const { error: linkError } = await linkNodeToCanvas(nodeId, canvasId);
 
   if (linkError) {
-    console.error(
-      'NodeEdgeDatabaseOperations: Error linking node to canvas:',
-      linkError
-    );
+    console.error('NodeEdgeService: Error linking node to canvas:', linkError);
     return { error: linkError };
   }
 
-  console.log('NodeEdgeDatabaseOperations: Node linked to canvas:', {
+  console.log('NodeEdgeService: Node linked to canvas:', {
     node_id: nodeId,
     canvas_id: canvasId
   });
@@ -113,24 +145,18 @@ export const createNode = async (
 
     const tableName = `${nodeType}_nodes` as keyof Database['public']['Tables'];
 
-    const { data: specificNodeData, error: specificNodeError } = await supabase
-      .from(tableName)
-      .insert([specificNodeInsert])
-      .select()
-      .single();
+    const { data: specificNodeData, error: specificNodeError } =
+      await insertSpecificNode(tableName, specificNodeInsert);
 
     if (specificNodeError) {
       console.error(
-        `NodeEdgeDatabaseOperations: Error inserting ${nodeType} node:`,
+        `NodeEdgeService: Error inserting ${nodeType} node:`,
         specificNodeError
       );
       return { error: specificNodeError };
     }
 
-    console.log(
-      `NodeEdgeDatabaseOperations: ${nodeType} node created:`,
-      specificNodeData
-    );
+    console.log(`NodeEdgeService: ${nodeType} node created:`, specificNodeData);
 
     return {
       data: {
@@ -163,7 +189,7 @@ export const updateNode = async (
   >,
   nodeType: Database['public']['Enums']['node_type']
 ): Promise<{ data?: any; error?: any }> => {
-  console.log('NodeEdgeDatabaseOperations: Updating node:', {
+  console.log('NodeEdgeService: Updating node:', {
     id,
     nodeType,
     updates,
@@ -209,13 +235,13 @@ export const updateNode = async (
 
   if (nodeError) {
     console.error(
-      'NodeEdgeDatabaseOperations: Error updating node properties:',
+      'NodeEdgeService: Error updating node properties:',
       nodeError
     );
     return { error: nodeError };
   }
 
-  console.log('NodeEdgeDatabaseOperations: Node properties updated:', nodeData);
+  console.log('NodeEdgeService: Node properties updated:', nodeData);
 
   // Handle specific node type updates
   if (nodeType !== 'selection_menu') {
@@ -254,16 +280,15 @@ export const updateNode = async (
     let specificNodeData;
     if (existingNode) {
       // Update existing specific node
-      const { data, error: updateError } = await supabase
-        .from(tableName)
-        .update(safeSpecificUpdates)
-        .eq('node_id', id)
-        .select()
-        .single();
+      const { data, error: updateError } = await updateNodeInTable(
+        tableName,
+        safeSpecificUpdates,
+        id
+      );
 
       if (updateError) {
         console.error(
-          `NodeEdgeDatabaseOperations: Error updating ${nodeType} node:`,
+          `NodeEdgeService: Error updating ${nodeType} node:`,
           updateError
         );
         return { error: updateError };
@@ -271,15 +296,14 @@ export const updateNode = async (
       specificNodeData = data;
     } else {
       // Insert new specific node
-      const { data, error: insertError } = await supabase
-        .from(tableName)
-        .insert({ node_id: id, ...safeSpecificUpdates })
-        .select()
-        .single();
+      const { data, error: insertError } = await insertSpecificNode(tableName, {
+        node_id: id,
+        ...safeSpecificUpdates
+      });
 
       if (insertError) {
         console.error(
-          `NodeEdgeDatabaseOperations: Error inserting ${nodeType} node:`,
+          `NodeEdgeService: Error inserting ${nodeType} node:`,
           insertError
         );
         return { error: insertError };
@@ -287,35 +311,30 @@ export const updateNode = async (
       specificNodeData = data;
     }
 
-    console.log(
-      `NodeEdgeDatabaseOperations: ${nodeType} node updated:`,
-      specificNodeData
-    );
+    console.log(`NodeEdgeService: ${nodeType} node updated:`, specificNodeData);
 
     return { data: { ...nodeData, ...specificNodeData } };
   }
 
   return { data: nodeData };
 };
+
 export const deleteNode = async (
   nodeId: string,
   nodeType: Database['public']['Enums']['node_type']
 ): Promise<{ success?: boolean; error?: any }> => {
-  console.log('NodeEdgeDatabaseOperations: Deleting node:', {
-    nodeId,
-    nodeType
-  });
+  console.log('NodeEdgeService: Deleting node:', { nodeId, nodeType });
 
   if (nodeType !== 'selection_menu') {
     const tableName = `${nodeType}_nodes` as keyof Database['public']['Tables'];
-    const { error: specificError } = await supabase
-      .from(tableName)
-      .delete()
-      .eq('node_id', nodeId);
+    const { error: specificError } = await deleteNodeFromTable(
+      tableName,
+      nodeId
+    );
 
     if (specificError) {
       console.error(
-        `NodeEdgeDatabaseOperations: Error deleting ${nodeType} node:`,
+        `NodeEdgeService: Error deleting ${nodeType} node:`,
         specificError
       );
       return { error: specificError };
@@ -328,58 +347,59 @@ export const deleteNode = async (
     .eq('id', nodeId);
 
   if (nodeError) {
-    console.error(
-      'NodeEdgeDatabaseOperations: Error deleting node:',
-      nodeError
-    );
+    console.error('NodeEdgeService: Error deleting node:', nodeError);
     return { error: nodeError };
   }
 
-  const { error: linkError } = await supabase
-    .from('node_canvas_link')
-    .delete()
-    .eq('node_id', nodeId);
+  const { error: linkError } = await deleteNodeLink(nodeId);
 
   if (linkError) {
-    console.error(
-      'NodeEdgeDatabaseOperations: Error deleting node links:',
-      linkError
-    );
+    console.error('NodeEdgeService: Error deleting node links:', linkError);
     return { error: linkError };
   }
 
-  console.log('NodeEdgeDatabaseOperations: Node deleted successfully');
+  console.log('NodeEdgeService: Node deleted successfully');
   return { success: true };
 };
 
 /* Edge related functions */
 
+const insertEdge = async (
+  edge: Database['public']['Tables']['edges']['Insert']
+) => {
+  return await supabase.from('edges').insert([edge]).select().single();
+};
+
+const updateEdgeInTable = async (
+  id: string,
+  updates: Database['public']['Tables']['edges']['Update']
+) => {
+  return await supabase
+    .from('edges')
+    .update(updates)
+    .eq('id', id)
+    .select()
+    .single();
+};
+
+const deleteEdgeFromTable = async (id: string) => {
+  return await supabase.from('edges').delete().eq('id', id);
+};
+
 export const createEdge = async (
   edge: Omit<Database['public']['Tables']['edges']['Insert'], 'id'>
 ): Promise<{ data?: { id: string }; error?: any }> => {
-  console.log('NodeEdgeDatabaseOperations: Creating edge:', edge);
+  console.log('NodeEdgeService: Creating edge:', edge);
 
   const edgeWithId = { ...edge, id: uuidv4() };
-  const { data, error } = await supabase
-    .from('edges')
-    .insert([
-      {
-        id: edgeWithId.id,
-        source_node_id: edgeWithId.source_node_id,
-        target_node_id: edgeWithId.target_node_id,
-        canvas_id: edgeWithId.canvas_id
-        // Add any other fields that are in your edges table
-      }
-    ])
-    .select()
-    .single();
+  const { data, error } = await insertEdge(edgeWithId);
 
   if (error) {
-    console.error('NodeEdgeDatabaseOperations: Error inserting edge:', error);
+    console.error('NodeEdgeService: Error inserting edge:', error);
     return { error };
   }
 
-  console.log('NodeEdgeDatabaseOperations: Edge created:', data);
+  console.log('NodeEdgeService: Edge created:', data);
   return { data: { id: data.id } };
 };
 
@@ -387,41 +407,31 @@ export const updateEdge = async (
   id: string,
   updates: Database['public']['Tables']['edges']['Update']
 ): Promise<{ data?: any; error?: any }> => {
-  console.log('NodeEdgeDatabaseOperations: Updating edge:', { id, updates });
+  console.log('NodeEdgeService: Updating edge:', { id, updates });
 
-  const { data, error } = await supabase
-    .from('edges')
-    .update({
-      source_node_id: updates.source_node_id,
-      target_node_id: updates.target_node_id,
-      canvas_id: updates.canvas_id
-      // Add any other fields that are in your edges table
-    })
-    .eq('id', id)
-    .select()
-    .single();
+  const { data, error } = await updateEdgeInTable(id, updates);
 
   if (error) {
-    console.error('NodeEdgeDatabaseOperations: Error updating edge:', error);
+    console.error('NodeEdgeService: Error updating edge:', error);
     return { error };
   }
 
-  console.log('NodeEdgeDatabaseOperations: Edge updated:', data);
+  console.log('NodeEdgeService: Edge updated:', data);
   return { data };
 };
 
 export const deleteEdge = async (
   id: string
 ): Promise<{ success?: boolean; error?: any }> => {
-  console.log('NodeEdgeDatabaseOperations: Deleting edge:', id);
+  console.log('NodeEdgeService: Deleting edge:', id);
 
-  const { error } = await supabase.from('edges').delete().eq('id', id);
+  const { error } = await deleteEdgeFromTable(id);
 
   if (error) {
-    console.error('NodeEdgeDatabaseOperations: Error deleting edge:', error);
+    console.error('NodeEdgeService: Error deleting edge:', error);
     return { error };
   }
 
-  console.log('NodeEdgeDatabaseOperations: Edge deleted successfully');
+  console.log('NodeEdgeService: Edge deleted successfully');
   return { success: true };
 };

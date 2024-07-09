@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
+import { produce } from 'immer';
 import {
   createEdge as createEdgeInDB,
   updateEdge as updateEdgeInDB,
@@ -20,7 +21,11 @@ const useEdgeStore = create<EdgeState>()(
   devtools((set, get) => ({
     edges: [],
     addEdge: async (edge) => {
-      set((state) => ({ edges: [...state.edges, edge] }));
+      set(
+        produce((state: EdgeState) => {
+          state.edges.push(edge);
+        })
+      );
       console.log('useEdgeStore: Creating edge:', edge);
       try {
         const { error } = await createEdgeInDB(edge);
@@ -29,9 +34,11 @@ const useEdgeStore = create<EdgeState>()(
             'useEdgeStore: Error adding edge to the database:',
             error
           );
-          set((state) => ({
-            edges: state.edges.filter((e) => e.id !== edge.id)
-          }));
+          set(
+            produce((state: EdgeState) => {
+              state.edges = state.edges.filter((e) => e.id !== edge.id);
+            })
+          );
         } else {
           console.log('useEdgeStore: Edge added successfully to the database');
         }
@@ -40,18 +47,23 @@ const useEdgeStore = create<EdgeState>()(
           'useEdgeStore: Error adding edge to the database:',
           error
         );
-        set((state) => ({
-          edges: state.edges.filter((e) => e.id !== edge.id)
-        }));
+        set(
+          produce((state: EdgeState) => {
+            state.edges = state.edges.filter((e) => e.id !== edge.id);
+          })
+        );
       }
     },
     updateEdge: async (id, data) => {
       const previousEdges = get().edges;
-      set((state) => ({
-        edges: state.edges.map((edge) =>
-          edge.id === id ? { ...edge, ...data } : edge
-        )
-      }));
+      set(
+        produce((state: EdgeState) => {
+          const index = state.edges.findIndex((edge) => edge.id === id);
+          if (index !== -1) {
+            state.edges[index] = { ...state.edges[index], ...data };
+          }
+        })
+      );
       try {
         const { error } = await updateEdgeInDB(id, data);
         if (error) {
@@ -75,9 +87,11 @@ const useEdgeStore = create<EdgeState>()(
     },
     removeEdge: async (id) => {
       const previousEdges = get().edges;
-      set((state) => ({
-        edges: state.edges.filter((edge) => edge.id !== id)
-      }));
+      set(
+        produce((state: EdgeState) => {
+          state.edges = state.edges.filter((edge) => edge.id !== id);
+        })
+      );
       try {
         const { error } = await deleteEdgeInDB(id);
         if (error) {
@@ -100,28 +114,33 @@ const useEdgeStore = create<EdgeState>()(
       }
     },
     setEdges: (updater) => {
-      set((state) => ({
-        edges: typeof updater === 'function' ? updater(state.edges) : updater
-      }));
+      set(
+        produce((state: EdgeState) => {
+          state.edges =
+            typeof updater === 'function' ? updater(state.edges) : updater;
+        })
+      );
     },
     onEdgesChange: (changes) => {
-      set((state) => {
-        const updatedEdges = state.edges
-          .map((edge) => {
-            const change = changes.find((change) => change.id === edge.id);
-            if (change) {
-              switch (change.type) {
-                case 'remove':
-                  return null;
-                default:
-                  return { ...edge, ...change };
+      set(
+        produce((state: EdgeState) => {
+          const updatedEdges = state.edges
+            .map((edge) => {
+              const change = changes.find((change) => change.id === edge.id);
+              if (change) {
+                switch (change.type) {
+                  case 'remove':
+                    return null;
+                  default:
+                    return { ...edge, ...change };
+                }
               }
-            }
-            return edge;
-          })
-          .filter(Boolean);
-        return { edges: updatedEdges };
-      });
+              return edge;
+            })
+            .filter(Boolean);
+          state.edges = updatedEdges;
+        })
+      );
     }
   }))
 );

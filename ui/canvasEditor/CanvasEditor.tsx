@@ -24,15 +24,13 @@ import {
 } from '@/ui/canvasEditor/utils/canvasUtils';
 import NodeRenderer from '@/ui/canvasEditor/NodeRenderer';
 import CustomEdge from '@/ui/edges/CustomEdge';
-import NodeSelectionMenu from '@/ui/nodes/nodeSelectionMenu/NodeSelectionMenu';
 import useNodeStore from '@/app/store/nodes/useNodeStore';
 import useEdgeStore from '@/app/store/edges/useEdgeStore';
 import useUIStore from '@/app/store/ui/useUIStore';
 import useCanvasStore from '@/app/store/canvas/useCanvasStore';
 import { useEdgeConnection } from '@/ui/canvasEditor/hooks/useEdgeConnection';
 import { v4 as uuidv4 } from 'uuid';
-import { handleTemporaryNodeCreation } from '@/ui/canvasEditor/utils/TemporaryNodeHandler';
-import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
+import { handleTemporaryNodeCreation } from '@/ui/canvasEditor/utils/nodeCreation';
 
 const nodeOrigin: NodeOrigin = [0.5, 0.5];
 const defaultEdgeOptions = {

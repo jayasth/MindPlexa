@@ -1,13 +1,15 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { v4 as uuidv4 } from 'uuid';
-import {
-  fetchCanvas,
-  saveCanvasState
-} from '@/utils/canvas/canvasService';
+import { fetchCanvas, saveCanvasState } from '@/utils/canvas/canvasService';
 import type { Node } from 'reactflow';
 import useNodeStore from '../nodes/useNodeStore';
 import useEdgeStore from '../edges/useEdgeStore';
+import { produce } from 'immer';
+import { enableMapSet } from 'immer';
+
+// Enable the MapSet plugin for Immer
+enableMapSet();
 
 interface CanvasState {
   canvasID: string;
@@ -143,35 +145,26 @@ const useCanvasStore = create<CanvasState>()(
       console.log('useCanvasStore: Canvas data saved successfully');
 
       // Update local state only after successful save
-      useNodeStore.getState().setNodes((prevNodes) =>
-        prevNodes.map((node) => {
-          const savedNode = canvasData.nodes.find((n) => n.id === node.id);
-          if (savedNode) {
-            return {
-              ...node,
-              data: {
-                ...node.data,
-                ...savedNode,
-                isModified: false
-              }
-            };
-          }
-          return node;
+      useNodeStore.getState().setNodes(
+        produce((nodes) => {
+          nodes.forEach((node) => {
+            const savedNode = canvasData.nodes.find((n) => n.id === node.id);
+            if (savedNode) {
+              Object.assign(node.data, savedNode);
+              node.data.isModified = false;
+            }
+          });
         })
       );
-      useEdgeStore.getState().setEdges((prevEdges) =>
-        prevEdges.map((edge) => {
-          const savedEdge = canvasData.edges.find((e) => e.id === edge.id);
-          if (savedEdge) {
-            return {
-              ...edge,
-              data: {
-                ...edge.data,
-                isModified: false
-              }
-            };
-          }
-          return edge;
+      useEdgeStore.getState().setEdges(
+        produce((edges) => {
+          edges.forEach((edge) => {
+            const savedEdge = canvasData.edges.find((e) => e.id === edge.id);
+            if (savedEdge) {
+              Object.assign(edge.data, savedEdge);
+              edge.data.isModified = false;
+            }
+          });
         })
       );
     },
