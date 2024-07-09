@@ -28,7 +28,7 @@ import useNodeStore from '@/app/store/nodes/useNodeStore';
 import useEdgeStore from '@/app/store/edges/useEdgeStore';
 import useUIStore from '@/app/store/ui/useUIStore';
 import useCanvasStore from '@/app/store/canvas/useCanvasStore';
-import { useEdgeConnection } from '@/ui/canvasEditor/edgeConnection';
+import { useEdgeConnection } from '@/ui/canvasEditor/edgeCreation';
 import { v4 as uuidv4 } from 'uuid';
 import { handleTemporaryNodeCreation } from '@/ui/canvasEditor/utils/nodeCreation';
 
