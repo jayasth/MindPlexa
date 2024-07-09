@@ -156,31 +156,33 @@ export const fetchCanvas = async (
       return { error };
     }
 
-    if (data.length === 0) {
+    if (!data || data.length === 0) {
       return { data: null };
     }
 
     const canvas = data[0];
     const nodeIds = canvas.node_canvas_link
-      .map((link) => link.nodes?.id)
-      .filter(Boolean);
+      ? canvas.node_canvas_link.map((link) => link.nodes?.id).filter(Boolean)
+      : [];
 
     const nodeData = await fetchSpecificNodeData(nodeIds as string[]);
 
     const nodes = canvas.node_canvas_link
-      .map((link) => {
-        if (link.nodes) {
-          const specificNodeData = nodeData[
-            link.nodes?.type as keyof typeof nodeData
-          ]?.find((data) => data.node_id === link.nodes?.id);
-          return {
-            ...link.nodes,
-            ...specificNodeData
-          };
-        }
-        return null;
-      })
-      .filter((node): node is NonNullable<typeof node> => node !== null);
+      ? canvas.node_canvas_link
+          .map((link) => {
+            if (link.nodes) {
+              const specificNodeData = nodeData[
+                link.nodes?.type as keyof typeof nodeData
+              ]?.find((data) => data.node_id === link.nodes?.id);
+              return {
+                ...link.nodes,
+                ...specificNodeData
+              };
+            }
+            return null;
+          })
+          .filter((node): node is NonNullable<typeof node> => node !== null)
+      : [];
 
     console.log('canvasService: Complete canvas state fetched:', {
       canvas,
