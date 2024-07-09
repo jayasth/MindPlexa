@@ -7,6 +7,7 @@ import {
 } from '@/app/store';
 import { getChildNodePosition } from '@/ui/canvasEditor/utils/getChildNodePosition';
 import { handleTemporaryNodeCreation } from '@/ui/canvasEditor/utils/nodeCreation';
+import { createEdge } from '@/utils/canvas/edgeService';
 
 import type { XYPosition } from 'reactflow';
 import { v4 as uuidv4 } from 'uuid';
@@ -33,7 +34,7 @@ export const useEdgeConnection = () => {
   }, []);
 
   const onConnectEnd = useCallback(
-    (event) => {
+    async (event) => {
       const targetIsPane = (event.target as Element).classList.contains(
         'react-flow__pane'
       );
@@ -85,6 +86,30 @@ export const useEdgeConnection = () => {
 
           console.log('onConnectEnd: Adding new edge between nodes:', newEdge);
           addEdge(newEdge);
+
+          try {
+            const { error } = await createEdge({
+              source_node_id: sourceNode.id,
+              target_node_id: targetNode,
+              canvas_id: canvasID
+            });
+
+            if (error) {
+              console.error(
+                'onConnectEnd: Error creating edge in database:',
+                error
+              );
+            } else {
+              console.log(
+                'onConnectEnd: Edge created successfully in database'
+              );
+            }
+          } catch (error) {
+            console.error(
+              'onConnectEnd: Unexpected error creating edge in database:',
+              error
+            );
+          }
         }
       }
       setParentNode(null);

@@ -8,7 +8,7 @@ import {
   createNode as createNodeInDatabase,
   updateNode as updateNodeInDatabase
 } from '@/utils/canvas/nodeService';
-import { createEdge } from '@/utils/canvas/edgeService';
+import { createEdge as createEdgeInDatabase } from '@/utils/canvas/edgeService';
 import { v4 as uuidv4 } from 'uuid';
 import { Database } from '@/types_db';
 import useEdgeStore from '@/app/store/edges/useEdgeStore';
@@ -21,6 +21,33 @@ function findNewPosition(
 ): XYPosition {
   return findOptimalPosition(nodes, canvasSize);
 }
+
+const createEdge = async (
+  parentNodeId: string,
+  newNodeId: string,
+  canvasId: string
+) => {
+  const edgeId = uuidv4();
+  const newEdge = {
+    id: edgeId,
+    source: parentNodeId,
+    target: newNodeId,
+    type: 'customEdge'
+  };
+  console.log('nodeCreation: Creating edge with data:', newEdge);
+  const { data: createdEdge, error: edgeError } = await createEdgeInDatabase({
+    source_node_id: parentNodeId,
+    target_node_id: newNodeId,
+    canvas_id: canvasId
+  });
+
+  if (edgeError) {
+    console.error('nodeCreation: Error creating edge:', edgeError);
+  } else if (createdEdge) {
+    useEdgeStore.getState().addEdge(newEdge);
+    console.log('nodeCreation: Edge created with ID:', createdEdge.id);
+  }
+};
 
 export const createNode = async (
   nodeType: Database['public']['Enums']['node_type'],
@@ -104,26 +131,7 @@ export const createNode = async (
       };
       callback(newNode);
       if (parentNode) {
-        const edgeId = uuidv4();
-        const newEdge = {
-          id: edgeId,
-          source: parentNode.id,
-          target: newNode.id,
-          type: 'customEdge'
-        };
-        console.log('nodeCreation: Creating edge with data:', newEdge);
-        const { data: createdEdge, error: edgeError } = await createEdge({
-          source_node_id: parentNode.id,
-          target_node_id: newNode.id,
-          canvas_id: canvasId
-        });
-
-        if (edgeError) {
-          console.error('nodeCreation: Error creating edge:', edgeError);
-        } else if (createdEdge) {
-          useEdgeStore.getState().addEdge(newEdge);
-          console.log('nodeCreation: Edge created with ID:', createdEdge.id);
-        }
+        await createEdge(parentNode.id, newNode.id, canvasId);
       }
     } else {
       throw new Error('nodeCreation: Node creation failed');

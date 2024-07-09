@@ -54,6 +54,29 @@ const deleteNodeLink = async (nodeId: string) => {
   return await supabase.from('node_canvas_link').delete().eq('node_id', nodeId);
 };
 
+const insertCommonNodeProperties = async (
+  nodeInsert: Database['public']['Tables']['nodes']['Insert']
+) => {
+  return await supabase.from('nodes').insert([nodeInsert]).select().single();
+};
+
+const insertNodeSpecificTable = async (
+  tableName: keyof Database['public']['Tables'],
+  specificNodeInsert: any
+) => {
+  return await supabase
+    .from(tableName)
+    .insert([specificNodeInsert])
+    .select()
+    .single();
+};
+
+const insertNodeCanvasLink = async (nodeId: string, canvasId: string) => {
+  return await supabase
+    .from('node_canvas_link')
+    .insert({ node_id: nodeId, canvas_id: canvasId });
+};
+
 export const createNode = async (
   canvasId: string,
   nodeType: Database['public']['Enums']['node_type'],
@@ -66,7 +89,7 @@ export const createNode = async (
     drawData?: Database['public']['Tables']['draw_nodes']['Insert'];
   }
 ): Promise<{ data?: any; error?: any }> => {
-  console.log('NodeEdgeService: Creating node:', {
+  console.log('nodeService: Creating node:', {
     canvasId,
     nodeType,
     position,
@@ -77,7 +100,7 @@ export const createNode = async (
   const defaultDimensions = nodeDimensions[nodeType];
 
   if (!defaultDimensions) {
-    console.warn('NodeEdgeService: Unsupported node type:', nodeType);
+    console.warn('nodeService: Unsupported node type:', nodeType);
     return { error: `Unsupported node type: ${nodeType}` };
   }
 
@@ -115,23 +138,24 @@ export const createNode = async (
     z_index: data.z_index || 0
   };
 
-  const { data: nodeData, error: nodeError } = await insertNode(nodeInsert);
+  const { data: nodeData, error: nodeError } =
+    await insertCommonNodeProperties(nodeInsert);
 
   if (nodeError) {
-    console.error('NodeEdgeService: Error inserting node:', nodeError);
+    console.error('nodeService: Error inserting node:', nodeError);
     return { error: nodeError };
   }
 
-  console.log('NodeEdgeService: Node created:', nodeData);
+  console.log('nodeService: Node created:', nodeData);
 
-  const { error: linkError } = await linkNodeToCanvas(nodeId, canvasId);
+  const { error: linkError } = await insertNodeCanvasLink(nodeId, canvasId);
 
   if (linkError) {
-    console.error('NodeEdgeService: Error linking node to canvas:', linkError);
+    console.error('nodeService: Error linking node to canvas:', linkError);
     return { error: linkError };
   }
 
-  console.log('NodeEdgeService: Node linked to canvas:', {
+  console.log('nodeService: Node linked to canvas:', {
     node_id: nodeId,
     canvas_id: canvasId
   });
@@ -146,17 +170,17 @@ export const createNode = async (
     const tableName = `${nodeType}_nodes` as keyof Database['public']['Tables'];
 
     const { data: specificNodeData, error: specificNodeError } =
-      await insertSpecificNode(tableName, specificNodeInsert);
+      await insertNodeSpecificTable(tableName, specificNodeInsert);
 
     if (specificNodeError) {
       console.error(
-        `NodeEdgeService: Error inserting ${nodeType} node:`,
+        `nodeService: Error inserting ${nodeType} node:`,
         specificNodeError
       );
       return { error: specificNodeError };
     }
 
-    console.log(`NodeEdgeService: ${nodeType} node created:`, specificNodeData);
+    console.log(`nodeService: ${nodeType} node created:`, specificNodeData);
 
     return {
       data: {
@@ -189,7 +213,7 @@ export const updateNode = async (
   >,
   nodeType: Database['public']['Enums']['node_type']
 ): Promise<{ data?: any; error?: any }> => {
-  console.log('NodeEdgeService: Updating node:', {
+  console.log('nodeService: Updating node:', {
     id,
     nodeType,
     updates,
@@ -234,14 +258,11 @@ export const updateNode = async (
     .single();
 
   if (nodeError) {
-    console.error(
-      'NodeEdgeService: Error updating node properties:',
-      nodeError
-    );
+    console.error('nodeService: Error updating node properties:', nodeError);
     return { error: nodeError };
   }
 
-  console.log('NodeEdgeService: Node properties updated:', nodeData);
+  console.log('nodeService: Node properties updated:', nodeData);
 
   // Handle specific node type updates
   if (nodeType !== 'selection_menu') {
@@ -288,7 +309,7 @@ export const updateNode = async (
 
       if (updateError) {
         console.error(
-          `NodeEdgeService: Error updating ${nodeType} node:`,
+          `nodeService: Error updating ${nodeType} node:`,
           updateError
         );
         return { error: updateError };
@@ -303,7 +324,7 @@ export const updateNode = async (
 
       if (insertError) {
         console.error(
-          `NodeEdgeService: Error inserting ${nodeType} node:`,
+          `nodeService: Error inserting ${nodeType} node:`,
           insertError
         );
         return { error: insertError };
@@ -311,7 +332,7 @@ export const updateNode = async (
       specificNodeData = data;
     }
 
-    console.log(`NodeEdgeService: ${nodeType} node updated:`, specificNodeData);
+    console.log(`nodeService: ${nodeType} node updated:`, specificNodeData);
 
     return { data: { ...nodeData, ...specificNodeData } };
   }
@@ -323,7 +344,7 @@ export const deleteNode = async (
   nodeId: string,
   nodeType: Database['public']['Enums']['node_type']
 ): Promise<{ success?: boolean; error?: any }> => {
-  console.log('NodeEdgeService: Deleting node:', { nodeId, nodeType });
+  console.log('nodeService: Deleting node:', { nodeId, nodeType });
 
   if (nodeType !== 'selection_menu') {
     const tableName = `${nodeType}_nodes` as keyof Database['public']['Tables'];
@@ -334,7 +355,7 @@ export const deleteNode = async (
 
     if (specificError) {
       console.error(
-        `NodeEdgeService: Error deleting ${nodeType} node:`,
+        `nodeService: Error deleting ${nodeType} node:`,
         specificError
       );
       return { error: specificError };
@@ -347,17 +368,17 @@ export const deleteNode = async (
     .eq('id', nodeId);
 
   if (nodeError) {
-    console.error('NodeEdgeService: Error deleting node:', nodeError);
+    console.error('nodeService: Error deleting node:', nodeError);
     return { error: nodeError };
   }
 
   const { error: linkError } = await deleteNodeLink(nodeId);
 
   if (linkError) {
-    console.error('NodeEdgeService: Error deleting node links:', linkError);
+    console.error('nodeService: Error deleting node links:', linkError);
     return { error: linkError };
   }
 
-  console.log('NodeEdgeService: Node deleted successfully');
+  console.log('nodeService: Node deleted successfully');
   return { success: true };
 };

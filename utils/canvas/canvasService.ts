@@ -25,7 +25,7 @@ export const createCanvas = async (
       .limit(1);
 
     if (error) {
-      console.error('canvasDatabaseOperations: Error fetching canvas:', error);
+      console.error('canvasService: Error fetching canvas:', error);
     } else if (data && data[0]) {
       setIsModalOpen(false);
       router.push(`/canvasEditor/${data[0].id}?new=true`);
@@ -47,7 +47,7 @@ export const deleteCanvas = async (
   const { error } = await supabase.from('canvases').delete().eq('id', canvasId);
 
   if (error) {
-    console.error('CanvasDatabaseOperations: Error deleting canvas:', error);
+    console.error('canvasService: Error deleting canvas:', error);
     return { error };
   } else {
     setCanvases((prevCanvases: any) =>
@@ -95,7 +95,10 @@ export const deleteCanvasWithNodes = async (
 
     return { success: true };
   } catch (error) {
-    console.error('Error during canvas and node deletion:', error);
+    console.error(
+      'canvasService: Error during canvas and node deletion:',
+      error
+    );
     return { error };
   }
 };
@@ -117,7 +120,7 @@ export const saveCanvasState = async (
     await upsertNodes(canvasId, nodes);
     await upsertEdges(canvasId, edges);
 
-    console.log('canvasDatabaseOperations: Complete canvas state saved:', {
+    console.log('canvasService: Complete canvas state saved:', {
       canvasId,
       nodesCount: nodes.length,
       edgesCount: edges.length
@@ -125,7 +128,7 @@ export const saveCanvasState = async (
 
     return { success: true };
   } catch (error) {
-    console.error('Error in saveCanvasState:', error);
+    console.error('canvasService: Error in saveCanvasState:', error);
     return { error };
   }
 };
@@ -176,7 +179,7 @@ export const fetchCanvas = async (
       })
       .filter((node): node is NonNullable<typeof node> => node !== null);
 
-    console.log('canvasDatabaseOperations: Complete canvas state fetched:', {
+    console.log('canvasService: Complete canvas state fetched:', {
       canvas,
       nodes,
       edges: canvas.edges
@@ -184,7 +187,7 @@ export const fetchCanvas = async (
 
     return { data: { ...canvas, nodes }, nodeData };
   } catch (error) {
-    console.error('Error in fetchCanvas:', error);
+    console.error('canvasService: Error in fetchCanvas:', error);
     return { error };
   }
 };
@@ -196,7 +199,7 @@ const deleteCanvasLinks = async (canvasId: string) => {
     .delete()
     .eq('canvas_id', canvasId);
   if (error) {
-    console.error('Error deleting canvas links:', error);
+    console.error('canvasService: Error deleting canvas links:', error);
   }
   return { error };
 };
@@ -207,7 +210,7 @@ const fetchLinkedNodes = async (canvasId: string) => {
     .select('node_id')
     .eq('canvas_id', canvasId);
   if (error) {
-    console.error('Error fetching linked nodes:', error);
+    console.error('canvasService: Error fetching linked nodes:', error);
     throw error;
   }
   return data;
@@ -219,7 +222,7 @@ const fetchSharedNodes = async (nodeIds: string[]) => {
     .select('node_id')
     .in('node_id', nodeIds);
   if (error) {
-    console.error('Error fetching shared nodes:', error);
+    console.error('canvasService: Error fetching shared nodes:', error);
     throw error;
   }
   return data;
@@ -234,7 +237,7 @@ const deleteNonSharedNodes = async (nodeIds: string[]) => {
       .single();
 
     if (nodeError) {
-      console.error('Error fetching node type:', nodeError);
+      console.error('canvasService: Error fetching node type:', nodeError);
       throw nodeError;
     }
 
@@ -246,7 +249,10 @@ const deleteNonSharedNodes = async (nodeIds: string[]) => {
       .eq('node_id', nodeId);
 
     if (deleteError) {
-      console.error(`Error deleting ${nodeType} node:`, deleteError);
+      console.error(
+        `canvasService: Error deleting ${nodeType} node:`,
+        deleteError
+      );
       throw deleteError;
     }
 
@@ -256,7 +262,7 @@ const deleteNonSharedNodes = async (nodeIds: string[]) => {
       .eq('id', nodeId);
 
     if (nodeDeleteError) {
-      console.error('Error deleting node:', nodeDeleteError);
+      console.error('canvasService: Error deleting node:', nodeDeleteError);
       throw nodeDeleteError;
     }
   }
@@ -286,7 +292,7 @@ const upsertNodes = async (
     } = node;
 
     if (!id) {
-      console.error('Node ID is undefined');
+      console.error('canvasService: Node ID is undefined');
       continue;
     }
 
@@ -295,7 +301,7 @@ const upsertNodes = async (
       .upsert({ id, type, ...nodeProperties });
 
     if (nodeUpsertError) {
-      console.error('Error upserting node:', nodeUpsertError);
+      console.error('canvasService: Error upserting node:', nodeUpsertError);
       throw nodeUpsertError;
     }
 
@@ -325,7 +331,7 @@ const upsertNodes = async (
       case 'selection_menu':
         break;
       default:
-        console.error('Unknown node type:', type);
+        console.error('canvasService: Unknown node type:', type);
         continue;
     }
 
@@ -337,7 +343,10 @@ const upsertNodes = async (
         .single();
 
       if (fetchError && fetchError.code !== 'PGRST116') {
-        console.error(`Error fetching existing ${type} node:`, fetchError);
+        console.error(
+          `canvasService: Error fetching existing ${type} node:`,
+          fetchError
+        );
         throw fetchError;
       }
 
@@ -350,7 +359,10 @@ const upsertNodes = async (
         .upsert(upsertData);
 
       if (specificNodeUpsertError) {
-        console.error(`Error upserting ${type} node:`, specificNodeUpsertError);
+        console.error(
+          `canvasService: Error upserting ${type} node:`,
+          specificNodeUpsertError
+        );
         throw specificNodeUpsertError;
       }
     }
@@ -360,7 +372,10 @@ const upsertNodes = async (
       .upsert({ node_id: id, canvas_id: canvasId });
 
     if (linkUpsertError) {
-      console.error('Error upserting node_canvas_link:', linkUpsertError);
+      console.error(
+        'canvasService: Error upserting node_canvas_link:',
+        linkUpsertError
+      );
       throw linkUpsertError;
     }
   }
@@ -377,7 +392,7 @@ const upsertEdges = async (
     );
 
   if (edgesUpsertError) {
-    console.error('Error upserting edges:', edgesUpsertError);
+    console.error('canvasService: Error upserting edges:', edgesUpsertError);
     throw edgesUpsertError;
   }
 };

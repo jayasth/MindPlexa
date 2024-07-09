@@ -92,6 +92,7 @@ const useEdgeStore = create<EdgeState>()(
           state.edges = state.edges.filter((edge) => edge.id !== id);
         })
       );
+      console.log('useEdgeStore: Removing edge with id:', id);
       try {
         const { error } = await deleteEdgeInDB(id);
         if (error) {

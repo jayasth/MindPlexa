@@ -31,18 +31,23 @@ const deleteEdgeFromTable = async (id: string) => {
 export const createEdge = async (
   edge: Omit<Database['public']['Tables']['edges']['Insert'], 'id'>
 ): Promise<{ data?: { id: string }; error?: any }> => {
-  console.log('NodeEdgeService: Creating edge:', edge);
+  console.log('edgeService: Creating edge:', edge);
 
   const edgeWithId = { ...edge, id: uuidv4() };
-  const { data, error } = await insertEdge(edgeWithId);
+  try {
+    const { data, error } = await insertEdge(edgeWithId);
 
-  if (error) {
-    console.error('NodeEdgeService: Error inserting edge:', error);
+    if (error) {
+      console.error('edgeService: Error inserting edge:', error);
+      return { error };
+    }
+
+    console.log('edgeService: Edge created:', data);
+    return { data: { id: data.id } };
+  } catch (error) {
+    console.error('edgeService: Unexpected error inserting edge:', error);
     return { error };
   }
-
-  console.log('NodeEdgeService: Edge created:', data);
-  return { data: { id: data.id } };
 };
 
 export const createEdgeBetweenNodes = async (
@@ -50,7 +55,7 @@ export const createEdgeBetweenNodes = async (
   targetNodeId: string,
   canvasId: string
 ): Promise<{ data?: { id: string }; error?: any }> => {
-  console.log('NodeEdgeService: Creating edge between nodes:', {
+  console.log('edgeService: Creating edge between nodes:', {
     sourceNodeId,
     targetNodeId,
     canvasId
@@ -69,31 +74,31 @@ export const updateEdge = async (
   id: string,
   updates: Database['public']['Tables']['edges']['Update']
 ): Promise<{ data?: any; error?: any }> => {
-  console.log('NodeEdgeService: Updating edge:', { id, updates });
+  console.log('edgeService: Updating edge:', { id, updates });
 
   const { data, error } = await updateEdgeInTable(id, updates);
 
   if (error) {
-    console.error('NodeEdgeService: Error updating edge:', error);
+    console.error('edgeService: Error updating edge:', error);
     return { error };
   }
 
-  console.log('NodeEdgeService: Edge updated:', data);
+  console.log('edgeService: Edge updated:', data);
   return { data };
 };
 
 export const deleteEdge = async (
   id: string
 ): Promise<{ success?: boolean; error?: any }> => {
-  console.log('NodeEdgeService: Deleting edge:', id);
+  console.log('edgeService: Deleting edge:', id);
 
   const { error } = await deleteEdgeFromTable(id);
 
   if (error) {
-    console.error('NodeEdgeService: Error deleting edge:', error);
+    console.error('edgeService: Error deleting edge:', error);
     return { error };
   }
 
-  console.log('NodeEdgeService: Edge deleted successfully');
+  console.log('edgeService: Edge deleted successfully');
   return { success: true };
 };
