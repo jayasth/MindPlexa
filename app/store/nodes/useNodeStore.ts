@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import {
   updateNode as updateNodeInDB,
   deleteNode as deleteNodeInDB
-} from '@/utils/canvas/nodeEdgeService';
+} from '@/utils/canvas/nodeService';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 import { getChildNodePosition } from '@/ui/canvasEditor/utils/getChildNodePosition';
 import type { Node, XYPosition } from 'reactflow';

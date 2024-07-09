@@ -36,7 +36,7 @@ import Quill from 'quill';
 import 'quill/dist/quill.snow.css';
 import { Database } from '@/types_db';
 import { useBackgroundColorChange } from '@/ui/nodes/common/useBackgroundColorChange';
-import { updateNode } from '@/utils/canvas/nodeEdgeService';
+import { updateNode } from '@/utils/canvas/nodeService';
 import { debounce } from 'lodash';
 
 interface NoteNodeEditProps extends NodeProps {

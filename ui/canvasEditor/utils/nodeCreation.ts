@@ -6,10 +6,9 @@ import {
 import { findOptimalPosition } from '@/ui/canvasEditor/utils/positioningUtils';
 import {
   createNode as createNodeInDatabase,
-  createEdge,
-  updateEdge as updateEdgeInDatabase,
   updateNode as updateNodeInDatabase
-} from '@/utils/canvas/nodeEdgeService';
+} from '@/utils/canvas/nodeService';
+import { createEdge } from '@/utils/canvas/edgeService';
 import { v4 as uuidv4 } from 'uuid';
 import { Database } from '@/types_db';
 import useEdgeStore from '@/app/store/edges/useEdgeStore';

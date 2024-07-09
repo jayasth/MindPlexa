@@ -21,7 +21,7 @@ import {
   createEdge as createEdgeInDB,
   updateEdge as updateEdgeInDB,
   deleteEdge as deleteEdgeInDB
-} from '@/utils/canvas/nodeEdgeService';
+} from '@/utils/canvas/nodeService';
 
 interface CanvasState {
   canvasID: string;
