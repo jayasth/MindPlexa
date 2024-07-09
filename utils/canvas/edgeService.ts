@@ -48,6 +48,7 @@ export const createEdge = async ({
     const { data, error } = await supabase
       .from('edges')
       .insert({
+        id: uuidv4(), // Ensure UUID is generated
         source_node_id: sourceNodeId,
         target_node_id: targetNodeId,
         canvas_id: canvasId
