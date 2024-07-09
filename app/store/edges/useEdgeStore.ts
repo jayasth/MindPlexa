@@ -2,7 +2,6 @@ import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { produce } from 'immer';
 import {
-  createEdge as createEdgeInDB,
   updateEdge as updateEdgeInDB,
   deleteEdge as deleteEdgeInDB
 } from '@/utils/canvas/edgeService';
@@ -20,39 +19,13 @@ interface EdgeState {
 const useEdgeStore = create<EdgeState>()(
   devtools((set, get) => ({
     edges: [],
-    addEdge: async (edge) => {
+    addEdge: (edge) => {
       set(
         produce((state: EdgeState) => {
           state.edges.push(edge);
         })
       );
-      console.log('useEdgeStore: Creating edge:', edge);
-      try {
-        const { error } = await createEdgeInDB(edge);
-        if (error) {
-          console.error(
-            'useEdgeStore: Error adding edge to the database:',
-            error
-          );
-          set(
-            produce((state: EdgeState) => {
-              state.edges = state.edges.filter((e) => e.id !== edge.id);
-            })
-          );
-        } else {
-          console.log('useEdgeStore: Edge added successfully to the database');
-        }
-      } catch (error) {
-        console.error(
-          'useEdgeStore: Error adding edge to the database:',
-          error
-        );
-        set(
-          produce((state: EdgeState) => {
-            state.edges = state.edges.filter((e) => e.id !== edge.id);
-          })
-        );
-      }
+      console.log('useEdgeStore: Edge added:', edge);
     },
     updateEdge: async (id, data) => {
       const previousEdges = get().edges;

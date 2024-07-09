@@ -95,8 +95,6 @@ const useNodeStore = create<NodeState>()(
                 viewWidth: updatedNode.data.viewWidth,
                 viewHeight: updatedNode.data.viewHeight,
                 isTemporary: updatedNode.data.isTemporary,
-                createdAt: updatedNode.data.createdAt,
-                updatedAt: updatedNode.data.updatedAt,
                 version: updatedNode.data.version
               };
               let specificUpdates: any = {};
@@ -424,8 +422,6 @@ const useNodeStore = create<NodeState>()(
                     viewWidth: updatedNode.data?.viewWidth,
                     viewHeight: updatedNode.data?.viewHeight,
                     isTemporary: updatedNode.data?.isTemporary,
-                    createdAt: updatedNode.data?.createdAt,
-                    updatedAt: updatedNode.data?.updatedAt,
                     version: updatedNode.data?.version
                   };
 

@@ -35,49 +35,55 @@ const deleteEdgeFromTable = async (id: string) => {
   return await supabase.from('edges').delete().eq('id', id);
 };
 
-export const createEdge = async (edge: {
+export const createEdge = async ({
+  sourceNodeId,
+  targetNodeId,
+  canvasId
+}: {
   sourceNodeId: string;
   targetNodeId: string;
   canvasId: string;
-  // Add other properties as needed
 }): Promise<{ data?: { id: string }; error?: any }> => {
-  console.log('edgeService: Creating edge:', edge);
-
-  const edgeWithId = { ...toSnakeCase(edge), id: uuidv4() };
   try {
-    const { data, error } = await insertEdge(edgeWithId);
+    const { data, error } = await supabase
+      .from('edges')
+      .insert({
+        source_node_id: sourceNodeId,
+        target_node_id: targetNodeId,
+        canvas_id: canvasId
+      })
+      .select()
+      .single();
 
-    if (error) {
-      console.error('edgeService: Error inserting edge:', error);
-      return { error };
-    }
+    if (error) throw error;
 
-    console.log('edgeService: Edge created:', data);
-    return { data: { id: data.id } };
+    return { data: { id: data.id }, error: null };
   } catch (error) {
-    console.error('edgeService: Unexpected error inserting edge:', error);
-    return { error };
+    console.error('Error creating edge:', error);
+    return { data: undefined, error };
   }
 };
 
-export const createEdgeBetweenNodes = async (
-  sourceNodeId: string,
-  targetNodeId: string,
-  canvasId: string
-): Promise<{ data?: { id: string }; error?: any }> => {
+export const createEdgeBetweenNodes = async ({
+  sourceNodeId,
+  targetNodeId,
+  canvasId
+}: {
+  sourceNodeId: string;
+  targetNodeId: string;
+  canvasId: string;
+}): Promise<{ data?: { id: string }; error?: any }> => {
   console.log('edgeService: Creating edge between nodes:', {
     sourceNodeId,
     targetNodeId,
     canvasId
   });
 
-  const newEdge = {
+  return await createEdge({
     sourceNodeId,
     targetNodeId,
     canvasId
-  };
-
-  return await createEdge(newEdge);
+  });
 };
 
 export const updateEdge = async (

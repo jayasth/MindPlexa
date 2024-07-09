@@ -210,12 +210,12 @@ export default function CanvasEditor({ canvasId: initialCanvasId }) {
           return;
         }
         const newEdge = {
-          ...connection,
           id: `e-${uuidv4()}`,
-          type: 'customEdge',
           sourceNodeId: connection.source,
           targetNodeId: connection.target,
-          canvasId: initialCanvasId
+          source: connection.source,
+          target: connection.target,
+          type: 'customEdge'
         };
         addEdge(newEdge);
         reactFlowInstance.current?.fitView({ padding: 0.2 });

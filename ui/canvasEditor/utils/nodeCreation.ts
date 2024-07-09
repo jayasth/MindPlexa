@@ -8,7 +8,7 @@ import {
   createNode as createNodeInDatabase,
   updateNode as updateNodeInDatabase
 } from '@/utils/canvas/nodeService';
-import { createEdge as createEdgeInDatabase } from '@/utils/canvas/edgeService';
+import { createEdgeBetweenNodes } from '@/utils/canvas/edgeService';
 import { v4 as uuidv4 } from 'uuid';
 import useEdgeStore from '@/app/store/edges/useEdgeStore';
 
@@ -34,10 +34,10 @@ const createEdge = async (
     type: 'customEdge'
   };
   console.log('nodeCreation: Creating edge with data:', newEdge);
-  const { data: createdEdge, error: edgeError } = await createEdgeInDatabase({
+  const { data: createdEdge, error: edgeError } = await createEdgeBetweenNodes({
     sourceNodeId: parentNodeId,
     targetNodeId: newNodeId,
-    canvasId: canvasId
+    canvasId
   });
 
   if (edgeError) {
@@ -179,6 +179,20 @@ export const handleTemporaryNodeCreation = async (
             async (newNode) => {
               addNode(newNode, canvasId);
               console.log('TemporaryNodeHandler: Node added:', newNode);
+              // Create the edge after the temporary node is added
+              const newEdge = {
+                id: uuidv4(),
+                source: parentNode?.id || '',
+                target: newNode.id,
+                type: 'customEdge',
+                data: { canvasId }
+              };
+              useEdgeStore.getState().addEdge(newEdge);
+              await createEdgeBetweenNodes({
+                sourceNodeId: parentNode?.id || '',
+                targetNodeId: newNode.id,
+                canvasId
+              });
             },
             {
               width: nodeDimensions['selection_menu'].width,
