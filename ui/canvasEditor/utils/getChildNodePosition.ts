@@ -44,8 +44,8 @@ export const getChildNodePosition = (
 
   console.log('getChildNodePosition: Flow position:', flowPosition);
 
-  const childNodeWidth = nodeDimensions['selection_menu'].width;
-  const childNodeHeight = nodeDimensions['selection_menu'].height;
+  const childNodeWidth = nodeDimensions['selectionMenu'].width;
+  const childNodeHeight = nodeDimensions['selectionMenu'].height;
 
   console.log(
     'getChildNodePosition: Child node dimensions:',

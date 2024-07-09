@@ -133,7 +133,7 @@ export default function CanvasEditor({ canvasId }) {
       newPosition: { x: number; y: number }
     ) => {
       try {
-        if (node.type !== 'selection_menu') {
+        if (node.type !== 'SelectionMenu') {
           updateNodeInStore(
             node.id,
             { ...newSize, position: newPosition },
@@ -165,7 +165,7 @@ export default function CanvasEditor({ canvasId }) {
       draw: (props) => (
         <NodeRenderer {...props} onNodeResizeStop={onNodeResizeStop} />
       ),
-      selection_menu: (props) => <NodeRenderer {...props} />
+      SelectionMenu: (props) => <NodeRenderer {...props} />
     }),
     [onNodeResizeStop]
   );
@@ -230,7 +230,7 @@ export default function CanvasEditor({ canvasId }) {
     (
       parentNode: Node | null,
       position: XYPosition,
-      nodeType: 'selection_menu'
+      nodeType: 'SelectionMenu'
     ) => {
       try {
         handleTemporaryNodeCreation(

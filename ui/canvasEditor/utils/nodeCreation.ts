@@ -103,9 +103,12 @@ export const createNode = async (
   try {
     const { data: createdNode, error } = await createNodeInDatabase(
       canvasId,
-      nodeType,
+      nodeType === 'selectionMenu' ? 'SelectionMenu' : nodeType,
       positionAsXYPosition,
-      newNodeData
+      {
+        ...newNodeData,
+        type: nodeType === 'selectionMenu' ? 'SelectionMenu' : nodeType
+      }
     );
 
     if (error) {
@@ -259,9 +262,12 @@ export const replaceNodeWithType = async (
   console.log('nodeCreation: Updating node with data:', newNodeData);
   const { data: updatedNode, error: updateError } = await updateNodeInDatabase(
     id,
-    newNodeData,
+    {
+      ...newNodeData,
+      type: nodeType === 'selectionMenu' ? 'SelectionMenu' : nodeType
+    },
     {},
-    nodeType
+    nodeType === 'selectionMenu' ? 'SelectionMenu' : nodeType
   );
 
   if (updateError) {

@@ -27,7 +27,7 @@ const processNode = (node: any, nodeData: any) => {
   console.log('useCanvasStore: Processing node:', node);
 
   let specificNodeData = {};
-  if (node.type !== 'selection_menu') {
+  if (node.type !== 'selectionMenu') {
     specificNodeData =
       nodeData?.[node.type]?.find(
         (specificNode) => specificNode.nodeId === node.id
