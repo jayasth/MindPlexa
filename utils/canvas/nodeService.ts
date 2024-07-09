@@ -7,18 +7,6 @@ const supabase = createClient();
 
 /* Node related functions */
 
-const insertNode = async (
-  nodeInsert: Database['public']['Tables']['nodes']['Insert']
-) => {
-  return await supabase.from('nodes').insert([nodeInsert]).select().single();
-};
-
-const linkNodeToCanvas = async (nodeId: string, canvasId: string) => {
-  return await supabase
-    .from('node_canvas_link')
-    .insert({ node_id: nodeId, canvas_id: canvasId });
-};
-
 const insertSpecificNode = async (
   tableName: keyof Database['public']['Tables'],
   specificNodeInsert: any
