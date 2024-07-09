@@ -29,6 +29,9 @@ const useEdgeStore = create<EdgeState>()(
             'useEdgeStore: Error adding edge to the database:',
             error
           );
+          set((state) => ({
+            edges: state.edges.filter((e) => e.id !== edge.id)
+          }));
         } else {
           console.log('useEdgeStore: Edge added successfully to the database');
         }
@@ -37,9 +40,13 @@ const useEdgeStore = create<EdgeState>()(
           'useEdgeStore: Error adding edge to the database:',
           error
         );
+        set((state) => ({
+          edges: state.edges.filter((e) => e.id !== edge.id)
+        }));
       }
     },
     updateEdge: async (id, data) => {
+      const previousEdges = get().edges;
       set((state) => ({
         edges: state.edges.map((edge) =>
           edge.id === id ? { ...edge, ...data } : edge
@@ -52,6 +59,7 @@ const useEdgeStore = create<EdgeState>()(
             'useEdgeStore: Error updating edge in the database:',
             error
           );
+          set({ edges: previousEdges });
         } else {
           console.log(
             'useEdgeStore: Edge updated successfully in the database'
@@ -62,9 +70,11 @@ const useEdgeStore = create<EdgeState>()(
           'useEdgeStore: Error updating edge in the database:',
           error
         );
+        set({ edges: previousEdges });
       }
     },
     removeEdge: async (id) => {
+      const previousEdges = get().edges;
       set((state) => ({
         edges: state.edges.filter((edge) => edge.id !== id)
       }));
@@ -75,6 +85,7 @@ const useEdgeStore = create<EdgeState>()(
             'useEdgeStore: Error removing edge from the database:',
             error
           );
+          set({ edges: previousEdges });
         } else {
           console.log(
             'useEdgeStore: Edge removed successfully from the database'
@@ -85,6 +96,7 @@ const useEdgeStore = create<EdgeState>()(
           'useEdgeStore: Error removing edge from the database:',
           error
         );
+        set({ edges: previousEdges });
       }
     },
     setEdges: (updater) => {

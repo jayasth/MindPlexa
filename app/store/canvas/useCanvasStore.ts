@@ -19,6 +19,54 @@ interface CanvasState {
   saveCanvasTimeout?: NodeJS.Timeout;
 }
 
+const processNode = (node: any, nodeData: any) => {
+  if (!node) return null;
+
+  console.log('useCanvasStore: Processing node:', node);
+
+  let specificNodeData = {};
+  if (node.type !== 'selection_menu') {
+    specificNodeData =
+      nodeData?.[node.type]?.find(
+        (specificNode) => specificNode.node_id === node.id
+      ) || {};
+  }
+
+  let position;
+  try {
+    position =
+      typeof node.position === 'string'
+        ? JSON.parse(node.position)
+        : node.position;
+  } catch (error) {
+    console.error('Error parsing position JSON:', error);
+    position = { x: 200, y: 200 };
+  }
+
+  return {
+    id: node.id,
+    type: node.type,
+    position,
+    data: {
+      ...node,
+      ...specificNodeData,
+      backgroundColor: node.background_color,
+      textColor: node.text_color,
+      isTemporary: node.is_temporary,
+      isEditing: node.is_editing
+    },
+    width: node.view_width,
+    height: node.view_height
+  };
+};
+
+const processEdge = (edge: any) => ({
+  id: edge.id,
+  source: edge.source_node_id || '',
+  target: edge.target_node_id || '',
+  type: 'customEdge'
+});
+
 const useCanvasStore = create<CanvasState>()(
   devtools((set, get) => ({
     canvasID: uuidv4(),
@@ -94,24 +142,37 @@ const useCanvasStore = create<CanvasState>()(
 
       console.log('useCanvasStore: Canvas data saved successfully');
 
-      // Update local state after saving
-      useNodeStore.getState().setNodes(
-        nodes.map((node) => ({
-          ...node,
-          data: {
-            ...node.data,
-            isModified: false
+      // Update local state only after successful save
+      useNodeStore.getState().setNodes((prevNodes) =>
+        prevNodes.map((node) => {
+          const savedNode = canvasData.nodes.find((n) => n.id === node.id);
+          if (savedNode) {
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                ...savedNode,
+                isModified: false
+              }
+            };
           }
-        }))
+          return node;
+        })
       );
-      useEdgeStore.getState().setEdges(
-        edges.map((edge) => ({
-          ...edge,
-          data: {
-            ...edge.data,
-            isModified: false
+      useEdgeStore.getState().setEdges((prevEdges) =>
+        prevEdges.map((edge) => {
+          const savedEdge = canvasData.edges.find((e) => e.id === edge.id);
+          if (savedEdge) {
+            return {
+              ...edge,
+              data: {
+                ...edge.data,
+                isModified: false
+              }
+            };
           }
-        }))
+          return edge;
+        })
       );
     },
     loadCanvas: async (canvasId: string) => {
@@ -129,82 +190,35 @@ const useCanvasStore = create<CanvasState>()(
         console.log('useCanvasStore: Fetched data:', data);
         console.log('useCanvasStore: Fetched nodeData:', nodeData);
 
-        if (data && data.node_canvas_link && data.node_canvas_link.length > 0) {
+        if (data) {
           console.log('useCanvasStore: Loading existing canvas data');
-          const nodes = data.node_canvas_link
-            .map((link) => {
-              const node = link.nodes;
-              if (!node) return null;
-
-              console.log('useCanvasStore: Processing node:', node);
-
-              let specificNodeData = {};
-              if (node.type !== 'selection_menu') {
-                specificNodeData =
-                  nodeData?.[node.type]?.find(
-                    (specificNode) => specificNode.node_id === node.id
-                  ) || {};
-              }
-
-              let position;
-              try {
-                position =
-                  typeof node.position === 'string'
-                    ? JSON.parse(node.position)
-                    : node.position;
-              } catch (error) {
-                console.error('Error parsing position JSON:', error);
-                position = { x: 200, y: 200 };
-              }
-
-              return {
-                id: node.id,
-                type: node.type,
-                position,
-                data: {
-                  ...node,
-                  ...specificNodeData,
-                  backgroundColor: node.background_color,
-                  textColor: node.text_color,
-                  isTemporary: node.is_temporary,
-                  isEditing: node.is_editing
-                },
-                width: node.view_width,
-                height: node.view_height
-              };
-            })
-            .filter((node): node is Node => node !== null);
+          const nodes =
+            data.node_canvas_link
+              ?.map((link) => processNode(link.nodes, nodeData))
+              .filter((node): node is Node => node !== null) || [];
 
           console.log('useCanvasStore: Nodes after processing:', nodes);
 
-          const edges = data.edges
-            ? data.edges.map((edge) => ({
-                id: edge.id,
-                source: edge.source_node_id || '',
-                target: edge.target_node_id || '',
-                type: 'customEdge'
-              }))
-            : [];
+          const edges = data.edges?.map(processEdge) || [];
 
           console.log('useCanvasStore: Edge data after load:', edges);
 
           useNodeStore.getState().setNodes(nodes);
           useNodeStore.getState().setInitialState(nodes);
           useEdgeStore.getState().setEdges(edges);
-          set({ isLoading: false, lastLoadTime: Date.now() });
         } else {
           console.log('useCanvasStore: Initializing new blank canvas');
           useNodeStore.getState().setNodes([]);
           useNodeStore.getState().setInitialState([]);
           useEdgeStore.getState().setEdges([]);
-          set({ isLoading: false, lastLoadTime: Date.now() });
         }
+
+        set({ isLoading: false, lastLoadTime: Date.now() });
       } catch (error) {
         console.error('useCanvasStore: Error loading canvas:', error);
         set({ isLoading: false });
       }
-    },
-    saveCanvasTimeout: undefined
+    }
   }))
 );
 
