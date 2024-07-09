@@ -353,6 +353,7 @@ const useNodeStore = create<NodeState>()(
               if (change) {
                 let updatedNode = { ...node };
                 let hasChanges = false;
+                let changedProperties = {};
 
                 switch (change.type) {
                   case 'position':
@@ -364,6 +365,7 @@ const useNodeStore = create<NodeState>()(
                         ...updatedNode,
                         position: change.position
                       };
+                      changedProperties['position'] = change.position;
                       hasChanges = true;
                     }
                     break;
@@ -377,6 +379,8 @@ const useNodeStore = create<NodeState>()(
                         width: change.dimensions.width,
                         height: change.dimensions.height
                       };
+                      changedProperties['width'] = change.dimensions.width;
+                      changedProperties['height'] = change.dimensions.height;
                       hasChanges = true;
                     }
                     break;
@@ -389,6 +393,7 @@ const useNodeStore = create<NodeState>()(
                         ...updatedNode,
                         data: { ...node.data, ...change.data }
                       };
+                      changedProperties['data'] = change.data;
                       hasChanges = true;
                     }
                     break;
@@ -401,11 +406,17 @@ const useNodeStore = create<NodeState>()(
                         ...updatedNode,
                         style: { ...node.style, ...change.style }
                       };
+                      changedProperties['style'] = change.style;
                       hasChanges = true;
                     }
                     break;
                 }
                 if (hasChanges) {
+                  console.log('useNodeStore: Node changes detected', {
+                    nodeId: updatedNode.id,
+                    changedProperties
+                  });
+
                   // Prepare updates for database
                   const nodeUpdates = {
                     position: JSON.stringify(updatedNode.position),
