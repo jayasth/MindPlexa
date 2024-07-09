@@ -34,12 +34,14 @@ import {
 } from '@/ui/nodes/common/CommonNodeFunctions';
 import Quill from 'quill';
 import 'quill/dist/quill.snow.css';
+import { Database } from '@/types_db';
 import { useBackgroundColorChange } from '@/ui/nodes/common/useBackgroundColorChange';
+import { updateNode } from '@/utils/canvas/nodeService';
 import { debounce } from 'lodash';
-import useNodeStore from '@/app/store/nodes/useNodeStore';
 
 interface NoteNodeEditProps extends NodeProps {
-  data: any;
+  data: Database['public']['Tables']['note_nodes']['Row'] &
+    Database['public']['Tables']['nodes']['Row'];
   width: number;
   height: number;
   selected: boolean;
@@ -143,8 +145,15 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     () =>
       debounce(async (commonData, specificData) => {
         try {
-          const updateNode = useNodeStore.getState().updateNode;
-          await updateNode(data.id, { ...commonData, data: specificData }, '');
+          const { error } = await updateNode(
+            data.id,
+            commonData,
+            specificData,
+            'note'
+          );
+          if (error) {
+            console.error('Error updating node:', error);
+          }
         } catch (error) {
           console.error('Error updating node:', error);
         }
@@ -287,8 +296,15 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     const specificData = { content };
 
     try {
-      const updateNode = useNodeStore.getState().updateNode;
-      await updateNode(data.id, { ...commonData, data: specificData }, '');
+      const { error } = await updateNode(
+        data.id,
+        commonData,
+        specificData,
+        'note'
+      );
+      if (error) {
+        console.error('Error saving node:', error);
+      }
     } catch (error) {
       console.error('Error saving node:', error);
     }
