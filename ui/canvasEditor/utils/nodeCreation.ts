@@ -10,7 +10,6 @@ import {
 } from '@/utils/canvas/nodeService';
 import { createEdge as createEdgeInDatabase } from '@/utils/canvas/edgeService';
 import { v4 as uuidv4 } from 'uuid';
-import { Database } from '@/types_db';
 import useEdgeStore from '@/app/store/edges/useEdgeStore';
 
 const setPosition = (x: number, y: number): XYPosition => ({ x, y });
@@ -36,9 +35,9 @@ const createEdge = async (
   };
   console.log('nodeCreation: Creating edge with data:', newEdge);
   const { data: createdEdge, error: edgeError } = await createEdgeInDatabase({
-    source_node_id: parentNodeId,
-    target_node_id: newNodeId,
-    canvas_id: canvasId
+    sourceNodeId: parentNodeId,
+    targetNodeId: newNodeId,
+    canvasId: canvasId
   });
 
   if (edgeError) {
@@ -50,12 +49,12 @@ const createEdge = async (
 };
 
 export const createNode = async (
-  nodeType: Database['public']['Enums']['node_type'],
+  nodeType: 'note' | 'task' | 'table' | 'calendar' | 'draw' | 'selectionMenu',
   position: XYPosition,
   nodes: Node<any>[],
   callback: (newNode: Node<any>) => void,
   canvasSize: { width: number; height: number },
-  isTemporary = nodeType === 'selection_menu',
+  isTemporary = nodeType === 'selectionMenu',
   isEditing = false,
   canvasId: string,
   parentNode?: Node<any> | null,
@@ -74,32 +73,31 @@ export const createNode = async (
     id: nodeId,
     type: nodeType,
     position: JSON.stringify(positionAsXYPosition),
-    background_color: defaultProperties.backgroundColor,
-    text_color: defaultProperties.textColor,
-    is_editing: isEditing,
-    is_temporary: isTemporary,
-    parent_node_id: parentNode ? parentNode.id : null,
-    z_index: 0,
-    view_width:
+    backgroundColor: defaultProperties.backgroundColor,
+    textColor: defaultProperties.textColor,
+    isEditing: isEditing,
+    isTemporary: isTemporary,
+    parentNodeId: parentNode ? parentNode.id : null,
+    zIndex: 0,
+    viewWidth:
       'width' in nodeDimension ? nodeDimension.width : nodeDimension.viewWidth,
-    view_height:
+    viewHeight:
       'height' in nodeDimension
         ? nodeDimension.height
         : nodeDimension.viewHeight,
-    edit_width: 'editWidth' in nodeDimension ? nodeDimension.editWidth : null,
-    edit_height:
-      'editHeight' in nodeDimension ? nodeDimension.editHeight : null,
-    mobile_edit_width:
+    editWidth: 'editWidth' in nodeDimension ? nodeDimension.editWidth : null,
+    editHeight: 'editHeight' in nodeDimension ? nodeDimension.editHeight : null,
+    mobileEditWidth:
       'mobileEditWidth' in nodeDimension ? nodeDimension.mobileEditWidth : null,
-    mobile_edit_height:
+    mobileEditHeight:
       'mobileEditHeight' in nodeDimension
         ? nodeDimension.mobileEditHeight
         : null
   };
 
-  if (nodeType === 'selection_menu') {
-    newNodeData.view_width = nodeDimensions.selection_menu.width;
-    newNodeData.view_height = nodeDimensions.selection_menu.height;
+  if (nodeType === 'selectionMenu') {
+    newNodeData.viewWidth = nodeDimensions.selectionMenu.width;
+    newNodeData.viewHeight = nodeDimensions.selectionMenu.height;
   }
 
   try {
@@ -123,9 +121,9 @@ export const createNode = async (
         position: positionAsXYPosition,
         data: {
           ...createdNode,
-          backgroundColor: createdNode.background_color,
-          textColor: createdNode.text_color,
-          isTemporary: createdNode.is_temporary,
+          backgroundColor: createdNode.backgroundColor,
+          textColor: createdNode.textColor,
+          isTemporary: createdNode.isTemporary,
           ...getNodeSpecificProperties(nodeType, isEditing)
         }
       };
@@ -144,7 +142,7 @@ export const createNode = async (
 export const handleTemporaryNodeCreation = async (
   parentNode: Node | null,
   position: XYPosition,
-  nodeType: 'selection_menu',
+  nodeType: 'selectionMenu',
   addNode: (node: Node, canvasId: string) => void,
   removeNode: (id: string) => void,
   nodes: Node[],
@@ -161,7 +159,7 @@ export const handleTemporaryNodeCreation = async (
     data: {
       onSelect: async (
         selectedNodeType:
-          | 'selection_menu'
+          | 'selectionMenu'
           | 'note'
           | 'task'
           | 'table'
@@ -180,8 +178,8 @@ export const handleTemporaryNodeCreation = async (
               console.log('TemporaryNodeHandler: Node added:', newNode);
             },
             {
-              width: nodeDimensions['selection_menu'].width,
-              height: nodeDimensions['selection_menu'].height
+              width: nodeDimensions['selectionMenu'].width,
+              height: nodeDimensions['selectionMenu'].height
             },
             true,
             false,
@@ -196,17 +194,17 @@ export const handleTemporaryNodeCreation = async (
       parentNode: parentNode,
       isTemporary: true
     },
-    width: nodeDimensions['selection_menu'].width,
-    height: nodeDimensions['selection_menu'].height
+    width: nodeDimensions['selectionMenu'].width,
+    height: nodeDimensions['selectionMenu'].height
   };
 
   console.log(
     'TemporaryNodeHandler: Node dimensions: ',
-    nodeDimensions['selection_menu']
+    nodeDimensions['selectionMenu']
   );
 
   await createNode(
-    'selection_menu',
+    'selectionMenu',
     position,
     nodes,
     (newNode) => {
@@ -214,8 +212,8 @@ export const handleTemporaryNodeCreation = async (
       console.log('TemporaryNodeHandler: Node added:', newNode);
     },
     {
-      width: nodeDimensions['selection_menu'].width,
-      height: nodeDimensions['selection_menu'].height
+      width: nodeDimensions['selectionMenu'].width,
+      height: nodeDimensions['selectionMenu'].height
     },
     true,
     false,
@@ -227,7 +225,7 @@ export const handleTemporaryNodeCreation = async (
 };
 
 export const replaceNodeWithType = async (
-  nodeType: Database['public']['Enums']['node_type'],
+  nodeType: 'note' | 'task' | 'table' | 'calendar' | 'draw' | 'selectionMenu',
   id: string,
   position: XYPosition,
   edges: any[],
@@ -238,22 +236,21 @@ export const replaceNodeWithType = async (
   const newNodeData = {
     type: nodeType,
     position: JSON.stringify(position),
-    is_editing: false,
-    is_temporary: false,
-    view_width:
+    isEditing: false,
+    isTemporary: false,
+    viewWidth:
       'viewWidth' in nodeDimension
         ? nodeDimension.viewWidth
         : nodeDimension.width,
-    view_height:
+    viewHeight:
       'viewHeight' in nodeDimension
         ? nodeDimension.viewHeight
         : nodeDimension.height,
-    edit_width: 'editWidth' in nodeDimension ? nodeDimension.editWidth : null,
-    edit_height:
-      'editHeight' in nodeDimension ? nodeDimension.editHeight : null,
-    mobile_edit_width:
+    editWidth: 'editWidth' in nodeDimension ? nodeDimension.editWidth : null,
+    editHeight: 'editHeight' in nodeDimension ? nodeDimension.editHeight : null,
+    mobileEditWidth:
       'mobileEditWidth' in nodeDimension ? nodeDimension.mobileEditWidth : null,
-    mobile_edit_height:
+    mobileEditHeight:
       'mobileEditHeight' in nodeDimension
         ? nodeDimension.mobileEditHeight
         : null

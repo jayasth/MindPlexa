@@ -9,7 +9,6 @@ import {
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 import { getChildNodePosition } from '@/ui/canvasEditor/utils/getChildNodePosition';
 import type { Node, XYPosition } from 'reactflow';
-import type { Database } from '@/types_db';
 
 interface NodeState {
   nodes: Node[];
@@ -81,19 +80,17 @@ const useNodeStore = create<NodeState>()(
                 }
               };
 
-              const nodeUpdates: Partial<
-                Database['public']['Tables']['nodes']['Update']
-              > = {
+              const nodeUpdates = {
                 position: JSON.stringify(updatedNode.position),
-                background_color: updatedNode.data.backgroundColor,
-                text_color: updatedNode.data.textColor,
+                backgroundColor: updatedNode.data.backgroundColor,
+                textColor: updatedNode.data.textColor,
                 title: updatedNode.data.title,
-                is_editing: updatedNode.data.isEditing,
-                z_index: updatedNode.data.zIndex,
-                edit_width: updatedNode.data.editWidth,
-                edit_height: updatedNode.data.editHeight,
-                mobile_edit_width: updatedNode.data.mobileEditWidth,
-                mobile_edit_height: updatedNode.data.mobileEditHeight
+                isEditing: updatedNode.data.isEditing,
+                zIndex: updatedNode.data.zIndex,
+                editWidth: updatedNode.data.editWidth,
+                editHeight: updatedNode.data.editHeight,
+                mobileEditWidth: updatedNode.data.mobileEditWidth,
+                mobileEditHeight: updatedNode.data.mobileEditHeight
               };
               let specificUpdates: any = {};
               switch (existingNode.type) {
@@ -119,7 +116,7 @@ const useNodeStore = create<NodeState>()(
                   break;
                 case 'draw':
                   specificUpdates = {
-                    drawing_data: updatedNode.data.drawingData || ''
+                    drawingData: updatedNode.data.drawingData || ''
                   };
                   break;
               }
@@ -406,17 +403,15 @@ const useNodeStore = create<NodeState>()(
 
                 if (hasChanges) {
                   // Prepare updates for database
-                  const nodeUpdates: Partial<
-                    Database['public']['Tables']['nodes']['Update']
-                  > = {
+                  const nodeUpdates = {
                     position: JSON.stringify(updatedNode.position),
-                    view_width: updatedNode.width,
-                    view_height: updatedNode.height,
-                    background_color: updatedNode.data?.backgroundColor,
-                    text_color: updatedNode.data?.textColor,
+                    viewWidth: updatedNode.width,
+                    viewHeight: updatedNode.height,
+                    backgroundColor: updatedNode.data?.backgroundColor,
+                    textColor: updatedNode.data?.textColor,
                     title: updatedNode.data?.title,
-                    is_editing: updatedNode.data?.isEditing,
-                    z_index: updatedNode.data?.zIndex
+                    isEditing: updatedNode.data?.isEditing,
+                    zIndex: updatedNode.data?.zIndex
                   };
 
                   // Prepare specific updates based on node type
@@ -448,7 +443,7 @@ const useNodeStore = create<NodeState>()(
                       break;
                     case 'draw':
                       specificUpdates = {
-                        drawing_data: updatedNode.data?.drawingData || ''
+                        drawingData: updatedNode.data?.drawingData || ''
                       };
                       break;
                   }
@@ -458,7 +453,13 @@ const useNodeStore = create<NodeState>()(
                     updatedNode.id,
                     nodeUpdates,
                     specificUpdates,
-                    updatedNode.type as Database['public']['Enums']['node_type']
+                    updatedNode.type as
+                      | 'note'
+                      | 'task'
+                      | 'table'
+                      | 'calendar'
+                      | 'draw'
+                      | 'selection_menu'
                   );
                 }
 

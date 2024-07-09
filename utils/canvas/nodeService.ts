@@ -12,12 +12,12 @@ const insertSpecificNode = async (
   tableName: keyof Database['public']['Tables'],
   specificNodeInsert: any
 ) => {
-  const response = await supabase
+  return await supabase
     .from(tableName)
     .insert([toSnakeCase(specificNodeInsert)])
     .select()
-    .single();
-  return { data: toCamelCase(response.data), error: response.error };
+    .single()
+    .then(({ data, error }) => ({ data: toCamelCase(data), error }));
 };
 
 const updateNodeInTable = async (
@@ -25,13 +25,13 @@ const updateNodeInTable = async (
   updates: any,
   id: string
 ) => {
-  const response = await supabase
+  return await supabase
     .from(tableName)
     .update(toSnakeCase(updates))
     .eq('node_id', id)
     .select()
-    .single();
-  return { data: toCamelCase(response.data), error: response.error };
+    .single()
+    .then(({ data, error }) => ({ data: toCamelCase(data), error }));
 };
 
 const deleteNodeFromTable = async (
@@ -48,31 +48,30 @@ const deleteNodeLink = async (nodeId: string) => {
 const insertCommonNodeProperties = async (
   nodeInsert: Database['public']['Tables']['nodes']['Insert']
 ) => {
-  const response = await supabase
+  return await supabase
     .from('nodes')
     .insert([toSnakeCase(nodeInsert)])
     .select()
-    .single();
-  return { data: toCamelCase(response.data), error: response.error };
+    .single()
+    .then(({ data, error }) => ({ data: toCamelCase(data), error }));
 };
 
 const insertNodeSpecificTable = async (
   tableName: keyof Database['public']['Tables'],
   specificNodeInsert: any
 ) => {
-  const response = await supabase
+  return await supabase
     .from(tableName)
     .insert([toSnakeCase(specificNodeInsert)])
     .select()
-    .single();
-  return { data: toCamelCase(response.data), error: response.error };
+    .single()
+    .then(({ data, error }) => ({ data: toCamelCase(data), error }));
 };
 
 const insertNodeCanvasLink = async (nodeId: string, canvasId: string) => {
-  const response = await supabase
+  return await supabase
     .from('node_canvas_link')
     .insert(toSnakeCase({ node_id: nodeId, canvas_id: canvasId }));
-  return { data: toCamelCase(response.data), error: response.error };
 };
 
 export const createNode = async (
@@ -248,14 +247,13 @@ export const updateNode = async (
   }
 
   // Update node in the nodes table
-  const response = await supabase
+  const { data: nodeData, error: nodeError } = await supabase
     .from('nodes')
     .update(toSnakeCase(safeUpdates))
     .eq('id', id)
     .select()
-    .single();
-
-  const { data: nodeData, error: nodeError } = response;
+    .single()
+    .then(({ data, error }) => ({ data: toCamelCase(data), error }));
 
   if (nodeError) {
     console.error('nodeService: Error updating node properties:', nodeError);
@@ -296,7 +294,8 @@ export const updateNode = async (
       .from(tableName)
       .select()
       .eq('node_id', id)
-      .single();
+      .single()
+      .then(({ data, error }) => ({ data: toCamelCase(data), error }));
 
     let specificNodeData;
     if (existingNode) {
@@ -334,12 +333,10 @@ export const updateNode = async (
 
     console.log(`nodeService: ${nodeType} node updated:`, specificNodeData);
 
-    return {
-      data: { ...toCamelCase(nodeData), ...toCamelCase(specificNodeData) }
-    };
+    return { data: { ...nodeData, ...specificNodeData } };
   }
 
-  return { data: toCamelCase(nodeData) };
+  return { data: nodeData };
 };
 
 export const deleteNode = async (

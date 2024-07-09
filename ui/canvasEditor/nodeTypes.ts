@@ -2,22 +2,22 @@ import type { Json } from '@/types_db';
 
 export interface Node {
   id: string;
-  type: 'note' | 'task' | 'table' | 'calendar' | 'draw' | 'selection_menu';
+  type: 'note' | 'task' | 'table' | 'calendar' | 'draw' | 'selectionMenu';
   position: { x: number; y: number };
   data: any;
-  view_width: number;
-  view_height: number;
-  edit_width: number;
-  edit_height: number;
+  viewWidth: number;
+  viewHeight: number;
+  editWidth: number;
+  editHeight: number;
   isEditing: boolean;
   draggable: boolean;
   connectable: boolean;
-  background_color?: string;
-  text_color?: string;
+  backgroundColor?: string;
+  textColor?: string;
   tags?: string[];
-  attached_files?: string[];
-  parent_node_id?: string | null;
-  z_index?: number;
+  attachedFiles?: string[];
+  parentNodeId?: string | null;
+  zIndex?: number;
 }
 
 export interface Edge {
@@ -111,7 +111,7 @@ export const nodeTypesReducer = (
         ...state,
         nodes: state.nodes.map((node) =>
           node.id === action.payload.id
-            ? { ...node, color: action.payload.color }
+            ? { ...node, backgroundColor: action.payload.color }
             : node
         )
       };
@@ -122,8 +122,8 @@ export const nodeTypesReducer = (
           node.id === action.payload.id
             ? {
                 ...node,
-                view_width: action.payload.width,
-                view_height: action.payload.height
+                viewWidth: action.payload.width,
+                viewHeight: action.payload.height
               }
             : node
         )

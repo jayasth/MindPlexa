@@ -73,7 +73,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
 
   const updateNode = useNodeStore((state) => state.updateNode);
   const toggleEditMode = useNodeStore((state) => state.toggleEditMode);
-  const canvasId = useCanvasStore((state) => state.canvasID);
+  const canvasId = useCanvasStore((state) => state.canvasId);
   const [size, setSize] = useState(
     getNodeSpecificProperties(
       node?.type || 'note',

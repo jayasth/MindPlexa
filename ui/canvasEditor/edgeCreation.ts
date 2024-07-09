@@ -20,7 +20,7 @@ export const useEdgeConnection = () => {
 
   const { domNode, screenToFlowPosition } = useUIStore();
 
-  const { canvasID } = useCanvasStore();
+  const { canvasId } = useCanvasStore();
 
   const connectingNodeId = useRef<string | null>(null);
   const [parentNode, setParentNode] = useState(null);
@@ -65,7 +65,7 @@ export const useEdgeConnection = () => {
             handleTemporaryNodeCreation(
               parentNode,
               position,
-              'selection_menu',
+              'selectionMenu',
               (node, canvasId) => {
                 addNode(node, canvasId);
                 // Create the edge after the temporary node is added
@@ -74,18 +74,18 @@ export const useEdgeConnection = () => {
                   source: parentNode.id,
                   target: node.id,
                   type: 'customEdge',
-                  data: { canvas_id: canvasId }
+                  data: { canvasId }
                 };
                 addEdge(newEdge);
                 createEdge({
-                  source_node_id: parentNode.id,
-                  target_node_id: node.id,
-                  canvas_id: canvasId
+                  sourceNodeId: parentNode.id,
+                  targetNodeId: node.id,
+                  canvasId
                 });
               },
-              (id) => removeNode(id, canvasID),
+              (id) => removeNode(id, canvasId),
               nodes,
-              canvasID
+              canvasId
             );
           }
         }
@@ -99,7 +99,7 @@ export const useEdgeConnection = () => {
             source: sourceNode.id,
             target: targetNode,
             type: 'customEdge',
-            data: { canvas_id: canvasID }
+            data: { canvasId }
           };
 
           console.log('onConnectEnd: Adding new edge between nodes:', newEdge);
@@ -107,9 +107,9 @@ export const useEdgeConnection = () => {
 
           try {
             const { data: createdEdge, error } = await createEdge({
-              source_node_id: sourceNode.id,
-              target_node_id: targetNode,
-              canvas_id: canvasID
+              sourceNodeId: sourceNode.id,
+              targetNodeId: targetNode,
+              canvasId
             });
 
             if (error || !createdEdge) {
@@ -150,7 +150,7 @@ export const useEdgeConnection = () => {
       updateEdge,
       removeNode,
       nodes,
-      canvasID
+      canvasId
     ]
   );
 

@@ -42,7 +42,7 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
   } = useNodeStore();
 
   const { addEdge, edges, removeEdge, updateEdge, setEdges } = useEdgeStore();
-  const { canvasID } = useCanvasStore();
+  const { canvasId } = useCanvasStore();
 
   const nodeRef = useRef<HTMLDivElement>(null);
 
@@ -75,8 +75,8 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({
       data.id,
       tempNode.position,
       edges,
-      (updatedNode) => updateLocalNode(data.id, updatedNode, canvasID),
-      canvasID
+      (updatedNode) => updateLocalNode(data.id, updatedNode, canvasId),
+      canvasId
     );
   };
 

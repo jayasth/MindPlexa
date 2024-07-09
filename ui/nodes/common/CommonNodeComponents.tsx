@@ -129,7 +129,7 @@ export const FileModal = ({
   const [fileUrl, setFileUrl] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const updateNode = useNodeStore((state) => state.updateNode);
-  const canvasID = useCanvasStore((state) => state.canvasID);
+  const canvasId = useCanvasStore((state) => state.canvasId);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -165,7 +165,7 @@ export const FileModal = ({
           {
             data: { attachedFiles: allFiles }
           },
-          canvasID
+          canvasId
         );
         setFileUrl('');
       } catch (e) {
@@ -180,7 +180,7 @@ export const FileModal = ({
       {
         data: { attachedFiles: updatedFiles }
       },
-      canvasID
+      canvasId
     );
     onRemoveFile(fileToRemove);
   };

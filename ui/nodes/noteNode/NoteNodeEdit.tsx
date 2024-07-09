@@ -214,7 +214,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
 
   const onChangeTitle = useCallback(
     (newTitle: string) => {
-      handleTitleChange(data.id, newTitle, setTitle);
+      handleTitleChange(data.id, newTitle, setTitle, data.id);
     },
     [data.id]
   );
@@ -223,7 +223,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     (newTags: string[]) => {
       const uniqueTags = Array.from(new Set([...tags, ...newTags]));
       setTags(uniqueTags);
-      handleAddTag(data.id, uniqueTags, () => {});
+      handleAddTag(data.id, uniqueTags, () => {}, data.id);
     },
     [data.id, tags]
   );
@@ -232,7 +232,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     (tagToRemove: string) => {
       const updatedTags = tags.filter((tag) => tag !== tagToRemove);
       setTags(updatedTags);
-      handleAddTag(data.id, updatedTags, () => {});
+      handleAddTag(data.id, updatedTags, () => {}, data.id);
     },
     [data.id, tags]
   );
@@ -243,7 +243,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
 
   const onRemoveFile = useCallback(
     (fileToRemove: string) => {
-      handleRemoveAttachedFile(data.id, fileToRemove, () => {});
+      handleRemoveAttachedFile(data.id, fileToRemove, () => {}, data.id);
     },
     [data.id]
   );
@@ -356,7 +356,9 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
           style={{ color: textColor }}
         />
         <CloseButton
-          onClick={() => handleClose(data.id, () => {}, title, content)}
+          onClick={() =>
+            handleClose(data.id, () => {}, title, content, data.id)
+          }
         />
       </div>
       <div
@@ -368,11 +370,13 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         memoizedTagFileContainer}
       <div className={styles.footer}>
         <SaveButton onClick={handleSave} />
-        <DeleteButton onClick={() => handleDelete(data.id, () => {})} />
+        <DeleteButton
+          onClick={() => handleDelete(data.id, () => {}, data.id)}
+        />
         <ChangeColorButton onClick={toggleColorPicker} />
         <AddTagButton onClick={() => setIsTagModalOpen(true)} />
         <AttachFileButton onClick={() => setIsFileModalOpen(true)} />
-        <DuplicateButton onClick={() => handleDuplicate(data.id)} />
+        <DuplicateButton onClick={() => handleDuplicate(data.id, data.id)} />
         <ColorPickerModal
           isOpen={isColorPickerVisible}
           onClose={() => setIsColorPickerVisible(false)}

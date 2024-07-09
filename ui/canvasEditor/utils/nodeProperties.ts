@@ -10,7 +10,7 @@ interface EditableNodeDimension {
 type NodeDimensionTypes = {
   [K in 'note' | 'task' | 'table' | 'calendar' | 'draw']: EditableNodeDimension;
 } & {
-  [K in 'selection_menu']: { width: number; height: number };
+  [K in 'selectionMenu']: { width: number; height: number };
 };
 
 export const nodeDimensions: NodeDimensionTypes = {
@@ -54,7 +54,7 @@ export const nodeDimensions: NodeDimensionTypes = {
     mobileEditWidth: 300,
     mobileEditHeight: 450
   },
-  selection_menu: { width: 200, height: 50 }
+  selectionMenu: { width: 200, height: 50 }
 };
 
 export const getNodeDimensions = (

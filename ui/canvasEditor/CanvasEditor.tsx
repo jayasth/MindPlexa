@@ -62,7 +62,7 @@ export default function CanvasEditor({ canvasId }) {
 
   const { setDomNode, domNode, isLoading, setIsLoading } = useUIStore();
 
-  const { canvasID, setCanvasId, saveCanvas, loadCanvas } = useCanvasStore();
+  const { canvasId, setCanvasId, saveCanvas, loadCanvas } = useCanvasStore();
 
   useEffect(() => {
     if (canvasId && !isLoading) {
@@ -213,9 +213,9 @@ export default function CanvasEditor({ canvasId }) {
           ...connection,
           id: `e-${uuidv4()}`,
           type: 'customEdge',
-          source_node_id: connection.source,
-          target_node_id: connection.target,
-          canvas_id: canvasID
+          sourceNodeId: connection.source,
+          targetNodeId: connection.target,
+          canvasId: canvasId
         };
         addEdge(newEdge);
         reactFlowInstance.current?.fitView({ padding: 0.2 });
@@ -223,7 +223,7 @@ export default function CanvasEditor({ canvasId }) {
         console.error('Failed to create edge:', error);
       }
     },
-    [addEdge, canvasID]
+    [addEdge, canvasId]
   );
 
   const handleTemporaryNodeCreationWithStore = useCallback(
@@ -237,16 +237,16 @@ export default function CanvasEditor({ canvasId }) {
           parentNode,
           position,
           nodeType,
-          (node) => addNode(node, canvasID),
-          (id) => removeNode(id, canvasID),
+          (node) => addNode(node, canvasId),
+          (id) => removeNode(id, canvasId),
           nodes,
-          canvasID
+          canvasId
         );
       } catch (error) {
         console.error('Failed to create temporary node:', error);
       }
     },
-    [addNode, addEdge, removeNode, nodes, canvasID]
+    [addNode, addEdge, removeNode, nodes, canvasId]
   );
 
   useEffect(() => {

@@ -2,6 +2,7 @@ import { createClient } from '@/utils/supabase/supabaseClient';
 import { Database } from '@/types_db';
 import { useRouter } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
+import { toCamelCase, toSnakeCase } from '@/utils/caseConversion';
 
 const supabase = createClient();
 
@@ -16,13 +17,14 @@ export const createCanvas = async (
   if (canvasTitle.trim() !== '') {
     const insertResponse = await supabase
       .from('canvases')
-      .insert({ id: uuidv4(), name: canvasTitle });
+      .insert(toSnakeCase({ id: uuidv4(), name: canvasTitle }));
 
     const { data, error } = await supabase
       .from('canvases')
       .select('*')
       .order('created_at', { ascending: false })
-      .limit(1);
+      .limit(1)
+      .then(({ data, error }) => ({ data: toCamelCase(data), error }));
 
     if (error) {
       console.error('canvasService: Error fetching canvas:', error);
@@ -147,7 +149,8 @@ export const fetchCanvas = async (
         edges(*)
       `
       )
-      .eq('id', canvasId);
+      .eq('id', canvasId)
+      .then(({ data, error }) => ({ data: toCamelCase(data), error }));
 
     if (error) {
       return { error };
@@ -234,7 +237,8 @@ const deleteNonSharedNodes = async (nodeIds: string[]) => {
       .from('nodes')
       .select('type')
       .eq('id', nodeId)
-      .single();
+      .single()
+      .then(({ data, error }) => ({ data: toCamelCase(data), error }));
 
     if (nodeError) {
       console.error('canvasService: Error fetching node type:', nodeError);
@@ -298,7 +302,7 @@ const upsertNodes = async (
 
     const { error: nodeUpsertError } = await supabase
       .from('nodes')
-      .upsert({ id, type, ...nodeProperties });
+      .upsert(toSnakeCase({ id, type, ...nodeProperties }));
 
     if (nodeUpsertError) {
       console.error('canvasService: Error upserting node:', nodeUpsertError);
@@ -340,7 +344,8 @@ const upsertNodes = async (
         .from(tableName)
         .select('id')
         .eq('node_id', id)
-        .single();
+        .single()
+        .then(({ data, error }) => ({ data: toCamelCase(data), error }));
 
       if (fetchError && fetchError.code !== 'PGRST116') {
         console.error(
@@ -356,7 +361,7 @@ const upsertNodes = async (
 
       const { error: specificNodeUpsertError } = await supabase
         .from(tableName)
-        .upsert(upsertData);
+        .upsert(toSnakeCase(upsertData));
 
       if (specificNodeUpsertError) {
         console.error(
@@ -369,7 +374,7 @@ const upsertNodes = async (
 
     const { error: linkUpsertError } = await supabase
       .from('node_canvas_link')
-      .upsert({ node_id: id, canvas_id: canvasId });
+      .upsert(toSnakeCase({ node_id: id, canvas_id: canvasId }));
 
     if (linkUpsertError) {
       console.error(
@@ -388,7 +393,9 @@ const upsertEdges = async (
   const { error: edgesUpsertError } = await supabase
     .from('edges')
     .upsert(
-      edges.map((edge) => ({ id: uuidv4(), ...edge, canvas_id: canvasId }))
+      edges.map((edge) =>
+        toSnakeCase({ id: uuidv4(), ...edge, canvas_id: canvasId })
+      )
     );
 
   if (edgesUpsertError) {
@@ -404,6 +411,7 @@ const fetchSpecificNodeData = async (nodeIds: string[]) => {
       .from(`${type}_nodes` as keyof Database['public']['Tables'])
       .select('*')
       .in('node_id', nodeIds)
+      .then(({ data, error }) => ({ data: toCamelCase(data), error }))
   );
 
   const nodeDataResults = await Promise.all(nodeDataPromises);

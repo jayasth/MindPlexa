@@ -28,7 +28,7 @@ const AIAssistanceModal: React.FC<AIAssistanceModalProps> = ({ onClose }) => {
   const { setNodes } = useNodeStore();
   const { setEdges } = useEdgeStore();
   const { isLoading: uiIsLoading, setIsLoading } = useUIStore();
-  const { canvasID } = useCanvasStore();
+  const { canvasId } = useCanvasStore();
 
   const handleTopicChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setTopic(e.target.value);

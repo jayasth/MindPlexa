@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/supabaseClient';
 import { Database } from '@/types_db';
 import { v4 as uuidv4 } from 'uuid';
+import { toCamelCase, toSnakeCase } from '@/utils/caseConversion';
 
 const supabase = createClient();
 
@@ -9,7 +10,12 @@ const supabase = createClient();
 const insertEdge = async (
   edge: Database['public']['Tables']['edges']['Insert']
 ) => {
-  return await supabase.from('edges').insert([edge]).select().single();
+  return await supabase
+    .from('edges')
+    .insert([toSnakeCase(edge)])
+    .select()
+    .single()
+    .then(({ data, error }) => ({ data: toCamelCase(data), error }));
 };
 
 const updateEdgeInTable = async (
@@ -18,22 +24,26 @@ const updateEdgeInTable = async (
 ) => {
   return await supabase
     .from('edges')
-    .update(updates)
+    .update(toSnakeCase(updates))
     .eq('id', id)
     .select()
-    .single();
+    .single()
+    .then(({ data, error }) => ({ data: toCamelCase(data), error }));
 };
 
 const deleteEdgeFromTable = async (id: string) => {
   return await supabase.from('edges').delete().eq('id', id);
 };
 
-export const createEdge = async (
-  edge: Omit<Database['public']['Tables']['edges']['Insert'], 'id'>
-): Promise<{ data?: { id: string }; error?: any }> => {
+export const createEdge = async (edge: {
+  sourceNodeId: string;
+  targetNodeId: string;
+  canvasId: string;
+  // Add other properties as needed
+}): Promise<{ data?: { id: string }; error?: any }> => {
   console.log('edgeService: Creating edge:', edge);
 
-  const edgeWithId = { ...edge, id: uuidv4() };
+  const edgeWithId = { ...toSnakeCase(edge), id: uuidv4() };
   try {
     const { data, error } = await insertEdge(edgeWithId);
 
@@ -61,10 +71,10 @@ export const createEdgeBetweenNodes = async (
     canvasId
   });
 
-  const newEdge: Omit<Database['public']['Tables']['edges']['Insert'], 'id'> = {
-    source_node_id: sourceNodeId,
-    target_node_id: targetNodeId,
-    canvas_id: canvasId
+  const newEdge = {
+    sourceNodeId,
+    targetNodeId,
+    canvasId
   };
 
   return await createEdge(newEdge);
