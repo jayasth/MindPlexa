@@ -132,7 +132,6 @@ export type Database = {
         Row: {
           canvas_id: string | null
           created_at: string | null
-          data: Json | null
           id: string
           source_node_id: string | null
           target_node_id: string | null
@@ -141,7 +140,6 @@ export type Database = {
         Insert: {
           canvas_id?: string | null
           created_at?: string | null
-          data?: Json | null
           id?: string
           source_node_id?: string | null
           target_node_id?: string | null
@@ -150,7 +148,6 @@ export type Database = {
         Update: {
           canvas_id?: string | null
           created_at?: string | null
-          data?: Json | null
           id?: string
           source_node_id?: string | null
           target_node_id?: string | null

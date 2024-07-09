@@ -3,27 +3,31 @@ import type { Json } from '@/types_db';
 export interface Node {
   id: string;
   type: 'note' | 'task' | 'table' | 'calendar' | 'draw' | 'selection_menu';
-  position: { x: number; y: number };
-  data: any;
-  viewWidth: number;
-  viewHeight: number;
-  editWidth: number;
-  editHeight: number;
-  isEditing: boolean;
-  draggable: boolean;
-  connectable: boolean;
-  backgroundColor?: string;
-  textColor?: string;
-  tags?: string[];
-  attachedFiles?: string[];
+  position: Json | null;
+  data: Json | null;
+  viewWidth: number | null;
+  viewHeight: number | null;
+  editWidth: number | null;
+  editHeight: number | null;
+  mobileEditHeight?: number | null;
+  mobileEditWidth?: number | null;
+  isEditing: boolean | null;
+  backgroundColor?: string | null;
+  textColor?: string | null;
   parentNodeId?: string | null;
-  zIndex?: number;
+  zIndex?: number | null;
+  createdAt?: string | null;
+  updatedAt?: string | null;
+  version?: number | null;
+  isTemporary?: boolean | null;
+
+  title?: string | null;
 }
 
 export interface Edge {
   id: string;
-  source: string;
-  target: string;
+  sourceNodeId: string | null;
+  targetNodeId: string | null;
 }
 
 export interface NoteNode extends Node {
@@ -31,22 +35,21 @@ export interface NoteNode extends Node {
 }
 
 export interface TaskNode extends Node {
-  task: string | null;
-  completed: boolean | null;
+  tasks: Json | null;
 }
 
 export interface TableNode extends Node {
-  title: string;
-  data: Json | null;
+  columns: Json | null;
+  rows: Json | null;
 }
 
 export interface CalendarNode extends Node {
-  date: string | null;
-  language: string | null;
+  events: Json | null;
+  view: string | null;
 }
 
 export interface DrawNode extends Node {
-  data: Json | null;
+  drawingData: string | null;
 }
 
 export interface NodeTypesState {
@@ -132,8 +135,8 @@ export const nodeTypesReducer = (
       return {
         ...state,
         nodes: state.nodes.map((node) =>
-          node.id === action.payload && 'completed' in node
-            ? { ...node, completed: !node.completed }
+          node.id === action.payload && 'tasks' in node
+            ? { ...node, tasks: !node.tasks }
             : node
         )
       };

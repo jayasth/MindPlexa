@@ -90,7 +90,14 @@ const useNodeStore = create<NodeState>()(
                 editWidth: updatedNode.data.editWidth,
                 editHeight: updatedNode.data.editHeight,
                 mobileEditWidth: updatedNode.data.mobileEditWidth,
-                mobileEditHeight: updatedNode.data.mobileEditHeight
+                mobileEditHeight: updatedNode.data.mobileEditHeight,
+                parentNodeId: updatedNode.data.parentNodeId,
+                viewWidth: updatedNode.data.viewWidth,
+                viewHeight: updatedNode.data.viewHeight,
+                isTemporary: updatedNode.data.isTemporary,
+                createdAt: updatedNode.data.createdAt,
+                updatedAt: updatedNode.data.updatedAt,
+                version: updatedNode.data.version
               };
               let specificUpdates: any = {};
               switch (existingNode.type) {
@@ -412,7 +419,14 @@ const useNodeStore = create<NodeState>()(
                     editWidth: updatedNode.data?.editWidth,
                     editHeight: updatedNode.data?.editHeight,
                     mobileEditWidth: updatedNode.data?.mobileEditWidth,
-                    mobileEditHeight: updatedNode.data?.mobileEditHeight
+                    mobileEditHeight: updatedNode.data?.mobileEditHeight,
+                    parentNodeId: updatedNode.data?.parentNodeId,
+                    viewWidth: updatedNode.data?.viewWidth,
+                    viewHeight: updatedNode.data?.viewHeight,
+                    isTemporary: updatedNode.data?.isTemporary,
+                    createdAt: updatedNode.data?.createdAt,
+                    updatedAt: updatedNode.data?.updatedAt,
+                    version: updatedNode.data?.version
                   };
 
                   // Prepare specific updates based on node type
