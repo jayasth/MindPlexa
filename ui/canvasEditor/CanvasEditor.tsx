@@ -46,8 +46,7 @@ export default function CanvasEditor({ canvasId }) {
     height: window.innerHeight
   });
 
-  const { onConnectStart, onConnectEnd, parentNode, childNodePosition } =
-    useEdgeConnection();
+  const { onConnectStart, onConnectEnd } = useEdgeConnection();
 
   const {
     nodes,
@@ -175,7 +174,7 @@ export default function CanvasEditor({ canvasId }) {
         <NodeRenderer {...props} onNodeResizeStop={onNodeResizeStop} />
       )
     }),
-    [parentNode, childNodePosition, onNodeResizeStop]
+    [onNodeResizeStop]
   );
 
   const onSelectionChange = useCallback(
@@ -306,17 +305,8 @@ export default function CanvasEditor({ canvasId }) {
             onEdgesChange={onEdgesChange}
             onConnect={handleConnect}
             onConnectStart={onConnectStart}
+            onConnectEnd={onConnectEnd}
             disableKeyboardA11y={true}
-            onConnectEnd={(event) => {
-              onConnectEnd(event);
-              if (parentNode && childNodePosition) {
-                handleTemporaryNodeCreationWithStore(
-                  parentNode,
-                  childNodePosition,
-                  'selection_menu'
-                );
-              }
-            }}
             onNodeDragStop={onNodeDragStop}
             onSelectionChange={onSelectionChange}
             nodeTypes={nodeTypes}
