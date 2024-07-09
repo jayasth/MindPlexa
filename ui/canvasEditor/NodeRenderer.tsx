@@ -77,23 +77,25 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
   const [size, setSize] = useState(
     getNodeSpecificProperties(
       node?.type || 'note',
-      node?.data?.isEditing ?? false
+      (node?.data as any)?.isEditing ?? false
     )
   );
-  const [isEditing, setIsEditing] = useState(node?.data?.isEditing ?? false);
+  const [isEditing, setIsEditing] = useState(
+    (node?.data as any)?.isEditing ?? false
+  );
 
   useEffect(() => {
     if (node) {
       console.log(
-        `NodeRenderer: Node ID: ${id}, Type: ${node.type}, IsEditing: ${node.data?.isEditing}`
+        `NodeRenderer: Node ID: ${id}, Type: ${node.type}, IsEditing: ${(node.data as any)?.isEditing}`
       );
-      if (isEditing !== node.data?.isEditing) {
+      if (isEditing !== (node.data as any)?.isEditing) {
         const newSize = getNodeSpecificProperties(
           node.type,
-          node.data?.isEditing
+          (node.data as any)?.isEditing
         );
         setSize(newSize);
-        setIsEditing(node.data?.isEditing);
+        setIsEditing((node.data as any)?.isEditing);
       }
     } else {
       console.log(`NodeRenderer: Node not found, ID: ${id}`);
@@ -110,22 +112,35 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
       toggleEditMode(id);
       const newSize = getNodeSpecificProperties(
         node.type,
-        !node.data?.isEditing
+        !(node.data as any)?.isEditing
       );
       updateNode(
         id,
         {
           ...newSize,
           data: {
-            ...node.data,
-            isEditing: !node.data?.isEditing,
-            tags: node.data.tags || [],
-            attachedFiles: node.data.attachedFiles || []
+            ...(node.data as any),
+            isEditing: !(node.data as any)?.isEditing,
+            tags: (node.data as any).tags || [],
+            attachedFiles: (node.data as any).attachedFiles || []
           }
         },
         canvasId
       );
-      onNodeResizeStop(id, newSize, node.position);
+      if (
+        node.position &&
+        typeof node.position === 'object' &&
+        'x' in node.position &&
+        'y' in node.position
+      ) {
+        onNodeResizeStop(
+          id,
+          newSize,
+          node.position as { x: number; y: number }
+        );
+      } else {
+        console.error('Invalid node position:', node.position);
+      }
     }
   };
 
@@ -146,7 +161,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     height: size.height,
     selected: selected,
     onLabelChange: (label: string) =>
-      updateNode(id, { data: { ...node.data, label } }, canvasId),
+      updateNode(id, { data: { ...(node.data as any), label } }, canvasId),
     onEdit: handleEdit,
     onNodeResizeStop:
       node.type !== 'selection_menu' ? onNodeResizeStop : undefined
@@ -168,27 +183,27 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
 
     if (node.type === 'selection_menu') {
       NodeComponent = componentInfo.view;
-    } else if ('edit' in componentInfo && node.data?.isEditing) {
+    } else if ('edit' in componentInfo && (node.data as any)?.isEditing) {
       NodeComponent = componentInfo.edit;
     } else {
       NodeComponent = componentInfo.view;
     }
 
     console.log(
-      `NodeRenderer: Rendering node ID: ${id}, Type: ${node.type}, IsEditing: ${node.data?.isEditing}`
+      `NodeRenderer: Rendering node ID: ${id}, Type: ${node.type}, IsEditing: ${(node.data as any)?.isEditing}`
     );
 
     return (
       <NodeComponent
         {...commonProps}
         data={{
-          ...node.data,
+          ...(node.data as any),
           width: size.width,
           height: size.height,
-          backgroundColor: node.data.backgroundColor,
-          textColor: node.data.textColor,
+          backgroundColor: (node.data as any).backgroundColor,
+          textColor: (node.data as any).textColor,
           id: node.id,
-          isTemporary: node.data.isTemporary
+          isTemporary: (node.data as any).isTemporary
         }}
         selected={selected}
       />
