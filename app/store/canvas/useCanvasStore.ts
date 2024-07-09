@@ -99,6 +99,8 @@ const useCanvasStore = create<CanvasState>()(
         return;
       }
 
+      console.log('useCanvasStore: Node data before save:', nodes);
+
       const canvasData = {
         nodes: nodes.map((node) => ({
           id: node.id,
@@ -143,6 +145,7 @@ const useCanvasStore = create<CanvasState>()(
       }
 
       console.log('useCanvasStore: Canvas data saved successfully');
+      console.log('useCanvasStore: Node data after save:', nodes);
 
       // Update local state only after successful save
       useNodeStore.getState().setNodes(
@@ -167,6 +170,8 @@ const useCanvasStore = create<CanvasState>()(
           });
         })
       );
+
+      console.log('useCanvasStore: Node data after state update:', nodes);
     },
     loadCanvas: async (canvasId: string) => {
       if (get().isLoading) return;

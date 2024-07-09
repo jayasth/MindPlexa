@@ -59,6 +59,7 @@ const useNodeStore = create<NodeState>()(
     },
     updateNode: async (id, data, canvasId) => {
       try {
+        console.log('useNodeStore: Before updateNode', { id, data });
         set(
           produce((state: NodeState) => {
             const existingNodeIndex = state.nodes.findIndex(
@@ -142,6 +143,7 @@ const useNodeStore = create<NodeState>()(
             }
           })
         );
+        console.log('useNodeStore: After updateNode', get().nodes);
       } catch (error) {
         console.error('useNodeStore: Error updating node', error);
       }
@@ -341,6 +343,7 @@ const useNodeStore = create<NodeState>()(
     },
     onNodesChange: async (changes, canvasId) => {
       try {
+        console.log('useNodeStore: Before onNodesChange', get().nodes);
         set(
           produce((state: NodeState) => {
             const updatedNodes = state.nodes.map((node) => {
@@ -475,6 +478,7 @@ const useNodeStore = create<NodeState>()(
             state.nodeInternals = updatedNodeInternals;
           })
         );
+        console.log('useNodeStore: After onNodesChange', get().nodes);
       } catch (error) {
         console.error('useNodeStore: Error updating nodes', error);
       }
