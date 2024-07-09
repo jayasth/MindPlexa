@@ -2,6 +2,7 @@ import { createClient } from '@/utils/supabase/supabaseClient';
 import { Database } from '@/types_db';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 import { v4 as uuidv4 } from 'uuid';
+import { toCamelCase, toSnakeCase } from '@/utils/caseConversion';
 
 const supabase = createClient();
 
@@ -11,11 +12,12 @@ const insertSpecificNode = async (
   tableName: keyof Database['public']['Tables'],
   specificNodeInsert: any
 ) => {
-  return await supabase
+  const response = await supabase
     .from(tableName)
-    .insert([specificNodeInsert])
+    .insert([toSnakeCase(specificNodeInsert)])
     .select()
     .single();
+  return { data: toCamelCase(response.data), error: response.error };
 };
 
 const updateNodeInTable = async (
@@ -23,12 +25,13 @@ const updateNodeInTable = async (
   updates: any,
   id: string
 ) => {
-  return await supabase
+  const response = await supabase
     .from(tableName)
-    .update(updates)
+    .update(toSnakeCase(updates))
     .eq('node_id', id)
     .select()
     .single();
+  return { data: toCamelCase(response.data), error: response.error };
 };
 
 const deleteNodeFromTable = async (
@@ -45,24 +48,31 @@ const deleteNodeLink = async (nodeId: string) => {
 const insertCommonNodeProperties = async (
   nodeInsert: Database['public']['Tables']['nodes']['Insert']
 ) => {
-  return await supabase.from('nodes').insert([nodeInsert]).select().single();
+  const response = await supabase
+    .from('nodes')
+    .insert([toSnakeCase(nodeInsert)])
+    .select()
+    .single();
+  return { data: toCamelCase(response.data), error: response.error };
 };
 
 const insertNodeSpecificTable = async (
   tableName: keyof Database['public']['Tables'],
   specificNodeInsert: any
 ) => {
-  return await supabase
+  const response = await supabase
     .from(tableName)
-    .insert([specificNodeInsert])
+    .insert([toSnakeCase(specificNodeInsert)])
     .select()
     .single();
+  return { data: toCamelCase(response.data), error: response.error };
 };
 
 const insertNodeCanvasLink = async (nodeId: string, canvasId: string) => {
-  return await supabase
+  const response = await supabase
     .from('node_canvas_link')
-    .insert({ node_id: nodeId, canvas_id: canvasId });
+    .insert(toSnakeCase({ node_id: nodeId, canvas_id: canvasId }));
+  return { data: toCamelCase(response.data), error: response.error };
 };
 
 export const createNode = async (
@@ -238,12 +248,14 @@ export const updateNode = async (
   }
 
   // Update node in the nodes table
-  const { data: nodeData, error: nodeError } = await supabase
+  const response = await supabase
     .from('nodes')
-    .update(safeUpdates)
+    .update(toSnakeCase(safeUpdates))
     .eq('id', id)
     .select()
     .single();
+
+  const { data: nodeData, error: nodeError } = response;
 
   if (nodeError) {
     console.error('nodeService: Error updating node properties:', nodeError);
@@ -322,10 +334,12 @@ export const updateNode = async (
 
     console.log(`nodeService: ${nodeType} node updated:`, specificNodeData);
 
-    return { data: { ...nodeData, ...specificNodeData } };
+    return {
+      data: { ...toCamelCase(nodeData), ...toCamelCase(specificNodeData) }
+    };
   }
 
-  return { data: nodeData };
+  return { data: toCamelCase(nodeData) };
 };
 
 export const deleteNode = async (
