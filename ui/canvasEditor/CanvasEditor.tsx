@@ -133,18 +133,13 @@ export default function CanvasEditor({ canvasId }) {
       newPosition: { x: number; y: number }
     ) => {
       try {
-        const nodeType = node.type as
-          | 'note'
-          | 'task'
-          | 'table'
-          | 'calendar'
-          | 'draw'
-          | 'selection_menu';
-        updateNodeInStore(
-          node.id,
-          { ...newSize, position: newPosition },
-          node.data.canvasId
-        );
+        if (node.type !== 'selection_menu') {
+          updateNodeInStore(
+            node.id,
+            { ...newSize, position: newPosition },
+            node.data.canvasId
+          );
+        }
       } catch (error) {
         console.error('Failed to update node on resize:', error);
         // Optionally, show an error message to the user
@@ -170,9 +165,7 @@ export default function CanvasEditor({ canvasId }) {
       draw: (props) => (
         <NodeRenderer {...props} onNodeResizeStop={onNodeResizeStop} />
       ),
-      selection_menu: (props) => (
-        <NodeRenderer {...props} onNodeResizeStop={onNodeResizeStop} />
-      )
+      selection_menu: (props) => <NodeRenderer {...props} />
     }),
     [onNodeResizeStop]
   );
