@@ -49,12 +49,12 @@ const createEdge = async (
 };
 
 export const createNode = async (
-  nodeType: 'note' | 'task' | 'table' | 'calendar' | 'draw' | 'selectionMenu',
+  nodeType: 'note' | 'task' | 'table' | 'calendar' | 'draw' | 'selection_menu',
   position: XYPosition,
   nodes: Node<any>[],
   callback: (newNode: Node<any>) => void,
   canvasSize: { width: number; height: number },
-  isTemporary = nodeType === 'selectionMenu',
+  isTemporary = nodeType === 'selection_menu',
   isEditing = false,
   canvasId: string,
   parentNode?: Node<any> | null,
@@ -95,19 +95,19 @@ export const createNode = async (
         : null
   };
 
-  if (nodeType === 'selectionMenu') {
-    newNodeData.viewWidth = nodeDimensions.selectionMenu.width;
-    newNodeData.viewHeight = nodeDimensions.selectionMenu.height;
+  if (nodeType === 'selection_menu') {
+    newNodeData.viewWidth = nodeDimensions.selection_menu.width;
+    newNodeData.viewHeight = nodeDimensions.selection_menu.height;
   }
 
   try {
     const { data: createdNode, error } = await createNodeInDatabase(
       canvasId,
-      nodeType === 'selectionMenu' ? 'SelectionMenu' : nodeType,
+      nodeType === 'selection_menu' ? 'selection_menu' : nodeType,
       positionAsXYPosition,
       {
         ...newNodeData,
-        type: nodeType === 'selectionMenu' ? 'SelectionMenu' : nodeType
+        type: nodeType === 'selection_menu' ? 'selection_menu' : nodeType
       }
     );
 
@@ -145,7 +145,7 @@ export const createNode = async (
 export const handleTemporaryNodeCreation = async (
   parentNode: Node | null,
   position: XYPosition,
-  nodeType: 'selectionMenu',
+  nodeType: 'selection_menu',
   addNode: (node: Node, canvasId: string) => void,
   removeNode: (id: string) => void,
   nodes: Node[],
@@ -162,7 +162,7 @@ export const handleTemporaryNodeCreation = async (
     data: {
       onSelect: async (
         selectedNodeType:
-          | 'selectionMenu'
+          | 'selection_menu'
           | 'note'
           | 'task'
           | 'table'
@@ -181,8 +181,8 @@ export const handleTemporaryNodeCreation = async (
               console.log('TemporaryNodeHandler: Node added:', newNode);
             },
             {
-              width: nodeDimensions['selectionMenu'].width,
-              height: nodeDimensions['selectionMenu'].height
+              width: nodeDimensions['selection_menu'].width,
+              height: nodeDimensions['selection_menu'].height
             },
             true,
             false,
@@ -197,17 +197,17 @@ export const handleTemporaryNodeCreation = async (
       parentNode: parentNode,
       isTemporary: true
     },
-    width: nodeDimensions['selectionMenu'].width,
-    height: nodeDimensions['selectionMenu'].height
+    width: nodeDimensions['selection_menu'].width,
+    height: nodeDimensions['selection_menu'].height
   };
 
   console.log(
     'TemporaryNodeHandler: Node dimensions: ',
-    nodeDimensions['selectionMenu']
+    nodeDimensions['selection_menu']
   );
 
   await createNode(
-    'selectionMenu',
+    'selection_menu',
     position,
     nodes,
     (newNode) => {
@@ -215,8 +215,8 @@ export const handleTemporaryNodeCreation = async (
       console.log('TemporaryNodeHandler: Node added:', newNode);
     },
     {
-      width: nodeDimensions['selectionMenu'].width,
-      height: nodeDimensions['selectionMenu'].height
+      width: nodeDimensions['selection_menu'].width,
+      height: nodeDimensions['selection_menu'].height
     },
     true,
     false,
@@ -228,7 +228,7 @@ export const handleTemporaryNodeCreation = async (
 };
 
 export const replaceNodeWithType = async (
-  nodeType: 'note' | 'task' | 'table' | 'calendar' | 'draw' | 'selectionMenu',
+  nodeType: 'note' | 'task' | 'table' | 'calendar' | 'draw' | 'selection_menu',
   id: string,
   position: XYPosition,
   edges: any[],
@@ -264,10 +264,10 @@ export const replaceNodeWithType = async (
     id,
     {
       ...newNodeData,
-      type: nodeType === 'selectionMenu' ? 'SelectionMenu' : nodeType
+      type: nodeType === 'selection_menu' ? 'selection_menu' : nodeType
     },
     {},
-    nodeType === 'selectionMenu' ? 'SelectionMenu' : nodeType
+    nodeType === 'selection_menu' ? 'selection_menu' : nodeType
   );
 
   if (updateError) {

@@ -37,7 +37,7 @@ const defaultEdgeOptions = {
   type: 'customEdge'
 };
 
-export default function CanvasEditor({ canvasId }) {
+export default function CanvasEditor({ canvasId: initialCanvasId }) {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const reactFlowInstance = useRef<ReactFlowInstance | null>(null);
   const [showAIAssistanceModal, setShowAIAssistanceModal] = useState(false);
@@ -65,11 +65,11 @@ export default function CanvasEditor({ canvasId }) {
   const { canvasId, setCanvasId, saveCanvas, loadCanvas } = useCanvasStore();
 
   useEffect(() => {
-    if (canvasId && !isLoading) {
-      setCanvasId(canvasId);
-      loadCanvas(canvasId);
+    if (initialCanvasId && !isLoading) {
+      setCanvasId(initialCanvasId);
+      loadCanvas(initialCanvasId);
     }
-  }, [canvasId, setCanvasId, loadCanvas, isLoading]);
+  }, [initialCanvasId, setCanvasId, loadCanvas, isLoading]);
 
   useEffect(() => {
     const updateCanvasSize = () => {
@@ -133,7 +133,7 @@ export default function CanvasEditor({ canvasId }) {
       newPosition: { x: number; y: number }
     ) => {
       try {
-        if (node.type !== 'SelectionMenu') {
+        if (node.type !== 'selection_menu') {
           updateNodeInStore(
             node.id,
             { ...newSize, position: newPosition },
@@ -165,7 +165,7 @@ export default function CanvasEditor({ canvasId }) {
       draw: (props) => (
         <NodeRenderer {...props} onNodeResizeStop={onNodeResizeStop} />
       ),
-      SelectionMenu: (props) => <NodeRenderer {...props} />
+      selection_menu: (props) => <NodeRenderer {...props} />
     }),
     [onNodeResizeStop]
   );
@@ -215,7 +215,7 @@ export default function CanvasEditor({ canvasId }) {
           type: 'customEdge',
           sourceNodeId: connection.source,
           targetNodeId: connection.target,
-          canvasId: canvasId
+          canvasId: initialCanvasId
         };
         addEdge(newEdge);
         reactFlowInstance.current?.fitView({ padding: 0.2 });
@@ -223,30 +223,30 @@ export default function CanvasEditor({ canvasId }) {
         console.error('Failed to create edge:', error);
       }
     },
-    [addEdge, canvasId]
+    [addEdge, initialCanvasId]
   );
 
   const handleTemporaryNodeCreationWithStore = useCallback(
     (
       parentNode: Node | null,
       position: XYPosition,
-      nodeType: 'SelectionMenu'
+      nodeType: 'selection_menu'
     ) => {
       try {
         handleTemporaryNodeCreation(
           parentNode,
           position,
           nodeType,
-          (node) => addNode(node, canvasId),
-          (id) => removeNode(id, canvasId),
+          (node) => addNode(node, initialCanvasId),
+          (id) => removeNode(id, initialCanvasId),
           nodes,
-          canvasId
+          initialCanvasId
         );
       } catch (error) {
         console.error('Failed to create temporary node:', error);
       }
     },
-    [addNode, addEdge, removeNode, nodes, canvasId]
+    [addNode, addEdge, removeNode, nodes, initialCanvasId]
   );
 
   useEffect(() => {
@@ -277,7 +277,7 @@ export default function CanvasEditor({ canvasId }) {
       <ReactFlowProvider>
         <div className="p-2">
           <Toolbar
-            canvasId={canvasId}
+            canvasId={initialCanvasId}
             onUndo={() => console.log('Undo')}
             onRedo={() => console.log('Redo')}
             onShare={() => handleShare({ nodes, edges })}
@@ -294,7 +294,7 @@ export default function CanvasEditor({ canvasId }) {
           <ReactFlow
             nodes={nodes}
             edges={edges}
-            onNodesChange={(changes) => onNodesChange(changes, canvasId)}
+            onNodesChange={(changes) => onNodesChange(changes, initialCanvasId)}
             onEdgesChange={onEdgesChange}
             onConnect={handleConnect}
             onConnectStart={onConnectStart}

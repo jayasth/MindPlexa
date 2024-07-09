@@ -131,7 +131,7 @@ const useNodeStore = create<NodeState>()(
                   | 'table'
                   | 'calendar'
                   | 'draw'
-                  | 'SelectionMenu'
+                  | 'selection_menu'
               );
 
               state.nodeInternals.set(id, updatedNode);
@@ -159,7 +159,7 @@ const useNodeStore = create<NodeState>()(
                   | 'table'
                   | 'calendar'
                   | 'draw'
-                  | 'SelectionMenu'
+                  | 'selection_menu'
               );
               state.nodeInternals.delete(id);
               console.log('useNodeStore: Node removed', nodeToRemove);
@@ -246,7 +246,7 @@ const useNodeStore = create<NodeState>()(
         };
         await addNode(newNode, canvasId);
         setNodes((nodes) => [
-          ...nodes.filter((node) => node.type !== 'selectionMenu')
+          ...nodes.filter((node) => node.type !== 'selection_menu')
         ]);
         console.log('useNodeStore: Child node added', newNode);
       } catch (error) {
@@ -277,8 +277,8 @@ const useNodeStore = create<NodeState>()(
           return;
         }
         const newNode = {
-          id: `SelectionMenu-${uuidv4()}`,
-          type: 'SelectionMenu',
+          id: `selection_menu-${uuidv4()}`,
+          type: 'selection_menu',
           position: childNodePosition,
           data: {
             onSelect: async (
@@ -325,13 +325,13 @@ const useNodeStore = create<NodeState>()(
             parentNode: parentNode,
             isTemporary: true
           },
-          width: nodeDimensions['selectionMenu'].width,
-          height: nodeDimensions['selectionMenu'].height
+          width: nodeDimensions['selection_menu'].width,
+          height: nodeDimensions['selection_menu'].height
         };
         await addNode(newNode, canvasId);
         setNodes((nodes) => [
-          ...nodes.filter((node) => node.type !== 'selectionMenu'),
-          newNode // Include the newly created selectionMenu node
+          ...nodes.filter((node) => node.type !== 'selection_menu'),
+          newNode // Include the newly created selection_menu node
         ]);
         console.log('useNodeStore: Selection menu node added', newNode);
       } catch (error) {
@@ -459,7 +459,7 @@ const useNodeStore = create<NodeState>()(
                       | 'table'
                       | 'calendar'
                       | 'draw'
-                      | 'SelectionMenu'
+                      | 'selection_menu'
                   );
                 }
 

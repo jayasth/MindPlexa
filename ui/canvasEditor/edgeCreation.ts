@@ -65,7 +65,7 @@ export const useEdgeConnection = () => {
             handleTemporaryNodeCreation(
               parentNode,
               position,
-              'selectionMenu',
+              'selection_menu',
               (node, canvasId) => {
                 addNode(node, canvasId);
                 // Create the edge after the temporary node is added

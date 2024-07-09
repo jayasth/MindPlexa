@@ -59,7 +59,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
 
   const handleAddNode = useCallback(
     async (
-      type: 'note' | 'task' | 'table' | 'calendar' | 'draw' | 'SelectionMenu'
+      type: 'note' | 'task' | 'table' | 'calendar' | 'draw' | 'selection_menu'
     ) => {
       try {
         const canvasSize = {
@@ -85,7 +85,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
             }
           },
           canvasSize,
-          type === 'SelectionMenu', // isTemporary
+          type === 'selection_menu', // isTemporary
           false, // isEditing
           canvasId,
           undefined, // parentNode
@@ -143,7 +143,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
               <PiNetworkFill size={iconSize} />
             </button>
             <button
-              onClick={() => handleAddNode('SelectionMenu')}
+              onClick={() => handleAddNode('selection_menu')}
               className={buttonClass}
               title="Selection Menu"
             >

@@ -106,7 +106,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
   }
 
   const handleEdit = () => {
-    if (node.type !== 'SelectionMenu') {
+    if (node.type !== 'selection_menu') {
       toggleEditMode(id);
       const newSize = getNodeSpecificProperties(
         node.type,
@@ -149,7 +149,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
       updateNode(id, { data: { ...node.data, label } }, canvasId),
     onEdit: handleEdit,
     onNodeResizeStop:
-      node.type !== 'SelectionMenu' ? onNodeResizeStop : undefined
+      node.type !== 'selection_menu' ? onNodeResizeStop : undefined
   };
 
   const nodeComponents = {
@@ -158,7 +158,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     table: { view: TableNodeView, edit: TableNodeEdit },
     calendar: { view: CalendarNodeView, edit: CalendarNodeEdit },
     draw: { view: DrawNodeView, edit: DrawNodeEdit },
-    SelectionMenu: { view: NodeSelectionMenu }
+    selection_menu: { view: NodeSelectionMenu }
   };
 
   if (node.type in nodeComponents) {
@@ -166,7 +166,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
       nodeComponents[node.type as keyof typeof nodeComponents];
     let NodeComponent;
 
-    if (node.type === 'SelectionMenu') {
+    if (node.type === 'selection_menu') {
       NodeComponent = componentInfo.view;
     } else if ('edit' in componentInfo && node.data?.isEditing) {
       NodeComponent = componentInfo.edit;
