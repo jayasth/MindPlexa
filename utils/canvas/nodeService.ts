@@ -217,33 +217,38 @@ export const updateNode = async (
     specificUpdates
   });
 
-  const defaultDimensions = nodeDimensions[nodeType];
   const safeUpdates: Partial<Database['public']['Tables']['nodes']['Update']> =
     { ...updates };
-
-  // Handle dimensions
-  if ('viewWidth' in defaultDimensions) {
-    safeUpdates.view_width = defaultDimensions.viewWidth;
-  }
-  if ('viewHeight' in defaultDimensions) {
-    safeUpdates.view_height = defaultDimensions.viewHeight;
-  }
-  if ('editWidth' in defaultDimensions) {
-    safeUpdates.edit_width = defaultDimensions.editWidth;
-  }
-  if ('editHeight' in defaultDimensions) {
-    safeUpdates.edit_height = defaultDimensions.editHeight;
-  }
-  if ('mobileEditWidth' in defaultDimensions) {
-    safeUpdates.mobile_edit_width = defaultDimensions.mobileEditWidth;
-  }
-  if ('mobileEditHeight' in defaultDimensions) {
-    safeUpdates.mobile_edit_height = defaultDimensions.mobileEditHeight;
-  }
 
   // Handle position
   if (safeUpdates.position && typeof safeUpdates.position === 'object') {
     safeUpdates.position = JSON.stringify(safeUpdates.position);
+  }
+
+  // Remove view dimensions from updates as they should not be changed
+  delete safeUpdates.view_width;
+  delete safeUpdates.view_height;
+
+  // Only update edit dimensions if they are provided and the node is not a selection menu
+  if (nodeType !== 'selection_menu') {
+    if (safeUpdates.edit_width) {
+      safeUpdates.edit_width = safeUpdates.edit_width;
+    }
+    if (safeUpdates.edit_height) {
+      safeUpdates.edit_height = safeUpdates.edit_height;
+    }
+    if (safeUpdates.mobile_edit_width) {
+      safeUpdates.mobile_edit_width = safeUpdates.mobile_edit_width;
+    }
+    if (safeUpdates.mobile_edit_height) {
+      safeUpdates.mobile_edit_height = safeUpdates.mobile_edit_height;
+    }
+  } else {
+    // For selection menu, remove all dimension updates
+    delete safeUpdates.edit_width;
+    delete safeUpdates.edit_height;
+    delete safeUpdates.mobile_edit_width;
+    delete safeUpdates.mobile_edit_height;
   }
 
   // Update node in the nodes table

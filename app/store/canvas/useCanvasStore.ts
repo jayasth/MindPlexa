@@ -45,6 +45,17 @@ const processNode = (node: any, nodeData: any) => {
     position = { x: 200, y: 200 };
   }
 
+  const isDesktop = window.innerWidth >= 768; // Assuming 768px as the breakpoint
+
+  const dimensions = {
+    viewWidth: node.viewWidth,
+    viewHeight: node.viewHeight,
+    editWidth: node.editWidth,
+    editHeight: node.editHeight,
+    mobileEditWidth: node.mobileEditWidth,
+    mobileEditHeight: node.mobileEditHeight
+  };
+
   return {
     id: node.id,
     type: node.type,
@@ -55,10 +66,15 @@ const processNode = (node: any, nodeData: any) => {
       backgroundColor: node.backgroundColor,
       textColor: node.textColor,
       isTemporary: node.isTemporary,
-      isEditing: node.isEditing
+      isEditing: node.isEditing,
+      ...dimensions
     },
-    width: node.viewWidth,
-    height: node.viewHeight
+    width: node.isEditing
+      ? (isDesktop ? node.editWidth : node.mobileEditWidth) || node.viewWidth
+      : node.viewWidth,
+    height: node.isEditing
+      ? (isDesktop ? node.editHeight : node.mobileEditHeight) || node.viewHeight
+      : node.viewHeight
   };
 };
 
@@ -97,7 +113,6 @@ const useCanvasStore = create<CanvasState>()(
         const nodes = useNodeStore.getState().nodes;
         const edges = useEdgeStore.getState().edges;
 
-        // Check if it's too soon after loading or if the canvas is empty
         if (
           Date.now() - lastLoadTime < 2000 ||
           (nodes.length === 0 && edges.length === 0)
@@ -108,7 +123,6 @@ const useCanvasStore = create<CanvasState>()(
           return;
         }
 
-        // Check if there are any changes to save
         const hasChanges =
           nodes.some((node) => node.data?.isModified) ||
           edges.some((edge) => edge.data?.isModified);
@@ -117,7 +131,6 @@ const useCanvasStore = create<CanvasState>()(
           return;
         }
 
-        // Check if current nodes and edges are different from previous state
         if (
           JSON.stringify(nodes) === JSON.stringify(previousNodes) &&
           JSON.stringify(edges) === JSON.stringify(previousEdges)
@@ -138,12 +151,12 @@ const useCanvasStore = create<CanvasState>()(
             title: node.data?.title || '',
             backgroundColor: node.data?.backgroundColor || '#F4F4F4',
             textColor: node.data?.textColor || '#575757',
-            viewWidth: node.width || 80,
-            viewHeight: node.height || 150,
-            editWidth: node.data?.editWidth || null,
-            editHeight: node.data?.editHeight || null,
-            mobileEditWidth: node.data?.mobileEditWidth || null,
-            mobileEditHeight: node.data?.mobileEditHeight || null,
+            viewWidth: node.data?.viewWidth,
+            viewHeight: node.data?.viewHeight,
+            editWidth: node.data?.editWidth,
+            editHeight: node.data?.editHeight,
+            mobileEditWidth: node.data?.mobileEditWidth,
+            mobileEditHeight: node.data?.mobileEditHeight,
             isEditing: node.data?.isEditing || false,
             isTemporary: node.data?.isTemporary || false,
             parentNodeId: node.data?.parentNodeId || null,
@@ -176,7 +189,6 @@ const useCanvasStore = create<CanvasState>()(
         console.log('useCanvasStore: Canvas data saved successfully');
         console.log('useCanvasStore: Node data after save:', nodes);
 
-        // Update local state only after successful save
         useNodeStore.getState().setNodes(
           produce((nodes) => {
             nodes.forEach((node) => {
@@ -200,7 +212,6 @@ const useCanvasStore = create<CanvasState>()(
           })
         );
 
-        // Update previous nodes and edges state
         previousNodes = nodes;
         previousEdges = edges;
 

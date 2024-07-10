@@ -4,7 +4,8 @@ import { produce } from 'immer';
 import { v4 as uuidv4 } from 'uuid';
 import {
   updateNode as updateNodeInDB,
-  deleteNode as deleteNodeInDB
+  deleteNode as deleteNodeInDB,
+  createNode as createNodeInDB
 } from '@/utils/canvas/nodeService';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 import { getChildNodePosition } from '@/ui/canvasEditor/utils/getChildNodePosition';
@@ -92,8 +93,6 @@ const useNodeStore = create<NodeState>()(
                 mobileEditWidth: updatedNode.data.mobileEditWidth,
                 mobileEditHeight: updatedNode.data.mobileEditHeight,
                 parentNodeId: updatedNode.data.parentNodeId,
-                viewWidth: updatedNode.data.viewWidth,
-                viewHeight: updatedNode.data.viewHeight,
                 isTemporary: updatedNode.data.isTemporary,
                 version: updatedNode.data.version
               };
@@ -204,7 +203,7 @@ const useNodeStore = create<NodeState>()(
       set(
         produce((state: NodeState) => {
           const node = state.nodes.find((n) => n.id === nodeId);
-          if (node) {
+          if (node && node.type !== 'selection_menu') {
             const updatedNode = {
               ...node,
               data: {
@@ -242,12 +241,21 @@ const useNodeStore = create<NodeState>()(
         const newNode = {
           id: uuidv4(),
           type: type,
-          data: { label: 'New Node', parentId: parentNode.id },
-          position,
-          style: {
+          data: {
+            label: 'New Node',
+            parentId: parentNode.id,
             backgroundColor: '#F4F4F4',
-            color: '#575757'
-          }
+            textColor: '#575757',
+            isEditing: false,
+            isTemporary: false,
+            viewWidth: nodeDimensions[type].width,
+            viewHeight: nodeDimensions[type].height,
+            editWidth: nodeDimensions[type].editWidth,
+            editHeight: nodeDimensions[type].editHeight,
+            mobileEditWidth: nodeDimensions[type].mobileEditWidth,
+            mobileEditHeight: nodeDimensions[type].mobileEditHeight
+          },
+          position
         };
         await addNode(newNode, canvasId);
         setNodes((nodes) => [
@@ -295,7 +303,22 @@ const useNodeStore = create<NodeState>()(
                   id: uuidv4(),
                   type: selectedNodeType,
                   position: selectedPosition,
-                  data: { label: 'New Node', parentId: parentNode.id }
+                  data: {
+                    label: 'New Node',
+                    parentId: parentNode.id,
+                    backgroundColor: '#F4F4F4',
+                    textColor: '#575757',
+                    isEditing: false,
+                    isTemporary: false,
+                    viewWidth: nodeDimensions[selectedNodeType].width,
+                    viewHeight: nodeDimensions[selectedNodeType].height,
+                    editWidth: nodeDimensions[selectedNodeType].editWidth,
+                    editHeight: nodeDimensions[selectedNodeType].editHeight,
+                    mobileEditWidth:
+                      nodeDimensions[selectedNodeType].mobileEditWidth,
+                    mobileEditHeight:
+                      nodeDimensions[selectedNodeType].mobileEditHeight
+                  }
                 };
                 await addNode(createdNode, canvasId);
                 await removeNode(newNode.id, canvasId);
@@ -328,10 +351,10 @@ const useNodeStore = create<NodeState>()(
               }
             },
             parentNode: parentNode,
-            isTemporary: true
-          },
-          viewWidth: nodeDimensions['selection_menu'].width,
-          viewHeight: nodeDimensions['selection_menu'].height
+            isTemporary: true,
+            viewWidth: nodeDimensions['selection_menu'].width,
+            viewHeight: nodeDimensions['selection_menu'].height
+          }
         };
         await addNode(newNode, canvasId);
         setNodes((nodes) => [
@@ -371,16 +394,25 @@ const useNodeStore = create<NodeState>()(
                     break;
                   case 'dimensions':
                     if (
-                      updatedNode.width !== change.dimensions.width ||
-                      updatedNode.height !== change.dimensions.height
+                      updatedNode.data.isEditing &&
+                      updatedNode.type !== 'selection_menu' &&
+                      (updatedNode.data.editWidth !== change.dimensions.width ||
+                        updatedNode.data.editHeight !==
+                          change.dimensions.height)
                     ) {
+                      const isDesktop = window.innerWidth >= 768; // Assuming 768px as the breakpoint
+                      const dimensionKey = isDesktop ? 'edit' : 'mobileEdit';
                       updatedNode = {
                         ...updatedNode,
-                        width: change.dimensions.width,
-                        height: change.dimensions.height
+                        data: {
+                          ...updatedNode.data,
+                          editWidth: change.dimensions.width,
+                          editHeight: change.dimensions.height
+                        }
                       };
-                      changedProperties['width'] = change.dimensions.width;
-                      changedProperties['height'] = change.dimensions.height;
+                      changedProperties['editWidth'] = change.dimensions.width;
+                      changedProperties['editHeight'] =
+                        change.dimensions.height;
                       hasChanges = true;
                     }
                     break;

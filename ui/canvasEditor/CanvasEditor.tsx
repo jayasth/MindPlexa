@@ -134,11 +134,16 @@ export default function CanvasEditor({ canvasId: initialCanvasId }) {
     ) => {
       try {
         if (node.type !== 'selection_menu') {
-          updateNodeInStore(
-            node.id,
-            { ...newSize, position: newPosition },
-            node.data.canvasId
-          );
+          const updates = {
+            position: newPosition,
+            ...(window.innerWidth <= 768
+              ? {
+                  mobileEditWidth: newSize.width,
+                  mobileEditHeight: newSize.height
+                }
+              : { editWidth: newSize.width, editHeight: newSize.height })
+          };
+          updateNodeInStore(node.id, updates, node.data.canvasId);
         }
       } catch (error) {
         console.error('Failed to update node on resize:', error);
