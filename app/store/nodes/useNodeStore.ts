@@ -4,8 +4,7 @@ import { produce } from 'immer';
 import { v4 as uuidv4 } from 'uuid';
 import {
   updateNode as updateNodeInDB,
-  deleteNode as deleteNodeInDB,
-  createNode as createNodeInDB
+  deleteNode as deleteNodeInDB
 } from '@/utils/canvas/nodeService';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 import { getChildNodePosition } from '@/ui/canvasEditor/utils/getChildNodePosition';
@@ -241,21 +240,12 @@ const useNodeStore = create<NodeState>()(
         const newNode = {
           id: uuidv4(),
           type: type,
-          data: {
-            label: 'New Node',
-            parentId: parentNode.id,
+          data: { label: 'New Node', parentId: parentNode.id },
+          position,
+          style: {
             backgroundColor: '#F4F4F4',
-            textColor: '#575757',
-            isEditing: false,
-            isTemporary: false,
-            viewWidth: nodeDimensions[type].width,
-            viewHeight: nodeDimensions[type].height,
-            editWidth: nodeDimensions[type].editWidth,
-            editHeight: nodeDimensions[type].editHeight,
-            mobileEditWidth: nodeDimensions[type].mobileEditWidth,
-            mobileEditHeight: nodeDimensions[type].mobileEditHeight
-          },
-          position
+            color: '#575757'
+          }
         };
         await addNode(newNode, canvasId);
         setNodes((nodes) => [
@@ -351,10 +341,10 @@ const useNodeStore = create<NodeState>()(
               }
             },
             parentNode: parentNode,
-            isTemporary: true,
-            viewWidth: nodeDimensions['selection_menu'].width,
-            viewHeight: nodeDimensions['selection_menu'].height
-          }
+            isTemporary: true
+          },
+          viewWidth: nodeDimensions['selection_menu'].width,
+          viewHeight: nodeDimensions['selection_menu'].height
         };
         await addNode(newNode, canvasId);
         setNodes((nodes) => [
@@ -394,25 +384,16 @@ const useNodeStore = create<NodeState>()(
                     break;
                   case 'dimensions':
                     if (
-                      updatedNode.data.isEditing &&
-                      updatedNode.type !== 'selection_menu' &&
-                      (updatedNode.data.editWidth !== change.dimensions.width ||
-                        updatedNode.data.editHeight !==
-                          change.dimensions.height)
+                      updatedNode.width !== change.dimensions.width ||
+                      updatedNode.height !== change.dimensions.height
                     ) {
-                      const isDesktop = window.innerWidth >= 768; // Assuming 768px as the breakpoint
-                      const dimensionKey = isDesktop ? 'edit' : 'mobileEdit';
                       updatedNode = {
                         ...updatedNode,
-                        data: {
-                          ...updatedNode.data,
-                          editWidth: change.dimensions.width,
-                          editHeight: change.dimensions.height
-                        }
+                        width: change.dimensions.width,
+                        height: change.dimensions.height
                       };
-                      changedProperties['editWidth'] = change.dimensions.width;
-                      changedProperties['editHeight'] =
-                        change.dimensions.height;
+                      changedProperties['width'] = change.dimensions.width;
+                      changedProperties['height'] = change.dimensions.height;
                       hasChanges = true;
                     }
                     break;
