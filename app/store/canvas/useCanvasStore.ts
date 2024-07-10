@@ -69,155 +69,186 @@ const processEdge = (edge: any) => ({
   type: 'customEdge'
 });
 
+const processNodeData = (nodeCanvasLink: any, nodeData: any) => {
+  return (
+    nodeCanvasLink
+      ?.map((link: any) => processNode(link.nodes, nodeData))
+      .filter((node: any): node is Node => node !== null) || []
+  );
+};
+
+const processEdgeData = (edges: any) => {
+  return edges?.map(processEdge) || [];
+};
+
 const useCanvasStore = create<CanvasState>()(
-  devtools((set, get) => ({
-    canvasId: uuidv4(),
-    isLoading: false,
-    lastLoadTime: 0,
-    setCanvasId: (id) => set({ canvasId: id }),
-    saveCanvas: async () => {
-      if (get().isLoading || get().saveCanvasTimeout) return;
-      const { canvasId, lastLoadTime } = get();
-      const nodes = useNodeStore.getState().nodes;
-      const edges = useEdgeStore.getState().edges;
+  devtools((set, get) => {
+    let previousNodes: Node[] = [];
+    let previousEdges: any[] = [];
 
-      if (
-        Date.now() - lastLoadTime < 2000 ||
-        (nodes.length === 0 && edges.length === 0)
-      ) {
-        console.log(
-          'useCanvasStore: Skipping save due to recent load or empty canvas'
-        );
-        return;
-      }
+    return {
+      canvasId: uuidv4(),
+      isLoading: false,
+      lastLoadTime: 0,
+      setCanvasId: (id) => set({ canvasId: id }),
+      saveCanvas: async () => {
+        if (get().isLoading || get().saveCanvasTimeout) return;
+        const { canvasId, lastLoadTime } = get();
+        const nodes = useNodeStore.getState().nodes;
+        const edges = useEdgeStore.getState().edges;
 
-      const hasChanges =
-        nodes.some((node) => node.data?.isModified) ||
-        edges.some((edge) => edge.data?.isModified);
-      if (!hasChanges) {
-        console.log('useCanvasStore: No changes detected, skipping save');
-        return;
-      }
-
-      console.log('useCanvasStore: Node data before save:', nodes);
-
-      const canvasData = {
-        nodes: nodes.map((node) => ({
-          id: node.id,
-          type: node.type,
-          position: JSON.stringify(node.position),
-          title: node.data?.title || '',
-          backgroundColor: node.data?.backgroundColor || '#F4F4F4',
-          textColor: node.data?.textColor || '#575757',
-          viewWidth: node.width || 80,
-          viewHeight: node.height || 150,
-          editWidth: node.data?.editWidth || null,
-          editHeight: node.data?.editHeight || null,
-          mobileEditWidth: node.data?.mobileEditWidth || null,
-          mobileEditHeight: node.data?.mobileEditHeight || null,
-          isEditing: node.data?.isEditing || false,
-          isTemporary: node.data?.isTemporary || false,
-          parentNodeId: node.data?.parentNodeId || null,
-          zIndex: node.data?.zIndex || 0,
-          [node.type + 'Data']: node.data?.[node.type + 'Data'] || {}
-        })),
-        edges: edges.map((edge) => ({
-          id: edge.id,
-          sourceNodeId: edge.source,
-          targetNodeId: edge.target,
-          canvasId: canvasId
-        }))
-      };
-
-      console.log('useCanvasStore: Node data before save:', canvasData.nodes);
-
-      const result = await saveCanvasState(
-        canvasId,
-        canvasData.nodes as any,
-        canvasData.edges
-      );
-      if (result.error) {
-        console.error(
-          'useCanvasStore: Error saving canvas data:',
-          result.error
-        );
-        return;
-      }
-
-      console.log('useCanvasStore: Canvas data saved successfully');
-      console.log('useCanvasStore: Node data after save:', nodes);
-
-      // Update local state only after successful save
-      useNodeStore.getState().setNodes(
-        produce((nodes) => {
-          nodes.forEach((node) => {
-            const savedNode = canvasData.nodes.find((n) => n.id === node.id);
-            if (savedNode) {
-              Object.assign(node.data, savedNode);
-              node.data.isModified = false;
-            }
-          });
-        })
-      );
-      useEdgeStore.getState().setEdges(
-        produce((edges) => {
-          edges.forEach((edge) => {
-            const savedEdge = canvasData.edges.find((e) => e.id === edge.id);
-            if (savedEdge) {
-              Object.assign(edge.data, savedEdge);
-              edge.data.isModified = false;
-            }
-          });
-        })
-      );
-
-      console.log('useCanvasStore: Node data after state update:', nodes);
-    },
-    loadCanvas: async (canvasId: string) => {
-      if (get().isLoading) return;
-      set({ isLoading: true });
-      try {
-        const { data, nodeData, error } = await fetchCanvas(canvasId);
-
-        if (error) {
-          console.error('useCanvasStore: Error fetching canvas data:', error);
-          set({ isLoading: false });
+        // Check if it's too soon after loading or if the canvas is empty
+        if (
+          Date.now() - lastLoadTime < 2000 ||
+          (nodes.length === 0 && edges.length === 0)
+        ) {
+          console.log(
+            'useCanvasStore: Skipping save due to recent load or empty canvas'
+          );
           return;
         }
 
-        console.log('useCanvasStore: Fetched data:', data);
-        console.log('useCanvasStore: Fetched nodeData:', nodeData);
-
-        if (data) {
-          console.log('useCanvasStore: Loading existing canvas data');
-          const nodes =
-            data.nodeCanvasLink
-              ?.map((link) => processNode(link.nodes, nodeData))
-              .filter((node): node is Node => node !== null) || [];
-
-          console.log('useCanvasStore: Nodes after processing:', nodes);
-
-          const edges = data.edges?.map(processEdge) || [];
-
-          console.log('useCanvasStore: Edge data after load:', edges);
-
-          useNodeStore.getState().setNodes(nodes);
-          useNodeStore.getState().setInitialState(nodes);
-          useEdgeStore.getState().setEdges(edges);
-        } else {
-          console.log('useCanvasStore: Initializing new blank canvas');
-          useNodeStore.getState().setNodes([]);
-          useNodeStore.getState().setInitialState([]);
-          useEdgeStore.getState().setEdges([]);
+        // Check if there are any changes to save
+        const hasChanges =
+          nodes.some((node) => node.data?.isModified) ||
+          edges.some((edge) => edge.data?.isModified);
+        if (!hasChanges) {
+          console.log('useCanvasStore: No changes detected, skipping save');
+          return;
         }
 
-        set({ isLoading: false, lastLoadTime: Date.now() });
-      } catch (error) {
-        console.error('useCanvasStore: Error loading canvas:', error);
-        set({ isLoading: false });
+        // Check if current nodes and edges are different from previous state
+        if (
+          JSON.stringify(nodes) === JSON.stringify(previousNodes) &&
+          JSON.stringify(edges) === JSON.stringify(previousEdges)
+        ) {
+          console.log(
+            'useCanvasStore: No actual changes in nodes or edges, skipping save'
+          );
+          return;
+        }
+
+        console.log('useCanvasStore: Node data before save:', nodes);
+
+        const canvasData = {
+          nodes: nodes.map((node) => ({
+            id: node.id,
+            type: node.type,
+            position: JSON.stringify(node.position),
+            title: node.data?.title || '',
+            backgroundColor: node.data?.backgroundColor || '#F4F4F4',
+            textColor: node.data?.textColor || '#575757',
+            viewWidth: node.width || 80,
+            viewHeight: node.height || 150,
+            editWidth: node.data?.editWidth || null,
+            editHeight: node.data?.editHeight || null,
+            mobileEditWidth: node.data?.mobileEditWidth || null,
+            mobileEditHeight: node.data?.mobileEditHeight || null,
+            isEditing: node.data?.isEditing || false,
+            isTemporary: node.data?.isTemporary || false,
+            parentNodeId: node.data?.parentNodeId || null,
+            zIndex: node.data?.zIndex || 0,
+            [node.type + 'Data']: node.data?.[node.type + 'Data'] || {}
+          })),
+          edges: edges.map((edge) => ({
+            id: edge.id,
+            sourceNodeId: edge.source,
+            targetNodeId: edge.target,
+            canvasId: canvasId
+          }))
+        };
+
+        console.log('useCanvasStore: Node data before save:', canvasData.nodes);
+
+        const result = await saveCanvasState(
+          canvasId,
+          canvasData.nodes as any,
+          canvasData.edges
+        );
+        if (result.error) {
+          console.error(
+            'useCanvasStore: Error saving canvas data:',
+            result.error
+          );
+          return;
+        }
+
+        console.log('useCanvasStore: Canvas data saved successfully');
+        console.log('useCanvasStore: Node data after save:', nodes);
+
+        // Update local state only after successful save
+        useNodeStore.getState().setNodes(
+          produce((nodes) => {
+            nodes.forEach((node) => {
+              const savedNode = canvasData.nodes.find((n) => n.id === node.id);
+              if (savedNode) {
+                Object.assign(node.data, savedNode);
+                node.data.isModified = false;
+              }
+            });
+          })
+        );
+        useEdgeStore.getState().setEdges(
+          produce((edges) => {
+            edges.forEach((edge) => {
+              const savedEdge = canvasData.edges.find((e) => e.id === edge.id);
+              if (savedEdge) {
+                Object.assign(edge.data, savedEdge);
+                edge.data.isModified = false;
+              }
+            });
+          })
+        );
+
+        // Update previous nodes and edges state
+        previousNodes = nodes;
+        previousEdges = edges;
+
+        console.log('useCanvasStore: Node data after state update:', nodes);
+      },
+      loadCanvas: async (canvasId: string) => {
+        if (get().isLoading) return;
+        set({ isLoading: true });
+        try {
+          const { data, nodeData, error } = await fetchCanvas(canvasId);
+
+          if (error) {
+            console.error('useCanvasStore: Error fetching canvas data:', error);
+            set({ isLoading: false });
+            return;
+          }
+
+          console.log('useCanvasStore: Fetched data:', data);
+          console.log('useCanvasStore: Fetched nodeData:', nodeData);
+
+          if (data) {
+            console.log('useCanvasStore: Loading existing canvas data');
+            const nodes = processNodeData(data.nodeCanvasLink, nodeData);
+
+            console.log('useCanvasStore: Nodes after processing:', nodes);
+
+            const edges = processEdgeData(data.edges);
+
+            console.log('useCanvasStore: Edge data after load:', edges);
+
+            useNodeStore.getState().setNodes(nodes);
+            useNodeStore.getState().setInitialState(nodes);
+            useEdgeStore.getState().setEdges(edges);
+          } else {
+            console.log('useCanvasStore: Initializing new blank canvas');
+            useNodeStore.getState().setNodes([]);
+            useNodeStore.getState().setInitialState([]);
+            useEdgeStore.getState().setEdges([]);
+          }
+
+          set({ isLoading: false, lastLoadTime: Date.now() });
+        } catch (error) {
+          console.error('useCanvasStore: Error loading canvas:', error);
+          set({ isLoading: false });
+        }
       }
-    }
-  }))
+    };
+  })
 );
 
 export default useCanvasStore;
