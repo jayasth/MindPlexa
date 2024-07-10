@@ -62,7 +62,12 @@ export const createNode = async (
 ): Promise<void> => {
   const nodeId = temporaryNodeId || uuidv4();
   const nodeDimension = nodeDimensions[nodeType];
-  const positionAsXYPosition = findNewPosition(nodes, canvasSize);
+
+  // Use the provided position directly for selection_menu, otherwise find optimal position
+  const positionAsXYPosition =
+    nodeType === 'selection_menu'
+      ? position
+      : findNewPosition(nodes, canvasSize);
 
   const defaultProperties = {
     backgroundColor: '#F4F4F4',
@@ -131,7 +136,7 @@ export const createNode = async (
         }
       };
       callback(newNode);
-      if (parentNode) {
+      if (parentNode && nodeType !== 'selection_menu') {
         await createEdge(parentNode.id, newNode.id, canvasId);
       }
     } else {
@@ -151,7 +156,7 @@ export const handleTemporaryNodeCreation = async (
   nodes: Node[],
   canvasId: string
 ) => {
-  console.log('Starting handleTemporaryNodeCreation');
+  console.log('Starting handleTemporaryNodeCreation with position:', position);
 
   const temporaryNodeId = uuidv4();
 
@@ -179,26 +184,15 @@ export const handleTemporaryNodeCreation = async (
             async (newNode) => {
               addNode(newNode, canvasId);
               console.log('TemporaryNodeHandler: Node added:', newNode);
-              // Create the edge after the temporary node is added
-              const newEdge = {
-                id: uuidv4(),
-                source: parentNode?.id || '',
-                target: newNode.id,
-                type: 'customEdge',
-                data: { canvasId }
-              };
-              useEdgeStore.getState().addEdge(newEdge);
-              await createEdgeBetweenNodes({
-                sourceNodeId: parentNode?.id || '',
-                targetNodeId: newNode.id,
-                canvasId
-              });
+              if (parentNode) {
+                await createEdge(parentNode.id, newNode.id, canvasId);
+              }
             },
             {
               width: nodeDimensions['selection_menu'].width,
               height: nodeDimensions['selection_menu'].height
             },
-            true,
+            false,
             false,
             canvasId,
             parentNode ? parentNode : undefined
@@ -224,9 +218,29 @@ export const handleTemporaryNodeCreation = async (
     'selection_menu',
     position,
     nodes,
-    (newNode) => {
+    async (newNode) => {
       addNode(newNode, canvasId);
       console.log('TemporaryNodeHandler: Node added:', newNode);
+
+      if (parentNode) {
+        const newEdge = {
+          id: uuidv4(),
+          source: parentNode.id,
+          target: newNode.id,
+          type: 'customEdge'
+        };
+        useEdgeStore.getState().addEdge(newEdge);
+        const { data: createdEdge, error } = await createEdgeBetweenNodes({
+          sourceNodeId: parentNode.id,
+          targetNodeId: newNode.id,
+          canvasId
+        });
+        if (error) {
+          console.error('Failed to create edge in database:', error);
+        } else {
+          console.log('Edge created successfully in database:', createdEdge);
+        }
+      }
     },
     {
       width: nodeDimensions['selection_menu'].width,

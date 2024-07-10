@@ -31,6 +31,7 @@ import useCanvasStore from '@/app/store/canvas/useCanvasStore';
 import { useEdgeConnection } from '@/ui/canvasEditor/edgeCreation';
 import { v4 as uuidv4 } from 'uuid';
 import { handleTemporaryNodeCreation } from '@/ui/canvasEditor/utils/nodeCreation';
+import { createEdge } from '@/utils/canvas/edgeService';
 
 const nodeOrigin: NodeOrigin = [0.5, 0.5];
 const defaultEdgeOptions = {
@@ -205,7 +206,7 @@ export default function CanvasEditor({ canvasId: initialCanvasId }) {
   );
 
   const handleConnect = useCallback(
-    (connection) => {
+    async (connection) => {
       try {
         if (!connection.source || !connection.target) {
           console.error(
@@ -222,13 +223,33 @@ export default function CanvasEditor({ canvasId: initialCanvasId }) {
           target: connection.target,
           type: 'customEdge'
         };
+
+        // Add edge to local state
         addEdge(newEdge);
+
+        // Create edge in the database
+        const { data: createdEdge, error } = await createEdge({
+          sourceNodeId: connection.source,
+          targetNodeId: connection.target,
+          canvasId: initialCanvasId
+        });
+
+        if (error) {
+          console.error('Failed to create edge in database:', error);
+          // Optionally remove the edge from local state if database insertion fails
+          // removeEdge(newEdge.id);
+        } else {
+          console.log('Edge created successfully in database:', createdEdge);
+          // Update the local edge with the database ID if needed
+          // updateEdge(newEdge.id, { id: createdEdge.id });
+        }
+
         reactFlowInstance.current?.fitView({ padding: 0.2 });
       } catch (error) {
         console.error('Failed to create edge:', error);
       }
     },
-    [addEdge, initialCanvasId]
+    [addEdge, initialCanvasId, createEdge]
   );
 
   const handleTemporaryNodeCreationWithStore = useCallback(
