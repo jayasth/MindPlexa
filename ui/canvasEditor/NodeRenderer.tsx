@@ -1,219 +1,118 @@
-import React, { useState, useEffect } from 'react';
-import { NodeProps } from 'reactflow';
-import { Node as BaseNode } from '@/ui/canvasEditor/nodeTypes';
-import dynamic from 'next/dynamic';
-import useNodeStore from '@/app/store/nodes/useNodeStore';
-import { getNodeSpecificProperties } from '@/ui/canvasEditor/utils/nodeProperties';
-import useCanvasStore from '@/app/store/canvas/useCanvasStore';
+import React, { useMemo } from 'react';
+import { NodeProps, Position } from 'reactflow';
+import NoteNodeView from '@/ui/nodes/noteNode/NoteNodeView';
+import NoteNodeEdit from '@/ui/nodes/noteNode/NoteNodeEdit';
+import TaskNodeView from '@/ui/nodes/taskNode/TaskNodeView';
+import TaskNodeEdit from '@/ui/nodes/taskNode/TaskNodeEdit';
+import TableNodeView from '@/ui/nodes/tableNode/TableNodeView';
+import TableNodeEdit from '@/ui/nodes/tableNode/TableNodeEdit';
+import CalendarNodeView from '@/ui/nodes/calendarNode/CalendarNodeView';
+import CalendarNodeEdit from '@/ui/nodes/calendarNode/CalendarNodeEdit';
+import DrawNodeView from '@/ui/nodes/drawNode/DrawNodeView';
+import DrawNodeEdit from '@/ui/nodes/drawNode/DrawNodeEdit';
 import NodeSelectionMenu from '@/ui/nodes/nodeSelectionMenu/NodeSelectionMenu';
 
-const NoteNodeEdit = dynamic(() => import('@/ui/nodes/noteNode/NoteNodeEdit'), {
-  ssr: false
-});
-const TaskNodeEdit = dynamic(() => import('@/ui/nodes/taskNode/TaskNodeEdit'), {
-  ssr: false
-});
-const TableNodeEdit = dynamic(
-  () => import('@/ui/nodes/tableNode/TableNodeEdit'),
-  {
-    ssr: false
-  }
-);
-const CalendarNodeEdit = dynamic(
-  () => import('@/ui/nodes/calendarNode/CalendarNodeEdit'),
-  {
-    ssr: false
-  }
-);
-const DrawNodeEdit = dynamic(() => import('@/ui/nodes/drawNode/DrawNodeEdit'), {
-  ssr: false
-});
-
-const NoteNodeView = dynamic(() => import('@/ui/nodes/noteNode/NoteNodeView'), {
-  ssr: false
-});
-const TaskNodeView = dynamic(() => import('@/ui/nodes/taskNode/TaskNodeView'), {
-  ssr: false
-});
-const TableNodeView = dynamic(
-  () => import('@/ui/nodes/tableNode/TableNodeView'),
-  {
-    ssr: false
-  }
-);
-const CalendarNodeView = dynamic(
-  () => import('@/ui/nodes/calendarNode/CalendarNodeView'),
-  {
-    ssr: false
-  }
-);
-const DrawNodeView = dynamic(() => import('@/ui/nodes/drawNode/DrawNodeView'), {
-  ssr: false
-});
-
 interface NodeRendererProps extends NodeProps {
-  onNodeResizeStop: (
+  onNodeResizeStop?: (
     nodeId: string,
     newSize: { width: number; height: number },
     newPosition: { x: number; y: number }
   ) => void;
+  selectNodesOnDrag?: boolean;
 }
 
 const NodeRenderer: React.FC<NodeRendererProps> = ({
+  type,
   data,
+  isConnectable,
   selected,
   id,
-  onNodeResizeStop
+  dragging,
+  zIndex,
+  xPos,
+  yPos,
+  selectNodesOnDrag,
+  onNodeResizeStop,
+  ...props
 }) => {
-  console.log('NodeRenderer: Received node', { id, type: data.type, data });
+  const nodeContent = useMemo(() => {
+    const commonProps = {
+      id,
+      type,
+      data,
+      isConnectable,
+      selected,
+      dragging,
+      zIndex,
+      xPos,
+      yPos,
+      selectNodesOnDrag,
+      ...props
+    };
 
-  const node = useNodeStore((state) => state.nodes.find((n) => n.id === id)) as
-    | BaseNode
-    | undefined;
+    const position = { x: xPos, y: yPos };
+    const dimensions = {
+      width: data.isEditing ? data.editWidth : data.viewWidth,
+      height: data.isEditing ? data.editHeight : data.viewHeight
+    };
 
-  const updateNode = useNodeStore((state) => state.updateNode);
-  const toggleEditMode = useNodeStore((state) => state.toggleEditMode);
-  const canvasId = useCanvasStore((state) => state.canvasId);
-  const [size, setSize] = useState(
-    getNodeSpecificProperties(
-      node?.type || 'note',
-      (node?.data as any)?.isEditing ?? false
-    )
-  );
-  const [isEditing, setIsEditing] = useState(
-    (node?.data as any)?.isEditing ?? false
-  );
-
-  useEffect(() => {
-    if (node) {
-      console.log(
-        `NodeRenderer: Node ID: ${id}, Type: ${node.type}, IsEditing: ${(node.data as any)?.isEditing}`
+    if (type === 'selection_menu') {
+      return (
+        <NodeSelectionMenu
+          {...commonProps}
+          position={position}
+          parentNode={data.parentNode}
+          width={dimensions.width}
+          height={dimensions.height}
+        />
       );
-      if (isEditing !== (node.data as any)?.isEditing) {
-        const newSize = getNodeSpecificProperties(
-          node.type,
-          (node.data as any)?.isEditing
-        );
-        setSize(newSize);
-        setIsEditing((node.data as any)?.isEditing);
-      }
-    } else {
-      console.log(`NodeRenderer: Node not found, ID: ${id}`);
-    }
-  }, [node, id, isEditing]);
-
-  if (!node) {
-    console.log(`NodeRenderer: Node not found, ID: ${id}`);
-    return null;
-  }
-
-  const handleEdit = () => {
-    if (node.type !== 'selection_menu') {
-      toggleEditMode(id);
-      const newSize = getNodeSpecificProperties(
-        node.type,
-        !(node.data as any)?.isEditing
-      );
-      updateNode(
-        id,
-        {
-          ...newSize,
-          data: {
-            ...(node.data as any),
-            isEditing: !(node.data as any)?.isEditing,
-            tags: (node.data as any).tags || [],
-            attachedFiles: (node.data as any).attachedFiles || []
-          }
-        },
-        canvasId
-      );
-      if (
-        node.position &&
-        typeof node.position === 'object' &&
-        'x' in node.position &&
-        'y' in node.position
-      ) {
-        onNodeResizeStop(
-          id,
-          newSize,
-          node.position as { x: number; y: number }
-        );
-      } else {
-        console.error('Invalid node position:', node.position);
-      }
-    }
-  };
-
-  const commonProps = {
-    draggable: true,
-    connectable: true,
-    onDelete: () =>
-      console.log(`Delete action for Node ID: ${id}, Type: ${node.type}`),
-    onChangeColor: () =>
-      console.log(`Change color action for Node ID: ${id}, Type: ${node.type}`),
-    onResize: () =>
-      console.log(`Resize action for Node ID: ${id}, Type: ${node.type}`),
-    onTag: () =>
-      console.log(`Tag action for Node ID: ${id}, Type: ${node.type}`),
-    onAttach: () =>
-      console.log(`Attach action for Node ID: ${id}, Type: ${node.type}`),
-    width: size.width,
-    height: size.height,
-    selected: selected,
-    onLabelChange: (label: string) =>
-      updateNode(id, { data: { ...(node.data as any), label } }, canvasId),
-    onEdit: handleEdit,
-    onNodeResizeStop:
-      node.type !== 'selection_menu' ? onNodeResizeStop : undefined
-  };
-
-  const nodeComponents = {
-    note: { view: NoteNodeView, edit: NoteNodeEdit },
-    task: { view: TaskNodeView, edit: TaskNodeEdit },
-    table: { view: TableNodeView, edit: TableNodeEdit },
-    calendar: { view: CalendarNodeView, edit: CalendarNodeEdit },
-    draw: { view: DrawNodeView, edit: DrawNodeEdit },
-    selection_menu: { view: NodeSelectionMenu }
-  };
-
-  if (node.type in nodeComponents) {
-    const componentInfo =
-      nodeComponents[node.type as keyof typeof nodeComponents];
-    let NodeComponent;
-
-    if (node.type === 'selection_menu') {
-      NodeComponent = componentInfo.view;
-    } else if ('edit' in componentInfo && (node.data as any)?.isEditing) {
-      NodeComponent = componentInfo.edit;
-    } else {
-      NodeComponent = componentInfo.view;
     }
 
-    console.log(
-      `NodeRenderer: Rendering node ID: ${id}, Type: ${node.type}, IsEditing: ${(node.data as any)?.isEditing}`
-    );
+    const NodeComponent = data.isEditing
+      ? {
+          note: NoteNodeEdit,
+          task: TaskNodeEdit,
+          table: TableNodeEdit,
+          calendar: CalendarNodeEdit,
+          draw: DrawNodeEdit
+        }[type]
+      : {
+          note: NoteNodeView,
+          task: TaskNodeView,
+          table: TableNodeView,
+          calendar: CalendarNodeView,
+          draw: DrawNodeView
+        }[type];
+
+    if (!NodeComponent) {
+      console.error('Unknown node type:', type);
+      return null;
+    }
 
     return (
       <NodeComponent
         {...commonProps}
-        data={{
-          ...(node.data as any),
-          width: size.width,
-          height: size.height,
-          backgroundColor: (node.data as any).backgroundColor,
-          textColor: (node.data as any).textColor,
-          id: node.id,
-          isTemporary: (node.data as any).isTemporary
-        }}
-        selected={selected}
+        {...dimensions}
+        position={position}
+        onNodeResizeStop={onNodeResizeStop || (() => {})}
       />
     );
-  }
+  }, [
+    id,
+    type,
+    data,
+    isConnectable,
+    selected,
+    dragging,
+    zIndex,
+    xPos,
+    yPos,
+    selectNodesOnDrag,
+    onNodeResizeStop,
+    props
+  ]);
 
-  console.log(
-    `NodeRenderer: Unrecognized node type for ID: ${id}, Type: ${node.type}`
-  );
-  return null;
+  return nodeContent;
 };
 
-export default NodeRenderer;
+export default React.memo(NodeRenderer);
