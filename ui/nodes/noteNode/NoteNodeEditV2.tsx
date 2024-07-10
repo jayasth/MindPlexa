@@ -1,4 +1,11 @@
-import React, { useState, useEffect, useRef, CSSProperties } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  CSSProperties,
+  useMemo,
+  useCallback
+} from 'react';
 import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
 import styles from './NoteNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
@@ -28,18 +35,11 @@ import {
 import Quill from 'quill';
 import 'quill/dist/quill.snow.css';
 import { useBackgroundColorChange } from '@/ui/nodes/common/useBackgroundColorChange';
-import { useStore } from '@/app/store/canvas/useCanvasStore';
+import { debounce } from 'lodash';
+import useNodeStore from '@/app/store/nodes/useNodeStore';
 
 interface NoteNodeEditProps extends NodeProps {
-  id: string;
-  data: {
-    title: string;
-    content: string;
-    background_color: string;
-    text_color: string;
-    tags: string[];
-    attached_files: { name: string }[];
-  };
+  data: any;
   width: number;
   height: number;
   selected: boolean;
@@ -52,7 +52,6 @@ interface NoteNodeEditProps extends NodeProps {
 }
 
 const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
-  id,
   data,
   width,
   height,
@@ -60,6 +59,17 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   onNodeResizeStop,
   position
 }) => {
+  console.log('NoteNodeEdit: Node details:', {
+    id: data.id,
+    title: data.title,
+    content: data.content,
+    backgroundColor: data.background_color,
+    textColor: data.text_color,
+    width,
+    height,
+    position
+  });
+
   const [isSelected, setIsSelected] = useState(selected);
   const [title, setTitle] = useState(data.title || 'Untitled Note');
   const [content, setContent] = useState(data.content || '');
@@ -67,12 +77,8 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     data.background_color || '#F4F4F4'
   );
   const [textColor, setTextColor] = useState(data.text_color || '#575757');
-  const [tags, setTags] = useState<string[]>(data.tags || []);
-  const [attachedFiles, setAttachedFiles] = useState<string[]>(
-    Array.isArray(data.attached_files)
-      ? data.attached_files.map((file) => file.name)
-      : []
-  );
+  const [tags, setTags] = useState<string[]>([]);
+  const [attachedFiles, setAttachedFiles] = useState<string[]>([]);
   const [isContainerSelected, setIsContainerSelected] = useState(false);
   const [nodeWidth, setNodeWidth] = useState(width);
   const [nodeHeight, setNodeHeight] = useState(height);
@@ -84,18 +90,19 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   const quillInstance = useRef<Quill | null>(null);
 
   const handleBackgroundColorChange = useBackgroundColorChange(
-    id,
+    data.id,
     setBackgroundColor,
     setTextColor
   );
 
-  const onChangeColor = (color: { hex: string }) => {
-    handleBackgroundColorChange(color);
-  };
+  const onChangeColor = useCallback(
+    (color: { hex: string }) => {
+      handleBackgroundColorChange(color);
+    },
+    [handleBackgroundColorChange]
+  );
 
-  const updateNode = useStore((state) => state.updateNode);
-
-  useEffect(() => {
+  const initializeQuill = useCallback(() => {
     if (
       typeof document !== 'undefined' &&
       quillRef.current &&
@@ -132,33 +139,49 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     }
   }, [content]);
 
+  const debouncedUpdateNodeData = useMemo(
+    () =>
+      debounce(async (commonData, specificData) => {
+        try {
+          const updateNode = useNodeStore.getState().updateNode;
+          await updateNode(data.id, { ...commonData, data: specificData }, '');
+        } catch (error) {
+          console.error('Error updating node:', error);
+        }
+      }, 500),
+    [data.id]
+  );
+
   useEffect(() => {
-    const updates = {
-      data: {
-        title,
-        content,
-        tags,
-        attached_files: attachedFiles.map((file) => ({ name: file })),
-        background_color: backgroundColor,
-        text_color: textColor
-      },
-      width: nodeWidth,
-      height: nodeHeight
+    initializeQuill();
+
+    return () => {
+      debouncedUpdateNodeData.cancel();
+    };
+  }, [initializeQuill, debouncedUpdateNodeData]);
+
+  useEffect(() => {
+    const commonData = {
+      title,
+      background_color: backgroundColor,
+      text_color: textColor,
+      edit_width: nodeWidth,
+      edit_height: nodeHeight
     };
 
-    updateNode(id, updates);
+    const specificData = { content };
+
+    debouncedUpdateNodeData(commonData, specificData);
   }, [
-    id,
     title,
     content,
-    tags,
-    attachedFiles,
     backgroundColor,
     textColor,
     nodeWidth,
     nodeHeight,
-    updateNode
+    debouncedUpdateNodeData
   ]);
+
   useEffect(() => {
     if (quillInstance.current) {
       const toolbar = quillRef.current?.previousSibling as HTMLElement;
@@ -180,85 +203,118 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     }
   }, [backgroundColor, textColor]);
 
-  const onChangeTitle = (newTitle: string) => {
-    handleTitleChange(id, newTitle, setTitle);
-  };
+  const onChangeTitle = useCallback(
+    (newTitle: string) => {
+      handleTitleChange(data.id, newTitle, setTitle, data.id);
+    },
+    [data.id]
+  );
 
-  const onAddTag = (newTags: string[]) => {
-    const uniqueTags = Array.from(new Set([...tags, ...newTags]));
-    setTags(uniqueTags);
-    handleAddTag(id, uniqueTags, () => {});
-  };
+  const onAddTag = useCallback(
+    (newTags: string[]) => {
+      const uniqueTags = Array.from(new Set([...tags, ...newTags]));
+      setTags(uniqueTags);
+      handleAddTag(data.id, uniqueTags, () => {}, data.id);
+    },
+    [data.id, tags]
+  );
 
-  const onRemoveTag = (tagToRemove: string) => {
-    const updatedTags = tags.filter((tag) => tag !== tagToRemove);
-    setTags(updatedTags);
-    handleAddTag(id, updatedTags, () => {});
-  };
+  const onRemoveTag = useCallback(
+    (tagToRemove: string) => {
+      const updatedTags = tags.filter((tag) => tag !== tagToRemove);
+      setTags(updatedTags);
+      handleAddTag(data.id, updatedTags, () => {}, data.id);
+    },
+    [data.id, tags]
+  );
 
-  const onAttachFiles = (files: string[]) => {
+  const onAttachFiles = useCallback((files: string[]) => {
     setAttachedFiles(files);
-  };
+  }, []);
 
-  const onRemoveFile = (fileToRemove: string) => {
-    handleRemoveAttachedFile(id, fileToRemove, () => {});
-  };
+  const onRemoveFile = useCallback(
+    (fileToRemove: string) => {
+      handleRemoveAttachedFile(data.id, fileToRemove, () => {}, data.id);
+    },
+    [data.id]
+  );
 
   useEffect(() => {
     setNodeWidth(width);
     setNodeHeight(height);
   }, [width, height]);
 
-  useEffect(() => {
-    setTags(data.tags || []);
-    setAttachedFiles(
-      Array.isArray(data.attached_files)
-        ? data.attached_files.map((file) => file.name)
-        : []
-    );
-  }, [data.tags, data.attached_files]);
+  const handleResize = useCallback(
+    (event, { width, height }) => {
+      setNodeWidth(width);
+      setNodeHeight(height);
+      onNodeResizeStop(data.id, { width, height }, position);
+    },
+    [data.id, onNodeResizeStop, position]
+  );
 
-  const handleResize = (event, { width, height }) => {
-    setNodeWidth(width);
-    setNodeHeight(height);
-    onNodeResizeStop(id, { width, height }, position);
-  };
-
-  const handleContainerClick = () => {
+  const handleContainerClick = useCallback(() => {
     setIsContainerSelected(true);
-  };
+  }, []);
 
-  const handleContainerBlur = () => {
+  const handleContainerBlur = useCallback(() => {
     setIsContainerSelected(false);
-  };
+  }, []);
 
-  const toggleColorPicker = () => {
-    setIsColorPickerVisible(!isColorPickerVisible);
-  };
+  const toggleColorPicker = useCallback(() => {
+    setIsColorPickerVisible((prev) => !prev);
+  }, []);
 
-  const customStyles: CSSProperties = {
-    width: nodeWidth,
-    height: nodeHeight,
-    backgroundColor,
-    color: textColor
-  };
-
-  const handleSave = () => {
-    const updates = {
-      data: {
-        title,
-        content,
-        tags,
-        attached_files: attachedFiles.map((file) => ({ name: file })),
-        background_color: backgroundColor,
-        text_color: textColor
-      },
+  const customStyles: CSSProperties = useMemo(
+    () => ({
       width: nodeWidth,
-      height: nodeHeight
+      height: nodeHeight,
+      backgroundColor,
+      color: textColor
+    }),
+    [nodeWidth, nodeHeight, backgroundColor, textColor]
+  );
+
+  const handleSave = useCallback(async () => {
+    const commonData = {
+      title,
+      background_color: backgroundColor,
+      text_color: textColor,
+      edit_width: nodeWidth,
+      edit_height: nodeHeight
     };
 
-    updateNode(id, updates);
-  };
+    const specificData = { content };
+
+    try {
+      const updateNode = useNodeStore.getState().updateNode;
+      await updateNode(data.id, { ...commonData, data: specificData }, '');
+    } catch (error) {
+      console.error('Error saving node:', error);
+    }
+  }, [
+    data.id,
+    title,
+    backgroundColor,
+    textColor,
+    nodeWidth,
+    nodeHeight,
+    content
+  ]);
+
+  const memoizedTagFileContainer = useMemo(
+    () => (
+      <TagFileContainer
+        tags={tags}
+        attachedFiles={attachedFiles}
+        onRemoveTag={onRemoveTag}
+        onRemoveFile={onRemoveFile}
+        textColor={textColor}
+        handleAttachmentPreview={handleAttachmentPreview}
+      />
+    ),
+    [tags, attachedFiles, onRemoveTag, onRemoveFile, textColor]
+  );
 
   return (
     <div
@@ -284,7 +340,9 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
           style={{ color: textColor }}
         />
         <CloseButton
-          onClick={() => handleClose(id, () => {}, title, content)}
+          onClick={() =>
+            handleClose(data.id, () => {}, title, content, data.id)
+          }
         />
       </div>
       <div
@@ -292,23 +350,17 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         className={`${styles.noteContent} nowheel nodrag`}
         style={{ color: textColor }}
       />
-      {(tags.length > 0 || attachedFiles.length > 0) && (
-        <TagFileContainer
-          tags={tags}
-          attachedFiles={attachedFiles}
-          onRemoveTag={onRemoveTag}
-          onRemoveFile={onRemoveFile}
-          textColor={textColor}
-          handleAttachmentPreview={handleAttachmentPreview}
-        />
-      )}
+      {(tags.length > 0 || attachedFiles.length > 0) &&
+        memoizedTagFileContainer}
       <div className={styles.footer}>
         <SaveButton onClick={handleSave} />
-        <DeleteButton onClick={() => handleDelete(id, () => {})} />
-        <ChangeColorButton onClick={() => toggleColorPicker()} />
+        <DeleteButton
+          onClick={() => handleDelete(data.id, () => {}, data.id)}
+        />
+        <ChangeColorButton onClick={toggleColorPicker} />
         <AddTagButton onClick={() => setIsTagModalOpen(true)} />
         <AttachFileButton onClick={() => setIsFileModalOpen(true)} />
-        <DuplicateButton onClick={() => handleDuplicate(id)} />
+        <DuplicateButton onClick={() => handleDuplicate(data.id, data.id)} />
         <ColorPickerModal
           isOpen={isColorPickerVisible}
           onClose={() => setIsColorPickerVisible(false)}
@@ -340,11 +392,10 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         onAttachFiles={onAttachFiles}
         onRemoveFile={onRemoveFile}
         existingFiles={attachedFiles}
-        nodeId={id}
-        nodeType="note"
+        nodeId={data.id}
       />
     </div>
   );
 };
 
-export default NoteNodeEdit;
+export default React.memo(NoteNodeEdit);
