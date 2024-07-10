@@ -1,16 +1,45 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { NodeProps, Position } from 'reactflow';
-import NoteNodeView from '@/ui/nodes/noteNode/NoteNodeView';
-import NoteNodeEdit from '@/ui/nodes/noteNode/NoteNodeEdit';
-import TaskNodeView from '@/ui/nodes/taskNode/TaskNodeView';
-import TaskNodeEdit from '@/ui/nodes/taskNode/TaskNodeEdit';
-import TableNodeView from '@/ui/nodes/tableNode/TableNodeView';
-import TableNodeEdit from '@/ui/nodes/tableNode/TableNodeEdit';
-import CalendarNodeView from '@/ui/nodes/calendarNode/CalendarNodeView';
-import CalendarNodeEdit from '@/ui/nodes/calendarNode/CalendarNodeEdit';
-import DrawNodeView from '@/ui/nodes/drawNode/DrawNodeView';
-import DrawNodeEdit from '@/ui/nodes/drawNode/DrawNodeEdit';
+import dynamic from 'next/dynamic';
+import useNodeStore from '@/app/store/nodes/useNodeStore';
+import useCanvasStore from '@/app/store/canvas/useCanvasStore';
+import { getNodeSpecificProperties } from '@/ui/canvasEditor/utils/nodeProperties';
 import NodeSelectionMenu from '@/ui/nodes/nodeSelectionMenu/NodeSelectionMenu';
+
+const NoteNodeView = dynamic(() => import('@/ui/nodes/noteNode/NoteNodeView'), {
+  ssr: false
+});
+const NoteNodeEdit = dynamic(() => import('@/ui/nodes/noteNode/NoteNodeEdit'), {
+  ssr: false
+});
+const TaskNodeView = dynamic(() => import('@/ui/nodes/taskNode/TaskNodeView'), {
+  ssr: false
+});
+const TaskNodeEdit = dynamic(() => import('@/ui/nodes/taskNode/TaskNodeEdit'), {
+  ssr: false
+});
+const TableNodeView = dynamic(
+  () => import('@/ui/nodes/tableNode/TableNodeView'),
+  { ssr: false }
+);
+const TableNodeEdit = dynamic(
+  () => import('@/ui/nodes/tableNode/TableNodeEdit'),
+  { ssr: false }
+);
+const CalendarNodeView = dynamic(
+  () => import('@/ui/nodes/calendarNode/CalendarNodeView'),
+  { ssr: false }
+);
+const CalendarNodeEdit = dynamic(
+  () => import('@/ui/nodes/calendarNode/CalendarNodeEdit'),
+  { ssr: false }
+);
+const DrawNodeView = dynamic(() => import('@/ui/nodes/drawNode/DrawNodeView'), {
+  ssr: false
+});
+const DrawNodeEdit = dynamic(() => import('@/ui/nodes/drawNode/DrawNodeEdit'), {
+  ssr: false
+});
 
 interface NodeRendererProps extends NodeProps {
   onNodeResizeStop?: (
@@ -35,11 +64,29 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
   onNodeResizeStop,
   ...props
 }) => {
+  const node = useNodeStore((state) => state.nodes.find((n) => n.id === id));
+  const updateNode = useNodeStore((state) => state.updateNode);
+  const toggleEditMode = useNodeStore((state) => state.toggleEditMode);
+  const canvasId = useCanvasStore((state) => state.canvasId);
+
+  useEffect(() => {
+    if (!node) {
+      console.error(`Node not found, ID: ${id}`);
+    }
+  }, [node, id]);
+
   const nodeContent = useMemo(() => {
+    if (!node) return null;
+
     const commonProps = {
       id,
       type,
-      data,
+      data: {
+        ...data,
+        isEditing: node.data.isEditing,
+        tags: node.data.tags || [],
+        attachedFiles: node.data.attachedFiles || []
+      },
       isConnectable,
       selected,
       dragging,
@@ -51,10 +98,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     };
 
     const position = { x: xPos, y: yPos };
-    const dimensions = {
-      width: data.isEditing ? data.editWidth : data.viewWidth,
-      height: data.isEditing ? data.editHeight : data.viewHeight
-    };
+    const dimensions = getNodeSpecificProperties(type, node.data.isEditing);
 
     if (type === 'selection_menu') {
       return (
@@ -68,21 +112,17 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
       );
     }
 
-    const NodeComponent = data.isEditing
-      ? {
-          note: NoteNodeEdit,
-          task: TaskNodeEdit,
-          table: TableNodeEdit,
-          calendar: CalendarNodeEdit,
-          draw: DrawNodeEdit
-        }[type]
-      : {
-          note: NoteNodeView,
-          task: TaskNodeView,
-          table: TableNodeView,
-          calendar: CalendarNodeView,
-          draw: DrawNodeView
-        }[type];
+    const nodeComponents = {
+      note: { view: NoteNodeView, edit: NoteNodeEdit },
+      task: { view: TaskNodeView, edit: TaskNodeEdit },
+      table: { view: TableNodeView, edit: TableNodeEdit },
+      calendar: { view: CalendarNodeView, edit: CalendarNodeEdit },
+      draw: { view: DrawNodeView, edit: DrawNodeEdit }
+    };
+
+    const NodeComponent = node.data.isEditing
+      ? nodeComponents[type]?.edit
+      : nodeComponents[type]?.view;
 
     if (!NodeComponent) {
       console.error('Unknown node type:', type);
@@ -95,9 +135,18 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
         {...dimensions}
         position={position}
         onNodeResizeStop={onNodeResizeStop || (() => {})}
+        onEdit={() => {
+          toggleEditMode(id);
+          updateNode(
+            id,
+            { data: { ...node.data, isEditing: !node.data.isEditing } },
+            canvasId
+          );
+        }}
       />
     );
   }, [
+    node,
     id,
     type,
     data,
@@ -109,7 +158,10 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
     yPos,
     selectNodesOnDrag,
     onNodeResizeStop,
-    props
+    props,
+    toggleEditMode,
+    updateNode,
+    canvasId
   ]);
 
   return nodeContent;
