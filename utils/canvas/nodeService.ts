@@ -62,6 +62,37 @@ const deleteNodeLink = async (nodeId: string) => {
   return await supabase.from('node_canvas_link').delete().eq('node_id', nodeId);
 };
 
+const insertNodeTag = async (nodeId: string, tag: string) => {
+  return await supabase
+    .from('node_tags')
+    .insert({ node_id: nodeId, tag })
+    .single()
+    .then(({ data, error }) => ({ data: toCamelCase(data), error }));
+};
+
+const deleteNodeTag = async (nodeId: string, tag: string) => {
+  return await supabase
+    .from('node_tags')
+    .delete()
+    .match({ node_id: nodeId, tag });
+};
+
+const insertNodeAttachment = async (
+  nodeId: string,
+  url: string,
+  type: string
+) => {
+  return await supabase
+    .from('node_attachments')
+    .insert({ node_id: nodeId, url, type })
+    .single()
+    .then(({ data, error }) => ({ data: toCamelCase(data), error }));
+};
+
+const deleteNodeAttachment = async (id: string) => {
+  return await supabase.from('node_attachments').delete().match({ id });
+};
+
 export const createNode = async (
   canvasId: string,
   nodeType: Database['public']['Enums']['node_type'],
@@ -188,13 +219,7 @@ export const createNode = async (
 export const updateNode = async (
   id: string,
   updates: Partial<Database['public']['Tables']['nodes']['Update']>,
-  specificUpdates: Partial<
-    | Database['public']['Tables']['note_nodes']['Update']
-    | Database['public']['Tables']['task_nodes']['Update']
-    | Database['public']['Tables']['calendar_nodes']['Update']
-    | Database['public']['Tables']['table_nodes']['Update']
-    | Database['public']['Tables']['draw_nodes']['Update']
-  >,
+  specificUpdates: any,
   nodeType: Database['public']['Enums']['node_type']
 ): Promise<{ data?: any; error?: any }> => {
   console.log('nodeService: Updating node:', {
@@ -204,29 +229,10 @@ export const updateNode = async (
     specificUpdates
   });
 
-  const safeUpdates: Partial<Database['public']['Tables']['nodes']['Update']> =
-    { ...updates };
-
-  if (safeUpdates.position && typeof safeUpdates.position === 'object') {
-    safeUpdates.position = JSON.stringify(safeUpdates.position);
-  }
-
-  // Remove view dimensions from updates as they should not be changed
-  delete safeUpdates.view_width;
-  delete safeUpdates.view_height;
-
-  if (nodeType === 'selection_menu') {
-    delete safeUpdates.edit_width;
-    delete safeUpdates.edit_height;
-    delete safeUpdates.mobile_edit_width;
-    delete safeUpdates.mobile_edit_height;
-    safeUpdates.is_editing = false;
-    safeUpdates.is_temporary = true;
-  }
-
+  // Update the main nodes table
   const { data: nodeData, error: nodeError } = await supabase
     .from('nodes')
-    .update(toSnakeCase(safeUpdates))
+    .update(toSnakeCase(updates))
     .eq('id', id)
     .select()
     .single()
@@ -239,79 +245,85 @@ export const updateNode = async (
 
   console.log('nodeService: Node properties updated:', nodeData);
 
+  // Update node-specific table
   if (nodeType !== 'selection_menu') {
     const tableName = `${nodeType}_nodes` as keyof Database['public']['Tables'];
-    const safeSpecificUpdates: any = { ...specificUpdates };
-
-    if (nodeType === 'note' && 'content' in safeSpecificUpdates) {
-      safeSpecificUpdates.content = String(safeSpecificUpdates.content);
-    } else if (nodeType === 'task' && 'tasks' in safeSpecificUpdates) {
-      safeSpecificUpdates.tasks = JSON.stringify(safeSpecificUpdates.tasks);
-    } else if (nodeType === 'calendar' && 'events' in safeSpecificUpdates) {
-      safeSpecificUpdates.events = JSON.stringify(safeSpecificUpdates.events);
-    } else if (nodeType === 'table') {
-      if ('columns' in safeSpecificUpdates) {
-        safeSpecificUpdates.columns = JSON.stringify(
-          safeSpecificUpdates.columns
-        );
-      }
-      if ('rows' in safeSpecificUpdates) {
-        safeSpecificUpdates.rows = JSON.stringify(safeSpecificUpdates.rows);
-      }
-    } else if (nodeType === 'draw' && 'drawing_data' in safeSpecificUpdates) {
-      safeSpecificUpdates.drawing_data = String(
-        safeSpecificUpdates.drawing_data
-      );
-    }
-
-    const { data: existingNode } = await supabase
-      .from(tableName)
-      .select()
-      .eq('node_id', id)
-      .single()
-      .then(({ data, error }) => ({ data: toCamelCase(data), error }));
-
-    let specificNodeData;
-    if (existingNode) {
-      const { data, error: updateError } = await updateNodeInTable(
+    const { data: specificNodeData, error: specificNodeError } =
+      await updateNodeInTable(
         tableName,
-        safeSpecificUpdates,
+        { content: specificUpdates.content },
         id
       );
 
-      if (updateError) {
-        console.error(
-          `nodeService: Error updating ${nodeType} node:`,
-          updateError
-        );
-        return { error: updateError };
-      }
-      specificNodeData = data;
-    } else {
-      const { data, error: insertError } = await insertNodeSpecificData(
-        tableName,
-        {
-          node_id: id,
-          ...safeSpecificUpdates
-        }
+    if (specificNodeError) {
+      console.error(
+        `nodeService: Error updating ${nodeType} node:`,
+        specificNodeError
       );
-
-      if (insertError) {
-        console.error(
-          `nodeService: Error inserting ${nodeType} node:`,
-          insertError
-        );
-        return { error: insertError };
-      }
-      specificNodeData = data;
+      return { error: specificNodeError };
     }
 
     console.log(`nodeService: ${nodeType} node updated:`, specificNodeData);
-
-    return { data: { ...nodeData, ...specificNodeData } };
   }
 
-  return { data: nodeData };
+  // Handle tags
+  if (specificUpdates.tags && Array.isArray(specificUpdates.tags)) {
+    const { error: tagError } = await supabase
+      .from('node_tags')
+      .delete()
+      .eq('node_id', id);
+
+    if (tagError) {
+      console.error('nodeService: Error deleting existing tags:', tagError);
+      return { error: tagError };
+    }
+
+    for (const tag of specificUpdates.tags) {
+      const { error: insertTagError } = await insertNodeTag(id, tag);
+
+      if (insertTagError) {
+        console.error('nodeService: Error inserting tag:', insertTagError);
+        return { error: insertTagError };
+      }
+    }
+  }
+
+  // Handle attachments
+  if (
+    specificUpdates.attachedFiles &&
+    Array.isArray(specificUpdates.attachedFiles)
+  ) {
+    const { error: attachmentError } = await supabase
+      .from('node_attachments')
+      .delete()
+      .eq('node_id', id);
+
+    if (attachmentError) {
+      console.error(
+        'nodeService: Error deleting existing attachments:',
+        attachmentError
+      );
+      return { error: attachmentError };
+    }
+
+    for (const file of specificUpdates.attachedFiles) {
+      const { error: insertAttachmentError } = await insertNodeAttachment(
+        id,
+        file.url,
+        file.type
+      );
+
+      if (insertAttachmentError) {
+        console.error(
+          'nodeService: Error inserting attachment:',
+          insertAttachmentError
+        );
+        return { error: insertAttachmentError };
+      }
+    }
+  }
+
+  return { data: { ...nodeData, ...specificUpdates } };
 };
 
 export const deleteNode = async (

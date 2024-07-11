@@ -145,7 +145,13 @@ export const fetchCanvas = async (
       .select(
         `
         *,
-        node_canvas_link!inner(nodes(*)),
+        node_canvas_link!inner(
+          nodes(
+            *,
+            node_tags(tag),
+            node_attachments(id, url, type)
+          )
+        ),
         edges(*)
       `
       )
@@ -176,7 +182,14 @@ export const fetchCanvas = async (
               ]?.find((data) => data.node_id === link.nodes?.id);
               return {
                 ...link.nodes,
-                ...specificNodeData
+                ...specificNodeData,
+                tags: link.nodes.node_tags?.map((tag) => tag.tag) || [],
+                attachedFiles:
+                  link.nodes.node_attachments?.map((attachment) => ({
+                    id: attachment.id,
+                    url: attachment.url,
+                    type: attachment.type
+                  })) || []
               };
             }
             return null;

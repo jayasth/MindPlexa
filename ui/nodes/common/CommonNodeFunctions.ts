@@ -260,24 +260,25 @@ export const handleAttachFile = (
 
 export const handleRemoveAttachedFile = (
   id: string,
-  fileToRemove: File | string,
-  onRemoveFile: (file: File | string) => void,
+  fileId: string,
+  onRemoveFile: (fileId: string) => void,
   canvasId: string
 ) => {
   const { updateNode } = useNodeStore.getState();
-  const existingFiles =
-    useNodeStore.getState().nodes.find((n) => n.id === id)?.data
-      ?.attachedFiles || [];
-  const updatedFiles = existingFiles.filter((file) => file !== fileToRemove);
-
-  updateNode(
-    id,
-    {
-      data: { attachedFiles: updatedFiles }
-    },
-    canvasId
-  );
-  onRemoveFile(fileToRemove);
+  const node = useNodeStore.getState().nodes.find((n) => n.id === id);
+  if (node) {
+    const updatedFiles = node.data.attachedFiles.filter(
+      (file) => file.id !== fileId
+    );
+    updateNode(
+      id,
+      {
+        data: { attachedFiles: updatedFiles }
+      },
+      canvasId
+    );
+    onRemoveFile(fileId);
+  }
 };
 
 export const handleDuplicate = (id: string, canvasId: string) => {

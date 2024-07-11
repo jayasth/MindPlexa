@@ -58,7 +58,6 @@ const useNodeStore = create<NodeState>()(
     },
     updateNode: async (id, data, canvasId) => {
       try {
-        console.log('useNodeStore: Before updateNode', { id, data });
         set(
           produce((state: NodeState) => {
             const existingNodeIndex = state.nodes.findIndex(
@@ -76,7 +75,29 @@ const useNodeStore = create<NodeState>()(
                   backgroundColor:
                     data.data?.backgroundColor ||
                     existingNode.data.backgroundColor,
-                  textColor: data.data?.textColor || existingNode.data.textColor
+                  textColor:
+                    data.data?.textColor || existingNode.data.textColor,
+                  tags: data.data?.tags || existingNode.data.tags,
+                  attachedFiles:
+                    data.data?.attachedFiles || existingNode.data.attachedFiles,
+                  isEditing:
+                    data.data?.isEditing ?? existingNode.data.isEditing,
+                  isTemporary:
+                    data.data?.isTemporary ?? existingNode.data.isTemporary,
+                  viewWidth:
+                    data.data?.viewWidth || existingNode.data.viewWidth,
+                  viewHeight:
+                    data.data?.viewHeight || existingNode.data.viewHeight,
+                  editWidth:
+                    data.data?.editWidth || existingNode.data.editWidth,
+                  editHeight:
+                    data.data?.editHeight || existingNode.data.editHeight,
+                  mobileEditWidth:
+                    data.data?.mobileEditWidth ||
+                    existingNode.data.mobileEditWidth,
+                  mobileEditHeight:
+                    data.data?.mobileEditHeight ||
+                    existingNode.data.mobileEditHeight
                 }
               };
 
@@ -85,16 +106,19 @@ const useNodeStore = create<NodeState>()(
                 backgroundColor: updatedNode.data.backgroundColor,
                 textColor: updatedNode.data.textColor,
                 title: updatedNode.data.title,
-                isEditing: updatedNode.data.isEditing,
+                is_editing: updatedNode.data.isEditing,
                 zIndex: updatedNode.data.zIndex,
-                editWidth: updatedNode.data.editWidth,
-                editHeight: updatedNode.data.editHeight,
-                mobileEditWidth: updatedNode.data.mobileEditWidth,
-                mobileEditHeight: updatedNode.data.mobileEditHeight,
-                parentNodeId: updatedNode.data.parentNodeId,
-                isTemporary: updatedNode.data.isTemporary,
+                edit_width: updatedNode.data.editWidth,
+                edit_height: updatedNode.data.editHeight,
+                mobile_edit_width: updatedNode.data.mobileEditWidth,
+                mobile_edit_height: updatedNode.data.mobileEditHeight,
+                parent_node_id: updatedNode.data.parentNodeId,
+                is_temporary: updatedNode.data.isTemporary,
+                view_width: updatedNode.data.viewWidth,
+                view_height: updatedNode.data.viewHeight,
                 version: updatedNode.data.version
               };
+
               let specificUpdates: any = {};
               switch (existingNode.type) {
                 case 'note':
@@ -123,6 +147,9 @@ const useNodeStore = create<NodeState>()(
                   };
                   break;
               }
+
+              specificUpdates.tags = updatedNode.data.tags;
+              specificUpdates.attachedFiles = updatedNode.data.attachedFiles;
 
               updateNodeInDB(
                 id,
