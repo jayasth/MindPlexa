@@ -129,20 +129,22 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
       return null;
     }
 
+    const handleEdit = () => {
+      toggleEditMode(id);
+      updateNode(
+        id,
+        { data: { ...node.data, isEditing: !node.data.isEditing } },
+        canvasId
+      );
+    };
+
     return (
       <NodeComponent
         {...commonProps}
         {...dimensions}
         position={position}
         onNodeResizeStop={onNodeResizeStop || (() => {})}
-        onEdit={() => {
-          toggleEditMode(id);
-          updateNode(
-            id,
-            { data: { ...node.data, isEditing: !node.data.isEditing } },
-            canvasId
-          );
-        }}
+        onEdit={handleEdit}
       />
     );
   }, [

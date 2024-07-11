@@ -7,10 +7,7 @@ import {
 } from '@/app/store';
 import { getChildNodePosition } from '@/ui/canvasEditor/utils/getChildNodePosition';
 import { handleTemporaryNodeCreation } from '@/ui/canvasEditor/utils/nodeCreation';
-import { createEdge } from '@/utils/canvas/edgeService';
-
 import type { XYPosition } from 'reactflow';
-import { v4 as uuidv4 } from 'uuid';
 
 export const useEdgeConnection = () => {
   const { nodes, nodeInternals, addNode, removeNode, addChildNode } =

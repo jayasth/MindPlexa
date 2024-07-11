@@ -390,7 +390,7 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "common_node_properties_parent_node_id_fkey"
+            foreignKeyName: "nodes_parent_node_id_fkey"
             columns: ["parent_node_id"]
             isOneToOne: false
             referencedRelation: "nodes"

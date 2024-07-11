@@ -248,18 +248,21 @@ const deleteNonSharedNodes = async (nodeIds: string[]) => {
     }
 
     const nodeType = nodeData.type;
-    const tableName = `${nodeType}_nodes` as keyof Database['public']['Tables'];
-    const { error: deleteError } = await supabase
-      .from(tableName)
-      .delete()
-      .eq('node_id', nodeId);
+    if (nodeType !== 'selection_menu') {
+      const tableName =
+        `${nodeType}_nodes` as keyof Database['public']['Tables'];
+      const { error: deleteError } = await supabase
+        .from(tableName)
+        .delete()
+        .eq('node_id', nodeId);
 
-    if (deleteError) {
-      console.error(
-        `canvasService: Error deleting ${nodeType} node:`,
-        deleteError
-      );
-      throw deleteError;
+      if (deleteError) {
+        console.error(
+          `canvasService: Error deleting ${nodeType} node:`,
+          deleteError
+        );
+        throw deleteError;
+      }
     }
 
     const { error: nodeDeleteError } = await supabase
@@ -302,75 +305,78 @@ const upsertNodes = async (
       continue;
     }
 
+    // Ensure view dimensions are not updated
+    const { view_width, view_height, ...updatableProperties } = nodeProperties;
+
     const { error: nodeUpsertError } = await supabase
       .from('nodes')
-      .upsert(toSnakeCase({ id, type, ...nodeProperties }));
+      .upsert(toSnakeCase({ id, type, ...updatableProperties }));
 
     if (nodeUpsertError) {
       console.error('canvasService: Error upserting node:', nodeUpsertError);
       throw nodeUpsertError;
     }
 
-    let specificData;
-    let tableName;
-    switch (type) {
-      case 'note':
-        specificData = noteData;
-        tableName = 'note_nodes';
-        break;
-      case 'task':
-        specificData = taskData;
-        tableName = 'task_nodes';
-        break;
-      case 'calendar':
-        specificData = calendarData;
-        tableName = 'calendar_nodes';
-        break;
-      case 'table':
-        specificData = tableData;
-        tableName = 'table_nodes';
-        break;
-      case 'draw':
-        specificData = drawData;
-        tableName = 'draw_nodes';
-        break;
-      case 'selection_menu':
-        break;
-      default:
-        console.error('canvasService: Unknown node type:', type);
-        continue;
-    }
-
-    if (tableName && specificData) {
-      const { data: existingData, error: fetchError } = await supabase
-        .from(tableName)
-        .select('id')
-        .eq('node_id', id)
-        .single()
-        .then(({ data, error }) => ({ data: toCamelCase(data), error }));
-
-      if (fetchError && fetchError.code !== 'PGRST116') {
-        console.error(
-          `canvasService: Error fetching existing ${type} node:`,
-          fetchError
-        );
-        throw fetchError;
+    if (type !== 'selection_menu') {
+      let specificData;
+      let tableName;
+      switch (type) {
+        case 'note':
+          specificData = noteData;
+          tableName = 'note_nodes';
+          break;
+        case 'task':
+          specificData = taskData;
+          tableName = 'task_nodes';
+          break;
+        case 'calendar':
+          specificData = calendarData;
+          tableName = 'calendar_nodes';
+          break;
+        case 'table':
+          specificData = tableData;
+          tableName = 'table_nodes';
+          break;
+        case 'draw':
+          specificData = drawData;
+          tableName = 'draw_nodes';
+          break;
+        default:
+          console.error('canvasService: Unknown node type:', type);
+          continue;
       }
 
-      const upsertData = existingData
-        ? { id: existingData.id, node_id: id, ...specificData }
-        : { id: uuidv4(), node_id: id, ...specificData };
+      if (tableName && specificData) {
+        const { data: existingData, error: fetchError } = await supabase
+          .from(tableName)
+          .select('id')
+          .eq('node_id', id)
+          .single()
+          .then(({ data, error }) => ({ data: toCamelCase(data), error }));
 
-      const { error: specificNodeUpsertError } = await supabase
-        .from(tableName)
-        .upsert(toSnakeCase(upsertData));
+        if (fetchError && fetchError.code !== 'PGRST116') {
+          console.error(
+            `canvasService: Error fetching existing ${type} node:`,
+            fetchError
+          );
+          throw fetchError;
+        }
 
-      if (specificNodeUpsertError) {
-        console.error(
-          `canvasService: Error upserting ${type} node:`,
-          specificNodeUpsertError
-        );
-        throw specificNodeUpsertError;
+        const upsertData = existingData
+          ? { id: existingData.id, node_id: id, ...specificData }
+          : { id: uuidv4(), node_id: id, ...specificData };
+
+        const { error: specificNodeUpsertError } = await supabase
+          .from(tableName)
+          .upsert(toSnakeCase(upsertData));
+
+        if (specificNodeUpsertError) {
+          console.error(
+            `canvasService: Error upserting ${type} node:`,
+            specificNodeUpsertError
+          );
+          throw specificNodeUpsertError;
+        }
       }
     }
 
@@ -396,7 +402,7 @@ const upsertEdges = async (
     .from('edges')
     .upsert(
       edges.map((edge) =>
-        toSnakeCase({ id: uuidv4(), ...edge, canvas_id: canvasId })
+        toSnakeCase({ id: edge.id || uuidv4(), ...edge, canvas_id: canvasId })
       )
     );
 

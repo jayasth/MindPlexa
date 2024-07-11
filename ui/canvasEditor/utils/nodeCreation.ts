@@ -195,7 +195,7 @@ export const handleTemporaryNodeCreation = async (
             false,
             false,
             canvasId,
-            parentNode ? parentNode : undefined
+            parentNode
           );
         }, 0);
       },
@@ -249,14 +249,14 @@ export const handleTemporaryNodeCreation = async (
     true,
     false,
     canvasId,
-    parentNode ? parentNode : undefined
+    parentNode
   );
 
   console.log('Finished handleTemporaryNodeCreation');
 };
 
 export const replaceNodeWithType = async (
-  nodeType: 'note' | 'task' | 'table' | 'calendar' | 'draw' | 'selection_menu',
+  nodeType: 'note' | 'task' | 'table' | 'calendar' | 'draw',
   id: string,
   position: XYPosition,
   edges: any[],
@@ -269,33 +269,20 @@ export const replaceNodeWithType = async (
     position: JSON.stringify(position),
     isEditing: false,
     isTemporary: false,
-    viewWidth:
-      'viewWidth' in nodeDimension
-        ? nodeDimension.viewWidth
-        : nodeDimension.width,
-    viewHeight:
-      'viewHeight' in nodeDimension
-        ? nodeDimension.viewHeight
-        : nodeDimension.height,
-    editWidth: 'editWidth' in nodeDimension ? nodeDimension.editWidth : null,
-    editHeight: 'editHeight' in nodeDimension ? nodeDimension.editHeight : null,
-    mobileEditWidth:
-      'mobileEditWidth' in nodeDimension ? nodeDimension.mobileEditWidth : null,
-    mobileEditHeight:
-      'mobileEditHeight' in nodeDimension
-        ? nodeDimension.mobileEditHeight
-        : null
+    viewWidth: nodeDimension.viewWidth,
+    viewHeight: nodeDimension.viewHeight,
+    editWidth: nodeDimension.editWidth,
+    editHeight: nodeDimension.editHeight,
+    mobileEditWidth: nodeDimension.mobileEditWidth,
+    mobileEditHeight: nodeDimension.mobileEditHeight
   };
 
   console.log('nodeCreation: Updating node with data:', newNodeData);
   const { data: updatedNode, error: updateError } = await updateNodeInDatabase(
     id,
-    {
-      ...newNodeData,
-      type: nodeType === 'selection_menu' ? 'selection_menu' : nodeType
-    },
+    newNodeData,
     {},
-    nodeType === 'selection_menu' ? 'selection_menu' : nodeType
+    nodeType
   );
 
   if (updateError) {

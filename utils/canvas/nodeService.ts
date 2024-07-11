@@ -8,7 +8,18 @@ const supabase = createClient();
 
 /* Node related functions */
 
-const insertSpecificNode = async (
+const insertNode = async (
+  nodeInsert: Database['public']['Tables']['nodes']['Insert']
+) => {
+  return await supabase
+    .from('nodes')
+    .insert([toSnakeCase(nodeInsert)])
+    .select()
+    .single()
+    .then(({ data, error }) => ({ data: toCamelCase(data), error }));
+};
+
+const insertNodeSpecificData = async (
   tableName: keyof Database['public']['Tables'],
   specificNodeInsert: any
 ) => {
@@ -18,6 +29,12 @@ const insertSpecificNode = async (
     .select()
     .single()
     .then(({ data, error }) => ({ data: toCamelCase(data), error }));
+};
+
+const insertNodeCanvasLink = async (nodeId: string, canvasId: string) => {
+  return await supabase
+    .from('node_canvas_link')
+    .insert(toSnakeCase({ node_id: nodeId, canvas_id: canvasId }));
 };
 
 const updateNodeInTable = async (
@@ -43,35 +60,6 @@ const deleteNodeFromTable = async (
 
 const deleteNodeLink = async (nodeId: string) => {
   return await supabase.from('node_canvas_link').delete().eq('node_id', nodeId);
-};
-
-const insertCommonNodeProperties = async (
-  nodeInsert: Database['public']['Tables']['nodes']['Insert']
-) => {
-  return await supabase
-    .from('nodes')
-    .insert([toSnakeCase(nodeInsert)])
-    .select()
-    .single()
-    .then(({ data, error }) => ({ data: toCamelCase(data), error }));
-};
-
-const insertNodeSpecificTable = async (
-  tableName: keyof Database['public']['Tables'],
-  specificNodeInsert: any
-) => {
-  return await supabase
-    .from(tableName)
-    .insert([toSnakeCase(specificNodeInsert)])
-    .select()
-    .single()
-    .then(({ data, error }) => ({ data: toCamelCase(data), error }));
-};
-
-const insertNodeCanvasLink = async (nodeId: string, canvasId: string) => {
-  return await supabase
-    .from('node_canvas_link')
-    .insert(toSnakeCase({ node_id: nodeId, canvas_id: canvasId }));
 };
 
 export const createNode = async (
@@ -135,8 +123,7 @@ export const createNode = async (
     z_index: data.z_index || 0
   };
 
-  const { data: nodeData, error: nodeError } =
-    await insertCommonNodeProperties(nodeInsert);
+  const { data: nodeData, error: nodeError } = await insertNode(nodeInsert);
 
   if (nodeError) {
     console.error('nodeService: Error inserting node:', nodeError);
@@ -167,7 +154,7 @@ export const createNode = async (
     const tableName = `${nodeType}_nodes` as keyof Database['public']['Tables'];
 
     const { data: specificNodeData, error: specificNodeError } =
-      await insertNodeSpecificTable(tableName, specificNodeInsert);
+      await insertNodeSpecificData(tableName, specificNodeInsert);
 
     if (specificNodeError) {
       console.error(
@@ -220,7 +207,6 @@ export const updateNode = async (
   const safeUpdates: Partial<Database['public']['Tables']['nodes']['Update']> =
     { ...updates };
 
-  // Handle position
   if (safeUpdates.position && typeof safeUpdates.position === 'object') {
     safeUpdates.position = JSON.stringify(safeUpdates.position);
   }
@@ -229,29 +215,15 @@ export const updateNode = async (
   delete safeUpdates.view_width;
   delete safeUpdates.view_height;
 
-  // Only update edit dimensions if they are provided and the node is not a selection menu
-  if (nodeType !== 'selection_menu') {
-    if (safeUpdates.edit_width) {
-      safeUpdates.edit_width = safeUpdates.edit_width;
-    }
-    if (safeUpdates.edit_height) {
-      safeUpdates.edit_height = safeUpdates.edit_height;
-    }
-    if (safeUpdates.mobile_edit_width) {
-      safeUpdates.mobile_edit_width = safeUpdates.mobile_edit_width;
-    }
-    if (safeUpdates.mobile_edit_height) {
-      safeUpdates.mobile_edit_height = safeUpdates.mobile_edit_height;
-    }
-  } else {
-    // For selection menu, remove all dimension updates
+  if (nodeType === 'selection_menu') {
     delete safeUpdates.edit_width;
     delete safeUpdates.edit_height;
     delete safeUpdates.mobile_edit_width;
     delete safeUpdates.mobile_edit_height;
+    safeUpdates.is_editing = false;
+    safeUpdates.is_temporary = true;
   }
 
-  // Update node in the nodes table
   const { data: nodeData, error: nodeError } = await supabase
     .from('nodes')
     .update(toSnakeCase(safeUpdates))
@@ -267,12 +239,10 @@ export const updateNode = async (
 
   console.log('nodeService: Node properties updated:', nodeData);
 
-  // Handle specific node type updates
   if (nodeType !== 'selection_menu') {
     const tableName = `${nodeType}_nodes` as keyof Database['public']['Tables'];
     const safeSpecificUpdates: any = { ...specificUpdates };
 
-    // Handle specific node type data
     if (nodeType === 'note' && 'content' in safeSpecificUpdates) {
       safeSpecificUpdates.content = String(safeSpecificUpdates.content);
     } else if (nodeType === 'task' && 'tasks' in safeSpecificUpdates) {
@@ -294,8 +264,7 @@ export const updateNode = async (
       );
     }
 
-    // Check if the specific node already exists
-    const { data: existingNode, error: existingNodeError } = await supabase
+    const { data: existingNode } = await supabase
       .from(tableName)
       .select()
       .eq('node_id', id)
@@ -304,7 +273,6 @@ export const updateNode = async (
 
     let specificNodeData;
     if (existingNode) {
-      // Update existing specific node
       const { data, error: updateError } = await updateNodeInTable(
         tableName,
         safeSpecificUpdates,
@@ -320,11 +288,13 @@ export const updateNode = async (
       }
       specificNodeData = data;
     } else {
-      // Insert new specific node
-      const { data, error: insertError } = await insertSpecificNode(tableName, {
-        node_id: id,
-        ...safeSpecificUpdates
-      });
+      const { data, error: insertError } = await insertNodeSpecificData(
+        tableName,
+        {
+          node_id: id,
+          ...safeSpecificUpdates
+        }
+      );
 
       if (insertError) {
         console.error(

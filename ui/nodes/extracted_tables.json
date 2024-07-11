@@ -402,7 +402,7 @@
         "data_type": "uuid",
         "is_nullable": "YES",
         "default": "None",
-        "foreign_key": "common_node_properties_parent_node_id_fkey",
+        "foreign_key": "nodes_parent_node_id_fkey",
         "references_table": "nodes",
         "references_column": "id"
       },
