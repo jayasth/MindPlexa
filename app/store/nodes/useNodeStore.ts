@@ -215,6 +215,20 @@ const useNodeStore = create<NodeState>()(
             state.nodes = state.nodes.map((n) =>
               n.id === nodeId ? updatedNode : n
             );
+
+            // Update the is_editing status in the database
+            updateNodeInDB(
+              nodeId,
+              { is_editing: updatedNode.data.isEditing },
+              {},
+              node.type as
+                | 'note'
+                | 'task'
+                | 'table'
+                | 'calendar'
+                | 'draw'
+                | 'selection_menu'
+            );
           }
         })
       );
@@ -244,7 +258,15 @@ const useNodeStore = create<NodeState>()(
           position,
           style: {
             backgroundColor: '#F4F4F4',
-            color: '#575757'
+            textColor: '#575757',
+            isEditing: false,
+            isTemporary: false,
+            viewWidth: nodeDimensions[type].width,
+            viewHeight: nodeDimensions[type].height,
+            editWidth: nodeDimensions[type].editWidth,
+            editHeight: nodeDimensions[type].editHeight,
+            mobileEditWidth: nodeDimensions[type].mobileEditWidth,
+            mobileEditHeight: nodeDimensions[type].mobileEditHeight
           }
         };
         await addNode(newNode, canvasId);
@@ -349,7 +371,7 @@ const useNodeStore = create<NodeState>()(
         await addNode(newNode, canvasId);
         setNodes((nodes) => [
           ...nodes.filter((node) => node.type !== 'selection_menu'),
-          newNode // Include the newly created selection_menu node
+          newNode
         ]);
         console.log('useNodeStore: Selection menu node added', newNode);
       } catch (error) {
