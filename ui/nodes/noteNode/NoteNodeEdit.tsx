@@ -63,8 +63,8 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     id: data.id,
     title: data.title,
     content: data.content,
-    backgroundColor: data.background_color,
-    textColor: data.text_color,
+    backgroundColor: data.backgroundColor,
+    textColor: data.textColor,
     width,
     height,
     position
@@ -74,11 +74,13 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   const [title, setTitle] = useState(data.title || 'Untitled Note');
   const [content, setContent] = useState(data.content || '');
   const [backgroundColor, setBackgroundColor] = useState(
-    data.background_color || '#F4F4F4'
+    data.backgroundColor || '#F4F4F4'
   );
-  const [textColor, setTextColor] = useState(data.text_color || '#575757');
-  const [tags, setTags] = useState<string[]>([]);
-  const [attachedFiles, setAttachedFiles] = useState<string[]>([]);
+  const [textColor, setTextColor] = useState(data.textColor || '#575757');
+  const [tags, setTags] = useState<string[]>(data.tags || []);
+  const [attachedFiles, setAttachedFiles] = useState<string[]>(
+    data.attachedFiles || []
+  );
   const [isContainerSelected, setIsContainerSelected] = useState(false);
   const [nodeWidth, setNodeWidth] = useState(width);
   const [nodeHeight, setNodeHeight] = useState(height);
@@ -144,7 +146,11 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
       debounce(async (commonData, specificData) => {
         try {
           const updateNode = useNodeStore.getState().updateNode;
-          await updateNode(data.id, { ...commonData, data: specificData }, '');
+          await updateNode(
+            data.id,
+            { ...commonData, data: specificData },
+            'note'
+          );
         } catch (error) {
           console.error('Error updating node:', error);
         }
@@ -163,13 +169,13 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   useEffect(() => {
     const commonData = {
       title,
-      background_color: backgroundColor,
-      text_color: textColor,
-      edit_width: nodeWidth,
-      edit_height: nodeHeight
+      backgroundColor,
+      textColor,
+      editWidth: nodeWidth,
+      editHeight: nodeHeight
     };
 
-    const specificData = { content };
+    const specificData = { content, tags, attachedFiles };
 
     debouncedUpdateNodeData(commonData, specificData);
   }, [
@@ -179,6 +185,8 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     textColor,
     nodeWidth,
     nodeHeight,
+    tags,
+    attachedFiles,
     debouncedUpdateNodeData
   ]);
 
@@ -278,17 +286,17 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   const handleSave = useCallback(async () => {
     const commonData = {
       title,
-      background_color: backgroundColor,
-      text_color: textColor,
-      edit_width: nodeWidth,
-      edit_height: nodeHeight
+      backgroundColor,
+      textColor,
+      editWidth: nodeWidth,
+      editHeight: nodeHeight
     };
 
-    const specificData = { content };
+    const specificData = { content, tags, attachedFiles };
 
     try {
       const updateNode = useNodeStore.getState().updateNode;
-      await updateNode(data.id, { ...commonData, data: specificData }, '');
+      await updateNode(data.id, { ...commonData, data: specificData }, 'note');
     } catch (error) {
       console.error('Error saving node:', error);
     }
@@ -299,7 +307,9 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     textColor,
     nodeWidth,
     nodeHeight,
-    content
+    content,
+    tags,
+    attachedFiles
   ]);
 
   const memoizedTagFileContainer = useMemo(
