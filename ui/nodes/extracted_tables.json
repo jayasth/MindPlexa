@@ -1,5 +1,82 @@
 [
   {
+    "table_name": "canvases",
+    "columns": [
+      {
+        "column_name": "content",
+        "data_type": "text",
+        "is_nullable": "YES",
+        "default": "None",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      },
+      {
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "is_nullable": "YES",
+        "default": "now()",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      },
+      {
+        "column_name": "description",
+        "data_type": "text",
+        "is_nullable": "YES",
+        "default": "None",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      },
+      {
+        "column_name": "id",
+        "data_type": "uuid",
+        "is_nullable": "NO",
+        "default": "gen_random_uuid()",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      },
+      {
+        "column_name": "name",
+        "data_type": "text",
+        "is_nullable": "NO",
+        "default": "None",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      },
+      {
+        "column_name": "nodes",
+        "data_type": "jsonb",
+        "is_nullable": "YES",
+        "default": "None",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      },
+      {
+        "column_name": "updated_at",
+        "data_type": "timestamp with time zone",
+        "is_nullable": "YES",
+        "default": "now()",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      },
+      {
+        "column_name": "user_id",
+        "data_type": "uuid",
+        "is_nullable": "YES",
+        "default": "None",
+        "foreign_key": "canvases_user_id_fkey",
+        "references_table": "users",
+        "references_column": "id"
+      }
+    ]
+  },
+  {
     "table_name": "draw_nodes",
     "columns": [
       {
@@ -91,6 +168,56 @@
     ]
   },
   {
+    "table_name": "node_attachments",
+    "columns": [
+      {
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "is_nullable": "YES",
+        "default": "now()",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      },
+      {
+        "column_name": "id",
+        "data_type": "uuid",
+        "is_nullable": "NO",
+        "default": "gen_random_uuid()",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      },
+      {
+        "column_name": "node_id",
+        "data_type": "uuid",
+        "is_nullable": "NO",
+        "default": "None",
+        "foreign_key": "node_attachments_node_id_fkey",
+        "references_table": "nodes",
+        "references_column": "id"
+      },
+      {
+        "column_name": "type",
+        "data_type": "character varying",
+        "is_nullable": "NO",
+        "default": "None",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      },
+      {
+        "column_name": "url",
+        "data_type": "character varying",
+        "is_nullable": "NO",
+        "default": "None",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      }
+    ]
+  },
+  {
     "table_name": "node_canvas_link",
     "columns": [
       {
@@ -110,6 +237,79 @@
         "foreign_key": "node_canvas_link_node_id_fkey",
         "references_table": "nodes",
         "references_column": "id"
+      }
+    ]
+  },
+  {
+    "table_name": "node_history",
+    "columns": [
+      {
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "is_nullable": "YES",
+        "default": "now()",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      },
+      {
+        "column_name": "data",
+        "data_type": "jsonb",
+        "is_nullable": "NO",
+        "default": "None",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      },
+      {
+        "column_name": "id",
+        "data_type": "uuid",
+        "is_nullable": "NO",
+        "default": "gen_random_uuid()",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      },
+      {
+        "column_name": "node_id",
+        "data_type": "uuid",
+        "is_nullable": "NO",
+        "default": "None",
+        "foreign_key": "node_history_node_id_fkey",
+        "references_table": "nodes",
+        "references_column": "id"
+      },
+      {
+        "column_name": "version",
+        "data_type": "integer",
+        "is_nullable": "NO",
+        "default": "None",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      }
+    ]
+  },
+  {
+    "table_name": "node_tags",
+    "columns": [
+      {
+        "column_name": "node_id",
+        "data_type": "uuid",
+        "is_nullable": "NO",
+        "default": "None",
+        "foreign_key": "node_tags_node_id_fkey",
+        "references_table": "nodes",
+        "references_column": "id"
+      },
+      {
+        "column_name": "tag",
+        "data_type": "character varying",
+        "is_nullable": "NO",
+        "default": "None",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
       }
     ]
   },

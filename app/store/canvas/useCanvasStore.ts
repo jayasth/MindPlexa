@@ -253,6 +253,9 @@ const useCanvasStore = create<CanvasState>()(
           }
 
           set({ isLoading: false, lastLoadTime: Date.now() });
+
+          // Trigger saving canvas state after loading
+          get().saveCanvas();
         } catch (error) {
           console.error('useCanvasStore: Error loading canvas:', error);
           set({ isLoading: false });
