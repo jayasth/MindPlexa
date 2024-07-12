@@ -805,17 +805,6 @@ export type Database = {
         }
         Returns: string
       }
-      update_node_transaction: {
-        Args: {
-          p_node_id: string
-          p_node_type: string
-          p_node_data: Json
-          p_specific_node_data: Json
-          p_tags: string[]
-          p_attachments: Json[]
-        }
-        Returns: Json
-      }
     }
     Enums: {
       node_type:

@@ -153,15 +153,17 @@ const useNodeStore = create<NodeState>()(
 
               updateNodeInDB(
                 id,
-                nodeUpdates,
-                specificUpdates,
                 existingNode.type as
                   | 'note'
                   | 'task'
                   | 'table'
                   | 'calendar'
                   | 'draw'
-                  | 'selection_menu'
+                  | 'selection_menu',
+                {
+                  nodeData: nodeUpdates,
+                  ...specificUpdates
+                }
               );
 
               state.nodeInternals.set(id, updatedNode);
@@ -246,15 +248,16 @@ const useNodeStore = create<NodeState>()(
             // Update the is_editing status in the database
             updateNodeInDB(
               nodeId,
-              { is_editing: updatedNode.data.isEditing },
-              {},
               node.type as
                 | 'note'
                 | 'task'
                 | 'table'
                 | 'calendar'
                 | 'draw'
-                | 'selection_menu'
+                | 'selection_menu',
+              {
+                nodeData: { is_editing: updatedNode.data.isEditing }
+              }
             );
           }
         })
@@ -535,15 +538,17 @@ const useNodeStore = create<NodeState>()(
                   // Update node in database
                   updateNodeInDB(
                     updatedNode.id,
-                    nodeUpdates,
-                    specificUpdates,
                     updatedNode.type as
                       | 'note'
                       | 'task'
                       | 'table'
                       | 'calendar'
                       | 'draw'
-                      | 'selection_menu'
+                      | 'selection_menu',
+                    {
+                      nodeData: nodeUpdates,
+                      ...specificUpdates
+                    }
                   );
                 }
 

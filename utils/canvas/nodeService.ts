@@ -284,78 +284,84 @@ export const createNode = async (
 };
 
 export const updateNode = async (
-  id: string,
-  updates: Partial<Database['public']['Tables']['nodes']['Update']>,
-  specificUpdates: any,
-  nodeType: Database['public']['Enums']['node_type']
+  nodeId: string,
+  nodeType: Database['public']['Enums']['node_type'],
+  updates: {
+    nodeData?: Database['public']['Tables']['nodes']['Update'];
+    noteData?: Database['public']['Tables']['note_nodes']['Update'];
+    taskData?: Database['public']['Tables']['task_nodes']['Update'];
+    calendarData?: Database['public']['Tables']['calendar_nodes']['Update'];
+    tableData?: Database['public']['Tables']['table_nodes']['Update'];
+    drawData?: Database['public']['Tables']['draw_nodes']['Update'];
+    tags?: string[];
+    attachments?: { id: string; url: string; type: string }[];
+  }
 ): Promise<{ data?: any; error?: any }> => {
-  console.log('nodeService: Updating node:', {
-    id,
-    nodeType,
-    updates,
-    specificUpdates
-  });
+  console.log('nodeService: Updating node:', { nodeId, nodeType, updates });
 
-  // Update the main nodes table
-  const { data: nodeData, error: nodeError } = await supabase
-    .from('nodes')
-    .update(toSnakeCase(updates))
-    .eq('id', id)
-    .select()
-    .single()
-    .then(({ data, error }) => ({ data: toCamelCase(data), error }));
+  const { nodeData, tags, attachments, ...specificNodeData } = updates;
 
-  if (nodeError) {
-    console.error('nodeService: Error updating node properties:', nodeError);
-    return { error: nodeError };
+  if (nodeData) {
+    const { data: updatedNodeData, error: nodeUpdateError } =
+      await updateNodeInTable('nodes', nodeData, nodeId);
+
+    if (nodeUpdateError) {
+      console.error('nodeService: Error updating node:', nodeUpdateError);
+      return { error: nodeUpdateError };
+    }
+
+    console.log('nodeService: Node updated:', updatedNodeData);
   }
 
-  console.log('nodeService: Node properties updated:', nodeData);
-
-  // Update node-specific table
-  if (nodeType !== 'selection_menu') {
+  if (nodeType !== 'selection_menu' && specificNodeData) {
     const tableName = `${nodeType}_nodes` as keyof Database['public']['Tables'];
-    const nodeSpecificUpdates = { ...specificUpdates };
-    delete nodeSpecificUpdates.tags;
-    delete nodeSpecificUpdates.attachedFiles;
+    const { data: updatedSpecificNodeData, error: specificNodeUpdateError } =
+      await updateNodeInTable(tableName, specificNodeData, nodeId);
 
-    const { data: specificNodeData, error: specificNodeError } =
-      await updateNodeInTable(tableName, nodeSpecificUpdates, id);
-
-    if (specificNodeError) {
+    if (specificNodeUpdateError) {
       console.error(
         `nodeService: Error updating ${nodeType} node:`,
-        specificNodeError
+        specificNodeUpdateError
       );
-      return { error: specificNodeError };
+      return { error: specificNodeUpdateError };
     }
 
-    console.log(`nodeService: ${nodeType} node updated:`, specificNodeData);
+    console.log(
+      `nodeService: ${nodeType} node updated:`,
+      updatedSpecificNodeData
+    );
   }
 
-  // Handle tags
-  if (specificUpdates?.tags && Array.isArray(specificUpdates.tags)) {
-    const { error: tagError } = await handleTags(id, specificUpdates.tags);
+  if (tags) {
+    const { error: tagError } = await handleTags(nodeId, tags);
+
     if (tagError) {
+      console.error('nodeService: Error updating tags:', tagError);
       return { error: tagError };
     }
+
+    console.log('nodeService: Tags updated successfully');
   }
 
-  // Handle attachments
-  if (
-    specificUpdates?.attachedFiles &&
-    Array.isArray(specificUpdates.attachedFiles)
-  ) {
+  if (attachments) {
     const { error: attachmentError } = await handleAttachments(
-      id,
-      specificUpdates.attachedFiles
+      nodeId,
+      attachments
     );
+
     if (attachmentError) {
+      console.error(
+        'nodeService: Error updating attachments:',
+        attachmentError
+      );
       return { error: attachmentError };
     }
+
+    console.log('nodeService: Attachments updated successfully');
   }
 
-  return { data: { ...nodeData, ...specificUpdates } };
+  console.log('nodeService: Node updated successfully');
+  return { data: { nodeId } };
 };
 
 export const deleteNode = async (
