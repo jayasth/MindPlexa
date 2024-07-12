@@ -1,6 +1,6 @@
 {
   "type": "module",
-  "name": "MindPlexa",
+  "name": "mindplexa",
   "version": "1.0.1",
   "private": true,
   "_moduleAliases": {
