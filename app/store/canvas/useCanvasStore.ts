@@ -21,18 +21,10 @@ interface CanvasState {
   saveCanvasTimeout?: NodeJS.Timeout;
 }
 
-const processNode = (node: any, nodeData: any) => {
+const processNode = (node: any) => {
   if (!node) return null;
 
   console.log('useCanvasStore: Processing node:', node);
-
-  let specificNodeData = {};
-  if (node.type !== 'selection_menu') {
-    specificNodeData =
-      nodeData?.[`${node.type}Nodes`]?.find(
-        (specificNode) => specificNode.nodeId === node.id
-      ) || {};
-  }
 
   let position;
   try {
@@ -45,16 +37,7 @@ const processNode = (node: any, nodeData: any) => {
     position = { x: 200, y: 200 };
   }
 
-  const isDesktop = window.innerWidth >= 768; // Assuming 768px as the breakpoint
-
-  const dimensions = {
-    viewWidth: node.viewWidth,
-    viewHeight: node.viewHeight,
-    editWidth: node.editWidth,
-    editHeight: node.editHeight,
-    mobileEditWidth: node.mobileEditWidth,
-    mobileEditHeight: node.mobileEditHeight
-  };
+  const isDesktop = window.innerWidth >= 768;
 
   return {
     id: node.id,
@@ -62,12 +45,11 @@ const processNode = (node: any, nodeData: any) => {
     position,
     data: {
       ...node,
-      ...specificNodeData,
+      ...node.data,
       backgroundColor: node.backgroundColor,
       textColor: node.textColor,
       isTemporary: node.isTemporary,
-      isEditing: node.isEditing,
-      ...dimensions
+      isEditing: node.isEditing
     },
     width: node.isEditing
       ? (isDesktop ? node.editWidth : node.mobileEditWidth) || node.viewWidth
@@ -77,7 +59,6 @@ const processNode = (node: any, nodeData: any) => {
       : node.viewHeight
   };
 };
-
 const processEdge = (edge: any) => ({
   id: edge.id,
   source: edge.sourceNodeId || '',
@@ -88,7 +69,7 @@ const processEdge = (edge: any) => ({
 const processNodeData = (nodeCanvasLink: any, nodeData: any) => {
   return (
     nodeCanvasLink
-      ?.map((link: any) => processNode(link.nodes, nodeData))
+      ?.map((link: any) => processNode(link.nodes))
       .filter((node: any): node is Node => node !== null) || []
   );
 };
@@ -140,29 +121,16 @@ const useCanvasStore = create<CanvasState>()(
 
         try {
           const canvasData = await fetchCanvas(canvasId);
-          const {
-            nodes: nodeCanvasLink,
-            edges,
-            ...canvasProperties
-          } = canvasData;
+          console.log('useCanvasStore: Fetched canvas data:', canvasData);
 
-          const nodeData = {
-            noteNodes: canvasData.noteNodes,
-            taskNodes: canvasData.taskNodes,
-            calendarNodes: canvasData.calendarNodes,
-            tableNodes: canvasData.tableNodes,
-            drawNodes: canvasData.drawNodes
-          };
-
-          const nodes = processNodeData(nodeCanvasLink, nodeData);
-          const processedEdges = processEdgeData(edges);
+          const nodes = canvasData.nodes.map((node) => processNode(node));
+          console.log('useCanvasStore: Processed nodes:', nodes);
 
           useNodeStore.getState().setNodes(nodes);
-          useEdgeStore.getState().setEdges(processedEdges);
+          useEdgeStore.getState().setEdges(canvasData.edges || []);
 
           set({
             canvasId,
-            ...canvasProperties,
             lastLoadTime: Date.now(),
             isLoading: false
           });

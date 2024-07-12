@@ -5,10 +5,22 @@ import { toCamelCase, toSnakeCase } from '@/utils/caseConversion';
 const supabase = createClient();
 
 export const fetchCanvas = async (canvasId: string) => {
+  console.log('canvasService: Fetching canvas with ID:', canvasId);
+
   const { data: canvasData, error: canvasError } = await supabase
     .from('canvases')
     .select(
-      '*, nodes(*, note_nodes(*), task_nodes(*), calendar_nodes(*), table_nodes(*), draw_nodes(*), node_tags(*), node_attachments(*))'
+      `*, 
+      nodes(
+        *, 
+        note_nodes(*), 
+        task_nodes(*), 
+        calendar_nodes(*), 
+        table_nodes(*), 
+        draw_nodes(*),
+        node_tags(*),
+        node_attachments(*)
+      )`
     )
     .eq('id', canvasId)
     .single();
@@ -17,6 +29,8 @@ export const fetchCanvas = async (canvasId: string) => {
     console.error('canvasService: Error fetching canvas:', canvasError);
     throw canvasError;
   }
+
+  console.log('canvasService: Raw canvas data:', canvasData);
 
   const canvas = toCamelCase(canvasData);
 
@@ -41,12 +55,13 @@ export const fetchCanvas = async (canvasId: string) => {
     };
   });
 
+  console.log('canvasService: Organized nodes:', organizedNodes);
+
   return {
     ...canvas,
     nodes: organizedNodes
   };
 };
-
 export const saveCanvasState = async (canvasId: string, canvasState: any) => {
   const { nodes, ...canvasData } = canvasState;
 
