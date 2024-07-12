@@ -267,63 +267,95 @@ export const updateNode = async (
   }
 
   // Handle tags
-  if (specificUpdates.tags && Array.isArray(specificUpdates.tags)) {
-    const { error: tagError } = await supabase
-      .from('node_tags')
-      .delete()
-      .eq('node_id', id);
-
+  if (specificUpdates?.tags && Array.isArray(specificUpdates.tags)) {
+    const { error: tagError } = await handleTags(id, specificUpdates.tags);
     if (tagError) {
-      console.error('nodeService: Error deleting existing tags:', tagError);
       return { error: tagError };
-    }
-
-    for (const tag of specificUpdates.tags) {
-      const { error: insertTagError } = await insertNodeTag(id, tag);
-
-      if (insertTagError) {
-        console.error('nodeService: Error inserting tag:', insertTagError);
-        return { error: insertTagError };
-      }
     }
   }
 
   // Handle attachments
   if (
-    specificUpdates.attachedFiles &&
+    specificUpdates?.attachedFiles &&
     Array.isArray(specificUpdates.attachedFiles)
   ) {
-    const { error: attachmentError } = await supabase
-      .from('node_attachments')
-      .delete()
-      .eq('node_id', id);
-
+    const { error: attachmentError } = await handleAttachments(
+      id,
+      specificUpdates.attachedFiles
+    );
     if (attachmentError) {
-      console.error(
-        'nodeService: Error deleting existing attachments:',
-        attachmentError
-      );
       return { error: attachmentError };
-    }
-
-    for (const file of specificUpdates.attachedFiles) {
-      const { error: insertAttachmentError } = await insertNodeAttachment(
-        id,
-        file.url,
-        file.type
-      );
-
-      if (insertAttachmentError) {
-        console.error(
-          'nodeService: Error inserting attachment:',
-          insertAttachmentError
-        );
-        return { error: insertAttachmentError };
-      }
     }
   }
 
   return { data: { ...nodeData, ...specificUpdates } };
+};
+
+const handleTags = async (
+  nodeId: string,
+  tags: string[]
+): Promise<{ error?: any }> => {
+  const { error: tagDeleteError } = await supabase
+    .from('node_tags')
+    .delete()
+    .eq('node_id', nodeId);
+
+  if (tagDeleteError) {
+    console.error('nodeService: Error deleting existing tags:', tagDeleteError);
+    return { error: tagDeleteError };
+  }
+
+  for (const tag of tags) {
+    const { error: insertTagError } = await insertNodeTag(nodeId, tag);
+
+    if (insertTagError) {
+      console.error('nodeService: Error inserting tag:', insertTagError);
+      return { error: insertTagError };
+    }
+  }
+
+  return {};
+};
+
+const handleAttachments = async (
+  nodeId: string,
+  attachedFiles: { id: string; url: string; type: string }[]
+): Promise<{ error?: any }> => {
+  const { error: attachmentDeleteError } = await supabase
+    .from('node_attachments')
+    .delete()
+    .eq('node_id', nodeId);
+
+  if (attachmentDeleteError) {
+    console.error(
+      'nodeService: Error deleting existing attachments:',
+      attachmentDeleteError
+    );
+    return { error: attachmentDeleteError };
+  }
+
+  for (const file of attachedFiles) {
+    if (!file.url) {
+      console.error('nodeService: Missing URL for attachment:', file);
+      return { error: 'Missing URL for attachment' };
+    }
+
+    const { error: insertAttachmentError } = await insertNodeAttachment(
+      nodeId,
+      file.url,
+      file.type
+    );
+
+    if (insertAttachmentError) {
+      console.error(
+        'nodeService: Error inserting attachment:',
+        insertAttachmentError
+      );
+      return { error: insertAttachmentError };
+    }
+  }
+
+  return {};
 };
 
 export const deleteNode = async (

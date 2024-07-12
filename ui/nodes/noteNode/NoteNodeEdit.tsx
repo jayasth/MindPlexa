@@ -151,7 +151,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
           await updateNode(
             data.id,
             { ...commonData, data: specificData },
-            'note'
+            data.id
           );
         } catch (error) {
           console.error('Error updating node:', error);
