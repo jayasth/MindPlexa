@@ -406,7 +406,167 @@ const useNodeStore = create<NodeState>()(
       }
     },
     onNodesChange: async (changes, canvasId) => {
-      // Implementation will be added later
+      try {
+        console.log('useNodeStore: Before onNodesChange', get().nodes);
+        set(
+          produce((state: NodeState) => {
+            const updatedNodes = state.nodes.map((node) => {
+              const change = changes.find((change) => change.id === node.id);
+              if (change) {
+                let updatedNode = { ...node };
+                let hasChanges = false;
+                let changedProperties = {};
+
+                switch (change.type) {
+                  case 'position':
+                    if (
+                      JSON.stringify(updatedNode.position) !==
+                      JSON.stringify(change.position)
+                    ) {
+                      updatedNode = {
+                        ...updatedNode,
+                        position: change.position
+                      };
+                      changedProperties['position'] = change.position;
+                      hasChanges = true;
+                    }
+                    break;
+                  case 'dimensions':
+                    if (
+                      updatedNode.width !== change.dimensions.width ||
+                      updatedNode.height !== change.dimensions.height
+                    ) {
+                      updatedNode = {
+                        ...updatedNode,
+                        width: change.dimensions.width,
+                        height: change.dimensions.height
+                      };
+                      changedProperties['width'] = change.dimensions.width;
+                      changedProperties['height'] = change.dimensions.height;
+                      hasChanges = true;
+                    }
+                    break;
+                  case 'data':
+                    if (
+                      JSON.stringify(updatedNode.data) !==
+                      JSON.stringify(change.data)
+                    ) {
+                      updatedNode = {
+                        ...updatedNode,
+                        data: { ...node.data, ...change.data }
+                      };
+                      changedProperties['data'] = change.data;
+                      hasChanges = true;
+                    }
+                    break;
+                  case 'style':
+                    if (
+                      JSON.stringify(updatedNode.style) !==
+                      JSON.stringify(change.style)
+                    ) {
+                      updatedNode = {
+                        ...updatedNode,
+                        style: { ...node.style, ...change.style }
+                      };
+                      changedProperties['style'] = change.style;
+                      hasChanges = true;
+                    }
+                    break;
+                }
+                if (hasChanges) {
+                  console.log('useNodeStore: Node changes detected', {
+                    nodeId: updatedNode.id,
+                    changedProperties
+                  });
+
+                  // Prepare updates for database
+                  const nodeUpdates = {
+                    position: JSON.stringify(updatedNode.position),
+                    backgroundColor: updatedNode.data?.backgroundColor,
+                    textColor: updatedNode.data?.textColor,
+                    title: updatedNode.data?.title,
+                    isEditing: updatedNode.data?.isEditing,
+                    zIndex: updatedNode.data?.zIndex,
+                    editWidth: updatedNode.data?.editWidth,
+                    editHeight: updatedNode.data?.editHeight,
+                    mobileEditWidth: updatedNode.data?.mobileEditWidth,
+                    mobileEditHeight: updatedNode.data?.mobileEditHeight,
+                    parentNodeId: updatedNode.data?.parentNodeId,
+                    viewWidth: updatedNode.data?.viewWidth,
+                    viewHeight: updatedNode.data?.viewHeight,
+                    isTemporary: updatedNode.data?.isTemporary,
+                    version: updatedNode.data?.version
+                  };
+
+                  // Prepare specific updates based on node type
+                  let specificUpdates: any = {};
+                  switch (updatedNode.type) {
+                    case 'note':
+                      specificUpdates = {
+                        content: updatedNode.data?.content || ''
+                      };
+                      break;
+                    case 'task':
+                      specificUpdates = {
+                        tasks: JSON.stringify(updatedNode.data?.tasks || [])
+                      };
+                      break;
+                    case 'table':
+                      specificUpdates = {
+                        columns: JSON.stringify(
+                          updatedNode.data?.columns || []
+                        ),
+                        rows: JSON.stringify(updatedNode.data?.rows || [])
+                      };
+                      break;
+                    case 'calendar':
+                      specificUpdates = {
+                        events: JSON.stringify(updatedNode.data?.events || []),
+                        view: updatedNode.data?.view || 'month'
+                      };
+                      break;
+                    case 'draw':
+                      specificUpdates = {
+                        drawingData: updatedNode.data?.drawingData || ''
+                      };
+                      break;
+                  }
+
+                  // Update node in database
+                  updateNodeInDB(
+                    updatedNode.id,
+                    nodeUpdates,
+                    specificUpdates,
+                    updatedNode.type as
+                      | 'note'
+                      | 'task'
+                      | 'table'
+                      | 'calendar'
+                      | 'draw'
+                      | 'selection_menu'
+                  );
+                }
+
+                return updatedNode;
+              }
+              return node;
+            });
+
+            // Update nodeInternals
+            const updatedNodeInternals = new Map(state.nodeInternals);
+            updatedNodes.forEach((node) =>
+              updatedNodeInternals.set(node.id, node)
+            );
+
+            console.log('useNodeStore: Nodes updated', updatedNodes);
+            state.nodes = updatedNodes;
+            state.nodeInternals = updatedNodeInternals;
+          })
+        );
+        console.log('useNodeStore: After onNodesChange', get().nodes);
+      } catch (error) {
+        console.error('useNodeStore: Error updating nodes', error);
+      }
     }
   }))
 );
