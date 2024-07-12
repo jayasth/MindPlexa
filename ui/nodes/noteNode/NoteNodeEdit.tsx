@@ -27,12 +27,10 @@ import {
   handleClose,
   handleDelete,
   colorCombinations,
+  handleAddTag,
+  handleRemoveAttachedFile,
   handleDuplicate,
   handleAttachmentPreview
-} from '@/ui/nodes/common/CommonNodeFunctions';
-import {
-  handleAddTag,
-  handleRemoveAttachedFile
 } from '@/ui/nodes/common/CommonNodeFunctions';
 import Quill from 'quill';
 import 'quill/dist/quill.snow.css';
@@ -80,9 +78,9 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   );
   const [textColor, setTextColor] = useState(data.textColor || '#575757');
   const [tags, setTags] = useState<string[]>(data.tags || []);
-  const [attachedFiles, setAttachedFiles] = useState<
-    { id: string; url: string; type: string }[]
-  >(data.attachedFiles || []);
+  const [attachedFiles, setAttachedFiles] = useState<string[]>(
+    data.attachedFiles || []
+  );
   const [isContainerSelected, setIsContainerSelected] = useState(false);
   const [nodeWidth, setNodeWidth] = useState(width);
   const [nodeHeight, setNodeHeight] = useState(height);
@@ -151,7 +149,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
           await updateNode(
             data.id,
             { ...commonData, data: specificData },
-            data.id
+            'note'
           );
         } catch (error) {
           console.error('Error updating node:', error);
@@ -238,26 +236,15 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     [data.id, tags]
   );
 
-  const onAttachFiles = useCallback(
-    (files: { id: string; url: string; type: string }[]) => {
-      setAttachedFiles((prevFiles) => [...prevFiles, ...files]);
-      const updateNode = useNodeStore.getState().updateNode;
-      updateNode(
-        data.id,
-        { data: { attachedFiles: [...attachedFiles, ...files] } },
-        data.id
-      );
-    },
-    [data.id, attachedFiles]
-  );
+  const onAttachFiles = useCallback((files: string[]) => {
+    setAttachedFiles(files);
+  }, []);
 
   const onRemoveFile = useCallback(
-    (fileId: string) => {
-      const updatedFiles = attachedFiles.filter((file) => file.id !== fileId);
-      setAttachedFiles(updatedFiles);
-      handleRemoveAttachedFile(data.id, fileId, () => {}, data.id);
+    (fileToRemove: string) => {
+      handleRemoveAttachedFile(data.id, fileToRemove, () => {}, data.id);
     },
-    [data.id, attachedFiles]
+    [data.id]
   );
 
   useEffect(() => {
