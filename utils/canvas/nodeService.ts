@@ -227,65 +227,71 @@ export const createNode = async (
     z_index: data.z_index || 0
   };
 
-  const { data: nodeData, error: nodeError } = await insertNode(nodeInsert);
+  try {
+    const { data: nodeData, error: nodeError } = await insertNode(nodeInsert);
 
-  if (nodeError) {
-    console.error('nodeService: Error inserting node:', nodeError);
-    return { error: nodeError };
-  }
-
-  console.log('nodeService: Node created:', nodeData);
-
-  const { error: linkError } = await insertNodeCanvasLink(nodeId, canvasId);
-
-  if (linkError) {
-    console.error('nodeService: Error linking node to canvas:', linkError);
-    return { error: linkError };
-  }
-
-  console.log('nodeService: Node linked to canvas:', {
-    node_id: nodeId,
-    canvas_id: canvasId
-  });
-
-  if (nodeType !== 'selection_menu') {
-    const specificNodeInsert = {
-      id: uuidv4(),
-      node_id: nodeId,
-      ...(data[`${nodeType}Data`] || {})
-    };
-
-    const tableName = `${nodeType}_nodes` as keyof Database['public']['Tables'];
-
-    const { data: specificNodeData, error: specificNodeError } =
-      await insertNodeSpecificData(tableName, specificNodeInsert);
-
-    if (specificNodeError) {
-      console.error(
-        `nodeService: Error inserting ${nodeType} node:`,
-        specificNodeError
-      );
-      return { error: specificNodeError };
+    if (nodeError) {
+      console.error('nodeService: Error inserting node:', nodeError);
+      return { error: nodeError };
     }
 
-    console.log(`nodeService: ${nodeType} node created:`, specificNodeData);
+    console.log('nodeService: Node created:', nodeData);
 
-    return {
-      data: {
-        ...nodeData,
-        ...specificNodeData,
-        id: nodeId,
-        nodeId: nodeId
+    const { error: linkError } = await insertNodeCanvasLink(nodeId, canvasId);
+
+    if (linkError) {
+      console.error('nodeService: Error linking node to canvas:', linkError);
+      return { error: linkError };
+    }
+
+    console.log('nodeService: Node linked to canvas:', {
+      node_id: nodeId,
+      canvas_id: canvasId
+    });
+
+    if (nodeType !== 'selection_menu') {
+      const specificNodeInsert = {
+        id: uuidv4(),
+        node_id: nodeId,
+        ...(data[`${nodeType}Data`] || {})
+      };
+
+      const tableName =
+        `${nodeType}_nodes` as keyof Database['public']['Tables'];
+
+      const { data: specificNodeData, error: specificNodeError } =
+        await insertNodeSpecificData(tableName, specificNodeInsert);
+
+      if (specificNodeError) {
+        console.error(
+          `nodeService: Error inserting ${nodeType} node:`,
+          specificNodeError
+        );
+        return { error: specificNodeError };
       }
-    };
-  } else {
-    return {
-      data: {
-        ...nodeData,
-        id: nodeId,
-        nodeId: nodeId
-      }
-    };
+
+      console.log(`nodeService: ${nodeType} node created:`, specificNodeData);
+
+      return {
+        data: {
+          ...nodeData,
+          ...specificNodeData,
+          id: nodeId,
+          nodeId: nodeId
+        }
+      };
+    } else {
+      return {
+        data: {
+          ...nodeData,
+          id: nodeId,
+          nodeId: nodeId
+        }
+      };
+    }
+  } catch (error) {
+    console.error('nodeService: Unexpected error:', error);
+    return { error };
   }
 };
 
