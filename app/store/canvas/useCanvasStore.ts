@@ -118,12 +118,11 @@ const useCanvasStore = create<CanvasState>()(
       },
       loadCanvas: async (canvasId: string) => {
         set({ isLoading: true });
-
         try {
           const canvasData = await fetchCanvas(canvasId);
           console.log('useCanvasStore: Fetched canvas data:', canvasData);
 
-          const nodes = canvasData.nodes.map((node) => processNode(node));
+          const nodes = canvasData.nodes.map(processNode);
           console.log('useCanvasStore: Processed nodes:', nodes);
 
           useNodeStore.getState().setNodes(nodes);

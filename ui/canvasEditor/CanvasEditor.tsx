@@ -226,15 +226,15 @@ export default function CanvasEditor({ canvasId: initialCanvasId }) {
           type: 'customEdge'
         };
 
-        // Add edge to local state
-        addEdge(newEdge);
-
-        // Create edge in the database
-        const { data: createdEdge, error } = await createEdge({
-          sourceNodeId: connection.source,
-          targetNodeId: connection.target,
-          canvasId: initialCanvasId
-        });
+        // Add edge to local state and database simultaneously
+        const [, { data: createdEdge, error }] = await Promise.all([
+          addEdge(newEdge),
+          createEdge({
+            sourceNodeId: connection.source,
+            targetNodeId: connection.target,
+            canvasId: initialCanvasId
+          })
+        ]);
 
         if (error) {
           console.error('Failed to create edge in database:', error);

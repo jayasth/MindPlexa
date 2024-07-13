@@ -50,43 +50,109 @@ interface NodeRendererProps extends NodeProps {
   selectNodesOnDrag?: boolean;
 }
 
-const NodeRenderer: React.FC<NodeRendererProps> = ({
-  type,
-  data,
-  isConnectable,
-  selected,
-  id,
-  dragging,
-  zIndex,
-  xPos,
-  yPos,
-  selectNodesOnDrag,
-  onNodeResizeStop,
-  ...props
-}) => {
-  const node = useNodeStore((state) => state.nodes.find((n) => n.id === id));
-  const updateNode = useNodeStore((state) => state.updateNode);
-  const toggleEditMode = useNodeStore((state) => state.toggleEditMode);
-  const canvasId = useCanvasStore((state) => state.canvasId);
+const NodeRenderer: React.FC<NodeRendererProps> = React.memo(
+  ({
+    type,
+    data,
+    isConnectable,
+    selected,
+    id,
+    dragging,
+    zIndex,
+    xPos,
+    yPos,
+    selectNodesOnDrag,
+    onNodeResizeStop,
+    ...props
+  }) => {
+    const node = useNodeStore((state) => state.nodes.find((n) => n.id === id));
+    const updateNode = useNodeStore((state) => state.updateNode);
+    const toggleEditMode = useNodeStore((state) => state.toggleEditMode);
+    const canvasId = useCanvasStore((state) => state.canvasId);
 
-  useEffect(() => {
-    if (!node) {
-      console.error(`Node not found, ID: ${id}`);
-    }
-  }, [node, id]);
+    useEffect(() => {
+      if (!node) {
+        console.error(`Node not found, ID: ${id}`);
+      }
+    }, [node, id]);
 
-  const nodeContent = useMemo(() => {
-    if (!node) return null;
+    const nodeContent = useMemo(() => {
+      if (!node) return null;
 
-    const commonProps = {
+      const commonProps = {
+        id,
+        type,
+        data: {
+          ...data,
+          isEditing: node.data.isEditing,
+          tags: node.data.tags || [],
+          attachedFiles: node.data.attachedFiles || []
+        },
+        isConnectable,
+        selected,
+        dragging,
+        zIndex,
+        xPos,
+        yPos,
+        selectNodesOnDrag,
+        ...props
+      };
+
+      const position = { x: xPos, y: yPos };
+      const dimensions = getNodeSpecificProperties(type, node.data.isEditing);
+
+      if (type === 'selection_menu') {
+        return (
+          <NodeSelectionMenu
+            {...commonProps}
+            position={position}
+            parentNode={data.parentNode}
+            width={dimensions.width}
+            height={dimensions.height}
+          />
+        );
+      }
+
+      const nodeComponents = {
+        note: { view: NoteNodeView, edit: NoteNodeEdit },
+        task: { view: TaskNodeView, edit: TaskNodeEdit },
+        table: { view: TableNodeView, edit: TableNodeEdit },
+        calendar: { view: CalendarNodeView, edit: CalendarNodeEdit },
+        draw: { view: DrawNodeView, edit: DrawNodeEdit }
+      };
+
+      const NodeComponent = node.data.isEditing
+        ? nodeComponents[type]?.edit
+        : nodeComponents[type]?.view;
+
+      if (!NodeComponent) {
+        console.error('Unknown node type:', type);
+        return null;
+      }
+
+      const handleEdit = () => {
+        toggleEditMode(id);
+        updateNode(
+          id,
+          { data: { ...node.data, isEditing: !node.data.isEditing } },
+          canvasId
+        );
+      };
+
+      return (
+        <NodeComponent
+          {...commonProps}
+          {...dimensions}
+          position={position}
+          onNodeResizeStop={onNodeResizeStop || (() => {})}
+          onEdit={handleEdit}
+        />
+      );
+    }, [
+      node,
       id,
       type,
-      data: {
-        ...data,
-        isEditing: node.data.isEditing,
-        tags: node.data.tags || [],
-        attachedFiles: node.data.attachedFiles || []
-      },
+      data,
       isConnectable,
       selected,
       dragging,
@@ -94,79 +160,15 @@ const NodeRenderer: React.FC<NodeRendererProps> = ({
       xPos,
       yPos,
       selectNodesOnDrag,
-      ...props
-    };
+      onNodeResizeStop,
+      props,
+      toggleEditMode,
+      updateNode,
+      canvasId
+    ]);
 
-    const position = { x: xPos, y: yPos };
-    const dimensions = getNodeSpecificProperties(type, node.data.isEditing);
+    return nodeContent;
+  }
+);
 
-    if (type === 'selection_menu') {
-      return (
-        <NodeSelectionMenu
-          {...commonProps}
-          position={position}
-          parentNode={data.parentNode}
-          width={dimensions.width}
-          height={dimensions.height}
-        />
-      );
-    }
-
-    const nodeComponents = {
-      note: { view: NoteNodeView, edit: NoteNodeEdit },
-      task: { view: TaskNodeView, edit: TaskNodeEdit },
-      table: { view: TableNodeView, edit: TableNodeEdit },
-      calendar: { view: CalendarNodeView, edit: CalendarNodeEdit },
-      draw: { view: DrawNodeView, edit: DrawNodeEdit }
-    };
-
-    const NodeComponent = node.data.isEditing
-      ? nodeComponents[type]?.edit
-      : nodeComponents[type]?.view;
-
-    if (!NodeComponent) {
-      console.error('Unknown node type:', type);
-      return null;
-    }
-
-    const handleEdit = () => {
-      toggleEditMode(id);
-      updateNode(
-        id,
-        { data: { ...node.data, isEditing: !node.data.isEditing } },
-        canvasId
-      );
-    };
-
-    return (
-      <NodeComponent
-        {...commonProps}
-        {...dimensions}
-        position={position}
-        onNodeResizeStop={onNodeResizeStop || (() => {})}
-        onEdit={handleEdit}
-      />
-    );
-  }, [
-    node,
-    id,
-    type,
-    data,
-    isConnectable,
-    selected,
-    dragging,
-    zIndex,
-    xPos,
-    yPos,
-    selectNodesOnDrag,
-    onNodeResizeStop,
-    props,
-    toggleEditMode,
-    updateNode,
-    canvasId
-  ]);
-
-  return nodeContent;
-};
-
-export default React.memo(NodeRenderer);
+export default NodeRenderer;
