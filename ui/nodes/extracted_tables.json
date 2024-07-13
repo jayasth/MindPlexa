@@ -180,6 +180,15 @@
         "references_column": null
       },
       {
+        "column_name": "file_path",
+        "data_type": "character varying",
+        "is_nullable": "YES",
+        "default": "None",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      },
+      {
         "column_name": "id",
         "data_type": "uuid",
         "is_nullable": "NO",
@@ -209,7 +218,7 @@
       {
         "column_name": "url",
         "data_type": "character varying",
-        "is_nullable": "NO",
+        "is_nullable": "YES",
         "default": "None",
         "foreign_key": null,
         "references_table": null,

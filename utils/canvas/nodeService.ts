@@ -79,12 +79,21 @@ const deleteNodeTag = async (nodeId: string, tag: string) => {
 
 const insertNodeAttachment = async (
   nodeId: string,
-  url: string,
-  type: string
+  type: 'file' | 'url',
+  filePath?: string,
+  url?: string
 ) => {
+  const attachmentData: any = {
+    node_id: nodeId,
+    type,
+    file_path: filePath || null,
+    url: url || null
+  };
+
   return await supabase
     .from('node_attachments')
-    .insert({ node_id: nodeId, url, type })
+    .insert([toSnakeCase(attachmentData)])
+    .select()
     .single()
     .then(({ data, error }) => ({ data: toCamelCase(data), error }));
 };
@@ -123,44 +132,40 @@ export const handleTags = async (
 
 export const handleAttachments = async (
   nodeId: string,
-  attachedFiles: { id?: string; url: string; type: string }[]
+  attachments: (File | string)[]
 ): Promise<{ error?: any }> => {
-  console.log('Handling attachments for node:', nodeId, attachedFiles);
-
-  const { error: attachmentDeleteError } = await supabase
-    .from('node_attachments')
-    .delete()
-    .eq('node_id', nodeId);
-
-  if (attachmentDeleteError) {
-    console.error(
-      'nodeService: Error deleting existing attachments:',
-      attachmentDeleteError
-    );
-    return { error: attachmentDeleteError };
-  }
-
-  for (const file of attachedFiles) {
-    const { error: insertAttachmentError } = await supabase
-      .from('node_attachments')
-      .insert({
-        node_id: nodeId,
-        url: file.url,
-        type: file.type
-      });
-
-    if (insertAttachmentError) {
-      console.error(
-        'nodeService: Error inserting attachment:',
-        insertAttachmentError
-      );
-      return { error: insertAttachmentError };
+  const attachmentPromises = attachments.map(async (attachment) => {
+    if (typeof attachment === 'string') {
+      // Handle URL attachment
+      return await insertNodeAttachment(nodeId, 'url', undefined, attachment);
+    } else {
+      // Handle file attachment
+      const filePath = await saveFileAttachment(attachment); // Implement this function to save the file and return the file path
+      return await insertNodeAttachment(nodeId, 'file', filePath);
     }
+  });
+
+  const results = await Promise.all(attachmentPromises);
+  const errors = results.filter((result) => result.error);
+
+  if (errors.length > 0) {
+    return { error: errors };
   }
 
-  console.log('Attachments handled successfully');
   return {};
 };
+
+// Implement this function to save the file and return the file path
+const saveFileAttachment = async (file: File): Promise<string> => {
+  // Save the file to a designated directory or upload it to a storage service
+  // Return the file path or URL
+  // Example:
+  // const filePath = `/uploads/${uuidv4()}-${file.name}`;
+  // await uploadFileToStorage(file, filePath);
+  // return filePath;
+  return 'path/to/saved/file'; // Replace with actual implementation
+};
+
 export const createNode = async (
   canvasId: string,
   nodeType: Database['public']['Enums']['node_type'],
