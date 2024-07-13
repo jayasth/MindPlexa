@@ -42,20 +42,34 @@ const updateNodeInTable = async (
   updates: any,
   id: string
 ) => {
-  const { data, error } = await supabase
+  // First, check if the record exists
+  const { data: existingData, error: checkError } = await supabase
     .from(tableName)
-    .update(toSnakeCase(updates))
+    .select('*')
     .eq('node_id', id)
-    .select();
+    .single();
 
-  if (error) {
-    console.error(`Error updating ${tableName}:`, error);
-    return { error };
+  if (checkError) {
+    console.error(`Error checking ${tableName}:`, checkError);
+    return { error: checkError };
   }
 
-  if (!data || data.length === 0) {
-    console.warn(`No rows updated in ${tableName} for node_id: ${id}`);
-    // If no rows were updated, try inserting a new row
+  if (existingData) {
+    // If the record exists, update it
+    const { data, error } = await supabase
+      .from(tableName)
+      .update(toSnakeCase(updates))
+      .eq('node_id', id)
+      .select();
+
+    if (error) {
+      console.error(`Error updating ${tableName}:`, error);
+      return { error };
+    }
+
+    return { data: toCamelCase(data[0]) };
+  } else {
+    // If the record doesn't exist, insert a new one
     const { data: insertedData, error: insertError } = await supabase
       .from(tableName)
       .insert({ ...toSnakeCase(updates), node_id: id })
@@ -68,8 +82,6 @@ const updateNodeInTable = async (
 
     return { data: toCamelCase(insertedData[0]) };
   }
-
-  return { data: toCamelCase(data[0]) };
 };
 
 const deleteNodeFromTable = async (
