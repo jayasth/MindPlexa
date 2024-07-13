@@ -225,7 +225,7 @@ export const fetchCanvas = async (canvasId: string) => {
         table_nodes(columns, rows),
         draw_nodes(drawing_data),
         node_tags(tag),
-        node_attachments(type, file_path, url)
+        node_attachments(id, type, file_name, file_size, content)
       ),
       edges(id, source_node_id, target_node_id)`
     )
