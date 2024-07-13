@@ -466,3 +466,23 @@ export const deleteNode = async (
   console.log('nodeService: Node deleted successfully');
   return { success: true };
 };
+
+export const deleteNodes = async (nodeIds: string[]) => {
+  // Delete node-specific data
+  await Promise.all([
+    supabase.from('note_nodes').delete().in('node_id', nodeIds),
+    supabase.from('task_nodes').delete().in('node_id', nodeIds),
+    supabase.from('calendar_nodes').delete().in('node_id', nodeIds),
+    supabase.from('table_nodes').delete().in('node_id', nodeIds),
+    supabase.from('draw_nodes').delete().in('node_id', nodeIds)
+  ]);
+
+  // Delete node attachments and tags
+  await Promise.all([
+    supabase.from('node_attachments').delete().in('node_id', nodeIds),
+    supabase.from('node_tags').delete().in('node_id', nodeIds)
+  ]);
+
+  // Delete nodes
+  await supabase.from('nodes').delete().in('id', nodeIds);
+};

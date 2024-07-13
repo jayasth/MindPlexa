@@ -3,6 +3,8 @@ import { Database } from '@/types_db';
 import { useRouter } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
 import { toCamelCase, toSnakeCase } from '@/utils/caseConversion';
+import { deleteNode, deleteNodes } from '@/utils/canvas/nodeService';
+import { deleteEdge } from '@/utils/canvas/edgeService';
 
 const supabase = createClient();
 
@@ -38,22 +40,54 @@ export const deleteCanvas = async (
   canvasId: string,
   setCanvases: (canvases: any) => void
 ) => {
-  const { error: linkError } = await deleteCanvasLinks(canvasId);
+  const { data: nodes, error: nodesError } = await supabase
+    .from('node_canvas_link')
+    .select('node_id')
+    .eq('canvas_id', canvasId);
 
-  if (linkError) {
-    return { error: linkError };
+  if (nodesError) {
+    console.error('Error fetching canvas nodes:', nodesError);
+    return;
   }
 
-  const { error } = await supabase.from('canvases').delete().eq('id', canvasId);
+  const nodeIds = nodes.map((node) => node.node_id);
 
-  if (error) {
-    console.error('canvasService: Error deleting canvas:', error);
-    return { error };
+  // Delete associated edges
+  await deleteEdge(canvasId);
+
+  // Delete associated nodes
+  for (const nodeId of nodeIds) {
+    const { data: nodeData, error: nodeError } = await supabase
+      .from('nodes')
+      .select('type')
+      .eq('id', nodeId)
+      .single();
+
+    if (nodeError) {
+      console.error(`Error fetching node type for node ${nodeId}:`, nodeError);
+      continue;
+    }
+
+    const nodeType = nodeData.type;
+    if (nodeType) {
+      await deleteNode(nodeId, nodeType);
+    } else {
+      console.error(`Node type for node ${nodeId} is null or undefined.`);
+    }
+  }
+
+  // Delete the canvas
+  const { error: deleteError } = await supabase
+    .from('canvases')
+    .delete()
+    .eq('id', canvasId);
+
+  if (deleteError) {
+    console.error('Error deleting canvas:', deleteError);
   } else {
-    setCanvases((prevCanvases: any) =>
-      prevCanvases.filter((canvas: any) => canvas.id !== canvasId)
+    setCanvases((prevCanvases) =>
+      prevCanvases.filter((canvas) => canvas.id !== canvasId)
     );
-    return { success: true };
   }
 };
 
@@ -62,44 +96,36 @@ export const deleteCanvasWithNodes = async (
   canvasId: string,
   setCanvases: (canvases: any) => void
 ) => {
-  try {
-    const linkedNodes = await fetchLinkedNodes(canvasId);
-    const nodeIds = linkedNodes.map((link) => link.node_id);
+  const { data: nodes, error: nodesError } = await supabase
+    .from('node_canvas_link')
+    .select('node_id')
+    .eq('canvas_id', canvasId);
 
-    const sharedNodes = await fetchSharedNodes(nodeIds);
-    const sharedNodeIds = sharedNodes.map((node) => node.node_id);
-    const nonSharedNodeIds = nodeIds.filter(
-      (nodeId) => !sharedNodeIds.includes(nodeId)
+  if (nodesError) {
+    console.error('Error fetching canvas nodes:', nodesError);
+    return;
+  }
+
+  const nodeIds = nodes.map((node) => node.node_id);
+
+  // Delete associated edges
+  await supabase.from('edges').delete().eq('canvas_id', canvasId);
+
+  // Delete associated nodes
+  await deleteNodes(nodeIds);
+
+  // Delete the canvas
+  const { error: deleteError } = await supabase
+    .from('canvases')
+    .delete()
+    .eq('id', canvasId);
+
+  if (deleteError) {
+    console.error('Error deleting canvas:', deleteError);
+  } else {
+    setCanvases((prevCanvases) =>
+      prevCanvases.filter((canvas) => canvas.id !== canvasId)
     );
-
-    await deleteNonSharedNodes(nonSharedNodeIds);
-
-    const { error: linkDeleteError } = await deleteCanvasLinks(canvasId);
-
-    if (linkDeleteError) {
-      throw linkDeleteError;
-    }
-
-    const { error: canvasError } = await supabase
-      .from('canvases')
-      .delete()
-      .eq('id', canvasId);
-
-    if (canvasError) {
-      throw canvasError;
-    }
-
-    setCanvases((prevCanvases: any) =>
-      prevCanvases.filter((canvas: any) => canvas.id !== canvasId)
-    );
-
-    return { success: true };
-  } catch (error) {
-    console.error(
-      'canvasService: Error during canvas and node deletion:',
-      error
-    );
-    return { error };
   }
 };
 
