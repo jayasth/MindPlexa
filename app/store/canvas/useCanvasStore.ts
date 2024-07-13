@@ -125,8 +125,11 @@ const useCanvasStore = create<CanvasState>()(
           const nodes = canvasData.nodes.map(processNode);
           console.log('useCanvasStore: Processed nodes:', nodes);
 
+          const edges = canvasData.edges.map(processEdge);
+          console.log('useCanvasStore: Processed edges:', edges);
+
           useNodeStore.getState().setNodes(nodes);
-          useEdgeStore.getState().setEdges(canvasData.edges || []);
+          useEdgeStore.getState().setEdges(edges);
 
           set({
             canvasId,

@@ -21,7 +21,8 @@ export const fetchCanvas = async (canvasId: string) => {
         draw_nodes(drawing_data),
         node_tags(tag),
         node_attachments(type, file_path, url)
-      )`
+      ),
+      edges(id, source_node_id, target_node_id)`
     )
     .eq('id', canvasId)
     .single();
