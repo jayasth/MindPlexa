@@ -66,11 +66,11 @@ export default function CanvasEditor({ canvasId: initialCanvasId }) {
   const { canvasId, setCanvasId, saveCanvas, loadCanvas } = useCanvasStore();
 
   useEffect(() => {
-    if (initialCanvasId && !isLoading) {
+    if (initialCanvasId) {
       setCanvasId(initialCanvasId);
       loadCanvas(initialCanvasId);
     }
-  }, [initialCanvasId, isLoading, setCanvasId, loadCanvas]);
+  }, [initialCanvasId, setCanvasId, loadCanvas]);
 
   useEffect(() => {
     const updateCanvasSize = () => {
