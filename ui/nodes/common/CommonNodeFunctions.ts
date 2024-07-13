@@ -243,10 +243,18 @@ export const handleAttachFile = (
       return;
     }
 
+    const attachedFiles = allFiles.map((file) => {
+      if (typeof file === 'string') {
+        return { url: file, type: 'url' };
+      } else {
+        return { url: URL.createObjectURL(file), type: file.type };
+      }
+    });
+
     updateNode(
       id,
       {
-        data: { attachedFiles: JSON.stringify(allFiles) } // Serialize files
+        data: { attachedFiles }
       },
       canvasId
     );

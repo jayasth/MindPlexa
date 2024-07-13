@@ -123,8 +123,10 @@ export const handleTags = async (
 
 export const handleAttachments = async (
   nodeId: string,
-  attachedFiles: { id: string; url: string; type: string }[]
+  attachedFiles: { id?: string; url: string; type: string }[]
 ): Promise<{ error?: any }> => {
+  console.log('Handling attachments for node:', nodeId, attachedFiles);
+
   const { error: attachmentDeleteError } = await supabase
     .from('node_attachments')
     .delete()
@@ -141,7 +143,11 @@ export const handleAttachments = async (
   for (const file of attachedFiles) {
     const { error: insertAttachmentError } = await supabase
       .from('node_attachments')
-      .insert({ node_id: nodeId, url: file.url, type: file.type });
+      .insert({
+        node_id: nodeId,
+        url: file.url,
+        type: file.type
+      });
 
     if (insertAttachmentError) {
       console.error(
@@ -152,9 +158,9 @@ export const handleAttachments = async (
     }
   }
 
+  console.log('Attachments handled successfully');
   return {};
 };
-
 export const createNode = async (
   canvasId: string,
   nodeType: Database['public']['Enums']['node_type'],
