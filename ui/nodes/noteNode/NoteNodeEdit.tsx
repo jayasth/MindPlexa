@@ -21,11 +21,12 @@ import {
   FileModal,
   ColorPickerModal
 } from '@/ui/nodes/common/CommonNodeComponents';
+import NodeDeleteConfirmationModal from '@/ui/nodes/common/NodeDeleteConfirmationModal';
 import TagFileContainer from '@/ui/nodes/common/TagFileContainer';
 import {
   handleTitleChange,
   handleClose,
-  handleDelete,
+  handleDelete as handleDeleteNode,
   colorCombinations,
   handleAddTag,
   handleRemoveAttachedFile,
@@ -87,6 +88,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   const [isColorPickerVisible, setIsColorPickerVisible] = useState(false);
   const [isTagModalOpen, setIsTagModalOpen] = useState(false);
   const [isFileModalOpen, setIsFileModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const quillRef = useRef<HTMLDivElement>(null);
   const quillInstance = useRef<Quill | null>(null);
@@ -312,6 +314,19 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     attachedFiles
   ]);
 
+  const handleDelete = () => {
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    setIsDeleteModalOpen(false);
+    handleDeleteNode(data.id, data.id);
+  };
+
+  const handleDeleteCancel = () => {
+    setIsDeleteModalOpen(false);
+  };
+
   const memoizedTagFileContainer = useMemo(
     () => (
       <TagFileContainer
@@ -364,9 +379,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         memoizedTagFileContainer}
       <div className={styles.footer}>
         <SaveButton onClick={handleSave} />
-        <DeleteButton
-          onClick={() => handleDelete(data.id, () => {}, data.id)}
-        />
+        <DeleteButton onClick={() => setIsDeleteModalOpen(true)} />
         <ChangeColorButton onClick={toggleColorPicker} />
         <AddTagButton onClick={() => setIsTagModalOpen(true)} />
         <AttachFileButton onClick={() => setIsFileModalOpen(true)} />
@@ -403,6 +416,11 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         onRemoveFile={onRemoveFile}
         existingFiles={attachedFiles}
         nodeId={data.id}
+      />
+      <NodeDeleteConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
       />
     </div>
   );

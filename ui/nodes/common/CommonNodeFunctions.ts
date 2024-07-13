@@ -175,19 +175,19 @@ export const handleClose = (
   toggleEditMode(nodeId);
 };
 
-export const handleDelete = (
+export const handleDelete = async (
   id: string,
-  onDelete: () => void,
   canvasId: string
 ) => {
-  const { removeNode } = useNodeStore.getState();
-  const { setEdges } = useEdgeStore.getState();
-  if (window.confirm('Are you sure you want to delete this node?')) {
-    onDelete();
-    removeNode(id, canvasId);
+  try {
+    const { removeNode } = useNodeStore.getState();
+    const { setEdges } = useEdgeStore.getState();
+    await removeNode(id, canvasId);
     setEdges((edges) =>
       edges.filter((edge) => edge.source !== id && edge.target !== id)
     );
+  } catch (error) {
+    console.error('Error deleting node:', error);
   }
 };
 
