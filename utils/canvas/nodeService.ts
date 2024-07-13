@@ -93,7 +93,7 @@ const deleteNodeAttachment = async (id: string) => {
   return await supabase.from('node_attachments').delete().match({ id });
 };
 
-const handleTags = async (
+export const handleTags = async (
   nodeId: string,
   tags: string[]
 ): Promise<{ error?: any }> => {
@@ -108,7 +108,9 @@ const handleTags = async (
   }
 
   for (const tag of tags) {
-    const { error: insertTagError } = await insertNodeTag(nodeId, tag);
+    const { error: insertTagError } = await supabase
+      .from('node_tags')
+      .insert({ node_id: nodeId, tag });
 
     if (insertTagError) {
       console.error('nodeService: Error inserting tag:', insertTagError);
@@ -119,7 +121,7 @@ const handleTags = async (
   return {};
 };
 
-const handleAttachments = async (
+export const handleAttachments = async (
   nodeId: string,
   attachedFiles: { id: string; url: string; type: string }[]
 ): Promise<{ error?: any }> => {
@@ -137,16 +139,9 @@ const handleAttachments = async (
   }
 
   for (const file of attachedFiles) {
-    if (!file.url) {
-      console.error('nodeService: Missing URL for attachment:', file);
-      return { error: 'Missing URL for attachment' };
-    }
-
-    const { error: insertAttachmentError } = await insertNodeAttachment(
-      nodeId,
-      file.url,
-      file.type
-    );
+    const { error: insertAttachmentError } = await supabase
+      .from('node_attachments')
+      .insert({ node_id: nodeId, url: file.url, type: file.type });
 
     if (insertAttachmentError) {
       console.error(

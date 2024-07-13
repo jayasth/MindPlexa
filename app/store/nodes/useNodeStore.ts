@@ -4,7 +4,9 @@ import { produce } from 'immer';
 import { v4 as uuidv4 } from 'uuid';
 import {
   updateNode as updateNodeInDB,
-  deleteNode as deleteNodeInDB
+  deleteNode as deleteNodeInDB,
+  handleTags,
+  handleAttachments
 } from '@/utils/canvas/nodeService';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 import { getChildNodePosition } from '@/ui/canvasEditor/utils/getChildNodePosition';
@@ -148,8 +150,13 @@ const useNodeStore = create<NodeState>()(
                   break;
               }
 
-              specificUpdates.tags = updatedNode.data.tags;
-              specificUpdates.attachedFiles = updatedNode.data.attachedFiles;
+              // Handle tags and attachments separately
+              if (data.data?.tags) {
+                handleTags(id, data.data.tags);
+              }
+              if (data.data?.attachedFiles) {
+                handleAttachments(id, data.data.attachedFiles);
+              }
 
               updateNodeInDB(
                 id,
