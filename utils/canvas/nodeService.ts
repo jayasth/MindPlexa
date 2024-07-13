@@ -42,10 +42,11 @@ const updateNodeInTable = async (
   updates: any,
   id: string
 ) => {
+  const idColumn = tableName === 'nodes' ? 'id' : 'node_id';
   return await supabase
     .from(tableName)
     .update(toSnakeCase(updates))
-    .eq('node_id', id)
+    .eq(idColumn, id)
     .select()
     .single()
     .then(({ data, error }) => ({ data: toCamelCase(data), error }));
@@ -55,7 +56,8 @@ const deleteNodeFromTable = async (
   tableName: keyof Database['public']['Tables'],
   nodeId: string
 ) => {
-  return await supabase.from(tableName).delete().eq('node_id', nodeId);
+  const idColumn = tableName === 'nodes' ? 'id' : 'node_id';
+  return await supabase.from(tableName).delete().eq(idColumn, nodeId);
 };
 
 const deleteNodeLink = async (nodeId: string) => {
@@ -70,13 +72,6 @@ const insertNodeTag = async (nodeId: string, tag: string) => {
     .then(({ data, error }) => ({ data: toCamelCase(data), error }));
 };
 
-const deleteNodeTag = async (nodeId: string, tag: string) => {
-  return await supabase
-    .from('node_tags')
-    .delete()
-    .match({ node_id: nodeId, tag });
-};
-
 const insertNodeAttachment = async (
   nodeId: string,
   url: string,
@@ -87,10 +82,6 @@ const insertNodeAttachment = async (
     .insert({ node_id: nodeId, url, type })
     .single()
     .then(({ data, error }) => ({ data: toCamelCase(data), error }));
-};
-
-const deleteNodeAttachment = async (id: string) => {
-  return await supabase.from('node_attachments').delete().match({ id });
 };
 
 const handleTags = async (
@@ -107,7 +98,7 @@ const handleTags = async (
     return { error: tagDeleteError };
   }
 
-  for (const tag of tags) {
+  for (const tag of tags || []) {
     const { error: insertTagError } = await insertNodeTag(nodeId, tag);
 
     if (insertTagError) {
@@ -136,7 +127,7 @@ const handleAttachments = async (
     return { error: attachmentDeleteError };
   }
 
-  for (const file of attachedFiles) {
+  for (const file of attachedFiles || []) {
     if (!file.url) {
       console.error('nodeService: Missing URL for attachment:', file);
       return { error: 'Missing URL for attachment' };
@@ -315,21 +306,26 @@ export const updateNode = async (
 
   if (nodeType !== 'selection_menu' && specificNodeData) {
     const tableName = `${nodeType}_nodes` as keyof Database['public']['Tables'];
-    const { data: updatedSpecificNodeData, error: specificNodeUpdateError } =
-      await updateNodeInTable(tableName, specificNodeData, nodeId);
+    const specificDataKey = `${nodeType}Data` as keyof typeof specificNodeData;
+    const specificData = specificNodeData[specificDataKey];
 
-    if (specificNodeUpdateError) {
-      console.error(
-        `nodeService: Error updating ${nodeType} node:`,
-        specificNodeUpdateError
+    if (specificData) {
+      const { data: updatedSpecificNodeData, error: specificNodeUpdateError } =
+        await updateNodeInTable(tableName, specificData, nodeId);
+
+      if (specificNodeUpdateError) {
+        console.error(
+          `nodeService: Error updating ${nodeType} node:`,
+          specificNodeUpdateError
+        );
+        return { error: specificNodeUpdateError };
+      }
+
+      console.log(
+        `nodeService: ${nodeType} node updated:`,
+        updatedSpecificNodeData
       );
-      return { error: specificNodeUpdateError };
     }
-
-    console.log(
-      `nodeService: ${nodeType} node updated:`,
-      updatedSpecificNodeData
-    );
   }
 
   if (tags) {

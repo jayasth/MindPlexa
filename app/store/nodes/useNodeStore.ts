@@ -103,11 +103,11 @@ const useNodeStore = create<NodeState>()(
 
               const nodeUpdates = {
                 position: JSON.stringify(updatedNode.position),
-                backgroundColor: updatedNode.data.backgroundColor,
-                textColor: updatedNode.data.textColor,
+                background_color: updatedNode.data.backgroundColor,
+                text_color: updatedNode.data.textColor,
                 title: updatedNode.data.title,
                 is_editing: updatedNode.data.isEditing,
-                zIndex: updatedNode.data.zIndex,
+                z_index: updatedNode.data.zIndex,
                 edit_width: updatedNode.data.editWidth,
                 edit_height: updatedNode.data.editHeight,
                 mobile_edit_width: updatedNode.data.mobileEditWidth,
@@ -143,13 +143,13 @@ const useNodeStore = create<NodeState>()(
                   break;
                 case 'draw':
                   specificUpdates = {
-                    drawingData: updatedNode.data.drawingData || ''
+                    drawing_data: updatedNode.data.drawingData || ''
                   };
                   break;
               }
 
               specificUpdates.tags = updatedNode.data.tags;
-              specificUpdates.attachedFiles = updatedNode.data.attachedFiles;
+              specificUpdates.attached_files = updatedNode.data.attachedFiles;
 
               updateNodeInDB(
                 id,
