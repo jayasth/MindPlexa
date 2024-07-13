@@ -232,41 +232,40 @@ const useNodeStore = create<NodeState>()(
         })
       );
     },
-    toggleEditMode: (nodeId) => {
-      set(
-        produce((state: NodeState) => {
-          const node = state.nodes.find((n) => n.id === nodeId);
-          if (node && node.type !== 'selection_menu') {
-            const updatedNode = {
-              ...node,
-              data: {
-                ...node.data,
-                isEditing: !node.data?.isEditing
-              }
-            };
-            state.nodeInternals.set(nodeId, updatedNode);
-            console.log('useNodeStore: Edit mode toggled', updatedNode);
-            state.nodes = state.nodes.map((n) =>
-              n.id === nodeId ? updatedNode : n
-            );
+      toggleEditMode: (nodeId) => {
+        set(
+          produce((state: NodeState) => {
+            const node = state.nodes.find((n) => n.id === nodeId);
+            if (node && node.type !== 'selection_menu') {
+              const updatedNode = {
+                ...node,
+                data: {
+                  ...node.data,
+                  isEditing: !node.data?.isEditing
+                }
+              };
+              state.nodeInternals.set(nodeId, updatedNode);
+              state.nodes = state.nodes.map((n) =>
+                n.id === nodeId ? updatedNode : n
+              );
 
-            // Update the is_editing status in the database
-            updateNodeInDB(
-              nodeId,
-              { is_editing: updatedNode.data.isEditing },
-              {},
-              node.type as
-                | 'note'
-                | 'task'
-                | 'table'
-                | 'calendar'
-                | 'draw'
-                | 'selection_menu'
-            );
-          }
-        })
-      );
-    },
+              // Update only the is_editing field in the nodes table
+              updateNodeInDB(
+                nodeId,
+                { is_editing: updatedNode.data.isEditing },
+                {},
+                node.type as
+                  | 'note'
+                  | 'task'
+                  | 'table'
+                  | 'calendar'
+                  | 'draw'
+                  | 'selection_menu'
+              );
+            } 
+          })
+        );
+      },
     setSelectedNodes: (selectedIds) => {
       set(
         produce((state: NodeState) => {

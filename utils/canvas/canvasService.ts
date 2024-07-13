@@ -12,14 +12,15 @@ export const fetchCanvas = async (canvasId: string) => {
     .select(
       `*, 
       nodes(
-        *, 
-        note_nodes(*), 
-        task_nodes(*), 
-        calendar_nodes(*), 
-        table_nodes(*), 
-        draw_nodes(*),
-        node_tags(*),
-        node_attachments(*)
+        id, type, position, is_editing, background_color, text_color, title, z_index,
+        view_width, view_height, edit_width, edit_height, mobile_edit_width, mobile_edit_height,
+        note_nodes(content),
+        task_nodes(tasks),
+        calendar_nodes(events, view),
+        table_nodes(columns, rows),
+        draw_nodes(drawing_data),
+        node_tags(tag),
+        node_attachments(type, file_path, url)
       )`
     )
     .eq('id', canvasId)

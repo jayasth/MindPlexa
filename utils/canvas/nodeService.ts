@@ -42,13 +42,34 @@ const updateNodeInTable = async (
   updates: any,
   id: string
 ) => {
-  return await supabase
+  const { data, error } = await supabase
     .from(tableName)
     .update(toSnakeCase(updates))
     .eq('node_id', id)
-    .select()
-    .single()
-    .then(({ data, error }) => ({ data: toCamelCase(data), error }));
+    .select();
+
+  if (error) {
+    console.error(`Error updating ${tableName}:`, error);
+    return { error };
+  }
+
+  if (!data || data.length === 0) {
+    console.warn(`No rows updated in ${tableName} for node_id: ${id}`);
+    // If no rows were updated, try inserting a new row
+    const { data: insertedData, error: insertError } = await supabase
+      .from(tableName)
+      .insert({ ...toSnakeCase(updates), node_id: id })
+      .select();
+
+    if (insertError) {
+      console.error(`Error inserting into ${tableName}:`, insertError);
+      return { error: insertError };
+    }
+
+    return { data: toCamelCase(insertedData[0]) };
+  }
+
+  return { data: toCamelCase(data[0]) };
 };
 
 const deleteNodeFromTable = async (
@@ -140,7 +161,7 @@ export const handleAttachments = async (
       return await insertNodeAttachment(nodeId, 'url', undefined, attachment);
     } else {
       // Handle file attachment
-      const filePath = await saveFileAttachment(attachment); // Implement this function to save the file and return the file path
+      const filePath = await saveFileAttachment(attachment);
       return await insertNodeAttachment(nodeId, 'file', filePath);
     }
   });
