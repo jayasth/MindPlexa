@@ -357,19 +357,40 @@ export const updateNode = async (
 
   console.log('nodeService: Node properties updated:', nodeData);
 
-  // Update node-specific table
+  // Update or create node-specific data
   if (nodeType !== 'selection_menu') {
     const tableName = `${nodeType}_nodes` as keyof Database['public']['Tables'];
-    const nodeSpecificUpdates = { ...specificUpdates };
-    delete nodeSpecificUpdates.tags;
-    delete nodeSpecificUpdates.attachedFiles;
+    const nodeSpecificUpdates = { ...specificUpdates, node_id: id };
 
-    const { data: specificNodeData, error: specificNodeError } =
-      await updateNodeInTable(tableName, nodeSpecificUpdates, id);
+    const { data: existingData } = await supabase
+      .from(tableName)
+      .select('*')
+      .eq('node_id', id)
+      .single();
+
+    let specificNodeData;
+    let specificNodeError;
+
+    if (existingData) {
+      // Update existing node-specific data
+      ({ data: specificNodeData, error: specificNodeError } = await supabase
+        .from(tableName)
+        .update(toSnakeCase(nodeSpecificUpdates))
+        .eq('node_id', id)
+        .select()
+        .single());
+    } else {
+      // Create new node-specific data
+      ({ data: specificNodeData, error: specificNodeError } = await supabase
+        .from(tableName)
+        .insert(toSnakeCase(nodeSpecificUpdates))
+        .select()
+        .single());
+    }
 
     if (specificNodeError) {
       console.error(
-        `nodeService: Error updating ${nodeType} node:`,
+        `nodeService: Error updating/creating ${nodeType} node:`,
         specificNodeError
       );
       return { error: specificNodeError };
