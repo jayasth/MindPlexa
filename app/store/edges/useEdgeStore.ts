@@ -73,6 +73,7 @@ const useEdgeStore = create<EdgeState>()(
             'useEdgeStore: Error removing edge from the database:',
             error
           );
+          // Revert local state if database deletion fails
           set({ edges: previousEdges });
         } else {
           console.log(
@@ -84,6 +85,7 @@ const useEdgeStore = create<EdgeState>()(
           'useEdgeStore: Error removing edge from the database:',
           error
         );
+        // Revert local state if database deletion fails
         set({ edges: previousEdges });
       }
     },

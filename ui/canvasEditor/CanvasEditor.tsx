@@ -14,7 +14,8 @@ import ReactFlow, {
   ReactFlowInstance,
   XYPosition,
   Node,
-  Edge
+  Edge,
+  applyEdgeChanges
 } from 'reactflow';
 import Toolbar from '@/ui/toolbar/Toolbar';
 import AIAssistanceModal from '@/ui/ai/generator/AIGeneratorModal';
@@ -59,7 +60,7 @@ export default function CanvasEditor({ canvasId: initialCanvasId }) {
     setSelectedNodes
   } = useNodeStore();
 
-  const { edges, setEdges, addEdge, onEdgesChange } = useEdgeStore();
+  const { edges, setEdges, addEdge, removeEdge } = useEdgeStore();
 
   const { setDomNode, domNode, isLoading, setIsLoading } = useUIStore();
 
@@ -215,8 +216,29 @@ export default function CanvasEditor({ canvasId: initialCanvasId }) {
           );
           return;
         }
+
+        // Create edge in database first
+        const { data: createdEdge, error } = await createEdge({
+          sourceNodeId: connection.source,
+          targetNodeId: connection.target,
+          canvasId: initialCanvasId
+        });
+
+        if (error) {
+          console.error('Failed to create edge in database:', error);
+          return;
+        }
+
+        if (!createdEdge) {
+          console.error(
+            'Failed to create edge: No data returned from database'
+          );
+          return;
+        }
+
+        // Use the ID from the database for the local edge
         const newEdge = {
-          id: `e-${uuidv4()}`,
+          id: createdEdge.id,
           sourceNodeId: connection.source,
           targetNodeId: connection.target,
           source: connection.source,
@@ -224,25 +246,10 @@ export default function CanvasEditor({ canvasId: initialCanvasId }) {
           type: 'customEdge'
         };
 
-        // Add edge to local state and database simultaneously
-        const [, { data: createdEdge, error }] = await Promise.all([
-          addEdge(newEdge),
-          createEdge({
-            sourceNodeId: connection.source,
-            targetNodeId: connection.target,
-            canvasId: initialCanvasId
-          })
-        ]);
+        // Add edge to local state
+        addEdge(newEdge);
 
-        if (error) {
-          console.error('Failed to create edge in database:', error);
-          // Optionally remove the edge from local state if database insertion fails
-          // removeEdge(newEdge.id);
-        } else {
-          console.log('Edge created successfully in database:', createdEdge);
-          // Update the local edge with the database ID if needed
-          // updateEdge(newEdge.id, { id: createdEdge.id });
-        }
+        console.log('Edge created successfully:', newEdge);
 
         reactFlowInstance.current?.fitView({ padding: 0.2 });
       } catch (error) {
@@ -250,6 +257,21 @@ export default function CanvasEditor({ canvasId: initialCanvasId }) {
       }
     },
     [addEdge, initialCanvasId, createEdge]
+  );
+
+  const onEdgesChange = useCallback(
+    (changes) => {
+      setEdges((eds) => {
+        const updatedEdges = applyEdgeChanges(changes, eds);
+        changes.forEach((change) => {
+          if (change.type === 'remove') {
+            removeEdge(change.id);
+          }
+        });
+        return updatedEdges;
+      });
+    },
+    [setEdges, removeEdge]
   );
 
   const handleTemporaryNodeCreationWithStore = useCallback(
