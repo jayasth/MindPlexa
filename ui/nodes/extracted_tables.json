@@ -171,6 +171,15 @@
     "table_name": "node_attachments",
     "columns": [
       {
+        "column_name": "content",
+        "data_type": "character varying",
+        "is_nullable": "YES",
+        "default": "None",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      },
+      {
         "column_name": "created_at",
         "data_type": "timestamp with time zone",
         "is_nullable": "YES",
@@ -180,8 +189,17 @@
         "references_column": null
       },
       {
-        "column_name": "file_path",
+        "column_name": "file_name",
         "data_type": "character varying",
+        "is_nullable": "YES",
+        "default": "None",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      },
+      {
+        "column_name": "file_size",
+        "data_type": "integer",
         "is_nullable": "YES",
         "default": "None",
         "foreign_key": null,
@@ -210,15 +228,6 @@
         "column_name": "type",
         "data_type": "character varying",
         "is_nullable": "NO",
-        "default": "None",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      },
-      {
-        "column_name": "url",
-        "data_type": "character varying",
-        "is_nullable": "YES",
         "default": "None",
         "foreign_key": null,
         "references_table": null,

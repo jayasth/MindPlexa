@@ -209,28 +209,31 @@ export type Database = {
       }
       node_attachments: {
         Row: {
+          content: string | null
           created_at: string | null
-          file_path: string | null
+          file_name: string | null
+          file_size: number | null
           id: string
           node_id: string
           type: string
-          url: string | null
         }
         Insert: {
+          content?: string | null
           created_at?: string | null
-          file_path?: string | null
+          file_name?: string | null
+          file_size?: number | null
           id?: string
           node_id: string
           type: string
-          url?: string | null
         }
         Update: {
+          content?: string | null
           created_at?: string | null
-          file_path?: string | null
+          file_name?: string | null
+          file_size?: number | null
           id?: string
           node_id?: string
           type?: string
-          url?: string | null
         }
         Relationships: [
           {

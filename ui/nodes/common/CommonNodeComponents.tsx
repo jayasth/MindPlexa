@@ -153,10 +153,9 @@ export const FileModal = ({
     if (fileUrl) {
       try {
         new URL(fileUrl); // Validate URL
-        const file = new File([fileUrl], fileUrl, { type: 'text/plain' });
-        const allFiles = [...existingFiles, file];
+        const allFiles = [...existingFiles, fileUrl];
         if (allFiles.length > 10) {
-          alert('You can attach a maximum of 10 files.');
+          alert('You can attach a maximum of 10 files or URLs.');
           return;
         }
         onAttachFiles(allFiles);
@@ -173,6 +172,7 @@ export const FileModal = ({
       }
     }
   };
+
   const handleRemoveFile = (fileToRemove: File | string) => {
     const updatedFiles = existingFiles.filter((file) => file !== fileToRemove);
     updateNode(
@@ -226,7 +226,7 @@ export const FileModal = ({
               }}
               style={{ cursor: 'pointer', textDecoration: 'underline' }}
             >
-              {file.name}
+              {typeof file === 'string' ? file : file.name}
             </span>
             <button
               className={styles.removeFileButton}

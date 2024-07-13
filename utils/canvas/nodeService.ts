@@ -113,26 +113,26 @@ const deleteNodeTag = async (nodeId: string, tag: string) => {
 const insertNodeAttachment = async (
   nodeId: string,
   type: 'file' | 'url',
-  filePath?: string,
-  url?: string
+  fileName: string,
+  fileSize: number,
+  content: string
 ) => {
-  const attachmentData: any = {
-    node_id: nodeId,
-    type,
-    file_path: filePath || null,
-    url: url || null
-  };
-
   return await supabase
     .from('node_attachments')
-    .insert([toSnakeCase(attachmentData)])
+    .insert({
+      node_id: nodeId,
+      type,
+      file_name: fileName,
+      file_size: fileSize,
+      content
+    })
     .select()
     .single()
     .then(({ data, error }) => ({ data: toCamelCase(data), error }));
 };
 
 const deleteNodeAttachment = async (id: string) => {
-  return await supabase.from('node_attachments').delete().match({ id });
+  return await supabase.from('node_attachments').delete().eq('id', id);
 };
 
 export const handleTags = async (
@@ -165,38 +165,52 @@ export const handleTags = async (
 
 export const handleAttachments = async (
   nodeId: string,
-  attachments: (File | string)[]
+  attachments: Array<{ type: 'file' | 'url'; content: string | File }>
 ): Promise<{ error?: any }> => {
-  const attachmentPromises = attachments.map(async (attachment) => {
-    if (typeof attachment === 'string') {
-      // Handle URL attachment
-      return await insertNodeAttachment(nodeId, 'url', undefined, attachment);
-    } else {
-      // Handle file attachment
-      const filePath = await saveFileAttachment(attachment);
-      return await insertNodeAttachment(nodeId, 'file', filePath);
+  // First, delete all existing attachments for this node
+  const { error: deleteError } = await supabase
+    .from('node_attachments')
+    .delete()
+    .eq('node_id', nodeId);
+
+  if (deleteError) {
+    console.error('Error deleting existing attachments:', deleteError);
+    return { error: deleteError };
+  }
+
+  // Then, insert new attachments
+  for (const attachment of attachments) {
+    let fileName = '';
+    let fileSize = 0;
+    let content = '';
+
+    if (attachment.type === 'file' && attachment.content instanceof File) {
+      fileName = attachment.content.name;
+      fileSize = attachment.content.size;
+      content = await attachment.content.text();
+    } else if (
+      attachment.type === 'url' &&
+      typeof attachment.content === 'string'
+    ) {
+      fileName = new URL(attachment.content).hostname;
+      content = attachment.content;
     }
-  });
 
-  const results = await Promise.all(attachmentPromises);
-  const errors = results.filter((result) => result.error);
+    const { error: insertError } = await insertNodeAttachment(
+      nodeId,
+      attachment.type,
+      fileName,
+      fileSize,
+      content
+    );
 
-  if (errors.length > 0) {
-    return { error: errors };
+    if (insertError) {
+      console.error('Error inserting attachment:', insertError);
+      return { error: insertError };
+    }
   }
 
   return {};
-};
-
-// Implement this function to save the file and return the file path
-const saveFileAttachment = async (file: File): Promise<string> => {
-  // Save the file to a designated directory or upload it to a storage service
-  // Return the file path or URL
-  // Example:
-  // const filePath = `/uploads/${uuidv4()}-${file.name}`;
-  // await uploadFileToStorage(file, filePath);
-  // return filePath;
-  return 'path/to/saved/file'; // Replace with actual implementation
 };
 
 export const createNode = async (

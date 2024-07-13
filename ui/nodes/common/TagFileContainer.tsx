@@ -22,13 +22,6 @@ const TagFileContainer = ({
             className={styles.tag}
             style={{ color: textColor }}
             onClick={() => onRemoveTag(tag)}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                onRemoveTag(tag);
-              }
-            }}
           >
             #{tag} <button className={styles.removeTagButton}>&times;</button>
           </span>
@@ -39,14 +32,14 @@ const TagFileContainer = ({
           <div key={index} className={styles.file}>
             <span
               onClick={() => {
-                if (file.type === 'text/plain') {
-                  window.open(file.name, '_blank');
+                if (file.type === 'url') {
+                  window.open(file.content, '_blank');
                 } else {
-                  const url = URL.createObjectURL(file);
+                  const url = URL.createObjectURL(file.content);
                   window.open(url, '_blank');
                 }
               }}
-              onMouseEnter={() => handleAttachmentPreview(file)}
+              onMouseEnter={() => handleAttachmentPreview(file.content)}
               onMouseLeave={() => {
                 const preview = document.querySelector('.file-preview');
                 if (preview) {
@@ -54,25 +47,14 @@ const TagFileContainer = ({
                 }
               }}
               style={{ cursor: 'pointer', textDecoration: 'underline' }}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  if (file.type === 'text/plain') {
-                    window.open(file.name, '_blank');
-                  } else {
-                    const url = URL.createObjectURL(file);
-                    window.open(url, '_blank');
-                  }
-                }
-              }}
             >
-              {file.name}
+              {file.type === 'url'
+                ? new URL(file.content).hostname
+                : file.content.name}
             </span>
             <button
               className={styles.removeFileButton}
-              onClick={() => onRemoveFile(file)}
-              aria-label={`Remove file ${file.name}`}
+              onClick={() => onRemoveFile(file.content)}
             >
               &times;
             </button>

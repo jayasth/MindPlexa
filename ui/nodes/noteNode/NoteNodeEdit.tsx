@@ -29,10 +29,10 @@ import {
   handleDelete as handleDeleteNode,
   colorCombinations,
   handleAddTag,
-  handleRemoveAttachedFile,
   handleDuplicate,
   handleAttachmentPreview
 } from '@/ui/nodes/common/CommonNodeFunctions';
+import { handleAttachments } from '@/utils/canvas/nodeService';
 import Quill from 'quill';
 import 'quill/dist/quill.snow.css';
 import { useBackgroundColorChange } from '@/ui/nodes/common/useBackgroundColorChange';
@@ -79,9 +79,9 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   );
   const [textColor, setTextColor] = useState(data.textColor || '#575757');
   const [tags, setTags] = useState<string[]>(data.tags || []);
-  const [attachedFiles, setAttachedFiles] = useState<string[]>(
-    data.attachedFiles || []
-  );
+  const [attachedFiles, setAttachedFiles] = useState<
+    Array<{ type: 'file' | 'url'; content: File | string }>
+  >(data.attachedFiles || []);
   const [isContainerSelected, setIsContainerSelected] = useState(false);
   const [nodeWidth, setNodeWidth] = useState(width);
   const [nodeHeight, setNodeHeight] = useState(height);
@@ -238,15 +238,60 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     [data.id, tags]
   );
 
-  const onAttachFiles = useCallback((files: string[]) => {
-    setAttachedFiles(files);
-  }, []);
-
-  const onRemoveFile = useCallback(
-    (fileToRemove: string) => {
-      handleRemoveAttachedFile(data.id, fileToRemove, () => {}, data.id);
+  const onAttachFiles = useCallback(
+    (files: Array<File | string>) => {
+      const attachments = files.map((file) => {
+        if (typeof file === 'string') {
+          return { type: 'url' as const, content: file };
+        } else {
+          return { type: 'file' as const, content: file };
+        }
+      });
+      setAttachedFiles(attachments);
+      handleAttachments(data.id, attachments)
+        .then(() => {
+          // Update the node in the store after successful attachment
+          const updateNode = useNodeStore.getState().updateNode;
+          updateNode(
+            data.id,
+            { data: { attachedFiles: attachments } },
+            data.id
+          );
+        })
+        .catch((error) => {
+          console.error('Error handling attachments:', error);
+          // Handle error (e.g., show an error message to the user)
+        });
     },
     [data.id]
+  );
+
+  const onRemoveFile = useCallback(
+    (fileToRemove: string | File) => {
+      const updatedFiles = attachedFiles.filter((file) =>
+        typeof file.content === 'string' && typeof fileToRemove === 'string'
+          ? file.content !== fileToRemove
+          : file.content instanceof File && fileToRemove instanceof File
+            ? file.content.name !== fileToRemove.name
+            : true
+      );
+      setAttachedFiles(updatedFiles);
+      handleAttachments(data.id, updatedFiles)
+        .then(() => {
+          // Update the node in the store after successful removal
+          const updateNode = useNodeStore.getState().updateNode;
+          updateNode(
+            data.id,
+            { data: { attachedFiles: updatedFiles } },
+            data.id
+          );
+        })
+        .catch((error) => {
+          console.error('Error handling attachments:', error);
+          // Handle error (e.g., show an error message to the user)
+        });
+    },
+    [data.id, attachedFiles]
   );
 
   useEffect(() => {
