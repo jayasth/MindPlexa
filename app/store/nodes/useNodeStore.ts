@@ -103,11 +103,11 @@ const useNodeStore = create<NodeState>()(
 
               const nodeUpdates = {
                 position: JSON.stringify(updatedNode.position),
-                background_color: updatedNode.data.backgroundColor,
-                text_color: updatedNode.data.textColor,
+                backgroundColor: updatedNode.data.backgroundColor,
+                textColor: updatedNode.data.textColor,
                 title: updatedNode.data.title,
                 is_editing: updatedNode.data.isEditing,
-                z_index: updatedNode.data.zIndex,
+                zIndex: updatedNode.data.zIndex,
                 edit_width: updatedNode.data.editWidth,
                 edit_height: updatedNode.data.editHeight,
                 mobile_edit_width: updatedNode.data.mobileEditWidth,
@@ -143,27 +143,25 @@ const useNodeStore = create<NodeState>()(
                   break;
                 case 'draw':
                   specificUpdates = {
-                    drawing_data: updatedNode.data.drawingData || ''
+                    drawingData: updatedNode.data.drawingData || ''
                   };
                   break;
               }
 
               specificUpdates.tags = updatedNode.data.tags;
-              specificUpdates.attached_files = updatedNode.data.attachedFiles;
+              specificUpdates.attachedFiles = updatedNode.data.attachedFiles;
 
               updateNodeInDB(
                 id,
+                nodeUpdates,
+                specificUpdates,
                 existingNode.type as
                   | 'note'
                   | 'task'
                   | 'table'
                   | 'calendar'
                   | 'draw'
-                  | 'selection_menu',
-                {
-                  nodeData: nodeUpdates,
-                  ...specificUpdates
-                }
+                  | 'selection_menu'
               );
 
               state.nodeInternals.set(id, updatedNode);
@@ -248,16 +246,15 @@ const useNodeStore = create<NodeState>()(
             // Update the is_editing status in the database
             updateNodeInDB(
               nodeId,
+              { is_editing: updatedNode.data.isEditing },
+              {},
               node.type as
                 | 'note'
                 | 'task'
                 | 'table'
                 | 'calendar'
                 | 'draw'
-                | 'selection_menu',
-              {
-                nodeData: { is_editing: updatedNode.data.isEditing }
-              }
+                | 'selection_menu'
             );
           }
         })
@@ -538,17 +535,15 @@ const useNodeStore = create<NodeState>()(
                   // Update node in database
                   updateNodeInDB(
                     updatedNode.id,
+                    nodeUpdates,
+                    specificUpdates,
                     updatedNode.type as
                       | 'note'
                       | 'task'
                       | 'table'
                       | 'calendar'
                       | 'draw'
-                      | 'selection_menu',
-                    {
-                      nodeData: nodeUpdates,
-                      ...specificUpdates
-                    }
+                      | 'selection_menu'
                   );
                 }
 
