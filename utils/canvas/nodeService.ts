@@ -37,53 +37,6 @@ const insertNodeCanvasLink = async (nodeId: string, canvasId: string) => {
     .insert(toSnakeCase({ node_id: nodeId, canvas_id: canvasId }));
 };
 
-const updateNodeInTable = async (
-  tableName: keyof Database['public']['Tables'],
-  updates: any,
-  id: string
-) => {
-  // First, check if the record exists
-  const { data: existingData, error: checkError } = await supabase
-    .from(tableName)
-    .select('*')
-    .eq('node_id', id)
-    .single();
-
-  if (checkError) {
-    console.error(`Error checking ${tableName}:`, checkError);
-    return { error: checkError };
-  }
-
-  if (existingData) {
-    // If the record exists, update it
-    const { data, error } = await supabase
-      .from(tableName)
-      .update(toSnakeCase(updates))
-      .eq('node_id', id)
-      .select();
-
-    if (error) {
-      console.error(`Error updating ${tableName}:`, error);
-      return { error };
-    }
-
-    return { data: toCamelCase(data[0]) };
-  } else {
-    // If the record doesn't exist, insert a new one
-    const { data: insertedData, error: insertError } = await supabase
-      .from(tableName)
-      .insert({ ...toSnakeCase(updates), node_id: id })
-      .select();
-
-    if (insertError) {
-      console.error(`Error inserting into ${tableName}:`, insertError);
-      return { error: insertError };
-    }
-
-    return { data: toCamelCase(insertedData[0]) };
-  }
-};
-
 const deleteNodeFromTable = async (
   tableName: keyof Database['public']['Tables'],
   nodeId: string
@@ -93,46 +46,6 @@ const deleteNodeFromTable = async (
 
 const deleteNodeLink = async (nodeId: string) => {
   return await supabase.from('node_canvas_link').delete().eq('node_id', nodeId);
-};
-
-const insertNodeTag = async (nodeId: string, tag: string) => {
-  return await supabase
-    .from('node_tags')
-    .insert({ node_id: nodeId, tag })
-    .single()
-    .then(({ data, error }) => ({ data: toCamelCase(data), error }));
-};
-
-const deleteNodeTag = async (nodeId: string, tag: string) => {
-  return await supabase
-    .from('node_tags')
-    .delete()
-    .match({ node_id: nodeId, tag });
-};
-
-const insertNodeAttachment = async (
-  nodeId: string,
-  type: 'file' | 'url',
-  fileName: string,
-  fileSize: number,
-  content: string
-) => {
-  return await supabase
-    .from('node_attachments')
-    .insert({
-      node_id: nodeId,
-      type,
-      file_name: fileName,
-      file_size: fileSize,
-      content
-    })
-    .select()
-    .single()
-    .then(({ data, error }) => ({ data: toCamelCase(data), error }));
-};
-
-const deleteNodeAttachment = async (id: string) => {
-  return await supabase.from('node_attachments').delete().eq('id', id);
 };
 
 export const handleTags = async (

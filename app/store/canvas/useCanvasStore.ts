@@ -5,7 +5,6 @@ import { fetchCanvas, saveCanvasState } from '@/utils/canvas/canvasService';
 import type { Node } from 'reactflow';
 import useNodeStore from '../nodes/useNodeStore';
 import useEdgeStore from '../edges/useEdgeStore';
-import { produce } from 'immer';
 import { enableMapSet } from 'immer';
 
 // Enable the MapSet plugin for Immer
@@ -59,6 +58,7 @@ const processNode = (node: any) => {
       : node.viewHeight
   };
 };
+
 const processEdge = (edge: any) => ({
   id: edge.id,
   source: edge.sourceNodeId || '',

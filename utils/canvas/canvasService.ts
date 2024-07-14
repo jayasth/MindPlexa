@@ -129,85 +129,6 @@ export const deleteCanvasWithNodes = async (
   }
 };
 
-// Helper functions
-const deleteCanvasLinks = async (canvasId: string) => {
-  const { error } = await supabase
-    .from('node_canvas_link')
-    .delete()
-    .eq('canvas_id', canvasId);
-  if (error) {
-    console.error('canvasService: Error deleting canvas links:', error);
-  }
-  return { error };
-};
-
-const fetchLinkedNodes = async (canvasId: string) => {
-  const { data, error } = await supabase
-    .from('node_canvas_link')
-    .select('node_id')
-    .eq('canvas_id', canvasId);
-  if (error) {
-    console.error('canvasService: Error fetching linked nodes:', error);
-    throw error;
-  }
-  return data;
-};
-
-const fetchSharedNodes = async (nodeIds: string[]) => {
-  const { data, error } = await supabase
-    .from('node_canvas_link')
-    .select('node_id')
-    .in('node_id', nodeIds);
-  if (error) {
-    console.error('canvasService: Error fetching shared nodes:', error);
-    throw error;
-  }
-  return data;
-};
-
-const deleteNonSharedNodes = async (nodeIds: string[]) => {
-  for (const nodeId of nodeIds) {
-    const { data: nodeData, error: nodeError } = await supabase
-      .from('nodes')
-      .select('type')
-      .eq('id', nodeId)
-      .single()
-      .then(({ data, error }) => ({ data: toCamelCase(data), error }));
-
-    if (nodeError) {
-      console.error('canvasService: Error fetching node type:', nodeError);
-      throw nodeError;
-    }
-
-    const nodeType = nodeData.type;
-    if (nodeType !== 'selection_menu') {
-      const tableName =
-        `${nodeType}_nodes` as keyof Database['public']['Tables'];
-      const { error: deleteError } = await supabase
-        .from(tableName)
-        .delete()
-        .eq('node_id', nodeId);
-
-      if (deleteError) {
-        console.error(
-          `canvasService: Error deleting ${nodeType} node:`,
-          deleteError
-        );
-        throw deleteError;
-      }
-    }
-
-    const { error: nodeDeleteError } = await supabase
-      .from('nodes')
-      .delete()
-      .eq('id', nodeId);
-
-    if (nodeDeleteError) {
-      console.error('canvasService: Error deleting node:', nodeDeleteError);
-      throw nodeDeleteError;
-    }
-  }
-};
 export const fetchCanvas = async (canvasId: string) => {
   console.log('canvasService: Fetching canvas with ID:', canvasId);
 
@@ -314,7 +235,28 @@ export const saveCanvasState = async (canvasId: string, canvasState: any) => {
               .from('note_nodes')
               .update(toSnakeCase(data))
               .eq('node_id', nodeId);
-          // ... (other node types)
+          case 'task':
+            return supabase
+              .from('task_nodes')
+              .update(toSnakeCase(data))
+              .eq('node_id', nodeId);
+          case 'calendar':
+            return supabase
+              .from('calendar_nodes')
+              .update(toSnakeCase(data))
+              .eq('node_id', nodeId);
+          case 'table':
+            return supabase
+              .from('table_nodes')
+              .update(toSnakeCase(data))
+              .eq('node_id', nodeId);
+          case 'draw':
+            return supabase
+              .from('draw_nodes')
+              .update(toSnakeCase(data))
+              .eq('node_id', nodeId);
+          default:
+            return null;
         }
       };
 
