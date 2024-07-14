@@ -165,47 +165,69 @@ export const handleTags = async (
 
 export const handleAttachments = async (
   nodeId: string,
-  attachments: Array<{ type: 'file' | 'url'; content: string | File }>
+  newAttachments: Array<{ type: 'file' | 'url'; content: string | File }>
 ): Promise<{ error?: any }> => {
-  // First, delete all existing attachments for this node
-  const { error: deleteError } = await supabase
+  // Fetch existing attachments
+  const { data: existingAttachments, error: fetchError } = await supabase
     .from('node_attachments')
-    .delete()
+    .select('*')
     .eq('node_id', nodeId);
 
-  if (deleteError) {
-    console.error('Error deleting existing attachments:', deleteError);
-    return { error: deleteError };
+  if (fetchError) {
+    console.error('Error fetching existing attachments:', fetchError);
+    return { error: fetchError };
   }
 
-  // Then, insert new attachments
-  for (const attachment of attachments) {
+  // Determine changes
+  const attachmentsToDelete = existingAttachments.filter(
+    (ea) => !newAttachments.some((na) => na.content === ea.content)
+  );
+  const attachmentsToAdd = newAttachments.filter(
+    (na) => !existingAttachments.some((ea) => ea.content === na.content)
+  );
+
+  // Delete outdated attachments
+  for (const attachment of attachmentsToDelete) {
+    const { error: deleteError } = await supabase
+      .from('node_attachments')
+      .delete()
+      .eq('id', attachment.id);
+
+    if (deleteError) {
+      console.error('Error deleting attachment:', deleteError);
+      return { error: deleteError };
+    }
+  }
+
+  // Add new attachments
+  for (const attachment of attachmentsToAdd) {
+    let content = attachment.content;
     let fileName = '';
     let fileSize = 0;
-    let content = '';
 
     if (attachment.type === 'file' && attachment.content instanceof File) {
+      content = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(attachment.content as Blob);
+      });
       fileName = attachment.content.name;
       fileSize = attachment.content.size;
-      content = await attachment.content.text();
-    } else if (
-      attachment.type === 'url' &&
-      typeof attachment.content === 'string'
-    ) {
-      fileName = new URL(attachment.content).hostname;
-      content = attachment.content;
     }
 
-    const { error: insertError } = await insertNodeAttachment(
-      nodeId,
-      attachment.type,
-      fileName,
-      fileSize,
-      content
-    );
+    const { error: insertError } = await supabase
+      .from('node_attachments')
+      .insert({
+        node_id: nodeId,
+        file_name: fileName,
+        file_size: fileSize,
+        content: content as string,
+        type: attachment.type
+      });
 
     if (insertError) {
-      console.error('Error inserting attachment:', insertError);
+      console.error('Error inserting new attachment:', insertError);
       return { error: insertError };
     }
   }
