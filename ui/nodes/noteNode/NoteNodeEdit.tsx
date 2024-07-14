@@ -250,7 +250,6 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
       setAttachedFiles(attachments);
       handleAttachments(data.id, attachments)
         .then(() => {
-          // Update the node in the store after successful attachment
           const updateNode = useNodeStore.getState().updateNode;
           updateNode(
             data.id,
@@ -260,7 +259,6 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         })
         .catch((error) => {
           console.error('Error handling attachments:', error);
-          // Handle error (e.g., show an error message to the user)
         });
     },
     [data.id]
@@ -459,7 +457,9 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         onClose={() => setIsFileModalOpen(false)}
         onAttachFiles={onAttachFiles}
         onRemoveFile={onRemoveFile}
-        existingFiles={attachedFiles}
+        existingFiles={attachedFiles.map((file) =>
+          file.type === 'url' ? file.content : (file.content as File)
+        )}
         nodeId={data.id}
       />
       <NodeDeleteConfirmationModal
