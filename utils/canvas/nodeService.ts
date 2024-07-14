@@ -214,6 +214,8 @@ export const handleAttachments = async (
       });
       fileName = attachment.content.name;
       fileSize = attachment.content.size;
+    } else if (attachment.type === 'url') {
+      fileName = new URL(attachment.content as string).hostname;
     }
 
     const { error: insertError } = await supabase
