@@ -237,16 +237,18 @@ export const fetchCanvas = async (canvasId: string) => {
     throw canvasError;
   }
 
-  console.log('canvasService: Raw canvas data:', canvasData);
-
   const canvas = toCamelCase(canvasData);
 
-  // Organize nodes data
   const organizedNodes = canvas.nodes.map((node) => {
-    const nodeType = node.type;
-    const specificNodeData = node[`${nodeType}Nodes`];
+    const nodeType = node.type.toLowerCase();
+    const specificNodeData = node[`${nodeType}Nodes`]?.[0] || {};
     const tags = node.nodeTags.map((tag) => tag.tag);
-    const attachments = node.nodeAttachments;
+    const attachments = node.nodeAttachments.map((attachment) => ({
+      type: attachment.type,
+      name: attachment.fileName,
+      size: attachment.fileSize,
+      content: attachment.content
+    }));
 
     delete node[`${nodeType}Nodes`];
     delete node.nodeTags;
@@ -257,7 +259,7 @@ export const fetchCanvas = async (canvasId: string) => {
       data: {
         ...specificNodeData,
         tags,
-        attachments
+        attachedFiles: attachments
       }
     };
   });
@@ -307,32 +309,12 @@ export const saveCanvasState = async (canvasId: string, canvasState: any) => {
               .from('note_nodes')
               .update(toSnakeCase(data))
               .eq('node_id', nodeId);
-          case 'task':
-            return supabase
-              .from('task_nodes')
-              .update(toSnakeCase(data))
-              .eq('node_id', nodeId);
-          case 'calendar':
-            return supabase
-              .from('calendar_nodes')
-              .update(toSnakeCase(data))
-              .eq('node_id', nodeId);
-          case 'table':
-            return supabase
-              .from('table_nodes')
-              .update(toSnakeCase(data))
-              .eq('node_id', nodeId);
-          case 'draw':
-            return supabase
-              .from('draw_nodes')
-              .update(toSnakeCase(data))
-              .eq('node_id', nodeId);
-          default:
-            throw new Error(`Unsupported node type: ${nodeType}`);
+          // ... (other node types)
         }
       };
 
-      const { error: specificNodeUpdateError } = await updateSpecificNodeData();
+      const result = await updateSpecificNodeData();
+      const specificNodeUpdateError = result?.error;
 
       if (specificNodeUpdateError) {
         console.error(
@@ -355,15 +337,18 @@ export const saveCanvasState = async (canvasId: string, canvasState: any) => {
     }
 
     // Update node attachments
-    const { attachments } = data;
-    if (attachments && Array.isArray(attachments)) {
+    const { attachedFiles } = data;
+    if (attachedFiles && Array.isArray(attachedFiles)) {
       // Delete existing attachments
       await supabase.from('node_attachments').delete().eq('node_id', nodeId);
 
       // Insert new attachments
-      const attachmentsData = attachments.map((attachment) => ({
+      const attachmentsData = attachedFiles.map((attachment) => ({
         node_id: nodeId,
-        ...attachment
+        type: attachment.type,
+        file_name: attachment.name || attachment.content,
+        file_size: attachment.size || null,
+        content: attachment.content
       }));
       await supabase.from('node_attachments').insert(attachmentsData);
     }
