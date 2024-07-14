@@ -248,7 +248,8 @@ export const fetchCanvas = async (canvasId: string) => {
               type: attachment.type,
               name: attachment.fileName,
               size: attachment.fileSize,
-              content: attachment.content
+              content: attachment.content,
+              fileName: attachment.fileName
             }))
           : [];
 

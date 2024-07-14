@@ -35,8 +35,7 @@ const TagFileContainer = ({
                 if (file.type === 'url') {
                   window.open(file.content, '_blank');
                 } else {
-                  const url = URL.createObjectURL(file.content);
-                  window.open(url, '_blank');
+                  handleAttachmentPreview(file.content);
                 }
               }}
               onMouseEnter={() => handleAttachmentPreview(file.content)}
@@ -48,13 +47,11 @@ const TagFileContainer = ({
               }}
               style={{ cursor: 'pointer', textDecoration: 'underline' }}
             >
-              {file.type === 'url'
-                ? new URL(file.content).hostname
-                : file.content.name}
+              {file.type === 'url' ? new URL(file.content).hostname : file.name}
             </span>
             <button
               className={styles.removeFileButton}
-              onClick={() => onRemoveFile(file.content)}
+              onClick={() => onRemoveFile(file)}
             >
               &times;
             </button>

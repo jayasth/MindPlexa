@@ -80,7 +80,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   const [textColor, setTextColor] = useState(data.textColor || '#575757');
   const [tags, setTags] = useState<string[]>(data.tags || []);
   const [attachedFiles, setAttachedFiles] = useState<
-    Array<{ type: 'file' | 'url'; content: File | string }>
+    Array<{ type: 'file' | 'url'; content: File | string; name: string }>
   >(data.attachedFiles || []);
   const [isContainerSelected, setIsContainerSelected] = useState(false);
   const [nodeWidth, setNodeWidth] = useState(width);
@@ -242,9 +242,13 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     (files: Array<File | string>) => {
       const attachments = files.map((file) => {
         if (typeof file === 'string') {
-          return { type: 'url' as const, content: file };
+          return {
+            type: 'url' as const,
+            content: file,
+            name: new URL(file).hostname
+          };
         } else {
-          return { type: 'file' as const, content: file };
+          return { type: 'file' as const, content: file, name: file.name };
         }
       });
       setAttachedFiles(attachments);

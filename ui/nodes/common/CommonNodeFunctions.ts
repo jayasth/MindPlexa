@@ -175,10 +175,7 @@ export const handleClose = (
   toggleEditMode(nodeId);
 };
 
-export const handleDelete = async (
-  id: string,
-  canvasId: string
-) => {
+export const handleDelete = async (id: string, canvasId: string) => {
   try {
     const { removeNode } = useNodeStore.getState();
     const { setEdges } = useEdgeStore.getState();
@@ -245,9 +242,9 @@ export const handleAttachFile = (
 
     const attachedFiles = allFiles.map((file) => {
       if (typeof file === 'string') {
-        return { url: file, type: 'url' };
+        return { type: 'url', content: file, name: new URL(file).hostname };
       } else {
-        return { url: URL.createObjectURL(file), type: file.type };
+        return { type: 'file', content: file, name: file.name };
       }
     });
 
