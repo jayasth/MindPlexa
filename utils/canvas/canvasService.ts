@@ -208,7 +208,6 @@ const deleteNonSharedNodes = async (nodeIds: string[]) => {
     }
   }
 };
-
 export const fetchCanvas = async (canvasId: string) => {
   console.log('canvasService: Fetching canvas with ID:', canvasId);
 
@@ -239,30 +238,34 @@ export const fetchCanvas = async (canvasId: string) => {
 
   const canvas = toCamelCase(canvasData);
 
-  const organizedNodes = canvas.nodes.map((node) => {
-    const nodeType = node.type.toLowerCase();
-    const specificNodeData = node[`${nodeType}Nodes`]?.[0] || {};
-    const tags = node.nodeTags.map((tag) => tag.tag);
-    const attachments = node.nodeAttachments.map((attachment) => ({
-      type: attachment.type,
-      name: attachment.fileName,
-      size: attachment.fileSize,
-      content: attachment.content
-    }));
+  const organizedNodes = canvas.nodes
+    ? canvas.nodes.map((node) => {
+        const nodeType = node.type.toLowerCase();
+        const specificNodeData = node[`${nodeType}Nodes`]?.[0] || {};
+        const tags = node.nodeTags ? node.nodeTags.map((tag) => tag.tag) : [];
+        const attachments = node.nodeAttachments
+          ? node.nodeAttachments.map((attachment) => ({
+              type: attachment.type,
+              name: attachment.fileName,
+              size: attachment.fileSize,
+              content: attachment.content
+            }))
+          : [];
 
-    delete node[`${nodeType}Nodes`];
-    delete node.nodeTags;
-    delete node.nodeAttachments;
+        delete node[`${nodeType}Nodes`];
+        delete node.nodeTags;
+        delete node.nodeAttachments;
 
-    return {
-      ...node,
-      data: {
-        ...specificNodeData,
-        tags,
-        attachedFiles: attachments
-      }
-    };
-  });
+        return {
+          ...node,
+          data: {
+            ...specificNodeData,
+            tags,
+            attachedFiles: attachments
+          }
+        };
+      })
+    : [];
 
   console.log('canvasService: Organized nodes:', organizedNodes);
 
@@ -271,6 +274,7 @@ export const fetchCanvas = async (canvasId: string) => {
     nodes: organizedNodes
   };
 };
+
 export const saveCanvasState = async (canvasId: string, canvasState: any) => {
   const { nodes, ...canvasData } = canvasState;
 
