@@ -336,7 +336,6 @@ export const handleDuplicate = (id: string, canvasId: string) => {
     setSelectedNodes([newNode.id]);
   }
 };
-
 export const handleAttachmentPreview = async (fileOrUrl: File | string) => {
   const previewWindow = document.createElement('div');
   previewWindow.style.position = 'fixed';
@@ -367,12 +366,17 @@ export const handleAttachmentPreview = async (fileOrUrl: File | string) => {
 
   if (typeof fileOrUrl === 'string') {
     try {
-      // Retrieve the public URL of the file from Supabase storage bucket
       const { data } = await supabase.storage
         .from('node-attachments')
         .getPublicUrl(fileOrUrl);
 
       const publicUrl = data.publicUrl;
+
+      // Store the storage path in the node_attachments table
+      await supabase
+        .from('node_attachments')
+        .update({ storage_path: fileOrUrl })
+        .eq('content', publicUrl);
 
       const iframe = document.createElement('iframe');
       iframe.src = publicUrl;
@@ -419,6 +423,14 @@ export const handleAttachmentPreview = async (fileOrUrl: File | string) => {
       };
       fileReader.readAsText(fileOrUrl);
     }
+
+    // After successful upload, store the storage path
+    // Note: This part assumes that the file has been uploaded and we have the uploadData
+    // You might need to adjust this based on your actual upload process
+    // await supabase
+    //   .from('node_attachments')
+    //   .update({ storage_path: uploadData.path })
+    //   .eq('content', fileURL);
   }
 
   document.body.appendChild(previewWindow);

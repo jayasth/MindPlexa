@@ -214,7 +214,9 @@ export type Database = {
           file_name: string | null
           file_size: number | null
           id: string
+          mime_type: string | null
           node_id: string
+          storage_path: string | null
           type: string
         }
         Insert: {
@@ -223,7 +225,9 @@ export type Database = {
           file_name?: string | null
           file_size?: number | null
           id?: string
+          mime_type?: string | null
           node_id: string
+          storage_path?: string | null
           type: string
         }
         Update: {
@@ -232,7 +236,9 @@ export type Database = {
           file_name?: string | null
           file_size?: number | null
           id?: string
+          mime_type?: string | null
           node_id?: string
+          storage_path?: string | null
           type?: string
         }
         Relationships: [

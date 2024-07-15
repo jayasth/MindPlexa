@@ -407,6 +407,29 @@ export const deleteNode = async (
 ): Promise<{ success?: boolean; error?: any }> => {
   console.log('nodeService: Deleting node:', { nodeId, nodeType });
 
+  // Delete attachments from storage
+  const { data: attachments, error: attachmentsError } = await supabase
+    .from('node_attachments')
+    .select('storage_path')
+    .eq('node_id', nodeId);
+
+  if (attachmentsError) {
+    console.error('Error fetching attachments:', attachmentsError);
+    return { error: attachmentsError };
+  }
+
+  for (const attachment of attachments) {
+    if (attachment.storage_path) {
+      const { error: deleteError } = await supabase.storage
+        .from('node-attachments')
+        .remove([attachment.storage_path]);
+
+      if (deleteError) {
+        console.error('Error deleting file from storage:', deleteError);
+      }
+    }
+  }
+
   if (nodeType !== 'selection_menu') {
     const tableName = `${nodeType}_nodes` as keyof Database['public']['Tables'];
     const { error: specificError } = await deleteNodeFromTable(
