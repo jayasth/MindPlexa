@@ -51,7 +51,7 @@ const TagFileContainer = ({
             </span>
             <button
               className={styles.removeFileButton}
-              onClick={() => onRemoveFile(file)}
+              onClick={() => onRemoveFile(file.content)}
             >
               &times;
             </button>
