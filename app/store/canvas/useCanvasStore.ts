@@ -66,18 +66,6 @@ const processEdge = (edge: any) => ({
   type: 'customEdge'
 });
 
-const processNodeData = (nodeCanvasLink: any, nodeData: any) => {
-  return (
-    nodeCanvasLink
-      ?.map((link: any) => processNode(link.nodes))
-      .filter((node: any): node is Node => node !== null) || []
-  );
-};
-
-const processEdgeData = (edges: any) => {
-  return edges?.map(processEdge) || [];
-};
-
 const useCanvasStore = create<CanvasState>()(
   devtools((set, get) => {
     let previousNodes: Node[] = [];
