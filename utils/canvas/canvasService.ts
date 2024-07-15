@@ -1,5 +1,4 @@
 import { createClient } from '@/utils/supabase/supabaseClient';
-import { Database } from '@/types_db';
 import { useRouter } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
 import { toCamelCase, toSnakeCase } from '@/utils/caseConversion';

@@ -211,58 +211,6 @@ export const handleAddTag = (
   tags.forEach((tag) => onAddTag(tag));
 };
 
-export const handleAttachFile = (
-  id: string,
-  files: (File | string)[],
-  callback: () => void,
-  canvasId: string
-) => {
-  const { updateNode } = useNodeStore.getState();
-  const maxFileSize = 2 * 1024 * 1024; // 2 MB in bytes
-  const validFiles = files.filter((file) => {
-    if (typeof file === 'string') return true;
-    return (
-      file.size <= maxFileSize &&
-      ['image/jpeg', 'image/png', 'application/pdf', 'text/plain'].includes(
-        file.type
-      )
-    );
-  });
-
-  if (validFiles.length > 0) {
-    const existingFiles =
-      useNodeStore.getState().nodes.find((n) => n.id === id)?.data
-        ?.attachedFiles || [];
-    const allFiles = [...existingFiles, ...validFiles];
-
-    if (allFiles.length > 10) {
-      alert('You can attach a maximum of 10 files.');
-      return;
-    }
-
-    const attachedFiles = allFiles.map((file) => {
-      if (typeof file === 'string') {
-        return { type: 'url', content: file, name: new URL(file).hostname };
-      } else {
-        return { type: 'file', content: file, name: file.name };
-      }
-    });
-
-    updateNode(
-      id,
-      {
-        data: { attachedFiles }
-      },
-      canvasId
-    );
-    callback();
-  } else {
-    alert(
-      'Please select valid files. Only JPEG, PNG, PDF, and TXT files under 2MB.'
-    );
-  }
-};
-
 export const handleRemoveAttachedFile = (
   id: string,
   fileId: string,
