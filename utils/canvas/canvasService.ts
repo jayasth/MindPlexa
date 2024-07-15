@@ -144,7 +144,7 @@ export const fetchCanvas = async (canvasId: string) => {
         table_nodes(columns, rows),
         draw_nodes(drawing_data),
         node_tags(tag),
-        node_attachments(id, type, file_name, file_size, content)
+        node_attachments(id, type, file_name, file_size, storage_path, content)
       ),
       edges(id, source_node_id, target_node_id)`
     )
@@ -165,11 +165,12 @@ export const fetchCanvas = async (canvasId: string) => {
         const tags = node.nodeTags ? node.nodeTags.map((tag) => tag.tag) : [];
         const attachments = node.nodeAttachments
           ? node.nodeAttachments.map((attachment) => ({
+              id: attachment.id,
               type: attachment.type,
               name: attachment.fileName,
               size: attachment.fileSize,
-              content: attachment.content,
-              fileName: attachment.fileName
+              storagePath: attachment.storagePath,
+              content: attachment.content
             }))
           : [];
 
@@ -309,8 +310,9 @@ export const saveCanvasState = async (canvasId: string, canvasState: any) => {
       const attachmentsData = attachedFiles.map((attachment) => ({
         node_id: nodeId,
         type: attachment.type,
-        file_name: attachment.name || attachment.content,
-        file_size: attachment.size || null,
+        file_name: attachment.name,
+        file_size: attachment.size,
+        storage_path: attachment.storagePath,
         content: attachment.content
       }));
       await supabase.from('node_attachments').insert(attachmentsData);

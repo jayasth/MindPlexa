@@ -180,6 +180,31 @@ export const handleClose = (
 
 export const handleDelete = async (id: string, canvasId: string) => {
   try {
+    // Fetch attachments before deleting the node
+    const { data: attachments, error: fetchError } = await supabase
+      .from('node_attachments')
+      .select('content')
+      .eq('node_id', id);
+
+    if (fetchError) {
+      console.error('Error fetching attachments:', fetchError);
+      return;
+    }
+
+    // Delete files from Supabase storage
+    for (const attachment of attachments) {
+      if (attachment.content) {
+        const { error: deleteError } = await supabase.storage
+          .from('node-attachments')
+          .remove([attachment.content]);
+
+        if (deleteError) {
+          console.error('Error deleting file from storage:', deleteError);
+        }
+      }
+    }
+
+    // Now delete the node
     const { removeNode } = useNodeStore.getState();
     const { setEdges } = useEdgeStore.getState();
     await removeNode(id, canvasId);
@@ -216,25 +241,39 @@ export const handleAddTag = (
 
 export const handleRemoveAttachedFile = async (
   id: string,
-  fileId: string,
+  fileToRemove: any,
   onRemoveFile: (fileId: string) => void,
   canvasId: string
 ) => {
+  console.log('Removing file:', fileToRemove); // Add this line for debugging
   const { updateNode } = useNodeStore.getState();
   const node = useNodeStore.getState().nodes.find((n) => n.id === id);
   if (node) {
     try {
-      // Delete the file from Supabase storage bucket
-      const { data, error } = await supabase.storage
-        .from('node-attachments')
-        .remove([fileId]);
+      if (fileToRemove.type === 'file' && fileToRemove.storage_path) {
+        // Delete the file from Supabase storage bucket
+        const { error } = await supabase.storage
+          .from('node-attachments')
+          .remove([fileToRemove.storage_path]);
+
+        if (error) {
+          console.error('Error deleting file from storage:', error);
+        }
+      }
+
+      // Delete the record from node_attachments table
+      const { error } = await supabase
+        .from('node_attachments')
+        .delete()
+        .eq('node_id', id)
+        .eq('file_name', fileToRemove.file_name);
 
       if (error) {
-        throw error;
+        console.error('Error deleting attachment record:', error);
       }
 
       const updatedFiles = node.data.attachedFiles.filter(
-        (file) => file.id !== fileId
+        (file) => file.file_name !== fileToRemove.file_name
       );
       updateNode(
         id,
@@ -243,11 +282,13 @@ export const handleRemoveAttachedFile = async (
         },
         canvasId
       );
-      onRemoveFile(fileId);
+      onRemoveFile(fileToRemove.file_name);
     } catch (error) {
-      console.error('Error deleting attachment:', error);
+      console.error('Error in handleRemoveAttachedFile:', error);
       // Handle error (e.g., show an error message to the user)
     }
+  } else {
+    console.error('Node not found:', id);
   }
 };
 

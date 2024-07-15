@@ -117,44 +117,33 @@ export const handleAttachments = async (
     let content = attachment.content;
     let fileName = '';
     let fileSize = 0;
+    let mimeType = '';
+    let storagePath = '';
 
     if (attachment.type === 'file' && attachment.content instanceof File) {
-      // Check if the file already exists in the bucket
-      const { data: existingFiles, error: listError } = await supabase.storage
+      // Generate a unique file name
+      const uniqueFileName = `${Date.now()}_${attachment.content.name}`;
+      storagePath = `node-attachments/${nodeId}/${uniqueFileName}`;
+
+      // Upload file to Supabase storage
+      const { error: uploadError, data: uploadData } = await supabase.storage
         .from('node-attachments')
-        .list();
+        .upload(storagePath, attachment.content);
 
-      if (listError) {
-        console.error('Error listing files:', listError);
-        return { error: listError };
+      if (uploadError) {
+        console.error('Error uploading attachment:', uploadError);
+        return { error: uploadError };
       }
-      const existingFile = existingFiles.find(
-        (file) => file.name === (attachment.content as File).name
-      );
 
-      if (existingFile) {
-        // File already exists, use the existing URL
-        content = existingFile.id;
-        fileName = existingFile.name;
-      } else {
-        // Upload file to Supabase storage
-        const { error: uploadError, data: uploadData } = await supabase.storage
-          .from('node-attachments')
-          .upload(attachment.content.name, attachment.content);
-
-        if (uploadError) {
-          console.error('Error uploading attachment:', uploadError);
-          return { error: uploadError };
-        }
-
-        // Update content with Supabase storage URL
-        content = uploadData.id;
-        fileName = attachment.content.name;
-        fileSize = attachment.content.size;
-      }
+      // Update content with Supabase storage path
+      content = storagePath;
+      fileName = attachment.content.name;
+      fileSize = attachment.content.size;
+      mimeType = attachment.content.type;
     } else if (attachment.type === 'url') {
       fileName = new URL(attachment.content as string).hostname;
       content = attachment.content as string;
+      mimeType = 'text/plain'; // Default MIME type for URLs
     }
 
     const { error: insertError } = await supabase
@@ -163,6 +152,8 @@ export const handleAttachments = async (
         node_id: nodeId,
         file_name: fileName,
         file_size: fileSize,
+        mime_type: mimeType,
+        storage_path: storagePath,
         content: content as string,
         type: attachment.type
       });
