@@ -48,7 +48,17 @@ const processNode = (node: any) => {
       backgroundColor: node.backgroundColor,
       textColor: node.textColor,
       isTemporary: node.isTemporary,
-      isEditing: node.isEditing
+      isEditing: node.isEditing,
+      attachedFiles: node.data.attachedFiles.map((file: any) => ({
+        id: file.id,
+        type: file.type,
+        name: file.name,
+        size: file.size,
+        storagePath: file.storagePath,
+        mimeType: file.mimeType,
+        url: file.url,
+        isFile: file.isFile
+      }))
     },
     width: node.isEditing
       ? (isDesktop ? node.editWidth : node.mobileEditWidth) || node.viewWidth
@@ -58,7 +68,6 @@ const processNode = (node: any) => {
       : node.viewHeight
   };
 };
-
 const processEdge = (edge: any) => ({
   id: edge.id,
   source: edge.sourceNodeId || '',

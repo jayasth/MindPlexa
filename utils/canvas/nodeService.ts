@@ -78,105 +78,68 @@ export const handleTags = async (
 
 export const handleAttachments = async (
   nodeId: string,
-  newAttachments: Array<{ type: 'file' | 'url'; content: string | File }>
+  attachments: Array<{ type: 'file' | 'url'; content: string | File }>
 ): Promise<{ error?: any }> => {
-  // Fetch existing attachments
-  const { data: existingAttachments, error: fetchError } = await supabase
+  // Delete existing attachments
+  const { error: deleteError } = await supabase
     .from('node_attachments')
-    .select('*')
+    .delete()
     .eq('node_id', nodeId);
 
-  if (fetchError) {
-    console.error('Error fetching existing attachments:', fetchError);
-    return { error: fetchError };
+  if (deleteError) {
+    console.error('Error deleting existing attachments:', deleteError);
+    return { error: deleteError };
   }
 
-  // Determine changes
-  const attachmentsToDelete = existingAttachments.filter(
-    (ea) => !newAttachments.some((na) => na.content === ea.content)
-  );
-  const attachmentsToAdd = newAttachments.filter(
-    (na) => !existingAttachments.some((ea) => ea.content === na.content)
-  );
-
-  // Delete outdated attachments
-  for (const attachment of attachmentsToDelete) {
-    const { error: deleteError } = await supabase
-      .from('node_attachments')
-      .delete()
-      .eq('id', attachment.id);
-
-    if (deleteError) {
-      console.error('Error deleting attachment:', deleteError);
-      return { error: deleteError };
-    }
-  }
-
-  // Add new attachments
-  for (const attachment of attachmentsToAdd) {
-    let content = attachment.content;
-    let fileName = '';
-    let fileSize = 0;
-    let mimeType = '';
-    let storagePath = '';
-
+  for (const attachment of attachments) {
     if (attachment.type === 'file' && attachment.content instanceof File) {
-      // Generate a unique file name
-      const uniqueFileName = `${Date.now()}_${attachment.content.name}`;
-      storagePath = `node-attachments/${nodeId}/${uniqueFileName}`;
+      const file = attachment.content;
+      const filePath = `node-attachments/${nodeId}/${file.name}`;
 
-      // Check if file already exists
-      const { data: existingFile } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('node-attachments')
-        .list(nodeId, { search: attachment.content.name });
+        .upload(filePath, file);
 
-      if (existingFile && existingFile.length > 0) {
-        // File already exists, use existing path
-        storagePath = `node-attachments/${nodeId}/${attachment.content.name}`;
-      } else {
-        // Upload new file
-        const { error: uploadError, data: uploadData } = await supabase.storage
-          .from('node-attachments')
-          .upload(storagePath, attachment.content);
+      if (uploadError) {
+        console.error('Error uploading file:', uploadError);
+        return { error: uploadError };
+      }
 
-        if (uploadError) {
-          console.error('Error uploading attachment:', uploadError);
-          return { error: uploadError };
-        }
+      const { error: insertError } = await supabase
+        .from('node_attachments')
+        .insert({
+          node_id: nodeId,
+          type: 'file',
+          file_name: file.name,
+          file_size: file.size,
+          storage_path: filePath,
+          mime_type: file.type,
+          is_file: true
+        });
 
-        // Update content with Supabase storage path
-        content = storagePath;
-        fileName = attachment.content.name;
-        fileSize = attachment.content.size;
-        mimeType = attachment.content.type;
+      if (insertError) {
+        console.error('Error inserting file attachment:', insertError);
+        return { error: insertError };
       }
     } else if (attachment.type === 'url') {
-      fileName = new URL(attachment.content as string).hostname;
-      content = attachment.content as string;
-      mimeType = 'text/plain'; // Default MIME type for URLs
-    }
+      const { error: insertError } = await supabase
+        .from('node_attachments')
+        .insert({
+          node_id: nodeId,
+          type: 'url',
+          url: attachment.content as string,
+          is_file: false
+        });
 
-    const { error: insertError } = await supabase
-      .from('node_attachments')
-      .upsert({
-        node_id: nodeId,
-        file_name: fileName,
-        file_size: fileSize,
-        mime_type: mimeType,
-        storage_path: storagePath,
-        content: content as string,
-        type: attachment.type
-      });
-
-    if (insertError) {
-      console.error('Error inserting new attachment:', insertError);
-      return { error: insertError };
+      if (insertError) {
+        console.error('Error inserting URL attachment:', insertError);
+        return { error: insertError };
+      }
     }
   }
 
   return {};
 };
-
 export const createNode = async (
   canvasId: string,
   nodeType: Database['public']['Enums']['node_type'],

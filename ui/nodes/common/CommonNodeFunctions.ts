@@ -183,7 +183,7 @@ export const handleDelete = async (id: string, canvasId: string) => {
     // Fetch attachments before deleting the node
     const { data: attachments, error: fetchError } = await supabase
       .from('node_attachments')
-      .select('content')
+      .select('storage_path')
       .eq('node_id', id);
 
     if (fetchError) {
@@ -193,10 +193,10 @@ export const handleDelete = async (id: string, canvasId: string) => {
 
     // Delete files from Supabase storage
     for (const attachment of attachments) {
-      if (attachment.content) {
+      if (attachment.storage_path) {
         const { error: deleteError } = await supabase.storage
           .from('node-attachments')
-          .remove([attachment.content]);
+          .remove([attachment.storage_path]);
 
         if (deleteError) {
           console.error('Error deleting file from storage:', deleteError);
@@ -215,19 +215,6 @@ export const handleDelete = async (id: string, canvasId: string) => {
     console.error('Error deleting node:', error);
   }
 };
-
-export const handleChangeColor = (
-  id: string,
-  color: string,
-  onChangeColor: (color: string) => void,
-  canvasId: string
-) => {
-  const { updateNode } = useNodeStore.getState();
-  const textColor = getContrastYIQ(color);
-  onChangeColor(color);
-  updateNode(id, { data: { backgroundColor: color, textColor } }, canvasId);
-};
-
 export const handleAddTag = (
   id: string,
   tags: string[],
@@ -241,11 +228,13 @@ export const handleAddTag = (
 
 export const handleRemoveAttachedFile = async (
   id: string,
-  fileToRemove: any,
-  onRemoveFile: (fileId: string) => void,
+  fileToRemove: { type: 'file' | 'url'; content: string | File },
+  onRemoveFile: (file: {
+    type: 'file' | 'url';
+    content: string | File;
+  }) => void,
   canvasId: string
 ) => {
-  console.log('Removing file:', fileToRemove);
   const { updateNode } = useNodeStore.getState();
   const node = useNodeStore.getState().nodes.find((n) => n.id === id);
 
@@ -255,47 +244,44 @@ export const handleRemoveAttachedFile = async (
   }
 
   try {
-    // Delete the file from Supabase storage if it's a file type
-    if (fileToRemove.type === 'file' && fileToRemove.storage_path) {
-      const { error: storageError } = await supabase.storage
+    if (fileToRemove.type === 'file') {
+      const { error: deleteError } = await supabase.storage
         .from('node-attachments')
-        .remove([fileToRemove.storage_path]);
+        .remove([
+          `node-attachments/${id}/${(fileToRemove.content as File).name}`
+        ]);
 
-      if (storageError) {
-        console.error('Error deleting file from storage:', storageError);
-        return; // Stop the process if file deletion fails
+      if (deleteError) {
+        console.error('Error deleting file from storage:', deleteError);
+        return;
       }
     }
 
-    // Delete the record from node_attachments table
     const { error: dbError } = await supabase
       .from('node_attachments')
       .delete()
       .eq('node_id', id)
-      .eq('content', fileToRemove.content);
+      .eq(
+        fileToRemove.type === 'file' ? 'file_name' : 'url',
+        fileToRemove.type === 'file'
+          ? (fileToRemove.content as File).name
+          : fileToRemove.content
+      );
 
     if (dbError) {
       console.error('Error deleting attachment record:', dbError);
-      return; // Stop the process if record deletion fails
+      return;
     }
 
-    // Update the node's data
     const updatedFiles = node.data.attachedFiles.filter(
       (file) => file.content !== fileToRemove.content
     );
 
-    await updateNode(
-      id,
-      {
-        data: { attachedFiles: updatedFiles }
-      },
-      canvasId
-    );
+    await updateNode(id, { data: { attachedFiles: updatedFiles } }, canvasId);
 
-    onRemoveFile(fileToRemove.content);
+    onRemoveFile(fileToRemove);
   } catch (error) {
     console.error('Error in handleRemoveAttachedFile:', error);
-    // Handle error (e.g., show an error message to the user)
   }
 };
 

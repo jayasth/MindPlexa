@@ -144,7 +144,7 @@ export const fetchCanvas = async (canvasId: string) => {
         table_nodes(columns, rows),
         draw_nodes(drawing_data),
         node_tags(tag),
-        node_attachments(id, type, file_name, file_size, storage_path, content)
+        node_attachments(id, type, file_name, file_size, storage_path, mime_type, url, is_file)
       ),
       edges(id, source_node_id, target_node_id)`
     )
@@ -170,7 +170,9 @@ export const fetchCanvas = async (canvasId: string) => {
               name: attachment.fileName,
               size: attachment.fileSize,
               storagePath: attachment.storagePath,
-              content: attachment.content
+              mimeType: attachment.mimeType,
+              url: attachment.url,
+              isFile: attachment.isFile
             }))
           : [];
 
@@ -190,23 +192,6 @@ export const fetchCanvas = async (canvasId: string) => {
     : [];
 
   console.log('canvasService: Organized nodes:', organizedNodes);
-
-  // Test query
-  const { data: testData, error: testError } = await supabase
-    .from('nodes')
-    .select(
-      `
-      *,
-      note_nodes (*)
-    `
-    )
-    .eq('id', 'cebfcbef-1418-4f49-b9f9-93d550dee051');
-
-  if (testError) {
-    console.error('Test query error:', testError);
-  } else {
-    console.log('Test query result:', testData);
-  }
 
   return {
     ...canvas,

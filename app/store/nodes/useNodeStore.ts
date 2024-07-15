@@ -190,16 +190,20 @@ const useNodeStore = create<NodeState>()(
         // Delete associated attachments from Supabase storage bucket
         const { data: attachments, error: attachmentsError } = await supabase
           .from('node_attachments')
-          .select('content')
+          .select('storage_path')
           .eq('node_id', id);
 
         if (attachmentsError) {
           throw attachmentsError;
         }
-        const fileIds = attachments
-          .map((attachment) => attachment.content)
-          .filter((content): content is string => content !== null);
-        await supabase.storage.from('node-attachments').remove(fileIds);
+
+        const filePaths = attachments
+          .map((attachment) => attachment.storage_path)
+          .filter((path): path is string => path !== null);
+
+        if (filePaths.length > 0) {
+          await supabase.storage.from('node-attachments').remove(filePaths);
+        }
 
         set(
           produce((state: NodeState) => {
