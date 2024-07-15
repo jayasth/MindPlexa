@@ -162,7 +162,7 @@ export const fetchCanvas = async (canvasId: string) => {
   const organizedNodes = canvas.nodes
     ? canvas.nodes.map((node) => {
         const nodeType = node.type.toLowerCase();
-        const specificNodeData = node[`${nodeType}Nodes`]?.[0] || {};
+        const specificNodeData = node[`${nodeType}Nodes`] || {};
         const tags = node.nodeTags ? node.nodeTags.map((tag) => tag.tag) : [];
         const attachments = node.nodeAttachments
           ? node.nodeAttachments.map((attachment) => ({
