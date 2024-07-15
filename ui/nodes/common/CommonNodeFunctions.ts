@@ -263,6 +263,7 @@ export const handleRemoveAttachedFile = async (
 
       if (storageError) {
         console.error('Error deleting file from storage:', storageError);
+        return; // Stop the process if file deletion fails
       }
     }
 
@@ -275,6 +276,7 @@ export const handleRemoveAttachedFile = async (
 
     if (dbError) {
       console.error('Error deleting attachment record:', dbError);
+      return; // Stop the process if record deletion fails
     }
 
     // Update the node's data

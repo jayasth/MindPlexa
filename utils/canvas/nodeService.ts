@@ -125,21 +125,31 @@ export const handleAttachments = async (
       const uniqueFileName = `${Date.now()}_${attachment.content.name}`;
       storagePath = `node-attachments/${nodeId}/${uniqueFileName}`;
 
-      // Upload file to Supabase storage
-      const { error: uploadError, data: uploadData } = await supabase.storage
+      // Check if file already exists
+      const { data: existingFile } = await supabase.storage
         .from('node-attachments')
-        .upload(storagePath, attachment.content);
+        .list(nodeId, { search: attachment.content.name });
 
-      if (uploadError) {
-        console.error('Error uploading attachment:', uploadError);
-        return { error: uploadError };
+      if (existingFile && existingFile.length > 0) {
+        // File already exists, use existing path
+        storagePath = `node-attachments/${nodeId}/${attachment.content.name}`;
+      } else {
+        // Upload new file
+        const { error: uploadError, data: uploadData } = await supabase.storage
+          .from('node-attachments')
+          .upload(storagePath, attachment.content);
+
+        if (uploadError) {
+          console.error('Error uploading attachment:', uploadError);
+          return { error: uploadError };
+        }
+
+        // Update content with Supabase storage path
+        content = storagePath;
+        fileName = attachment.content.name;
+        fileSize = attachment.content.size;
+        mimeType = attachment.content.type;
       }
-
-      // Update content with Supabase storage path
-      content = storagePath;
-      fileName = attachment.content.name;
-      fileSize = attachment.content.size;
-      mimeType = attachment.content.type;
     } else if (attachment.type === 'url') {
       fileName = new URL(attachment.content as string).hostname;
       content = attachment.content as string;
@@ -148,7 +158,7 @@ export const handleAttachments = async (
 
     const { error: insertError } = await supabase
       .from('node_attachments')
-      .insert({
+      .upsert({
         node_id: nodeId,
         file_name: fileName,
         file_size: fileSize,
