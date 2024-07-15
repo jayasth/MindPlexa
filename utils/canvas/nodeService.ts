@@ -119,12 +119,18 @@ export const handleAttachments = async (
     let fileSize = 0;
 
     if (attachment.type === 'file' && attachment.content instanceof File) {
-      content = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(attachment.content as Blob);
-      });
+      // Upload file to Supabase storage
+      const { error: uploadError, data: uploadData } = await supabase.storage
+        .from('node-attachments')
+        .upload(attachment.content.name, attachment.content);
+
+      if (uploadError) {
+        console.error('Error uploading attachment:', uploadError);
+        return { error: uploadError };
+      }
+
+      // Update content with Supabase storage URL
+      content = uploadData.path; // Use 'path' instead of 'Key'
       fileName = attachment.content.name;
       fileSize = attachment.content.size;
     } else if (attachment.type === 'url') {
