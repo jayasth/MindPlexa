@@ -11,6 +11,9 @@ import {
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 import { getChildNodePosition } from '@/ui/canvasEditor/utils/getChildNodePosition';
 import type { Node, XYPosition } from 'reactflow';
+import { createClient } from '@/utils/supabase/supabaseClient';
+
+const supabase = createClient();
 
 interface NodeState {
   nodes: Node[];
@@ -184,6 +187,20 @@ const useNodeStore = create<NodeState>()(
     },
     removeNode: async (id, canvasId) => {
       try {
+        // Delete associated attachments from Supabase storage bucket
+        const { data: attachments, error: attachmentsError } = await supabase
+          .from('node_attachments')
+          .select('content')
+          .eq('node_id', id);
+
+        if (attachmentsError) {
+          throw attachmentsError;
+        }
+        const fileIds = attachments
+          .map((attachment) => attachment.content)
+          .filter((content): content is string => content !== null);
+        await supabase.storage.from('node-attachments').remove(fileIds);
+
         set(
           produce((state: NodeState) => {
             const nodeToRemove = state.nodes.find((node) => node.id === id);

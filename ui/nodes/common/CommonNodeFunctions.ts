@@ -1,6 +1,9 @@
 import { useNodeStore, useEdgeStore } from '@/app/store';
 import { v4 as uuidv4 } from 'uuid';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
+import { createClient } from '@/utils/supabase/supabaseClient';
+
+const supabase = createClient();
 
 export const getContrastYIQ = (color: string) => {
   let r,
@@ -211,7 +214,7 @@ export const handleAddTag = (
   tags.forEach((tag) => onAddTag(tag));
 };
 
-export const handleRemoveAttachedFile = (
+export const handleRemoveAttachedFile = async (
   id: string,
   fileId: string,
   onRemoveFile: (fileId: string) => void,
@@ -220,17 +223,31 @@ export const handleRemoveAttachedFile = (
   const { updateNode } = useNodeStore.getState();
   const node = useNodeStore.getState().nodes.find((n) => n.id === id);
   if (node) {
-    const updatedFiles = node.data.attachedFiles.filter(
-      (file) => file.id !== fileId
-    );
-    updateNode(
-      id,
-      {
-        data: { attachedFiles: updatedFiles }
-      },
-      canvasId
-    );
-    onRemoveFile(fileId);
+    try {
+      // Delete the file from Supabase storage bucket
+      const { data, error } = await supabase.storage
+        .from('node-attachments')
+        .remove([fileId]);
+
+      if (error) {
+        throw error;
+      }
+
+      const updatedFiles = node.data.attachedFiles.filter(
+        (file) => file.id !== fileId
+      );
+      updateNode(
+        id,
+        {
+          data: { attachedFiles: updatedFiles }
+        },
+        canvasId
+      );
+      onRemoveFile(fileId);
+    } catch (error) {
+      console.error('Error deleting attachment:', error);
+      // Handle error (e.g., show an error message to the user)
+    }
   }
 };
 
@@ -320,7 +337,7 @@ export const handleDuplicate = (id: string, canvasId: string) => {
   }
 };
 
-export const handleAttachmentPreview = (fileOrUrl: File | string) => {
+export const handleAttachmentPreview = async (fileOrUrl: File | string) => {
   const previewWindow = document.createElement('div');
   previewWindow.style.position = 'fixed';
   previewWindow.style.maxWidth = '300px';
@@ -350,16 +367,23 @@ export const handleAttachmentPreview = (fileOrUrl: File | string) => {
 
   if (typeof fileOrUrl === 'string') {
     try {
+      // Retrieve the public URL of the file from Supabase storage bucket
+      const { data } = await supabase.storage
+        .from('node-attachments')
+        .getPublicUrl(fileOrUrl);
+
+      const publicUrl = data.publicUrl;
+
       const iframe = document.createElement('iframe');
-      iframe.src = fileOrUrl;
+      iframe.src = publicUrl;
       iframe.style.width = '100%';
       iframe.style.height = '100%';
       iframe.style.border = 'none';
       previewWindow.appendChild(iframe);
     } catch (error) {
-      console.error('Error loading URL:', error);
+      console.error('Error loading attachment:', error);
       const errorMessage = document.createElement('div');
-      errorMessage.textContent = 'Error loading URL';
+      errorMessage.textContent = 'Error loading attachment';
       previewWindow.appendChild(errorMessage);
     }
   } else {
