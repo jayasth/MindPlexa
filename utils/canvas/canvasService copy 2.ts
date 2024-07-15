@@ -191,23 +191,6 @@ export const fetchCanvas = async (canvasId: string) => {
 
   console.log('canvasService: Organized nodes:', organizedNodes);
 
-  // Test query
-  const { data: testData, error: testError } = await supabase
-    .from('nodes')
-    .select(
-      `
-      *,
-      note_nodes (*)
-    `
-    )
-    .eq('id', 'cebfcbef-1418-4f49-b9f9-93d550dee051');
-
-  if (testError) {
-    console.error('Test query error:', testError);
-  } else {
-    console.log('Test query result:', testData);
-  }
-
   return {
     ...canvas,
     nodes: organizedNodes

@@ -162,21 +162,21 @@ export const fetchCanvas = async (canvasId: string) => {
   const organizedNodes = canvas.nodes
     ? canvas.nodes.map((node) => {
         const nodeType = node.type.toLowerCase();
-        const specificNodeData = node[`${nodeType}Nodes`]?.[0] || {};
-        const tags = node.nodeTags ? node.nodeTags.map((tag) => tag.tag) : [];
-        const attachments = node.nodeAttachments
-          ? node.nodeAttachments.map((attachment) => ({
+        const specificNodeData = node[`${nodeType}_nodes`] || {};
+        const tags = node.node_tags ? node.node_tags.map((tag) => tag.tag) : [];
+        const attachments = node.node_attachments
+          ? node.node_attachments.map((attachment) => ({
               type: attachment.type,
-              name: attachment.fileName,
-              size: attachment.fileSize,
+              name: attachment.file_name,
+              size: attachment.file_size,
               content: attachment.content,
-              fileName: attachment.fileName
+              fileName: attachment.file_name
             }))
           : [];
 
-        delete node[`${nodeType}Nodes`];
-        delete node.nodeTags;
-        delete node.nodeAttachments;
+        delete node[`${nodeType}_nodes`];
+        delete node.node_tags;
+        delete node.node_attachments;
 
         return {
           ...node,
@@ -190,23 +190,6 @@ export const fetchCanvas = async (canvasId: string) => {
     : [];
 
   console.log('canvasService: Organized nodes:', organizedNodes);
-
-  // Test query
-  const { data: testData, error: testError } = await supabase
-    .from('nodes')
-    .select(
-      `
-      *,
-      note_nodes (*)
-    `
-    )
-    .eq('id', 'cebfcbef-1418-4f49-b9f9-93d550dee051');
-
-  if (testError) {
-    console.error('Test query error:', testError);
-  } else {
-    console.log('Test query result:', testData);
-  }
 
   return {
     ...canvas,
