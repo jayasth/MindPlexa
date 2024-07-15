@@ -119,22 +119,42 @@ export const handleAttachments = async (
     let fileSize = 0;
 
     if (attachment.type === 'file' && attachment.content instanceof File) {
-      // Upload file to Supabase storage
-      const { error: uploadError, data: uploadData } = await supabase.storage
+      // Check if the file already exists in the bucket
+      const { data: existingFiles, error: listError } = await supabase.storage
         .from('node-attachments')
-        .upload(attachment.content.name, attachment.content);
+        .list();
 
-      if (uploadError) {
-        console.error('Error uploading attachment:', uploadError);
-        return { error: uploadError };
+      if (listError) {
+        console.error('Error listing files:', listError);
+        return { error: listError };
       }
+      const existingFile = existingFiles.find(
+        (file) => file.name === (attachment.content as File).name
+      );
 
-      // Update content with Supabase storage URL
-      content = uploadData.path; // Use 'path' instead of 'Key'
-      fileName = attachment.content.name;
-      fileSize = attachment.content.size;
+      if (existingFile) {
+        // File already exists, use the existing URL
+        content = existingFile.id;
+        fileName = existingFile.name;
+      } else {
+        // Upload file to Supabase storage
+        const { error: uploadError, data: uploadData } = await supabase.storage
+          .from('node-attachments')
+          .upload(attachment.content.name, attachment.content);
+
+        if (uploadError) {
+          console.error('Error uploading attachment:', uploadError);
+          return { error: uploadError };
+        }
+
+        // Update content with Supabase storage URL
+        content = uploadData.id;
+        fileName = attachment.content.name;
+        fileSize = attachment.content.size;
+      }
     } else if (attachment.type === 'url') {
       fileName = new URL(attachment.content as string).hostname;
+      content = attachment.content as string;
     }
 
     const { error: insertError } = await supabase
