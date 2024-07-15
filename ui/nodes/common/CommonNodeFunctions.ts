@@ -245,50 +245,55 @@ export const handleRemoveAttachedFile = async (
   onRemoveFile: (fileId: string) => void,
   canvasId: string
 ) => {
-  console.log('Removing file:', fileToRemove); // Add this line for debugging
+  console.log('Removing file:', fileToRemove);
   const { updateNode } = useNodeStore.getState();
   const node = useNodeStore.getState().nodes.find((n) => n.id === id);
-  if (node) {
-    try {
-      if (fileToRemove.type === 'file' && fileToRemove.storage_path) {
-        // Delete the file from Supabase storage bucket
-        const { error } = await supabase.storage
-          .from('node-attachments')
-          .remove([fileToRemove.storage_path]);
 
-        if (error) {
-          console.error('Error deleting file from storage:', error);
-        }
-      }
-
-      // Delete the record from node_attachments table
-      const { error } = await supabase
-        .from('node_attachments')
-        .delete()
-        .eq('node_id', id)
-        .eq('file_name', fileToRemove.file_name);
-
-      if (error) {
-        console.error('Error deleting attachment record:', error);
-      }
-
-      const updatedFiles = node.data.attachedFiles.filter(
-        (file) => file.file_name !== fileToRemove.file_name
-      );
-      updateNode(
-        id,
-        {
-          data: { attachedFiles: updatedFiles }
-        },
-        canvasId
-      );
-      onRemoveFile(fileToRemove.file_name);
-    } catch (error) {
-      console.error('Error in handleRemoveAttachedFile:', error);
-      // Handle error (e.g., show an error message to the user)
-    }
-  } else {
+  if (!node || !id) {
     console.error('Node not found:', id);
+    return;
+  }
+
+  try {
+    // Delete the file from Supabase storage if it's a file type
+    if (fileToRemove.type === 'file' && fileToRemove.storage_path) {
+      const { error: storageError } = await supabase.storage
+        .from('node-attachments')
+        .remove([fileToRemove.storage_path]);
+
+      if (storageError) {
+        console.error('Error deleting file from storage:', storageError);
+      }
+    }
+
+    // Delete the record from node_attachments table
+    const { error: dbError } = await supabase
+      .from('node_attachments')
+      .delete()
+      .eq('node_id', id)
+      .eq('content', fileToRemove.content);
+
+    if (dbError) {
+      console.error('Error deleting attachment record:', dbError);
+    }
+
+    // Update the node's data
+    const updatedFiles = node.data.attachedFiles.filter(
+      (file) => file.content !== fileToRemove.content
+    );
+
+    await updateNode(
+      id,
+      {
+        data: { attachedFiles: updatedFiles }
+      },
+      canvasId
+    );
+
+    onRemoveFile(fileToRemove.content);
+  } catch (error) {
+    console.error('Error in handleRemoveAttachedFile:', error);
+    // Handle error (e.g., show an error message to the user)
   }
 };
 
@@ -377,7 +382,8 @@ export const handleDuplicate = (id: string, canvasId: string) => {
     setSelectedNodes([newNode.id]);
   }
 };
-export const handleAttachmentPreview = async (fileOrUrl: File | string) => {
+
+export const handleAttachmentPreview = (fileOrUrl: File | string) => {
   const previewWindow = document.createElement('div');
   previewWindow.style.position = 'fixed';
   previewWindow.style.maxWidth = '300px';
@@ -407,28 +413,16 @@ export const handleAttachmentPreview = async (fileOrUrl: File | string) => {
 
   if (typeof fileOrUrl === 'string') {
     try {
-      const { data } = await supabase.storage
-        .from('node-attachments')
-        .getPublicUrl(fileOrUrl);
-
-      const publicUrl = data.publicUrl;
-
-      // Store the storage path in the node_attachments table
-      await supabase
-        .from('node_attachments')
-        .update({ storage_path: fileOrUrl })
-        .eq('content', publicUrl);
-
       const iframe = document.createElement('iframe');
-      iframe.src = publicUrl;
+      iframe.src = fileOrUrl;
       iframe.style.width = '100%';
       iframe.style.height = '100%';
       iframe.style.border = 'none';
       previewWindow.appendChild(iframe);
     } catch (error) {
-      console.error('Error loading attachment:', error);
+      console.error('Error loading URL:', error);
       const errorMessage = document.createElement('div');
-      errorMessage.textContent = 'Error loading attachment';
+      errorMessage.textContent = 'Error loading URL';
       previewWindow.appendChild(errorMessage);
     }
   } else {
@@ -464,14 +458,6 @@ export const handleAttachmentPreview = async (fileOrUrl: File | string) => {
       };
       fileReader.readAsText(fileOrUrl);
     }
-
-    // After successful upload, store the storage path
-    // Note: This part assumes that the file has been uploaded and we have the uploadData
-    // You might need to adjust this based on your actual upload process
-    // await supabase
-    //   .from('node_attachments')
-    //   .update({ storage_path: uploadData.path })
-    //   .eq('content', fileURL);
   }
 
   document.body.appendChild(previewWindow);
