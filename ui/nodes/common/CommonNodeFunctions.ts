@@ -292,7 +292,12 @@ export const handleDuplicate = async (id: string, canvasId: string) => {
 
     // Insert the duplicated node into the database
     try {
-      console.log('Duplicating node with canvasId:', canvasId); // Add logging
+      console.log(
+        'CommonNodeFunctions: Duplicating node with nodeId:',
+        id,
+        'and canvasId:',
+        canvasId
+      );
       const { success, newNode, error } = await duplicateNode(id, canvasId);
       if (!success) throw error;
 

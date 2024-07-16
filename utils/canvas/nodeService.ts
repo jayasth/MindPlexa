@@ -127,6 +127,12 @@ export const duplicateNode = async (nodeId: string, canvasId: string) => {
     if (insertNodeSpecificError) throw insertNodeSpecificError;
 
     // Insert the node-canvas link
+    console.log(
+      'NodeService: Node duplicaiton: Inserting node-canvas link with nodeId:',
+      newNodeId,
+      'and canvasId:',
+      canvasId
+    );
     const { data: newNodeCanvasLink, error: nodeCanvasLinkError } =
       await insertNodeCanvasLink(newNodeId, canvasId);
     if (nodeCanvasLinkError) throw nodeCanvasLinkError;
