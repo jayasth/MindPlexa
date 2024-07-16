@@ -134,24 +134,10 @@ export const FileModal = ({
 }) => {
   const [fileUrl, setFileUrl] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const updateNode = useNodeStore((state) => state.updateNode);
-  const canvasId = useCanvasStore((state) => state.canvasId);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const files = Array.from(e.target.files);
-      const allFiles = [...existingFiles, ...files];
-      if (allFiles.length > 10) {
-        alert('You can attach a maximum of 10 files.');
-        return;
-      }
-      onAttachFiles(allFiles);
-    }
-  };
-
-  const handleAddFiles = async () => {
-    if (fileInputRef.current && fileInputRef.current.files) {
-      const files = Array.from(fileInputRef.current.files);
       for (const file of files) {
         await addAttachment(nodeId, { type: 'file', content: file });
       }
@@ -190,7 +176,11 @@ export const FileModal = ({
         className={styles.fileInput}
         ref={fileInputRef}
       />
-      <Button variant="slim" onClick={handleAddFiles} className={styles.button}>
+      <Button
+        variant="slim"
+        onClick={() => fileInputRef.current?.click()}
+        className={styles.button}
+      >
         Add Files
       </Button>
       <Input
@@ -212,18 +202,10 @@ export const FileModal = ({
           <div key={file.id} className={styles.file}>
             <span
               onClick={() =>
-                handleAttachmentPreview(
-                  file.is_file && file.file_name
-                    ? file.file_name
-                    : file.url || ''
-                )
+                handleAttachmentPreview(file.file_name || file.url || '')
               }
               onMouseEnter={() =>
-                handleAttachmentPreview(
-                  file.is_file && file.file_name
-                    ? file.file_name
-                    : file.url || ''
-                )
+                handleAttachmentPreview(file.file_name || file.url || '')
               }
               onMouseLeave={() => {
                 const preview = document.querySelector('.file-preview');
