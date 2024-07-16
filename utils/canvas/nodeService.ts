@@ -128,7 +128,7 @@ export const duplicateNode = async (nodeId: string, canvasId: string) => {
 
     // Insert the node-canvas link
     console.log(
-      'NodeService: Node duplicaiton: Inserting node-canvas link with nodeId:',
+      'NodeService: Node duplication: Inserting node-canvas link with nodeId:',
       newNodeId,
       'and canvasId:',
       canvasId
@@ -178,7 +178,7 @@ export const duplicateNode = async (nodeId: string, canvasId: string) => {
 
     if (newAttachmentsError) throw newAttachmentsError;
 
-    return { success: true, newNode };
+    return { success: true, newNode: { ...newNode, id: newNodeId, canvasId } };
   } catch (error) {
     console.error('Error duplicating node:', error);
     return { success: false, error };
