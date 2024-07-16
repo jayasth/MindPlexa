@@ -120,7 +120,7 @@ export const duplicateNode = async (nodeId: string, canvasId: string) => {
 
     const newNodeSpecificData = {
       ...originalNodeSpecific,
-      id: uuidv4(), // Generate new ID for node-specific data
+      id: uuidv4(),
       node_id: newNodeId
     };
     const { error: insertNodeSpecificError } = await supabase
@@ -153,7 +153,10 @@ export const duplicateNode = async (nodeId: string, canvasId: string) => {
         .from('node_tags')
         .insert(newTags);
 
-      if (newTagsError) throw newTagsError;
+      if (newTagsError) {
+        console.error('nodeService: Error inserting new tags:', newTagsError);
+        throw newTagsError;
+      }
     }
 
     // Duplicate attachments
@@ -191,75 +194,36 @@ export const duplicateNode = async (nodeId: string, canvasId: string) => {
       if (newAttachmentsError) throw newAttachmentsError;
     }
 
-    // Test function to compare original and duplicated node data
-    await compareNodeData(nodeId, newNodeId);
+    // Fetch the complete duplicated node data
+    const { data: completeDuplicatedNode, error: completeNodeError } =
+      await supabase
+        .from('nodes')
+        .select(
+          `
+          *,
+          ${nodeSpecificTable}!inner(*),
+          node_tags(tag)
+        `
+        )
+        .eq('id', newNodeId)
+        .single();
 
-    return { success: true, newNode: { ...newNode, id: newNodeId, canvasId } };
+    if (completeNodeError) throw completeNodeError;
+
+    return {
+      success: true,
+      newNode: {
+        ...completeDuplicatedNode,
+        id: newNodeId,
+        canvasId,
+        content: completeDuplicatedNode[nodeSpecificTable].content,
+        tags: completeDuplicatedNode.node_tags.map((t) => t.tag)
+      }
+    };
   } catch (error) {
     console.error('Error duplicating node:', error);
     return { success: false, error };
   }
-};
-
-// Test function to compare original and duplicated node data
-const compareNodeData = async (
-  originalNodeId: string,
-  duplicatedNodeId: string
-) => {
-  const fetchNodeData = async (nodeId: string) => {
-    const { data: node, error: nodeError } = await supabase
-      .from('nodes')
-      .select('*')
-      .eq('id', nodeId)
-      .single();
-
-    if (nodeError) throw nodeError;
-    const { data: nodeSpecific, error: nodeSpecificError } = await supabase
-      .from(
-        node.type === null
-          ? 'nodes'
-          : (`${node.type}_nodes` as
-              | 'calendar_nodes'
-              | 'draw_nodes'
-              | 'note_nodes'
-              | 'table_nodes'
-              | 'task_nodes')
-      )
-      .select('*')
-      .eq('node_id', nodeId)
-      .single();
-
-    if (nodeSpecificError) throw nodeSpecificError;
-
-    const { data: tags, error: tagsError } = await supabase
-      .from('node_tags')
-      .select('tag')
-      .eq('node_id', nodeId);
-
-    if (tagsError) throw tagsError;
-
-    const { data: attachments, error: attachmentsError } = await supabase
-      .from('node_attachments')
-      .select('*')
-      .eq('node_id', nodeId);
-
-    if (attachmentsError) throw attachmentsError;
-
-    const { data: canvasLink, error: canvasLinkError } = await supabase
-      .from('node_canvas_link')
-      .select('canvas_id')
-      .eq('node_id', nodeId);
-
-    if (canvasLinkError) throw canvasLinkError;
-
-    return { node, nodeSpecific, tags, attachments, canvasLink };
-  };
-
-  const originalData = await fetchNodeData(originalNodeId);
-  const duplicatedData = await fetchNodeData(duplicatedNodeId);
-
-  console.log('Original Node Data:', JSON.stringify(originalData, null, 2));
-  console.log('Duplicated Node Data:', JSON.stringify(duplicatedData, null, 2));
 };
 
 export const createNode = async (
