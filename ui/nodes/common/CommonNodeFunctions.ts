@@ -292,6 +292,7 @@ export const handleDuplicate = async (id: string, canvasId: string) => {
 
     // Insert the duplicated node into the database
     try {
+      console.log('Duplicating node with canvasId:', canvasId); // Add logging
       const { success, newNode, error } = await duplicateNode(id, canvasId);
       if (!success) throw error;
 
@@ -304,6 +305,33 @@ export const handleDuplicate = async (id: string, canvasId: string) => {
       };
       addNode(newNodeData, canvasId);
       setSelectedNodes([newNodeData.id]);
+
+      // Duplicate tags
+      const { tags } = nodeToDuplicate.data;
+      if (tags && tags.length > 0) {
+        for (const tag of tags) {
+          await supabase.from('node_tags').insert({ node_id: newNode.id, tag });
+        }
+      }
+
+      // Duplicate attachments
+      const attachments = await getAttachments(id);
+      for (const attachment of attachments) {
+        const newAttachmentId = uuidv4();
+        const newStoragePath = `node-attachments/${newNode.id}/${attachment.file_name}`;
+        if (attachment.is_file && attachment.storage_path) {
+          const { data, error } = await supabase.storage
+            .from('node-attachments')
+            .copy(attachment.storage_path, newStoragePath);
+          if (error) throw error;
+        }
+        await supabase.from('node_attachments').insert({
+          ...attachment,
+          id: newAttachmentId,
+          node_id: newNode.id,
+          storage_path: newStoragePath
+        });
+      }
     } catch (error) {
       console.error('Error duplicating node:', error);
     }
