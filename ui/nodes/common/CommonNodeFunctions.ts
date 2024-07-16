@@ -311,6 +311,12 @@ export const handleDuplicate = async (id: string, canvasId: string) => {
       addNode(newNodeData, canvasId);
       setSelectedNodes([newNodeData.id]);
 
+      // Insert the node-canvas link
+      const { error: linkError } = await supabase
+        .from('node_canvas_link')
+        .insert({ node_id: newNode.id, canvas_id: canvasId });
+      if (linkError) throw linkError;
+
       // Duplicate tags
       const { tags } = nodeToDuplicate.data;
       if (tags && tags.length > 0) {

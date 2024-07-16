@@ -393,7 +393,9 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         <ChangeColorButton onClick={toggleColorPicker} />
         <AddTagButton onClick={() => setIsTagModalOpen(true)} />
         <AttachFileButton onClick={() => setIsFileModalOpen(true)} />
-        <DuplicateButton onClick={() => handleDuplicate(data.id, data.id)} />
+        <DuplicateButton
+          onClick={() => handleDuplicate(data.id, data.canvasId)}
+        />
         <ColorPickerModal
           isOpen={isColorPickerVisible}
           onClose={() => setIsColorPickerVisible(false)}
