@@ -98,7 +98,8 @@ export const duplicateNode = async (nodeId: string, canvasId: string) => {
       ...originalNode,
       id: newNodeId,
       parent_node_id: null,
-      title: `${originalNode.title} copy`
+      title: `${originalNode.title} (copy)`,
+      version: 1
     };
 
     // Insert the duplicated node into the nodes table
