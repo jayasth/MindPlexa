@@ -219,130 +219,68 @@ export const handleDuplicate = async (id: string, canvasId: string) => {
   const { nodes, addNode, setSelectedNodes } = useNodeStore.getState();
   const nodeToDuplicate = nodes.find((node) => node.id === id);
   if (nodeToDuplicate) {
-    const nodeDimension =
-      nodeDimensions[nodeToDuplicate.type as keyof typeof nodeDimensions];
-    const isEditing = nodeToDuplicate.data.isEditing;
-    const nodeWidth =
-      isEditing && 'editWidth' in nodeDimension
-        ? nodeDimension.editWidth
-        : nodeToDuplicate.width;
-    const nodeHeight =
-      isEditing && 'editHeight' in nodeDimension
-        ? nodeDimension.editHeight
-        : nodeToDuplicate.height;
-
-    let newPosition = {
-      x: nodeToDuplicate.position.x + (nodeWidth || 0) / 2 - 50,
-      y: nodeToDuplicate.position.y + (nodeHeight || 0) + 50
-    };
-
-    let attempts = 0;
-    const maxAttempts = 100;
-    const padding = 20;
-
-    while (
-      nodes.some((node) => {
-        const nodeSize =
-          nodeDimensions[node.type as keyof typeof nodeDimensions];
-        const width = 'width' in nodeSize ? nodeSize.width : nodeSize.viewWidth;
-        const height =
-          'height' in nodeSize ? nodeSize.height : nodeSize.viewHeight;
-        return (
-          Math.abs(node.position.x - newPosition.x) < width + padding &&
-          Math.abs(node.position.y - newPosition.y) < height + padding
-        );
-      }) &&
-      attempts < maxAttempts
-    ) {
-      newPosition = {
-        x: newPosition.x + padding,
-        y: newPosition.y + padding
-      };
-      attempts++;
-    }
-
-    if (attempts >= maxAttempts) {
-      console.error(
-        'Failed to find optimal position for duplicate node: Canvas might be too crowded.'
-      );
-      return;
-    }
-
-    const newData = JSON.parse(JSON.stringify(nodeToDuplicate.data));
-    const newId = `${nodeToDuplicate.type}-${uuidv4()}`;
-    newData.id = newId;
-
-    if (newData.type === 'text') {
-      newData.content = `Copy of ${newData.content}`;
-    } else if (newData.type === 'image') {
-      newData.url = newData.url;
-    } else if (newData.type === 'video') {
-      newData.url = newData.url;
-    } else if (newData.type === 'file') {
-      newData.fileName = `Copy of ${newData.fileName}`;
-    }
-
-    if (nodeToDuplicate.data.attachedFiles) {
-      newData.attachedFiles = [...nodeToDuplicate.data.attachedFiles];
-    }
-
-    if (newData.title) {
-      newData.title = `${newData.title} copy`;
-    }
-
-    // Insert the duplicated node into the database
     try {
-      console.log(
-        'CommonNodeFunctions: Duplicating node with nodeId:',
-        id,
-        'and canvasId:',
-        canvasId
-      );
       const { success, newNode, error } = await duplicateNode(id, canvasId);
-      if (!success) throw error;
+      if (!success || error) throw error;
 
-      // Add the duplicated node to the state
+      const nodeDimension =
+        nodeDimensions[nodeToDuplicate.type as keyof typeof nodeDimensions];
+      const isEditing = nodeToDuplicate.data.isEditing;
+      const nodeWidth =
+        isEditing && 'editWidth' in nodeDimension
+          ? nodeDimension.editWidth
+          : nodeToDuplicate.width;
+      const nodeHeight =
+        isEditing && 'editHeight' in nodeDimension
+          ? nodeDimension.editHeight
+          : nodeToDuplicate.height;
+
+      let newPosition = {
+        x: nodeToDuplicate.position.x + (nodeWidth || 0) / 2 - 50,
+        y: nodeToDuplicate.position.y + (nodeHeight || 0) + 50
+      };
+
+      let attempts = 0;
+      const maxAttempts = 100;
+      const padding = 20;
+
+      while (
+        nodes.some((node) => {
+          const nodeSize =
+            nodeDimensions[node.type as keyof typeof nodeDimensions];
+          const width =
+            'width' in nodeSize ? nodeSize.width : nodeSize.viewWidth;
+          const height =
+            'height' in nodeSize ? nodeSize.height : nodeSize.viewHeight;
+          return (
+            Math.abs(node.position.x - newPosition.x) < width + padding &&
+            Math.abs(node.position.y - newPosition.y) < height + padding
+          );
+        }) &&
+        attempts < maxAttempts
+      ) {
+        newPosition = {
+          x: newPosition.x + padding,
+          y: newPosition.y + padding
+        };
+        attempts++;
+      }
+
+      if (attempts >= maxAttempts) {
+        console.error(
+          'Failed to find optimal position for duplicate node: Canvas might be too crowded.'
+        );
+        return;
+      }
+
       const newNodeData = {
         ...nodeToDuplicate,
         id: newNode.id,
         position: newPosition,
-        data: { ...newData, canvasId }
+        data: { ...newNode, canvasId }
       };
       addNode(newNodeData, canvasId);
       setSelectedNodes([newNodeData.id]);
-
-      // Insert the node-canvas link
-      const { error: linkError } = await supabase
-        .from('node_canvas_link')
-        .insert({ node_id: newNode.id, canvas_id: canvasId });
-      if (linkError) throw linkError;
-
-      // Duplicate tags
-      const { tags } = nodeToDuplicate.data;
-      if (tags && tags.length > 0) {
-        for (const tag of tags) {
-          await supabase.from('node_tags').insert({ node_id: newNode.id, tag });
-        }
-      }
-
-      // Duplicate attachments
-      const attachments = await getAttachments(id);
-      for (const attachment of attachments) {
-        const newAttachmentId = uuidv4();
-        const newStoragePath = `node-attachments/${newNode.id}/${attachment.file_name}`;
-        if (attachment.is_file && attachment.storage_path) {
-          const { data, error } = await supabase.storage
-            .from('node-attachments')
-            .copy(attachment.storage_path, newStoragePath);
-          if (error) throw error;
-        }
-        await supabase.from('node_attachments').insert({
-          ...attachment,
-          id: newAttachmentId,
-          node_id: newNode.id,
-          storage_path: newStoragePath
-        });
-      }
     } catch (error) {
       console.error('Error duplicating node:', error);
     }
