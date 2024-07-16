@@ -3,7 +3,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 import { createClient } from '@/utils/supabase/supabaseClient';
 import {
-  addAttachment,
   removeAttachment,
   getAttachments
 } from '@/utils/canvas/attachmentService';

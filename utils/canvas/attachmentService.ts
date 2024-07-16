@@ -3,16 +3,16 @@ import { v4 as uuidv4 } from 'uuid';
 
 const supabase = createClient();
 
-interface Attachment {
+export interface Attachment {
   id: string;
   node_id: string;
-  type: string;
+  type: 'file' | 'url';
   file_name: string | null;
   file_size: number | null;
   storage_path: string | null;
   mime_type: string | null;
   url: string | null;
-  is_file: boolean | null;
+  is_file: boolean;
   created_at: string | null;
 }
 
@@ -38,7 +38,7 @@ export const addAttachment = async (
       .insert({
         id: uuidv4(),
         node_id: nodeId,
-        type: 'file',
+        type: 'file' as 'file',
         file_name: file.name,
         file_size: file.size,
         storage_path: filePath,
@@ -53,14 +53,14 @@ export const addAttachment = async (
       return null;
     }
 
-    return data;
+    return data as Attachment;
   } else if (attachment.type === 'url') {
     const { data, error: insertError } = await supabase
       .from('node_attachments')
       .insert({
         id: uuidv4(),
         node_id: nodeId,
-        type: 'url',
+        type: 'url' as 'url',
         url: attachment.content as string,
         is_file: false
       })
@@ -72,7 +72,7 @@ export const addAttachment = async (
       return null;
     }
 
-    return data;
+    return data as Attachment;
   }
 
   return null;
@@ -127,8 +127,9 @@ export const getAttachments = async (nodeId: string): Promise<Attachment[]> => {
     return [];
   }
 
-  return data;
+  return data as Attachment[];
 };
+
 export const handleAttachmentPreview = (fileOrUrl: File | string) => {
   const previewWindow = document.createElement('div');
   previewWindow.style.position = 'fixed';

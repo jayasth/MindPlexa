@@ -32,6 +32,7 @@ import {
   handleDuplicate
 } from '@/ui/nodes/common/CommonNodeFunctions';
 import {
+  Attachment,
   addAttachment,
   removeAttachment,
   getAttachments,
@@ -83,9 +84,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   );
   const [textColor, setTextColor] = useState(data.textColor || '#575757');
   const [tags, setTags] = useState<string[]>(data.tags || []);
-  const [attachedFiles, setAttachedFiles] = useState<
-    Array<{ type: 'file' | 'url'; content: File | string; name: string }>
-  >([]);
+  const [attachedFiles, setAttachedFiles] = useState<Attachment[]>([]);
   const [isContainerSelected, setIsContainerSelected] = useState(false);
   const [nodeWidth, setNodeWidth] = useState(width);
   const [nodeHeight, setNodeHeight] = useState(height);
@@ -242,26 +241,13 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     [data.id, tags]
   );
 
-  const onAttachFiles = useCallback(
-    async (files: Array<File | string>) => {
-      for (const file of files) {
-        if (typeof file === 'string') {
-          await addAttachment(data.id, { type: 'url', content: file });
-        } else {
-          await addAttachment(data.id, { type: 'file', content: file });
-        }
-      }
-      // Refetch attachments or update local state
-      const updatedAttachments = await getAttachments(data.id);
-      setAttachedFiles(updatedAttachments);
-    },
-    [data.id]
-  );
+  const onAttachFiles = useCallback(async (files: Attachment[]) => {
+    setAttachedFiles(files);
+  }, []);
 
   const onRemoveFile = useCallback(
     async (fileId: string) => {
       await removeAttachment(fileId);
-      // Refetch attachments or update local state
       const updatedAttachments = await getAttachments(data.id);
       setAttachedFiles(updatedAttachments);
     },
@@ -354,6 +340,15 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     setIsDeleteModalOpen(false);
   };
 
+  const handleAttachmentPreviewWrapper = useCallback((file: Attachment) => {
+    if (file.is_file && file.storage_path) {
+      return handleAttachmentPreview(new File([], file.file_name || ''));
+    } else if (!file.is_file && file.url) {
+      return handleAttachmentPreview(file.url);
+    }
+    return () => {};
+  }, []);
+
   const memoizedTagFileContainer = useMemo(
     () => (
       <TagFileContainer
@@ -362,10 +357,17 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         onRemoveTag={onRemoveTag}
         onRemoveFile={onRemoveFile}
         textColor={textColor}
-        handleAttachmentPreview={handleAttachmentPreview}
+        handleAttachmentPreview={handleAttachmentPreviewWrapper}
       />
     ),
-    [tags, attachedFiles, onRemoveTag, onRemoveFile, textColor]
+    [
+      tags,
+      attachedFiles,
+      onRemoveTag,
+      onRemoveFile,
+      textColor,
+      handleAttachmentPreviewWrapper
+    ]
   );
 
   return (
@@ -441,9 +443,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         onClose={() => setIsFileModalOpen(false)}
         onAttachFiles={onAttachFiles}
         onRemoveFile={onRemoveFile}
-        existingFiles={attachedFiles.map((file) =>
-          file.type === 'url' ? file.content : (file.content as File)
-        )}
+        existingFiles={attachedFiles}
         nodeId={data.id}
       />
       <NodeDeleteConfirmationModal

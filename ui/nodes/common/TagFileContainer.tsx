@@ -1,17 +1,23 @@
 import React from 'react';
 import styles from '@/ui/nodes/common/TagFileContainer.module.css';
-import {
-  removeAttachment,
-  handleAttachmentPreview
-} from '@/utils/canvas/attachmentService';
+import { Attachment, removeAttachment } from '@/utils/canvas/attachmentService';
 
-const TagFileContainer = ({
+interface TagFileContainerProps {
+  tags: string[];
+  onRemoveTag: (tag: string) => void;
+  textColor: string;
+  attachedFiles: Attachment[];
+  onRemoveFile: (fileId: string) => void;
+  handleAttachmentPreview: (file: Attachment) => void;
+}
+
+const TagFileContainer: React.FC<TagFileContainerProps> = ({
   tags,
   onRemoveTag,
   textColor,
   attachedFiles,
   onRemoveFile,
-  handleAttachmentPreview: externalHandleAttachmentPreview
+  handleAttachmentPreview
 }) => {
   const hasContent = tags.length > 0 || attachedFiles.length > 0;
 
@@ -42,9 +48,9 @@ const TagFileContainer = ({
             <span
               onClick={() => {
                 if (file.type === 'url') {
-                  window.open(file.url, '_blank');
+                  window.open(file.url!, '_blank');
                 } else {
-                  externalHandleAttachmentPreview(file);
+                  handleAttachmentPreview(file);
                 }
               }}
               onMouseEnter={() => handleAttachmentPreview(file)}
@@ -56,7 +62,9 @@ const TagFileContainer = ({
               }}
               style={{ cursor: 'pointer', textDecoration: 'underline' }}
             >
-              {file.type === 'url' ? new URL(file.url).hostname : file.fileName}
+              {file.type === 'url'
+                ? new URL(file.url!).hostname
+                : file.file_name}
             </span>
             <button
               className={styles.removeFileButton}

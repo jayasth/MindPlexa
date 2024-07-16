@@ -18,6 +18,7 @@ import useNodeStore from '@/app/store/nodes/useNodeStore';
 import useCanvasStore from '@/app/store/canvas/useCanvasStore';
 import { handleAttachmentPreview } from '@/utils/canvas/attachmentService';
 import {
+  Attachment,
   addAttachment,
   removeAttachment,
   getAttachments
@@ -151,15 +152,11 @@ export const FileModal = ({
   const handleAddFiles = async () => {
     if (fileInputRef.current && fileInputRef.current.files) {
       const files = Array.from(fileInputRef.current.files);
-      const allFiles = [...existingFiles, ...files];
-      if (allFiles.length > 10) {
-        alert('You can attach a maximum of 10 files.');
-        return;
-      }
       for (const file of files) {
         await addAttachment(nodeId, { type: 'file', content: file });
       }
-      onAttachFiles(allFiles);
+      const updatedAttachments = await getAttachments(nodeId);
+      onAttachFiles(updatedAttachments);
     }
   };
 
@@ -167,20 +164,9 @@ export const FileModal = ({
     if (fileUrl) {
       try {
         new URL(fileUrl); // Validate URL
-        const allFiles = [...existingFiles, fileUrl];
-        if (allFiles.length > 10) {
-          alert('You can attach a maximum of 10 files or URLs.');
-          return;
-        }
         await addAttachment(nodeId, { type: 'url', content: fileUrl });
-        onAttachFiles(allFiles);
-        updateNode(
-          nodeId,
-          {
-            data: { attachedFiles: allFiles }
-          },
-          canvasId
-        );
+        const updatedAttachments = await getAttachments(nodeId);
+        onAttachFiles(updatedAttachments);
         setFileUrl('');
       } catch (e) {
         alert('Invalid URL');
@@ -188,27 +174,10 @@ export const FileModal = ({
     }
   };
 
-  const handleRemoveFile = async (fileToRemove: File | string) => {
-    const attachments = await getAttachments(nodeId);
-    const attachmentToRemove = attachments.find(
-      (a) =>
-        (a.is_file && a.file_name === (fileToRemove as File).name) ||
-        (!a.is_file && a.url === fileToRemove)
-    );
-
-    if (attachmentToRemove) {
-      await removeAttachment(attachmentToRemove.id);
-    }
-
-    const updatedFiles = existingFiles.filter((file) => file !== fileToRemove);
-    updateNode(
-      nodeId,
-      {
-        data: { attachedFiles: updatedFiles }
-      },
-      canvasId
-    );
-    onRemoveFile(fileToRemove);
+  const handleRemoveFile = async (fileId: string) => {
+    await removeAttachment(fileId);
+    const updatedAttachments = await getAttachments(nodeId);
+    onAttachFiles(updatedAttachments);
   };
 
   return (
@@ -239,11 +208,23 @@ export const FileModal = ({
         Add URL Link
       </Button>
       <div className={styles.fileList}>
-        {existingFiles.map((file, index) => (
-          <div key={index} className={styles.file}>
+        {existingFiles.map((file: Attachment) => (
+          <div key={file.id} className={styles.file}>
             <span
-              onClick={() => handleAttachmentPreview(file)}
-              onMouseEnter={() => handleAttachmentPreview(file)}
+              onClick={() =>
+                handleAttachmentPreview(
+                  file.is_file && file.file_name
+                    ? file.file_name
+                    : file.url || ''
+                )
+              }
+              onMouseEnter={() =>
+                handleAttachmentPreview(
+                  file.is_file && file.file_name
+                    ? file.file_name
+                    : file.url || ''
+                )
+              }
               onMouseLeave={() => {
                 const preview = document.querySelector('.file-preview');
                 if (preview) {
@@ -252,11 +233,11 @@ export const FileModal = ({
               }}
               style={{ cursor: 'pointer', textDecoration: 'underline' }}
             >
-              {typeof file === 'string' ? file : file.name}
+              {file.is_file ? file.file_name : file.url}
             </span>
             <button
               className={styles.removeFileButton}
-              onClick={() => handleRemoveFile(file)}
+              onClick={() => handleRemoveFile(file.id)}
             >
               &times;
             </button>
