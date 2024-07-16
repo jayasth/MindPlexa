@@ -3,7 +3,8 @@ import styles from '@/ui/nodes/common/TagFileContainer.module.css';
 import {
   Attachment,
   removeAttachment,
-  handleAttachmentPreview
+  handleAttachmentPreview,
+  downloadAttachment
 } from '@/utils/canvas/attachmentService';
 
 interface TagFileContainerProps {
@@ -35,6 +36,10 @@ const TagFileContainer: React.FC<TagFileContainerProps> = ({
     };
   };
 
+  const handleDownloadFile = async (attachment: Attachment) => {
+    await downloadAttachment(attachment);
+  };
+
   return (
     <div
       className={`${styles.tagFileContainer} ${hasContent ? styles.withBorder : ''}`}
@@ -59,7 +64,7 @@ const TagFileContainer: React.FC<TagFileContainerProps> = ({
                 if (attachment.type === 'url') {
                   window.open(attachment.url!, '_blank');
                 } else {
-                  handlePreview(attachment);
+                  handleDownloadFile(attachment);
                 }
               }}
               onMouseEnter={() => handlePreview(attachment)}

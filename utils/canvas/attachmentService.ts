@@ -210,3 +210,25 @@ export const handleAttachmentPreview = async (attachment: Attachment) => {
     document.body.removeChild(previewWindow);
   };
 };
+
+export const downloadAttachment = async (
+  attachment: Attachment
+): Promise<void> => {
+  if (attachment.type === 'file' && attachment.storage_path) {
+    const { data, error } = await supabase.storage
+      .from('node-attachments')
+      .download(attachment.storage_path);
+
+    if (error) {
+      console.error('Error downloading file:', error);
+      return;
+    }
+
+    const blob = new Blob([data], { type: attachment.mime_type || '' });
+    const fileURL = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = fileURL;
+    link.download = attachment.file_name || '';
+    link.click();
+  }
+};

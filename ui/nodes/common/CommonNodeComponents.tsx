@@ -14,8 +14,9 @@ import { CompactPicker } from 'react-color';
 import styles from '@/ui/nodes/common/CommonNodeStyles.module.css';
 import Input from '@/ui/Input/Input';
 import Button from '@/ui/Button/Button';
-import { handleAttachmentPreview } from '@/utils/canvas/attachmentService';
 import {
+  handleAttachmentPreview,
+  downloadAttachment,
   Attachment,
   addAttachment,
   removeAttachment,
@@ -171,6 +172,14 @@ export const FileModal = ({
     };
   };
 
+  const handleFileClick = async (file: Attachment) => {
+    if (file.type === 'url') {
+      window.open(file.url!, '_blank');
+    } else {
+      await downloadAttachment(file);
+    }
+  };
+
   return (
     <Modal open={isOpen} onClose={onClose} center>
       <h2>Attach Files</h2>
@@ -206,7 +215,7 @@ export const FileModal = ({
         {existingFiles.map((file: Attachment) => (
           <div key={file.id} className={styles.file}>
             <span
-              onClick={() => handlePreview(file)}
+              onClick={() => handleFileClick(file)}
               onMouseEnter={() => handlePreview(file)}
               onMouseLeave={() => {
                 const preview = document.querySelector('.file-preview');
@@ -216,7 +225,9 @@ export const FileModal = ({
               }}
               style={{ cursor: 'pointer', textDecoration: 'underline' }}
             >
-              {file.is_file ? file.file_name : file.url}
+              {file.type === 'url'
+                ? new URL(file.url!).hostname
+                : file.file_name}
             </span>
             <button
               className={styles.removeFileButton}
