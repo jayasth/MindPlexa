@@ -6,6 +6,7 @@ import {
   removeAttachment,
   getAttachments
 } from '@/utils/canvas/attachmentService';
+import { duplicateNode } from '@/utils/canvas/nodeService';
 
 const supabase = createClient();
 
@@ -214,7 +215,7 @@ export const handleAddTag = (
   tags.forEach((tag) => onAddTag(tag));
 };
 
-export const handleDuplicate = (id: string, canvasId: string) => {
+export const handleDuplicate = async (id: string, canvasId: string) => {
   const { nodes, addNode, setSelectedNodes } = useNodeStore.getState();
   const nodeToDuplicate = nodes.find((node) => node.id === id);
   if (nodeToDuplicate) {
@@ -289,13 +290,22 @@ export const handleDuplicate = (id: string, canvasId: string) => {
       newData.title = `${newData.title} copy`;
     }
 
-    const newNode = {
-      ...nodeToDuplicate,
-      id: newId,
-      position: newPosition,
-      data: newData
-    };
-    addNode(newNode, canvasId);
-    setSelectedNodes([newNode.id]);
+    // Insert the duplicated node into the database
+    try {
+      const { success, newNode, error } = await duplicateNode(id, canvasId);
+      if (!success) throw error;
+
+      // Add the duplicated node to the state
+      const newNodeData = {
+        ...nodeToDuplicate,
+        id: newNode.id,
+        position: newPosition,
+        data: newData
+      };
+      addNode(newNodeData, canvasId);
+      setSelectedNodes([newNodeData.id]);
+    } catch (error) {
+      console.error('Error duplicating node:', error);
+    }
   }
 };
