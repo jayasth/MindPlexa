@@ -29,10 +29,14 @@ import {
   handleDelete as handleDeleteNode,
   colorCombinations,
   handleAddTag,
-  handleDuplicate,
-  handleAttachmentPreview
+  handleDuplicate
 } from '@/ui/nodes/common/CommonNodeFunctions';
-import { handleAttachments } from '@/utils/canvas/nodeService';
+import {
+  addAttachment,
+  removeAttachment,
+  getAttachments,
+  handleAttachmentPreview
+} from '@/utils/canvas/attachmentService';
 import Quill from 'quill';
 import 'quill/dist/quill.snow.css';
 import { useBackgroundColorChange } from '@/ui/nodes/common/useBackgroundColorChange';
@@ -81,7 +85,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   const [tags, setTags] = useState<string[]>(data.tags || []);
   const [attachedFiles, setAttachedFiles] = useState<
     Array<{ type: 'file' | 'url'; content: File | string; name: string }>
-  >(data.attachedFiles || []);
+  >([]);
   const [isContainerSelected, setIsContainerSelected] = useState(false);
   const [nodeWidth, setNodeWidth] = useState(width);
   const [nodeHeight, setNodeHeight] = useState(height);
@@ -239,62 +243,38 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   );
 
   const onAttachFiles = useCallback(
-    (files: Array<File | string>) => {
-      const attachments = files.map((file) => {
+    async (files: Array<File | string>) => {
+      for (const file of files) {
         if (typeof file === 'string') {
-          return {
-            type: 'url' as const,
-            content: file,
-            name: new URL(file).hostname
-          };
+          await addAttachment(data.id, { type: 'url', content: file });
         } else {
-          return { type: 'file' as const, content: file, name: file.name };
+          await addAttachment(data.id, { type: 'file', content: file });
         }
-      });
-      setAttachedFiles(attachments);
-      handleAttachments(data.id, attachments)
-        .then(() => {
-          const updateNode = useNodeStore.getState().updateNode;
-          updateNode(
-            data.id,
-            { data: { attachedFiles: attachments } },
-            data.id
-          );
-        })
-        .catch((error) => {
-          console.error('Error handling attachments:', error);
-        });
+      }
+      // Refetch attachments or update local state
+      const updatedAttachments = await getAttachments(data.id);
+      setAttachedFiles(updatedAttachments);
     },
     [data.id]
   );
 
   const onRemoveFile = useCallback(
-    (fileToRemove: string | File) => {
-      const updatedFiles = attachedFiles.filter((file) =>
-        typeof file.content === 'string' && typeof fileToRemove === 'string'
-          ? file.content !== fileToRemove
-          : file.content instanceof File && fileToRemove instanceof File
-            ? file.content.name !== fileToRemove.name
-            : true
-      );
-      setAttachedFiles(updatedFiles);
-      handleAttachments(data.id, updatedFiles)
-        .then(() => {
-          // Update the node in the store after successful removal
-          const updateNode = useNodeStore.getState().updateNode;
-          updateNode(
-            data.id,
-            { data: { attachedFiles: updatedFiles } },
-            data.id
-          );
-        })
-        .catch((error) => {
-          console.error('Error handling attachments:', error);
-          // Handle error (e.g., show an error message to the user)
-        });
+    async (fileId: string) => {
+      await removeAttachment(fileId);
+      // Refetch attachments or update local state
+      const updatedAttachments = await getAttachments(data.id);
+      setAttachedFiles(updatedAttachments);
     },
-    [data.id, attachedFiles]
+    [data.id]
   );
+
+  useEffect(() => {
+    const fetchAttachments = async () => {
+      const attachments = await getAttachments(data.id);
+      setAttachedFiles(attachments);
+    };
+    fetchAttachments();
+  }, [data.id]);
 
   useEffect(() => {
     setNodeWidth(width);

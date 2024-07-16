@@ -1,5 +1,9 @@
 import React from 'react';
 import styles from '@/ui/nodes/common/TagFileContainer.module.css';
+import {
+  removeAttachment,
+  handleAttachmentPreview
+} from '@/utils/canvas/attachmentService';
 
 const TagFileContainer = ({
   tags,
@@ -7,9 +11,14 @@ const TagFileContainer = ({
   textColor,
   attachedFiles,
   onRemoveFile,
-  handleAttachmentPreview
+  handleAttachmentPreview: externalHandleAttachmentPreview
 }) => {
   const hasContent = tags.length > 0 || attachedFiles.length > 0;
+
+  const handleRemoveFile = async (fileId: string) => {
+    await removeAttachment(fileId);
+    onRemoveFile(fileId);
+  };
 
   return (
     <div
@@ -28,17 +37,17 @@ const TagFileContainer = ({
         ))}
       </div>
       <div className={styles.fileContainer}>
-        {attachedFiles.map((file, index) => (
-          <div key={index} className={styles.file}>
+        {attachedFiles.map((file) => (
+          <div key={file.id} className={styles.file}>
             <span
               onClick={() => {
                 if (file.type === 'url') {
-                  window.open(file.content, '_blank');
+                  window.open(file.url, '_blank');
                 } else {
-                  handleAttachmentPreview(file.content);
+                  externalHandleAttachmentPreview(file);
                 }
               }}
-              onMouseEnter={() => handleAttachmentPreview(file.content)}
+              onMouseEnter={() => handleAttachmentPreview(file)}
               onMouseLeave={() => {
                 const preview = document.querySelector('.file-preview');
                 if (preview) {
@@ -47,11 +56,11 @@ const TagFileContainer = ({
               }}
               style={{ cursor: 'pointer', textDecoration: 'underline' }}
             >
-              {file.type === 'url' ? new URL(file.content).hostname : file.name}
+              {file.type === 'url' ? new URL(file.url).hostname : file.fileName}
             </span>
             <button
               className={styles.removeFileButton}
-              onClick={() => onRemoveFile(file.content)}
+              onClick={() => handleRemoveFile(file.id)}
             >
               &times;
             </button>

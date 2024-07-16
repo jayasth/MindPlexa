@@ -2,6 +2,11 @@ import { useNodeStore, useEdgeStore } from '@/app/store';
 import { v4 as uuidv4 } from 'uuid';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 import { createClient } from '@/utils/supabase/supabaseClient';
+import {
+  addAttachment,
+  removeAttachment,
+  getAttachments
+} from '@/utils/canvas/attachmentService';
 
 const supabase = createClient();
 
@@ -180,31 +185,14 @@ export const handleClose = (
 
 export const handleDelete = async (id: string, canvasId: string) => {
   try {
-    // Fetch attachments before deleting the node
-    const { data: attachments, error: fetchError } = await supabase
-      .from('node_attachments')
-      .select('storage_path')
-      .eq('node_id', id);
+    const attachments = await getAttachments(id);
 
-    if (fetchError) {
-      console.error('Error fetching attachments:', fetchError);
-      return;
-    }
-
-    // Delete files from Supabase storage
     for (const attachment of attachments) {
       if (attachment.storage_path) {
-        const { error: deleteError } = await supabase.storage
-          .from('node-attachments')
-          .remove([attachment.storage_path]);
-
-        if (deleteError) {
-          console.error('Error deleting file from storage:', deleteError);
-        }
+        await removeAttachment(attachment.id);
       }
     }
 
-    // Now delete the node
     const { removeNode } = useNodeStore.getState();
     const { setEdges } = useEdgeStore.getState();
     await removeNode(id, canvasId);
@@ -215,6 +203,7 @@ export const handleDelete = async (id: string, canvasId: string) => {
     console.error('Error deleting node:', error);
   }
 };
+
 export const handleAddTag = (
   id: string,
   tags: string[],
@@ -224,65 +213,6 @@ export const handleAddTag = (
   const { updateNode } = useNodeStore.getState();
   updateNode(id, { data: { tags } }, canvasId);
   tags.forEach((tag) => onAddTag(tag));
-};
-
-export const handleRemoveAttachedFile = async (
-  id: string,
-  fileToRemove: { type: 'file' | 'url'; content: string | File },
-  onRemoveFile: (file: {
-    type: 'file' | 'url';
-    content: string | File;
-  }) => void,
-  canvasId: string
-) => {
-  const { updateNode } = useNodeStore.getState();
-  const node = useNodeStore.getState().nodes.find((n) => n.id === id);
-
-  if (!node || !id) {
-    console.error('Node not found:', id);
-    return;
-  }
-
-  try {
-    if (fileToRemove.type === 'file') {
-      const { error: deleteError } = await supabase.storage
-        .from('node-attachments')
-        .remove([
-          `node-attachments/${id}/${(fileToRemove.content as File).name}`
-        ]);
-
-      if (deleteError) {
-        console.error('Error deleting file from storage:', deleteError);
-        return;
-      }
-    }
-
-    const { error: dbError } = await supabase
-      .from('node_attachments')
-      .delete()
-      .eq('node_id', id)
-      .eq(
-        fileToRemove.type === 'file' ? 'file_name' : 'url',
-        fileToRemove.type === 'file'
-          ? (fileToRemove.content as File).name
-          : fileToRemove.content
-      );
-
-    if (dbError) {
-      console.error('Error deleting attachment record:', dbError);
-      return;
-    }
-
-    const updatedFiles = node.data.attachedFiles.filter(
-      (file) => file.content !== fileToRemove.content
-    );
-
-    await updateNode(id, { data: { attachedFiles: updatedFiles } }, canvasId);
-
-    onRemoveFile(fileToRemove);
-  } catch (error) {
-    console.error('Error in handleRemoveAttachedFile:', error);
-  }
 };
 
 export const handleDuplicate = (id: string, canvasId: string) => {
