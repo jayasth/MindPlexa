@@ -7,7 +7,11 @@ import {
   deleteNode as deleteNodeInDB,
   handleTags
 } from '@/utils/canvas/nodeService';
-import { addAttachment } from '@/utils/canvas/attachmentService';
+import {
+  addAttachment,
+  removeAttachment,
+  getAttachments
+} from '@/utils/canvas/attachmentService';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 import { getChildNodePosition } from '@/ui/canvasEditor/utils/getChildNodePosition';
 import type { Node, XYPosition } from 'reactflow';
@@ -159,8 +163,25 @@ const useNodeStore = create<NodeState>()(
               }
               if (data.data?.attachedFiles) {
                 (async () => {
-                  for (const file of data.data.attachedFiles) {
-                    await addAttachment(id, { type: 'file', content: file });
+                  const existingAttachments = await getAttachments(id);
+                  const existingIds = new Set(
+                    existingAttachments.map((a) => a.id)
+                  );
+
+                  for (const attachment of data.data.attachedFiles) {
+                    if (!existingIds.has(attachment.id)) {
+                      await addAttachment(id, attachment);
+                    }
+                  }
+
+                  for (const existingAttachment of existingAttachments) {
+                    if (
+                      !data.data.attachedFiles.some(
+                        (a) => a.id === existingAttachment.id
+                      )
+                    ) {
+                      await removeAttachment(existingAttachment.id);
+                    }
                   }
                 })();
               }
@@ -191,22 +212,9 @@ const useNodeStore = create<NodeState>()(
     },
     removeNode: async (id, canvasId) => {
       try {
-        // Delete associated attachments from Supabase storage bucket
-        const { data: attachments, error: attachmentsError } = await supabase
-          .from('node_attachments')
-          .select('storage_path')
-          .eq('node_id', id);
-
-        if (attachmentsError) {
-          throw attachmentsError;
-        }
-
-        const filePaths = attachments
-          .map((attachment) => attachment.storage_path)
-          .filter((path): path is string => path !== null);
-
-        if (filePaths.length > 0) {
-          await supabase.storage.from('node-attachments').remove(filePaths);
+        const attachments = await getAttachments(id);
+        for (const attachment of attachments) {
+          await removeAttachment(attachment.id);
         }
 
         set(

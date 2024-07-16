@@ -17,6 +17,11 @@ import Button from '@/ui/Button/Button';
 import useNodeStore from '@/app/store/nodes/useNodeStore';
 import useCanvasStore from '@/app/store/canvas/useCanvasStore';
 import { handleAttachmentPreview } from '@/utils/canvas/attachmentService';
+import {
+  addAttachment,
+  removeAttachment,
+  getAttachments
+} from '@/utils/canvas/attachmentService';
 
 const ICON_SIZE = 16;
 
@@ -143,13 +148,22 @@ export const FileModal = ({
     }
   };
 
-  const handleAddFiles = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
+  const handleAddFiles = async () => {
+    if (fileInputRef.current && fileInputRef.current.files) {
+      const files = Array.from(fileInputRef.current.files);
+      const allFiles = [...existingFiles, ...files];
+      if (allFiles.length > 10) {
+        alert('You can attach a maximum of 10 files.');
+        return;
+      }
+      for (const file of files) {
+        await addAttachment(nodeId, { type: 'file', content: file });
+      }
+      onAttachFiles(allFiles);
     }
   };
 
-  const handleAddFileUrl = () => {
+  const handleAddFileUrl = async () => {
     if (fileUrl) {
       try {
         new URL(fileUrl); // Validate URL
@@ -158,6 +172,7 @@ export const FileModal = ({
           alert('You can attach a maximum of 10 files or URLs.');
           return;
         }
+        await addAttachment(nodeId, { type: 'url', content: fileUrl });
         onAttachFiles(allFiles);
         updateNode(
           nodeId,
@@ -173,7 +188,18 @@ export const FileModal = ({
     }
   };
 
-  const handleRemoveFile = (fileToRemove: File | string) => {
+  const handleRemoveFile = async (fileToRemove: File | string) => {
+    const attachments = await getAttachments(nodeId);
+    const attachmentToRemove = attachments.find(
+      (a) =>
+        (a.is_file && a.file_name === (fileToRemove as File).name) ||
+        (!a.is_file && a.url === fileToRemove)
+    );
+
+    if (attachmentToRemove) {
+      await removeAttachment(attachmentToRemove.id);
+    }
+
     const updatedFiles = existingFiles.filter((file) => file !== fileToRemove);
     updateNode(
       nodeId,
