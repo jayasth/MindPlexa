@@ -33,10 +33,8 @@ import {
 } from '@/ui/nodes/common/CommonNodeFunctions';
 import {
   Attachment,
-  addAttachment,
   removeAttachment,
-  getAttachments,
-  handleAttachmentPreview
+  getAttachments
 } from '@/utils/canvas/attachmentService';
 import Quill from 'quill';
 import 'quill/dist/quill.snow.css';
@@ -340,15 +338,6 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     setIsDeleteModalOpen(false);
   };
 
-  const handleAttachmentPreviewWrapper = useCallback((file: Attachment) => {
-    if (file.is_file && file.storage_path) {
-      return handleAttachmentPreview(new File([], file.file_name || ''));
-    } else if (!file.is_file && file.url) {
-      return handleAttachmentPreview(file.url);
-    }
-    return () => {};
-  }, []);
-
   const memoizedTagFileContainer = useMemo(
     () => (
       <TagFileContainer
@@ -357,17 +346,9 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         onRemoveTag={onRemoveTag}
         onRemoveFile={onRemoveFile}
         textColor={textColor}
-        handleAttachmentPreview={handleAttachmentPreviewWrapper}
       />
     ),
-    [
-      tags,
-      attachedFiles,
-      onRemoveTag,
-      onRemoveFile,
-      textColor,
-      handleAttachmentPreviewWrapper
-    ]
+    [tags, attachedFiles, onRemoveTag, onRemoveFile, textColor]
   );
 
   return (

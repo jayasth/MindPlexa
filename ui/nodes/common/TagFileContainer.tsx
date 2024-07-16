@@ -1,6 +1,10 @@
 import React from 'react';
 import styles from '@/ui/nodes/common/TagFileContainer.module.css';
-import { Attachment, removeAttachment } from '@/utils/canvas/attachmentService';
+import {
+  Attachment,
+  removeAttachment,
+  handleAttachmentPreview
+} from '@/utils/canvas/attachmentService';
 
 interface TagFileContainerProps {
   tags: string[];
@@ -8,7 +12,6 @@ interface TagFileContainerProps {
   textColor: string;
   attachedFiles: Attachment[];
   onRemoveFile: (fileId: string) => void;
-  handleAttachmentPreview: (file: Attachment) => void;
 }
 
 const TagFileContainer: React.FC<TagFileContainerProps> = ({
@@ -16,14 +19,20 @@ const TagFileContainer: React.FC<TagFileContainerProps> = ({
   onRemoveTag,
   textColor,
   attachedFiles,
-  onRemoveFile,
-  handleAttachmentPreview
+  onRemoveFile
 }) => {
   const hasContent = tags.length > 0 || attachedFiles.length > 0;
 
   const handleRemoveFile = async (fileId: string) => {
     await removeAttachment(fileId);
     onRemoveFile(fileId);
+  };
+
+  const handlePreview = async (attachment: Attachment) => {
+    const removePreview = await handleAttachmentPreview(attachment);
+    return () => {
+      removePreview();
+    };
   };
 
   return (
@@ -43,17 +52,17 @@ const TagFileContainer: React.FC<TagFileContainerProps> = ({
         ))}
       </div>
       <div className={styles.fileContainer}>
-        {attachedFiles.map((file) => (
-          <div key={file.id} className={styles.file}>
+        {attachedFiles.map((attachment) => (
+          <div key={attachment.id} className={styles.file}>
             <span
               onClick={() => {
-                if (file.type === 'url') {
-                  window.open(file.url!, '_blank');
+                if (attachment.type === 'url') {
+                  window.open(attachment.url!, '_blank');
                 } else {
-                  handleAttachmentPreview(file);
+                  handlePreview(attachment);
                 }
               }}
-              onMouseEnter={() => handleAttachmentPreview(file)}
+              onMouseEnter={() => handlePreview(attachment)}
               onMouseLeave={() => {
                 const preview = document.querySelector('.file-preview');
                 if (preview) {
@@ -62,13 +71,13 @@ const TagFileContainer: React.FC<TagFileContainerProps> = ({
               }}
               style={{ cursor: 'pointer', textDecoration: 'underline' }}
             >
-              {file.type === 'url'
-                ? new URL(file.url!).hostname
-                : file.file_name}
+              {attachment.type === 'url'
+                ? new URL(attachment.url!).hostname
+                : attachment.file_name}
             </span>
             <button
               className={styles.removeFileButton}
-              onClick={() => handleRemoveFile(file.id)}
+              onClick={() => handleRemoveFile(attachment.id)}
             >
               &times;
             </button>

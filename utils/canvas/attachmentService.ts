@@ -130,7 +130,7 @@ export const getAttachments = async (nodeId: string): Promise<Attachment[]> => {
   return data as Attachment[];
 };
 
-export const handleAttachmentPreview = (fileOrUrl: File | string) => {
+export const handleAttachmentPreview = async (attachment: Attachment) => {
   const previewWindow = document.createElement('div');
   previewWindow.style.position = 'fixed';
   previewWindow.style.maxWidth = '300px';
@@ -158,52 +158,48 @@ export const handleAttachmentPreview = (fileOrUrl: File | string) => {
 
   document.addEventListener('mousemove', handleMouseMove);
 
-  if (typeof fileOrUrl === 'string') {
+  if (attachment.type === 'url') {
+    const iframe = document.createElement('iframe');
+    iframe.src = attachment.url || '';
+    iframe.style.width = '100%';
+    iframe.style.height = '100%';
+    iframe.style.border = 'none';
+    previewWindow.appendChild(iframe);
+  } else if (attachment.type === 'file' && attachment.storage_path) {
     try {
-      const iframe = document.createElement('iframe');
-      iframe.src = fileOrUrl;
-      iframe.style.width = '100%';
-      iframe.style.height = '100%';
-      iframe.style.border = 'none';
-      previewWindow.appendChild(iframe);
+      const { data, error } = await supabase.storage
+        .from('node-attachments')
+        .download(attachment.storage_path);
+
+      if (error) throw error;
+
+      const blob = new Blob([data], { type: attachment.mime_type || '' });
+      const fileURL = URL.createObjectURL(blob);
+
+      if (attachment.mime_type?.startsWith('image/')) {
+        const img = document.createElement('img');
+        img.src = fileURL;
+        img.style.maxWidth = '100%';
+        img.style.maxHeight = '100%';
+        img.style.objectFit = 'contain';
+        previewWindow.appendChild(img);
+      } else if (attachment.mime_type === 'application/pdf') {
+        const iframe = document.createElement('iframe');
+        iframe.src = fileURL;
+        iframe.style.width = '100%';
+        iframe.style.height = '100%';
+        iframe.style.border = 'none';
+        previewWindow.appendChild(iframe);
+      } else {
+        const textContainer = document.createElement('div');
+        textContainer.textContent = `File: ${attachment.file_name}`;
+        previewWindow.appendChild(textContainer);
+      }
     } catch (error) {
-      console.error('Error loading URL:', error);
+      console.error('Error loading file:', error);
       const errorMessage = document.createElement('div');
-      errorMessage.textContent = 'Error loading URL';
+      errorMessage.textContent = 'Error loading file';
       previewWindow.appendChild(errorMessage);
-    }
-  } else {
-    const fileURL = URL.createObjectURL(fileOrUrl);
-    const fileType = fileOrUrl.type;
-
-    if (fileType === 'application/pdf') {
-      const iframe = document.createElement('iframe');
-      iframe.src = fileURL;
-      iframe.style.width = '100%';
-      iframe.style.height = '100%';
-      iframe.style.border = 'none';
-      previewWindow.appendChild(iframe);
-    } else if (fileType.startsWith('image/')) {
-      const img = document.createElement('img');
-      img.src = fileURL;
-      img.style.maxWidth = '100%';
-      img.style.maxHeight = '100%';
-      img.style.objectFit = 'contain';
-      previewWindow.appendChild(img);
-    } else {
-      const textContainer = document.createElement('div');
-      textContainer.style.padding = '10px';
-      textContainer.style.overflowY = 'auto';
-      textContainer.style.maxHeight = '100%';
-      previewWindow.appendChild(textContainer);
-
-      const fileReader = new FileReader();
-      fileReader.onload = () => {
-        if (fileReader.result) {
-          textContainer.textContent = fileReader.result.toString();
-        }
-      };
-      fileReader.readAsText(fileOrUrl);
     }
   }
 
