@@ -119,6 +119,14 @@ export const deleteCanvasWithNodes = async (
   // Delete associated edges
   await supabase.from('edges').delete().eq('canvas_id', canvasId);
 
+  // Delete attachments and files for each node
+  for (const nodeId of nodeIds) {
+    const attachments = await getAttachments(nodeId);
+    for (const attachment of attachments) {
+      await removeAttachment(attachment.id);
+    }
+  }
+
   // Delete associated nodes
   await deleteNodes(nodeIds);
 
