@@ -123,8 +123,9 @@ export const duplicateNode = async (nodeId: string, canvasId: string) => {
       id: uuidv4(), // Generate new ID for node-specific data
       node_id: newNodeId
     };
-    const { data: newNodeSpecific, error: insertNodeSpecificError } =
-      await insertNodeSpecificData(nodeSpecificTable, newNodeSpecificData);
+    const { error: insertNodeSpecificError } = await supabase
+      .from(nodeSpecificTable)
+      .insert(newNodeSpecificData);
     if (insertNodeSpecificError) throw insertNodeSpecificError;
 
     // Insert the node-canvas link
@@ -190,12 +191,77 @@ export const duplicateNode = async (nodeId: string, canvasId: string) => {
       if (newAttachmentsError) throw newAttachmentsError;
     }
 
+    // Test function to compare original and duplicated node data
+    await compareNodeData(nodeId, newNodeId);
+
     return { success: true, newNode: { ...newNode, id: newNodeId, canvasId } };
   } catch (error) {
     console.error('Error duplicating node:', error);
     return { success: false, error };
   }
 };
+
+// Test function to compare original and duplicated node data
+const compareNodeData = async (
+  originalNodeId: string,
+  duplicatedNodeId: string
+) => {
+  const fetchNodeData = async (nodeId: string) => {
+    const { data: node, error: nodeError } = await supabase
+      .from('nodes')
+      .select('*')
+      .eq('id', nodeId)
+      .single();
+
+    if (nodeError) throw nodeError;
+    const { data: nodeSpecific, error: nodeSpecificError } = await supabase
+      .from(
+        node.type === null
+          ? 'nodes'
+          : (`${node.type}_nodes` as
+              | 'calendar_nodes'
+              | 'draw_nodes'
+              | 'note_nodes'
+              | 'table_nodes'
+              | 'task_nodes')
+      )
+      .select('*')
+      .eq('node_id', nodeId)
+      .single();
+
+    if (nodeSpecificError) throw nodeSpecificError;
+
+    const { data: tags, error: tagsError } = await supabase
+      .from('node_tags')
+      .select('tag')
+      .eq('node_id', nodeId);
+
+    if (tagsError) throw tagsError;
+
+    const { data: attachments, error: attachmentsError } = await supabase
+      .from('node_attachments')
+      .select('*')
+      .eq('node_id', nodeId);
+
+    if (attachmentsError) throw attachmentsError;
+
+    const { data: canvasLink, error: canvasLinkError } = await supabase
+      .from('node_canvas_link')
+      .select('canvas_id')
+      .eq('node_id', nodeId);
+
+    if (canvasLinkError) throw canvasLinkError;
+
+    return { node, nodeSpecific, tags, attachments, canvasLink };
+  };
+
+  const originalData = await fetchNodeData(originalNodeId);
+  const duplicatedData = await fetchNodeData(duplicatedNodeId);
+
+  console.log('Original Node Data:', JSON.stringify(originalData, null, 2));
+  console.log('Duplicated Node Data:', JSON.stringify(duplicatedData, null, 2));
+};
+
 export const createNode = async (
   canvasId: string,
   nodeType: Database['public']['Enums']['node_type'],
