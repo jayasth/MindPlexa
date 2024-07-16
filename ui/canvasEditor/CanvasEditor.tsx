@@ -70,6 +70,7 @@ export default function CanvasEditor({ canvasId: initialCanvasId }) {
     if (initialCanvasId) {
       setCanvasId(initialCanvasId);
       loadCanvas(initialCanvasId);
+      console.log(`CanvasEditor: Canvas ID set to ${initialCanvasId}`);
     }
   }, [initialCanvasId, setCanvasId, loadCanvas]);
 

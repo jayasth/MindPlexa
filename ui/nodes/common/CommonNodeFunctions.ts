@@ -306,7 +306,7 @@ export const handleDuplicate = async (id: string, canvasId: string) => {
         ...nodeToDuplicate,
         id: newNode.id,
         position: newPosition,
-        data: { ...newData, canvasId } // Add canvasId to the node data
+        data: { ...newData, canvasId }
       };
       addNode(newNodeData, canvasId);
       setSelectedNodes([newNodeData.id]);

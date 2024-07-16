@@ -41,6 +41,7 @@ import 'quill/dist/quill.snow.css';
 import { useBackgroundColorChange } from '@/ui/nodes/common/useBackgroundColorChange';
 import { debounce } from 'lodash';
 import useNodeStore from '@/app/store/nodes/useNodeStore';
+import useCanvasStore from '@/app/store/canvas/useCanvasStore';
 
 interface NoteNodeEditProps extends NodeProps {
   data: any;
@@ -74,6 +75,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     position
   });
 
+  const { canvasId } = useCanvasStore();
   const [isSelected, setIsSelected] = useState(selected);
   const [title, setTitle] = useState(data.title || 'Untitled Note');
   const [content, setContent] = useState(data.content || '');
@@ -216,27 +218,27 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
 
   const onChangeTitle = useCallback(
     (newTitle: string) => {
-      handleTitleChange(data.id, newTitle, setTitle, data.id);
+      handleTitleChange(data.id, newTitle, setTitle, canvasId);
     },
-    [data.id]
+    [data.id, canvasId]
   );
 
   const onAddTag = useCallback(
     (newTags: string[]) => {
       const uniqueTags = Array.from(new Set([...tags, ...newTags]));
       setTags(uniqueTags);
-      handleAddTag(data.id, uniqueTags, () => {}, data.id);
+      handleAddTag(data.id, uniqueTags, () => {}, canvasId);
     },
-    [data.id, tags]
+    [data.id, tags, canvasId]
   );
 
   const onRemoveTag = useCallback(
     (tagToRemove: string) => {
       const updatedTags = tags.filter((tag) => tag !== tagToRemove);
       setTags(updatedTags);
-      handleAddTag(data.id, updatedTags, () => {}, data.id);
+      handleAddTag(data.id, updatedTags, () => {}, canvasId);
     },
-    [data.id, tags]
+    [data.id, tags, canvasId]
   );
 
   const onAttachFiles = useCallback(async (files: Attachment[]) => {
@@ -331,7 +333,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
 
   const handleDeleteConfirm = () => {
     setIsDeleteModalOpen(false);
-    handleDeleteNode(data.id, data.id);
+    handleDeleteNode(data.id, canvasId);
   };
 
   const handleDeleteCancel = () => {
@@ -376,7 +378,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         />
         <CloseButton
           onClick={() =>
-            handleClose(data.id, () => {}, title, content, data.id)
+            handleClose(data.id, () => {}, title, content, canvasId)
           }
         />
       </div>
@@ -393,9 +395,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         <ChangeColorButton onClick={toggleColorPicker} />
         <AddTagButton onClick={() => setIsTagModalOpen(true)} />
         <AttachFileButton onClick={() => setIsFileModalOpen(true)} />
-        <DuplicateButton
-          onClick={() => handleDuplicate(data.id, data.canvasId)}
-        />
+        <DuplicateButton onClick={() => handleDuplicate(data.id, canvasId)} />
         <ColorPickerModal
           isOpen={isColorPickerVisible}
           onClose={() => setIsColorPickerVisible(false)}
