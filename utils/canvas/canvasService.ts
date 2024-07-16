@@ -4,6 +4,10 @@ import { v4 as uuidv4 } from 'uuid';
 import { toCamelCase, toSnakeCase } from '@/utils/caseConversion';
 import { deleteNode, deleteNodes } from '@/utils/canvas/nodeService';
 import { deleteEdge } from '@/utils/canvas/edgeService';
+import {
+  getAttachments,
+  removeAttachment
+} from '@/utils/canvas/attachmentService';
 
 const supabase = createClient();
 
@@ -56,6 +60,11 @@ export const deleteCanvas = async (
 
   // Delete associated nodes
   for (const nodeId of nodeIds) {
+    const attachments = await getAttachments(nodeId);
+    for (const attachment of attachments) {
+      await removeAttachment(attachment.id);
+    }
+
     const { data: nodeData, error: nodeError } = await supabase
       .from('nodes')
       .select('type')

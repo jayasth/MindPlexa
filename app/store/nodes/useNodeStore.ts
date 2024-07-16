@@ -5,9 +5,9 @@ import { v4 as uuidv4 } from 'uuid';
 import {
   updateNode as updateNodeInDB,
   deleteNode as deleteNodeInDB,
-  handleTags,
-  handleAttachments
+  handleTags
 } from '@/utils/canvas/nodeService';
+import { addAttachment } from '@/utils/canvas/attachmentService';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 import { getChildNodePosition } from '@/ui/canvasEditor/utils/getChildNodePosition';
 import type { Node, XYPosition } from 'reactflow';
@@ -158,7 +158,11 @@ const useNodeStore = create<NodeState>()(
                 handleTags(id, data.data.tags);
               }
               if (data.data?.attachedFiles) {
-                handleAttachments(id, data.data.attachedFiles);
+                (async () => {
+                  for (const file of data.data.attachedFiles) {
+                    await addAttachment(id, { type: 'file', content: file });
+                  }
+                })();
               }
 
               updateNodeInDB(

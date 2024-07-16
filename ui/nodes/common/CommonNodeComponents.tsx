@@ -14,9 +14,9 @@ import { CompactPicker } from 'react-color';
 import styles from '@/ui/nodes/common/CommonNodeStyles.module.css';
 import Input from '@/ui/Input/Input';
 import Button from '@/ui/Button/Button';
-import { handleAttachmentPreview } from '@/ui/nodes/common/CommonNodeFunctions';
 import useNodeStore from '@/app/store/nodes/useNodeStore';
 import useCanvasStore from '@/app/store/canvas/useCanvasStore';
+import { handleAttachmentPreview } from '@/utils/canvas/attachmentService';
 
 const ICON_SIZE = 16;
 

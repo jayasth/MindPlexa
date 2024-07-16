@@ -3,6 +3,11 @@ import { Database } from '@/types_db';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 import { v4 as uuidv4 } from 'uuid';
 import { toCamelCase, toSnakeCase } from '@/utils/caseConversion';
+import {
+  addAttachment,
+  removeAttachment,
+  getAttachments
+} from '@/utils/canvas/attachmentService';
 
 const supabase = createClient();
 
@@ -76,70 +81,6 @@ export const handleTags = async (
   return {};
 };
 
-export const handleAttachments = async (
-  nodeId: string,
-  attachments: Array<{ type: 'file' | 'url'; content: string | File }>
-): Promise<{ error?: any }> => {
-  // Delete existing attachments
-  const { error: deleteError } = await supabase
-    .from('node_attachments')
-    .delete()
-    .eq('node_id', nodeId);
-
-  if (deleteError) {
-    console.error('Error deleting existing attachments:', deleteError);
-    return { error: deleteError };
-  }
-
-  for (const attachment of attachments) {
-    if (attachment.type === 'file' && attachment.content instanceof File) {
-      const file = attachment.content;
-      const filePath = `node-attachments/${nodeId}/${file.name}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('node-attachments')
-        .upload(filePath, file);
-
-      if (uploadError) {
-        console.error('Error uploading file:', uploadError);
-        return { error: uploadError };
-      }
-
-      const { error: insertError } = await supabase
-        .from('node_attachments')
-        .insert({
-          node_id: nodeId,
-          type: 'file',
-          file_name: file.name,
-          file_size: file.size,
-          storage_path: filePath,
-          mime_type: file.type,
-          is_file: true
-        });
-
-      if (insertError) {
-        console.error('Error inserting file attachment:', insertError);
-        return { error: insertError };
-      }
-    } else if (attachment.type === 'url') {
-      const { error: insertError } = await supabase
-        .from('node_attachments')
-        .insert({
-          node_id: nodeId,
-          type: 'url',
-          url: attachment.content as string,
-          is_file: false
-        });
-
-      if (insertError) {
-        console.error('Error inserting URL attachment:', insertError);
-        return { error: insertError };
-      }
-    }
-  }
-
-  return {};
-};
 export const createNode = async (
   canvasId: string,
   nodeType: Database['public']['Enums']['node_type'],
@@ -222,6 +163,12 @@ export const createNode = async (
       node_id: nodeId,
       canvas_id: canvasId
     });
+
+    if ('attachedFiles' in data && Array.isArray(data.attachedFiles)) {
+      for (const attachment of data.attachedFiles) {
+        await addAttachment(nodeId, attachment);
+      }
+    }
 
     if (nodeType !== 'selection_menu') {
       const specificNodeInsert = {
@@ -349,16 +296,24 @@ export const updateNode = async (
   }
 
   // Handle attachments
-  if (
-    specificUpdates?.attachedFiles &&
-    Array.isArray(specificUpdates.attachedFiles)
-  ) {
-    const { error: attachmentError } = await handleAttachments(
-      id,
-      specificUpdates.attachedFiles
-    );
-    if (attachmentError) {
-      return { error: attachmentError };
+  if (specificUpdates?.attachedFiles) {
+    const existingAttachments = await getAttachments(id);
+    const existingIds = new Set(existingAttachments.map((a) => a.id));
+
+    for (const attachment of specificUpdates.attachedFiles) {
+      if (!existingIds.has(attachment.id)) {
+        await addAttachment(id, attachment);
+      }
+    }
+
+    for (const existingAttachment of existingAttachments) {
+      if (
+        !specificUpdates.attachedFiles.some(
+          (a) => a.id === existingAttachment.id
+        )
+      ) {
+        await removeAttachment(existingAttachment.id);
+      }
     }
   }
 
