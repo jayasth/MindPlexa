@@ -102,8 +102,9 @@ export const duplicateNode = async (nodeId: string, canvasId: string) => {
     };
 
     // Insert the duplicated node into the nodes table
-    const { data: newNode, error: insertNodeError } =
-      await insertNode(newNodeData);
+    const { error: insertNodeError } = await supabase
+      .from('nodes')
+      .insert(newNodeData);
     if (insertNodeError) throw insertNodeError;
 
     // Insert the duplicated node-specific data into the corresponding table
@@ -194,31 +195,9 @@ export const duplicateNode = async (nodeId: string, canvasId: string) => {
       if (newAttachmentsError) throw newAttachmentsError;
     }
 
-    // Fetch the complete duplicated node data
-    const { data: completeDuplicatedNode, error: completeNodeError } =
-      await supabase
-        .from('nodes')
-        .select(
-          `
-          *,
-          ${nodeSpecificTable}!inner(*),
-          node_tags(tag)
-        `
-        )
-        .eq('id', newNodeId)
-        .single();
-
-    if (completeNodeError) throw completeNodeError;
-
     return {
       success: true,
-      newNode: {
-        ...completeDuplicatedNode,
-        id: newNodeId,
-        canvasId,
-        content: completeDuplicatedNode[nodeSpecificTable].content,
-        tags: completeDuplicatedNode.node_tags.map((t) => t.tag)
-      }
+      newNodeId: newNodeId
     };
   } catch (error) {
     console.error('Error duplicating node:', error);
