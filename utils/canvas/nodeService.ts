@@ -98,14 +98,13 @@ export const duplicateNode = async (nodeId: string, canvasId: string) => {
       ...originalNode,
       id: newNodeId,
       parent_node_id: null,
-      title: `${originalNode.title} (copy)`,
+      title: `${originalNode.title} copy`,
       version: 1
     };
 
     // Insert the duplicated node into the nodes table
-    const { error: insertNodeError } = await supabase
-      .from('nodes')
-      .insert(newNodeData);
+    const { data: newNode, error: insertNodeError } =
+      await insertNode(newNodeData);
     if (insertNodeError) throw insertNodeError;
 
     // Insert the duplicated node-specific data into the corresponding table
@@ -122,12 +121,11 @@ export const duplicateNode = async (nodeId: string, canvasId: string) => {
 
     const newNodeSpecificData = {
       ...originalNodeSpecific,
-      id: uuidv4(),
+      id: uuidv4(), // Generate new ID for node-specific data
       node_id: newNodeId
     };
-    const { error: insertNodeSpecificError } = await supabase
-      .from(nodeSpecificTable)
-      .insert(newNodeSpecificData);
+    const { data: newNodeSpecific, error: insertNodeSpecificError } =
+      await insertNodeSpecificData(nodeSpecificTable, newNodeSpecificData);
     if (insertNodeSpecificError) throw insertNodeSpecificError;
 
     // Insert the node-canvas link
@@ -155,10 +153,7 @@ export const duplicateNode = async (nodeId: string, canvasId: string) => {
         .from('node_tags')
         .insert(newTags);
 
-      if (newTagsError) {
-        console.error('nodeService: Error inserting new tags:', newTagsError);
-        throw newTagsError;
-      }
+      if (newTagsError) throw newTagsError;
     }
 
     // Duplicate attachments
@@ -196,16 +191,12 @@ export const duplicateNode = async (nodeId: string, canvasId: string) => {
       if (newAttachmentsError) throw newAttachmentsError;
     }
 
-    return {
-      success: true,
-      newNodeId: newNodeId
-    };
+    return { success: true, newNode: { ...newNode, id: newNodeId, canvasId } };
   } catch (error) {
     console.error('Error duplicating node:', error);
     return { success: false, error };
   }
 };
-
 export const createNode = async (
   canvasId: string,
   nodeType: Database['public']['Enums']['node_type'],

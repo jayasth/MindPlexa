@@ -220,8 +220,8 @@ export const handleDuplicate = async (id: string, canvasId: string) => {
   const nodeToDuplicate = nodes.find((node) => node.id === id);
   if (nodeToDuplicate) {
     try {
-      const { success, newNodeId, error } = await duplicateNode(id, canvasId);
-      if (!success || error || !newNodeId) {
+      const { success, newNode, error } = await duplicateNode(id, canvasId);
+      if (!success || error || !newNode) {
         throw error || new Error('Failed to duplicate node');
       }
 
@@ -277,7 +277,7 @@ export const handleDuplicate = async (id: string, canvasId: string) => {
 
       const newNodeData = {
         ...nodeToDuplicate,
-        id: newNodeId,
+        id: newNode.id,
         position: newPosition,
         data: { ...nodeToDuplicate.data, canvasId }
       };
