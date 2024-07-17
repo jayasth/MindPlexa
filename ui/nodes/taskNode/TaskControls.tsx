@@ -40,6 +40,7 @@ const TaskControls: React.FC<TaskControlsProps> = ({
         onChange={(value) => onSortChange(value)}
         value={sortBy}
         variant="slim"
+        className={styles.sortDropdown}
       >
         <option value="">Sort by</option>
         <option value="priority">Priority</option>

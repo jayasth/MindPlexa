@@ -48,10 +48,8 @@ import {
   verticalListSortingStrategy
 } from '@dnd-kit/sortable';
 import { SortableItem } from './SortableItem';
-import { FaEye, FaEyeSlash, FaSort } from 'react-icons/fa';
-import Dropdown from '@/ui/dropdown/Dropdown';
-import TaskOptions from '@/ui/nodes/taskNode/TaskOptions';
 import TaskControls from './TaskControls';
+import TaskOptions from './TaskOptions';
 
 interface TaskNodeEditProps extends NodeProps {
   data: any;
@@ -107,11 +105,6 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
   const [totalTasks, setTotalTasks] = useState(data.total_tasks || 0);
   const [completedTasks, setCompletedTasks] = useState(0);
   const [sortBy, setSortBy] = useState('');
-  const [filterBy, setFilterBy] = useState({
-    assignee: '',
-    priority: '',
-    status: ''
-  });
   const [showPriority, setShowPriority] = useState(true);
   const [showDueDate, setShowDueDate] = useState(true);
 
@@ -337,31 +330,18 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
     }
   };
 
-  const filterTasks = (tasks: typeof data.tasks) => {
-    return tasks.filter(
-      (task) =>
-        (!filterBy.assignee || task.assignee === filterBy.assignee) &&
-        (!filterBy.priority || task.priority === filterBy.priority) &&
-        (!filterBy.status || task.status === filterBy.status)
-    );
-  };
-
   const displayedTasks = useMemo(() => {
-    let filteredTasks = filterTasks(tasks);
+    let filteredTasks = tasks;
     if (!showCompletedTasks) {
       filteredTasks = filteredTasks.filter((task) => !task.completed);
     }
     return sortTasks(filteredTasks);
-  }, [tasks, sortBy, filterBy, showCompletedTasks]);
+  }, [tasks, sortBy, showCompletedTasks]);
 
   const handleNewTaskKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       addTask();
     }
-  };
-
-  const toggleShowCompletedTasks = () => {
-    setShowCompletedTasks(!showCompletedTasks);
   };
 
   const toggleShowPriority = () => {
@@ -418,7 +398,19 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
         showCompletedTasks={showCompletedTasks}
         showPriority={showPriority}
         showDueDate={showDueDate}
-        onToggleCompletedTasks={toggleShowCompletedTasks}
+        onToggleCompletedTasks={() =>
+          setShowCompletedTasks(!showCompletedTasks)
+        }
+        onTogglePriority={toggleShowPriority}
+        onToggleDueDate={toggleShowDueDate}
+      />
+      <TaskOptions
+        showCompletedTasks={showCompletedTasks}
+        showPriority={showPriority}
+        showDueDate={showDueDate}
+        onToggleCompletedTasks={() =>
+          setShowCompletedTasks(!showCompletedTasks)
+        }
         onTogglePriority={toggleShowPriority}
         onToggleDueDate={toggleShowDueDate}
       />
@@ -464,15 +456,6 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
         <AddTagButton onClick={() => setIsTagModalOpen(true)} />
         <AttachFileButton onClick={() => setIsFileModalOpen(true)} />
         <DuplicateButton onClick={() => handleDuplicate(data.id, canvasId)} />
-        <button
-          onClick={toggleShowCompletedTasks}
-          className={styles.iconButton}
-          title={
-            showCompletedTasks ? 'Hide completed tasks' : 'Show completed tasks'
-          }
-        >
-          {showCompletedTasks ? <FaEyeSlash /> : <FaEye />}
-        </button>
         <ColorPickerModal
           isOpen={isColorPickerVisible}
           onClose={() => setIsColorPickerVisible(false)}
