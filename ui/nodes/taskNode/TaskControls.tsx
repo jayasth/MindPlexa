@@ -33,8 +33,8 @@ const TaskControls: React.FC<TaskControlsProps> = ({
   return (
     <div className={styles.taskControls}>
       <div className={styles.taskStats}>
-        <span>Total Tasks: {totalTasks}</span>
-        <span>Completed Tasks: {completedTasks}</span>
+        <span>Total: {totalTasks}</span>
+        <span>Completed: {completedTasks}</span>
       </div>
       <Dropdown
         onChange={(value) => onSortChange(value)}
@@ -62,7 +62,7 @@ const TaskControls: React.FC<TaskControlsProps> = ({
                 checked={showCompletedTasks}
                 onChange={onToggleCompletedTasks}
               />
-              Show completed tasks
+              Show completed
             </label>
             <label>
               <input

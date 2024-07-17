@@ -24,24 +24,19 @@
 .taskItem {
   display: flex;
   align-items: center;
-  padding: 4px; /* Adjust padding as needed */
-  border: 1px solid transparent; /* Add border for visual feedback */
-  cursor: grab; /* Ensure the cursor changes to grab */
-}
-
-.taskItem:hover {
-  border: 1px solid #ccc; /* Change border color on hover for visual feedback */
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
 .taskCheckbox {
-  margin-right: 8px;
+  flex: 0 0 auto;
 }
 
 .taskInput {
+  flex: 1;
   font-size: 12px;
   border: none;
   background-color: transparent;
-  flex-grow: 1;
   cursor: text;
   color: inherit;
   box-shadow: none !important;
@@ -53,17 +48,26 @@
   transition: border-bottom 0.3s ease-in-out;
 }
 
+.taskPriority,
+.taskDueDate {
+  flex: 0 0 120px;
+}
+
 .deleteTaskButton {
   background: none;
   border: none;
   cursor: pointer;
   color: inherit;
-  margin-left: 8px;
-  padding: 4px; /* Add padding for better click area */
+  transition: color 0.3s ease;
 }
 
 .deleteTaskButton:hover {
-  color: #f28b82; /* Change color on hover for visual feedback */
+  color: #ff6961;
+}
+
+.dragHandle {
+  cursor: grab;
+  margin-left: 10px;
 }
 
 .newTaskInput {
@@ -197,19 +201,36 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px;
-  border-bottom: 1px solid #ccc;
+  margin-bottom: 10px;
 }
 
 .taskStats {
   display: flex;
-  gap: 16px;
-  font-size: 12px;
-  flex: 1; /* Allow stats to take up available space */
+  gap: 10px;
+}
+
+.sortDropdown {
+  width: 120px;
 }
 
 .taskOptions {
   position: relative;
+}
+
+.optionsMenu {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 10px;
+  z-index: 1000;
+}
+
+.optionsMenu label {
+  display: block;
+  margin-bottom: 5px;
 }
 
 .iconButton {
@@ -217,26 +238,4 @@
   border: none;
   cursor: pointer;
   color: inherit;
-  padding: 4px;
-  font-size: 16px; /* Increase the size of the icon */
-}
-
-.optionsMenu {
-  position: absolute;
-  right: 0;
-  top: 100%;
-  background-color: white;
-  border: 1px solid #ccc;
-  padding: 10px;
-  border-radius: 4px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
-  min-width: 180px; /* Increase the minimum width of the options menu */
-}
-
-.optionsMenu label {
-  display: block;
-  margin-bottom: 8px; /* Increase spacing between options */
-  font-size: 12px;
-  white-space: nowrap; /* Prevent text from wrapping */
 }
