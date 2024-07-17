@@ -8,6 +8,7 @@
   overflow: hidden;
   height: 100%;
   cursor: move;
+  min-width: 300px; /* Add a min-width to prevent the node from becoming too narrow */
 }
 
 .header {
@@ -60,7 +61,8 @@
 }
 
 .taskItem {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr auto auto auto;
   align-items: center;
   gap: 10px;
   margin-bottom: 10px;
@@ -78,6 +80,7 @@
   cursor: text;
   color: inherit;
   box-shadow: none !important;
+  min-width: 0; /* Add this to allow the input to shrink */
 }
 
 .taskInput:focus,
