@@ -1,5 +1,4 @@
 import { useNodeStore, useEdgeStore } from '@/app/store';
-import { v4 as uuidv4 } from 'uuid';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 import { createClient } from '@/utils/supabase/supabaseClient';
 import {

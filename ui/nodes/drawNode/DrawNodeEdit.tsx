@@ -3,13 +3,12 @@ import React, {
   useEffect,
   useRef,
   CSSProperties,
-  useCallback
+  useCallback,
+  useMemo
 } from 'react';
 import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
-import { useNodeStore, useUIStore, useCanvasStore } from '@/app/store';
 import styles from './DrawNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
-
 import {
   FaPencilAlt,
   FaPaintBrush,
@@ -30,12 +29,9 @@ import {
   ToolHandlers
 } from '@/ui/nodes/drawNode/DrawNodeTools';
 import { useHistory } from '@/ui/nodes/drawNode/drawNodeHistory';
-import { getNodeSpecificProperties } from '@/ui/canvasEditor/utils/nodeProperties';
 import type { IconType } from 'react-icons/lib';
 import DrawNodeToolbar from '@/ui/nodes/drawNode/components/DrawNodeToolbar';
-import type { DrawNodeData } from '@/ui/canvasEditor/utils/nodeDatatypes';
 import {
-  SaveButton,
   DeleteButton,
   ChangeColorButton,
   AddTagButton,
@@ -46,22 +42,29 @@ import {
   FileModal,
   ColorPickerModal
 } from '@/ui/nodes/common/CommonNodeComponents';
+import NodeDeleteConfirmationModal from '@/ui/nodes/common/NodeDeleteConfirmationModal';
 import TagFileContainer from '@/ui/nodes/common/TagFileContainer';
 import {
   handleTitleChange,
-  handleSave,
   handleClose,
-  handleDelete,
+  handleDelete as handleDeleteNode,
   colorCombinations,
   handleAddTag,
-  handleRemoveAttachedFile,
-  handleDuplicate,
-  handleAttachmentPreview
+  handleDuplicate
 } from '@/ui/nodes/common/CommonNodeFunctions';
+import {
+  Attachment,
+  removeAttachment,
+  getAttachments,
+  removeAllPreviews
+} from '@/utils/canvas/attachmentService';
 import { useBackgroundColorChange } from '@/ui/nodes/common/useBackgroundColorChange';
+import { debounce } from 'lodash';
+import useNodeStore from '@/app/store/nodes/useNodeStore';
+import useCanvasStore from '@/app/store/canvas/useCanvasStore';
 
 interface DrawNodeEditProps extends NodeProps {
-  data: DrawNodeData;
+  data: any;
   width: number;
   height: number;
   selected: boolean;
@@ -73,28 +76,6 @@ interface DrawNodeEditProps extends NodeProps {
   position: { x: number; y: number };
 }
 
-const useClickOutside = (
-  ref: React.RefObject<HTMLElement>,
-  handler: () => void
-) => {
-  useEffect(() => {
-    const listener = (event: MouseEvent | TouchEvent) => {
-      if (!ref.current || ref.current.contains(event.target as Node)) {
-        return;
-      }
-      handler();
-    };
-
-    document.addEventListener('mousedown', listener);
-    document.addEventListener('touchstart', listener);
-
-    return () => {
-      document.removeEventListener('mousedown', listener);
-      document.removeEventListener('touchstart', listener);
-    };
-  }, [ref, handler]);
-};
-
 const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   data,
   width,
@@ -103,27 +84,195 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   onNodeResizeStop,
   position
 }) => {
+  console.log('DrawNodeEdit: Node details:', {
+    id: data.id,
+    title: data.title,
+    drawingData: data.drawingData,
+    backgroundColor: data.backgroundColor,
+    textColor: data.textColor,
+    width,
+    height,
+    position
+  });
+
+  const { canvasId } = useCanvasStore();
   const [isSelected, setIsSelected] = useState(selected);
   const [title, setTitle] = useState(data.title || 'Untitled Drawing');
+  const [drawingData, setDrawingData] = useState(data.drawingData || '');
   const [backgroundColor, setBackgroundColor] = useState(
     data.backgroundColor || '#F4F4F4'
   );
   const [textColor, setTextColor] = useState(data.textColor || '#575757');
   const [tags, setTags] = useState<string[]>(data.tags || []);
-  const [attachedFiles, setAttachedFiles] = useState<File[]>(
-    data.attachedFiles || []
-  );
+  const [attachedFiles, setAttachedFiles] = useState<Attachment[]>([]);
   const [isContainerSelected, setIsContainerSelected] = useState(false);
   const [nodeWidth, setNodeWidth] = useState(width);
   const [nodeHeight, setNodeHeight] = useState(height);
-  const [drawingData, setDrawingData] = useState(data.drawingData || '');
-  const [color, setColor] = useState('#531B93');
-  const [strokeWidth, setStrokeWidth] = useState(5);
-  const [sizeOpen, setSizeOpen] = useState(false);
   const [isColorPickerVisible, setIsColorPickerVisible] = useState(false);
   const [isTagModalOpen, setIsTagModalOpen] = useState(false);
   const [isFileModalOpen, setIsFileModalOpen] = useState(false);
-  const artboardInstance = useRef<ArtboardRef | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [color, setColor] = useState('#531B93');
+  const [strokeWidth, setStrokeWidth] = useState(5);
+  const [currentTool, setCurrentTool] = useState(0);
+
+  const artboardRef = useRef<ArtboardRef | null>(null);
+
+  const handleBackgroundColorChange = useBackgroundColorChange(
+    data.id,
+    setBackgroundColor,
+    setTextColor
+  );
+
+  const onChangeColor = useCallback(
+    (color: { hex: string }) => {
+      handleBackgroundColorChange(color);
+    },
+    [handleBackgroundColorChange]
+  );
+
+  const debouncedUpdateNodeData = useMemo(
+    () =>
+      debounce(async (commonData, specificData) => {
+        try {
+          const updateNode = useNodeStore.getState().updateNode;
+          await updateNode(
+            data.id,
+            { ...commonData, data: specificData },
+            'draw'
+          );
+        } catch (error) {
+          console.error('Error updating node:', error);
+        }
+      }, 500),
+    [data.id]
+  );
+
+  useEffect(() => {
+    return () => {
+      debouncedUpdateNodeData.cancel();
+      removeAllPreviews();
+    };
+  }, [debouncedUpdateNodeData]);
+
+  useEffect(() => {
+    const commonData = {
+      title,
+      backgroundColor,
+      textColor,
+      editWidth: nodeWidth,
+      editHeight: nodeHeight
+    };
+
+    const specificData = { drawingData, tags, attachedFiles };
+
+    debouncedUpdateNodeData(commonData, specificData);
+  }, [
+    title,
+    drawingData,
+    backgroundColor,
+    textColor,
+    nodeWidth,
+    nodeHeight,
+    tags,
+    attachedFiles,
+    debouncedUpdateNodeData
+  ]);
+
+  const onChangeTitle = useCallback(
+    (newTitle: string) => {
+      handleTitleChange(data.id, newTitle, setTitle, canvasId);
+    },
+    [data.id, canvasId]
+  );
+
+  const onAddTag = useCallback(
+    (newTags: string[]) => {
+      const uniqueTags = Array.from(new Set([...tags, ...newTags]));
+      setTags(uniqueTags);
+      handleAddTag(data.id, uniqueTags, () => {}, canvasId);
+    },
+    [data.id, tags, canvasId]
+  );
+
+  const onRemoveTag = useCallback(
+    (tagToRemove: string) => {
+      const updatedTags = tags.filter((tag) => tag !== tagToRemove);
+      setTags(updatedTags);
+      handleAddTag(data.id, updatedTags, () => {}, canvasId);
+    },
+    [data.id, tags, canvasId]
+  );
+
+  const onAttachFiles = useCallback(async (files: Attachment[]) => {
+    setAttachedFiles(files);
+  }, []);
+
+  const onRemoveFile = useCallback(
+    async (fileId: string) => {
+      await removeAttachment(fileId);
+      const updatedAttachments = await getAttachments(data.id);
+      setAttachedFiles(updatedAttachments);
+    },
+    [data.id]
+  );
+
+  useEffect(() => {
+    const fetchAttachments = async () => {
+      const attachments = await getAttachments(data.id);
+      setAttachedFiles(attachments);
+    };
+    fetchAttachments();
+  }, [data.id]);
+
+  useEffect(() => {
+    setNodeWidth(width);
+    setNodeHeight(height);
+  }, [width, height]);
+
+  const handleResize = useCallback(
+    (event, { width, height }) => {
+      setNodeWidth(width);
+      setNodeHeight(height);
+      onNodeResizeStop(data.id, { width, height }, position);
+    },
+    [data.id, onNodeResizeStop, position]
+  );
+
+  const handleContainerClick = useCallback(() => {
+    setIsContainerSelected(true);
+  }, []);
+
+  const handleContainerBlur = useCallback(() => {
+    setIsContainerSelected(false);
+  }, []);
+
+  const toggleColorPicker = useCallback(() => {
+    setIsColorPickerVisible((prev) => !prev);
+  }, []);
+
+  const customStyles: CSSProperties = useMemo(
+    () => ({
+      width: nodeWidth,
+      height: nodeHeight,
+      backgroundColor,
+      color: textColor
+    }),
+    [nodeWidth, nodeHeight, backgroundColor, textColor]
+  );
+
+  const handleDelete = () => {
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    setIsDeleteModalOpen(false);
+    handleDeleteNode(data.id, canvasId);
+  };
+
+  const handleDeleteCancel = () => {
+    setIsDeleteModalOpen(false);
+  };
 
   const brush = useBrush({ color, strokeWidth });
   const marker = useMarker({ color, strokeWidth });
@@ -145,124 +294,24 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     [eraser, FaEraser, 30]
   ];
 
-  const [currentTool, setCurrentTool] = useState(0);
-
   const { undo, redo, history, canUndo, canRedo } = useHistory();
 
-  const updateNode = useNodeStore((state) => state.updateNode);
-  const sizePickerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const nodeProperties = getNodeSpecificProperties('draw', true);
-    setNodeWidth(nodeProperties.width);
-    setNodeHeight(nodeProperties.height);
-  }, []);
-
-  useEffect(() => {
-    updateNode(data.id, {
-      data: {
-        title,
-        tags,
-        attachedFiles,
-        textColor,
-        backgroundColor,
-        drawingData
-      }
-    });
-  }, [
-    data.id,
-    title,
-    tags,
-    attachedFiles,
-    textColor,
-    backgroundColor,
-    drawingData,
-    updateNode
-  ]);
-
-  useEffect(() => {
-    setIsSelected(selected);
-  }, [selected]);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        sizePickerRef.current &&
-        !sizePickerRef.current.contains(event.target as Node)
-      ) {
-        setSizeOpen(false);
-      }
-    };
-    window.addEventListener('click', handleClickOutside);
-    return () => {
-      window.removeEventListener('click', handleClickOutside);
-    };
-  }, []);
-
-  useEffect(() => {
-    setStrokeWidth(tools[currentTool][2]);
-  }, [currentTool]);
-
-  const handleBackgroundColorChange = useBackgroundColorChange(
-    data.id,
-    setBackgroundColor,
-    setTextColor
+  const memoizedTagFileContainer = useMemo(
+    () => (
+      <TagFileContainer
+        tags={tags}
+        attachedFiles={attachedFiles}
+        onRemoveTag={onRemoveTag}
+        onRemoveFile={onRemoveFile}
+        textColor={textColor}
+      />
+    ),
+    [tags, attachedFiles, onRemoveTag, onRemoveFile, textColor]
   );
-
-  const onChangeColor = (color: { hex: string }) => {
-    handleBackgroundColorChange(color);
-  };
-
-  const onAddTag = (newTags: string[]) => {
-    const uniqueTags = Array.from(new Set([...tags, ...newTags]));
-    setTags(uniqueTags);
-    handleAddTag(data.id, uniqueTags, () => {});
-  };
-
-  const onRemoveTag = (tagToRemove: string) => {
-    const updatedTags = tags.filter((tag) => tag !== tagToRemove);
-    setTags(updatedTags);
-    handleAddTag(data.id, updatedTags, () => {});
-  };
-
-  const onAttachFiles = (files: File[]) => {
-    setAttachedFiles([...attachedFiles, ...files]);
-  };
-
-  const onRemoveFile = (fileToRemove: File) => {
-    const updatedFiles = attachedFiles.filter((file) => file !== fileToRemove);
-    setAttachedFiles(updatedFiles);
-    handleRemoveAttachedFile(data.id, fileToRemove, () => {});
-  };
-
-  const handleContainerClick = () => {
-    setIsContainerSelected(true);
-  };
-
-  const handleContainerBlur = () => {
-    setIsContainerSelected(false);
-  };
-
-  const handleResize = (event, { width, height }) => {
-    setNodeWidth(width);
-    setNodeHeight(height);
-    onNodeResizeStop(data.id, { width, height }, position);
-  };
-
-  const toggleColorPicker = () => {
-    setIsColorPickerVisible(!isColorPickerVisible);
-  };
-
-  const customStyles: CSSProperties = {
-    width: nodeWidth,
-    height: nodeHeight,
-    backgroundColor,
-    color: textColor
-  };
 
   return (
     <div
-      className={`${styles.drawNode} ${isSelected ? styles.selected : ''}`}
+      className={styles.drawNode}
       style={customStyles}
       onClick={handleContainerClick}
       onBlur={handleContainerBlur}
@@ -277,12 +326,14 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         <input
           type="text"
           value={title}
-          onChange={(e) => handleTitleChange(data.id, e.target.value, setTitle)}
+          onChange={(e) => onChangeTitle(e.target.value)}
           className={`${styles.titleInput} nodrag`}
           style={{ color: textColor }}
         />
         <CloseButton
-          onClick={() => handleClose(data.id, () => {}, title, drawingData)}
+          onClick={() =>
+            handleClose(data.id, () => {}, title, drawingData, canvasId)
+          }
         />
       </div>
       <div className={`${styles.drawContent} nowheel nodrag`}>
@@ -298,13 +349,13 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
           redo={redo}
           canUndo={canUndo}
           canRedo={canRedo}
-          download={() => artboardInstance.current?.download()}
-          clear={() => artboardInstance.current?.clear()}
+          download={() => artboardRef.current?.download()}
+          clear={() => artboardRef.current?.clear()}
         />
         <div id="artboard" className={styles.artboard}>
           <Artboard
             tool={tools[currentTool][0]}
-            ref={artboardInstance}
+            ref={artboardRef}
             history={history}
             style={{ border: '1px gray solid' }}
             content={drawingData}
@@ -313,35 +364,14 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
           />
         </div>
       </div>
-      {(tags.length > 0 || attachedFiles.length > 0) && (
-        <TagFileContainer
-          tags={tags}
-          attachedFiles={attachedFiles}
-          onRemoveTag={onRemoveTag}
-          onRemoveFile={onRemoveFile}
-          textColor={textColor}
-          handleAttachmentPreview={handleAttachmentPreview}
-        />
-      )}
+      {(tags.length > 0 || attachedFiles.length > 0) &&
+        memoizedTagFileContainer}
       <div className={styles.footer}>
-        <SaveButton
-          onClick={() =>
-            handleSave(data.id, () => {}, {
-              ...data,
-              title,
-              tags,
-              attachedFiles,
-              backgroundColor,
-              textColor,
-              drawingData
-            })
-          }
-        />
-        <DeleteButton onClick={() => handleDelete(data.id, () => {})} />
-        <ChangeColorButton onClick={() => toggleColorPicker()} />
+        <DeleteButton onClick={() => setIsDeleteModalOpen(true)} />
+        <ChangeColorButton onClick={toggleColorPicker} />
         <AddTagButton onClick={() => setIsTagModalOpen(true)} />
         <AttachFileButton onClick={() => setIsFileModalOpen(true)} />
-        <DuplicateButton onClick={() => handleDuplicate(data.id)} />
+        <DuplicateButton onClick={() => handleDuplicate(data.id, canvasId)} />
         <ColorPickerModal
           isOpen={isColorPickerVisible}
           onClose={() => setIsColorPickerVisible(false)}
@@ -375,8 +405,13 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         existingFiles={attachedFiles}
         nodeId={data.id}
       />
+      <NodeDeleteConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+      />
     </div>
   );
 };
 
-export default DrawNodeEdit;
+export default React.memo(DrawNodeEdit);

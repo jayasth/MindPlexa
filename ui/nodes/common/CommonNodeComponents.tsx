@@ -1,6 +1,5 @@
 import React, { useState, useRef } from 'react';
 import {
-  FaSave,
   FaTrash,
   FaPalette,
   FaTags,
@@ -25,16 +24,6 @@ import {
 } from '@/utils/canvas/attachmentService';
 
 const ICON_SIZE = 16;
-
-export const SaveButton = ({ onClick }) => (
-  <button
-    className={styles.actionButton}
-    onClick={onClick}
-    title="Save to Project"
-  >
-    <FaSave size={ICON_SIZE} />
-  </button>
-);
 
 export const DeleteButton = ({ onClick }) => (
   <button className={styles.actionButton} onClick={onClick} title="Delete">

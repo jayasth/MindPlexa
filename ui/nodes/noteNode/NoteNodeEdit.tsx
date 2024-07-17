@@ -10,7 +10,6 @@ import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
 import styles from './NoteNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 import {
-  SaveButton,
   DeleteButton,
   ChangeColorButton,
   AddTagButton,
@@ -300,35 +299,6 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     [nodeWidth, nodeHeight, backgroundColor, textColor]
   );
 
-  const handleSave = useCallback(async () => {
-    const commonData = {
-      title,
-      backgroundColor,
-      textColor,
-      editWidth: nodeWidth,
-      editHeight: nodeHeight
-    };
-
-    const specificData = { content, tags, attachedFiles };
-
-    try {
-      const updateNode = useNodeStore.getState().updateNode;
-      await updateNode(data.id, { ...commonData, data: specificData }, 'note');
-    } catch (error) {
-      console.error('Error saving node:', error);
-    }
-  }, [
-    data.id,
-    title,
-    backgroundColor,
-    textColor,
-    nodeWidth,
-    nodeHeight,
-    content,
-    tags,
-    attachedFiles
-  ]);
-
   const handleDelete = () => {
     setIsDeleteModalOpen(true);
   };
@@ -392,7 +362,6 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
       {(tags.length > 0 || attachedFiles.length > 0) &&
         memoizedTagFileContainer}
       <div className={styles.footer}>
-        <SaveButton onClick={handleSave} />
         <DeleteButton onClick={() => setIsDeleteModalOpen(true)} />
         <ChangeColorButton onClick={toggleColorPicker} />
         <AddTagButton onClick={() => setIsTagModalOpen(true)} />

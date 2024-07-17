@@ -1,16 +1,20 @@
-import React, { useState, useEffect, useRef, CSSProperties } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  CSSProperties,
+  useMemo,
+  useCallback
+} from 'react';
 import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
 import { Calendar, momentLocalizer, Views } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import { useNodeStore, useUIStore, useCanvasStore } from '@/app/store';
 import styles from './CalendarNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 import EventModal from '@/ui/nodes/calendarNode/EventModal';
 import CalendarToolbar from '@/ui/nodes/calendarNode/CalendarToolbar';
-import { CalendarNodeData } from '@/ui/canvasEditor/utils/nodeDatatypes';
 import {
-  SaveButton,
   DeleteButton,
   ChangeColorButton,
   AddTagButton,
@@ -21,24 +25,31 @@ import {
   FileModal,
   ColorPickerModal
 } from '@/ui/nodes/common/CommonNodeComponents';
+import NodeDeleteConfirmationModal from '@/ui/nodes/common/NodeDeleteConfirmationModal';
 import TagFileContainer from '@/ui/nodes/common/TagFileContainer';
 import {
   handleTitleChange,
-  handleSave,
   handleClose,
-  handleDelete,
-  handleAddTag,
-  handleRemoveAttachedFile,
-  handleDuplicate,
+  handleDelete as handleDeleteNode,
   colorCombinations,
-  handleAttachmentPreview
+  handleAddTag,
+  handleDuplicate
 } from '@/ui/nodes/common/CommonNodeFunctions';
+import {
+  Attachment,
+  removeAttachment,
+  getAttachments,
+  removeAllPreviews
+} from '@/utils/canvas/attachmentService';
 import { useBackgroundColorChange } from '@/ui/nodes/common/useBackgroundColorChange';
+import { debounce } from 'lodash';
+import useNodeStore from '@/app/store/nodes/useNodeStore';
+import useCanvasStore from '@/app/store/canvas/useCanvasStore';
 
 const localizer = momentLocalizer(moment);
 
 interface CalendarNodeEditProps extends NodeProps {
-  data: CalendarNodeData;
+  data: any;
   width: number;
   height: number;
   selected: boolean;
@@ -58,10 +69,34 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
   onNodeResizeStop,
   position
 }) => {
+  console.log('CalendarNodeEdit: Node details:', {
+    id: data.id,
+    title: data.title,
+    events: data.events,
+    backgroundColor: data.backgroundColor,
+    textColor: data.textColor,
+    width,
+    height,
+    position
+  });
+
+  const { canvasId } = useCanvasStore();
+  const [isSelected, setIsSelected] = useState(selected);
+  const [title, setTitle] = useState(data.title || 'Untitled Calendar');
   const [events, setEvents] = useState(data.events || []);
+  const [backgroundColor, setBackgroundColor] = useState(
+    data.backgroundColor || '#F4F4F4'
+  );
+  const [textColor, setTextColor] = useState(data.textColor || '#575757');
+  const [tags, setTags] = useState<string[]>(data.tags || []);
+  const [attachedFiles, setAttachedFiles] = useState<Attachment[]>([]);
+  const [isContainerSelected, setIsContainerSelected] = useState(false);
   const [nodeWidth, setNodeWidth] = useState(width);
   const [nodeHeight, setNodeHeight] = useState(height);
-  const [isContainerSelected, setIsContainerSelected] = useState(false);
+  const [isColorPickerVisible, setIsColorPickerVisible] = useState(false);
+  const [isTagModalOpen, setIsTagModalOpen] = useState(false);
+  const [isFileModalOpen, setIsFileModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [view, setView] = useState(data.view || 'month');
@@ -69,56 +104,161 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
     null
   );
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [title, setTitle] = useState(data.title || 'Untitled Calendar');
-  const [backgroundColor, setBackgroundColor] = useState(
-    data.backgroundColor || '#F4F4F4'
-  );
-  const [textColor, setTextColor] = useState(data.textColor || '#575757');
-  const [tags, setTags] = useState<string[]>(data.tags || []);
-  const [attachedFiles, setAttachedFiles] = useState<File[]>(
-    data.attachedFiles || []
-  );
-  const [isColorPickerVisible, setIsColorPickerVisible] = useState(false);
-  const [isTagModalOpen, setIsTagModalOpen] = useState(false);
-  const [isFileModalOpen, setIsFileModalOpen] = useState(false);
 
-  const updateNode = useNodeStore((state) => state.updateNode);
-  const saveCanvas = useCanvasStore((state) => state.saveCanvas);
+  const handleBackgroundColorChange = useBackgroundColorChange(
+    data.id,
+    setBackgroundColor,
+    setTextColor
+  );
+
+  const onChangeColor = useCallback(
+    (color: { hex: string }) => {
+      handleBackgroundColorChange(color);
+    },
+    [handleBackgroundColorChange]
+  );
+
+  const debouncedUpdateNodeData = useMemo(
+    () =>
+      debounce(async (commonData, specificData) => {
+        try {
+          const updateNode = useNodeStore.getState().updateNode;
+          await updateNode(
+            data.id,
+            { ...commonData, data: specificData },
+            'calendar'
+          );
+        } catch (error) {
+          console.error('Error updating node:', error);
+        }
+      }, 500),
+    [data.id]
+  );
 
   useEffect(() => {
-    updateNode(data.id, {
-      data: { events, title, tags, attachedFiles, backgroundColor, textColor }
-    });
-    saveCanvas();
+    return () => {
+      debouncedUpdateNodeData.cancel();
+      removeAllPreviews();
+    };
+  }, [debouncedUpdateNodeData]);
+
+  useEffect(() => {
+    const commonData = {
+      title,
+      backgroundColor,
+      textColor,
+      editWidth: nodeWidth,
+      editHeight: nodeHeight
+    };
+
+    const specificData = { events, tags, attachedFiles };
+
+    debouncedUpdateNodeData(commonData, specificData);
   }, [
-    events,
     title,
-    tags,
-    attachedFiles,
+    events,
     backgroundColor,
     textColor,
-    updateNode,
-    saveCanvas,
-    data.id
+    nodeWidth,
+    nodeHeight,
+    tags,
+    attachedFiles,
+    debouncedUpdateNodeData
   ]);
+
+  const onChangeTitle = useCallback(
+    (newTitle: string) => {
+      handleTitleChange(data.id, newTitle, setTitle, canvasId);
+    },
+    [data.id, canvasId]
+  );
+
+  const onAddTag = useCallback(
+    (newTags: string[]) => {
+      const uniqueTags = Array.from(new Set([...tags, ...newTags]));
+      setTags(uniqueTags);
+      handleAddTag(data.id, uniqueTags, () => {}, canvasId);
+    },
+    [data.id, tags, canvasId]
+  );
+
+  const onRemoveTag = useCallback(
+    (tagToRemove: string) => {
+      const updatedTags = tags.filter((tag) => tag !== tagToRemove);
+      setTags(updatedTags);
+      handleAddTag(data.id, updatedTags, () => {}, canvasId);
+    },
+    [data.id, tags, canvasId]
+  );
+
+  const onAttachFiles = useCallback(async (files: Attachment[]) => {
+    setAttachedFiles(files);
+  }, []);
+
+  const onRemoveFile = useCallback(
+    async (fileId: string) => {
+      await removeAttachment(fileId);
+      const updatedAttachments = await getAttachments(data.id);
+      setAttachedFiles(updatedAttachments);
+    },
+    [data.id]
+  );
+
+  useEffect(() => {
+    const fetchAttachments = async () => {
+      const attachments = await getAttachments(data.id);
+      setAttachedFiles(attachments);
+    };
+    fetchAttachments();
+  }, [data.id]);
 
   useEffect(() => {
     setNodeWidth(width);
     setNodeHeight(height);
   }, [width, height]);
 
-  const handleResize = (event, { width, height }) => {
-    setNodeWidth(width);
-    setNodeHeight(height);
-    onNodeResizeStop(data.id, { width, height }, position);
-  };
+  const handleResize = useCallback(
+    (event, { width, height }) => {
+      setNodeWidth(width);
+      setNodeHeight(height);
+      onNodeResizeStop(data.id, { width, height }, position);
+    },
+    [data.id, onNodeResizeStop, position]
+  );
 
-  const handleContainerClick = () => {
+  const handleContainerClick = useCallback(() => {
     setIsContainerSelected(true);
+  }, []);
+
+  const handleContainerBlur = useCallback(() => {
+    setIsContainerSelected(false);
+  }, []);
+
+  const toggleColorPicker = useCallback(() => {
+    setIsColorPickerVisible((prev) => !prev);
+  }, []);
+
+  const customStyles: CSSProperties = useMemo(
+    () => ({
+      width: nodeWidth,
+      height: nodeHeight,
+      backgroundColor,
+      color: textColor
+    }),
+    [nodeWidth, nodeHeight, backgroundColor, textColor]
+  );
+
+  const handleDelete = () => {
+    setIsDeleteModalOpen(true);
   };
 
-  const handleContainerBlur = () => {
-    setIsContainerSelected(false);
+  const handleDeleteConfirm = () => {
+    setIsDeleteModalOpen(false);
+    handleDeleteNode(data.id, canvasId);
+  };
+
+  const handleDeleteCancel = () => {
+    setIsDeleteModalOpen(false);
   };
 
   const handleSelectEvent = (event) => {
@@ -164,51 +304,18 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
     setEvents(events.map((ev) => (ev === event ? updatedEvent : ev)));
   };
 
-  const handleBackgroundColorChange = useBackgroundColorChange(
-    data.id,
-    setBackgroundColor,
-    setTextColor
+  const memoizedTagFileContainer = useMemo(
+    () => (
+      <TagFileContainer
+        tags={tags}
+        attachedFiles={attachedFiles}
+        onRemoveTag={onRemoveTag}
+        onRemoveFile={onRemoveFile}
+        textColor={textColor}
+      />
+    ),
+    [tags, attachedFiles, onRemoveTag, onRemoveFile, textColor]
   );
-
-  const onChangeColor = (color: { hex: string }) => {
-    handleBackgroundColorChange(color);
-  };
-
-  const onAddTag = (newTags: string[]) => {
-    const uniqueTags = Array.from(new Set([...tags, ...newTags]));
-    setTags(uniqueTags);
-    handleAddTag(data.id, uniqueTags, () => {});
-  };
-
-  const onRemoveTag = (tagToRemove: string) => {
-    const updatedTags = tags.filter((tag) => tag !== tagToRemove);
-    setTags(updatedTags);
-    handleAddTag(data.id, updatedTags, () => {});
-  };
-
-  const onAttachFiles = (files: File[]) => {
-    setAttachedFiles(files);
-  };
-
-  const onRemoveFile = (fileToRemove: File) => {
-    handleRemoveAttachedFile(data.id, fileToRemove, () => {});
-  };
-
-  useEffect(() => {
-    setTags(data.tags || []);
-    setAttachedFiles(data.attachedFiles || []);
-  }, [data.tags, data.attachedFiles]);
-
-  const toggleColorPicker = () => {
-    setIsColorPickerVisible(!isColorPickerVisible);
-  };
-
-  const customStyles: CSSProperties = {
-    width: nodeWidth,
-    height: nodeHeight,
-    backgroundColor,
-    color: textColor
-  };
 
   return (
     <div
@@ -229,12 +336,14 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
         <input
           type="text"
           value={title}
-          onChange={(e) => handleTitleChange(data.id, e.target.value, setTitle)}
+          onChange={(e) => onChangeTitle(e.target.value)}
           className={`${styles.titleInput} nodrag`}
           style={{ color: textColor }}
         />
         <CloseButton
-          onClick={() => handleClose(data.id, () => {}, title, events)}
+          onClick={() =>
+            handleClose(data.id, () => {}, title, events, canvasId)
+          }
         />
       </div>
       <div className={`${styles.calendarContent} nowheel nodrag`}>
@@ -261,32 +370,14 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
           toolbar={true}
         />
       </div>
-      {(tags.length > 0 || attachedFiles.length > 0) && (
-        <TagFileContainer
-          tags={tags}
-          attachedFiles={attachedFiles}
-          onRemoveTag={onRemoveTag}
-          onRemoveFile={onRemoveFile}
-          textColor={textColor}
-          handleAttachmentPreview={handleAttachmentPreview}
-        />
-      )}
+      {(tags.length > 0 || attachedFiles.length > 0) &&
+        memoizedTagFileContainer}
       <div className={styles.footer}>
-        <SaveButton
-          onClick={() =>
-            handleSave(data.id, () => {}, {
-              ...data,
-              title,
-              events,
-              tags
-            })
-          }
-        />
-        <DeleteButton onClick={() => handleDelete(data.id, () => {})} />
-        <ChangeColorButton onClick={() => toggleColorPicker()} />
+        <DeleteButton onClick={() => setIsDeleteModalOpen(true)} />
+        <ChangeColorButton onClick={toggleColorPicker} />
         <AddTagButton onClick={() => setIsTagModalOpen(true)} />
         <AttachFileButton onClick={() => setIsFileModalOpen(true)} />
-        <DuplicateButton onClick={() => handleDuplicate(data.id)} />
+        <DuplicateButton onClick={() => handleDuplicate(data.id, canvasId)} />
         <ColorPickerModal
           isOpen={isColorPickerVisible}
           onClose={() => setIsColorPickerVisible(false)}
@@ -320,6 +411,11 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
         existingFiles={attachedFiles}
         nodeId={data.id}
       />
+      <NodeDeleteConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+      />
       {isModalOpen && (
         <EventModal
           event={selectedEvent || newEvent}
@@ -335,4 +431,4 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
   );
 };
 
-export default CalendarNodeEdit;
+export default React.memo(CalendarNodeEdit);
