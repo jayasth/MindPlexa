@@ -1,22 +1,15 @@
-import React, { useState, useEffect, useRef, CSSProperties } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  CSSProperties,
+  useCallback,
+  useMemo
+} from 'react';
 import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
-import { useNodeStore, useUIStore } from '@/app/store';
 import styles from './TaskNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 import {
-  handleTitleChange,
-  handleSave,
-  handleClose,
-  handleDelete,
-  colorCombinations,
-  handleAddTag,
-  handleDuplicate,
-  handleRemoveAttachedFile,
-  handleAttachmentPreview
-} from '@/ui/nodes/common/CommonNodeFunctions';
-import { useBackgroundColorChange } from '@/ui/nodes/common/useBackgroundColorChange';
-import {
-  SaveButton,
   DeleteButton,
   ChangeColorButton,
   AddTagButton,
@@ -27,7 +20,26 @@ import {
   FileModal,
   ColorPickerModal
 } from '@/ui/nodes/common/CommonNodeComponents';
+import NodeDeleteConfirmationModal from '@/ui/nodes/common/NodeDeleteConfirmationModal';
 import TagFileContainer from '@/ui/nodes/common/TagFileContainer';
+import {
+  handleTitleChange,
+  handleClose,
+  handleDelete as handleDeleteNode,
+  colorCombinations,
+  handleAddTag,
+  handleDuplicate
+} from '@/ui/nodes/common/CommonNodeFunctions';
+import {
+  Attachment,
+  removeAttachment,
+  getAttachments,
+  removeAllPreviews
+} from '@/utils/canvas/attachmentService';
+import { useBackgroundColorChange } from '@/ui/nodes/common/useBackgroundColorChange';
+import { debounce } from 'lodash';
+import useNodeStore from '@/app/store/nodes/useNodeStore';
+import useCanvasStore from '@/app/store/canvas/useCanvasStore';
 import {
   DndContext,
   closestCenter,
@@ -44,11 +56,9 @@ import {
 } from '@dnd-kit/sortable';
 import { SortableItem } from './SortableItem';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
-import { getNodeSpecificProperties } from '@/ui/canvasEditor/utils/nodeProperties';
-import { TaskNodeData } from '@/ui/canvasEditor/utils/nodeDatatypes';
 
 interface TaskNodeEditProps extends NodeProps {
-  data: TaskNodeData;
+  data: any;
   width: number;
   height: number;
   selected: boolean;
@@ -68,6 +78,18 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
   onNodeResizeStop,
   position
 }) => {
+  console.log('TaskNodeEdit: Node details:', {
+    id: data.id,
+    title: data.title,
+    tasks: data.tasks,
+    backgroundColor: data.backgroundColor,
+    textColor: data.textColor,
+    width,
+    height,
+    position
+  });
+
+  const { canvasId } = useCanvasStore();
   const [isSelected, setIsSelected] = useState(selected);
   const [title, setTitle] = useState(data.title || 'Untitled Task');
   const [tasks, setTasks] = useState(data.tasks || []);
@@ -76,21 +98,16 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
   );
   const [textColor, setTextColor] = useState(data.textColor || '#575757');
   const [tags, setTags] = useState<string[]>(data.tags || []);
-  const [attachedFiles, setAttachedFiles] = useState<File[]>(
-    data.attachedFiles || []
-  );
+  const [attachedFiles, setAttachedFiles] = useState<Attachment[]>([]);
   const [isContainerSelected, setIsContainerSelected] = useState(false);
   const [nodeWidth, setNodeWidth] = useState(width);
   const [nodeHeight, setNodeHeight] = useState(height);
   const [isColorPickerVisible, setIsColorPickerVisible] = useState(false);
   const [isTagModalOpen, setIsTagModalOpen] = useState(false);
   const [isFileModalOpen, setIsFileModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [newTaskText, setNewTaskText] = useState('');
   const [showCompletedTasks, setShowCompletedTasks] = useState(true);
-
-  const updateNode = useNodeStore((state) => state.updateNode);
-  const { screenToFlowPosition } = useUIStore();
-  const colorPickerRef = useRef<HTMLDivElement>(null);
 
   const handleBackgroundColorChange = useBackgroundColorChange(
     data.id,
@@ -98,90 +115,155 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
     setTextColor
   );
 
-  const onChangeColor = (color: { hex: string }) => {
-    handleBackgroundColorChange(color);
-  };
+  const onChangeColor = useCallback(
+    (color: { hex: string }) => {
+      handleBackgroundColorChange(color);
+    },
+    [handleBackgroundColorChange]
+  );
+
+  const debouncedUpdateNodeData = useMemo(
+    () =>
+      debounce(async (commonData, specificData) => {
+        try {
+          const updateNode = useNodeStore.getState().updateNode;
+          await updateNode(
+            data.id,
+            { ...commonData, data: specificData },
+            'task'
+          );
+        } catch (error) {
+          console.error('Error updating node:', error);
+        }
+      }, 500),
+    [data.id]
+  );
 
   useEffect(() => {
-    const nodeProperties = getNodeSpecificProperties('task', true);
-    setNodeWidth(nodeProperties.width);
-    setNodeHeight(nodeProperties.height);
-  }, []);
+    return () => {
+      debouncedUpdateNodeData.cancel();
+      removeAllPreviews();
+    };
+  }, [debouncedUpdateNodeData]);
 
   useEffect(() => {
-    updateNode(data.id, {
-      data: {
-        title,
-        tasks,
-        tags,
-        attachedFiles,
-        backgroundColor,
-        textColor
-      }
-    });
+    const commonData = {
+      title,
+      backgroundColor,
+      textColor,
+      editWidth: nodeWidth,
+      editHeight: nodeHeight
+    };
+
+    const specificData = { tasks, tags, attachedFiles };
+
+    debouncedUpdateNodeData(commonData, specificData);
   }, [
-    data.id,
     title,
     tasks,
-    tags,
-    attachedFiles,
     backgroundColor,
     textColor,
-    updateNode
+    nodeWidth,
+    nodeHeight,
+    tags,
+    attachedFiles,
+    debouncedUpdateNodeData
   ]);
 
-  useEffect(() => {
-    setIsSelected(selected);
-  }, [selected]);
+  const onChangeTitle = useCallback(
+    (newTitle: string) => {
+      handleTitleChange(data.id, newTitle, setTitle, canvasId);
+    },
+    [data.id, canvasId]
+  );
 
-  const toggleColorPicker = () => {
-    setIsColorPickerVisible(!isColorPickerVisible);
-  };
+  const onAddTag = useCallback(
+    (newTags: string[]) => {
+      const uniqueTags = Array.from(new Set([...tags, ...newTags]));
+      setTags(uniqueTags);
+      handleAddTag(data.id, uniqueTags, () => {}, canvasId);
+    },
+    [data.id, tags, canvasId]
+  );
 
-  const handleClickOutside = (event: MouseEvent) => {
-    if (
-      colorPickerRef.current &&
-      !colorPickerRef.current.contains(event.target as Node)
-    ) {
-      setIsColorPickerVisible(false);
-    }
-  };
+  const onRemoveTag = useCallback(
+    (tagToRemove: string) => {
+      const updatedTags = tags.filter((tag) => tag !== tagToRemove);
+      setTags(updatedTags);
+      handleAddTag(data.id, updatedTags, () => {}, canvasId);
+    },
+    [data.id, tags, canvasId]
+  );
 
-  useEffect(() => {
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+  const onAttachFiles = useCallback(async (files: Attachment[]) => {
+    setAttachedFiles(files);
   }, []);
 
-  const onChangeTitle = (value: string) => {
-    handleTitleChange(data.id, value, setTitle);
-  };
-
-  const onAddTag = (newTags: string[]) => {
-    const uniqueTags = Array.from(new Set([...tags, ...newTags]));
-    setTags(uniqueTags);
-    handleAddTag(data.id, uniqueTags, () => {});
-  };
-
-  const onRemoveTag = (tagToRemove: string) => {
-    const updatedTags = tags.filter((tag) => tag !== tagToRemove);
-    setTags(updatedTags);
-    handleAddTag(data.id, updatedTags, () => {});
-  };
-
-  const onAttachFiles = (files: File[]) => {
-    setAttachedFiles(files);
-  };
-
-  const onRemoveFile = (fileToRemove: File) => {
-    handleRemoveAttachedFile(data.id, fileToRemove, () => {});
-  };
+  const onRemoveFile = useCallback(
+    async (fileId: string) => {
+      await removeAttachment(fileId);
+      const updatedAttachments = await getAttachments(data.id);
+      setAttachedFiles(updatedAttachments);
+    },
+    [data.id]
+  );
 
   useEffect(() => {
-    setTags(data.tags || []);
-    setAttachedFiles(data.attachedFiles || []);
-  }, [data.tags, data.attachedFiles]);
+    const fetchAttachments = async () => {
+      const attachments = await getAttachments(data.id);
+      setAttachedFiles(attachments);
+    };
+    fetchAttachments();
+  }, [data.id]);
+
+  useEffect(() => {
+    setNodeWidth(width);
+    setNodeHeight(height);
+  }, [width, height]);
+
+  const handleResize = useCallback(
+    (event, { width, height }) => {
+      setNodeWidth(width);
+      setNodeHeight(height);
+      onNodeResizeStop(data.id, { width, height }, position);
+    },
+    [data.id, onNodeResizeStop, position]
+  );
+
+  const handleContainerClick = useCallback(() => {
+    setIsContainerSelected(true);
+  }, []);
+
+  const handleContainerBlur = useCallback(() => {
+    setIsContainerSelected(false);
+  }, []);
+
+  const toggleColorPicker = useCallback(() => {
+    setIsColorPickerVisible((prev) => !prev);
+  }, []);
+
+  const customStyles: CSSProperties = useMemo(
+    () => ({
+      width: nodeWidth,
+      height: nodeHeight,
+      backgroundColor,
+      color: textColor
+    }),
+    [nodeWidth, nodeHeight, backgroundColor, textColor]
+  );
+
+  const handleDelete = () => {
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    setIsDeleteModalOpen(false);
+    handleDeleteNode(data.id, canvasId);
+  };
+
+  const handleDeleteCancel = () => {
+    setIsDeleteModalOpen(false);
+  };
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -231,20 +313,6 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
     setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
   };
 
-  const handleContainerClick = () => {
-    setIsContainerSelected(true);
-  };
-
-  const handleContainerBlur = () => {
-    setIsContainerSelected(false);
-  };
-
-  const handleResize = (event, { width, height }) => {
-    setNodeWidth(width);
-    setNodeHeight(height);
-    onNodeResizeStop(data.id, { width, height }, position);
-  };
-
   const handleNewTaskKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       addTask();
@@ -255,16 +323,22 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
     setShowCompletedTasks(!showCompletedTasks);
   };
 
-  const customStyles: CSSProperties = {
-    width: nodeWidth,
-    height: nodeHeight,
-    backgroundColor,
-    color: textColor
-  };
+  const memoizedTagFileContainer = useMemo(
+    () => (
+      <TagFileContainer
+        tags={tags}
+        attachedFiles={attachedFiles}
+        onRemoveTag={onRemoveTag}
+        onRemoveFile={onRemoveFile}
+        textColor={textColor}
+      />
+    ),
+    [tags, attachedFiles, onRemoveTag, onRemoveFile, textColor]
+  );
 
   return (
     <div
-      className={`${styles.taskNode} ${isSelected ? styles.selected : ''}`}
+      className={styles.taskNode}
       style={customStyles}
       onClick={handleContainerClick}
       onBlur={handleContainerBlur}
@@ -284,7 +358,7 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
           style={{ color: textColor }}
         />
         <CloseButton
-          onClick={() => handleClose(data.id, () => {}, title, tasks)}
+          onClick={() => handleClose(data.id, () => {}, title, tasks, canvasId)}
         />
       </div>
       <div className={`${styles.taskContent} nowheel nodrag`}>
@@ -319,34 +393,14 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
           style={{ color: textColor }}
         />
       </div>
-      {(tags.length > 0 || attachedFiles.length > 0) && (
-        <TagFileContainer
-          tags={tags}
-          attachedFiles={attachedFiles}
-          onRemoveTag={onRemoveTag}
-          onRemoveFile={onRemoveFile}
-          textColor={textColor}
-          handleAttachmentPreview={handleAttachmentPreview}
-        />
-      )}
+      {(tags.length > 0 || attachedFiles.length > 0) &&
+        memoizedTagFileContainer}
       <div className={styles.footer}>
-        <SaveButton
-          onClick={() =>
-            handleSave(data.id, () => {}, {
-              title,
-              tasks,
-              tags,
-              attachedFiles,
-              backgroundColor,
-              textColor
-            })
-          }
-        />
-        <DeleteButton onClick={() => handleDelete(data.id, () => {})} />
-        <ChangeColorButton onClick={() => toggleColorPicker()} />
+        <DeleteButton onClick={() => setIsDeleteModalOpen(true)} />
+        <ChangeColorButton onClick={toggleColorPicker} />
         <AddTagButton onClick={() => setIsTagModalOpen(true)} />
         <AttachFileButton onClick={() => setIsFileModalOpen(true)} />
-        <DuplicateButton onClick={() => handleDuplicate(data.id)} />
+        <DuplicateButton onClick={() => handleDuplicate(data.id, canvasId)} />
         <button
           onClick={toggleShowCompletedTasks}
           className={styles.iconButton}
@@ -363,21 +417,6 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
           onChangeColor={onChangeColor}
           colorCombinations={colorCombinations}
         />
-        <TagModal
-          isOpen={isTagModalOpen}
-          onClose={() => setIsTagModalOpen(false)}
-          onAddTag={onAddTag}
-          onRemoveTag={onRemoveTag}
-          existingTags={tags}
-        />
-        <FileModal
-          isOpen={isFileModalOpen}
-          onClose={() => setIsFileModalOpen(false)}
-          onAttachFiles={onAttachFiles}
-          onRemoveFile={onRemoveFile}
-          existingFiles={attachedFiles}
-          data={data}
-        />
       </div>
       <Handle
         type="target"
@@ -388,6 +427,26 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
         type="source"
         position={Position.Bottom}
         className={`${edgeStyles.reactFlowHandle} ${edgeStyles.reactFlowHandleBottom}`}
+      />
+      <TagModal
+        isOpen={isTagModalOpen}
+        onClose={() => setIsTagModalOpen(false)}
+        onAddTag={onAddTag}
+        onRemoveTag={onRemoveTag}
+        existingTags={tags}
+      />
+      <FileModal
+        isOpen={isFileModalOpen}
+        onClose={() => setIsFileModalOpen(false)}
+        onAttachFiles={onAttachFiles}
+        onRemoveFile={onRemoveFile}
+        existingFiles={attachedFiles}
+        nodeId={data.id}
+      />
+      <NodeDeleteConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
       />
     </div>
   );

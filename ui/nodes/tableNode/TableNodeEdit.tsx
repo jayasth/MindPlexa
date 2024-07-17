@@ -3,12 +3,13 @@ import React, {
   useEffect,
   useRef,
   CSSProperties,
-  useCallback
+  useCallback,
+  useMemo
 } from 'react';
 import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
 import { AgGridReact } from 'ag-grid-react';
 import useNodeStore from '@/app/store/nodes/useNodeStore';
-import useUIStore from '@/app/store/ui/useUIStore';
+import useCanvasStore from '@/app/store/canvas/useCanvasStore';
 import styles from '@/ui/nodes/tableNode/styles/TableNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 import {
@@ -22,6 +23,24 @@ import {
   FileModal,
   ColorPickerModal
 } from '@/ui/nodes/common/CommonNodeComponents';
+import NodeDeleteConfirmationModal from '@/ui/nodes/common/NodeDeleteConfirmationModal';
+import TagFileContainer from '@/ui/nodes/common/TagFileContainer';
+import {
+  handleTitleChange,
+  handleClose,
+  handleDelete as handleDeleteNode,
+  colorCombinations,
+  handleAddTag,
+  handleDuplicate
+} from '@/ui/nodes/common/CommonNodeFunctions';
+import {
+  Attachment,
+  removeAttachment,
+  getAttachments,
+  removeAllPreviews
+} from '@/utils/canvas/attachmentService';
+import { useBackgroundColorChange } from '@/ui/nodes/common/useBackgroundColorChange';
+
 import {
   AddTableButton,
   AddColumnButton,
@@ -48,27 +67,11 @@ import {
   gridOptions as existingOptions
 } from '@/ui/nodes/tableNode/utils/TableFunctions';
 
-import {
-  handleTitleChange,
-  handleSave,
-  handleDelete,
-  handleAddTag,
-  handleClose,
-  handleDuplicate,
-  handleRemoveAttachedFile,
-  colorCombinations,
-  handleAttachmentPreview
-} from '@/ui/nodes/common/CommonNodeFunctions';
-
-import { useBackgroundColorChange } from '@/ui/nodes/common/useBackgroundColorChange';
-
 import { TableNodeData } from '@/ui/canvasEditor/utils/nodeDatatypes';
 
 import CustomHeader from '@/ui/nodes/tableNode/components/CustomHeader';
 import HeaderContextMenu from '@/ui/nodes/tableNode/components/HeaderContextMenu';
 import CellContextMenu from '@/ui/nodes/tableNode/components/CellContextMenu';
-
-import TagFileContainer from '@/ui/nodes/common/TagFileContainer';
 
 import {
   useKeyPressHandler,
@@ -96,6 +99,19 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   onNodeResizeStop,
   position
 }) => {
+  console.log('TableNodeEdit: Node details:', {
+    id: data.id,
+    title: data.title,
+    columns: data.columns,
+    rows: data.rows,
+    backgroundColor: data.backgroundColor,
+    textColor: data.textColor,
+    width,
+    height,
+    position
+  });
+
+  const { canvasId } = useCanvasStore();
   const [isSelected, setIsSelected] = useState(selected);
   const [title, setTitle] = useState(data.title || 'Untitled Table');
   const [content, setContent] = useState({
@@ -107,9 +123,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   );
   const [textColor, setTextColor] = useState(data.textColor || '#575757');
   const [tags, setTags] = useState<string[]>(data.tags || []);
-  const [attachedFiles, setAttachedFiles] = useState<File[]>(
-    data.attachedFiles || []
-  );
+  const [attachedFiles, setAttachedFiles] = useState<Attachment[]>([]);
   const [isContainerSelected, setIsContainerSelected] = useState(false);
   const [nodeWidth, setNodeWidth] = useState(width);
   const [nodeHeight, setNodeHeight] = useState(height);
@@ -137,21 +151,19 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
       title !== data.title ||
       content.columns !== data.columns ||
       content.rows !== data.rows ||
-      tags.length > 0 ||
-      attachedFiles.length > 0 ||
+      tags !== data.tags ||
+      attachedFiles !== data.attachedFiles ||
       backgroundColor !== data.backgroundColor ||
       textColor !== data.textColor
     ) {
-      updateNode(data.id, {
-        data: {
-          title,
-          columns: content.columns,
-          rows: content.rows,
-          tags,
-          attachedFiles,
-          backgroundColor,
-          textColor
-        }
+      updateNode(data.id, canvasId, {
+        title,
+        columns: content.columns,
+        rows: content.rows,
+        tags,
+        attachedFiles,
+        backgroundColor,
+        textColor
       });
     }
   }, [
@@ -162,11 +174,20 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     backgroundColor,
     textColor,
     data.id,
+    canvasId,
     updateNode
   ]);
 
+  useEffect(() => {
+    const fetchAttachments = async () => {
+      const attachments = await getAttachments(data.id);
+      setAttachedFiles(attachments);
+    };
+    fetchAttachments();
+  }, [data.id]);
+
   const onChangeTitle = (newTitle: string) => {
-    handleTitleChange(data.id, newTitle, setTitle);
+    handleTitleChange(data.id, newTitle, setTitle, canvasId);
   };
 
   const handleBackgroundColorChange = useBackgroundColorChange(
@@ -182,27 +203,48 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   const onAddTag = (newTags: string[]) => {
     const uniqueTags = Array.from(new Set([...tags, ...newTags]));
     setTags(uniqueTags);
-    handleAddTag(data.id, uniqueTags, () => {});
+    handleAddTag(data.id, uniqueTags, () => {}, canvasId);
   };
 
   const onRemoveTag = (tagToRemove: string) => {
     const updatedTags = tags.filter((tag) => tag !== tagToRemove);
     setTags(updatedTags);
-    handleAddTag(data.id, updatedTags, () => {});
+    handleAddTag(data.id, updatedTags, () => {}, canvasId);
   };
 
-  const onAttachFiles = (files: File[]) => {
-    setAttachedFiles(files);
+  const onAttachFiles = async (files: File[]) => {
+    const attachments = await Promise.all(
+      files.map(async (file) => {
+        const attachment = await uploadAttachment(data.id, file);
+        return attachment;
+      })
+    );
+    setAttachedFiles((prevAttachments) => [...prevAttachments, ...attachments]);
   };
 
-  const onRemoveFile = (fileToRemove: File) => {
-    handleRemoveAttachedFile(data.id, fileToRemove, () => {});
+  const onRemoveFile = async (fileId: string) => {
+    await removeAttachment(fileId);
+    setAttachedFiles((prevAttachments) =>
+      prevAttachments.filter((file) => file.id !== fileId)
+    );
   };
 
-  useEffect(() => {
-    setTags(data.tags || []);
-    setAttachedFiles(data.attachedFiles || []);
-  }, [data.tags, data.attachedFiles]);
+  const handleDeleteCancel = () => {
+    setIsDeleteModalOpen(false);
+  };
+
+  const handleDeleteConfirm = () => {
+    handleDeleteNode(data.id, canvasId);
+    setIsDeleteModalOpen(false);
+  };
+
+  const handleContainerClick = () => {
+    setIsContainerSelected(true);
+  };
+
+  const handleContainerBlur = () => {
+    setIsContainerSelected(false);
+  };
 
   useEffect(() => {
     setNodeWidth(width);
@@ -213,13 +255,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     setNodeWidth(width);
     setNodeHeight(height);
   }, []);
-
-  const handleResizeEnd = useCallback(
-    (event, { width, height }) => {
-      onNodeResizeStop(data.id, { width, height }, position);
-    },
-    [data.id, onNodeResizeStop, position]
-  );
 
   const toggleColorPicker = () => {
     setIsColorPickerVisible(!isColorPickerVisible);
@@ -280,6 +315,19 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     }
   };
 
+  const memoizedTagFileContainer = useMemo(
+    () => (
+      <TagFileContainer
+        tags={tags}
+        attachedFiles={attachedFiles}
+        onRemoveTag={onRemoveTag}
+        onRemoveFile={onRemoveFile}
+        textColor={textColor}
+      />
+    ),
+    [tags, attachedFiles, onRemoveTag, onRemoveFile, textColor]
+  );
+
   return (
     <div>
       {errorMessage && (
@@ -288,8 +336,8 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
       <div
         className={`${styles.tableNode} ${isSelected ? styles.selected : ''}`}
         style={customStyles}
-        onClick={() => setIsContainerSelected(true)}
-        onBlur={() => setIsContainerSelected(false)}
+        onClick={handleContainerClick}
+        onBlur={handleContainerBlur}
         ref={tableRef}
       >
         <NodeResizer
@@ -297,7 +345,9 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           minWidth={200}
           minHeight={200}
           onResize={handleResize}
-          onResizeEnd={handleResizeEnd}
+          onResizeEnd={(event, { width, height }) => {
+            onNodeResizeStop(data.id, { width, height }, position);
+          }}
         />
         <div className={styles.header}>
           <input
@@ -309,7 +359,9 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
             aria-label="Table Title"
           />
           <CloseButton
-            onClick={() => handleClose(data.id, () => {}, title, content)}
+            onClick={() =>
+              handleClose(data.id, () => {}, title, content, canvasId)
+            }
             aria-label="Close Table"
           />
         </div>
@@ -393,35 +445,14 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
             />
           </div>
         </div>
-        <TagFileContainer
-          tags={tags}
-          attachedFiles={attachedFiles}
-          onRemoveTag={onRemoveTag}
-          onRemoveFile={onRemoveFile}
-          textColor={textColor}
-          handleAttachmentPreview={handleAttachmentPreview}
-        />
+        {(tags.length > 0 || attachedFiles.length > 0) &&
+          memoizedTagFileContainer}
         <div className={styles.footer}>
-          <DeleteButton
-            onClick={() => handleDelete(data.id, () => {})}
-            aria-label="Delete Table"
-          />
-          <ChangeColorButton
-            onClick={() => toggleColorPicker()}
-            aria-label="Change Color"
-          />
-          <AddTagButton
-            onClick={() => setIsTagModalOpen(true)}
-            aria-label="Add Tag"
-          />
-          <AttachFileButton
-            onClick={() => setIsFileModalOpen(true)}
-            aria-label="Attach File"
-          />
-          <DuplicateButton
-            onClick={() => handleDuplicate(data.id)}
-            aria-label="Duplicate Table"
-          />
+          <DeleteButton onClick={() => setIsDeleteModalOpen(true)} />
+          <ChangeColorButton onClick={toggleColorPicker} />
+          <AddTagButton onClick={() => setIsTagModalOpen(true)} />
+          <AttachFileButton onClick={() => setIsFileModalOpen(true)} />
+          <DuplicateButton onClick={() => handleDuplicate(data.id, canvasId)} />
           <ColorPickerModal
             isOpen={isColorPickerVisible}
             onClose={() => setIsColorPickerVisible(false)}
@@ -445,7 +476,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           onClose={() => setIsTagModalOpen(false)}
           onAddTag={onAddTag}
           onRemoveTag={onRemoveTag}
-          data={data}
           existingTags={tags}
         />
         <FileModal
@@ -454,7 +484,12 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           onAttachFiles={onAttachFiles}
           onRemoveFile={onRemoveFile}
           existingFiles={attachedFiles}
-          data={data}
+          nodeId={data.id}
+        />
+        <NodeDeleteConfirmationModal
+          isOpen={isDeleteModalOpen}
+          onClose={handleDeleteCancel}
+          onConfirm={handleDeleteConfirm}
         />
         {isModalOpen && (
           <AddTableModal
