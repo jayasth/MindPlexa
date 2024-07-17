@@ -1,3 +1,4 @@
+/* General Node Styles */
 .taskNode {
   display: flex;
   flex-direction: column;
@@ -9,6 +10,43 @@
   cursor: move;
 }
 
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background-color: transparent;
+  z-index: 0;
+  cursor: move;
+}
+
+.titleInput {
+  font-size: 16px;
+  font-weight: bold;
+  border: none;
+  background-color: transparent;
+  outline: none;
+  flex-grow: 1;
+  cursor: text;
+  color: inherit;
+  box-shadow: none !important;
+}
+
+.titleInput:focus,
+.titleInput:active {
+  border-bottom: 2px solid #989ff0;
+  transition: border-bottom 0.3s ease-in-out;
+}
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  background-color: transparent;
+  padding: 4px;
+}
+
+/* Task Content Styles */
 .taskContent {
   flex-grow: 1;
   overflow: auto;
@@ -53,6 +91,10 @@
   flex: 0 0 120px;
 }
 
+.taskPriority {
+  width: 90px; /* Adjust width for the priority dropdown */
+}
+
 .deleteTaskButton {
   background: none;
   border: none;
@@ -88,44 +130,7 @@
   transition: border-bottom 0.3s ease-in-out;
 }
 
-/* common on all nodes */
-
-.header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 12px;
-  background-color: transparent;
-  z-index: 0;
-  cursor: move;
-}
-
-.titleInput {
-  font-size: 16px;
-  font-weight: bold;
-  border: none;
-  background-color: transparent;
-  outline: none;
-  flex-grow: 1;
-  cursor: text;
-  color: inherit;
-  box-shadow: none !important;
-}
-
-.titleInput:focus,
-.titleInput:active {
-  border-bottom: 2px solid #989ff0;
-  transition: border-bottom 0.3s ease-in-out;
-}
-
-.footer {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 8px;
-  background-color: transparent;
-  padding: 4px;
-}
-
+/* Tag and File Container Styles */
 .tagFileContainer {
   display: flex;
   justify-content: space-between;
@@ -160,6 +165,7 @@
   color: #666;
 }
 
+/* Color Picker Styles */
 .colorPicker {
   position: absolute;
   left: 0;
@@ -181,6 +187,7 @@
   z-index: 10;
 }
 
+/* Utility Classes */
 .nodrag {
   -webkit-user-drag: none;
   user-select: none;
@@ -196,7 +203,7 @@
   display: none; /* Safari and Chrome */
 }
 
-/* Additional styles for task controls */
+/* Task Controls Styles */
 .taskControls {
   display: flex;
   justify-content: space-between;
