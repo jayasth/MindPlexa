@@ -80,8 +80,11 @@ export const handleTags = async (
 
   return {};
 };
-
-export const duplicateNode = async (nodeId: string, canvasId: string) => {
+export const duplicateNode = async (
+  nodeId: string,
+  canvasId: string,
+  newPosition: { x: number; y: number }
+) => {
   try {
     // Fetch the original node data
     const { data: originalNode, error: nodeError } = await supabase
@@ -99,7 +102,8 @@ export const duplicateNode = async (nodeId: string, canvasId: string) => {
       id: newNodeId,
       parent_node_id: null,
       title: `${originalNode.title} copy`,
-      version: 1
+      version: 1,
+      position: JSON.stringify(newPosition) // Update the position
     };
 
     // Insert the duplicated node into the nodes table
@@ -191,7 +195,18 @@ export const duplicateNode = async (nodeId: string, canvasId: string) => {
       if (newAttachmentsError) throw newAttachmentsError;
     }
 
-    return { success: true, newNode: { ...newNode, id: newNodeId, canvasId } };
+    return {
+      success: true,
+      newNode: {
+        ...newNode,
+        id: newNodeId,
+        canvasId,
+        parent_node_id: null,
+        title: newNodeData.title,
+        version: newNodeData.version,
+        position: newPosition
+      }
+    };
   } catch (error) {
     console.error('Error duplicating node:', error);
     return { success: false, error };

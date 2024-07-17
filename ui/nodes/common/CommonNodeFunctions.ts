@@ -220,11 +220,6 @@ export const handleDuplicate = async (id: string, canvasId: string) => {
   const nodeToDuplicate = nodes.find((node) => node.id === id);
   if (nodeToDuplicate) {
     try {
-      const { success, newNode, error } = await duplicateNode(id, canvasId);
-      if (!success || error || !newNode) {
-        throw error || new Error('Failed to duplicate node');
-      }
-
       const nodeDimension =
         nodeDimensions[nodeToDuplicate.type as keyof typeof nodeDimensions];
       const isEditing = nodeToDuplicate.data.isEditing;
@@ -275,11 +270,25 @@ export const handleDuplicate = async (id: string, canvasId: string) => {
         return;
       }
 
+      const { success, newNode, error } = await duplicateNode(
+        id,
+        canvasId,
+        newPosition
+      );
+      if (!success || error || !newNode) {
+        throw error || new Error('Failed to duplicate node');
+      }
+
       const newNodeData = {
         ...nodeToDuplicate,
         id: newNode.id,
         position: newPosition,
-        data: { ...nodeToDuplicate.data, canvasId }
+        data: {
+          ...nodeToDuplicate.data,
+          canvasId,
+          title: newNode.title,
+          version: newNode.version
+        }
       };
       addNode(newNodeData, canvasId);
       setSelectedNodes([newNodeData.id]);
