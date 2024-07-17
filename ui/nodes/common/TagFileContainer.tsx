@@ -4,7 +4,8 @@ import {
   Attachment,
   removeAttachment,
   handleAttachmentPreview,
-  downloadAttachment
+  downloadAttachment,
+  removeAllPreviews
 } from '@/utils/canvas/attachmentService';
 
 interface TagFileContainerProps {
@@ -30,10 +31,13 @@ const TagFileContainer: React.FC<TagFileContainerProps> = ({
   };
 
   const handlePreview = async (attachment: Attachment) => {
+    removeAllPreviews(); // Remove any existing previews
     const removePreview = await handleAttachmentPreview(attachment);
-    return () => {
-      removePreview();
-    };
+    return removePreview;
+  };
+
+  const handleMouseLeave = () => {
+    removeAllPreviews();
   };
 
   const handleDownloadFile = async (attachment: Attachment) => {
@@ -68,12 +72,7 @@ const TagFileContainer: React.FC<TagFileContainerProps> = ({
                 }
               }}
               onMouseEnter={() => handlePreview(attachment)}
-              onMouseLeave={() => {
-                const preview = document.querySelector('.file-preview');
-                if (preview) {
-                  document.body.removeChild(preview);
-                }
-              }}
+              onMouseLeave={handleMouseLeave}
               style={{ cursor: 'pointer', textDecoration: 'underline' }}
             >
               {attachment.type === 'url'

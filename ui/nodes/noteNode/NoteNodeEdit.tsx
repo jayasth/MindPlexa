@@ -34,7 +34,8 @@ import {
 import {
   Attachment,
   removeAttachment,
-  getAttachments
+  getAttachments,
+  removeAllPreviews
 } from '@/utils/canvas/attachmentService';
 import Quill from 'quill';
 import 'quill/dist/quill.snow.css';
@@ -168,6 +169,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
 
     return () => {
       debouncedUpdateNodeData.cancel();
+      removeAllPreviews(); // Remove all previews when the component unmounts
     };
   }, [initializeQuill, debouncedUpdateNodeData]);
 

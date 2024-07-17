@@ -131,7 +131,15 @@ export const getAttachments = async (nodeId: string): Promise<Attachment[]> => {
 };
 
 export const handleAttachmentPreview = async (attachment: Attachment) => {
-  const previewWindow = document.createElement('div');
+  const previewId = `preview-${attachment.id}`;
+  let previewWindow = document.getElementById(previewId);
+
+  if (previewWindow) {
+    document.body.removeChild(previewWindow);
+  }
+
+  previewWindow = document.createElement('div');
+  previewWindow.id = previewId;
   previewWindow.style.position = 'fixed';
   previewWindow.style.maxWidth = '300px';
   previewWindow.style.maxHeight = '200px';
@@ -207,8 +215,19 @@ export const handleAttachmentPreview = async (attachment: Attachment) => {
 
   return () => {
     document.removeEventListener('mousemove', handleMouseMove);
-    document.body.removeChild(previewWindow);
+    if (previewWindow && document.body.contains(previewWindow)) {
+      document.body.removeChild(previewWindow);
+    }
   };
+};
+
+export const removeAllPreviews = () => {
+  const previews = document.querySelectorAll('.file-preview');
+  previews.forEach((preview) => {
+    if (document.body.contains(preview)) {
+      document.body.removeChild(preview);
+    }
+  });
 };
 
 export const downloadAttachment = async (

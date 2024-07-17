@@ -20,7 +20,8 @@ import {
   Attachment,
   addAttachment,
   removeAttachment,
-  getAttachments
+  getAttachments,
+  removeAllPreviews
 } from '@/utils/canvas/attachmentService';
 
 const ICON_SIZE = 16;
@@ -166,10 +167,13 @@ export const FileModal = ({
   };
 
   const handlePreview = async (file: Attachment) => {
+    removeAllPreviews(); // Remove any existing previews
     const removePreview = await handleAttachmentPreview(file);
-    return () => {
-      removePreview();
-    };
+    return removePreview;
+  };
+
+  const handleMouseLeave = () => {
+    removeAllPreviews();
   };
 
   const handleFileClick = async (file: Attachment) => {
@@ -217,12 +221,7 @@ export const FileModal = ({
             <span
               onClick={() => handleFileClick(file)}
               onMouseEnter={() => handlePreview(file)}
-              onMouseLeave={() => {
-                const preview = document.querySelector('.file-preview');
-                if (preview) {
-                  document.body.removeChild(preview);
-                }
-              }}
+              onMouseLeave={handleMouseLeave}
               style={{ cursor: 'pointer', textDecoration: 'underline' }}
             >
               {file.type === 'url'
