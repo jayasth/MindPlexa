@@ -67,8 +67,6 @@ import {
   gridOptions as existingOptions
 } from '@/ui/nodes/tableNode/utils/TableFunctions';
 
-import { TableNodeData } from '@/ui/canvasEditor/utils/nodeDatatypes';
-
 import CustomHeader from '@/ui/nodes/tableNode/components/CustomHeader';
 import HeaderContextMenu from '@/ui/nodes/tableNode/components/HeaderContextMenu';
 import CellContextMenu from '@/ui/nodes/tableNode/components/CellContextMenu';
@@ -79,7 +77,7 @@ import {
 } from '@/ui/nodes/tableNode/utils/KeyboardMouseHandlers';
 
 interface TableNodeEditProps extends NodeProps {
-  data: TableNodeData;
+  data: any;
   width: number;
   height: number;
   selected: boolean;

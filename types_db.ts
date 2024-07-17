@@ -11,21 +11,33 @@ export type Database = {
     Tables: {
       calendar_nodes: {
         Row: {
+          default_view: string | null
+          event_categories: Json | null
           events: Json | null
+          export_settings: Json | null
           id: string
           node_id: string | null
+          time_zone: string | null
           view: string | null
         }
         Insert: {
+          default_view?: string | null
+          event_categories?: Json | null
           events?: Json | null
+          export_settings?: Json | null
           id?: string
           node_id?: string | null
+          time_zone?: string | null
           view?: string | null
         }
         Update: {
+          default_view?: string | null
+          event_categories?: Json | null
           events?: Json | null
+          export_settings?: Json | null
           id?: string
           node_id?: string | null
+          time_zone?: string | null
           view?: string | null
         }
         Relationships: [
@@ -104,19 +116,46 @@ export type Database = {
       }
       draw_nodes: {
         Row: {
+          background_image_url: string | null
+          brush_presets: Json | null
+          color_palette: Json | null
           drawing_data: string | null
           id: string
+          layers: Json | null
           node_id: string | null
+          pan_offset: Json | null
+          shape_elements: Json | null
+          symmetry_settings: Json | null
+          text_elements: Json | null
+          zoom_level: number | null
         }
         Insert: {
+          background_image_url?: string | null
+          brush_presets?: Json | null
+          color_palette?: Json | null
           drawing_data?: string | null
           id?: string
+          layers?: Json | null
           node_id?: string | null
+          pan_offset?: Json | null
+          shape_elements?: Json | null
+          symmetry_settings?: Json | null
+          text_elements?: Json | null
+          zoom_level?: number | null
         }
         Update: {
+          background_image_url?: string | null
+          brush_presets?: Json | null
+          color_palette?: Json | null
           drawing_data?: string | null
           id?: string
+          layers?: Json | null
           node_id?: string | null
+          pan_offset?: Json | null
+          shape_elements?: Json | null
+          symmetry_settings?: Json | null
+          text_elements?: Json | null
+          zoom_level?: number | null
         }
         Relationships: [
           {
@@ -671,18 +710,24 @@ export type Database = {
       table_nodes: {
         Row: {
           columns: Json | null
+          default_column_type: string | null
+          default_locale: string | null
           id: string
           node_id: string | null
           rows: Json | null
         }
         Insert: {
           columns?: Json | null
+          default_column_type?: string | null
+          default_locale?: string | null
           id?: string
           node_id?: string | null
           rows?: Json | null
         }
         Update: {
           columns?: Json | null
+          default_column_type?: string | null
+          default_locale?: string | null
           id?: string
           node_id?: string | null
           rows?: Json | null
@@ -699,19 +744,43 @@ export type Database = {
       }
       task_nodes: {
         Row: {
+          assignee: string | null
+          completed: boolean | null
+          created_at: string | null
+          due_date: string | null
           id: string
           node_id: string | null
+          priority: string | null
+          status: string | null
           tasks: Json | null
+          total_tasks: number | null
+          updated_at: string | null
         }
         Insert: {
+          assignee?: string | null
+          completed?: boolean | null
+          created_at?: string | null
+          due_date?: string | null
           id?: string
           node_id?: string | null
+          priority?: string | null
+          status?: string | null
           tasks?: Json | null
+          total_tasks?: number | null
+          updated_at?: string | null
         }
         Update: {
+          assignee?: string | null
+          completed?: boolean | null
+          created_at?: string | null
+          due_date?: string | null
           id?: string
           node_id?: string | null
+          priority?: string | null
+          status?: string | null
           tasks?: Json | null
+          total_tasks?: number | null
+          updated_at?: string | null
         }
         Relationships: [
           {

@@ -1,5 +1,82 @@
 [
   {
+    "table_name": "calendar_nodes",
+    "columns": [
+      {
+        "column_name": "default_view",
+        "data_type": "character varying",
+        "is_nullable": "YES",
+        "default": "'month'::character varying",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      },
+      {
+        "column_name": "event_categories",
+        "data_type": "jsonb",
+        "is_nullable": "YES",
+        "default": "None",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      },
+      {
+        "column_name": "events",
+        "data_type": "jsonb",
+        "is_nullable": "YES",
+        "default": "None",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      },
+      {
+        "column_name": "export_settings",
+        "data_type": "jsonb",
+        "is_nullable": "YES",
+        "default": "None",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      },
+      {
+        "column_name": "id",
+        "data_type": "uuid",
+        "is_nullable": "NO",
+        "default": "gen_random_uuid()",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      },
+      {
+        "column_name": "node_id",
+        "data_type": "uuid",
+        "is_nullable": "YES",
+        "default": "None",
+        "foreign_key": "calendar_nodes_node_id_fkey",
+        "references_table": "nodes",
+        "references_column": "id"
+      },
+      {
+        "column_name": "time_zone",
+        "data_type": "character varying",
+        "is_nullable": "YES",
+        "default": "'UTC'::character varying",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      },
+      {
+        "column_name": "view",
+        "data_type": "character varying",
+        "is_nullable": "YES",
+        "default": "None",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      }
+    ]
+  },
+  {
     "table_name": "canvases",
     "columns": [
       {
@@ -80,6 +157,33 @@
     "table_name": "draw_nodes",
     "columns": [
       {
+        "column_name": "background_image_url",
+        "data_type": "text",
+        "is_nullable": "YES",
+        "default": "None",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      },
+      {
+        "column_name": "brush_presets",
+        "data_type": "jsonb",
+        "is_nullable": "YES",
+        "default": "None",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      },
+      {
+        "column_name": "color_palette",
+        "data_type": "jsonb",
+        "is_nullable": "YES",
+        "default": "None",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      },
+      {
         "column_name": "drawing_data",
         "data_type": "text",
         "is_nullable": "YES",
@@ -98,6 +202,15 @@
         "references_column": null
       },
       {
+        "column_name": "layers",
+        "data_type": "jsonb",
+        "is_nullable": "YES",
+        "default": "None",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      },
+      {
         "column_name": "node_id",
         "data_type": "uuid",
         "is_nullable": "YES",
@@ -105,6 +218,51 @@
         "foreign_key": "draw_nodes_node_id_fkey",
         "references_table": "nodes",
         "references_column": "id"
+      },
+      {
+        "column_name": "pan_offset",
+        "data_type": "jsonb",
+        "is_nullable": "YES",
+        "default": "'{\"x\": 0, \"y\": 0}'::jsonb",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      },
+      {
+        "column_name": "shape_elements",
+        "data_type": "jsonb",
+        "is_nullable": "YES",
+        "default": "None",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      },
+      {
+        "column_name": "symmetry_settings",
+        "data_type": "jsonb",
+        "is_nullable": "YES",
+        "default": "None",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      },
+      {
+        "column_name": "text_elements",
+        "data_type": "jsonb",
+        "is_nullable": "YES",
+        "default": "None",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      },
+      {
+        "column_name": "zoom_level",
+        "data_type": "double precision",
+        "is_nullable": "YES",
+        "default": "1.0",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
       }
     ]
   },
@@ -573,7 +731,25 @@
         "column_name": "columns",
         "data_type": "jsonb",
         "is_nullable": "YES",
-        "default": "None",
+        "default": "'[]'::jsonb",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      },
+      {
+        "column_name": "default_column_type",
+        "data_type": "character varying",
+        "is_nullable": "YES",
+        "default": "'text'::character varying",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      },
+      {
+        "column_name": "default_locale",
+        "data_type": "character varying",
+        "is_nullable": "YES",
+        "default": "'en-US'::character varying",
         "foreign_key": null,
         "references_table": null,
         "references_column": null
@@ -600,7 +776,7 @@
         "column_name": "rows",
         "data_type": "jsonb",
         "is_nullable": "YES",
-        "default": "None",
+        "default": "'[]'::jsonb",
         "foreign_key": null,
         "references_table": null,
         "references_column": null
@@ -610,6 +786,42 @@
   {
     "table_name": "task_nodes",
     "columns": [
+      {
+        "column_name": "assignee",
+        "data_type": "text",
+        "is_nullable": "YES",
+        "default": "None",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      },
+      {
+        "column_name": "completed",
+        "data_type": "boolean",
+        "is_nullable": "YES",
+        "default": "false",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      },
+      {
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
+        "is_nullable": "YES",
+        "default": "now()",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      },
+      {
+        "column_name": "due_date",
+        "data_type": "timestamp without time zone",
+        "is_nullable": "YES",
+        "default": "None",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      },
       {
         "column_name": "id",
         "data_type": "uuid",
@@ -629,10 +841,46 @@
         "references_column": "id"
       },
       {
+        "column_name": "priority",
+        "data_type": "text",
+        "is_nullable": "YES",
+        "default": "None",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      },
+      {
+        "column_name": "status",
+        "data_type": "text",
+        "is_nullable": "YES",
+        "default": "None",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      },
+      {
         "column_name": "tasks",
         "data_type": "jsonb",
         "is_nullable": "YES",
         "default": "None",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      },
+      {
+        "column_name": "total_tasks",
+        "data_type": "integer",
+        "is_nullable": "YES",
+        "default": "None",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      },
+      {
+        "column_name": "updated_at",
+        "data_type": "timestamp with time zone",
+        "is_nullable": "YES",
+        "default": "now()",
         "foreign_key": null,
         "references_table": null,
         "references_column": null
