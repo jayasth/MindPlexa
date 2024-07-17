@@ -22,6 +22,8 @@ interface SortableItemProps {
   ) => void;
   deleteTask: (taskId: string) => void;
   textColor: string;
+  showPriority: boolean;
+  showDueDate: boolean;
 }
 
 export function SortableItem({
@@ -29,7 +31,9 @@ export function SortableItem({
   task,
   updateTask,
   deleteTask,
-  textColor
+  textColor,
+  showPriority,
+  showDueDate
 }: SortableItemProps) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id });
@@ -63,23 +67,27 @@ export function SortableItem({
         style={{ color: textColor }}
         variant="slim"
       />
-      <Dropdown
-        value={task.priority}
-        onChange={(value) => updateTask(task.id, { priority: value })}
-        className={styles.taskPriority}
-        variant="slim"
-      >
-        <option value="low">Low</option>
-        <option value="medium">Medium</option>
-        <option value="high">High</option>
-      </Dropdown>
-      <Input
-        type="date"
-        value={task.due_date || ''}
-        onChange={(value) => updateTask(task.id, { due_date: value })}
-        className={styles.taskDueDate}
-        variant="slim"
-      />
+      {showPriority && (
+        <Dropdown
+          value={task.priority}
+          onChange={(value) => updateTask(task.id, { priority: value })}
+          className={styles.taskPriority}
+          variant="slim"
+        >
+          <option value="low">Low</option>
+          <option value="medium">Medium</option>
+          <option value="high">High</option>
+        </Dropdown>
+      )}
+      {showDueDate && (
+        <Input
+          type="date"
+          value={task.due_date || ''}
+          onChange={(value) => updateTask(task.id, { due_date: value })}
+          className={styles.taskDueDate}
+          variant="slim"
+        />
+      )}
       <button
         onClick={() => deleteTask(task.id)}
         className={styles.deleteTaskButton}

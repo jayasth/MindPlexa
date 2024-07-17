@@ -50,6 +50,8 @@ import {
 import { SortableItem } from './SortableItem';
 import { FaEye, FaEyeSlash, FaSort } from 'react-icons/fa';
 import Dropdown from '@/ui/dropdown/Dropdown';
+import TaskOptions from '@/ui/nodes/taskNode/TaskOptions';
+import TaskControls from './TaskControls';
 
 interface TaskNodeEditProps extends NodeProps {
   data: any;
@@ -110,6 +112,8 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
     priority: '',
     status: ''
   });
+  const [showPriority, setShowPriority] = useState(true);
+  const [showDueDate, setShowDueDate] = useState(true);
 
   const handleBackgroundColorChange = useBackgroundColorChange(
     data.id,
@@ -344,8 +348,11 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
 
   const displayedTasks = useMemo(() => {
     let filteredTasks = filterTasks(tasks);
+    if (!showCompletedTasks) {
+      filteredTasks = filteredTasks.filter((task) => !task.completed);
+    }
     return sortTasks(filteredTasks);
-  }, [tasks, sortBy, filterBy]);
+  }, [tasks, sortBy, filterBy, showCompletedTasks]);
 
   const handleNewTaskKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -355,6 +362,14 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
 
   const toggleShowCompletedTasks = () => {
     setShowCompletedTasks(!showCompletedTasks);
+  };
+
+  const toggleShowPriority = () => {
+    setShowPriority(!showPriority);
+  };
+
+  const toggleShowDueDate = () => {
+    setShowDueDate(!showDueDate);
   };
 
   const memoizedTagFileContainer = useMemo(
@@ -395,24 +410,19 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
           onClick={() => handleClose(data.id, () => {}, title, tasks, canvasId)}
         />
       </div>
+      <TaskControls
+        totalTasks={totalTasks}
+        completedTasks={completedTasks}
+        sortBy={sortBy}
+        onSortChange={setSortBy}
+        showCompletedTasks={showCompletedTasks}
+        showPriority={showPriority}
+        showDueDate={showDueDate}
+        onToggleCompletedTasks={toggleShowCompletedTasks}
+        onTogglePriority={toggleShowPriority}
+        onToggleDueDate={toggleShowDueDate}
+      />
       <div className={`${styles.taskContent} nowheel nodrag`}>
-        <div className={styles.taskStats}>
-          <span>Total Tasks: {totalTasks}</span>
-          <span>Completed Tasks: {completedTasks}</span>
-        </div>
-        <div className={styles.taskControls}>
-          <Dropdown
-            onChange={(value) => setSortBy(value)}
-            value={sortBy}
-            variant="slim"
-          >
-            <option value="">Sort by</option>
-            <option value="priority">Priority</option>
-            <option value="dueDate">Due Date</option>
-            <option value="status">Status</option>
-          </Dropdown>
-          {/* Add filter controls here */}
-        </div>
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -430,6 +440,8 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
                 updateTask={updateTask}
                 deleteTask={deleteTask}
                 textColor={textColor}
+                showPriority={showPriority}
+                showDueDate={showDueDate}
               />
             ))}
           </SortableContext>
