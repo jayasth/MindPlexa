@@ -5,13 +5,17 @@ import { FaCalendarAlt, FaCalendarWeek, FaCalendarDay } from 'react-icons/fa';
 
 interface CalendarToolbarProps {
   view: string;
+  defaultView: string;
   onViewChange: (view: string) => void;
+  onDefaultViewChange: (view: string) => void;
   textColor: string;
 }
 
 const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
   view,
+  defaultView,
   onViewChange,
+  onDefaultViewChange,
   textColor
 }) => {
   const handleViewClick = (newView: string) => {
@@ -20,6 +24,15 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
 
   return (
     <div className={styles.toolbar} style={{ color: textColor }}>
+      <select
+        value={defaultView}
+        onChange={(e) => onDefaultViewChange(e.target.value)}
+        style={{ color: textColor }}
+      >
+        <option value="month">Month</option>
+        <option value="week">Week</option>
+        <option value="day">Day</option>
+      </select>
       <button
         className={`${styles.viewButton} ${
           view === 'month' ? styles.active : ''

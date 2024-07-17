@@ -1,11 +1,4 @@
-import React, {
-  useState,
-  useEffect,
-  useRef,
-  CSSProperties,
-  useCallback,
-  useMemo
-} from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
 import styles from './TaskNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
@@ -55,7 +48,8 @@ import {
   verticalListSortingStrategy
 } from '@dnd-kit/sortable';
 import { SortableItem } from './SortableItem';
-import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import { FaEye, FaEyeSlash, FaSort } from 'react-icons/fa';
+import Dropdown from '@/ui/dropdown/Dropdown';
 
 interface TaskNodeEditProps extends NodeProps {
   data: any;
@@ -108,6 +102,14 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [newTaskText, setNewTaskText] = useState('');
   const [showCompletedTasks, setShowCompletedTasks] = useState(true);
+  const [totalTasks, setTotalTasks] = useState(data.total_tasks || 0);
+  const [completedTasks, setCompletedTasks] = useState(0);
+  const [sortBy, setSortBy] = useState('');
+  const [filterBy, setFilterBy] = useState({
+    assignee: '',
+    priority: '',
+    status: ''
+  });
 
   const handleBackgroundColorChange = useBackgroundColorChange(
     data.id,
@@ -169,6 +171,11 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
     attachedFiles,
     debouncedUpdateNodeData
   ]);
+
+  useEffect(() => {
+    setTotalTasks(tasks.length);
+    setCompletedTasks(tasks.filter((task) => task.completed).length);
+  }, [tasks]);
 
   const onChangeTitle = useCallback(
     (newTitle: string) => {
@@ -242,7 +249,7 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
     setIsColorPickerVisible((prev) => !prev);
   }, []);
 
-  const customStyles: CSSProperties = useMemo(
+  const customStyles = useMemo(
     () => ({
       width: nodeWidth,
       height: nodeHeight,
@@ -288,23 +295,21 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
       const newTask = {
         id: Date.now().toString(),
         text: newTaskText.trim(),
-        completed: false
+        completed: false,
+        assignee: '',
+        priority: 'medium',
+        status: 'todo',
+        due_date: null
       };
       setTasks([...tasks, newTask]);
       setNewTaskText('');
     }
   };
 
-  const updateTaskText = (taskId: string, text: string) => {
-    setTasks((prevTasks) =>
-      prevTasks.map((task) => (task.id === taskId ? { ...task, text } : task))
-    );
-  };
-
-  const toggleTaskCompletion = (taskId: string) => {
+  const updateTask = (taskId: string, updates: Partial<(typeof tasks)[0]>) => {
     setTasks((prevTasks) =>
       prevTasks.map((task) =>
-        task.id === taskId ? { ...task, completed: !task.completed } : task
+        task.id === taskId ? { ...task, ...updates } : task
       )
     );
   };
@@ -312,6 +317,35 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
   const deleteTask = (taskId: string) => {
     setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
   };
+
+  const sortTasks = (tasks: typeof data.tasks) => {
+    switch (sortBy) {
+      case 'priority':
+        return [...tasks].sort((a, b) => a.priority.localeCompare(b.priority));
+      case 'dueDate':
+        return [...tasks].sort((a, b) =>
+          (a.due_date || '').localeCompare(b.due_date || '')
+        );
+      case 'status':
+        return [...tasks].sort((a, b) => a.status.localeCompare(b.status));
+      default:
+        return tasks;
+    }
+  };
+
+  const filterTasks = (tasks: typeof data.tasks) => {
+    return tasks.filter(
+      (task) =>
+        (!filterBy.assignee || task.assignee === filterBy.assignee) &&
+        (!filterBy.priority || task.priority === filterBy.priority) &&
+        (!filterBy.status || task.status === filterBy.status)
+    );
+  };
+
+  const displayedTasks = useMemo(() => {
+    let filteredTasks = filterTasks(tasks);
+    return sortTasks(filteredTasks);
+  }, [tasks, sortBy, filterBy]);
 
   const handleNewTaskKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -362,25 +396,42 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
         />
       </div>
       <div className={`${styles.taskContent} nowheel nodrag`}>
+        <div className={styles.taskStats}>
+          <span>Total Tasks: {totalTasks}</span>
+          <span>Completed Tasks: {completedTasks}</span>
+        </div>
+        <div className={styles.taskControls}>
+          <Dropdown
+            onChange={(value) => setSortBy(value)}
+            value={sortBy}
+            variant="slim"
+          >
+            <option value="">Sort by</option>
+            <option value="priority">Priority</option>
+            <option value="dueDate">Due Date</option>
+            <option value="status">Status</option>
+          </Dropdown>
+          {/* Add filter controls here */}
+        </div>
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
           onDragEnd={handleDragEnd}
         >
-          <SortableContext items={tasks} strategy={verticalListSortingStrategy}>
-            {tasks
-              .filter((task) => showCompletedTasks || !task.completed)
-              .map((task) => (
-                <SortableItem
-                  key={task.id}
-                  id={task.id}
-                  task={task}
-                  updateTaskText={updateTaskText}
-                  toggleTaskCompletion={toggleTaskCompletion}
-                  deleteTask={deleteTask}
-                  textColor={textColor}
-                />
-              ))}
+          <SortableContext
+            items={displayedTasks}
+            strategy={verticalListSortingStrategy}
+          >
+            {displayedTasks.map((task) => (
+              <SortableItem
+                key={task.id}
+                id={task.id}
+                task={task}
+                updateTask={updateTask}
+                deleteTask={deleteTask}
+                textColor={textColor}
+              />
+            ))}
           </SortableContext>
         </DndContext>
         <input

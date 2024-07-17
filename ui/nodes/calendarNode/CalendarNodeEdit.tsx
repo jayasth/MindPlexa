@@ -104,6 +104,14 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
     null
   );
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [defaultView, setDefaultView] = useState(data.defaultView || 'month');
+  const [eventCategories, setEventCategories] = useState(
+    data.eventCategories || []
+  );
+  const [timeZone, setTimeZone] = useState(data.timeZone || 'UTC');
+  const [exportSettings, setExportSettings] = useState(
+    data.exportSettings || {}
+  );
 
   const handleBackgroundColorChange = useBackgroundColorChange(
     data.id,
@@ -151,7 +159,15 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
       editHeight: nodeHeight
     };
 
-    const specificData = { events, tags, attachedFiles };
+    const specificData = {
+      events,
+      tags,
+      attachedFiles,
+      defaultView,
+      eventCategories,
+      timeZone,
+      exportSettings
+    };
 
     debouncedUpdateNodeData(commonData, specificData);
   }, [
@@ -163,6 +179,10 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
     nodeHeight,
     tags,
     attachedFiles,
+    defaultView,
+    eventCategories,
+    timeZone,
+    exportSettings,
     debouncedUpdateNodeData
   ]);
 
@@ -304,6 +324,15 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
     setEvents(events.map((ev) => (ev === event ? updatedEvent : ev)));
   };
 
+  const handleAddEventCategory = (category: string, color: string) => {
+    setEventCategories([...eventCategories, { name: category, color }]);
+  };
+
+  const handleExport = () => {
+    // Implement export logic based on exportSettings
+    // This could be exporting to iCal, CSV, etc.
+  };
+
   const memoizedTagFileContainer = useMemo(
     () => (
       <TagFileContainer
@@ -351,10 +380,16 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
           view={view}
           onViewChange={handleViewChange}
           textColor={textColor}
+          defaultView={defaultView}
+          onDefaultViewChange={handleViewChange}
         />
         <Calendar
           localizer={localizer}
-          events={events}
+          events={events.map((event) => ({
+            ...event,
+            color: eventCategories.find((cat) => cat.name === event.category)
+              ?.color
+          }))}
           startAccessor="start"
           endAccessor="end"
           style={{ height: 'calc(100% - 40px)', width: '100%' }}
@@ -368,6 +403,7 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
           date={currentDate}
           onNavigate={(date) => setCurrentDate(date)}
           toolbar={true}
+          timezone={timeZone}
         />
       </div>
       {(tags.length > 0 || attachedFiles.length > 0) &&
@@ -425,6 +461,7 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
           }}
           onSave={handleEventSave}
           onDelete={handleEventDelete}
+          eventCategories={eventCategories}
         />
       )}
     </div>

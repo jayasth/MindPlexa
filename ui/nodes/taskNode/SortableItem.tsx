@@ -3,6 +3,8 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { FaTimes } from 'react-icons/fa';
 import { MdDragIndicator } from 'react-icons/md';
+import Dropdown from '@/ui/dropdown/Dropdown';
+import Input from '@/ui/Input/Input';
 import styles from './TaskNodeEdit.module.css';
 
 interface SortableItemProps {
@@ -11,9 +13,13 @@ interface SortableItemProps {
     id: string;
     text: string;
     completed: boolean;
+    priority: string;
+    due_date: string | null;
   };
-  updateTaskText: (taskId: string, text: string) => void;
-  toggleTaskCompletion: (taskId: string) => void;
+  updateTask: (
+    taskId: string,
+    updates: Partial<SortableItemProps['task']>
+  ) => void;
   deleteTask: (taskId: string) => void;
   textColor: string;
 }
@@ -21,8 +27,7 @@ interface SortableItemProps {
 export function SortableItem({
   id,
   task,
-  updateTaskText,
-  toggleTaskCompletion,
+  updateTask,
   deleteTask,
   textColor
 }: SortableItemProps) {
@@ -33,8 +38,8 @@ export function SortableItem({
     transform: CSS.Transform.toString(transform),
     transition,
     color: textColor,
-    textDecoration: task.completed ? 'line-through' : 'none', // Add strikethrough for completed tasks
-    opacity: task.completed ? 0.6 : 1 // Reduce opacity for completed tasks
+    textDecoration: task.completed ? 'line-through' : 'none',
+    opacity: task.completed ? 0.6 : 1
   };
 
   return (
@@ -47,15 +52,33 @@ export function SortableItem({
       <input
         type="checkbox"
         checked={task.completed}
-        onChange={() => toggleTaskCompletion(task.id)}
-        className="appearance-none h-4 w-4 border border-gray-300 rounded-sm bg-white checked:bg-lavender-500 checked:border-lavender-600 focus:outline-none transition duration-200 align-top bg-no-repeat bg-center bg-contain float-left cursor-pointer"
+        onChange={() => updateTask(task.id, { completed: !task.completed })}
+        className={styles.taskCheckbox}
       />
-      <input
+      <Input
         type="text"
         value={task.text}
-        onChange={(e) => updateTaskText(task.id, e.target.value)}
+        onChange={(value) => updateTask(task.id, { text: value })}
         className={styles.taskInput}
         style={{ color: textColor }}
+        variant="slim"
+      />
+      <Dropdown
+        value={task.priority}
+        onChange={(value) => updateTask(task.id, { priority: value })}
+        className={styles.taskPriority}
+        variant="slim"
+      >
+        <option value="low">Low</option>
+        <option value="medium">Medium</option>
+        <option value="high">High</option>
+      </Dropdown>
+      <Input
+        type="date"
+        value={task.due_date || ''}
+        onChange={(value) => updateTask(task.id, { due_date: value })}
+        className={styles.taskDueDate}
+        variant="slim"
       />
       <button
         onClick={() => deleteTask(task.id)}

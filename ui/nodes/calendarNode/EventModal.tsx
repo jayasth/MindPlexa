@@ -8,24 +8,28 @@ interface EventModalProps {
   onClose: () => void;
   onSave: (updatedEvent: any) => void;
   onDelete: (eventToDelete: any) => void;
+  eventCategories: any[];
 }
 
 const EventModal: React.FC<EventModalProps> = ({
   event,
   onClose,
   onSave,
-  onDelete
+  onDelete,
+  eventCategories
 }) => {
   const [title, setTitle] = useState(event.title);
   const [start, setStart] = useState(event.start.toISOString().slice(0, 16));
   const [end, setEnd] = useState(event.end.toISOString().slice(0, 16));
+  const [category, setCategory] = useState(event.category || '');
 
   const handleSave = () => {
     const updatedEvent = {
       ...event,
       title,
       start: new Date(start),
-      end: new Date(end)
+      end: new Date(end),
+      category
     };
     onSave(updatedEvent);
   };
@@ -68,6 +72,23 @@ const EventModal: React.FC<EventModalProps> = ({
               variant="slim"
               className={styles.input}
             />
+          </label>
+        </div>
+        <div className={styles.inputGroup}>
+          <label className={styles.label}>
+            Category:
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className={styles.input}
+            >
+              <option value="">Select Category</option>
+              {eventCategories.map((cat) => (
+                <option key={cat.name} value={cat.name}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
           </label>
         </div>
         <div className={styles.buttons}>
