@@ -59,25 +59,38 @@ const processNode = (node: any) => {
       textColor: node.textColor,
       isTemporary: node.isTemporary,
       isEditing: node.isEditing,
-      attachedFiles: node.data.attachedFiles.map((file: any) => ({
-        id: file.id,
-        type: file.type,
-        name: file.name,
-        size: file.size,
-        storagePath: file.storagePath,
-        mimeType: file.mimeType,
-        url: file.url,
-        isFile: file.isFile
-      })),
-      tasks: tasks, // Add parsed tasks to the data
-      completedTasks: node.taskNodes ? node.taskNodes[0].completedTasks : 0,
-      totalTasks: node.taskNodes ? node.taskNodes[0].totalTasks : 0,
-      showCompletedTasks: node.taskNodes
-        ? node.taskNodes[0].showCompletedTasks
-        : true,
-      showDueDate: node.taskNodes ? node.taskNodes[0].showDueDate : true,
-      showPriority: node.taskNodes ? node.taskNodes[0].showPriority : true,
-      sortBy: node.taskNodes ? node.taskNodes[0].sortBy : ''
+      attachedFiles:
+        node.data?.attachedFiles?.map((file: any) => ({
+          id: file.id,
+          type: file.type,
+          name: file.name,
+          size: file.size,
+          storagePath: file.storagePath,
+          mimeType: file.mimeType,
+          url: file.url,
+          isFile: file.isFile
+        })) || [],
+      tasks: tasks,
+      completedTasks:
+        node.taskNodes && node.taskNodes[0]
+          ? node.taskNodes[0].completedTasks
+          : 0,
+      totalTasks:
+        node.taskNodes && node.taskNodes[0] ? node.taskNodes[0].totalTasks : 0,
+      showCompletedTasks:
+        node.taskNodes && node.taskNodes[0]
+          ? node.taskNodes[0].showCompletedTasks
+          : true,
+      showDueDate:
+        node.taskNodes && node.taskNodes[0]
+          ? node.taskNodes[0].showDueDate
+          : true,
+      showPriority:
+        node.taskNodes && node.taskNodes[0]
+          ? node.taskNodes[0].showPriority
+          : true,
+      sortBy:
+        node.taskNodes && node.taskNodes[0] ? node.taskNodes[0].sortBy : ''
     },
     width: node.isEditing
       ? (isDesktop ? node.editWidth : node.mobileEditWidth) || node.viewWidth
