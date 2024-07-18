@@ -41,6 +41,10 @@ const updateNodeSpecificData = async (
   nodeId: string,
   specificUpdates: any
 ) => {
+  if (tableName === 'task_nodes' && specificUpdates.tasks) {
+    specificUpdates.tasks = JSON.stringify(specificUpdates.tasks);
+  }
+
   return await supabase
     .from(tableName)
     .update(toSnakeCase(specificUpdates))
