@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { FaCog, FaTrash } from 'react-icons/fa';
 import Dropdown from '@/ui/dropdown/Dropdown';
 import styles from './TaskNodeEdit.module.css';
@@ -33,6 +33,23 @@ const TaskControls: React.FC<TaskControlsProps> = ({
   onDeleteAllTasks
 }) => {
   const [isOptionsOpen, setIsOptionsOpen] = useState(false);
+  const optionsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        optionsRef.current &&
+        !optionsRef.current.contains(event.target as Node)
+      ) {
+        setIsOptionsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   return (
     <div className={styles.taskControls}>
@@ -51,7 +68,7 @@ const TaskControls: React.FC<TaskControlsProps> = ({
         <option value="dueDate">Due Date</option>
         <option value="alphabetical">Alphabetical</option>
       </Dropdown>
-      <div className={styles.taskOptions}>
+      <div className={styles.taskOptions} ref={optionsRef}>
         <button
           onClick={() => setIsOptionsOpen(!isOptionsOpen)}
           className={styles.iconButton}
@@ -66,7 +83,7 @@ const TaskControls: React.FC<TaskControlsProps> = ({
                 checked={showCompletedTasks}
                 onChange={onToggleCompletedTasks}
               />
-              Show completed tasks
+              Show completed
             </label>
             <label>
               <input
@@ -88,7 +105,7 @@ const TaskControls: React.FC<TaskControlsProps> = ({
               onClick={onDeleteCompletedTasks}
               className={styles.cleanupButton}
             >
-              <FaTrash /> Delete Completed Tasks
+              <FaTrash /> Delete Completed
             </button>
             <button onClick={onDeleteAllTasks} className={styles.cleanupButton}>
               <FaTrash /> Delete All Tasks

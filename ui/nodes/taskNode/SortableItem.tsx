@@ -53,12 +53,15 @@ export function SortableItem({
       {...attributes}
       className={styles.taskItem}
     >
-      <input
-        type="checkbox"
-        checked={task.completed}
-        onChange={() => updateTask(task.id, { completed: !task.completed })}
-        className={styles.taskCheckbox}
-      />
+      <label className={styles.customCheckbox}>
+        <input
+          type="checkbox"
+          checked={task.completed}
+          onChange={() => updateTask(task.id, { completed: !task.completed })}
+          className={styles.taskCheckbox}
+        />
+        <span className={styles.checkmark}></span>
+      </label>
       <Input
         type="text"
         value={task.text}

@@ -70,6 +70,29 @@
 
 .taskCheckbox {
   flex: 0 0 auto;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #989ff0;
+  border-radius: 3px;
+  position: relative;
+  cursor: pointer;
+}
+
+.taskCheckbox:checked {
+  background-color: #989ff0;
+}
+
+.taskCheckbox:checked::after {
+  content: '\2714';
+  font-size: 12px;
+  color: white;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .taskInput {
@@ -240,7 +263,7 @@
   border-radius: 4px;
   padding: 10px;
   z-index: 1000;
-  width: 200px; /* Increase the width */
+  width: 150px; /* Increase the width */
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Add some shadow for better visibility */
 }
 
@@ -249,7 +272,7 @@
   align-items: center;
   margin-bottom: 8px;
   color: #333;
-  font-size: 14px;
+  font-size: 12px;
 }
 
 .optionsMenu input[type='checkbox'] {
@@ -271,7 +294,7 @@
 
 .optionsMenu input[type='checkbox']:checked::after {
   content: '\2714';
-  font-size: 14px;
+  font-size: 12px;
   color: white;
   position: absolute;
   top: 50%;
@@ -294,7 +317,7 @@
   border: none;
   color: #ff6961;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 12px;
   padding: 5px 0;
   width: 100%;
   text-align: left;

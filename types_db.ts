@@ -744,40 +744,40 @@ export type Database = {
       }
       task_nodes: {
         Row: {
-          assignee: string | null
-          completed: boolean | null
+          completed_tasks: number | null
           created_at: string | null
-          due_date: string | null
           id: string
           node_id: string | null
-          priority: string | null
-          status: string | null
+          show_completed_tasks: boolean | null
+          show_due_date: boolean | null
+          show_priority: boolean | null
+          sort_by: string | null
           tasks: Json | null
           total_tasks: number | null
           updated_at: string | null
         }
         Insert: {
-          assignee?: string | null
-          completed?: boolean | null
+          completed_tasks?: number | null
           created_at?: string | null
-          due_date?: string | null
           id?: string
           node_id?: string | null
-          priority?: string | null
-          status?: string | null
+          show_completed_tasks?: boolean | null
+          show_due_date?: boolean | null
+          show_priority?: boolean | null
+          sort_by?: string | null
           tasks?: Json | null
           total_tasks?: number | null
           updated_at?: string | null
         }
         Update: {
-          assignee?: string | null
-          completed?: boolean | null
+          completed_tasks?: number | null
           created_at?: string | null
-          due_date?: string | null
           id?: string
           node_id?: string | null
-          priority?: string | null
-          status?: string | null
+          show_completed_tasks?: boolean | null
+          show_due_date?: boolean | null
+          show_priority?: boolean | null
+          sort_by?: string | null
           tasks?: Json | null
           total_tasks?: number | null
           updated_at?: string | null
@@ -786,7 +786,7 @@ export type Database = {
           {
             foreignKeyName: "task_nodes_node_id_fkey"
             columns: ["node_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "nodes"
             referencedColumns: ["id"]
           },

@@ -34,7 +34,7 @@ const TaskOptions: React.FC<TaskOptionsProps> = ({
               checked={showCompletedTasks}
               onChange={onToggleCompletedTasks}
             />
-            Show completed tasks
+            Show completed
           </label>
           <label>
             <input
