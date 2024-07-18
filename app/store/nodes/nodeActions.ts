@@ -199,7 +199,7 @@ export const removeNode = async (set, get, id, canvasId) => {
         ) {
           deleteNodeInDB(id, nodeToRemove.type as NodeType);
           state.nodeInternals.delete(id);
-          console.log('useNodeStore: Node removed', nodeToRemove);
+          console.log(`useNodeStore: Node with id ${id} removed`, nodeToRemove);
           state.nodes = state.nodes.filter((node) => node.id !== id);
         }
       })

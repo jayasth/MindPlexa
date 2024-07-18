@@ -1,5 +1,4 @@
 import { useNodeStore, useEdgeStore } from '@/app/store';
-import { v4 as uuidv4 } from 'uuid';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 import { createClient } from '@/utils/supabase/supabaseClient';
 import {
@@ -185,7 +184,15 @@ export const handleClose = (
 
 export const handleDelete = async (id: string, canvasId: string) => {
   try {
-    console.log('Deleting node with ID:', id); // Add this log
+    console.log(`Deleting node with id: ${id}`);
+    const { nodes } = useNodeStore.getState();
+    const nodeToDelete = nodes.find((node) => node.id === id);
+
+    if (!nodeToDelete) {
+      console.error(`Node with id ${id} not found`);
+      return;
+    }
+
     const attachments = await getAttachments(id);
 
     for (const attachment of attachments) {
@@ -291,10 +298,15 @@ export const handleDuplicate = async (id: string, canvasId: string) => {
           version: newNode.version
         }
       };
-      addNode(newNodeData, canvasId);
+      await addNode(newNodeData, canvasId);
       setSelectedNodes([newNodeData.id]);
+
+      // Return the new node ID
+      return newNodeData.id;
     } catch (error) {
       console.error('Error duplicating node:', error);
+      return null;
     }
   }
+  return null;
 };
