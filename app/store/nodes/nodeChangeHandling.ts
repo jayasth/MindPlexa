@@ -131,7 +131,7 @@ export const onNodesChange = async (set, get, changes, canvasId) => {
 
               // Handle tags
               if (updatedNode.data?.tags) {
-                handleTags(updatedNode.id, updatedNode.data.tags);
+                handleTags(updatedNode.id, [...updatedNode.data.tags]);
               }
 
               // Handle attachments

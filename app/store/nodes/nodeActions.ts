@@ -77,7 +77,7 @@ export const updateNode = async (set, get, id, data, canvasId) => {
 
           // Handle tags and attachments separately
           if (data.data?.tags) {
-            handleTags(id, data.data.tags);
+            handleTags(id, [...data.data.tags]);
           }
           if (data.data?.attachedFiles) {
             (async () => {

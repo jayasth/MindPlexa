@@ -1,12 +1,15 @@
 import { createClient } from '@/utils/supabase/supabaseClient';
 import { Database } from '@/types_db';
 
-const supabase = createClient();
-
 export const handleTags = async (
   nodeId: string,
   tags: string[]
 ): Promise<{ error?: any }> => {
+  const supabase = createClient();
+
+  // Make a copy of the tags array
+  const tagsCopy = [...tags];
+
   const { error: tagDeleteError } = await supabase
     .from('node_tags')
     .delete()
@@ -20,7 +23,7 @@ export const handleTags = async (
     return { error: tagDeleteError };
   }
 
-  for (const tag of tags) {
+  for (const tag of tagsCopy) {
     const { error: insertTagError } = await supabase
       .from('node_tags')
       .insert({ node_id: nodeId, tag });

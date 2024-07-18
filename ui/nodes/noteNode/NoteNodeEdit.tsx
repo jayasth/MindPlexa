@@ -228,7 +228,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     (newTags: string[]) => {
       const uniqueTags = Array.from(new Set([...tags, ...newTags]));
       setTags(uniqueTags);
-      handleAddTag(data.id, uniqueTags, () => {}, canvasId);
+      handleAddTag(data.id, [...uniqueTags], () => {}, canvasId);
     },
     [data.id, tags, canvasId]
   );

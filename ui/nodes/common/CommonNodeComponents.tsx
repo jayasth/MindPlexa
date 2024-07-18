@@ -74,7 +74,7 @@ export const TagModal = ({
 }) => {
   const [newTags, setNewTags] = useState('');
 
-  const handleAddTags = () => {
+  const handleAddTags = async () => {
     const tagList = newTags
       .split(',')
       .map((tag) => tag.trim())

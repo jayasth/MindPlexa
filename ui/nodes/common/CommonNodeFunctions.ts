@@ -5,7 +5,7 @@ import {
   removeAttachment,
   getAttachments
 } from '@/utils/canvas/attachmentService';
-import { duplicateNode } from '@/utils/canvas/nodeService';
+import { duplicateNode } from '@/utils/canvas/nodeDuplicationService';
 
 const supabase = createClient();
 
