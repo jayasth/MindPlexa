@@ -36,6 +36,20 @@ const insertNodeSpecificData = async (
     .then(({ data, error }) => ({ data: toCamelCase(data), error }));
 };
 
+const updateNodeSpecificData = async (
+  tableName: keyof Database['public']['Tables'],
+  nodeId: string,
+  specificUpdates: any
+) => {
+  return await supabase
+    .from(tableName)
+    .update(toSnakeCase(specificUpdates))
+    .eq('node_id', nodeId)
+    .select()
+    .single()
+    .then(({ data, error }) => ({ data: toCamelCase(data), error }));
+};
+
 const insertNodeCanvasLink = async (nodeId: string, canvasId: string) => {
   return await supabase
     .from('node_canvas_link')
@@ -392,19 +406,12 @@ export const updateNode = async (
 
     if (existingData) {
       // Update existing node-specific data
-      ({ data: specificNodeData, error: specificNodeError } = await supabase
-        .from(tableName)
-        .update(toSnakeCase(nodeSpecificUpdates))
-        .eq('node_id', id)
-        .select()
-        .single());
+      ({ data: specificNodeData, error: specificNodeError } =
+        await updateNodeSpecificData(tableName, id, nodeSpecificUpdates));
     } else {
       // Create new node-specific data
-      ({ data: specificNodeData, error: specificNodeError } = await supabase
-        .from(tableName)
-        .insert(toSnakeCase(nodeSpecificUpdates))
-        .select()
-        .single());
+      ({ data: specificNodeData, error: specificNodeError } =
+        await insertNodeSpecificData(tableName, nodeSpecificUpdates));
     }
 
     if (specificNodeError) {

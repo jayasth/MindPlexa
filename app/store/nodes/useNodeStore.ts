@@ -135,7 +135,7 @@ const useNodeStore = create<NodeState>()(
                   break;
                 case 'task':
                   specificUpdates = {
-                    tasks: updatedNode.data.tasks || [],
+                    tasks: JSON.stringify(updatedNode.data.tasks || []),
                     completed_tasks: updatedNode.data.completedTasks || 0,
                     total_tasks: updatedNode.data.totalTasks || 0,
                     show_completed_tasks: updatedNode.data.showCompletedTasks,
@@ -553,7 +553,14 @@ const useNodeStore = create<NodeState>()(
                       break;
                     case 'task':
                       specificUpdates = {
-                        tasks: JSON.stringify(updatedNode.data?.tasks || [])
+                        tasks: JSON.stringify(updatedNode.data?.tasks || []),
+                        completedTasks: updatedNode.data?.completedTasks || 0,
+                        totalTasks: updatedNode.data?.totalTasks || 0,
+                        showCompletedTasks:
+                          updatedNode.data?.showCompletedTasks,
+                        showDueDate: updatedNode.data?.showDueDate,
+                        showPriority: updatedNode.data?.showPriority,
+                        sortBy: updatedNode.data?.sortBy || ''
                       };
                       break;
                     case 'table':
