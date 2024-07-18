@@ -1,5 +1,5 @@
-import React from 'react';
-import { FaCog } from 'react-icons/fa';
+import React, { useState } from 'react';
+import { FaCog, FaTrash } from 'react-icons/fa';
 import Dropdown from '@/ui/dropdown/Dropdown';
 import styles from './TaskNodeEdit.module.css';
 
@@ -14,6 +14,8 @@ interface TaskControlsProps {
   onToggleCompletedTasks: () => void;
   onTogglePriority: () => void;
   onToggleDueDate: () => void;
+  onDeleteCompletedTasks: () => void;
+  onDeleteAllTasks: () => void;
 }
 
 const TaskControls: React.FC<TaskControlsProps> = ({
@@ -26,9 +28,11 @@ const TaskControls: React.FC<TaskControlsProps> = ({
   showDueDate,
   onToggleCompletedTasks,
   onTogglePriority,
-  onToggleDueDate
+  onToggleDueDate,
+  onDeleteCompletedTasks,
+  onDeleteAllTasks
 }) => {
-  const [isOptionsOpen, setIsOptionsOpen] = React.useState(false);
+  const [isOptionsOpen, setIsOptionsOpen] = useState(false);
 
   return (
     <div className={styles.taskControls}>
@@ -62,7 +66,7 @@ const TaskControls: React.FC<TaskControlsProps> = ({
                 checked={showCompletedTasks}
                 onChange={onToggleCompletedTasks}
               />
-              Show completed
+              Show completed tasks
             </label>
             <label>
               <input
@@ -80,6 +84,15 @@ const TaskControls: React.FC<TaskControlsProps> = ({
               />
               Show due date
             </label>
+            <button
+              onClick={onDeleteCompletedTasks}
+              className={styles.cleanupButton}
+            >
+              <FaTrash /> Delete Completed Tasks
+            </button>
+            <button onClick={onDeleteAllTasks} className={styles.cleanupButton}>
+              <FaTrash /> Delete All Tasks
+            </button>
           </div>
         )}
       </div>

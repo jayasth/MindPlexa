@@ -49,7 +49,6 @@ import {
 } from '@dnd-kit/sortable';
 import { SortableItem } from './SortableItem';
 import TaskControls from './TaskControls';
-import TaskOptions from './TaskOptions';
 
 interface TaskNodeEditProps extends NodeProps {
   data: any;
@@ -315,20 +314,31 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
     setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
   };
 
-  const sortTasks = (tasks: typeof data.tasks) => {
-    switch (sortBy) {
-      case 'priority':
-        return [...tasks].sort((a, b) => a.priority.localeCompare(b.priority));
-      case 'dueDate':
-        return [...tasks].sort((a, b) =>
-          (a.due_date || '').localeCompare(b.due_date || '')
-        );
-      case 'status':
-        return [...tasks].sort((a, b) => a.status.localeCompare(b.status));
-      default:
-        return tasks;
-    }
+  const deleteCompletedTasks = () => {
+    setTasks((prevTasks) => prevTasks.filter((task) => !task.completed));
   };
+
+  const deleteAllTasks = () => {
+    setTasks([]);
+  };
+
+  const sortTasks = useCallback(
+    (tasksToSort: typeof data.tasks) => {
+      return [...tasksToSort].sort((a, b) => {
+        switch (sortBy) {
+          case 'priority':
+            return a.priority.localeCompare(b.priority);
+          case 'dueDate':
+            return (a.due_date || '').localeCompare(b.due_date || '');
+          case 'status':
+            return a.status.localeCompare(b.status);
+          default:
+            return 0;
+        }
+      });
+    },
+    [sortBy]
+  );
 
   const displayedTasks = useMemo(() => {
     let filteredTasks = tasks;
@@ -336,7 +346,7 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
       filteredTasks = filteredTasks.filter((task) => !task.completed);
     }
     return sortTasks(filteredTasks);
-  }, [tasks, sortBy, showCompletedTasks]);
+  }, [tasks, sortBy, showCompletedTasks, sortTasks]);
 
   const handleNewTaskKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -403,16 +413,8 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
         }
         onTogglePriority={toggleShowPriority}
         onToggleDueDate={toggleShowDueDate}
-      />
-      <TaskOptions
-        showCompletedTasks={showCompletedTasks}
-        showPriority={showPriority}
-        showDueDate={showDueDate}
-        onToggleCompletedTasks={() =>
-          setShowCompletedTasks(!showCompletedTasks)
-        }
-        onTogglePriority={toggleShowPriority}
-        onToggleDueDate={toggleShowDueDate}
+        onDeleteCompletedTasks={deleteCompletedTasks}
+        onDeleteAllTasks={deleteAllTasks}
       />
       <div className={`${styles.taskContent} nowheel nodrag`}>
         <DndContext

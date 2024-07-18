@@ -286,3 +286,24 @@
   cursor: pointer;
   color: inherit;
 }
+
+.cleanupButton {
+  display: flex;
+  align-items: center;
+  background: none;
+  border: none;
+  color: #ff6961;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 5px 0;
+  width: 100%;
+  text-align: left;
+}
+
+.cleanupButton:hover {
+  background-color: #f8f8f8;
+}
+
+.cleanupButton svg {
+  margin-right: 5px;
+}
