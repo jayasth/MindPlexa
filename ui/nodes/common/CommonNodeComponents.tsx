@@ -26,7 +26,7 @@ import {
 const ICON_SIZE = 16;
 
 export const DeleteButton = ({ onClick }) => (
-  <button className={styles.actionButton} onClick={onClick} title="Delete">
+  <button className={styles.actionButton} onClick={onClick} title="Delete Node">
     <FaTrash size={ICON_SIZE} />
   </button>
 );

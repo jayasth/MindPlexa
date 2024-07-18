@@ -327,11 +327,12 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
       return [...tasksToSort].sort((a, b) => {
         switch (sortBy) {
           case 'priority':
-            return a.priority.localeCompare(b.priority);
+            const priorityOrder = { high: 0, medium: 1, low: 2 };
+            return priorityOrder[a.priority] - priorityOrder[b.priority];
           case 'dueDate':
             return (a.due_date || '').localeCompare(b.due_date || '');
-          case 'status':
-            return a.status.localeCompare(b.status);
+          case 'alphabetical':
+            return a.text.localeCompare(b.text);
           default:
             return 0;
         }

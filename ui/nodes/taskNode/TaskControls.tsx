@@ -49,7 +49,7 @@ const TaskControls: React.FC<TaskControlsProps> = ({
         <option value="">Sort by</option>
         <option value="priority">Priority</option>
         <option value="dueDate">Due Date</option>
-        <option value="status">Status</option>
+        <option value="alphabetical">Alphabetical</option>
       </Dropdown>
       <div className={styles.taskOptions}>
         <button
