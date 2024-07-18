@@ -274,7 +274,7 @@ export const handleDuplicate = async (id: string, canvasId: string) => {
         console.error(
           'Failed to find optimal position for duplicate node: Canvas might be too crowded.'
         );
-        return;
+        return null;
       }
 
       const { success, newNode, error } = await duplicateNode(
@@ -297,10 +297,15 @@ export const handleDuplicate = async (id: string, canvasId: string) => {
           version: newNode.version
         }
       };
-      addNode(newNodeData, canvasId);
+      await addNode(newNodeData, canvasId);
       setSelectedNodes([newNodeData.id]);
+
+      // Return the new node ID
+      return newNodeData.id;
     } catch (error) {
       console.error('Error duplicating node:', error);
+      return null;
     }
   }
+  return null;
 };

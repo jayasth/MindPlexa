@@ -4,7 +4,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { toCamelCase, toSnakeCase } from '@/utils/caseConversion';
 import {
   getNodeSpecificData,
-  createNodeSpecificData
+  createNodeSpecificData,
+  processNodeSpecificData
 } from '@/utils/canvas/nodeSpecificDataService';
 import { insertNode, insertNodeCanvasLink } from '@/utils/canvas/nodeService';
 
@@ -55,17 +56,25 @@ export const duplicateNode = async (
     if (!originalNodeSpecific)
       throw new Error('Failed to fetch original node specific data');
 
-    const newNodeSpecificData = {
-      ...originalNodeSpecific,
-      node_id: newNodeId
-    };
-    const newNodeSpecific = await createNodeSpecificData(
-      newNodeId,
+    // Process the node-specific data
+    const processedNodeSpecificData = processNodeSpecificData(
       originalNode.type as NodeType,
-      newNodeSpecificData
+      originalNodeSpecific
     );
-    if (!newNodeSpecific)
-      throw new Error('Failed to create new node specific data');
+
+    // Create new node-specific data
+    const { data: newNodeSpecific, error: newNodeSpecificError } =
+      await createNodeSpecificData(
+        newNodeId,
+        originalNode.type as NodeType,
+        processedNodeSpecificData
+      );
+
+    if (newNodeSpecificError)
+      throw new Error(
+        'Failed to create new node specific data: ' +
+          newNodeSpecificError.message
+      );
 
     // Insert the node-canvas link
     const { error: nodeCanvasLinkError } = await insertNodeCanvasLink(

@@ -12,6 +12,12 @@ import {
 } from '@/utils/canvas/attachmentService';
 import { handleTags } from '@/utils/canvas/tagService';
 import type { NodeState } from './useNodeStore';
+import { Database } from '@/types_db';
+
+type NodeType = Exclude<
+  Database['public']['Enums']['node_type'],
+  'selection_menu'
+>;
 
 export const addNode = async (set, node, canvasId) => {
   try {
@@ -48,11 +54,11 @@ export const updateNode = async (set, get, id, data, canvasId) => {
 
           const nodeUpdates = {
             position: JSON.stringify(updatedNode.position),
-            backgroundColor: updatedNode.data.backgroundColor,
-            textColor: updatedNode.data.textColor,
+            background_color: updatedNode.data.backgroundColor,
+            text_color: updatedNode.data.textColor,
             title: updatedNode.data.title,
             is_editing: updatedNode.data.isEditing,
-            zIndex: updatedNode.data.zIndex,
+            z_index: updatedNode.data.zIndex,
             edit_width: updatedNode.data.editWidth,
             edit_height: updatedNode.data.editHeight,
             mobile_edit_width: updatedNode.data.mobileEditWidth,
@@ -64,21 +70,70 @@ export const updateNode = async (set, get, id, data, canvasId) => {
             version: updatedNode.data.version
           };
 
-          const specificUpdates =
-            nodeSpecificDataService.processNodeSpecificData(
-              existingNode.type as
-                | 'note'
-                | 'task'
-                | 'table'
-                | 'calendar'
-                | 'draw',
-              updatedNode.data
-            );
+          let specificUpdates = {};
+          switch (existingNode.type) {
+            case 'note':
+              specificUpdates = {
+                content: updatedNode.data.content
+              };
+              break;
+            case 'task':
+              specificUpdates = {
+                tasks: JSON.stringify(updatedNode.data.tasks),
+                completed_tasks: updatedNode.data.completedTasks,
+                total_tasks: updatedNode.data.totalTasks,
+                show_completed_tasks: updatedNode.data.showCompletedTasks,
+                show_due_date: updatedNode.data.showDueDate,
+                show_priority: updatedNode.data.showPriority,
+                sort_by: updatedNode.data.sortBy
+              };
+              break;
+            case 'calendar':
+              specificUpdates = {
+                events: JSON.stringify(updatedNode.data.events),
+                view: updatedNode.data.view,
+                default_view: updatedNode.data.defaultView,
+                event_categories: JSON.stringify(
+                  updatedNode.data.eventCategories
+                ),
+                export_settings: JSON.stringify(
+                  updatedNode.data.exportSettings
+                ),
+                time_zone: updatedNode.data.timeZone
+              };
+              break;
+            case 'table':
+              specificUpdates = {
+                columns: JSON.stringify(updatedNode.data.columns),
+                rows: JSON.stringify(updatedNode.data.rows),
+                default_column_type: updatedNode.data.defaultColumnType,
+                default_locale: updatedNode.data.defaultLocale
+              };
+              break;
+            case 'draw':
+              specificUpdates = {
+                drawing_data: updatedNode.data.drawingData,
+                background_image_url: updatedNode.data.backgroundImageUrl,
+                brush_presets: JSON.stringify(updatedNode.data.brushPresets),
+                color_palette: JSON.stringify(updatedNode.data.colorPalette),
+                layers: JSON.stringify(updatedNode.data.layers),
+                pan_offset: JSON.stringify(updatedNode.data.panOffset),
+                shape_elements: JSON.stringify(updatedNode.data.shapeElements),
+                symmetry_settings: JSON.stringify(
+                  updatedNode.data.symmetrySettings
+                ),
+                text_elements: JSON.stringify(updatedNode.data.textElements),
+                zoom_level: updatedNode.data.zoomLevel
+              };
+              break;
+          }
 
-          // Handle tags and attachments separately
+          // Handle tags
           if (data.data?.tags) {
             handleTags(id, [...data.data.tags]);
           }
+
+          // Handle attachments
           if (data.data?.attachedFiles) {
             (async () => {
               const existingAttachments = await getAttachments(id);
@@ -102,18 +157,19 @@ export const updateNode = async (set, get, id, data, canvasId) => {
             })();
           }
 
-          updateNodeInDB(
-            id,
-            nodeUpdates,
-            specificUpdates,
-            existingNode.type as
-              | 'note'
-              | 'task'
-              | 'table'
-              | 'calendar'
-              | 'draw'
-              | 'selection_menu'
-          );
+          if (existingNode.type && existingNode.type !== 'selection_menu') {
+            updateNodeInDB(
+              id,
+              nodeUpdates,
+              specificUpdates,
+              existingNode.type as NodeType
+            );
+            nodeSpecificDataService.updateNodeSpecificData(
+              id,
+              existingNode.type as NodeType,
+              specificUpdates
+            );
+          }
 
           state.nodeInternals.set(id, updatedNode);
           console.log('useNodeStore: Node updated', updatedNode);
@@ -137,17 +193,12 @@ export const removeNode = async (set, get, id, canvasId) => {
     set(
       produce((state: NodeState) => {
         const nodeToRemove = state.nodes.find((node) => node.id === id);
-        if (nodeToRemove) {
-          deleteNodeInDB(
-            id,
-            nodeToRemove.type as
-              | 'note'
-              | 'task'
-              | 'table'
-              | 'calendar'
-              | 'draw'
-              | 'selection_menu'
-          );
+        if (
+          nodeToRemove &&
+          nodeToRemove.type &&
+          nodeToRemove.type !== 'selection_menu'
+        ) {
+          deleteNodeInDB(id, nodeToRemove.type as NodeType);
           state.nodeInternals.delete(id);
           console.log('useNodeStore: Node removed', nodeToRemove);
           state.nodes = state.nodes.filter((node) => node.id !== id);

@@ -8,6 +8,12 @@ import {
 } from '@/utils/canvas/attachmentService';
 import { handleTags } from '@/utils/canvas/tagService';
 import type { NodeState } from './useNodeStore';
+import { Database } from '@/types_db';
+
+type NodeType = Exclude<
+  Database['public']['Enums']['node_type'],
+  'selection_menu'
+>;
 
 export const onNodesChange = async (set, get, changes, canvasId) => {
   try {
@@ -31,7 +37,9 @@ export const onNodesChange = async (set, get, changes, canvasId) => {
                     ...updatedNode,
                     position: change.position
                   };
-                  changedProperties['position'] = change.position;
+                  changedProperties['position'] = JSON.stringify(
+                    change.position
+                  );
                   hasChanges = true;
                 }
                 break;
@@ -45,8 +53,8 @@ export const onNodesChange = async (set, get, changes, canvasId) => {
                     width: change.dimensions.width,
                     height: change.dimensions.height
                   };
-                  changedProperties['width'] = change.dimensions.width;
-                  changedProperties['height'] = change.dimensions.height;
+                  changedProperties['view_width'] = change.dimensions.width;
+                  changedProperties['view_height'] = change.dimensions.height;
                   hasChanges = true;
                 }
                 break;
@@ -104,29 +112,84 @@ export const onNodesChange = async (set, get, changes, canvasId) => {
               };
 
               // Prepare specific updates based on node type
-              const specificUpdates =
-                nodeSpecificDataService.processNodeSpecificData(
-                  updatedNode.type as
-                    | 'note'
-                    | 'task'
-                    | 'table'
-                    | 'calendar'
-                    | 'draw',
-                  updatedNode.data
-                );
+              let specificUpdates = {};
+              switch (updatedNode.type) {
+                case 'note':
+                  specificUpdates = {
+                    content: updatedNode.data.content
+                  };
+                  break;
+                case 'task':
+                  specificUpdates = {
+                    tasks: JSON.stringify(updatedNode.data.tasks),
+                    completed_tasks: updatedNode.data.completedTasks,
+                    total_tasks: updatedNode.data.totalTasks,
+                    show_completed_tasks: updatedNode.data.showCompletedTasks,
+                    show_due_date: updatedNode.data.showDueDate,
+                    show_priority: updatedNode.data.showPriority,
+                    sort_by: updatedNode.data.sortBy
+                  };
+                  break;
+                case 'calendar':
+                  specificUpdates = {
+                    events: JSON.stringify(updatedNode.data.events),
+                    view: updatedNode.data.view,
+                    default_view: updatedNode.data.defaultView,
+                    event_categories: JSON.stringify(
+                      updatedNode.data.eventCategories
+                    ),
+                    export_settings: JSON.stringify(
+                      updatedNode.data.exportSettings
+                    ),
+                    time_zone: updatedNode.data.timeZone
+                  };
+                  break;
+                case 'table':
+                  specificUpdates = {
+                    columns: JSON.stringify(updatedNode.data.columns),
+                    rows: JSON.stringify(updatedNode.data.rows),
+                    default_column_type: updatedNode.data.defaultColumnType,
+                    default_locale: updatedNode.data.defaultLocale
+                  };
+                  break;
+                case 'draw':
+                  specificUpdates = {
+                    drawing_data: updatedNode.data.drawingData,
+                    background_image_url: updatedNode.data.backgroundImageUrl,
+                    brush_presets: JSON.stringify(
+                      updatedNode.data.brushPresets
+                    ),
+                    color_palette: JSON.stringify(
+                      updatedNode.data.colorPalette
+                    ),
+                    layers: JSON.stringify(updatedNode.data.layers),
+                    pan_offset: JSON.stringify(updatedNode.data.panOffset),
+                    shape_elements: JSON.stringify(
+                      updatedNode.data.shapeElements
+                    ),
+                    symmetry_settings: JSON.stringify(
+                      updatedNode.data.symmetrySettings
+                    ),
+                    text_elements: JSON.stringify(
+                      updatedNode.data.textElements
+                    ),
+                    zoom_level: updatedNode.data.zoomLevel
+                  };
+                  break;
+              }
 
               // Update node in database
               updateNodeInDB(
                 updatedNode.id,
                 nodeUpdates,
                 specificUpdates,
-                updatedNode.type as
-                  | 'note'
-                  | 'task'
-                  | 'table'
-                  | 'calendar'
-                  | 'draw'
-                  | 'selection_menu'
+                updatedNode.type as NodeType
+              );
+
+              nodeSpecificDataService.updateNodeSpecificData(
+                updatedNode.id,
+                updatedNode.type as NodeType,
+                specificUpdates
               );
 
               // Handle tags
