@@ -178,7 +178,21 @@ export const fetchCanvas = async (canvasId: string) => {
   const organizedNodes = canvas.nodes
     ? canvas.nodes.map((node) => {
         const nodeType = node.type.toLowerCase();
-        const specificNodeData = node[`${nodeType}Nodes`] || {};
+        const specificNodeData =
+          node[`${nodeType}Nodes`] && node[`${nodeType}Nodes`][0]
+            ? node[`${nodeType}Nodes`][0]
+            : {};
+
+        // Parse tasks JSON string if it exists
+        let tasks = [];
+        if (nodeType === 'task' && specificNodeData.tasks) {
+          try {
+            tasks = JSON.parse(specificNodeData.tasks);
+          } catch (error) {
+            console.error('Error parsing tasks JSON:', error);
+          }
+        }
+
         const tags = node.nodeTags ? node.nodeTags.map((tag) => tag.tag) : [];
         const attachments = node.nodeAttachments
           ? node.nodeAttachments.map((attachment) => ({
@@ -201,6 +215,7 @@ export const fetchCanvas = async (canvasId: string) => {
           ...node,
           data: {
             ...specificNodeData,
+            tasks: tasks, // Add parsed tasks to the data
             tags,
             attachedFiles: attachments
           }
