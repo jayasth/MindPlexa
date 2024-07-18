@@ -33,7 +33,6 @@ import { useEdgeConnection } from '@/ui/canvasEditor/edgeCreation';
 import { v4 as uuidv4 } from 'uuid';
 import { handleTemporaryNodeCreation } from '@/ui/canvasEditor/utils/nodeCreation';
 import { createEdge } from '@/utils/canvas/edgeService';
-import { handleTags } from '@/utils/canvas/tagService';
 
 const nodeOrigin: NodeOrigin = [0.5, 0.5];
 const defaultEdgeOptions = {
@@ -147,9 +146,6 @@ export default function CanvasEditor({ canvasId: initialCanvasId }) {
                 }
               : { editWidth: newSize.width, editHeight: newSize.height })
           };
-          updateNodeInStore(node.id, updates, node.data.canvasId);
-          // Pass a copy of the tags to handleTags
-          handleTags(node.id, [...node.data.tags]);
         }
       } catch (error) {
         console.error('Failed to update node on resize:', error);
@@ -203,8 +199,6 @@ export default function CanvasEditor({ canvasId: initialCanvasId }) {
           { position: node.position },
           node.data.canvasId
         );
-        // Pass a copy of the tags to handleTags
-        handleTags(node.id, [...node.data.tags]);
       } catch (error) {
         console.error('Failed to update node position:', error);
       }

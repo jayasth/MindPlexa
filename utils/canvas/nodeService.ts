@@ -78,6 +78,8 @@ export const createNode = async (
     return { error: `Unsupported node type: ${nodeType}` };
   }
 
+  const defaultTitle = `Untitled ${nodeType.charAt(0).toUpperCase() + nodeType.slice(1)}`;
+
   const nodeInsert: Database['public']['Tables']['nodes']['Insert'] = {
     id: nodeId,
     type: nodeType,
@@ -104,14 +106,13 @@ export const createNode = async (
         : null,
     background_color: data.background_color || '#F4F4F4',
     text_color: data.text_color || '#575757',
-    title: data.title,
+    title: data.title || defaultTitle, // Use the provided title or the default
     is_editing: data.is_editing || false,
     is_temporary:
       nodeType === 'selection_menu' ? true : data.is_temporary || false,
     parent_node_id: data.parent_node_id || null,
     z_index: data.z_index || 0
   };
-
   try {
     const { data: nodeData, error: nodeError } = await insertNode(nodeInsert);
 

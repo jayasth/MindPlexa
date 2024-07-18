@@ -74,6 +74,8 @@ export const createNode = async (
     textColor: '#575757'
   };
 
+  const defaultTitle = `Untitled ${nodeType.charAt(0).toUpperCase() + nodeType.slice(1)}`;
+
   const newNodeData = {
     id: nodeId,
     type: nodeType,
@@ -84,6 +86,7 @@ export const createNode = async (
     isTemporary: isTemporary,
     parentNodeId: parentNode ? parentNode.id : null,
     zIndex: 0,
+    title: defaultTitle, // Add this line
     viewWidth:
       'width' in nodeDimension ? nodeDimension.width : nodeDimension.viewWidth,
     viewHeight:
