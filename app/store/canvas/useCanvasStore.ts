@@ -40,9 +40,12 @@ const processNode = (node: any) => {
 
   // Parse tasks JSON string if it exists
   let tasks = [];
-  if (node.taskNodes && node.taskNodes[0] && node.taskNodes[0].tasks) {
+  if (node.type === 'task' && node.data && node.data.tasks) {
     try {
-      tasks = JSON.parse(node.taskNodes[0].tasks);
+      tasks =
+        typeof node.data.tasks === 'string'
+          ? JSON.parse(node.data.tasks)
+          : node.data.tasks;
     } catch (error) {
       console.error('Error parsing tasks JSON:', error);
     }
