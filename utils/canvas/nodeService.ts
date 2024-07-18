@@ -8,12 +8,26 @@ import {
   removeAttachment,
   getAttachments
 } from '@/utils/canvas/attachmentService';
+import {
+  getNodeSpecificData,
+  updateNodeSpecificData,
+  createNodeSpecificData,
+  deleteNodeSpecificData
+} from '@/utils/canvas/nodeSpecificDataService';
+import { duplicateNode } from '@/utils/canvas/nodeDuplicationService';
+import { handleTags } from '@/utils/canvas/tagService';
+
+// Add this line to define NodeType
+type NodeType = Exclude<
+  Database['public']['Enums']['node_type'],
+  'selection_menu'
+>;
 
 const supabase = createClient();
 
 /* Node related functions */
 
-const insertNode = async (
+export const insertNode = async (
   nodeInsert: Database['public']['Tables']['nodes']['Insert']
 ) => {
   return await supabase
@@ -24,212 +38,19 @@ const insertNode = async (
     .then(({ data, error }) => ({ data: toCamelCase(data), error }));
 };
 
-const insertNodeSpecificData = async (
-  tableName: keyof Database['public']['Tables'],
-  specificNodeInsert: any
-) => {
-  return await supabase
-    .from(tableName)
-    .insert([toSnakeCase(specificNodeInsert)])
-    .select()
-    .single()
-    .then(({ data, error }) => ({ data: toCamelCase(data), error }));
-};
-
-const updateNodeSpecificData = async (
-  tableName: keyof Database['public']['Tables'],
+export const insertNodeCanvasLink = async (
   nodeId: string,
-  specificUpdates: any
+  canvasId: string
 ) => {
-  if (tableName === 'task_nodes' && specificUpdates.tasks) {
-    specificUpdates.tasks = JSON.stringify(specificUpdates.tasks);
-  }
-
-  return await supabase
-    .from(tableName)
-    .update(toSnakeCase(specificUpdates))
-    .eq('node_id', nodeId)
-    .select()
-    .single()
-    .then(({ data, error }) => ({ data: toCamelCase(data), error }));
-};
-
-const insertNodeCanvasLink = async (nodeId: string, canvasId: string) => {
   return await supabase
     .from('node_canvas_link')
     .insert(toSnakeCase({ node_id: nodeId, canvas_id: canvasId }));
-};
-
-const deleteNodeFromTable = async (
-  tableName: keyof Database['public']['Tables'],
-  nodeId: string
-) => {
-  return await supabase.from(tableName).delete().eq('node_id', nodeId);
 };
 
 const deleteNodeLink = async (nodeId: string) => {
   return await supabase.from('node_canvas_link').delete().eq('node_id', nodeId);
 };
 
-export const handleTags = async (
-  nodeId: string,
-  tags: string[]
-): Promise<{ error?: any }> => {
-  const { error: tagDeleteError } = await supabase
-    .from('node_tags')
-    .delete()
-    .eq('node_id', nodeId);
-
-  if (tagDeleteError) {
-    console.error('nodeService: Error deleting existing tags:', tagDeleteError);
-    return { error: tagDeleteError };
-  }
-
-  for (const tag of tags) {
-    const { error: insertTagError } = await supabase
-      .from('node_tags')
-      .insert({ node_id: nodeId, tag });
-
-    if (insertTagError) {
-      console.error('nodeService: Error inserting tag:', insertTagError);
-      return { error: insertTagError };
-    }
-  }
-
-  return {};
-};
-export const duplicateNode = async (
-  nodeId: string,
-  canvasId: string,
-  newPosition: { x: number; y: number }
-) => {
-  try {
-    // Fetch the original node data
-    const { data: originalNode, error: nodeError } = await supabase
-      .from('nodes')
-      .select('*')
-      .eq('id', nodeId)
-      .single();
-
-    if (nodeError) throw nodeError;
-
-    // Generate new ID for the duplicated node
-    const newNodeId = uuidv4();
-    const newNodeData = {
-      ...originalNode,
-      id: newNodeId,
-      parent_node_id: null,
-      title: `${originalNode.title} copy`,
-      version: 1,
-      position: JSON.stringify(newPosition) // Update the position
-    };
-
-    // Insert the duplicated node into the nodes table
-    const { data: newNode, error: insertNodeError } =
-      await insertNode(newNodeData);
-    if (insertNodeError) throw insertNodeError;
-
-    // Insert the duplicated node-specific data into the corresponding table
-    const nodeSpecificTable =
-      `${originalNode.type}_nodes` as keyof Database['public']['Tables'];
-    const { data: originalNodeSpecific, error: nodeSpecificError } =
-      await supabase
-        .from(nodeSpecificTable)
-        .select('*')
-        .eq('node_id', nodeId)
-        .single();
-
-    if (nodeSpecificError) throw nodeSpecificError;
-
-    const newNodeSpecificData = {
-      ...originalNodeSpecific,
-      id: uuidv4(), // Generate new ID for node-specific data
-      node_id: newNodeId
-    };
-    const { data: newNodeSpecific, error: insertNodeSpecificError } =
-      await insertNodeSpecificData(nodeSpecificTable, newNodeSpecificData);
-    if (insertNodeSpecificError) throw insertNodeSpecificError;
-
-    // Insert the node-canvas link
-    const { error: nodeCanvasLinkError } = await insertNodeCanvasLink(
-      newNodeId,
-      canvasId
-    );
-    if (nodeCanvasLinkError) throw nodeCanvasLinkError;
-
-    // Duplicate tags
-    const { data: tags, error: tagsError } = await supabase
-      .from('node_tags')
-      .select('tag')
-      .eq('node_id', nodeId);
-
-    if (tagsError) throw tagsError;
-
-    if (tags && tags.length > 0) {
-      const newTags = tags.map((tag) => ({
-        node_id: newNodeId,
-        tag: tag.tag
-      }));
-
-      const { error: newTagsError } = await supabase
-        .from('node_tags')
-        .insert(newTags);
-
-      if (newTagsError) throw newTagsError;
-    }
-
-    // Duplicate attachments
-    const { data: attachments, error: attachmentsError } = await supabase
-      .from('node_attachments')
-      .select('*')
-      .eq('node_id', nodeId);
-
-    if (attachmentsError) throw attachmentsError;
-
-    if (attachments && attachments.length > 0) {
-      const newAttachments = await Promise.all(
-        attachments.map(async (attachment) => {
-          const newAttachment = {
-            ...attachment,
-            id: uuidv4(),
-            node_id: newNodeId
-          };
-          if (attachment.is_file && attachment.storage_path) {
-            const newStoragePath = `node-attachments/${newNodeId}/${attachment.file_name}`;
-            const { data, error } = await supabase.storage
-              .from('node-attachments')
-              .copy(attachment.storage_path, newStoragePath);
-            if (error) throw error;
-            newAttachment.storage_path = newStoragePath;
-          }
-          return newAttachment;
-        })
-      );
-
-      const { error: newAttachmentsError } = await supabase
-        .from('node_attachments')
-        .insert(newAttachments);
-
-      if (newAttachmentsError) throw newAttachmentsError;
-    }
-
-    return {
-      success: true,
-      newNode: {
-        ...newNode,
-        id: newNodeId,
-        canvasId,
-        parent_node_id: null,
-        title: newNodeData.title,
-        version: newNodeData.version,
-        position: newPosition
-      }
-    };
-  } catch (error) {
-    console.error('Error duplicating node:', error);
-    return { success: false, error };
-  }
-};
 export const createNode = async (
   canvasId: string,
   nodeType: Database['public']['Enums']['node_type'],
@@ -321,16 +142,16 @@ export const createNode = async (
 
     if (nodeType !== 'selection_menu') {
       const specificNodeInsert = {
-        id: uuidv4(),
         node_id: nodeId,
         ...(data[`${nodeType}Data`] || {})
       };
 
-      const tableName =
-        `${nodeType}_nodes` as keyof Database['public']['Tables'];
-
       const { data: specificNodeData, error: specificNodeError } =
-        await insertNodeSpecificData(tableName, specificNodeInsert);
+        await createNodeSpecificData(
+          nodeId,
+          nodeType as NodeType,
+          specificNodeInsert
+        );
 
       if (specificNodeError) {
         console.error(
@@ -396,31 +217,18 @@ export const updateNode = async (
 
   // Update or create node-specific data
   if (nodeType !== 'selection_menu') {
-    const tableName = `${nodeType}_nodes` as keyof Database['public']['Tables'];
     const nodeSpecificUpdates = { ...specificUpdates, node_id: id };
 
-    const { data: existingData } = await supabase
-      .from(tableName)
-      .select('*')
-      .eq('node_id', id)
-      .single();
-
-    let specificNodeData;
-    let specificNodeError;
-
-    if (existingData) {
-      // Update existing node-specific data
-      ({ data: specificNodeData, error: specificNodeError } =
-        await updateNodeSpecificData(tableName, id, nodeSpecificUpdates));
-    } else {
-      // Create new node-specific data
-      ({ data: specificNodeData, error: specificNodeError } =
-        await insertNodeSpecificData(tableName, nodeSpecificUpdates));
-    }
+    const { data: specificNodeData, error: specificNodeError } =
+      await updateNodeSpecificData(
+        id,
+        nodeType as NodeType,
+        nodeSpecificUpdates
+      );
 
     if (specificNodeError) {
       console.error(
-        `nodeService: Error updating/creating ${nodeType} node:`,
+        `nodeService: Error updating ${nodeType} node:`,
         specificNodeError
       );
       return { error: specificNodeError };
@@ -492,10 +300,9 @@ export const deleteNode = async (
   }
 
   if (nodeType !== 'selection_menu') {
-    const tableName = `${nodeType}_nodes` as keyof Database['public']['Tables'];
-    const { error: specificError } = await deleteNodeFromTable(
-      tableName,
-      nodeId
+    const { error: specificError } = await deleteNodeSpecificData(
+      nodeId,
+      nodeType as NodeType
     );
 
     if (specificError) {

@@ -74,26 +74,12 @@ const processNode = (node: any) => {
           isFile: file.isFile
         })) || [],
       tasks: tasks,
-      completedTasks:
-        node.taskNodes && node.taskNodes[0]
-          ? node.taskNodes[0].completedTasks
-          : 0,
-      totalTasks:
-        node.taskNodes && node.taskNodes[0] ? node.taskNodes[0].totalTasks : 0,
-      showCompletedTasks:
-        node.taskNodes && node.taskNodes[0]
-          ? node.taskNodes[0].showCompletedTasks
-          : true,
-      showDueDate:
-        node.taskNodes && node.taskNodes[0]
-          ? node.taskNodes[0].showDueDate
-          : true,
-      showPriority:
-        node.taskNodes && node.taskNodes[0]
-          ? node.taskNodes[0].showPriority
-          : true,
-      sortBy:
-        node.taskNodes && node.taskNodes[0] ? node.taskNodes[0].sortBy : ''
+      completedTasks: node.data?.completedTasks || 0,
+      totalTasks: node.data?.totalTasks || 0,
+      showCompletedTasks: node.data?.showCompletedTasks ?? true,
+      showDueDate: node.data?.showDueDate ?? true,
+      showPriority: node.data?.showPriority ?? true,
+      sortBy: node.data?.sortBy || ''
     },
     width: node.isEditing
       ? (isDesktop ? node.editWidth : node.mobileEditWidth) || node.viewWidth
@@ -103,6 +89,7 @@ const processNode = (node: any) => {
       : node.viewHeight
   };
 };
+
 const processEdge = (edge: any) => ({
   id: edge.id,
   source: edge.sourceNodeId || '',
