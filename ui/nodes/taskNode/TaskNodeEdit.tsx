@@ -100,12 +100,20 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
   const [isFileModalOpen, setIsFileModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [newTaskText, setNewTaskText] = useState('');
-  const [showCompletedTasks, setShowCompletedTasks] = useState(true);
-  const [totalTasks, setTotalTasks] = useState(data.total_tasks || 0);
-  const [completedTasks, setCompletedTasks] = useState(0);
-  const [sortBy, setSortBy] = useState('');
-  const [showPriority, setShowPriority] = useState(true);
-  const [showDueDate, setShowDueDate] = useState(true);
+  const [showCompletedTasks, setShowCompletedTasks] = useState(
+    data.showCompletedTasks !== undefined ? data.showCompletedTasks : true
+  );
+  const [totalTasks, setTotalTasks] = useState(data.totalTasks || 0);
+  const [completedTasks, setCompletedTasks] = useState(
+    data.completedTasks || 0
+  );
+  const [sortBy, setSortBy] = useState(data.sortBy || '');
+  const [showPriority, setShowPriority] = useState(
+    data.showPriority !== undefined ? data.showPriority : true
+  );
+  const [showDueDate, setShowDueDate] = useState(
+    data.showDueDate !== undefined ? data.showDueDate : true
+  );
 
   const handleBackgroundColorChange = useBackgroundColorChange(
     data.id,
@@ -153,7 +161,17 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
       editHeight: nodeHeight
     };
 
-    const specificData = { tasks, tags, attachedFiles };
+    const specificData = {
+      tasks,
+      tags,
+      attachedFiles,
+      completedTasks,
+      totalTasks,
+      showCompletedTasks,
+      showDueDate,
+      showPriority,
+      sortBy
+    };
 
     debouncedUpdateNodeData(commonData, specificData);
   }, [
@@ -165,6 +183,12 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
     nodeHeight,
     tags,
     attachedFiles,
+    completedTasks,
+    totalTasks,
+    showCompletedTasks,
+    showDueDate,
+    showPriority,
+    sortBy,
     debouncedUpdateNodeData
   ]);
 
@@ -292,7 +316,6 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
         id: Date.now().toString(),
         text: newTaskText.trim(),
         completed: false,
-        assignee: '',
         priority: 'medium',
         status: 'todo',
         due_date: null

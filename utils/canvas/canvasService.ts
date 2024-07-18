@@ -156,7 +156,7 @@ export const fetchCanvas = async (canvasId: string) => {
         id, type, position, is_editing, background_color, text_color, title, z_index,
         view_width, view_height, edit_width, edit_height, mobile_edit_width, mobile_edit_height,
         note_nodes(content),
-        task_nodes(tasks),
+        task_nodes(tasks, completed_tasks, total_tasks, show_completed_tasks, show_due_date, show_priority, sort_by),
         calendar_nodes(events, view),
         table_nodes(columns, rows),
         draw_nodes(drawing_data),

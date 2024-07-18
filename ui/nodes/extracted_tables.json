@@ -179,19 +179,10 @@
     "table_name": "task_nodes",
     "columns": [
       {
-        "column_name": "assignee",
-        "data_type": "text",
+        "column_name": "completed_tasks",
+        "data_type": "integer",
         "is_nullable": "YES",
-        "default": "None",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      },
-      {
-        "column_name": "completed",
-        "data_type": "boolean",
-        "is_nullable": "YES",
-        "default": "false",
+        "default": "0",
         "foreign_key": null,
         "references_table": null,
         "references_column": null
@@ -201,15 +192,6 @@
         "data_type": "timestamp with time zone",
         "is_nullable": "YES",
         "default": "now()",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      },
-      {
-        "column_name": "due_date",
-        "data_type": "timestamp without time zone",
-        "is_nullable": "YES",
-        "default": "None",
         "foreign_key": null,
         "references_table": null,
         "references_column": null
@@ -233,19 +215,37 @@
         "references_column": "id"
       },
       {
-        "column_name": "priority",
-        "data_type": "text",
+        "column_name": "show_completed_tasks",
+        "data_type": "boolean",
         "is_nullable": "YES",
-        "default": "None",
+        "default": "true",
         "foreign_key": null,
         "references_table": null,
         "references_column": null
       },
       {
-        "column_name": "status",
+        "column_name": "show_due_date",
+        "data_type": "boolean",
+        "is_nullable": "YES",
+        "default": "true",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      },
+      {
+        "column_name": "show_priority",
+        "data_type": "boolean",
+        "is_nullable": "YES",
+        "default": "true",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      },
+      {
+        "column_name": "sort_by",
         "data_type": "text",
         "is_nullable": "YES",
-        "default": "None",
+        "default": "''::text",
         "foreign_key": null,
         "references_table": null,
         "references_column": null
@@ -263,7 +263,7 @@
         "column_name": "total_tasks",
         "data_type": "integer",
         "is_nullable": "YES",
-        "default": "None",
+        "default": "0",
         "foreign_key": null,
         "references_table": null,
         "references_column": null
