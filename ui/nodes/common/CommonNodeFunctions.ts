@@ -184,6 +184,14 @@ export const handleClose = (
 
 export const handleDelete = async (id: string, canvasId: string) => {
   try {
+    const { nodes } = useNodeStore.getState();
+    const nodeToDelete = nodes.find((node) => node.id === id);
+
+    if (!nodeToDelete) {
+      console.error(`Node with id ${id} not found`);
+      return;
+    }
+
     const attachments = await getAttachments(id);
 
     for (const attachment of attachments) {
