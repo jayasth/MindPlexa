@@ -14,7 +14,6 @@ import ReactFlow, {
   ReactFlowInstance,
   XYPosition,
   Node,
-  Edge,
   applyEdgeChanges
 } from 'reactflow';
 import Toolbar from '@/ui/toolbar/Toolbar';
@@ -30,7 +29,6 @@ import useEdgeStore from '@/app/store/edges/useEdgeStore';
 import useUIStore from '@/app/store/ui/useUIStore';
 import useCanvasStore from '@/app/store/canvas/useCanvasStore';
 import { useEdgeConnection } from '@/ui/canvasEditor/edgeCreation';
-import { v4 as uuidv4 } from 'uuid';
 import { handleTemporaryNodeCreation } from '@/ui/canvasEditor/utils/nodeCreation';
 import { createEdge } from '@/utils/canvas/edgeService';
 
