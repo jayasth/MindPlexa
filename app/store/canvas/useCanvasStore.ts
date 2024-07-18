@@ -38,6 +38,16 @@ const processNode = (node: any) => {
 
   const isDesktop = window.innerWidth >= 768;
 
+  // Parse tasks JSON string if it exists
+  let tasks = [];
+  if (node.taskNodes && node.taskNodes[0] && node.taskNodes[0].tasks) {
+    try {
+      tasks = JSON.parse(node.taskNodes[0].tasks);
+    } catch (error) {
+      console.error('Error parsing tasks JSON:', error);
+    }
+  }
+
   return {
     id: node.id,
     type: node.type,
@@ -58,7 +68,16 @@ const processNode = (node: any) => {
         mimeType: file.mimeType,
         url: file.url,
         isFile: file.isFile
-      }))
+      })),
+      tasks: tasks, // Add parsed tasks to the data
+      completedTasks: node.taskNodes ? node.taskNodes[0].completedTasks : 0,
+      totalTasks: node.taskNodes ? node.taskNodes[0].totalTasks : 0,
+      showCompletedTasks: node.taskNodes
+        ? node.taskNodes[0].showCompletedTasks
+        : true,
+      showDueDate: node.taskNodes ? node.taskNodes[0].showDueDate : true,
+      showPriority: node.taskNodes ? node.taskNodes[0].showPriority : true,
+      sortBy: node.taskNodes ? node.taskNodes[0].sortBy : ''
     },
     width: node.isEditing
       ? (isDesktop ? node.editWidth : node.mobileEditWidth) || node.viewWidth

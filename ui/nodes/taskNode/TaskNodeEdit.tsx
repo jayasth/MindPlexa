@@ -197,6 +197,10 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
     setCompletedTasks(tasks.filter((task) => task.completed).length);
   }, [tasks]);
 
+  useEffect(() => {
+    setTasks(data.tasks || []);
+  }, [data.tasks]);
+
   const onChangeTitle = useCallback(
     (newTitle: string) => {
       handleTitleChange(data.id, newTitle, setTitle, canvasId);
