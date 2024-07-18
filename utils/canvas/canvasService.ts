@@ -8,6 +8,12 @@ import {
   getAttachments,
   removeAttachment
 } from '@/utils/canvas/attachmentService';
+import {
+  getNodeSpecificData,
+  updateNodeSpecificData,
+  processNodeSpecificData
+} from '@/utils/canvas/nodeSpecificDataService';
+import { handleTags } from '@/utils/canvas/tagService';
 
 const supabase = createClient();
 
@@ -155,11 +161,6 @@ export const fetchCanvas = async (canvasId: string) => {
       nodes(
         id, type, position, is_editing, background_color, text_color, title, z_index,
         view_width, view_height, edit_width, edit_height, mobile_edit_width, mobile_edit_height,
-        note_nodes(content),
-        task_nodes(tasks, completed_tasks, total_tasks, show_completed_tasks, show_due_date, show_priority, sort_by),
-        calendar_nodes(events, view),
-        table_nodes(columns, rows),
-        draw_nodes(drawing_data),
         node_tags(tag),
         node_attachments(id, type, file_name, file_size, storage_path, mime_type, url, is_file)
       ),
@@ -175,53 +176,39 @@ export const fetchCanvas = async (canvasId: string) => {
 
   const canvas = toCamelCase(canvasData);
 
-  const organizedNodes = canvas.nodes
-    ? canvas.nodes.map((node) => {
-        const nodeType = node.type.toLowerCase();
-        const specificNodeData =
-          node[`${nodeType}Nodes`] && node[`${nodeType}Nodes`][0]
-            ? node[`${nodeType}Nodes`][0]
-            : {};
+  const organizedNodes = await Promise.all(
+    canvas.nodes.map(async (node) => {
+      const nodeType = node.type.toLowerCase();
+      const specificNodeData = await getNodeSpecificData(node.id, nodeType);
+      const processedData = processNodeSpecificData(nodeType, specificNodeData);
 
-        // Parse tasks JSON string if it exists
-        let tasks = [];
-        if (nodeType === 'task' && specificNodeData.tasks) {
-          try {
-            tasks = JSON.parse(specificNodeData.tasks);
-          } catch (error) {
-            console.error('Error parsing tasks JSON:', error);
-          }
+      const tags = node.nodeTags ? node.nodeTags.map((tag) => tag.tag) : [];
+      const attachments = node.nodeAttachments
+        ? node.nodeAttachments.map((attachment) => ({
+            id: attachment.id,
+            type: attachment.type,
+            name: attachment.fileName,
+            size: attachment.fileSize,
+            storagePath: attachment.storagePath,
+            mimeType: attachment.mimeType,
+            url: attachment.url,
+            isFile: attachment.isFile
+          }))
+        : [];
+
+      delete node.nodeTags;
+      delete node.nodeAttachments;
+
+      return {
+        ...node,
+        data: {
+          ...processedData,
+          tags,
+          attachedFiles: attachments
         }
-
-        const tags = node.nodeTags ? node.nodeTags.map((tag) => tag.tag) : [];
-        const attachments = node.nodeAttachments
-          ? node.nodeAttachments.map((attachment) => ({
-              id: attachment.id,
-              type: attachment.type,
-              name: attachment.fileName,
-              size: attachment.fileSize,
-              storagePath: attachment.storagePath,
-              mimeType: attachment.mimeType,
-              url: attachment.url,
-              isFile: attachment.isFile
-            }))
-          : [];
-
-        delete node[`${nodeType}Nodes`];
-        delete node.nodeTags;
-        delete node.nodeAttachments;
-
-        return {
-          ...node,
-          data: {
-            ...specificNodeData,
-            tasks: tasks, // Add parsed tasks to the data
-            tags,
-            attachedFiles: attachments
-          }
-        };
-      })
-    : [];
+      };
+    })
+  );
 
   console.log('canvasService: Organized nodes:', organizedNodes);
 
@@ -262,40 +249,11 @@ export const saveCanvasState = async (canvasId: string, canvasState: any) => {
 
     // Update node-specific data
     if (nodeType !== 'selection_menu') {
-      const updateSpecificNodeData = async () => {
-        switch (nodeType) {
-          case 'note':
-            return supabase
-              .from('note_nodes')
-              .update(toSnakeCase(data))
-              .eq('node_id', nodeId);
-          case 'task':
-            return supabase
-              .from('task_nodes')
-              .update(toSnakeCase(data))
-              .eq('node_id', nodeId);
-          case 'calendar':
-            return supabase
-              .from('calendar_nodes')
-              .update(toSnakeCase(data))
-              .eq('node_id', nodeId);
-          case 'table':
-            return supabase
-              .from('table_nodes')
-              .update(toSnakeCase(data))
-              .eq('node_id', nodeId);
-          case 'draw':
-            return supabase
-              .from('draw_nodes')
-              .update(toSnakeCase(data))
-              .eq('node_id', nodeId);
-          default:
-            return null;
-        }
-      };
-
-      const result = await updateSpecificNodeData();
-      const specificNodeUpdateError = result?.error;
+      const { error: specificNodeUpdateError } = await updateNodeSpecificData(
+        nodeId,
+        nodeType,
+        data
+      );
 
       if (specificNodeUpdateError) {
         console.error(
@@ -309,12 +267,7 @@ export const saveCanvasState = async (canvasId: string, canvasState: any) => {
     // Update node tags
     const { tags } = data;
     if (tags && Array.isArray(tags)) {
-      // Delete existing tags
-      await supabase.from('node_tags').delete().eq('node_id', nodeId);
-
-      // Insert new tags
-      const tagsData = tags.map((tag) => ({ node_id: nodeId, tag }));
-      await supabase.from('node_tags').insert(tagsData);
+      await handleTags(nodeId, tags);
     }
 
     // Update node attachments
@@ -330,7 +283,9 @@ export const saveCanvasState = async (canvasId: string, canvasState: any) => {
         file_name: attachment.name,
         file_size: attachment.size,
         storage_path: attachment.storagePath,
-        content: attachment.content
+        mime_type: attachment.mimeType,
+        url: attachment.url,
+        is_file: attachment.isFile
       }));
       await supabase.from('node_attachments').insert(attachmentsData);
     }
