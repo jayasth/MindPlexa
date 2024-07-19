@@ -100,9 +100,6 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [view, setView] = useState(data.view || 'month');
-  const [newEvent, setNewEvent] = useState<{ start: Date; end: Date } | null>(
-    null
-  );
   const [currentDate, setCurrentDate] = useState(new Date());
   const [defaultView, setDefaultView] = useState(data.defaultView || 'month');
   const [eventCategories, setEventCategories] = useState(
@@ -286,45 +283,34 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
     setIsModalOpen(true);
   };
 
-  const handleAddEvent = ({ start, end, slots }) => {
-    // Ensure we're using the correct start and end times
-    const actualStart = slots && slots.length > 0 ? slots[0] : start;
-    const actualEnd = slots && slots.length > 0 ? slots[slots.length - 1] : end;
-
-    // If it's an all-day event, adjust the end time
-    const isAllDayEvent =
-      actualStart.getHours() === 0 &&
-      actualEnd.getHours() === 0 &&
-      actualEnd.getDate() > actualStart.getDate();
-    if (isAllDayEvent) {
-      actualEnd.setDate(actualEnd.getDate() - 1);
-      actualEnd.setHours(23, 59, 59);
-    }
-
+  const handleAddEvent = ({ start, end }) => {
     const newEvent = {
-      title: '',
-      start: actualStart,
-      end: actualEnd,
+      id: Date.now(), // Add a unique id
+      title: 'New Event',
+      start,
+      end,
       category: ''
     };
+    setEvents([...events, newEvent]);
     setSelectedEvent(newEvent);
     setIsModalOpen(true);
   };
 
-  const handleEventDelete = (eventToDelete) => {
-    setEvents(events.filter((event) => event !== eventToDelete));
+  const handleEventSave = (updatedEvent) => {
+    if (events.find((e) => e.id === updatedEvent.id)) {
+      setEvents(
+        events.map((event) =>
+          event.id === updatedEvent.id ? updatedEvent : event
+        )
+      );
+    } else {
+      setEvents([...events, updatedEvent]);
+    }
     setIsModalOpen(false);
   };
 
-  const handleEventSave = (updatedEvent) => {
-    if (newEvent) {
-      setEvents([...events, updatedEvent]);
-      setNewEvent(null);
-    } else {
-      setEvents(
-        events.map((event) => (event === selectedEvent ? updatedEvent : event))
-      );
-    }
+  const handleEventDelete = (eventToDelete) => {
+    setEvents(events.filter((event) => event !== eventToDelete));
     setIsModalOpen(false);
   };
 
@@ -418,16 +404,20 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
           onViewChange={handleViewChange}
           textColor={textColor}
           defaultView={defaultView}
-          onDefaultViewChange={handleViewChange}
+          onDefaultViewChange={setDefaultView}
           backgroundColor={backgroundColor}
+          onNavigate={(action) => {
+            const newDate = new Date(currentDate);
+            if (action === 'PREV') newDate.setMonth(newDate.getMonth() - 1);
+            if (action === 'NEXT') newDate.setMonth(newDate.getMonth() + 1);
+            if (action === 'TODAY') newDate.setMonth(new Date().getMonth());
+            setCurrentDate(newDate);
+          }}
+          currentDate={currentDate}
         />
         <Calendar
           localizer={localizer}
-          events={events.map((event) => ({
-            ...event,
-            color: eventCategories.find((cat) => cat.name === event.category)
-              ?.color
-          }))}
+          events={events}
           startAccessor="start"
           endAccessor="end"
           style={{ height: 'calc(100% - 40px)', width: '100%' }}
@@ -441,7 +431,6 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
           date={currentDate}
           onNavigate={(date) => setCurrentDate(date)}
           toolbar={false}
-          timezone={timeZone}
           dayPropGetter={customDayPropGetter}
           eventPropGetter={(event) => ({
             style: {
@@ -501,10 +490,10 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
       />
       {isModalOpen && (
         <EventModal
-          event={selectedEvent || newEvent}
+          event={selectedEvent}
           onClose={() => {
             setIsModalOpen(false);
-            setNewEvent(null);
+            setSelectedEvent(null);
           }}
           onSave={handleEventSave}
           onDelete={handleEventDelete}
