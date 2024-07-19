@@ -63,35 +63,38 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
           year: 'numeric'
         })}
       </div>
-      <div className={styles.viewButtons}>
-        <button
-          className={`${styles.viewButton} ${view === 'month' ? styles.active : ''}`}
-          onClick={() => handleViewClick('month')}
-          title="Month View"
-        >
-          <FaCalendarAlt />
-        </button>
-        <button
-          className={`${styles.viewButton} ${view === 'week' ? styles.active : ''}`}
-          onClick={() => handleViewClick('week')}
-          title="Week View"
-        >
-          <FaCalendarWeek />
-        </button>
-        <button
-          className={`${styles.viewButton} ${view === 'day' ? styles.active : ''}`}
-          onClick={() => handleViewClick('day')}
-          title="Day View"
-        >
-          <FaCalendarDay />
-        </button>
-        <button
-          className={`${styles.viewButton} ${view === 'agenda' ? styles.active : ''}`}
-          onClick={() => handleViewClick('agenda')}
-          title="Agenda View"
-        >
-          <FaList />
-        </button>
+      <div className={styles.rightControls}>
+        <div className={styles.viewButtons}>
+          <button
+            className={`${styles.viewButton} ${view === 'month' ? styles.active : ''}`}
+            onClick={() => handleViewClick('month')}
+            title="Month View"
+          >
+            <FaCalendarAlt />
+          </button>
+          <button
+            className={`${styles.viewButton} ${view === 'week' ? styles.active : ''}`}
+            onClick={() => handleViewClick('week')}
+            title="Week View"
+          >
+            <FaCalendarWeek />
+          </button>
+          <button
+            className={`${styles.viewButton} ${view === 'day' ? styles.active : ''}`}
+            onClick={() => handleViewClick('day')}
+            title="Day View"
+          >
+            <FaCalendarDay />
+          </button>
+          <button
+            className={`${styles.viewButton} ${view === 'agenda' ? styles.active : ''}`}
+            onClick={() => handleViewClick('agenda')}
+            title="Agenda View"
+          >
+            <FaList />
+          </button>
+        </div>
+        <div className={styles.separator}></div>
         <button
           className={styles.exportButton}
           onClick={onExport}

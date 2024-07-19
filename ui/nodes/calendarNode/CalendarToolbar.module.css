@@ -30,9 +30,17 @@
   font-weight: bold;
 }
 
+.rightControls {
+  display: flex;
+  align-items: center;
+}
+
 .viewButtons {
   display: flex;
   gap: 4px;
+  border-radius: 4px;
+  overflow: hidden;
+  background-color: rgba(0, 0, 0, 0.05);
 }
 
 .viewButton {
@@ -40,9 +48,9 @@
   border: none;
   cursor: pointer;
   font-size: 0.8rem;
-  padding: 2px 4px;
-  border-radius: 4px;
+  padding: 4px 8px;
   color: inherit;
+  transition: background-color 0.2s;
 }
 
 .viewButton:hover {
@@ -53,14 +61,22 @@
   background-color: rgba(0, 0, 0, 0.2);
 }
 
+.separator {
+  width: 1px;
+  height: 20px;
+  background-color: rgba(0, 0, 0, 0.2);
+  margin: 0 8px;
+}
+
 .exportButton {
   background: none;
   border: none;
   cursor: pointer;
   font-size: 0.8rem;
-  padding: 2px 4px;
+  padding: 4px 8px;
   border-radius: 4px;
   color: inherit;
+  transition: background-color 0.2s;
 }
 
 .exportButton:hover {
