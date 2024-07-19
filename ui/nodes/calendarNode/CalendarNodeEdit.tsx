@@ -423,6 +423,13 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
           toolbar={false}
           timezone={timeZone}
           dayPropGetter={customDayPropGetter}
+          eventPropGetter={(event) => ({
+            style: {
+              backgroundColor: event.color || backgroundColor,
+              color: textColor,
+              border: `1px solid ${textColor}`
+            }
+          })}
           className={styles.customCalendar}
         />
       </div>

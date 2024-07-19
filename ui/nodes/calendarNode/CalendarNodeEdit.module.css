@@ -31,6 +31,7 @@
   padding: 4px 3px;
   font-weight: bold;
   font-size: 0.75rem;
+  border-bottom: 1px solid currentColor !important;
 }
 
 .customCalendar .rbc-date-cell {
@@ -44,7 +45,26 @@
 }
 
 .todayCell {
-  font-weight: bold;
+  font-weight: bold !important;
+  background-color: rgba(0, 0, 0, 0.1) !important;
+  border: 2px solid currentColor !important;
+  border-radius: 4px !important;
+}
+
+.customCalendar .rbc-today {
+  background-color: transparent !important;
+}
+
+.customCalendar .rbc-off-range-bg {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+.customCalendar .rbc-month-row + .rbc-month-row {
+  border-top: 1px solid currentColor !important;
+}
+
+.customCalendar .rbc-day-bg + .rbc-day-bg {
+  border-left: 1px solid currentColor !important;
 }
 
 /* common on all nodes */
