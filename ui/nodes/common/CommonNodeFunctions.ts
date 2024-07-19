@@ -293,16 +293,17 @@ export const handleDuplicate = async (id: string, canvasId: string) => {
         position: newPosition,
         data: {
           ...nodeToDuplicate.data,
+          id: newNode.id,
           canvasId,
           title: newNode.title,
           version: newNode.version
         }
       };
       await addNode(newNodeData, canvasId);
-      setSelectedNodes([newNodeData.id]);
+      setSelectedNodes([newNode.id]);
 
       // Return the new node ID
-      return newNodeData.id;
+      return newNode.id;
     } catch (error) {
       console.error('Error duplicating node:', error);
       return null;
