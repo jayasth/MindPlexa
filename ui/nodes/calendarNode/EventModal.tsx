@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import styles from './EventModal.module.css';
 import Button from '@/ui/Button/Button';
 import Input from '@/ui/Input/Input';
+import Dropdown from '@/ui/dropdown/Dropdown';
 
 interface EventModalProps {
   event: any;
@@ -35,61 +36,51 @@ const EventModal: React.FC<EventModalProps> = ({
   };
 
   return (
-    <div className={styles.modal}>
-      <div className={styles.modalContent}>
+    <div className={styles.modalOverlay}>
+      <div className={styles.modal}>
         <h2 className={styles.modalTitle}>Edit Event</h2>
         <div className={styles.inputGroup}>
-          <label className={styles.label}>
-            Title:
-            <Input
-              type="text"
-              value={title}
-              onChange={(value) => setTitle(value)}
-              variant="slim"
-              className={styles.input}
-            />
-          </label>
+          <Input
+            type="text"
+            value={title}
+            onChange={setTitle}
+            placeholder="Event Title"
+            variant="slim"
+            className={styles.input}
+          />
         </div>
         <div className={styles.inputGroup}>
-          <label className={styles.label}>
-            Start:
-            <Input
-              type="datetime-local"
-              value={start}
-              onChange={(value) => setStart(value)}
-              variant="slim"
-              className={styles.input}
-            />
-          </label>
+          <Input
+            type="datetime-local"
+            value={start}
+            onChange={setStart}
+            variant="slim"
+            className={styles.input}
+          />
         </div>
         <div className={styles.inputGroup}>
-          <label className={styles.label}>
-            End:
-            <Input
-              type="datetime-local"
-              value={end}
-              onChange={(value) => setEnd(value)}
-              variant="slim"
-              className={styles.input}
-            />
-          </label>
+          <Input
+            type="datetime-local"
+            value={end}
+            onChange={setEnd}
+            variant="slim"
+            className={styles.input}
+          />
         </div>
         <div className={styles.inputGroup}>
-          <label className={styles.label}>
-            Category:
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className={styles.input}
-            >
-              <option value="">Select Category</option>
-              {eventCategories.map((cat) => (
-                <option key={cat.name} value={cat.name}>
-                  {cat.name}
-                </option>
-              ))}
-            </select>
-          </label>
+          <Dropdown
+            value={category}
+            onChange={setCategory}
+            variant="slim"
+            className={styles.input}
+          >
+            <option value="">Select Category</option>
+            {eventCategories.map((cat) => (
+              <option key={cat.name} value={cat.name}>
+                {cat.name}
+              </option>
+            ))}
+          </Dropdown>
         </div>
         <div className={styles.buttons}>
           <Button variant="submit" onClick={handleSave}>
