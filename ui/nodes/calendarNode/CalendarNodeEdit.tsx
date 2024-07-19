@@ -45,6 +45,7 @@ import { useBackgroundColorChange } from '@/ui/nodes/common/useBackgroundColorCh
 import { debounce } from 'lodash';
 import useNodeStore from '@/app/store/nodes/useNodeStore';
 import useCanvasStore from '@/app/store/canvas/useCanvasStore';
+import { exportEventsToICS } from './exportCalendarEvent';
 
 const localizer = momentLocalizer(moment);
 
@@ -334,8 +335,7 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
   };
 
   const handleExport = () => {
-    // Implement export logic based on exportSettings
-    // This could be exporting to iCal, CSV, etc.
+    exportEventsToICS(events);
   };
 
   const customDayPropGetter = useCallback(
@@ -413,6 +413,7 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
             setCurrentDate(newDate);
           }}
           currentDate={currentDate}
+          onExport={handleExport} // Pass the handleExport function
         />
         <Calendar
           localizer={localizer}

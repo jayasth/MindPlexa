@@ -52,3 +52,17 @@
 .viewButton.active {
   background-color: rgba(0, 0, 0, 0.2);
 }
+
+.exportButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.8rem;
+  padding: 2px 4px;
+  border-radius: 4px;
+  color: inherit;
+}
+
+.exportButton:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}

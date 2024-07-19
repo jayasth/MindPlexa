@@ -6,7 +6,8 @@ import {
   FaCalendarDay,
   FaChevronLeft,
   FaChevronRight,
-  FaList
+  FaList,
+  FaFileExport
 } from 'react-icons/fa';
 import Dropdown from '@/ui/dropdown/Dropdown';
 
@@ -19,6 +20,7 @@ interface CalendarToolbarProps {
   backgroundColor: string;
   onNavigate: (action: 'PREV' | 'NEXT' | 'TODAY') => void;
   currentDate: Date;
+  onExport: () => void;
 }
 
 const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
@@ -29,7 +31,8 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
   textColor,
   backgroundColor,
   onNavigate,
-  currentDate
+  currentDate,
+  onExport
 }) => {
   const handleViewClick = (newView: string) => {
     onViewChange(newView);
@@ -88,6 +91,13 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
           title="Agenda View"
         >
           <FaList />
+        </button>
+        <button
+          className={styles.exportButton}
+          onClick={onExport}
+          title="Export Events"
+        >
+          <FaFileExport />
         </button>
       </div>
     </div>
