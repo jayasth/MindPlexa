@@ -285,13 +285,12 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
 
   const handleAddEvent = ({ start, end }) => {
     const newEvent = {
-      id: Date.now(), // Add a unique id
-      title: 'New Event',
+      id: Date.now(),
+      title: '',
       start,
       end,
       category: ''
     };
-    setEvents([...events, newEvent]);
     setSelectedEvent(newEvent);
     setIsModalOpen(true);
   };
@@ -310,7 +309,7 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
   };
 
   const handleEventDelete = (eventToDelete) => {
-    setEvents(events.filter((event) => event !== eventToDelete));
+    setEvents(events.filter((event) => event.id !== eventToDelete.id));
     setIsModalOpen(false);
   };
 
@@ -491,6 +490,7 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
       {isModalOpen && (
         <EventModal
           event={selectedEvent}
+          isOpen={isModalOpen}
           onClose={() => {
             setIsModalOpen(false);
             setSelectedEvent(null);
