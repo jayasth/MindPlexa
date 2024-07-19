@@ -4,7 +4,8 @@ import 'react-responsive-modal/styles.css';
 import styles from './EventModal.module.css';
 import Button from '@/ui/Button/Button';
 import Input from '@/ui/Input/Input';
-import moment from 'moment';
+import Dropdown from '@/ui/dropdown/Dropdown';
+import moment from 'moment-timezone';
 
 interface EventModalProps {
   event: any;
@@ -12,6 +13,7 @@ interface EventModalProps {
   onClose: () => void;
   onSave: (updatedEvent: any) => void;
   onDelete: (eventToDelete: any) => void;
+  defaultTimezone: string;
 }
 
 const EventModal: React.FC<EventModalProps> = ({
@@ -19,31 +21,34 @@ const EventModal: React.FC<EventModalProps> = ({
   isOpen,
   onClose,
   onSave,
-  onDelete
+  onDelete,
+  defaultTimezone
 }) => {
   const [title, setTitle] = useState(event?.title || '');
   const [start, setStart] = useState('');
   const [end, setEnd] = useState('');
+  const [timezone, setTimezone] = useState(event?.timezone || defaultTimezone);
 
   useEffect(() => {
     if (event?.start) {
-      setStart(formatDateTimeForInput(event.start));
+      setStart(formatDateTimeForInput(event.start, timezone));
     }
     if (event?.end) {
-      setEnd(formatDateTimeForInput(event.end));
+      setEnd(formatDateTimeForInput(event.end, timezone));
     }
-  }, [event]);
+  }, [event, timezone]);
 
-  const formatDateTimeForInput = (date: Date) => {
-    return moment(date).format('YYYY-MM-DDTHH:mm');
+  const formatDateTimeForInput = (date: Date, tz: string) => {
+    return moment(date).tz(tz).format('YYYY-MM-DDTHH:mm');
   };
 
   const handleSave = () => {
     const updatedEvent = {
       ...event,
       title,
-      start: new Date(start),
-      end: new Date(end)
+      start: moment.tz(start, timezone).toDate(),
+      end: moment.tz(end, timezone).toDate(),
+      timezone
     };
     onSave(updatedEvent);
   };
@@ -64,7 +69,7 @@ const EventModal: React.FC<EventModalProps> = ({
         <Input
           type="text"
           value={title}
-          onChange={setTitle}
+          onChange={(value) => setTitle(value)}
           placeholder="Event Title"
           variant="slim"
           className={styles.input}
@@ -74,7 +79,7 @@ const EventModal: React.FC<EventModalProps> = ({
         <Input
           type="datetime-local"
           value={start}
-          onChange={setStart}
+          onChange={(value) => setStart(value)}
           variant="slim"
           className={styles.input}
         />
@@ -83,10 +88,24 @@ const EventModal: React.FC<EventModalProps> = ({
         <Input
           type="datetime-local"
           value={end}
-          onChange={setEnd}
+          onChange={(value) => setEnd(value)}
           variant="slim"
           className={styles.input}
         />
+      </div>
+      <div className={styles.inputGroup}>
+        <Dropdown
+          value={timezone}
+          onChange={(value) => setTimezone(value)}
+          variant="slim"
+          className={styles.input}
+        >
+          {moment.tz.names().map((tz) => (
+            <option key={tz} value={tz}>
+              {tz}
+            </option>
+          ))}
+        </Dropdown>
       </div>
       <div className={styles.buttons}>
         <Button variant="submit" onClick={handleSave}>

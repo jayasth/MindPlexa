@@ -1,14 +1,16 @@
 import { CalendarEvent } from './eventTypes';
+import moment from 'moment-timezone';
 
 export const exportEventsToICS = (events: CalendarEvent[]) => {
-  let icsContent = 'BEGIN:VCALENDAR\nVERSION:2.0\n';
+  let icsContent =
+    'BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//MindePlexa//Calendar//EN\n';
 
   events.forEach((event) => {
     icsContent += `BEGIN:VEVENT\n`;
     icsContent += `UID:${event.id}\n`;
     icsContent += `SUMMARY:${event.title}\n`;
-    icsContent += `DTSTART:${formatDateToICS(event.start)}\n`;
-    icsContent += `DTEND:${formatDateToICS(event.end)}\n`;
+    icsContent += `DTSTART;TZID=${event.timezone}:${formatDateToICS(event.start, event.timezone)}\n`;
+    icsContent += `DTEND;TZID=${event.timezone}:${formatDateToICS(event.end, event.timezone)}\n`;
     icsContent += `END:VEVENT\n`;
   });
 
@@ -26,6 +28,6 @@ export const exportEventsToICS = (events: CalendarEvent[]) => {
   URL.revokeObjectURL(url);
 };
 
-const formatDateToICS = (date: Date) => {
-  return date.toISOString().replace(/[-:]/g, '').split('.')[0];
+const formatDateToICS = (date: Date, timezone: string) => {
+  return moment(date).tz(timezone).format('YYYYMMDDTHHmmss');
 };

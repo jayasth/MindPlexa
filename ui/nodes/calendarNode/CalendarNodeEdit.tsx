@@ -7,7 +7,7 @@ import React, {
 } from 'react';
 import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
 import { Calendar, momentLocalizer, Views } from 'react-big-calendar';
-import moment from 'moment';
+import moment from 'moment-timezone';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import styles from './CalendarNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
@@ -45,6 +45,7 @@ import { debounce } from 'lodash';
 import useNodeStore from '@/app/store/nodes/useNodeStore';
 import useCanvasStore from '@/app/store/canvas/useCanvasStore';
 import { exportEventsToICS } from './exportCalendarEvent';
+import { CalendarEvent } from './eventTypes';
 
 const localizer = momentLocalizer(moment);
 
@@ -83,12 +84,13 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
   const { canvasId } = useCanvasStore();
   const [isSelected, setIsSelected] = useState(selected);
   const [title, setTitle] = useState(data.title || 'Untitled Calendar');
-  const [events, setEvents] = useState(() => {
+  const [events, setEvents] = useState<CalendarEvent[]>(() => {
     if (data.events && Array.isArray(data.events)) {
       return data.events.map((event) => ({
         ...event,
         start: new Date(event.start),
-        end: new Date(event.end)
+        end: new Date(event.end),
+        timezone: event.timezone || timeZone // Use the event's timezone or the default
       }));
     }
     return [];
@@ -119,7 +121,7 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
     return moment().toDate();
   });
   const [defaultView, setDefaultView] = useState(data.defaultView || 'month');
-  const [timeZone, setTimeZone] = useState(data.timeZone || 'UTC');
+  const [timeZone, setTimeZone] = useState(data.timeZone || moment.tz.guess());
   const [exportSettings, setExportSettings] = useState(
     data.exportSettings || {}
   );
@@ -307,11 +309,12 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
     setIsModalOpen(true);
   };
 
-  const handleEventSave = (updatedEvent) => {
-    const newEvent = {
+  const handleEventSave = (updatedEvent: CalendarEvent) => {
+    const newEvent: CalendarEvent = {
       ...updatedEvent,
-      start: new Date(updatedEvent.start),
-      end: new Date(updatedEvent.end)
+      start: moment.tz(updatedEvent.start, updatedEvent.timezone).toDate(),
+      end: moment.tz(updatedEvent.end, updatedEvent.timezone).toDate(),
+      timezone: updatedEvent.timezone
     };
     if (events.find((e) => e.id === newEvent.id)) {
       setEvents(
@@ -320,6 +323,7 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
     } else {
       setEvents([...events, newEvent]);
     }
+    setTimeZone(newEvent.timezone);
     setIsModalOpen(false);
   };
 
@@ -527,6 +531,7 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
           }}
           onSave={handleEventSave}
           onDelete={handleEventDelete}
+          defaultTimezone={timeZone}
         />
       )}
     </div>
