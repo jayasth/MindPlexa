@@ -101,7 +101,15 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [view, setView] = useState(data.view || 'month');
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState(() => {
+    if (data.events && data.events.length > 0) {
+      const latestEvent = data.events.reduce((latest, event) =>
+        event.start > latest.start ? event : latest
+      );
+      return moment(latestEvent.start).toDate();
+    }
+    return moment().toDate();
+  });
   const [defaultView, setDefaultView] = useState(data.defaultView || 'month');
   const [eventCategories, setEventCategories] = useState(
     data.eventCategories || []
@@ -368,6 +376,22 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
     [tags, attachedFiles, onRemoveTag, onRemoveFile, textColor]
   );
 
+  const handleNavigate = useCallback((action: 'PREV' | 'NEXT' | 'TODAY') => {
+    setCurrentDate((prevDate) => {
+      const newDate = moment(prevDate);
+      switch (action) {
+        case 'PREV':
+          return newDate.subtract(1, 'month').toDate();
+        case 'NEXT':
+          return newDate.add(1, 'month').toDate();
+        case 'TODAY':
+          return moment().toDate();
+        default:
+          return prevDate;
+      }
+    });
+  }, []);
+
   return (
     <div
       className={styles.calendarNode}
@@ -405,15 +429,9 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
           defaultView={defaultView}
           onDefaultViewChange={setDefaultView}
           backgroundColor={backgroundColor}
-          onNavigate={(action) => {
-            const newDate = new Date(currentDate);
-            if (action === 'PREV') newDate.setMonth(newDate.getMonth() - 1);
-            if (action === 'NEXT') newDate.setMonth(newDate.getMonth() + 1);
-            if (action === 'TODAY') newDate.setMonth(new Date().getMonth());
-            setCurrentDate(newDate);
-          }}
+          onNavigate={handleNavigate}
           currentDate={currentDate}
-          onExport={handleExport} // Pass the handleExport function
+          onExport={handleExport}
         />
         <Calendar
           localizer={localizer}
@@ -445,6 +463,9 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
             week: true,
             day: true,
             agenda: true
+          }}
+          messages={{
+            agenda: 'List'
           }}
         />
       </div>
