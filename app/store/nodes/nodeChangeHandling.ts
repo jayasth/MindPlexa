@@ -133,14 +133,7 @@ export const onNodesChange = async (set, get, changes, canvasId) => {
                 case 'calendar':
                   specificUpdates = {
                     events: JSON.stringify(updatedNode.data.events),
-                    view: updatedNode.data.view,
                     default_view: updatedNode.data.defaultView,
-                    event_categories: JSON.stringify(
-                      updatedNode.data.eventCategories
-                    ),
-                    export_settings: JSON.stringify(
-                      updatedNode.data.exportSettings
-                    ),
                     time_zone: updatedNode.data.timeZone
                   };
                   break;

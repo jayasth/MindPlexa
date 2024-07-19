@@ -96,15 +96,8 @@ export const processNodeSpecificData = (nodeType: NodeType, data: any) => {
       };
     case 'calendar':
       return {
-        events: data.events ? JSON.parse(data.events) : [],
-        view: data.view || 'month',
+        events: data.events || [],
         defaultView: data.default_view || 'month',
-        eventCategories: data.event_categories
-          ? JSON.parse(data.event_categories)
-          : [],
-        exportSettings: data.export_settings
-          ? JSON.parse(data.export_settings)
-          : {},
         timeZone: data.time_zone || 'UTC'
       };
     case 'table':

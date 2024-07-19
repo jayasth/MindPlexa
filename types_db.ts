@@ -12,33 +12,24 @@ export type Database = {
       calendar_nodes: {
         Row: {
           default_view: string | null
-          event_categories: Json | null
           events: Json | null
-          export_settings: Json | null
           id: string
           node_id: string | null
           time_zone: string | null
-          view: string | null
         }
         Insert: {
           default_view?: string | null
-          event_categories?: Json | null
           events?: Json | null
-          export_settings?: Json | null
           id?: string
           node_id?: string | null
           time_zone?: string | null
-          view?: string | null
         }
         Update: {
           default_view?: string | null
-          event_categories?: Json | null
           events?: Json | null
-          export_settings?: Json | null
           id?: string
           node_id?: string | null
           time_zone?: string | null
-          view?: string | null
         }
         Relationships: [
           {
