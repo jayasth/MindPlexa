@@ -1,7 +1,7 @@
 .calendarNode {
   display: flex;
   flex-direction: column;
-  border-radius: 4px;
+  border-radius: 8px;
   padding: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   overflow: hidden;
@@ -20,7 +20,31 @@
   padding: 0;
   z-index: 0;
   cursor: text;
-  font-size: 12px; /* Reduced font size for calendar content */
+  font-size: 12px;
+}
+
+.customCalendar {
+  font-size: 0.8rem;
+}
+
+.customCalendar .rbc-header {
+  padding: 4px 3px;
+  font-weight: bold;
+  font-size: 0.75rem;
+}
+
+.customCalendar .rbc-date-cell {
+  padding: 2px;
+  font-size: 0.7rem;
+}
+
+.customCalendar .rbc-event {
+  padding: 2px 3px;
+  font-size: 0.7rem;
+}
+
+.todayCell {
+  font-weight: bold;
 }
 
 /* common on all nodes */

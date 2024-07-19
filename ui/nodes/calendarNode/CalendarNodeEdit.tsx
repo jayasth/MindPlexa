@@ -333,6 +333,23 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
     // This could be exporting to iCal, CSV, etc.
   };
 
+  const customDayPropGetter = useCallback(
+    (date: Date) => {
+      if (moment(date).isSame(moment(), 'day')) {
+        return {
+          className: styles.todayCell,
+          style: {
+            backgroundColor: backgroundColor,
+            color: textColor,
+            border: `2px solid ${textColor}`
+          }
+        };
+      }
+      return {};
+    },
+    [backgroundColor, textColor]
+  );
+
   const memoizedTagFileContainer = useMemo(
     () => (
       <TagFileContainer
@@ -393,7 +410,7 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
           }))}
           startAccessor="start"
           endAccessor="end"
-          style={{ height: 'calc(100% - 30px)', width: '100%' }}
+          style={{ height: 'calc(100% - 40px)', width: '100%' }}
           selectable
           onSelectEvent={handleSelectEvent}
           onSelectSlot={handleAddEvent}
@@ -405,6 +422,8 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
           onNavigate={(date) => setCurrentDate(date)}
           toolbar={false}
           timezone={timeZone}
+          dayPropGetter={customDayPropGetter}
+          className={styles.customCalendar}
         />
       </div>
       {(tags.length > 0 || attachedFiles.length > 0) &&
