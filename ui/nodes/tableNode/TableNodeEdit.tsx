@@ -76,6 +76,8 @@ import {
   onCellKeyDown
 } from '@/ui/nodes/tableNode/utils/KeyboardMouseHandlers';
 
+import debounce from 'lodash/debounce';
+
 interface TableNodeEditProps extends NodeProps {
   data: any;
   width: number;
@@ -144,6 +146,27 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   const tableRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<any>(null);
 
+  const handleBackgroundColorChange = useBackgroundColorChange(
+    data.id,
+    setBackgroundColor,
+    setTextColor
+  );
+
+  const onChangeColor = useCallback(
+    (color: { hex: string }) => {
+      handleBackgroundColorChange(color);
+    },
+    [handleBackgroundColorChange]
+  );
+
+  const debouncedUpdateNode = useMemo(
+    () =>
+      debounce((nodeId, canvasId, updates) => {
+        updateNode(nodeId, canvasId, updates);
+      }, 500),
+    [updateNode]
+  );
+
   useEffect(() => {
     if (
       title !== data.title ||
@@ -154,7 +177,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
       backgroundColor !== data.backgroundColor ||
       textColor !== data.textColor
     ) {
-      updateNode(data.id, canvasId, {
+      debouncedUpdateNode(data.id, canvasId, {
         title,
         columns: content.columns,
         rows: content.rows,
@@ -173,89 +196,36 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     textColor,
     data.id,
     canvasId,
-    updateNode
+    debouncedUpdateNode
   ]);
 
   useEffect(() => {
-    const fetchAttachments = async () => {
-      const attachments = await getAttachments(data.id);
-      setAttachedFiles(attachments);
+    return () => {
+      removeAllPreviews();
     };
-    fetchAttachments();
-  }, [data.id]);
-
-  const onChangeTitle = (newTitle: string) => {
-    handleTitleChange(data.id, newTitle, setTitle, canvasId);
-  };
-
-  const handleBackgroundColorChange = useBackgroundColorChange(
-    data.id,
-    setBackgroundColor,
-    setTextColor
-  );
-
-  const onChangeColor = (color: { hex: string }) => {
-    handleBackgroundColorChange(color);
-  };
-
-  const onAddTag = (newTags: string[]) => {
-    const uniqueTags = Array.from(new Set([...tags, ...newTags]));
-    setTags(uniqueTags);
-    handleAddTag(data.id, uniqueTags, () => {}, canvasId);
-  };
-
-  const onRemoveTag = (tagToRemove: string) => {
-    const updatedTags = tags.filter((tag) => tag !== tagToRemove);
-    setTags(updatedTags);
-    handleAddTag(data.id, updatedTags, () => {}, canvasId);
-  };
-
-  const onAttachFiles = async (files: File[]) => {
-    const attachments = await Promise.all(
-      files.map(async (file) => {
-        const attachment = await uploadAttachment(data.id, file);
-        return attachment;
-      })
-    );
-    setAttachedFiles((prevAttachments) => [...prevAttachments, ...attachments]);
-  };
-
-  const onRemoveFile = async (fileId: string) => {
-    await removeAttachment(fileId);
-    setAttachedFiles((prevAttachments) =>
-      prevAttachments.filter((file) => file.id !== fileId)
-    );
-  };
-
-  const handleDeleteCancel = () => {
-    setIsDeleteModalOpen(false);
-  };
-
-  const handleDeleteConfirm = () => {
-    handleDeleteNode(data.id, canvasId);
-    setIsDeleteModalOpen(false);
-  };
-
-  const handleContainerClick = () => {
-    setIsContainerSelected(true);
-  };
-
-  const handleContainerBlur = () => {
-    setIsContainerSelected(false);
-  };
-
-  useEffect(() => {
-    setNodeWidth(width);
-    setNodeHeight(height);
-  }, [width, height]);
-
-  const handleResize = useCallback((event, { width, height }) => {
-    setNodeWidth(width);
-    setNodeHeight(height);
   }, []);
 
-  const toggleColorPicker = () => {
-    setIsColorPickerVisible(!isColorPickerVisible);
+  const columnDefs = getColumnDefs(content, setContent, updateNode, gridRef);
+
+  useKeyPressHandler(content, setContent, updateNode, gridRef);
+  const handleCellClick = useCallback(
+    (event) => {
+      if (gridRef.current) {
+        gridRef.current.api.deselectAll();
+      }
+    },
+    [gridRef]
+  );
+
+  const gridOptions = {
+    ...existingOptions,
+    onCellClicked: handleCellClick
+  };
+
+  const updateColumnState = () => {
+    if (gridRef.current) {
+      gridRef.current.api.refreshHeader();
+    }
   };
 
   const handleDeleteTable = () => {
@@ -283,34 +253,101 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     setCellContextMenuParams(null);
   };
 
-  const customStyles: CSSProperties = {
-    width: nodeWidth,
-    height: nodeHeight,
-    backgroundColor,
-    color: textColor
-  };
+  /*Common node functions*/
 
-  const columnDefs = getColumnDefs(content, setContent, updateNode, gridRef);
-
-  useKeyPressHandler(content, setContent, updateNode, gridRef);
-  const handleCellClick = useCallback(
-    (event) => {
-      if (gridRef.current) {
-        gridRef.current.api.deselectAll();
-      }
+  const onChangeTitle = useCallback(
+    (newTitle: string) => {
+      handleTitleChange(data.id, newTitle, setTitle, canvasId);
     },
-    [gridRef]
+    [data.id, canvasId]
   );
 
-  const gridOptions = {
-    ...existingOptions,
-    onCellClicked: handleCellClick
+  const onAddTag = useCallback(
+    (newTags: string[]) => {
+      const uniqueTags = Array.from(new Set([...tags, ...newTags]));
+      setTags(uniqueTags);
+      handleAddTag(data.id, [...uniqueTags], () => {}, canvasId);
+    },
+    [data.id, tags, canvasId]
+  );
+
+  const onRemoveTag = useCallback(
+    (tagToRemove: string) => {
+      const updatedTags = tags.filter((tag) => tag !== tagToRemove);
+      setTags(updatedTags);
+      handleAddTag(data.id, updatedTags, () => {}, canvasId);
+    },
+    [data.id, tags, canvasId]
+  );
+
+  const onAttachFiles = useCallback(async (files: Attachment[]) => {
+    setAttachedFiles(files);
+  }, []);
+
+  const onRemoveFile = useCallback(
+    async (fileId: string) => {
+      await removeAttachment(fileId);
+      const updatedAttachments = await getAttachments(data.id);
+      setAttachedFiles(updatedAttachments);
+    },
+    [data.id]
+  );
+
+  useEffect(() => {
+    const fetchAttachments = async () => {
+      const attachments = await getAttachments(data.id);
+      setAttachedFiles(attachments);
+    };
+    fetchAttachments();
+  }, [data.id]);
+
+  useEffect(() => {
+    setNodeWidth(width);
+    setNodeHeight(height);
+  }, [width, height]);
+
+  const handleResize = useCallback(
+    (event, { width, height }) => {
+      setNodeWidth(width);
+      setNodeHeight(height);
+      onNodeResizeStop(data.id, { width, height }, position);
+    },
+    [data.id, onNodeResizeStop, position]
+  );
+
+  const handleContainerClick = useCallback(() => {
+    setIsContainerSelected(true);
+  }, []);
+
+  const handleContainerBlur = useCallback(() => {
+    setIsContainerSelected(false);
+  }, []);
+
+  const toggleColorPicker = useCallback(() => {
+    setIsColorPickerVisible((prev) => !prev);
+  }, []);
+
+  const customStyles: CSSProperties = useMemo(
+    () => ({
+      width: nodeWidth,
+      height: nodeHeight,
+      backgroundColor,
+      color: textColor
+    }),
+    [nodeWidth, nodeHeight, backgroundColor, textColor]
+  );
+
+  const handleDelete = () => {
+    setIsDeleteModalOpen(true);
   };
 
-  const updateColumnState = () => {
-    if (gridRef.current) {
-      gridRef.current.api.refreshHeader();
-    }
+  const handleDeleteConfirm = () => {
+    setIsDeleteModalOpen(false);
+    handleDeleteNode(data.id, canvasId);
+  };
+
+  const handleDeleteCancel = () => {
+    setIsDeleteModalOpen(false);
   };
 
   const memoizedTagFileContainer = useMemo(
@@ -325,7 +362,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     ),
     [tags, attachedFiles, onRemoveTag, onRemoveFile, textColor]
   );
-
   return (
     <div>
       {errorMessage && (
@@ -446,7 +482,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
         {(tags.length > 0 || attachedFiles.length > 0) &&
           memoizedTagFileContainer}
         <div className={styles.footer}>
-          <DeleteButton onClick={() => setIsDeleteModalOpen(true)} />
+          <DeleteButton onClick={() => handleDeleteNode(data.id, canvasId)} />
           <ChangeColorButton onClick={toggleColorPicker} />
           <AddTagButton onClick={() => setIsTagModalOpen(true)} />
           <AttachFileButton onClick={() => setIsFileModalOpen(true)} />
@@ -562,4 +598,4 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   );
 };
 
-export default TableNodeEdit;
+export default React.memo(TableNodeEdit);
