@@ -1,7 +1,6 @@
 import React, {
   useState,
   useEffect,
-  useRef,
   CSSProperties,
   useMemo,
   useCallback
@@ -84,7 +83,16 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
   const { canvasId } = useCanvasStore();
   const [isSelected, setIsSelected] = useState(selected);
   const [title, setTitle] = useState(data.title || 'Untitled Calendar');
-  const [events, setEvents] = useState(data.events || []);
+  const [events, setEvents] = useState(() => {
+    if (data.events && Array.isArray(data.events)) {
+      return data.events.map((event) => ({
+        ...event,
+        start: new Date(event.start),
+        end: new Date(event.end)
+      }));
+    }
+    return [];
+  });
   const [backgroundColor, setBackgroundColor] = useState(
     data.backgroundColor || '#F4F4F4'
   );
@@ -102,7 +110,7 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [view, setView] = useState(data.view || 'month');
   const [currentDate, setCurrentDate] = useState(() => {
-    if (data.events && data.events.length > 0) {
+    if (data.events && Array.isArray(data.events) && data.events.length > 0) {
       const latestEvent = data.events.reduce((latest, event) =>
         event.start > latest.start ? event : latest
       );
@@ -300,14 +308,17 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
   };
 
   const handleEventSave = (updatedEvent) => {
-    if (events.find((e) => e.id === updatedEvent.id)) {
+    const newEvent = {
+      ...updatedEvent,
+      start: new Date(updatedEvent.start),
+      end: new Date(updatedEvent.end)
+    };
+    if (events.find((e) => e.id === newEvent.id)) {
       setEvents(
-        events.map((event) =>
-          event.id === updatedEvent.id ? updatedEvent : event
-        )
+        events.map((event) => (event.id === newEvent.id ? newEvent : event))
       );
     } else {
-      setEvents([...events, updatedEvent]);
+      setEvents([...events, newEvent]);
     }
     setIsModalOpen(false);
   };

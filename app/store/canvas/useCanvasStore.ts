@@ -51,6 +51,19 @@ const processNode = (node: any) => {
     }
   }
 
+  // Parse events JSON string if it exists
+  let events = [];
+  if (node.type === 'calendar' && node.data && node.data.events) {
+    try {
+      events =
+        typeof node.data.events === 'string'
+          ? JSON.parse(node.data.events)
+          : node.data.events;
+    } catch (error) {
+      console.error('Error parsing events JSON:', error);
+    }
+  }
+
   return {
     id: node.id,
     type: node.type,
@@ -74,6 +87,7 @@ const processNode = (node: any) => {
           isFile: file.isFile
         })) || [],
       tasks: tasks,
+      events: events,
       completedTasks: node.data?.completedTasks || 0,
       totalTasks: node.data?.totalTasks || 0,
       showCompletedTasks: node.data?.showCompletedTasks ?? true,
