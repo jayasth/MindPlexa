@@ -286,8 +286,28 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
     setIsModalOpen(true);
   };
 
-  const handleAddEvent = ({ start, end }) => {
-    setNewEvent({ start, end });
+  const handleAddEvent = ({ start, end, slots }) => {
+    // Ensure we're using the correct start and end times
+    const actualStart = slots && slots.length > 0 ? slots[0] : start;
+    const actualEnd = slots && slots.length > 0 ? slots[slots.length - 1] : end;
+
+    // If it's an all-day event, adjust the end time
+    const isAllDayEvent =
+      actualStart.getHours() === 0 &&
+      actualEnd.getHours() === 0 &&
+      actualEnd.getDate() > actualStart.getDate();
+    if (isAllDayEvent) {
+      actualEnd.setDate(actualEnd.getDate() - 1);
+      actualEnd.setHours(23, 59, 59);
+    }
+
+    const newEvent = {
+      title: '',
+      start: actualStart,
+      end: actualEnd,
+      category: ''
+    };
+    setSelectedEvent(newEvent);
     setIsModalOpen(true);
   };
 

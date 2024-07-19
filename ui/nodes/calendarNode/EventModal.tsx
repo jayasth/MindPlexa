@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './EventModal.module.css';
 import Button from '@/ui/Button/Button';
 import Input from '@/ui/Input/Input';
 import Dropdown from '@/ui/dropdown/Dropdown';
+import moment from 'moment';
 
 interface EventModalProps {
   event: any;
@@ -19,10 +20,23 @@ const EventModal: React.FC<EventModalProps> = ({
   onDelete,
   eventCategories
 }) => {
-  const [title, setTitle] = useState(event.title);
-  const [start, setStart] = useState(event.start.toISOString().slice(0, 16));
-  const [end, setEnd] = useState(event.end.toISOString().slice(0, 16));
+  const [title, setTitle] = useState(event.title || '');
+  const [start, setStart] = useState('');
+  const [end, setEnd] = useState('');
   const [category, setCategory] = useState(event.category || '');
+
+  useEffect(() => {
+    if (event.start) {
+      setStart(formatDateTimeForInput(event.start));
+    }
+    if (event.end) {
+      setEnd(formatDateTimeForInput(event.end));
+    }
+  }, [event]);
+
+  const formatDateTimeForInput = (date: Date) => {
+    return moment(date).format('YYYY-MM-DDTHH:mm');
+  };
 
   const handleSave = () => {
     const updatedEvent = {
@@ -38,7 +52,9 @@ const EventModal: React.FC<EventModalProps> = ({
   return (
     <div className={styles.modalOverlay}>
       <div className={styles.modal}>
-        <h2 className={styles.modalTitle}>Edit Event</h2>
+        <h2 className={styles.modalTitle}>
+          {event.title ? 'Edit Event' : 'Add Event'}
+        </h2>
         <div className={styles.inputGroup}>
           <Input
             type="text"
@@ -86,9 +102,11 @@ const EventModal: React.FC<EventModalProps> = ({
           <Button variant="submit" onClick={handleSave}>
             Save
           </Button>
-          <Button variant="cancel" onClick={() => onDelete(event)}>
-            Delete
-          </Button>
+          {event.title && (
+            <Button variant="cancel" onClick={() => onDelete(event)}>
+              Delete
+            </Button>
+          )}
           <Button variant="outline" onClick={onClose}>
             Close
           </Button>
