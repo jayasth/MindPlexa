@@ -4,7 +4,6 @@ import 'react-responsive-modal/styles.css';
 import styles from './EventModal.module.css';
 import Button from '@/ui/Button/Button';
 import Input from '@/ui/Input/Input';
-import Dropdown from '@/ui/dropdown/Dropdown';
 import moment from 'moment';
 
 interface EventModalProps {
@@ -13,7 +12,6 @@ interface EventModalProps {
   onClose: () => void;
   onSave: (updatedEvent: any) => void;
   onDelete: (eventToDelete: any) => void;
-  eventCategories: any[];
 }
 
 const EventModal: React.FC<EventModalProps> = ({
@@ -21,13 +19,11 @@ const EventModal: React.FC<EventModalProps> = ({
   isOpen,
   onClose,
   onSave,
-  onDelete,
-  eventCategories
+  onDelete
 }) => {
   const [title, setTitle] = useState(event?.title || '');
   const [start, setStart] = useState('');
   const [end, setEnd] = useState('');
-  const [category, setCategory] = useState(event?.category || '');
 
   useEffect(() => {
     if (event?.start) {
@@ -47,8 +43,7 @@ const EventModal: React.FC<EventModalProps> = ({
       ...event,
       title,
       start: new Date(start),
-      end: new Date(end),
-      category
+      end: new Date(end)
     };
     onSave(updatedEvent);
   };
@@ -92,21 +87,6 @@ const EventModal: React.FC<EventModalProps> = ({
           variant="slim"
           className={styles.input}
         />
-      </div>
-      <div className={styles.inputGroup}>
-        <Dropdown
-          value={category}
-          onChange={setCategory}
-          variant="slim"
-          className={styles.input}
-        >
-          <option value="">Select Category</option>
-          {eventCategories.map((cat) => (
-            <option key={cat.name} value={cat.name}>
-              {cat.name}
-            </option>
-          ))}
-        </Dropdown>
       </div>
       <div className={styles.buttons}>
         <Button variant="submit" onClick={handleSave}>

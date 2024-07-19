@@ -111,9 +111,6 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
     return moment().toDate();
   });
   const [defaultView, setDefaultView] = useState(data.defaultView || 'month');
-  const [eventCategories, setEventCategories] = useState(
-    data.eventCategories || []
-  );
   const [timeZone, setTimeZone] = useState(data.timeZone || 'UTC');
   const [exportSettings, setExportSettings] = useState(
     data.exportSettings || {}
@@ -170,7 +167,6 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
       tags,
       attachedFiles,
       defaultView,
-      eventCategories,
       timeZone,
       exportSettings
     };
@@ -186,7 +182,6 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
     tags,
     attachedFiles,
     defaultView,
-    eventCategories,
     timeZone,
     exportSettings,
     debouncedUpdateNodeData
@@ -336,10 +331,6 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
     const { start, end, event } = data;
     const updatedEvent = { ...event, start, end };
     setEvents(events.map((ev) => (ev === event ? updatedEvent : ev)));
-  };
-
-  const handleAddEventCategory = (category: string, color: string) => {
-    setEventCategories([...eventCategories, { name: category, color }]);
   };
 
   const handleExport = () => {
@@ -525,7 +516,6 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
           }}
           onSave={handleEventSave}
           onDelete={handleEventDelete}
-          eventCategories={eventCategories}
         />
       )}
     </div>
