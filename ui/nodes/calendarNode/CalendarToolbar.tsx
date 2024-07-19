@@ -13,7 +13,7 @@ import Dropdown from '@/ui/dropdown/Dropdown';
 
 interface CalendarToolbarProps {
   view: string;
-  defaultView: string;
+  defaultView?: string;
   onViewChange: (view: string) => void;
   onDefaultViewChange: (view: string) => void;
   textColor: string;
@@ -21,18 +21,20 @@ interface CalendarToolbarProps {
   onNavigate: (action: 'PREV' | 'NEXT' | 'TODAY') => void;
   currentDate: Date;
   onExport: () => void;
+  messages?: { [key: string]: string };
 }
 
 const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
   view,
-  defaultView,
+  defaultView = 'month', // Default view is month
   onViewChange,
   onDefaultViewChange,
   textColor,
   backgroundColor,
   onNavigate,
   currentDate,
-  onExport
+  onExport,
+  messages = { agenda: 'List' }
 }) => {
   const handleViewClick = (newView: string) => {
     onViewChange(newView);
@@ -94,7 +96,7 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
             <FaList />
           </button>
         </div>
-        <div className={styles.separator}></div>
+        <div className={styles.separator} />
         <button
           className={styles.exportButton}
           onClick={onExport}

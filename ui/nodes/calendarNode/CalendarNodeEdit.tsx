@@ -299,8 +299,8 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
     const newEvent = {
       id: Date.now(),
       title: '',
-      start,
-      end,
+      start: new Date(start),
+      end: new Date(end),
       category: ''
     };
     setSelectedEvent(newEvent);
@@ -383,11 +383,11 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
       const newDate = moment(prevDate);
       switch (action) {
         case 'PREV':
-          return newDate.subtract(1, 'month').toDate();
+          return newDate.startOf('month').subtract(1, 'month').toDate();
         case 'NEXT':
-          return newDate.add(1, 'month').toDate();
+          return newDate.startOf('month').add(1, 'month').toDate();
         case 'TODAY':
-          return moment().toDate();
+          return moment().startOf('month').toDate();
         default:
           return prevDate;
       }
