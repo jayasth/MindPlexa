@@ -439,6 +439,12 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
             }
           })}
           className={styles.customCalendar}
+          views={{
+            month: true,
+            week: true,
+            day: true,
+            agenda: true
+          }}
         />
       </div>
       {(tags.length > 0 || attachedFiles.length > 0) &&

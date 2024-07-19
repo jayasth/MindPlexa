@@ -5,7 +5,8 @@ import {
   FaCalendarWeek,
   FaCalendarDay,
   FaChevronLeft,
-  FaChevronRight
+  FaChevronRight,
+  FaList
 } from 'react-icons/fa';
 import Dropdown from '@/ui/dropdown/Dropdown';
 
@@ -80,6 +81,13 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
           title="Day View"
         >
           <FaCalendarDay />
+        </button>
+        <button
+          className={`${styles.viewButton} ${view === 'agenda' ? styles.active : ''}`}
+          onClick={() => handleViewClick('agenda')}
+          title="Agenda View"
+        >
+          <FaList />
         </button>
       </div>
     </div>
