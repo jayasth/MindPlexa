@@ -382,6 +382,7 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
           textColor={textColor}
           defaultView={defaultView}
           onDefaultViewChange={handleViewChange}
+          backgroundColor={backgroundColor}
         />
         <Calendar
           localizer={localizer}
@@ -392,7 +393,7 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
           }))}
           startAccessor="start"
           endAccessor="end"
-          style={{ height: 'calc(100% - 40px)', width: '100%' }}
+          style={{ height: 'calc(100% - 30px)', width: '100%' }}
           selectable
           onSelectEvent={handleSelectEvent}
           onSelectSlot={handleAddEvent}
@@ -402,7 +403,7 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
           onView={(newView) => handleViewChange(newView)}
           date={currentDate}
           onNavigate={(date) => setCurrentDate(date)}
-          toolbar={true}
+          toolbar={false}
           timezone={timeZone}
         />
       </div>

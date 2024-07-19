@@ -2,6 +2,7 @@ import React from 'react';
 import styles from './CalendarToolbar.module.css';
 import { Views } from 'react-big-calendar';
 import { FaCalendarAlt, FaCalendarWeek, FaCalendarDay } from 'react-icons/fa';
+import Dropdown from '@/ui/dropdown/Dropdown';
 
 interface CalendarToolbarProps {
   view: string;
@@ -9,6 +10,7 @@ interface CalendarToolbarProps {
   onViewChange: (view: string) => void;
   onDefaultViewChange: (view: string) => void;
   textColor: string;
+  backgroundColor: string;
 }
 
 const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
@@ -16,23 +18,29 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
   defaultView,
   onViewChange,
   onDefaultViewChange,
-  textColor
+  textColor,
+  backgroundColor
 }) => {
   const handleViewClick = (newView: string) => {
     onViewChange(newView);
   };
 
   return (
-    <div className={styles.toolbar} style={{ color: textColor }}>
-      <select
+    <div
+      className={styles.toolbar}
+      style={{ color: textColor, backgroundColor }}
+    >
+      <Dropdown
         value={defaultView}
-        onChange={(e) => onDefaultViewChange(e.target.value)}
-        style={{ color: textColor }}
+        onChange={onDefaultViewChange}
+        variant="slim"
+        style={{ color: textColor, backgroundColor: 'transparent' }}
+        className={styles.viewDropdown}
       >
         <option value="month">Month</option>
         <option value="week">Week</option>
         <option value="day">Day</option>
-      </select>
+      </Dropdown>
       <button
         className={`${styles.viewButton} ${
           view === 'month' ? styles.active : ''
