@@ -34,7 +34,11 @@ const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
         value={defaultView}
         onChange={onDefaultViewChange}
         variant="slim"
-        style={{ color: textColor, backgroundColor: 'transparent' }}
+        style={{
+          color: textColor,
+          backgroundColor: backgroundColor,
+          borderColor: textColor
+        }}
         className={styles.viewDropdown}
       >
         <option value="month">Month</option>

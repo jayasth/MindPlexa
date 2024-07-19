@@ -7,10 +7,18 @@ interface Props extends Omit<SelectHTMLAttributes<any>, 'onChange'> {
   className?: string;
   variant?: 'slim' | 'outline' | 'sleek' | 'gradient';
   onChange: (value: string) => void;
+  style?: React.CSSProperties;
 }
 
 const Dropdown = (props: Props) => {
-  const { className, variant = 'sleek', onChange, children, ...rest } = props;
+  const {
+    className,
+    variant = 'sleek',
+    onChange,
+    children,
+    style,
+    ...rest
+  } = props;
 
   const rootClassName = cn(
     s.root,
@@ -32,7 +40,12 @@ const Dropdown = (props: Props) => {
 
   return (
     <label>
-      <select className={rootClassName} onChange={handleOnChange} {...rest}>
+      <select
+        className={rootClassName}
+        onChange={handleOnChange}
+        style={style}
+        {...rest}
+      >
         {children}
       </select>
     </label>
