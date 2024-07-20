@@ -20,7 +20,7 @@
 
 .toolbarContainer {
   width: 70px;
-  padding: 8px;
+  padding: 4px;
   background-color: #f0f0f0;
   border-right: 1px solid #ccc;
   overflow-y: auto;
@@ -109,7 +109,6 @@
   margin-top: auto;
   background-color: transparent;
   padding: 4px;
-  height: 40px; /* Set a fixed height for the footer */
 }
 
 .tagFileContainer {
