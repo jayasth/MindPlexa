@@ -12,7 +12,6 @@ import { GrPaint } from 'react-icons/gr';
 import { SketchPicker } from 'react-color';
 import Modal from 'react-responsive-modal';
 import 'react-responsive-modal/styles.css';
-import { Popover } from '@/ui/Popover/Popover';
 import { Tooltip } from '@/ui/Tooltip/Tooltip';
 import Slider from './DrawNodeSlider';
 import styles from './DrawNodeToolbar.module.css';
