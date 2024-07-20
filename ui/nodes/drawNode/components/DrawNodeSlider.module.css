@@ -1,8 +1,19 @@
+.sliderContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  background-color: white;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 180px;
+}
+
 .slider {
-  width: 100%;
+  flex-grow: 1;
   -webkit-appearance: none;
   appearance: none;
-  height: 8px;
+  height: 4px;
   background: #ddd;
   outline: none;
   opacity: 0.7;
@@ -16,15 +27,26 @@
 .slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   background: #4caf50;
   cursor: pointer;
+  border-radius: 50%;
 }
 
 .slider::-moz-range-thumb {
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   background: #4caf50;
   cursor: pointer;
+  border-radius: 50%;
+}
+
+.sliderValue {
+  font-size: 12px;
+  min-width: 24px;
+  text-align: right;
+  background-color: #f0f0f0;
+  padding: 2px 6px;
+  border-radius: 10px;
 }

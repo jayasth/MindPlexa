@@ -13,7 +13,7 @@ import { HexColorPicker } from 'react-colorful';
 import { Popover } from '@/ui/Popover/Popover';
 import { Tooltip } from '@/ui/Tooltip/Tooltip';
 import Slider from './DrawNodeSlider';
-import toolbarStyles from '@/ui/nodes/drawNode/components/DrawNodeToolbar.module.css';
+import styles from './DrawNodeToolbar.module.css';
 
 interface DrawNodeToolbarProps {
   tools: Array<[any, any, number]>;
@@ -57,12 +57,12 @@ const DrawNodeToolbar: React.FC<DrawNodeToolbarProps> = ({
   const iconSize = 16;
 
   return (
-    <div className={toolbarStyles.toolbar} style={{ backgroundColor }}>
-      <div className={toolbarStyles.toolGroup}>
+    <div className={styles.toolbar} style={{ backgroundColor }}>
+      <div className={styles.toolGroup}>
         {tools.map(([tool, Icon], index) => (
           <Tooltip key={tool.name} content={tool.name}>
             <button
-              className={`${toolbarStyles.toolbarButton} ${currentTool === index ? toolbarStyles.selected : ''}`}
+              className={`${styles.toolbarButton} ${currentTool === index ? styles.selected : ''}`}
               onClick={() => setCurrentTool(index)}
               style={{ color: textColor }}
             >
@@ -71,12 +71,12 @@ const DrawNodeToolbar: React.FC<DrawNodeToolbarProps> = ({
           </Tooltip>
         ))}
       </div>
-      <div className={toolbarStyles.toolGroup}>
+      <div className={styles.toolGroup}>
         <Tooltip content="Color Picker">
           <Popover
             trigger={
               <button
-                className={`${toolbarStyles.toolbarButton} ${toolbarStyles.colorPickerButton}`}
+                className={`${styles.toolbarButton} ${styles.colorPickerButton}`}
               >
                 <GrPaint size={iconSize} color={color} />
               </button>
@@ -88,34 +88,29 @@ const DrawNodeToolbar: React.FC<DrawNodeToolbarProps> = ({
           <Popover
             trigger={
               <button
-                className={`${toolbarStyles.toolbarButton} ${toolbarStyles.sizePickerButton}`}
+                className={`${styles.toolbarButton} ${styles.sizePickerButton}`}
               >
                 <FaRuler size={iconSize} color={textColor} />
-                <span className={toolbarStyles.strokeWidthLabel}>
-                  {strokeWidth}
-                </span>
+                <span className={styles.strokeWidthLabel}>{strokeWidth}</span>
               </button>
             }
             content={
-              <div className={toolbarStyles.sliderContainer}>
-                <Slider
-                  min={1}
-                  max={100}
-                  value={strokeWidth}
-                  onChange={setStrokeWidth}
-                />
-                <span className={toolbarStyles.sliderValue}>{strokeWidth}</span>
-              </div>
+              <Slider
+                min={1}
+                max={100}
+                value={strokeWidth}
+                onChange={setStrokeWidth}
+              />
             }
           />
         </Tooltip>
       </div>
-      <div className={toolbarStyles.toolGroup}>
+      <div className={styles.toolGroup}>
         <Tooltip content="Undo">
           <button
             onClick={undo}
             disabled={!canUndo}
-            className={toolbarStyles.toolbarButton}
+            className={styles.toolbarButton}
             style={{ color: textColor }}
           >
             <FaUndo size={iconSize} />
@@ -125,7 +120,7 @@ const DrawNodeToolbar: React.FC<DrawNodeToolbarProps> = ({
           <button
             onClick={redo}
             disabled={!canRedo}
-            className={toolbarStyles.toolbarButton}
+            className={styles.toolbarButton}
             style={{ color: textColor }}
           >
             <FaRedo size={iconSize} />
@@ -134,7 +129,7 @@ const DrawNodeToolbar: React.FC<DrawNodeToolbarProps> = ({
         <Tooltip content="Clear">
           <button
             onClick={clear}
-            className={toolbarStyles.toolbarButton}
+            className={styles.toolbarButton}
             style={{ color: textColor }}
           >
             <RiCheckboxBlankLine size={iconSize} />
@@ -143,18 +138,18 @@ const DrawNodeToolbar: React.FC<DrawNodeToolbarProps> = ({
         <Tooltip content="Download">
           <button
             onClick={download}
-            className={toolbarStyles.toolbarButton}
+            className={styles.toolbarButton}
             style={{ color: textColor }}
           >
             <FaDownload size={iconSize} />
           </button>
         </Tooltip>
       </div>
-      <div className={toolbarStyles.toolGroup}>
+      <div className={styles.toolGroup}>
         <Tooltip content="Zoom In">
           <button
             onClick={onZoomIn}
-            className={toolbarStyles.toolbarButton}
+            className={styles.toolbarButton}
             style={{ color: textColor }}
           >
             <FaSearchPlus size={iconSize} />
@@ -163,7 +158,7 @@ const DrawNodeToolbar: React.FC<DrawNodeToolbarProps> = ({
         <Tooltip content="Zoom Out">
           <button
             onClick={onZoomOut}
-            className={toolbarStyles.toolbarButton}
+            className={styles.toolbarButton}
             style={{ color: textColor }}
           >
             <FaSearchMinus size={iconSize} />
