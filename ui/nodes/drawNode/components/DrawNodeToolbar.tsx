@@ -1,5 +1,6 @@
 import React from 'react';
-import { FaUndo, FaRedo, FaDownload, FaTrash } from 'react-icons/fa';
+import { FaUndo, FaRedo, FaDownload } from 'react-icons/fa';
+import { RiCheckboxBlankLine } from 'react-icons/ri';
 import { HexColorPicker } from 'react-colorful';
 import { Popover } from '@/ui/Popover/Popover';
 import { Tooltip } from '@/ui/Tooltip/Tooltip';
@@ -44,85 +45,91 @@ const DrawNodeToolbar: React.FC<DrawNodeToolbarProps> = ({
   const iconSize = 12;
 
   return (
-    <div className={toolbarStyles.floatingToolbar} style={{ backgroundColor }}>
-      {tools.map(([tool, Icon], index) => (
-        <Tooltip key={tool.name} content={tool.name}>
+    <div className={toolbarStyles.toolbar} style={{ backgroundColor }}>
+      <div className={toolbarStyles.toolGroup}>
+        {tools.map(([tool, Icon], index) => (
+          <Tooltip key={tool.name} content={tool.name}>
+            <button
+              className={`${toolbarStyles.toolbarButton} ${currentTool === index ? toolbarStyles.selected : ''}`}
+              onClick={() => setCurrentTool(index)}
+              style={{ color: textColor }}
+            >
+              <Icon size={iconSize} />
+            </button>
+          </Tooltip>
+        ))}
+      </div>
+      <div className={toolbarStyles.toolGroup}>
+        <Popover
+          trigger={
+            <button
+              className={toolbarStyles.toolbarButton}
+              style={{ backgroundColor: color }}
+            >
+              <span className={toolbarStyles.colorIndicator} />
+            </button>
+          }
+          content={<HexColorPicker color={color} onChange={setColor} />}
+        />
+        <Popover
+          trigger={
+            <button className={toolbarStyles.toolbarButton}>
+              <span
+                className={toolbarStyles.sizeIndicator}
+                style={{ width: strokeWidth, height: strokeWidth }}
+              />
+            </button>
+          }
+          content={
+            <Slider
+              min={1}
+              max={100}
+              value={strokeWidth}
+              onChange={setStrokeWidth}
+            />
+          }
+        />
+      </div>
+      <div className={toolbarStyles.toolGroup}>
+        <Tooltip content="Undo">
           <button
-            className={`${toolbarStyles.toolbarButton} ${currentTool === index ? toolbarStyles.selected : ''}`}
-            onClick={() => setCurrentTool(index)}
+            onClick={undo}
+            disabled={!canUndo}
+            className={toolbarStyles.toolbarButton}
             style={{ color: textColor }}
           >
-            <Icon size={iconSize} />
+            <FaUndo size={iconSize} />
           </button>
         </Tooltip>
-      ))}
-      <Popover
-        trigger={
+        <Tooltip content="Redo">
           <button
+            onClick={redo}
+            disabled={!canRedo}
             className={toolbarStyles.toolbarButton}
-            style={{ backgroundColor: color }}
+            style={{ color: textColor }}
           >
-            <span className={toolbarStyles.colorIndicator} />
+            <FaRedo size={iconSize} />
           </button>
-        }
-        content={<HexColorPicker color={color} onChange={setColor} />}
-      />
-      <Popover
-        trigger={
-          <button className={toolbarStyles.toolbarButton}>
-            <span
-              className={toolbarStyles.sizeIndicator}
-              style={{ width: strokeWidth, height: strokeWidth }}
-            />
+        </Tooltip>
+        <Tooltip content="Clear">
+          <button
+            onClick={clear}
+            className={toolbarStyles.toolbarButton}
+            style={{ color: textColor }}
+          >
+            <RiCheckboxBlankLine size={iconSize} />
           </button>
-        }
-        content={
-          <Slider
-            min={1}
-            max={100}
-            value={strokeWidth}
-            onChange={setStrokeWidth}
-          />
-        }
-      />
-      <Tooltip content="Undo">
-        <button
-          onClick={undo}
-          disabled={!canUndo}
-          className={toolbarStyles.toolbarButton}
-          style={{ color: textColor }}
-        >
-          <FaUndo size={iconSize} />
-        </button>
-      </Tooltip>
-      <Tooltip content="Redo">
-        <button
-          onClick={redo}
-          disabled={!canRedo}
-          className={toolbarStyles.toolbarButton}
-          style={{ color: textColor }}
-        >
-          <FaRedo size={iconSize} />
-        </button>
-      </Tooltip>
-      <Tooltip content="Download">
-        <button
-          onClick={download}
-          className={toolbarStyles.toolbarButton}
-          style={{ color: textColor }}
-        >
-          <FaDownload size={iconSize} />
-        </button>
-      </Tooltip>
-      <Tooltip content="Clear">
-        <button
-          onClick={clear}
-          className={toolbarStyles.toolbarButton}
-          style={{ color: textColor }}
-        >
-          <FaTrash size={iconSize} />
-        </button>
-      </Tooltip>
+        </Tooltip>
+        <Tooltip content="Download">
+          <button
+            onClick={download}
+            className={toolbarStyles.toolbarButton}
+            style={{ color: textColor }}
+          >
+            <FaDownload size={iconSize} />
+          </button>
+        </Tooltip>
+      </div>
     </div>
   );
 };

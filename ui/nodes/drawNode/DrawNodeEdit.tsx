@@ -379,25 +379,23 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         />
       </div>
       <div className={`${styles.drawContent} nowheel nodrag`}>
-        <div className={styles.toolbarContainer}>
-          <DrawNodeToolbar
-            tools={tools}
-            currentTool={currentTool}
-            setCurrentTool={setCurrentTool}
-            color={color}
-            setColor={setColor}
-            strokeWidth={strokeWidth}
-            setStrokeWidth={handleSizeChange}
-            undo={undo}
-            redo={redo}
-            canUndo={canUndo}
-            canRedo={canRedo}
-            download={download}
-            clear={clear}
-            backgroundColor={backgroundColor}
-            textColor={textColor}
-          />
-        </div>
+        <DrawNodeToolbar
+          tools={tools}
+          currentTool={currentTool}
+          setCurrentTool={setCurrentTool}
+          color={color}
+          setColor={setColor}
+          strokeWidth={strokeWidth}
+          setStrokeWidth={handleSizeChange}
+          undo={undo}
+          redo={redo}
+          canUndo={canUndo}
+          canRedo={canRedo}
+          download={download}
+          clear={clear}
+          backgroundColor={backgroundColor}
+          textColor={textColor}
+        />
         <div className={styles.artboardContainer}>
           <Artboard
             tool={tools[currentTool][0]}
@@ -405,8 +403,8 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
             history={history}
             style={{ border: '1px gray solid' }}
             content={drawingData}
-            width={nodeWidth * 0.7}
-            height={nodeHeight * 0.7}
+            width={nodeWidth * 0.9}
+            height={nodeHeight * 0.8}
           />
           <canvas ref={canvasRef} style={{ display: 'none' }} />
         </div>

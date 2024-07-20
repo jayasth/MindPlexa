@@ -11,11 +11,18 @@
 
 .drawContent {
   display: flex;
-  flex-direction: row;
-  height: calc(
-    100% - 80px
-  ); /* Adjust this value to leave space for header and footer */
+  flex-direction: column;
+  height: calc(100% - 80px);
   min-height: 200px;
+}
+
+.artboardContainer {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 8px;
+  overflow: hidden;
 }
 
 .toolbarContainer {
@@ -44,15 +51,6 @@
   border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.2s;
-}
-
-.artboardContainer {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 8px;
-  overflow: hidden;
 }
 
 .canvas {
