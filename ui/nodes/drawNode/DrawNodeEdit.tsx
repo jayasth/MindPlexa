@@ -56,7 +56,9 @@ import {
   handleDelete as handleDeleteNode,
   colorCombinations,
   handleAddTag,
-  handleDuplicate
+  handleDuplicate,
+  getContrastYIQ,
+  handleChangeColorWithCombination
 } from '@/ui/nodes/common/CommonNodeFunctions';
 import {
   Attachment,
@@ -130,10 +132,20 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const artboardRef = useRef<ArtboardRef | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  const handleBackgroundColorChange = useBackgroundColorChange(
-    data.id,
-    setBackgroundColor,
-    setTextColor
+  const handleBackgroundColorChange = useCallback(
+    (color: { hex: string }) => {
+      const newBackgroundColor = color.hex;
+      const newTextColor = getContrastYIQ(newBackgroundColor);
+      handleChangeColorWithCombination(
+        data.id,
+        newBackgroundColor,
+        newTextColor,
+        setBackgroundColor,
+        canvasId
+      );
+      setTextColor(newTextColor);
+    },
+    [data.id, canvasId]
   );
 
   const onChangeColor = useCallback(
@@ -426,7 +438,10 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         memoizedTagFileContainer}
       <div className={styles.footer}>
         <DeleteButton onClick={() => setIsDeleteModalOpen(true)} />
-        <ChangeColorButton onClick={toggleColorPicker} />
+        <ChangeColorButton
+          onClick={() => setIsColorPickerVisible(true)}
+          backgroundColor={backgroundColor}
+        />
         <AddTagButton onClick={() => setIsTagModalOpen(true)} />
         <AttachFileButton onClick={() => setIsFileModalOpen(true)} />
         <DuplicateButton onClick={() => handleDuplicate(data.id, canvasId)} />
@@ -434,7 +449,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
           isOpen={isColorPickerVisible}
           onClose={() => setIsColorPickerVisible(false)}
           currentColor={backgroundColor}
-          onChangeColor={onChangeColor}
+          onChangeColor={handleBackgroundColorChange}
           colorCombinations={colorCombinations}
         />
       </div>

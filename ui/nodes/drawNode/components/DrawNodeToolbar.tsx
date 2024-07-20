@@ -8,7 +8,7 @@ import {
   FaRuler
 } from 'react-icons/fa';
 import { RiCheckboxBlankLine } from 'react-icons/ri';
-import { GiPaintBucket } from 'react-icons/gi';
+import { GrPaint } from 'react-icons/gr';
 import { HexColorPicker } from 'react-colorful';
 import { Popover } from '@/ui/Popover/Popover';
 import { Tooltip } from '@/ui/Tooltip/Tooltip';
@@ -54,7 +54,7 @@ const DrawNodeToolbar: React.FC<DrawNodeToolbarProps> = ({
   onZoomIn,
   onZoomOut
 }) => {
-  const iconSize = 12;
+  const iconSize = 16;
 
   return (
     <div className={toolbarStyles.toolbar} style={{ backgroundColor }}>
@@ -77,9 +77,8 @@ const DrawNodeToolbar: React.FC<DrawNodeToolbarProps> = ({
             trigger={
               <button
                 className={`${toolbarStyles.toolbarButton} ${toolbarStyles.colorPickerButton}`}
-                style={{ backgroundColor: color }}
               >
-                <GiPaintBucket size={iconSize} color={textColor} />
+                <GrPaint size={iconSize} color={color} />
               </button>
             }
             content={<HexColorPicker color={color} onChange={setColor} />}

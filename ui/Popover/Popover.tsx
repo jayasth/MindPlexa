@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { createPortal } from 'react-dom';
+import React, { useState, useRef } from 'react';
 import styles from './Popover.module.css';
+import useClickOutside from '@/hooks/useClickOutside';
 
 interface PopoverProps {
   trigger: React.ReactElement;
@@ -9,40 +9,33 @@ interface PopoverProps {
 
 export const Popover: React.FC<PopoverProps> = ({ trigger, content }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const popoverRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLDivElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        contentRef.current &&
-        !contentRef.current.contains(event.target as Node) &&
-        !triggerRef.current?.contains(event.target as Node)
-      ) {
-        setIsOpen(false);
-      }
-    };
+  useClickOutside(popoverRef, () => setIsOpen(false));
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
+  const togglePopover = () => {
+    setIsOpen(!isOpen);
+  };
 
   return (
-    <>
-      <div ref={triggerRef}>
-        {React.cloneElement(trigger, {
-          onClick: () => setIsOpen(!isOpen)
-        })}
+    <div className={styles.popoverContainer}>
+      <div ref={triggerRef} onClick={togglePopover}>
+        {trigger}
       </div>
-      {isOpen &&
-        createPortal(
-          <div className={styles.popoverContent} ref={contentRef}>
-            {content}
-          </div>,
-          document.body
-        )}
-    </>
+      {isOpen && (
+        <div
+          ref={popoverRef}
+          className={styles.popoverContent}
+          style={{
+            position: 'absolute',
+            top: triggerRef.current ? triggerRef.current.offsetHeight + 5 : 0,
+            left: 0
+          }}
+        >
+          {content}
+        </div>
+      )}
+    </div>
   );
 };
