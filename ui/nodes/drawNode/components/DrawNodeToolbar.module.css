@@ -1,5 +1,4 @@
 .toolbarContainer {
-  display: flex;
   position: absolute;
   pointer-events: none;
 }
