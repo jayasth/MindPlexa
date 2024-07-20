@@ -413,7 +413,9 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
           onZoomIn={handleZoomIn}
           onZoomOut={handleZoomOut}
           layers={layers}
+          setLayers={setLayers}
           activeLayerId={activeLayerId}
+          setActiveLayerId={setActiveLayerId}
         />
         <div className={styles.artboardContainer}>
           <div

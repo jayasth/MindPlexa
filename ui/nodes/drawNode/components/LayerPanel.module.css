@@ -1,18 +1,38 @@
 .layerPanel {
   width: 200px;
+  max-height: 300px;
+  overflow-y: auto;
   background-color: #f0f0f0;
   padding: 10px;
   border-left: 1px solid #ccc;
+}
+
+.addLayerButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 4px;
+  margin-bottom: 8px;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.addLayerButton:hover {
+  background-color: #e0e0e0;
 }
 
 .layer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 5px;
-  margin-bottom: 5px;
+  padding: 4px;
+  margin-bottom: 4px;
   background-color: #fff;
   border: 1px solid #ccc;
+  border-radius: 4px;
   cursor: pointer;
 }
 
@@ -20,6 +40,26 @@
   background-color: #e0e0e0;
 }
 
-.layer button {
-  margin-left: 5px;
+.layerName {
+  flex-grow: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.layerControls {
+  display: flex;
+  gap: 4px;
+}
+
+.layerControls button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+}
+
+.layerControls button:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 2px;
 }

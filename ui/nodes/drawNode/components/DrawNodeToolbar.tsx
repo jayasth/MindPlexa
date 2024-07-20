@@ -5,9 +5,18 @@ import {
   FaDownload,
   FaSearchPlus,
   FaSearchMinus,
-  FaRuler
+  FaRuler,
+  FaPencilAlt,
+  FaPaintBrush,
+  FaMarker,
+  FaEraser,
+  FaSprayCan,
+  FaSquare,
+  FaCircle,
+  FaDrawPolygon,
+  FaLayerGroup
 } from 'react-icons/fa';
-import { RiCheckboxBlankLine } from 'react-icons/ri';
+import { IoMdWater } from 'react-icons/io';
 import { GrPaint } from 'react-icons/gr';
 import { SketchPicker } from 'react-color';
 import Modal from 'react-responsive-modal';
@@ -16,6 +25,7 @@ import { Tooltip } from '@/ui/Tooltip/Tooltip';
 import Slider from './DrawNodeSlider';
 import styles from './DrawNodeToolbar.module.css';
 import { Layer } from '../types';
+import LayerPanel from './LayerPanel';
 
 interface DrawNodeToolbarProps {
   tools: Array<[any, any, number]>;
@@ -37,6 +47,8 @@ interface DrawNodeToolbarProps {
   onZoomOut: () => void;
   layers: Layer[];
   activeLayerId: string;
+  setLayers: React.Dispatch<React.SetStateAction<Layer[]>>;
+  setActiveLayerId: (id: string) => void;
 }
 
 const DrawNodeToolbar: React.FC<DrawNodeToolbarProps> = ({
@@ -58,28 +70,41 @@ const DrawNodeToolbar: React.FC<DrawNodeToolbarProps> = ({
   onZoomIn,
   onZoomOut,
   layers,
-  activeLayerId
+  activeLayerId,
+  setLayers,
+  setActiveLayerId
 }) => {
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   const [isStrokeWidthOpen, setIsStrokeWidthOpen] = useState(false);
+  const [isLayerPanelOpen, setIsLayerPanelOpen] = useState(false);
   const iconSize = 16;
 
+  const toolGroups = [
+    { icon: FaPencilAlt, name: 'Pencil' },
+    { icon: IoMdWater, name: 'Watercolor' },
+    { icon: FaPaintBrush, name: 'Brush' },
+    { icon: FaMarker, name: 'Marker' },
+    { icon: FaSprayCan, name: 'Airbrush' },
+    { icon: FaEraser, name: 'Eraser' },
+    { icon: FaSquare, name: 'Square' },
+    { icon: FaCircle, name: 'Circle' },
+    { icon: FaDrawPolygon, name: 'Polygon' }
+  ];
+
   return (
-    <div className={styles.toolbar} style={{ backgroundColor }}>
-      <div className={styles.toolGroup}>
-        {tools.map(([tool, Icon], index) => (
+    <div className={styles.toolbarContainer} style={{ backgroundColor }}>
+      <div className={styles.verticalToolbar}>
+        {toolGroups.map((tool, index) => (
           <Tooltip key={tool.name} content={tool.name}>
             <button
               className={`${styles.toolbarButton} ${currentTool === index ? styles.selected : ''}`}
               onClick={() => setCurrentTool(index)}
               style={{ color: textColor }}
             >
-              <Icon size={iconSize} />
+              <tool.icon size={iconSize} />
             </button>
           </Tooltip>
         ))}
-      </div>
-      <div className={styles.toolGroup}>
         <Tooltip content="Change Color">
           <button
             className={`${styles.toolbarButton} ${styles.colorPickerButton}`}
@@ -94,17 +119,23 @@ const DrawNodeToolbar: React.FC<DrawNodeToolbarProps> = ({
             onClick={() => setIsStrokeWidthOpen(true)}
           >
             <FaRuler size={iconSize} color={textColor} />
-            <span className={styles.strokeWidthLabel}>{strokeWidth}</span>
+          </button>
+        </Tooltip>
+        <Tooltip content="Layers">
+          <button
+            className={`${styles.toolbarButton}`}
+            onClick={() => setIsLayerPanelOpen(!isLayerPanelOpen)}
+          >
+            <FaLayerGroup size={iconSize} color={textColor} />
           </button>
         </Tooltip>
       </div>
-      <div className={styles.toolGroup}>
+      <div className={styles.horizontalToolbar}>
         <Tooltip content="Undo">
           <button
             onClick={undo}
             disabled={!canUndo}
             className={styles.toolbarButton}
-            style={{ color: textColor }}
           >
             <FaUndo size={iconSize} />
           </button>
@@ -114,51 +145,41 @@ const DrawNodeToolbar: React.FC<DrawNodeToolbarProps> = ({
             onClick={redo}
             disabled={!canRedo}
             className={styles.toolbarButton}
-            style={{ color: textColor }}
           >
             <FaRedo size={iconSize} />
           </button>
         </Tooltip>
         <Tooltip content="Clear">
-          <button
-            onClick={clear}
-            className={styles.toolbarButton}
-            style={{ color: textColor }}
-          >
-            <RiCheckboxBlankLine size={iconSize} />
+          <button onClick={clear} className={styles.toolbarButton}>
+            <FaEraser size={iconSize} />
           </button>
         </Tooltip>
         <Tooltip content="Download">
-          <button
-            onClick={download}
-            className={styles.toolbarButton}
-            style={{ color: textColor }}
-          >
+          <button onClick={download} className={styles.toolbarButton}>
             <FaDownload size={iconSize} />
           </button>
         </Tooltip>
-      </div>
-      <div className={styles.toolGroup}>
         <Tooltip content="Zoom In">
-          <button
-            onClick={onZoomIn}
-            className={styles.toolbarButton}
-            style={{ color: textColor }}
-          >
+          <button onClick={onZoomIn} className={styles.toolbarButton}>
             <FaSearchPlus size={iconSize} />
           </button>
         </Tooltip>
         <Tooltip content="Zoom Out">
-          <button
-            onClick={onZoomOut}
-            className={styles.toolbarButton}
-            style={{ color: textColor }}
-          >
+          <button onClick={onZoomOut} className={styles.toolbarButton}>
             <FaSearchMinus size={iconSize} />
           </button>
         </Tooltip>
       </div>
-
+      {isLayerPanelOpen && (
+        <div className={styles.layerPanelContainer}>
+          <LayerPanel
+            layers={layers}
+            setLayers={setLayers}
+            activeLayerId={activeLayerId}
+            setActiveLayerId={setActiveLayerId}
+          />
+        </div>
+      )}
       <Modal
         open={isColorPickerOpen}
         onClose={() => setIsColorPickerOpen(false)}
@@ -170,7 +191,6 @@ const DrawNodeToolbar: React.FC<DrawNodeToolbarProps> = ({
           onChange={(newColor) => setColor(newColor.hex)}
         />
       </Modal>
-
       <Modal
         open={isStrokeWidthOpen}
         onClose={() => setIsStrokeWidthOpen(false)}

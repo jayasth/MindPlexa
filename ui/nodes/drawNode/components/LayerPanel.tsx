@@ -1,6 +1,14 @@
 import React from 'react';
 import { Layer } from '../types';
 import styles from './LayerPanel.module.css';
+import {
+  FaEye,
+  FaEyeSlash,
+  FaLock,
+  FaLockOpen,
+  FaTrash,
+  FaPlus
+} from 'react-icons/fa';
 
 interface LayerPanelProps {
   layers: Layer[];
@@ -53,21 +61,27 @@ const LayerPanel: React.FC<LayerPanelProps> = ({
 
   return (
     <div className={styles.layerPanel}>
-      <button onClick={addLayer}>Add Layer</button>
+      <button className={styles.addLayerButton} onClick={addLayer}>
+        <FaPlus /> Add Layer
+      </button>
       {layers.map((layer) => (
         <div
           key={layer.id}
           className={`${styles.layer} ${layer.id === activeLayerId ? styles.active : ''}`}
           onClick={() => setActiveLayerId(layer.id)}
         >
-          <span>{layer.name}</span>
-          <button onClick={() => toggleVisibility(layer.id)}>
-            {layer.visible ? 'Hide' : 'Show'}
-          </button>
-          <button onClick={() => toggleLock(layer.id)}>
-            {layer.locked ? 'Unlock' : 'Lock'}
-          </button>
-          <button onClick={() => deleteLayer(layer.id)}>Delete</button>
+          <span className={styles.layerName}>{layer.name}</span>
+          <div className={styles.layerControls}>
+            <button onClick={() => toggleVisibility(layer.id)}>
+              {layer.visible ? <FaEye /> : <FaEyeSlash />}
+            </button>
+            <button onClick={() => toggleLock(layer.id)}>
+              {layer.locked ? <FaLock /> : <FaLockOpen />}
+            </button>
+            <button onClick={() => deleteLayer(layer.id)}>
+              <FaTrash />
+            </button>
+          </div>
         </div>
       ))}
     </div>

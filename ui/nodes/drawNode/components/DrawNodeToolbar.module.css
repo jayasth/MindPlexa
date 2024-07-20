@@ -1,15 +1,28 @@
-.toolbar {
+.toolbarContainer {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 4px;
-  background-color: #f0f0f0;
-  border-bottom: 1px solid #ccc;
+  position: absolute;
+  pointer-events: none;
 }
 
-.toolGroup {
+.verticalToolbar {
   display: flex;
-  gap: 2px;
+  flex-direction: column;
+  padding: 4px;
+  background-color: rgba(240, 240, 240, 0.8);
+  border-right: 1px solid #ccc;
+  pointer-events: auto;
+}
+
+.horizontalToolbar {
+  display: flex;
+  padding: 4px;
+  background-color: rgba(240, 240, 240, 0.8);
+  border-bottom: 1px solid #ccc;
+  position: absolute;
+  top: 0;
+  left: 40px;
+  right: 0;
+  pointer-events: auto;
 }
 
 .toolbarButton {
@@ -25,7 +38,7 @@
   transition:
     background-color 0.2s,
     border-color 0.2s;
-  position: relative;
+  margin: 2px 0;
 }
 
 .toolbarButton:hover {
@@ -36,18 +49,23 @@
   background-color: rgba(0, 0, 0, 0.2);
 }
 
+.colorPickerButton {
+  position: relative;
+}
+
 .sizePickerButton {
   position: relative;
 }
 
-.strokeWidthLabel {
+.layerPanelContainer {
   position: absolute;
-  bottom: -2px;
-  right: -2px;
-  font-size: 8px;
-  background-color: rgba(255, 255, 255, 0.8);
-  border-radius: 2px;
-  padding: 1px 2px;
+  top: 40px;
+  left: 40px;
+  background-color: rgba(240, 240, 240, 0.9);
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 8px;
+  pointer-events: auto;
 }
 
 .sliderContainer {
