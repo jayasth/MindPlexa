@@ -72,38 +72,34 @@ const DrawNodeToolbar: React.FC<DrawNodeToolbarProps> = ({
         ))}
       </div>
       <div className={styles.toolGroup}>
-        <Tooltip content="Color Picker">
-          <Popover
-            trigger={
-              <button
-                className={`${styles.toolbarButton} ${styles.colorPickerButton}`}
-              >
-                <GrPaint size={iconSize} color={color} />
-              </button>
-            }
-            content={<HexColorPicker color={color} onChange={setColor} />}
-          />
-        </Tooltip>
-        <Tooltip content="Stroke Width">
-          <Popover
-            trigger={
-              <button
-                className={`${styles.toolbarButton} ${styles.sizePickerButton}`}
-              >
-                <FaRuler size={iconSize} color={textColor} />
-                <span className={styles.strokeWidthLabel}>{strokeWidth}</span>
-              </button>
-            }
-            content={
-              <Slider
-                min={1}
-                max={100}
-                value={strokeWidth}
-                onChange={setStrokeWidth}
-              />
-            }
-          />
-        </Tooltip>
+        <Popover
+          trigger={
+            <button
+              className={`${styles.toolbarButton} ${styles.colorPickerButton}`}
+            >
+              <GrPaint size={iconSize} color={color} />
+            </button>
+          }
+          content={<HexColorPicker color={color} onChange={setColor} />}
+        />
+        <Popover
+          trigger={
+            <button
+              className={`${styles.toolbarButton} ${styles.sizePickerButton}`}
+            >
+              <FaRuler size={iconSize} color={textColor} />
+              <span className={styles.strokeWidthLabel}>{strokeWidth}</span>
+            </button>
+          }
+          content={
+            <Slider
+              min={1}
+              max={100}
+              value={strokeWidth}
+              onChange={setStrokeWidth}
+            />
+          }
+        />
       </div>
       <div className={styles.toolGroup}>
         <Tooltip content="Undo">

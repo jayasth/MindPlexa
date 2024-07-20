@@ -4,9 +4,14 @@ import styles from './Tooltip.module.css';
 interface TooltipProps {
   content: React.ReactNode;
   children: React.ReactNode;
+  hideOnClick?: boolean;
 }
 
-export const Tooltip: React.FC<TooltipProps> = ({ content, children }) => {
+export const Tooltip: React.FC<TooltipProps> = ({
+  content,
+  children,
+  hideOnClick = false
+}) => {
   const [isVisible, setIsVisible] = useState(false);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -21,11 +26,13 @@ export const Tooltip: React.FC<TooltipProps> = ({ content, children }) => {
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    if (hideOnClick) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, []);
+  }, [hideOnClick]);
 
   return (
     <div
