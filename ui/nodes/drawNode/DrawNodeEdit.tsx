@@ -350,7 +350,14 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const clear = () => artboardRef.current?.clear();
 
   return (
-    <div className={styles.drawNode} style={customStyles}>
+    <div
+      className={styles.drawNode}
+      style={customStyles}
+      onClick={handleContainerClick}
+      onBlur={handleContainerBlur}
+      data-toolbar-background-color={backgroundColor}
+      data-toolbar-text-color={textColor}
+    >
       <NodeResizer
         isVisible={isContainerSelected}
         minWidth={200}
