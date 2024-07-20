@@ -74,6 +74,7 @@ interface DrawNodeEditProps extends NodeProps {
     newPosition: { x: number; y: number }
   ) => void;
   position: { x: number; y: number };
+  onResize?: () => void;
 }
 
 const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
@@ -82,7 +83,8 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   height,
   selected,
   onNodeResizeStop,
-  position
+  position,
+  onResize
 }) => {
   console.log('DrawNodeEdit: Node details:', {
     id: data.id,
@@ -118,6 +120,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const [toolSizes, setToolSizes] = useState([5, 10, 15, 20, 10, 40]);
 
   const artboardRef = useRef<ArtboardRef | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const handleBackgroundColorChange = useBackgroundColorChange(
     data.id,
@@ -179,6 +182,22 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     attachedFiles,
     debouncedUpdateNodeData
   ]);
+
+  useEffect(() => {
+    if (onResize) {
+      onResize();
+    }
+    const canvas = canvasRef.current;
+    const context = canvas?.getContext('2d');
+    if (canvas && context && drawingData) {
+      const image = new Image();
+      image.onload = () => {
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+      };
+      image.src = drawingData;
+    }
+  }, [width, height, onResize, drawingData]);
 
   const onChangeTitle = useCallback(
     (newTitle: string) => {
@@ -369,9 +388,10 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
             history={history}
             style={{ border: '1px gray solid' }}
             content={drawingData}
-            width={nodeWidth / 2}
-            height={nodeHeight / 2}
+            width={nodeWidth * 0.5}
+            height={nodeHeight * 0.5}
           />
+          <canvas ref={canvasRef} style={{ display: 'none' }} />
         </div>
       </div>
       {(tags.length > 0 || attachedFiles.length > 0) &&

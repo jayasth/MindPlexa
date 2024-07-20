@@ -18,7 +18,7 @@ import {
 
 export interface ArtboardProps
   extends React.CanvasHTMLAttributes<HTMLCanvasElement> {
-    tool: ToolHandlers;
+  tool: ToolHandlers;
   history?: History;
   onStartStroke?: (point: Point) => void;
   onContinueStroke?: (point: Point) => void;
@@ -179,7 +179,7 @@ export const Artboard = forwardRef(function Artboard(
       if (!canvasRef) {
         return;
       }
-      const aspectRatio = 16 / 9;
+      const aspectRatio = width / height;
       const canvasSize = Math.min(width, height);
       canvasRef.width = canvasSize * aspectRatio;
       canvasRef.height = canvasSize;
@@ -296,4 +296,3 @@ export const Artboard = forwardRef(function Artboard(
     />
   );
 });
- 
