@@ -68,6 +68,8 @@ import { useBackgroundColorChange } from '@/ui/nodes/common/useBackgroundColorCh
 import { debounce } from 'lodash';
 import useNodeStore from '@/app/store/nodes/useNodeStore';
 import useCanvasStore from '@/app/store/canvas/useCanvasStore';
+import { Layer } from './types';
+import LayerPanel from './components/LayerPanel';
 
 interface DrawNodeEditProps extends NodeProps {
   data: any;
@@ -125,6 +127,10 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const [toolSizes, setToolSizes] = useState([5, 10, 15, 20, 10, 40]);
   const [strokeWidth, setStrokeWidth] = useState(toolSizes[currentTool]);
   const [zoom, setZoom] = useState(1);
+  const [layers, setLayers] = useState<Layer[]>([
+    { id: '1', name: 'Layer 1', visible: true, locked: false }
+  ]);
+  const [activeLayerId, setActiveLayerId] = useState('1');
 
   const artboardRef = useRef<ArtboardRef | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -406,6 +412,8 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
           textColor={textColor}
           onZoomIn={handleZoomIn}
           onZoomOut={handleZoomOut}
+          layers={layers}
+          activeLayerId={activeLayerId}
         />
         <div className={styles.artboardContainer}>
           <div
@@ -420,8 +428,16 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
               content={drawingData}
               width={nodeWidth * 0.9}
               height={nodeHeight * 0.8}
+              layers={layers}
+              activeLayerId={activeLayerId}
             />
           </div>
+          <LayerPanel
+            layers={layers}
+            setLayers={setLayers}
+            activeLayerId={activeLayerId}
+            setActiveLayerId={setActiveLayerId}
+          />
           <canvas ref={canvasRef} style={{ display: 'none' }} />
         </div>
       </div>

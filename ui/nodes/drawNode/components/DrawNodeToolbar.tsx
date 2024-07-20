@@ -15,6 +15,7 @@ import 'react-responsive-modal/styles.css';
 import { Tooltip } from '@/ui/Tooltip/Tooltip';
 import Slider from './DrawNodeSlider';
 import styles from './DrawNodeToolbar.module.css';
+import { Layer } from '../types';
 
 interface DrawNodeToolbarProps {
   tools: Array<[any, any, number]>;
@@ -34,6 +35,8 @@ interface DrawNodeToolbarProps {
   textColor: string;
   onZoomIn: () => void;
   onZoomOut: () => void;
+  layers: Layer[];
+  activeLayerId: string;
 }
 
 const DrawNodeToolbar: React.FC<DrawNodeToolbarProps> = ({
@@ -53,7 +56,9 @@ const DrawNodeToolbar: React.FC<DrawNodeToolbarProps> = ({
   backgroundColor,
   textColor,
   onZoomIn,
-  onZoomOut
+  onZoomOut,
+  layers,
+  activeLayerId
 }) => {
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   const [isStrokeWidthOpen, setIsStrokeWidthOpen] = useState(false);

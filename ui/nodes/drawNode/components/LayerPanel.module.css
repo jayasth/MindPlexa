@@ -1,0 +1,25 @@
+.layerPanel {
+  width: 200px;
+  background-color: #f0f0f0;
+  padding: 10px;
+  border-left: 1px solid #ccc;
+}
+
+.layer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px;
+  margin-bottom: 5px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  cursor: pointer;
+}
+
+.layer.active {
+  background-color: #e0e0e0;
+}
+
+.layer button {
+  margin-left: 5px;
+}

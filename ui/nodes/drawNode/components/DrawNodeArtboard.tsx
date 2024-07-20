@@ -8,6 +8,7 @@ import React, {
 } from 'react';
 
 import { History } from '@/ui/nodes/drawNode/drawNodeHistory';
+import { Layer } from '../types';
 
 import {
   getMousePoint,
@@ -28,6 +29,8 @@ export interface ArtboardProps
   width: number;
   height: number;
   onResize?: () => void;
+  layers: Layer[];
+  activeLayerId: string;
 }
 
 export interface ArtboardRef {
@@ -60,6 +63,8 @@ export const Artboard = forwardRef(function Artboard(
     width,
     height,
     onResize,
+    layers,
+    activeLayerId,
     ...props
   }: ArtboardProps,
   ref: ForwardedRef<ArtboardRef>
@@ -67,51 +72,96 @@ export const Artboard = forwardRef(function Artboard(
   const [context, setContext] = useState<CanvasRenderingContext2D | null>();
   const [canvas, setCanvas] = useState<HTMLCanvasElement>();
   const [drawing, setDrawing] = useState(false);
+  const [layerContexts, setLayerContexts] = useState<{
+    [key: string]: CanvasRenderingContext2D;
+  }>({});
+
+  useEffect(() => {
+    if (!canvas) return;
+
+    const newLayerContexts: { [key: string]: CanvasRenderingContext2D } = {};
+    layers.forEach((layer) => {
+      const layerCanvas = document.createElement('canvas');
+      layerCanvas.width = canvas.width;
+      layerCanvas.height = canvas.height;
+      const layerContext = layerCanvas.getContext('2d');
+      if (layerContext) {
+        newLayerContexts[layer.id] = layerContext;
+      }
+    });
+    setLayerContexts(newLayerContexts);
+  }, [layers, canvas]);
+
+  const composeLayers = useCallback(() => {
+    if (!context || !canvas) return;
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    layers.forEach((layer) => {
+      if (layer.visible) {
+        const layerContext = layerContexts[layer.id];
+        if (layerContext) {
+          context.drawImage(layerContext.canvas, 0, 0);
+        }
+      }
+    });
+  }, [context, canvas, layers, layerContexts]);
+
+  useEffect(() => {
+    composeLayers();
+  }, [composeLayers]);
 
   const startStroke = useCallback(
     (point: Point) => {
-      if (!context) {
-        return;
-      }
-      context.save();
+      const activeLayerContext = layerContexts[activeLayerId];
+      if (!activeLayerContext) return;
+      activeLayerContext.save();
       setDrawing(true);
-      tool.startStroke?.(point, context);
+      tool.startStroke?.(point, activeLayerContext);
       onStartStroke?.(point);
     },
-    [tool, context, onStartStroke]
+    [tool, layerContexts, activeLayerId, onStartStroke]
   );
 
   const continueStroke = useCallback(
     (newPoint: Point) => {
-      if (!context) {
-        return;
-      }
-      tool.continueStroke?.(newPoint, context);
+      const activeLayerContext = layerContexts[activeLayerId];
+      if (!activeLayerContext) return;
+      tool.continueStroke?.(newPoint, activeLayerContext);
       onContinueStroke?.(newPoint);
+      composeLayers();
     },
-    [tool, context, onContinueStroke]
+    [tool, layerContexts, activeLayerId, onContinueStroke, composeLayers]
   );
 
   const endStroke = useCallback(() => {
+    const activeLayerContext = layerContexts[activeLayerId];
+    if (!activeLayerContext) return;
     setDrawing(false);
-    if (context) {
-      tool.endStroke?.(context);
-      onEndStroke?.();
-      context.restore();
-      if (canvas && history) {
-        history.pushState(canvas);
-      }
-      if (onContentChange) {
-        const newContent = canvas?.toDataURL() || '';
-        onContentChange(newContent);
-        window.dispatchEvent(
-          new CustomEvent('content-updated', {
-            detail: { content: newContent }
-          })
-        );
-      }
+    tool.endStroke?.(activeLayerContext);
+    onEndStroke?.();
+    activeLayerContext.restore();
+    if (canvas && history) {
+      history.pushState(canvas);
     }
-  }, [tool, context, canvas, history, onEndStroke, onContentChange]);
+    if (onContentChange) {
+      const newContent = canvas?.toDataURL() || '';
+      onContentChange(newContent);
+      window.dispatchEvent(
+        new CustomEvent('content-updated', {
+          detail: { content: newContent }
+        })
+      );
+    }
+    composeLayers();
+  }, [
+    tool,
+    layerContexts,
+    activeLayerId,
+    canvas,
+    history,
+    onEndStroke,
+    onContentChange,
+    composeLayers
+  ]);
 
   const mouseMove = useCallback(
     (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
