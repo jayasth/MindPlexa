@@ -407,7 +407,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         <div className={styles.artboardContainer}>
           <div
             className={styles.artboardWrapper}
-            style={{ transform: `scale(${zoom})` }}
+            style={{ transform: `scale(${zoom})`, transformOrigin: 'center' }}
           >
             <Artboard
               tool={tools[currentTool][0]}
