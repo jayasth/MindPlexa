@@ -76,7 +76,7 @@ const DrawNodeToolbar: React.FC<DrawNodeToolbarProps> = ({
 }) => {
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   const [isStrokeWidthOpen, setIsStrokeWidthOpen] = useState(false);
-  const [isLayerPanelOpen, setIsLayerPanelOpen] = useState(false);
+  const [isLayerModalOpen, setIsLayerModalOpen] = useState(false);
   const iconSize = 16;
 
   const toolGroups = [
@@ -124,7 +124,7 @@ const DrawNodeToolbar: React.FC<DrawNodeToolbarProps> = ({
         <Tooltip content="Layers">
           <button
             className={`${styles.toolbarButton}`}
-            onClick={() => setIsLayerPanelOpen(!isLayerPanelOpen)}
+            onClick={() => setIsLayerModalOpen(true)}
           >
             <FaLayerGroup size={iconSize} color={textColor} />
           </button>
@@ -170,16 +170,6 @@ const DrawNodeToolbar: React.FC<DrawNodeToolbarProps> = ({
           </button>
         </Tooltip>
       </div>
-      {isLayerPanelOpen && (
-        <div className={styles.layerPanelContainer}>
-          <LayerPanel
-            layers={layers}
-            setLayers={setLayers}
-            activeLayerId={activeLayerId}
-            setActiveLayerId={setActiveLayerId}
-          />
-        </div>
-      )}
       <Modal
         open={isColorPickerOpen}
         onClose={() => setIsColorPickerOpen(false)}
@@ -202,6 +192,19 @@ const DrawNodeToolbar: React.FC<DrawNodeToolbarProps> = ({
           max={100}
           value={strokeWidth}
           onChange={setStrokeWidth}
+        />
+      </Modal>
+      <Modal
+        open={isLayerModalOpen}
+        onClose={() => setIsLayerModalOpen(false)}
+        center
+      >
+        <h2>Layers</h2>
+        <LayerPanel
+          layers={layers}
+          setLayers={setLayers}
+          activeLayerId={activeLayerId}
+          setActiveLayerId={setActiveLayerId}
         />
       </Modal>
     </div>

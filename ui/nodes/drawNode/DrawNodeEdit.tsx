@@ -69,7 +69,6 @@ import { debounce } from 'lodash';
 import useNodeStore from '@/app/store/nodes/useNodeStore';
 import useCanvasStore from '@/app/store/canvas/useCanvasStore';
 import { Layer } from './types';
-import LayerPanel from './components/LayerPanel';
 
 interface DrawNodeEditProps extends NodeProps {
   data: any;
@@ -434,12 +433,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
               activeLayerId={activeLayerId}
             />
           </div>
-          <LayerPanel
-            layers={layers}
-            setLayers={setLayers}
-            activeLayerId={activeLayerId}
-            setActiveLayerId={setActiveLayerId}
-          />
           <canvas ref={canvasRef} style={{ display: 'none' }} />
         </div>
       </div>
