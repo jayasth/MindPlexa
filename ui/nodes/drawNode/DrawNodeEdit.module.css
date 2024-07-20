@@ -11,19 +11,22 @@
 
 .drawContent {
   display: flex;
-  flex-direction: column;
   height: calc(100% - 80px);
   min-height: 200px;
   overflow: hidden;
   position: relative;
 }
 
+.mainContent {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
 .artboardContainer {
   flex: 1;
   overflow: auto;
   padding: 8px;
-  margin-top: 36px;
-  margin-left: 36px;
 }
 
 .artboardWrapper {

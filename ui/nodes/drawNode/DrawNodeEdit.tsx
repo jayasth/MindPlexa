@@ -30,7 +30,8 @@ import {
 } from '@/ui/nodes/drawNode/DrawNodeTools';
 import { useHistory } from '@/ui/nodes/drawNode/drawNodeHistory';
 import type { IconType } from 'react-icons/lib';
-import DrawNodeToolbar from '@/ui/nodes/drawNode/components/DrawNodeToolbar';
+import DrawNodeSidebar from './components/DrawNodeSidebar';
+import DrawNodeTopbar from './components/DrawNodeTopbar';
 import {
   DeleteButton,
   ChangeColorButton,
@@ -386,48 +387,53 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
           }
         />
       </div>
-      <div className={`${styles.drawContent} nowheel nodrag`}>
-        <DrawNodeToolbar
-          tools={tools}
+      <div className={styles.drawContent}>
+        <DrawNodeSidebar
           currentTool={currentTool}
           setCurrentTool={setCurrentTool}
           color={color}
           setColor={setColor}
           strokeWidth={strokeWidth}
           setStrokeWidth={handleSizeChange}
-          undo={undo}
-          redo={redo}
-          canUndo={canUndo}
-          canRedo={canRedo}
-          download={download}
-          clear={clear}
           backgroundColor={backgroundColor}
           textColor={textColor}
-          onZoomIn={handleZoomIn}
-          onZoomOut={handleZoomOut}
           layers={layers}
-          setLayers={setLayers}
           activeLayerId={activeLayerId}
+          setLayers={setLayers}
           setActiveLayerId={setActiveLayerId}
         />
-        <div className={styles.artboardContainer}>
-          <div
-            className={styles.artboardWrapper}
-            style={{ transform: `scale(${zoom})`, transformOrigin: 'center' }}
-          >
-            <Artboard
-              tool={tools[currentTool][0]}
-              ref={artboardRef}
-              history={history}
-              style={{ border: '1px gray solid' }}
-              content={drawingData}
-              width={nodeWidth * 0.9}
-              height={nodeHeight * 0.8}
-              layers={layers}
-              activeLayerId={activeLayerId}
-            />
+        <div className={styles.mainContent}>
+          <DrawNodeTopbar
+            undo={undo}
+            redo={redo}
+            canUndo={canUndo}
+            canRedo={canRedo}
+            download={download}
+            clear={clear}
+            onZoomIn={handleZoomIn}
+            onZoomOut={handleZoomOut}
+            backgroundColor={backgroundColor}
+            textColor={textColor}
+          />
+          <div className={styles.artboardContainer}>
+            <div
+              className={styles.artboardWrapper}
+              style={{ transform: `scale(${zoom})`, transformOrigin: 'center' }}
+            >
+              <Artboard
+                tool={tools[currentTool][0]}
+                ref={artboardRef}
+                history={history}
+                style={{ border: '1px gray solid' }}
+                content={drawingData}
+                width={nodeWidth * 0.9}
+                height={nodeHeight * 0.8}
+                layers={layers}
+                activeLayerId={activeLayerId}
+              />
+            </div>
+            <canvas ref={canvasRef} style={{ display: 'none' }} />
           </div>
-          <canvas ref={canvasRef} style={{ display: 'none' }} />
         </div>
       </div>
       {(tags.length > 0 || attachedFiles.length > 0) &&
