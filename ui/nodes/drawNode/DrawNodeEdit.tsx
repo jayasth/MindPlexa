@@ -68,7 +68,6 @@ import { useBackgroundColorChange } from '@/ui/nodes/common/useBackgroundColorCh
 import { debounce } from 'lodash';
 import useNodeStore from '@/app/store/nodes/useNodeStore';
 import useCanvasStore from '@/app/store/canvas/useCanvasStore';
-import { Tooltip } from '@/ui/Tooltip/Tooltip';
 
 interface DrawNodeEditProps extends NodeProps {
   data: any;
@@ -122,9 +121,9 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const [isFileModalOpen, setIsFileModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [color, setColor] = useState('#531B93');
-  const [strokeWidth, setStrokeWidth] = useState(5);
   const [currentTool, setCurrentTool] = useState(0);
   const [toolSizes, setToolSizes] = useState([5, 10, 15, 20, 10, 40]);
+  const [strokeWidth, setStrokeWidth] = useState(toolSizes[currentTool]);
   const [zoom, setZoom] = useState(1);
 
   const artboardRef = useRef<ArtboardRef | null>(null);
@@ -333,6 +332,10 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     },
     [currentTool]
   );
+
+  useEffect(() => {
+    setStrokeWidth(toolSizes[currentTool]);
+  }, [currentTool, toolSizes]);
 
   const { undo, redo, history, canUndo, canRedo } = useHistory();
 
