@@ -1,15 +1,18 @@
-.topbar {
+.sidebar {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
   padding: 8px;
   background-color: rgba(240, 240, 240, 0.8);
-  border-bottom: 1px solid #ccc;
+  border-right: 1px solid #ccc;
+  height: 100%;
+  width: 40px;
 }
 
 .toolGroup {
   display: flex;
+  flex-direction: column;
   gap: 8px;
+  margin-bottom: 16px;
 }
 
 .toolbarButton {
@@ -31,7 +34,32 @@
   background-color: rgba(0, 0, 0, 0.1);
 }
 
-.toolbarButton:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.toolbarButton.selected {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.colorPickerButton {
+  position: relative;
+}
+
+.colorPreview {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+}
+
+.sizePickerButton {
+  position: relative;
+}
+
+.strokeWidthLabel {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  font-size: 8px;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 2px;
+  padding: 1px 2px;
 }

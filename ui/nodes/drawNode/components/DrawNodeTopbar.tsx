@@ -4,9 +4,9 @@ import {
   FaRedo,
   FaDownload,
   FaSearchPlus,
-  FaSearchMinus,
-  FaEraser
+  FaSearchMinus
 } from 'react-icons/fa';
+import { RiCheckboxBlankLine } from 'react-icons/ri';
 import { Tooltip } from '@/ui/Tooltip/Tooltip';
 import styles from './DrawNodeTopbar.module.css';
 
@@ -60,13 +60,15 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
             <FaRedo size={iconSize} />
           </button>
         </Tooltip>
+      </div>
+      <div className={styles.toolGroup}>
         <Tooltip content="Clear">
           <button
             onClick={clear}
             className={styles.toolbarButton}
             style={{ color: textColor }}
           >
-            <FaEraser size={iconSize} />
+            <RiCheckboxBlankLine size={iconSize} />
           </button>
         </Tooltip>
         <Tooltip content="Download">
@@ -78,8 +80,6 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
             <FaDownload size={iconSize} />
           </button>
         </Tooltip>
-      </div>
-      <div className={styles.toolGroup}>
         <Tooltip content="Zoom In">
           <button
             onClick={onZoomIn}

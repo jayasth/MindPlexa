@@ -59,39 +59,54 @@ const DrawNodeSidebar: React.FC<DrawNodeSidebarProps> = ({
   const iconSize = 16;
 
   const toolGroups = [
-    { icon: FaPencilAlt, name: 'Pencil' },
-    { icon: IoMdWater, name: 'Watercolor' },
-    { icon: FaPaintBrush, name: 'Brush' },
-    { icon: FaMarker, name: 'Marker' },
-    { icon: FaSprayCan, name: 'Airbrush' },
-    { icon: FaEraser, name: 'Eraser' },
-    { icon: FaSquare, name: 'Square' },
-    { icon: FaCircle, name: 'Circle' },
-    { icon: FaDrawPolygon, name: 'Polygon' }
+    [
+      { icon: FaPencilAlt, name: 'Pencil' },
+      { icon: IoMdWater, name: 'Watercolor' },
+      { icon: FaPaintBrush, name: 'Brush' },
+      { icon: FaMarker, name: 'Marker' },
+      { icon: FaSprayCan, name: 'Airbrush' },
+      { icon: FaEraser, name: 'Eraser' }
+    ],
+    [
+      { icon: FaSquare, name: 'Square' },
+      { icon: FaCircle, name: 'Circle' },
+      { icon: FaDrawPolygon, name: 'Polygon' }
+    ]
   ];
 
   return (
     <div className={styles.sidebar} style={{ backgroundColor }}>
-      <div className={styles.toolGroup}>
-        {toolGroups.map((tool, index) => (
-          <Tooltip key={tool.name} content={tool.name}>
-            <button
-              className={`${styles.toolbarButton} ${currentTool === index ? styles.selected : ''}`}
-              onClick={() => setCurrentTool(index)}
-              style={{ color: textColor }}
-            >
-              <tool.icon size={iconSize} />
-            </button>
-          </Tooltip>
-        ))}
-      </div>
+      {toolGroups.map((group, groupIndex) => (
+        <div key={groupIndex} className={styles.toolGroup}>
+          {group.map((tool, index) => (
+            <Tooltip key={tool.name} content={tool.name}>
+              <button
+                className={`${styles.toolbarButton} ${
+                  currentTool === index + (groupIndex === 1 ? 6 : 0)
+                    ? styles.selected
+                    : ''
+                }`}
+                onClick={() =>
+                  setCurrentTool(index + (groupIndex === 1 ? 6 : 0))
+                }
+                style={{ color: textColor }}
+              >
+                <tool.icon size={iconSize} />
+              </button>
+            </Tooltip>
+          ))}
+        </div>
+      ))}
       <div className={styles.toolGroup}>
         <Tooltip content="Change Color">
           <button
             className={`${styles.toolbarButton} ${styles.colorPickerButton}`}
             onClick={() => setIsColorPickerOpen(true)}
           >
-            <GrPaint size={iconSize} color={color} />
+            <div
+              className={styles.colorPreview}
+              style={{ backgroundColor: color }}
+            />
           </button>
         </Tooltip>
         <Tooltip content="Change Stroke Width">
@@ -100,6 +115,7 @@ const DrawNodeSidebar: React.FC<DrawNodeSidebarProps> = ({
             onClick={() => setIsStrokeWidthOpen(true)}
           >
             <FaRuler size={iconSize} color={textColor} />
+            <span className={styles.strokeWidthLabel}>{strokeWidth}</span>
           </button>
         </Tooltip>
         <Tooltip content="Layers">
