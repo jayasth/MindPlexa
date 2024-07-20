@@ -14,15 +14,18 @@
   flex-direction: column;
   height: calc(100% - 80px);
   min-height: 200px;
+  overflow: hidden;
 }
 
 .artboardContainer {
   flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  overflow: auto;
   padding: 8px;
-  overflow: hidden;
+}
+
+.artboardWrapper {
+  display: inline-block;
+  transform-origin: top left;
 }
 
 .toolbarContainer {

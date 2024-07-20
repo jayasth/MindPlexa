@@ -18,7 +18,9 @@ import {
   FaUndo,
   FaRedo,
   FaDownload,
-  FaTrash
+  FaTrash,
+  FaSearchPlus,
+  FaSearchMinus
 } from 'react-icons/fa';
 import { IoMdWater } from 'react-icons/io';
 import {
@@ -123,6 +125,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const [strokeWidth, setStrokeWidth] = useState(5);
   const [currentTool, setCurrentTool] = useState(0);
   const [toolSizes, setToolSizes] = useState([5, 10, 15, 20, 10, 40]);
+  const [zoom, setZoom] = useState(1);
 
   const artboardRef = useRef<ArtboardRef | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -349,6 +352,9 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const download = () => artboardRef.current?.download();
   const clear = () => artboardRef.current?.clear();
 
+  const handleZoomIn = () => setZoom((prev) => Math.min(prev + 0.1, 3));
+  const handleZoomOut = () => setZoom((prev) => Math.max(prev - 0.1, 0.5));
+
   return (
     <div
       className={styles.drawNode}
@@ -395,17 +401,24 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
           clear={clear}
           backgroundColor={backgroundColor}
           textColor={textColor}
+          onZoomIn={handleZoomIn}
+          onZoomOut={handleZoomOut}
         />
         <div className={styles.artboardContainer}>
-          <Artboard
-            tool={tools[currentTool][0]}
-            ref={artboardRef}
-            history={history}
-            style={{ border: '1px gray solid' }}
-            content={drawingData}
-            width={nodeWidth * 0.9}
-            height={nodeHeight * 0.8}
-          />
+          <div
+            className={styles.artboardWrapper}
+            style={{ transform: `scale(${zoom})` }}
+          >
+            <Artboard
+              tool={tools[currentTool][0]}
+              ref={artboardRef}
+              history={history}
+              style={{ border: '1px gray solid' }}
+              content={drawingData}
+              width={nodeWidth * 0.9}
+              height={nodeHeight * 0.8}
+            />
+          </div>
           <canvas ref={canvasRef} style={{ display: 'none' }} />
         </div>
       </div>

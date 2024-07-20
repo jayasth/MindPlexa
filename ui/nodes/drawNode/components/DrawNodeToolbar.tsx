@@ -1,5 +1,11 @@
 import React from 'react';
-import { FaUndo, FaRedo, FaDownload } from 'react-icons/fa';
+import {
+  FaUndo,
+  FaRedo,
+  FaDownload,
+  FaSearchPlus,
+  FaSearchMinus
+} from 'react-icons/fa';
 import { RiCheckboxBlankLine } from 'react-icons/ri';
 import { HexColorPicker } from 'react-colorful';
 import { Popover } from '@/ui/Popover/Popover';
@@ -23,6 +29,8 @@ interface DrawNodeToolbarProps {
   clear: () => void;
   backgroundColor: string;
   textColor: string;
+  onZoomIn: () => void;
+  onZoomOut: () => void;
 }
 
 const DrawNodeToolbar: React.FC<DrawNodeToolbarProps> = ({
@@ -40,7 +48,9 @@ const DrawNodeToolbar: React.FC<DrawNodeToolbarProps> = ({
   download,
   clear,
   backgroundColor,
-  textColor
+  textColor,
+  onZoomIn,
+  onZoomOut
 }) => {
   const iconSize = 12;
 
@@ -127,6 +137,26 @@ const DrawNodeToolbar: React.FC<DrawNodeToolbarProps> = ({
             style={{ color: textColor }}
           >
             <FaDownload size={iconSize} />
+          </button>
+        </Tooltip>
+      </div>
+      <div className={toolbarStyles.toolGroup}>
+        <Tooltip content="Zoom In">
+          <button
+            onClick={onZoomIn}
+            className={toolbarStyles.toolbarButton}
+            style={{ color: textColor }}
+          >
+            <FaSearchPlus size={iconSize} />
+          </button>
+        </Tooltip>
+        <Tooltip content="Zoom Out">
+          <button
+            onClick={onZoomOut}
+            className={toolbarStyles.toolbarButton}
+            style={{ color: textColor }}
+          >
+            <FaSearchMinus size={iconSize} />
           </button>
         </Tooltip>
       </div>
