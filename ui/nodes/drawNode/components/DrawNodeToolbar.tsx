@@ -14,7 +14,7 @@ interface DrawNodeToolbarProps {
   color: string;
   setColor: (color: string) => void;
   strokeWidth: number;
-  setStrokeWidth: (width: number) => void;
+  setStrokeWidth: (toolIndex: number, width: number) => void;
   undo: () => void;
   redo: () => void;
   canUndo: boolean;
@@ -84,7 +84,9 @@ const DrawNodeToolbar: React.FC<DrawNodeToolbarProps> = ({
         </label>
         <label className={toolbarStyles.toolbarLabel}>
           Size:
-          <button onClick={() => setSizeOpen(!sizeOpen)}>{strokeWidth}</button>
+          <button onClick={() => setSizeOpen(!sizeOpen)}>
+            {tools[currentTool][2]}
+          </button>
           <Modal open={sizeOpen} onClose={() => setSizeOpen(false)} center>
             <div
               ref={sizePickerRef}
@@ -98,8 +100,8 @@ const DrawNodeToolbar: React.FC<DrawNodeToolbarProps> = ({
               <Slider
                 min={1}
                 max={100}
-                value={strokeWidth}
-                onChange={setStrokeWidth}
+                value={tools[currentTool][2]}
+                onChange={(newSize) => setStrokeWidth(currentTool, newSize)}
               />
               <div
                 style={{
@@ -113,10 +115,10 @@ const DrawNodeToolbar: React.FC<DrawNodeToolbarProps> = ({
               >
                 <div
                   style={{
-                    width: strokeWidth,
-                    height: strokeWidth,
+                    width: tools[currentTool][2],
+                    height: tools[currentTool][2],
                     backgroundColor: color,
-                    borderRadius: strokeWidth
+                    borderRadius: tools[currentTool][2]
                   }}
                 ></div>
               </div>

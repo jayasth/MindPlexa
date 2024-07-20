@@ -115,6 +115,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const [color, setColor] = useState('#531B93');
   const [strokeWidth, setStrokeWidth] = useState(5);
   const [currentTool, setCurrentTool] = useState(0);
+  const [toolSizes, setToolSizes] = useState([5, 10, 15, 20, 10, 40]);
 
   const artboardRef = useRef<ArtboardRef | null>(null);
 
@@ -286,13 +287,22 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   });
 
   const tools: Array<[ToolHandlers, IconType, number]> = [
-    [shading, FaPencilAlt, 5],
-    [watercolor, IoMdWater, 20],
-    [brush, FaPaintBrush, 15],
-    [marker, FaMarker, 20],
-    [airbrush, FaSprayCan, 10],
-    [eraser, FaEraser, 30]
+    [shading, FaPencilAlt, toolSizes[0]],
+    [watercolor, IoMdWater, toolSizes[1]],
+    [brush, FaPaintBrush, toolSizes[2]],
+    [marker, FaMarker, toolSizes[3]],
+    [airbrush, FaSprayCan, toolSizes[4]],
+    [eraser, FaEraser, toolSizes[5]]
   ];
+
+  const handleSizeChange = (index: number, newSize: number) => {
+    setToolSizes((prev) => {
+      const newSizes = [...prev];
+      newSizes[index] = newSize;
+      return newSizes;
+    });
+    setStrokeWidth(newSize);
+  };
 
   const { undo, redo, history, canUndo, canRedo } = useHistory();
 
@@ -344,7 +354,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
           color={color}
           setColor={setColor}
           strokeWidth={strokeWidth}
-          setStrokeWidth={setStrokeWidth}
+          setStrokeWidth={handleSizeChange}
           undo={undo}
           redo={redo}
           canUndo={canUndo}
