@@ -19,6 +19,12 @@ const Slider: React.FC<SliderProps> = ({ min, max, value, onChange }) => {
         onChange={(e) => onChange(Number(e.target.value))}
         className={styles.slider}
       />
+      <div className={styles.sliderPreview}>
+        <div
+          className={styles.sliderPreviewCircle}
+          style={{ width: value, height: value }}
+        ></div>
+      </div>
       <span className={styles.sliderValue}>{value}</span>
     </div>
   );

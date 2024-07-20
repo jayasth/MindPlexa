@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   FaUndo,
   FaRedo,
@@ -9,7 +9,9 @@ import {
 } from 'react-icons/fa';
 import { RiCheckboxBlankLine } from 'react-icons/ri';
 import { GrPaint } from 'react-icons/gr';
-import { HexColorPicker } from 'react-colorful';
+import { SketchPicker } from 'react-color';
+import Modal from 'react-responsive-modal';
+import 'react-responsive-modal/styles.css';
 import { Popover } from '@/ui/Popover/Popover';
 import { Tooltip } from '@/ui/Tooltip/Tooltip';
 import Slider from './DrawNodeSlider';
@@ -54,6 +56,8 @@ const DrawNodeToolbar: React.FC<DrawNodeToolbarProps> = ({
   onZoomIn,
   onZoomOut
 }) => {
+  const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
+  const [isStrokeWidthOpen, setIsStrokeWidthOpen] = useState(false);
   const iconSize = 16;
 
   return (
@@ -72,34 +76,23 @@ const DrawNodeToolbar: React.FC<DrawNodeToolbarProps> = ({
         ))}
       </div>
       <div className={styles.toolGroup}>
-        <Popover
-          trigger={
-            <button
-              className={`${styles.toolbarButton} ${styles.colorPickerButton}`}
-            >
-              <GrPaint size={iconSize} color={color} />
-            </button>
-          }
-          content={<HexColorPicker color={color} onChange={setColor} />}
-        />
-        <Popover
-          trigger={
-            <button
-              className={`${styles.toolbarButton} ${styles.sizePickerButton}`}
-            >
-              <FaRuler size={iconSize} color={textColor} />
-              <span className={styles.strokeWidthLabel}>{strokeWidth}</span>
-            </button>
-          }
-          content={
-            <Slider
-              min={1}
-              max={100}
-              value={strokeWidth}
-              onChange={setStrokeWidth}
-            />
-          }
-        />
+        <Tooltip content="Change Color">
+          <button
+            className={`${styles.toolbarButton} ${styles.colorPickerButton}`}
+            onClick={() => setIsColorPickerOpen(true)}
+          >
+            <GrPaint size={iconSize} color={color} />
+          </button>
+        </Tooltip>
+        <Tooltip content="Change Stroke Width">
+          <button
+            className={`${styles.toolbarButton} ${styles.sizePickerButton}`}
+            onClick={() => setIsStrokeWidthOpen(true)}
+          >
+            <FaRuler size={iconSize} color={textColor} />
+            <span className={styles.strokeWidthLabel}>{strokeWidth}</span>
+          </button>
+        </Tooltip>
       </div>
       <div className={styles.toolGroup}>
         <Tooltip content="Undo">
@@ -161,6 +154,32 @@ const DrawNodeToolbar: React.FC<DrawNodeToolbarProps> = ({
           </button>
         </Tooltip>
       </div>
+
+      <Modal
+        open={isColorPickerOpen}
+        onClose={() => setIsColorPickerOpen(false)}
+        center
+      >
+        <h2>Change Drawing Color</h2>
+        <SketchPicker
+          color={color}
+          onChange={(newColor) => setColor(newColor.hex)}
+        />
+      </Modal>
+
+      <Modal
+        open={isStrokeWidthOpen}
+        onClose={() => setIsStrokeWidthOpen(false)}
+        center
+      >
+        <h2>Change Stroke Width</h2>
+        <Slider
+          min={1}
+          max={100}
+          value={strokeWidth}
+          onChange={setStrokeWidth}
+        />
+      </Modal>
     </div>
   );
 };
