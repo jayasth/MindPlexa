@@ -4,7 +4,7 @@
 }
 
 .tooltipContent {
-  position: absolute;
+  position: fixed;
   z-index: 1000;
   background-color: #333;
   color: white;
@@ -12,10 +12,6 @@
   border-radius: 4px;
   font-size: 12px;
   white-space: nowrap;
-  top: 50%;
-  left: 100%;
-  transform: translateY(-50%);
-  margin-left: 10px;
 }
 
 .tooltipContent::before {

@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import styles from './Popover.module.css';
 
 interface PopoverProps {
@@ -8,13 +9,15 @@ interface PopoverProps {
 
 export const Popover: React.FC<PopoverProps> = ({ trigger, content }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const popoverRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
-        popoverRef.current &&
-        !popoverRef.current.contains(event.target as Node)
+        contentRef.current &&
+        !contentRef.current.contains(event.target as Node) &&
+        !triggerRef.current?.contains(event.target as Node)
       ) {
         setIsOpen(false);
       }
@@ -27,11 +30,19 @@ export const Popover: React.FC<PopoverProps> = ({ trigger, content }) => {
   }, []);
 
   return (
-    <div className={styles.popoverContainer} ref={popoverRef}>
-      {React.cloneElement(trigger, {
-        onClick: () => setIsOpen(!isOpen)
-      })}
-      {isOpen && <div className={styles.popoverContent}>{content}</div>}
-    </div>
+    <>
+      <div ref={triggerRef}>
+        {React.cloneElement(trigger, {
+          onClick: () => setIsOpen(!isOpen)
+        })}
+      </div>
+      {isOpen &&
+        createPortal(
+          <div className={styles.popoverContent} ref={contentRef}>
+            {content}
+          </div>,
+          document.body
+        )}
+    </>
   );
 };

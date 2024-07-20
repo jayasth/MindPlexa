@@ -44,7 +44,7 @@ const DrawNodeToolbar: React.FC<DrawNodeToolbarProps> = ({
   const iconSize = 12;
 
   return (
-    <div className={toolbarStyles.toolbar} style={{ backgroundColor }}>
+    <div className={toolbarStyles.floatingToolbar} style={{ backgroundColor }}>
       {tools.map(([tool, Icon], index) => (
         <Tooltip key={tool.name} content={tool.name}>
           <button
