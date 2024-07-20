@@ -1,8 +1,43 @@
 .toolbar {
   display: flex;
   justify-content: space-between;
-  margin-top: 8px;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.toolbarButton {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   background-color: transparent;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.toolbarButton:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.toolbarButton.selected {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.colorIndicator {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid white;
+}
+
+.sizeIndicator {
+  background-color: black;
+  border-radius: 50%;
+  max-width: 20px;
+  max-height: 20px;
 }
 
 .toolbarSection {
@@ -12,33 +47,6 @@
   width: 100%;
   gap: 0;
   flex-grow: 1;
-}
-.toolbarButton {
-  padding: 4px;
-  display: inline-flex;
-  cursor: pointer;
-  border: none;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  margin: 3px;
-  background-color: transparent; /* Ensure background is transparent */
-  border-radius: 4px;
-  color: inherit; /* Ensure the icon color inherits the text color */
-  transition:
-    background-color 0.3s ease,
-    border 0.3s ease;
-}
-
-.toolbarButton.selected {
-  background-color: rgba(
-    255,
-    255,
-    255,
-    0.2
-  ); /* Slight background color for selected state */
-  border: 2px solid rgba(255, 255, 255, 0.5); /* Border for selected state */
 }
 
 .toolbarLabel {

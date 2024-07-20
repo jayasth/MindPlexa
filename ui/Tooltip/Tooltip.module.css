@@ -1,0 +1,30 @@
+.tooltipContainer {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltipContent {
+  position: absolute;
+  z-index: 1000;
+  background-color: #333;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 5px;
+}
+
+.tooltipContent::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent transparent #333 transparent;
+  transform: translateX(-50%);
+}

@@ -10,17 +10,25 @@
 }
 
 .drawContent {
-  flex-grow: 1;
-  overflow: auto;
-  background-color: transparent;
-  outline: none;
-  resize: none;
-  padding: 8px;
-  z-index: 0;
-  cursor: text;
-  border: 1px solid #ccc;
   display: flex;
   flex-direction: column;
+  flex-direction: row;
+  height: 100%;
+}
+
+.toolbarContainer {
+  width: 40px;
+  padding: 8px;
+  background-color: #f0f0f0;
+  border-right: 1px solid #ccc;
+}
+
+.artboardContainer {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 8px;
 }
 
 .canvas {

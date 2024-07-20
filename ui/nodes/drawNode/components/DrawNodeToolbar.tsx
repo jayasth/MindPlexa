@@ -1,11 +1,10 @@
 import React from 'react';
 import { FaUndo, FaRedo, FaDownload, FaTrash } from 'react-icons/fa';
-import { HexColorPicker, HexColorInput } from 'react-colorful';
-import { Modal } from 'react-responsive-modal';
-import 'react-responsive-modal/styles.css';
+import { HexColorPicker } from 'react-colorful';
+import { Popover } from '@/ui/Popover/Popover';
+import { Tooltip } from '@/ui/Tooltip/Tooltip';
 import Slider from './DrawNodeSlider';
 import toolbarStyles from '@/ui/nodes/drawNode/components/DrawNodeToolbar.module.css';
-import Input from '@/ui/Input/Input';
 
 interface DrawNodeToolbarProps {
   tools: Array<[any, any, number]>;
@@ -14,7 +13,7 @@ interface DrawNodeToolbarProps {
   color: string;
   setColor: (color: string) => void;
   strokeWidth: number;
-  setStrokeWidth: (toolIndex: number, width: number) => void;
+  setStrokeWidth: (width: number) => void;
   undo: () => void;
   redo: () => void;
   canUndo: boolean;
@@ -38,114 +37,77 @@ const DrawNodeToolbar: React.FC<DrawNodeToolbarProps> = ({
   download,
   clear
 }) => {
-  const [colorOpen, setColorOpen] = React.useState(false);
-  const [sizeOpen, setSizeOpen] = React.useState(false);
-  const colorPickerRef = React.useRef<HTMLDivElement>(null);
-  const sizePickerRef = React.useRef<HTMLDivElement>(null);
+  const iconSize = 12;
 
   return (
     <div className={toolbarStyles.toolbar}>
-      <div className={toolbarStyles.toolbarSection}>
-        {tools.map(([tool, Icon], index) => (
+      {tools.map(([tool, Icon], index) => (
+        <Tooltip key={tool.name} content={tool.name}>
           <button
-            aria-label={tool.name}
-            key={tool.name}
-            title={tool.name}
             className={`${toolbarStyles.toolbarButton} ${currentTool === index ? toolbarStyles.selected : ''}`}
             onClick={() => setCurrentTool(index)}
           >
-            {<Icon size={14} title={tool.name} />}
+            <Icon size={iconSize} />
           </button>
-        ))}
-        <label className={toolbarStyles.toolbarLabel}>
-          Color:
+        </Tooltip>
+      ))}
+      <Popover
+        trigger={
           <button
-            onClick={() => setColorOpen(!colorOpen)}
-            style={{
-              backgroundColor: color,
-              width: 50,
-              border: '2px gray solid',
-              color: 'transparent'
-            }}
+            className={toolbarStyles.toolbarButton}
+            style={{ backgroundColor: color }}
           >
-            Color
+            <span className={toolbarStyles.colorIndicator} />
           </button>
-          <Modal open={colorOpen} onClose={() => setColorOpen(false)} center>
-            <div ref={colorPickerRef} style={{ padding: '20px' }}>
-              <HexColorPicker color={color} onChange={setColor} />
-              <Input
-                className={toolbarStyles.input}
-                variant="slim"
-                value={color}
-                onChange={setColor}
-              />
-            </div>
-          </Modal>
-        </label>
-        <label className={toolbarStyles.toolbarLabel}>
-          Size:
-          <button onClick={() => setSizeOpen(!sizeOpen)}>
-            {tools[currentTool][2]}
+        }
+        content={<HexColorPicker color={color} onChange={setColor} />}
+      />
+      <Popover
+        trigger={
+          <button className={toolbarStyles.toolbarButton}>
+            <span
+              className={toolbarStyles.sizeIndicator}
+              style={{ width: strokeWidth, height: strokeWidth }}
+            />
           </button>
-          <Modal open={sizeOpen} onClose={() => setSizeOpen(false)} center>
-            <div
-              ref={sizePickerRef}
-              style={{
-                width: 150,
-                padding: '30px 20px 10px 20px',
-                display: 'flex',
-                flexDirection: 'column'
-              }}
-            >
-              <Slider
-                min={1}
-                max={100}
-                value={tools[currentTool][2]}
-                onChange={(newSize) => setStrokeWidth(currentTool, newSize)}
-              />
-              <div
-                style={{
-                  flex: 1,
-                  minHeight: 150,
-                  justifyContent: 'center',
-                  flexDirection: 'column',
-                  display: 'flex',
-                  placeItems: 'center'
-                }}
-              >
-                <div
-                  style={{
-                    width: tools[currentTool][2],
-                    height: tools[currentTool][2],
-                    backgroundColor: color,
-                    borderRadius: tools[currentTool][2]
-                  }}
-                ></div>
-              </div>
-            </div>
-          </Modal>
-        </label>
+        }
+        content={
+          <Slider
+            min={1}
+            max={100}
+            value={strokeWidth}
+            onChange={(newSize) => setStrokeWidth(newSize)}
+          />
+        }
+      />
+      <Tooltip content="Undo">
         <button
           onClick={undo}
           disabled={!canUndo}
           className={toolbarStyles.toolbarButton}
         >
-          <FaUndo size={12} title="Undo" />
+          <FaUndo size={iconSize} />
         </button>
+      </Tooltip>
+      <Tooltip content="Redo">
         <button
           onClick={redo}
           disabled={!canRedo}
           className={toolbarStyles.toolbarButton}
         >
-          <FaRedo title="Redo" />
+          <FaRedo size={iconSize} />
         </button>
+      </Tooltip>
+      <Tooltip content="Download">
         <button onClick={download} className={toolbarStyles.toolbarButton}>
-          <FaDownload title="Download" />
+          <FaDownload size={iconSize} />
         </button>
+      </Tooltip>
+      <Tooltip content="Clear">
         <button onClick={clear} className={toolbarStyles.toolbarButton}>
-          <FaTrash title="Clear" />
+          <FaTrash size={iconSize} />
         </button>
-      </div>
+      </Tooltip>
     </div>
   );
 };

@@ -14,7 +14,11 @@ import {
   FaPaintBrush,
   FaMarker,
   FaEraser,
-  FaSprayCan
+  FaSprayCan,
+  FaUndo,
+  FaRedo,
+  FaDownload,
+  FaTrash
 } from 'react-icons/fa';
 import { IoMdWater } from 'react-icons/io';
 import {
@@ -62,6 +66,7 @@ import { useBackgroundColorChange } from '@/ui/nodes/common/useBackgroundColorCh
 import { debounce } from 'lodash';
 import useNodeStore from '@/app/store/nodes/useNodeStore';
 import useCanvasStore from '@/app/store/canvas/useCanvasStore';
+import { Tooltip } from '@/ui/Tooltip/Tooltip';
 
 interface DrawNodeEditProps extends NodeProps {
   data: any;
@@ -338,13 +343,11 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     [tags, attachedFiles, onRemoveTag, onRemoveFile, textColor]
   );
 
+  const download = () => artboardRef.current?.download();
+  const clear = () => artboardRef.current?.clear();
+
   return (
-    <div
-      className={styles.drawNode}
-      style={customStyles}
-      onClick={handleContainerClick}
-      onBlur={handleContainerBlur}
-    >
+    <div className={styles.drawNode} style={customStyles}>
       <NodeResizer
         isVisible={isContainerSelected}
         minWidth={200}
@@ -366,32 +369,32 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         />
       </div>
       <div className={`${styles.drawContent} nowheel nodrag`}>
-        <DrawNodeToolbar
-          tools={tools}
-          currentTool={currentTool}
-          setCurrentTool={setCurrentTool}
-          color={color}
-          setColor={setColor}
-          strokeWidth={strokeWidth}
-          setStrokeWidth={handleSizeChange}
-          undo={undo}
-          redo={redo}
-          canUndo={canUndo}
-          canRedo={canRedo}
-          download={() => artboardRef.current?.download()}
-          clear={() => artboardRef.current?.clear()}
-        />
-        <div id="artboard" className={styles.artboard}>
+        <div className={styles.toolbarContainer}>
+          <DrawNodeToolbar
+            tools={tools}
+            currentTool={currentTool}
+            setCurrentTool={setCurrentTool}
+            color={color}
+            setColor={setColor}
+            strokeWidth={strokeWidth}
+            setStrokeWidth={handleSizeChange}
+            undo={undo}
+            redo={redo}
+            canUndo={canUndo}
+            canRedo={canRedo}
+            download={download}
+            clear={clear}
+          />
+        </div>
+        <div className={styles.artboardContainer}>
           <Artboard
             tool={tools[currentTool][0]}
             ref={artboardRef}
             history={history}
-            style={{ border: '1px gray solid' }}
             content={drawingData}
-            width={nodeWidth * 0.5}
-            height={nodeHeight * 0.5}
+            width={nodeWidth * 0.8}
+            height={nodeHeight * 0.8}
           />
-          <canvas ref={canvasRef} style={{ display: 'none' }} />
         </div>
       </div>
       {(tags.length > 0 || attachedFiles.length > 0) &&
