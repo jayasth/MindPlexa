@@ -14,13 +14,7 @@ import {
   FaPaintBrush,
   FaMarker,
   FaEraser,
-  FaSprayCan,
-  FaUndo,
-  FaRedo,
-  FaDownload,
-  FaTrash,
-  FaSearchPlus,
-  FaSearchMinus
+  FaSprayCan
 } from 'react-icons/fa';
 import { IoMdWater } from 'react-icons/io';
 import {

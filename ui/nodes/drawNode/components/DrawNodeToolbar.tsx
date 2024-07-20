@@ -14,7 +14,8 @@ import {
   FaSquare,
   FaCircle,
   FaDrawPolygon,
-  FaLayerGroup
+  FaLayerGroup,
+  FaCog
 } from 'react-icons/fa';
 import { IoMdWater } from 'react-icons/io';
 import { GrPaint } from 'react-icons/gr';
@@ -77,6 +78,7 @@ const DrawNodeToolbar: React.FC<DrawNodeToolbarProps> = ({
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   const [isStrokeWidthOpen, setIsStrokeWidthOpen] = useState(false);
   const [isLayerModalOpen, setIsLayerModalOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const iconSize = 16;
 
   const toolGroups = [
@@ -127,6 +129,14 @@ const DrawNodeToolbar: React.FC<DrawNodeToolbarProps> = ({
             onClick={() => setIsLayerModalOpen(true)}
           >
             <FaLayerGroup size={iconSize} color={textColor} />
+          </button>
+        </Tooltip>
+        <Tooltip content="Settings">
+          <button
+            className={`${styles.toolbarButton}`}
+            onClick={() => setIsSettingsOpen(true)}
+          >
+            <FaCog size={iconSize} color={textColor} />
           </button>
         </Tooltip>
       </div>
@@ -206,6 +216,14 @@ const DrawNodeToolbar: React.FC<DrawNodeToolbarProps> = ({
           activeLayerId={activeLayerId}
           setActiveLayerId={setActiveLayerId}
         />
+      </Modal>
+      <Modal
+        open={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        center
+      >
+        <h2>Settings</h2>
+        {/* Add settings content here */}
       </Modal>
     </div>
   );

@@ -9,6 +9,12 @@
   padding: 4px;
   background-color: rgba(240, 240, 240, 0.8);
   border-right: 1px solid #ccc;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 36px;
+  overflow-y: auto;
   pointer-events: auto;
 }
 
@@ -21,6 +27,7 @@
   top: 0;
   left: 40px;
   right: 0;
+  height: 36px;
   pointer-events: auto;
 }
 
@@ -56,34 +63,24 @@
   position: relative;
 }
 
-.layerPanelContainer {
-  position: absolute;
-  top: 40px;
-  left: 40px;
-  background-color: rgba(240, 240, 240, 0.9);
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  padding: 8px;
-  pointer-events: auto;
+/* Add styles for the modal content */
+.modalContent {
+  padding: 16px;
 }
 
-.sliderContainer {
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 1000;
-  margin-top: 8px;
-  padding: 8px;
-  background-color: white;
-  border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  width: 150px;
-}
+/* Add responsive styles for smaller screens */
+@media (max-width: 600px) {
+  .verticalToolbar {
+    width: 32px;
+  }
 
-.sliderValue {
-  display: block;
-  text-align: center;
-  margin-top: 4px;
-  font-size: 12px;
+  .horizontalToolbar {
+    left: 36px;
+    height: 32px;
+  }
+
+  .toolbarButton {
+    width: 24px;
+    height: 24px;
+  }
 }
