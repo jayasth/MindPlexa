@@ -12,19 +12,19 @@
   border-radius: 4px;
   font-size: 12px;
   white-space: nowrap;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  margin-top: 5px;
+  top: 50%;
+  left: 100%;
+  transform: translateY(-50%);
+  margin-left: 10px;
 }
 
 .tooltipContent::before {
   content: '';
   position: absolute;
-  bottom: 100%;
-  left: 50%;
+  top: 50%;
+  right: 100%;
   border-width: 5px;
   border-style: solid;
-  border-color: transparent transparent #333 transparent;
-  transform: translateX(-50%);
+  border-color: transparent #333 transparent transparent;
+  transform: translateY(-50%);
 }

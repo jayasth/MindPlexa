@@ -11,7 +11,6 @@
 
 .drawContent {
   display: flex;
-  flex-direction: column;
   flex-direction: row;
   height: 100%;
 }
@@ -21,6 +20,26 @@
   padding: 8px;
   background-color: #f0f0f0;
   border-right: 1px solid #ccc;
+}
+
+.toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px;
+}
+
+.toolbarButton {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: transparent;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
 }
 
 .artboardContainer {
