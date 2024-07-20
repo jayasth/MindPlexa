@@ -12,14 +12,18 @@
 .drawContent {
   display: flex;
   flex-direction: row;
-  height: 100%;
+  height: calc(
+    100% - 80px
+  ); /* Adjust this value to leave space for header and footer */
+  min-height: 200px;
 }
 
 .toolbarContainer {
-  width: 40px;
+  width: 70px;
   padding: 8px;
   background-color: #f0f0f0;
   border-right: 1px solid #ccc;
+  overflow-y: auto;
 }
 
 .toolbar {
@@ -48,6 +52,7 @@
   justify-content: center;
   align-items: center;
   padding: 8px;
+  overflow: hidden;
 }
 
 .canvas {
@@ -101,9 +106,10 @@
 .footer {
   display: flex;
   justify-content: space-between;
-  margin-top: 8px;
+  margin-top: auto;
   background-color: transparent;
   padding: 4px;
+  height: 40px; /* Set a fixed height for the footer */
 }
 
 .tagFileContainer {

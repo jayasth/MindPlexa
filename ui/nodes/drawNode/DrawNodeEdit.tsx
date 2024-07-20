@@ -319,14 +319,17 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     [eraser, FaEraser, toolSizes[5]]
   ];
 
-  const handleSizeChange = (index: number, newSize: number) => {
-    setToolSizes((prev) => {
-      const newSizes = [...prev];
-      newSizes[index] = newSize;
-      return newSizes;
-    });
-    setStrokeWidth(newSize);
-  };
+  const handleSizeChange = useCallback(
+    (newSize: number) => {
+      setStrokeWidth(newSize);
+      setToolSizes((prev) => {
+        const newSizes = [...prev];
+        newSizes[currentTool] = newSize;
+        return newSizes;
+      });
+    },
+    [currentTool]
+  );
 
   const { undo, redo, history, canUndo, canRedo } = useHistory();
 
@@ -391,10 +394,12 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
             tool={tools[currentTool][0]}
             ref={artboardRef}
             history={history}
+            style={{ border: '1px gray solid' }}
             content={drawingData}
-            width={nodeWidth * 0.8}
-            height={nodeHeight * 0.8}
+            width={nodeWidth * 0.7}
+            height={nodeHeight * 0.7}
           />
+          <canvas ref={canvasRef} style={{ display: 'none' }} />
         </div>
       </div>
       {(tags.length > 0 || attachedFiles.length > 0) &&
