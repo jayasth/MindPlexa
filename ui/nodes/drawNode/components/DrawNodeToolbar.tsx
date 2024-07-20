@@ -4,9 +4,11 @@ import {
   FaRedo,
   FaDownload,
   FaSearchPlus,
-  FaSearchMinus
+  FaSearchMinus,
+  FaRuler
 } from 'react-icons/fa';
 import { RiCheckboxBlankLine } from 'react-icons/ri';
+import { GiPaintBucket } from 'react-icons/gi';
 import { HexColorPicker } from 'react-colorful';
 import { Popover } from '@/ui/Popover/Popover';
 import { Tooltip } from '@/ui/Tooltip/Tooltip';
@@ -70,35 +72,44 @@ const DrawNodeToolbar: React.FC<DrawNodeToolbarProps> = ({
         ))}
       </div>
       <div className={toolbarStyles.toolGroup}>
-        <Popover
-          trigger={
-            <button
-              className={toolbarStyles.toolbarButton}
-              style={{ backgroundColor: color }}
-            >
-              <span className={toolbarStyles.colorIndicator} />
-            </button>
-          }
-          content={<HexColorPicker color={color} onChange={setColor} />}
-        />
-        <Popover
-          trigger={
-            <button className={toolbarStyles.toolbarButton}>
-              <span
-                className={toolbarStyles.sizeIndicator}
-                style={{ width: strokeWidth, height: strokeWidth }}
-              />
-            </button>
-          }
-          content={
-            <Slider
-              min={1}
-              max={100}
-              value={strokeWidth}
-              onChange={setStrokeWidth}
-            />
-          }
-        />
+        <Tooltip content="Color Picker">
+          <Popover
+            trigger={
+              <button
+                className={`${toolbarStyles.toolbarButton} ${toolbarStyles.colorPickerButton}`}
+                style={{ backgroundColor: color }}
+              >
+                <GiPaintBucket size={iconSize} color={textColor} />
+              </button>
+            }
+            content={<HexColorPicker color={color} onChange={setColor} />}
+          />
+        </Tooltip>
+        <Tooltip content="Stroke Width">
+          <Popover
+            trigger={
+              <button
+                className={`${toolbarStyles.toolbarButton} ${toolbarStyles.sizePickerButton}`}
+              >
+                <FaRuler size={iconSize} color={textColor} />
+                <span className={toolbarStyles.strokeWidthLabel}>
+                  {strokeWidth}
+                </span>
+              </button>
+            }
+            content={
+              <div className={toolbarStyles.sliderContainer}>
+                <Slider
+                  min={1}
+                  max={100}
+                  value={strokeWidth}
+                  onChange={setStrokeWidth}
+                />
+                <span className={toolbarStyles.sliderValue}>{strokeWidth}</span>
+              </div>
+            }
+          />
+        </Tooltip>
       </div>
       <div className={toolbarStyles.toolGroup}>
         <Tooltip content="Undo">

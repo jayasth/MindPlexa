@@ -10,14 +10,17 @@ interface SliderProps {
 
 const Slider: React.FC<SliderProps> = ({ min, max, value, onChange }) => {
   return (
-    <input
-      type="range"
-      min={min}
-      max={max}
-      value={value}
-      onChange={(e) => onChange(Number(e.target.value))}
-      className={styles.slider}
-    />
+    <div className={styles.sliderContainer}>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        className={styles.slider}
+      />
+      <span className={styles.sliderValue}>{value}</span>
+    </div>
   );
 };
 
