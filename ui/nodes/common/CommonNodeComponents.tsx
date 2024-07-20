@@ -22,7 +22,6 @@ import {
   getAttachments,
   removeAllPreviews
 } from '@/utils/canvas/attachmentService';
-import { getContrastYIQ } from '@/ui/nodes/common/CommonNodeFunctions';
 
 const ICON_SIZE = 16;
 
@@ -32,14 +31,13 @@ export const DeleteButton = ({ onClick }) => (
   </button>
 );
 
-export const ChangeColorButton = ({ onClick, backgroundColor }) => (
+export const ChangeColorButton = ({ onClick }) => (
   <button
     className={styles.actionButton}
     onClick={onClick}
     title="Change Background Color"
-    style={{ backgroundColor }}
   >
-    <FaPalette size={ICON_SIZE} color={getContrastYIQ(backgroundColor)} />
+    <FaPalette size={ICON_SIZE} />
   </button>
 );
 
