@@ -415,7 +415,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
             backgroundColor={backgroundColor}
             textColor={textColor}
           />
-          <div className={styles.artboardContainer}>
+          <div className={`${styles.artboardContainer} nodrag nowheel`}>
             <div
               className={styles.artboardWrapper}
               style={{ transform: `scale(${zoom})`, transformOrigin: 'center' }}
