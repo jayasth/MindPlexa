@@ -135,6 +135,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     { id: '1', name: 'Layer 1', visible: true, locked: false }
   ]);
   const [activeLayerId, setActiveLayerId] = useState('1');
+  const [aspectRatio, setAspectRatio] = useState(1);
 
   const artboardRef = useRef<ArtboardRef | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -209,12 +210,29 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     if (canvas && context && drawingData) {
       const image = new Image();
       image.onload = () => {
+        setAspectRatio(image.width / image.height);
         context.clearRect(0, 0, canvas.width, canvas.height);
         context.drawImage(image, 0, 0, canvas.width, canvas.height);
       };
       image.src = drawingData;
     }
   }, [width, height, onResize, drawingData]);
+
+  const artboardSize = useMemo(() => {
+    const maxWidth = nodeWidth * 0.95;
+    const maxHeight = nodeHeight * 0.8;
+    let artboardWidth, artboardHeight;
+
+    if (maxWidth / aspectRatio <= maxHeight) {
+      artboardWidth = maxWidth;
+      artboardHeight = maxWidth / aspectRatio;
+    } else {
+      artboardHeight = maxHeight;
+      artboardWidth = maxHeight * aspectRatio;
+    }
+
+    return { width: artboardWidth, height: artboardHeight };
+  }, [nodeWidth, nodeHeight, aspectRatio]);
 
   const onChangeTitle = useCallback(
     (newTitle: string) => {
@@ -439,24 +457,24 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         />
         <div className={styles.mainContent}>
           <div className={`${styles.artboardContainer} nodrag nowheel`}>
-            <div
-              className={styles.artboardWrapper}
-              style={{ transform: `scale(${zoom})`, transformOrigin: 'center' }}
-            >
-              <Artboard
-                tool={tools[currentTool][0]}
-                ref={artboardRef}
-                history={history}
-                style={{ border: '1px gray solid' }}
-                content={drawingData}
-                width={nodeWidth * 0.7}
-                height={nodeHeight * 0.7}
-                layers={layers}
-                activeLayerId={activeLayerId}
-              />
-            </div>
-            <canvas ref={canvasRef} style={{ display: 'none' }} />
+            <Artboard
+              tool={tools[currentTool][0]}
+              ref={artboardRef}
+              history={history}
+              style={{
+                border: '1px solid #ccc',
+                backgroundColor: 'white',
+                width: `${artboardSize.width}px`,
+                height: `${artboardSize.height}px`
+              }}
+              content={drawingData}
+              width={artboardSize.width}
+              height={artboardSize.height}
+              layers={layers}
+              activeLayerId={activeLayerId}
+            />
           </div>
+          <canvas ref={canvasRef} style={{ display: 'none' }} />
         </div>
       </div>
       {(tags.length > 0 || attachedFiles.length > 0) &&
