@@ -219,20 +219,10 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   }, [width, height, onResize, drawingData]);
 
   const artboardSize = useMemo(() => {
-    const maxWidth = nodeWidth * 0.95;
-    const maxHeight = nodeHeight * 0.8;
-    let artboardWidth, artboardHeight;
-
-    if (maxWidth / aspectRatio <= maxHeight) {
-      artboardWidth = maxWidth;
-      artboardHeight = maxWidth / aspectRatio;
-    } else {
-      artboardHeight = maxHeight;
-      artboardWidth = maxHeight * aspectRatio;
-    }
-
-    return { width: artboardWidth, height: artboardHeight };
-  }, [nodeWidth, nodeHeight, aspectRatio]);
+    const maxWidth = nodeWidth * 0.9;
+    const maxHeight = nodeHeight * 0.7;
+    return { width: maxWidth, height: maxHeight };
+  }, [nodeWidth, nodeHeight]);
 
   const onChangeTitle = useCallback(
     (newTitle: string) => {
@@ -472,6 +462,13 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
               height={artboardSize.height}
               layers={layers}
               activeLayerId={activeLayerId}
+              onResize={() => {
+                // Trigger a redraw of the entire canvas
+                if (artboardRef.current) {
+                  const dataUrl = artboardRef.current.getImageAsDataUri();
+                  setDrawingData(dataUrl || '');
+                }
+              }}
             />
           </div>
           <canvas ref={canvasRef} style={{ display: 'none' }} />

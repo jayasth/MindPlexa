@@ -279,6 +279,47 @@ export const Artboard = forwardRef(function Artboard(
     [continueStroke, drawing, endStroke]
   );
 
+  const resizeCanvas = useCallback(() => {
+    if (!canvas || !context) return;
+
+    const tempCanvas = document.createElement('canvas');
+    const tempContext = tempCanvas.getContext('2d');
+    tempCanvas.width = canvas.width;
+    tempCanvas.height = canvas.height;
+    tempContext?.drawImage(canvas, 0, 0);
+
+    canvas.width = width;
+    canvas.height = height;
+
+    context.fillStyle = '#ffffff';
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.drawImage(tempCanvas, 0, 0);
+
+    // Update layer contexts
+    Object.values(layerContexts).forEach((layerContext) => {
+      const tempLayerCanvas = document.createElement('canvas');
+      const tempLayerContext = tempLayerCanvas.getContext('2d');
+      tempLayerCanvas.width = layerContext.canvas.width;
+      tempLayerCanvas.height = layerContext.canvas.height;
+      tempLayerContext?.drawImage(layerContext.canvas, 0, 0);
+
+      layerContext.canvas.width = width;
+      layerContext.canvas.height = height;
+      layerContext.fillStyle = '#ffffff';
+      layerContext.fillRect(0, 0, width, height);
+      layerContext.drawImage(tempLayerCanvas, 0, 0);
+    });
+
+    composeLayers();
+  }, [canvas, context, width, height, layerContexts, composeLayers]);
+
+  useEffect(() => {
+    resizeCanvas();
+    if (onResize) {
+      onResize();
+    }
+  }, [width, height, resizeCanvas, onResize]);
+
   useImperativeHandle(
     ref,
     () => ({
