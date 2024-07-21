@@ -462,6 +462,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
               height={artboardSize.height}
               layers={layers}
               activeLayerId={activeLayerId}
+              zoom={zoom}
               onResize={() => {
                 // Trigger a redraw of the entire canvas
                 if (artboardRef.current) {

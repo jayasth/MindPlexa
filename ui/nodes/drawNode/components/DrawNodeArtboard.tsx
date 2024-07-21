@@ -31,6 +31,7 @@ export interface ArtboardProps
   onResize?: () => void;
   layers: Layer[];
   activeLayerId: string;
+  zoom: number;
 }
 
 export interface ArtboardRef {
@@ -65,6 +66,7 @@ export const Artboard = forwardRef(function Artboard(
     onResize,
     layers,
     activeLayerId,
+    zoom,
     ...props
   }: ArtboardProps,
   ref: ForwardedRef<ArtboardRef>
@@ -75,6 +77,7 @@ export const Artboard = forwardRef(function Artboard(
   const [layerContexts, setLayerContexts] = useState<{
     [key: string]: CanvasRenderingContext2D;
   }>({});
+  const [zoomLevel, setZoomLevel] = useState(1);
 
   useEffect(() => {
     if (!canvas) return;
@@ -92,9 +95,15 @@ export const Artboard = forwardRef(function Artboard(
     setLayerContexts(newLayerContexts);
   }, [layers, canvas]);
 
+  useEffect(() => {
+    setZoomLevel(zoom);
+  }, [zoom]);
+
   const composeLayers = useCallback(() => {
     if (!context || !canvas) return;
     context.clearRect(0, 0, canvas.width, canvas.height);
+    context.save();
+    context.scale(zoomLevel, zoomLevel);
     layers.forEach((layer) => {
       if (layer.visible) {
         const layerContext = layerContexts[layer.id];
@@ -103,7 +112,8 @@ export const Artboard = forwardRef(function Artboard(
         }
       }
     });
-  }, [context, canvas, layers, layerContexts]);
+    context.restore();
+  }, [context, canvas, layers, layerContexts, zoomLevel]);
 
   useEffect(() => {
     composeLayers();
@@ -373,7 +383,13 @@ export const Artboard = forwardRef(function Artboard(
 
   return (
     <canvas
-      style={{ cursor: tool?.cursor, touchAction: 'none', ...style }}
+      style={{
+        cursor: tool?.cursor,
+        touchAction: 'none',
+        transform: `scale(${zoomLevel})`,
+        transformOrigin: 'top left',
+        ...style
+      }}
       onTouchStart={touchStart}
       onMouseDown={mouseDown}
       onMouseEnter={mouseEnter}
