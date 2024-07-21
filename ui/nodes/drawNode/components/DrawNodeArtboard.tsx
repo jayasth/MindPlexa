@@ -102,7 +102,16 @@ export const Artboard = forwardRef(function Artboard(
     if (!context || !canvas) return;
     context.clearRect(0, 0, canvas.width, canvas.height);
     context.save();
+
+    // Calculate the center point
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+
+    // Translate to the center, scale, then translate back
+    context.translate(centerX, centerY);
     context.scale(zoom, zoom);
+    context.translate(-centerX, -centerY);
+
     layers.forEach((layer) => {
       if (layer.visible) {
         const layerContext = layerContexts[layer.id];

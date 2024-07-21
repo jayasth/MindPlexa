@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import styles from './ArtboardResizer.module.css';
 
 interface ArtboardResizerProps {
@@ -13,20 +13,24 @@ const ArtboardResizer: React.FC<ArtboardResizerProps> = ({
   onResize
 }) => {
   const [resizing, setResizing] = useState(false);
-  const [resizeDirection, setResizeDirection] = useState('');
-  const [startX, setStartX] = useState(0);
-  const [startY, setStartY] = useState(0);
-  const [startWidth, setStartWidth] = useState(width);
-  const [startHeight, setStartHeight] = useState(height);
+  const resizeInfo = useRef({
+    direction: '',
+    startX: 0,
+    startY: 0,
+    startWidth: width,
+    startHeight: height
+  });
 
   const handleMouseDown = useCallback(
     (e: React.MouseEvent, direction: string) => {
       setResizing(true);
-      setResizeDirection(direction);
-      setStartX(e.clientX);
-      setStartY(e.clientY);
-      setStartWidth(width);
-      setStartHeight(height);
+      resizeInfo.current = {
+        direction,
+        startX: e.clientX,
+        startY: e.clientY,
+        startWidth: width,
+        startHeight: height
+      };
     },
     [width, height]
   );
@@ -35,10 +39,12 @@ const ArtboardResizer: React.FC<ArtboardResizerProps> = ({
     (e: React.MouseEvent) => {
       if (!resizing) return;
 
+      const { direction, startX, startY, startWidth, startHeight } =
+        resizeInfo.current;
       let newWidth = startWidth;
       let newHeight = startHeight;
 
-      switch (resizeDirection) {
+      switch (direction) {
         case 'right':
           newWidth = startWidth + e.clientX - startX;
           break;
@@ -71,15 +77,7 @@ const ArtboardResizer: React.FC<ArtboardResizerProps> = ({
 
       onResize(Math.max(newWidth, 100), Math.max(newHeight, 100));
     },
-    [
-      resizing,
-      resizeDirection,
-      startWidth,
-      startHeight,
-      startX,
-      startY,
-      onResize
-    ]
+    [resizing, onResize]
   );
 
   const handleMouseUp = useCallback(() => {

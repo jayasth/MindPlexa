@@ -204,28 +204,9 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     debouncedUpdateNodeData
   ]);
 
-  useEffect(() => {
-    if (onResize) {
-      onResize();
-    }
-    const canvas = canvasRef.current;
-    const context = canvas?.getContext('2d');
-    if (canvas && context && drawingData) {
-      const image = new Image();
-      image.onload = () => {
-        setAspectRatio(image.width / image.height);
-        context.clearRect(0, 0, canvas.width, canvas.height);
-        context.drawImage(image, 0, 0, canvas.width, canvas.height);
-      };
-      image.src = drawingData;
-    }
-  }, [width, height, onResize, drawingData]);
-
   const artboardSize = useMemo(() => {
-    const maxWidth = nodeWidth * 0.9;
-    const maxHeight = nodeHeight * 0.7;
-    return { width: maxWidth, height: maxHeight };
-  }, [nodeWidth, nodeHeight]);
+    return { width: artboardWidth, height: artboardHeight };
+  }, [artboardWidth, artboardHeight]);
 
   const onChangeTitle = useCallback(
     (newTitle: string) => {
