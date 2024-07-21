@@ -395,8 +395,13 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const download = () => artboardRef.current?.download();
   const clear = () => artboardRef.current?.clear();
 
-  const handleZoomIn = () => setZoom((prev) => Math.min(prev + 0.1, 3));
-  const handleZoomOut = () => setZoom((prev) => Math.max(prev - 0.1, 0.5));
+  const handleZoomIn = useCallback(() => {
+    setZoom((prevZoom) => Math.min(prevZoom + 0.1, 3));
+  }, []);
+
+  const handleZoomOut = useCallback(() => {
+    setZoom((prevZoom) => Math.max(prevZoom - 0.1, 0.5));
+  }, []);
 
   const handleArtboardResize = useCallback((width: number, height: number) => {
     setArtboardWidth(width);

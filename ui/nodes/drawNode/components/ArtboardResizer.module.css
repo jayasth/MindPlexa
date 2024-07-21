@@ -1,37 +1,73 @@
-.resizer {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  width: 10px;
-  height: 10px;
-  cursor: se-resize;
-}
-
 .handle {
   position: absolute;
   background-color: #4a90e2;
+  z-index: 10;
 }
 
-.handleRight {
-  right: 0;
-  top: 0;
-  width: 2px;
-  height: 100%;
-  cursor: e-resize;
-}
-
+.handleTop,
 .handleBottom {
   left: 0;
-  bottom: 0;
   width: 100%;
-  height: 2px;
-  cursor: s-resize;
+  height: 4px;
+  cursor: ns-resize;
 }
 
-.handleCorner {
+.handleRight,
+.handleLeft {
+  top: 0;
+  width: 4px;
+  height: 100%;
+  cursor: ew-resize;
+}
+
+.handleTop {
+  top: -2px;
+}
+.handleRight {
+  right: -2px;
+}
+.handleBottom {
+  bottom: -2px;
+}
+.handleLeft {
+  left: -2px;
+}
+
+.handleTopLeft,
+.handleTopRight,
+.handleBottomLeft,
+.handleBottomRight {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.handleTopLeft {
+  top: -4px;
+  left: -4px;
+  cursor: nwse-resize;
+}
+.handleTopRight {
+  top: -4px;
+  right: -4px;
+  cursor: nesw-resize;
+}
+.handleBottomLeft {
+  bottom: -4px;
+  left: -4px;
+  cursor: nesw-resize;
+}
+.handleBottomRight {
+  bottom: -4px;
+  right: -4px;
+  cursor: nwse-resize;
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
   right: 0;
   bottom: 0;
-  width: 10px;
-  height: 10px;
-  cursor: se-resize;
+  z-index: 1000;
 }
