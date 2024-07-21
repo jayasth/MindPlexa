@@ -5,6 +5,10 @@ export { useAirbrush } from './tools/airbrush/useAirbrush';
 export { useShadingBrush } from './tools/shading/useShadingBrush';
 export { useWatercolor } from './tools/watercolor/useWatercolor';
 export { useEraser } from './tools/eraser/useEraser';
+export { useCircle } from './tools/circle/useCircle';
+export { useLine } from './tools/line/useLine';
+export { useRectangle } from './tools/rectangle/useRectangle';
+export { usePolygon } from './tools/polygon/usePolygon';
 export * from './tools/brush/brushHelpers';
 export * from './tools/watercolor/watercolor';
 
