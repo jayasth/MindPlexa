@@ -141,6 +141,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
 
   const artboardRef = useRef<ArtboardRef | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const artboardContainerRef = useRef<HTMLDivElement>(null);
 
   const handleBackgroundColorChange = useBackgroundColorChange(
     data.id,
@@ -388,8 +389,35 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const download = () => artboardRef.current?.download();
   const clear = () => artboardRef.current?.clear();
 
-  const handleZoomIn = () => setZoom((prev) => Math.min(prev + 0.1, 3));
-  const handleZoomOut = () => setZoom((prev) => Math.max(prev - 0.1, 0.5));
+  const handleZoomIn = useCallback(() => {
+    setZoom((prev) => Math.min(prev + 0.1, 3));
+  }, []);
+
+  const handleZoomOut = useCallback(() => {
+    setZoom((prev) => Math.max(prev - 0.1, 0.5));
+  }, []);
+
+  useEffect(() => {
+    if (artboardContainerRef.current) {
+      const container = artboardContainerRef.current;
+      const artboard = container.firstChild as HTMLElement;
+      if (artboard) {
+        const containerWidth = container.clientWidth;
+        const containerHeight = container.clientHeight;
+        const artboardWidth = artboard.clientWidth * zoom;
+        const artboardHeight = artboard.clientHeight * zoom;
+
+        const left = (containerWidth - artboardWidth) / 2;
+        const top = (containerHeight - artboardHeight) / 2;
+
+        artboard.style.transform = `scale(${zoom})`;
+        artboard.style.transformOrigin = 'top left';
+        artboard.style.position = 'absolute';
+        artboard.style.left = `${left}px`;
+        artboard.style.top = `${top}px`;
+      }
+    }
+  }, [zoom, nodeWidth, nodeHeight]);
 
   return (
     <div
@@ -448,7 +476,10 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
           textColor={textColor}
         />
         <div className={styles.mainContent}>
-          <div className={`${styles.artboardContainer} nodrag nowheel`}>
+          <div
+            className={`${styles.artboardContainer} nodrag nowheel`}
+            ref={artboardContainerRef}
+          >
             <Artboard
               tool={tools[currentTool][0]}
               ref={artboardRef}
@@ -466,7 +497,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
               activeLayerId={activeLayerId}
               zoom={zoom}
               onResize={() => {
-                // Trigger a redraw of the entire canvas
                 if (artboardRef.current) {
                   const dataUrl = artboardRef.current.getImageAsDataUri();
                   setDrawingData(dataUrl || '');

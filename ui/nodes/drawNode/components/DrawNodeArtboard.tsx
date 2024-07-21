@@ -119,27 +119,46 @@ export const Artboard = forwardRef(function Artboard(
     composeLayers();
   }, [composeLayers]);
 
+  const getAdjustedPoint = useCallback(
+    (point: Point): Point => {
+      if (!canvas) return point;
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      return [(point[0] * scaleX) / zoomLevel, (point[1] * scaleY) / zoomLevel];
+    },
+    [canvas, zoomLevel]
+  );
   const startStroke = useCallback(
     (point: Point) => {
       const activeLayerContext = layerContexts[activeLayerId];
       if (!activeLayerContext) return;
       activeLayerContext.save();
       setDrawing(true);
-      tool.startStroke?.(point, activeLayerContext);
-      onStartStroke?.(point);
+      const adjustedPoint = getAdjustedPoint(point);
+      tool.startStroke?.(adjustedPoint, activeLayerContext);
+      onStartStroke?.(adjustedPoint);
     },
-    [tool, layerContexts, activeLayerId, onStartStroke]
+    [tool, layerContexts, activeLayerId, onStartStroke, getAdjustedPoint]
   );
 
   const continueStroke = useCallback(
     (newPoint: Point) => {
       const activeLayerContext = layerContexts[activeLayerId];
       if (!activeLayerContext) return;
-      tool.continueStroke?.(newPoint, activeLayerContext);
-      onContinueStroke?.(newPoint);
+      const adjustedPoint = getAdjustedPoint(newPoint);
+      tool.continueStroke?.(adjustedPoint, activeLayerContext);
+      onContinueStroke?.(adjustedPoint);
       composeLayers();
     },
-    [tool, layerContexts, activeLayerId, onContinueStroke, composeLayers]
+    [
+      tool,
+      layerContexts,
+      activeLayerId,
+      onContinueStroke,
+      composeLayers,
+      getAdjustedPoint
+    ]
   );
 
   const endStroke = useCallback(() => {
@@ -386,8 +405,6 @@ export const Artboard = forwardRef(function Artboard(
       style={{
         cursor: tool?.cursor,
         touchAction: 'none',
-        transform: `scale(${zoomLevel})`,
-        transformOrigin: 'top left',
         ...style
       }}
       onTouchStart={touchStart}
