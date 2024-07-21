@@ -2,64 +2,70 @@
   position: absolute;
   background-color: #4a90e2;
   z-index: 10;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.handle:hover {
+  opacity: 1;
 }
 
 .handleTop,
 .handleBottom {
   left: 0;
   width: 100%;
-  height: 4px;
+  height: 8px;
   cursor: ns-resize;
 }
 
 .handleRight,
 .handleLeft {
   top: 0;
-  width: 4px;
+  width: 8px;
   height: 100%;
   cursor: ew-resize;
 }
 
 .handleTop {
-  top: -2px;
+  top: -4px;
 }
 .handleRight {
-  right: -2px;
+  right: -4px;
 }
 .handleBottom {
-  bottom: -2px;
+  bottom: -4px;
 }
 .handleLeft {
-  left: -2px;
+  left: -4px;
 }
 
 .handleTopLeft,
 .handleTopRight,
 .handleBottomLeft,
 .handleBottomRight {
-  width: 8px;
-  height: 8px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
 }
 
 .handleTopLeft {
-  top: -4px;
-  left: -4px;
+  top: -6px;
+  left: -6px;
   cursor: nwse-resize;
 }
 .handleTopRight {
-  top: -4px;
-  right: -4px;
+  top: -6px;
+  right: -6px;
   cursor: nesw-resize;
 }
 .handleBottomLeft {
-  bottom: -4px;
-  left: -4px;
+  bottom: -6px;
+  left: -6px;
   cursor: nesw-resize;
 }
 .handleBottomRight {
-  bottom: -4px;
-  right: -4px;
+  bottom: -6px;
+  right: -6px;
   cursor: nwse-resize;
 }
 
@@ -70,4 +76,14 @@
   right: 0;
   bottom: 0;
   z-index: 1000;
+}
+
+.artboardBorder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border: 2px solid #4a90e2;
+  pointer-events: none;
 }

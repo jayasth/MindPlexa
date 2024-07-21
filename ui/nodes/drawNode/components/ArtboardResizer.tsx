@@ -23,6 +23,7 @@ const ArtboardResizer: React.FC<ArtboardResizerProps> = ({
 
   const handleMouseDown = useCallback(
     (e: React.MouseEvent, direction: string) => {
+      e.stopPropagation();
       setResizing(true);
       resizeInfo.current = {
         direction,
@@ -46,32 +47,32 @@ const ArtboardResizer: React.FC<ArtboardResizerProps> = ({
 
       switch (direction) {
         case 'right':
-          newWidth = startWidth + e.clientX - startX;
+          newWidth = Math.max(100, startWidth + e.clientX - startX);
           break;
         case 'bottom':
-          newHeight = startHeight + e.clientY - startY;
+          newHeight = Math.max(100, startHeight + e.clientY - startY);
           break;
         case 'left':
-          newWidth = startWidth - (e.clientX - startX);
+          newWidth = Math.max(100, startWidth - (e.clientX - startX));
           break;
         case 'top':
-          newHeight = startHeight - (e.clientY - startY);
+          newHeight = Math.max(100, startHeight - (e.clientY - startY));
           break;
         case 'topLeft':
-          newWidth = startWidth - (e.clientX - startX);
-          newHeight = startHeight - (e.clientY - startY);
+          newWidth = Math.max(100, startWidth - (e.clientX - startX));
+          newHeight = Math.max(100, startHeight - (e.clientY - startY));
           break;
         case 'topRight':
-          newWidth = startWidth + e.clientX - startX;
-          newHeight = startHeight - (e.clientY - startY);
+          newWidth = Math.max(100, startWidth + e.clientX - startX);
+          newHeight = Math.max(100, startHeight - (e.clientY - startY));
           break;
         case 'bottomLeft':
-          newWidth = startWidth - (e.clientX - startX);
-          newHeight = startHeight + e.clientY - startY;
+          newWidth = Math.max(100, startWidth - (e.clientX - startX));
+          newHeight = Math.max(100, startHeight + e.clientY - startY);
           break;
         case 'bottomRight':
-          newWidth = startWidth + e.clientX - startX;
-          newHeight = startHeight + e.clientY - startY;
+          newWidth = Math.max(100, startWidth + e.clientX - startX);
+          newHeight = Math.max(100, startHeight + e.clientY - startY);
           break;
       }
 
@@ -86,6 +87,7 @@ const ArtboardResizer: React.FC<ArtboardResizerProps> = ({
 
   return (
     <>
+      <div className={styles.artboardBorder} />
       <div
         className={`${styles.handle} ${styles.handleTop}`}
         onMouseDown={(e) => handleMouseDown(e, 'top')}
