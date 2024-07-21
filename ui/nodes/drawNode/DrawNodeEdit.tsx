@@ -17,7 +17,8 @@ import {
   FaSprayCan,
   FaSquare,
   FaCircle,
-  FaDrawPolygon
+  FaDrawPolygon,
+  FaPen
 } from 'react-icons/fa';
 import { IoMdWater } from 'react-icons/io';
 import { BsSlashLg } from 'react-icons/bs';
@@ -32,6 +33,7 @@ import {
   useWatercolor,
   ToolHandlers
 } from '@/ui/nodes/drawNode/DrawNodeTools';
+import { usePen } from './tools/pen/usePen';
 import { useHistory } from '@/ui/nodes/drawNode/drawNodeHistory';
 import type { IconType } from 'react-icons/lib';
 import DrawNodeSidebar from './components/DrawNodeSidebar';
@@ -127,7 +129,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const [color, setColor] = useState('#531B93');
   const [currentTool, setCurrentTool] = useState(0);
   const [toolSizes, setToolSizes] = useState([
-    5, 10, 15, 20, 10, 40, 5, 5, 5, 5
+    5, 10, 15, 20, 10, 40, 5, 5, 5, 5, 2
   ]);
   const [strokeWidth, setStrokeWidth] = useState(toolSizes[currentTool]);
   const [zoom, setZoom] = useState(1);
@@ -336,6 +338,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const circle = useCircle({ color, strokeWidth });
   const line = useLine({ color, strokeWidth });
   const polygon = usePolygon({ color, strokeWidth });
+  const pen = usePen({ color, strokeWidth });
 
   const tools: Array<[ToolHandlers, IconType, number]> = [
     [shading, FaPencilAlt, toolSizes[0]],
@@ -347,7 +350,8 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     [rectangle, FaSquare, toolSizes[6]],
     [circle, FaCircle, toolSizes[7]],
     [line, BsSlashLg, toolSizes[8]],
-    [polygon, FaDrawPolygon, toolSizes[9]]
+    [polygon, FaDrawPolygon, toolSizes[9]],
+    [pen, FaPen, toolSizes[10]]
   ];
 
   const handleSizeChange = useCallback(

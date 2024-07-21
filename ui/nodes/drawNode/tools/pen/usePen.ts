@@ -2,15 +2,15 @@ import { useCallback, useRef } from 'react';
 import { ToolHandlers } from '@/ui/nodes/drawNode/components/DrawNodeArtboard';
 import { Point } from '../../utils/pointUtils';
 
-export interface UsePolygonProps {
+export interface UsePenProps {
   color?: string;
   strokeWidth?: number;
 }
 
-export function usePolygon({
+export function usePen({
   color = '#000000',
   strokeWidth = 2
-}: UsePolygonProps): ToolHandlers {
+}: UsePenProps): ToolHandlers {
   const points = useRef<Point[]>([]);
   const isDrawing = useRef(false);
   const tempCanvas = useRef<HTMLCanvasElement | null>(null);
@@ -38,6 +38,7 @@ export function usePolygon({
     (point: Point, context: CanvasRenderingContext2D) => {
       if (!isDrawing.current || !tempCanvas.current) return;
 
+      points.current.push(point);
       const tempCtx = tempCanvas.current.getContext('2d');
       if (!tempCtx) return;
 
@@ -45,11 +46,26 @@ export function usePolygon({
       tempCtx.beginPath();
       tempCtx.moveTo(points.current[0][0], points.current[0][1]);
 
-      for (let i = 1; i < points.current.length; i++) {
-        tempCtx.lineTo(points.current[i][0], points.current[i][1]);
+      for (let i = 1; i < points.current.length - 2; i++) {
+        const xc = (points.current[i][0] + points.current[i + 1][0]) / 2;
+        const yc = (points.current[i][1] + points.current[i + 1][1]) / 2;
+        tempCtx.quadraticCurveTo(
+          points.current[i][0],
+          points.current[i][1],
+          xc,
+          yc
+        );
       }
 
-      tempCtx.lineTo(point[0], point[1]);
+      if (points.current.length > 2) {
+        tempCtx.quadraticCurveTo(
+          points.current[points.current.length - 2][0],
+          points.current[points.current.length - 2][1],
+          points.current[points.current.length - 1][0],
+          points.current[points.current.length - 1][1]
+        );
+      }
+
       tempCtx.stroke();
 
       // Draw the preview on the main canvas
@@ -61,15 +77,32 @@ export function usePolygon({
 
   const endStroke = useCallback(
     (context: CanvasRenderingContext2D) => {
-      if (points.current.length > 2) {
+      if (points.current.length > 1) {
         context.strokeStyle = color;
         context.lineWidth = strokeWidth;
         context.beginPath();
         context.moveTo(points.current[0][0], points.current[0][1]);
-        for (let i = 1; i < points.current.length; i++) {
-          context.lineTo(points.current[i][0], points.current[i][1]);
+
+        for (let i = 1; i < points.current.length - 2; i++) {
+          const xc = (points.current[i][0] + points.current[i + 1][0]) / 2;
+          const yc = (points.current[i][1] + points.current[i + 1][1]) / 2;
+          context.quadraticCurveTo(
+            points.current[i][0],
+            points.current[i][1],
+            xc,
+            yc
+          );
         }
-        context.closePath();
+
+        if (points.current.length > 2) {
+          context.quadraticCurveTo(
+            points.current[points.current.length - 2][0],
+            points.current[points.current.length - 2][1],
+            points.current[points.current.length - 1][0],
+            points.current[points.current.length - 1][1]
+          );
+        }
+
         context.stroke();
       }
       isDrawing.current = false;
@@ -86,5 +119,5 @@ export function usePolygon({
 
   const cursor = 'crosshair';
 
-  return { name: 'Polygon', startStroke, continueStroke, endStroke, cursor };
+  return { name: 'Pen', startStroke, continueStroke, endStroke, cursor };
 }
