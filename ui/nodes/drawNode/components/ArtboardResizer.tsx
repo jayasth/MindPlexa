@@ -75,7 +75,7 @@ const ArtboardResizer: React.FC<ArtboardResizerProps> = ({
           break;
       }
 
-      onResize(Math.max(newWidth, 100), Math.max(newHeight, 100));
+      onResize(newWidth, newHeight);
     },
     [resizing, onResize]
   );
