@@ -398,10 +398,15 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const handleZoomIn = () => setZoom((prev) => Math.min(prev + 0.1, 3));
   const handleZoomOut = () => setZoom((prev) => Math.max(prev - 0.1, 0.5));
 
-  const handleArtboardResize = (newWidth: number, newHeight: number) => {
-    setArtboardWidth(newWidth);
-    setArtboardHeight(newHeight);
-  };
+  const handleArtboardResize = useCallback((width: number, height: number) => {
+    setArtboardWidth(width);
+    setArtboardHeight(height);
+    // Trigger a redraw of the entire canvas
+    if (artboardRef.current) {
+      const dataUrl = artboardRef.current.getImageAsDataUri();
+      setDrawingData(dataUrl || '');
+    }
+  }, []);
 
   return (
     <div
@@ -467,9 +472,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
               history={history}
               style={{
                 border: '1px solid #ccc',
-                backgroundColor: 'white',
-                width: `${artboardWidth}px`,
-                height: `${artboardHeight}px`
+                backgroundColor: 'white'
               }}
               content={drawingData}
               width={artboardWidth}
@@ -477,21 +480,9 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
               layers={layers}
               activeLayerId={activeLayerId}
               zoom={zoom}
-              onResize={() => {
-                // Trigger a redraw of the entire canvas
-                if (artboardRef.current) {
-                  const dataUrl = artboardRef.current.getImageAsDataUri();
-                  setDrawingData(dataUrl || '');
-                }
-              }}
-            />
-            <ArtboardResizer
-              width={artboardWidth}
-              height={artboardHeight}
-              onResize={handleArtboardResize}
+              onArtboardResize={handleArtboardResize}
             />
           </div>
-          <canvas ref={canvasRef} style={{ display: 'none' }} />
         </div>
       </div>
       {(tags.length > 0 || attachedFiles.length > 0) &&

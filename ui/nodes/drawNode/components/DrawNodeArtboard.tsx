@@ -17,6 +17,9 @@ import {
   Point
 } from '@/ui/nodes/drawNode/utils/pointUtils';
 
+import { ResizableBox } from 'react-resizable';
+import 'react-resizable/css/styles.css';
+
 export interface ArtboardProps
   extends React.CanvasHTMLAttributes<HTMLCanvasElement> {
   tool: ToolHandlers;
@@ -28,7 +31,7 @@ export interface ArtboardProps
   onContentChange?: (newContent: string) => void;
   width: number;
   height: number;
-  onResize?: () => void;
+  onArtboardResize?: (width: number, height: number) => void; // Renamed from onResize
   layers: Layer[];
   activeLayerId: string;
   zoom: number;
@@ -63,7 +66,7 @@ export const Artboard = forwardRef(function Artboard(
     onContentChange,
     width,
     height,
-    onResize,
+    onArtboardResize, // Updated prop name
     layers,
     activeLayerId,
     zoom,
@@ -78,6 +81,7 @@ export const Artboard = forwardRef(function Artboard(
     [key: string]: CanvasRenderingContext2D;
   }>({});
   const [zoomLevel, setZoomLevel] = useState(1);
+  const [artboardSize, setArtboardSize] = useState({ width, height });
 
   useEffect(() => {
     if (!canvas) return;
@@ -103,7 +107,16 @@ export const Artboard = forwardRef(function Artboard(
     if (!context || !canvas) return;
     context.clearRect(0, 0, canvas.width, canvas.height);
     context.save();
+
+    // Calculate the center point
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+
+    // Translate to the center, scale, and translate back
+    context.translate(centerX, centerY);
     context.scale(zoomLevel, zoomLevel);
+    context.translate(-centerX, -centerY);
+
     layers.forEach((layer) => {
       if (layer.visible) {
         const layerContext = layerContexts[layer.id];
@@ -298,8 +311,8 @@ export const Artboard = forwardRef(function Artboard(
     tempCanvas.height = canvas.height;
     tempContext?.drawImage(canvas, 0, 0);
 
-    canvas.width = width;
-    canvas.height = height;
+    canvas.width = artboardSize.width;
+    canvas.height = artboardSize.height;
 
     context.fillStyle = '#ffffff';
     context.fillRect(0, 0, canvas.width, canvas.height);
@@ -313,22 +326,57 @@ export const Artboard = forwardRef(function Artboard(
       tempLayerCanvas.height = layerContext.canvas.height;
       tempLayerContext?.drawImage(layerContext.canvas, 0, 0);
 
-      layerContext.canvas.width = width;
-      layerContext.canvas.height = height;
+      layerContext.canvas.width = artboardSize.width;
+      layerContext.canvas.height = artboardSize.height;
       layerContext.fillStyle = '#ffffff';
-      layerContext.fillRect(0, 0, width, height);
+      layerContext.fillRect(0, 0, artboardSize.width, artboardSize.height);
       layerContext.drawImage(tempLayerCanvas, 0, 0);
     });
 
     composeLayers();
-  }, [canvas, context, width, height, layerContexts, composeLayers]);
+  }, [canvas, context, artboardSize, layerContexts, composeLayers]);
+
+  const handleResize = useCallback(
+    (event, { size }) => {
+      setArtboardSize(size);
+      if (onArtboardResize) {
+        // Updated prop name
+        onArtboardResize(size.width, size.height);
+      }
+    },
+    [onArtboardResize] // Updated prop name
+  );
 
   useEffect(() => {
     resizeCanvas();
-    if (onResize) {
-      onResize();
+  }, [artboardSize, resizeCanvas]);
+
+  useEffect(() => {
+    if (canvas && context) {
+      const image = new Image();
+      image.onload = () => {
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.drawImage(
+          image,
+          0,
+          0,
+          image.width,
+          image.height,
+          0,
+          0,
+          canvas.width,
+          canvas.height
+        );
+      };
+      image.src = content || '';
     }
-  }, [width, height, resizeCanvas, onResize]);
+  }, [canvas, context, content]);
+
+  useEffect(() => {
+    if (onContentChange) {
+      onContentChange(canvas?.toDataURL() || '');
+    }
+  }, [canvas, onContentChange]);
 
   useImperativeHandle(
     ref,
@@ -351,55 +399,35 @@ export const Artboard = forwardRef(function Artboard(
     [canvas, context, clear]
   );
 
-  useEffect(() => {
-    if (onResize) {
-      onResize();
-    }
-    if (canvas && context) {
-      const image = new Image();
-      image.onload = () => {
-        context.clearRect(0, 0, canvas.width, canvas.height);
-        context.drawImage(
-          image,
-          0,
-          0,
-          image.width,
-          image.height,
-          0,
-          0,
-          canvas.width,
-          canvas.height
-        ); // Draw the image with scaling
-      };
-      image.src = content || '';
-    }
-  }, [width, height, onResize, canvas, context, content]);
-
-  useEffect(() => {
-    if (onContentChange) {
-      onContentChange(canvas?.toDataURL() || '');
-    }
-  }, [canvas, onContentChange]);
-
   return (
-    <canvas
-      style={{
-        cursor: tool?.cursor,
-        touchAction: 'none',
-        transform: `scale(${zoomLevel})`,
-        transformOrigin: 'top left',
-        ...style
-      }}
-      onTouchStart={touchStart}
-      onMouseDown={mouseDown}
-      onMouseEnter={mouseEnter}
-      onMouseMove={drawing ? mouseMove : undefined}
-      onTouchMove={drawing ? touchMove : undefined}
-      onMouseUp={endStroke}
-      onMouseOut={mouseLeave}
-      onTouchEnd={endStroke}
-      ref={gotRef}
-      {...props}
-    />
+    <ResizableBox
+      width={artboardSize.width}
+      height={artboardSize.height}
+      onResize={handleResize}
+      minConstraints={[100, 100]}
+      maxConstraints={[width, height]}
+    >
+      <canvas
+        style={{
+          cursor: tool?.cursor,
+          touchAction: 'none',
+          width: '100%',
+          height: '100%',
+          ...style
+        }}
+        width={artboardSize.width}
+        height={artboardSize.height}
+        onTouchStart={touchStart}
+        onMouseDown={mouseDown}
+        onMouseEnter={mouseEnter}
+        onMouseMove={drawing ? mouseMove : undefined}
+        onTouchMove={drawing ? touchMove : undefined}
+        onMouseUp={endStroke}
+        onMouseOut={mouseLeave}
+        onTouchEnd={endStroke}
+        ref={gotRef}
+        {...props}
+      />
+    </ResizableBox>
   );
 });
