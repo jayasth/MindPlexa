@@ -387,34 +387,33 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
           }
         />
       </div>
+      <DrawNodeTopbar
+        undo={undo}
+        redo={redo}
+        canUndo={canUndo}
+        canRedo={canRedo}
+        download={download}
+        clear={clear}
+        onZoomIn={handleZoomIn}
+        onZoomOut={handleZoomOut}
+        backgroundColor={backgroundColor}
+        textColor={textColor}
+        color={color}
+        setColor={setColor}
+        strokeWidth={strokeWidth}
+        setStrokeWidth={handleSizeChange}
+        layers={layers}
+        activeLayerId={activeLayerId}
+        setLayers={setLayers}
+        setActiveLayerId={setActiveLayerId}
+      />
       <div className={styles.drawContent}>
         <DrawNodeSidebar
           currentTool={currentTool}
           setCurrentTool={setCurrentTool}
-          color={color}
-          setColor={setColor}
-          strokeWidth={strokeWidth}
-          setStrokeWidth={handleSizeChange}
-          backgroundColor={backgroundColor}
           textColor={textColor}
-          layers={layers}
-          activeLayerId={activeLayerId}
-          setLayers={setLayers}
-          setActiveLayerId={setActiveLayerId}
         />
         <div className={styles.mainContent}>
-          <DrawNodeTopbar
-            undo={undo}
-            redo={redo}
-            canUndo={canUndo}
-            canRedo={canRedo}
-            download={download}
-            clear={clear}
-            onZoomIn={handleZoomIn}
-            onZoomOut={handleZoomOut}
-            backgroundColor={backgroundColor}
-            textColor={textColor}
-          />
           <div className={`${styles.artboardContainer} nodrag nowheel`}>
             <div
               className={styles.artboardWrapper}

@@ -15,9 +15,14 @@
   margin-bottom: 8px;
 }
 
+.toolGroup:not(:last-child) {
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 8px;
+}
+
 .toolbarButton {
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -36,30 +41,4 @@
 
 .toolbarButton.selected {
   background-color: rgba(0, 0, 0, 0.2);
-}
-
-.colorPickerButton {
-  position: relative;
-}
-
-.colorPreview {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  border: 2px solid #fff;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
-}
-
-.sizePickerButton {
-  position: relative;
-}
-
-.strokeWidthLabel {
-  position: absolute;
-  bottom: -2px;
-  right: -2px;
-  font-size: 8px;
-  background-color: rgba(255, 255, 255, 0.8);
-  border-radius: 2px;
-  padding: 1px 2px;
 }

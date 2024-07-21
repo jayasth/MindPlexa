@@ -1,20 +1,19 @@
 .topbar {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 8px;
+  padding: 4px;
   background-color: rgba(240, 240, 240, 0.8);
   border-bottom: 1px solid #ccc;
 }
 
 .toolGroup {
   display: flex;
-  gap: 8px;
+  gap: 4px;
 }
 
 .toolbarButton {
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -34,4 +33,33 @@
 .toolbarButton:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.colorPickerButton {
+  position: relative;
+}
+
+.colorPreview {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid #fff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+}
+
+.sizePickerButton {
+  position: relative;
+}
+
+.strokeWidthLabel {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  font-size: 8px;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 2px;
+  padding: 1px 2px;
 }
