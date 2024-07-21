@@ -449,8 +449,8 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
                 history={history}
                 style={{ border: '1px gray solid' }}
                 content={drawingData}
-                width={nodeWidth * 0.9}
-                height={nodeHeight * 0.8}
+                width={nodeWidth * 0.7}
+                height={nodeHeight * 0.7}
                 layers={layers}
                 activeLayerId={activeLayerId}
               />
