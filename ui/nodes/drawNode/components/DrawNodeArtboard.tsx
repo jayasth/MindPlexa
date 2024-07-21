@@ -17,9 +17,6 @@ import {
   Point
 } from '@/ui/nodes/drawNode/utils/pointUtils';
 
-import ArtboardResizer from './ArtboardResizer';
-import styles from './DrawNodeArtboard.module.css';
-
 export interface ArtboardProps
   extends React.CanvasHTMLAttributes<HTMLCanvasElement> {
   tool: ToolHandlers;
@@ -31,7 +28,7 @@ export interface ArtboardProps
   onContentChange?: (newContent: string) => void;
   width: number;
   height: number;
-  onArtboardResize?: (width: number, height: number) => void;
+  onResize?: () => void;
   layers: Layer[];
   activeLayerId: string;
   zoom: number;
@@ -66,7 +63,7 @@ export const Artboard = forwardRef(function Artboard(
     onContentChange,
     width,
     height,
-    onArtboardResize,
+    onResize,
     layers,
     activeLayerId,
     zoom,
@@ -80,8 +77,7 @@ export const Artboard = forwardRef(function Artboard(
   const [layerContexts, setLayerContexts] = useState<{
     [key: string]: CanvasRenderingContext2D;
   }>({});
-  const [artboardSize, setArtboardSize] = useState({ width, height });
-  const [artboardPosition, setArtboardPosition] = useState({ x: 0, y: 0 });
+  const [zoomLevel, setZoomLevel] = useState(1);
 
   useEffect(() => {
     if (!canvas) return;
@@ -99,23 +95,15 @@ export const Artboard = forwardRef(function Artboard(
     setLayerContexts(newLayerContexts);
   }, [layers, canvas]);
 
+  useEffect(() => {
+    setZoomLevel(zoom);
+  }, [zoom]);
+
   const composeLayers = useCallback(() => {
     if (!context || !canvas) return;
     context.clearRect(0, 0, canvas.width, canvas.height);
     context.save();
-
-    // Calculate the center point
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-
-    // Translate to the center, scale, then translate back
-    context.translate(centerX, centerY);
-    context.scale(zoom, zoom);
-    context.translate(-centerX, -centerY);
-
-    // Apply artboard position
-    context.translate(artboardPosition.x, artboardPosition.y);
-
+    context.scale(zoomLevel, zoomLevel);
     layers.forEach((layer) => {
       if (layer.visible) {
         const layerContext = layerContexts[layer.id];
@@ -125,7 +113,7 @@ export const Artboard = forwardRef(function Artboard(
       }
     });
     context.restore();
-  }, [context, canvas, layers, layerContexts, zoom, artboardPosition]);
+  }, [context, canvas, layers, layerContexts, zoomLevel]);
 
   useEffect(() => {
     composeLayers();
@@ -310,8 +298,8 @@ export const Artboard = forwardRef(function Artboard(
     tempCanvas.height = canvas.height;
     tempContext?.drawImage(canvas, 0, 0);
 
-    canvas.width = artboardSize.width;
-    canvas.height = artboardSize.height;
+    canvas.width = width;
+    canvas.height = height;
 
     context.fillStyle = '#ffffff';
     context.fillRect(0, 0, canvas.width, canvas.height);
@@ -325,56 +313,22 @@ export const Artboard = forwardRef(function Artboard(
       tempLayerCanvas.height = layerContext.canvas.height;
       tempLayerContext?.drawImage(layerContext.canvas, 0, 0);
 
-      layerContext.canvas.width = artboardSize.width;
-      layerContext.canvas.height = artboardSize.height;
+      layerContext.canvas.width = width;
+      layerContext.canvas.height = height;
       layerContext.fillStyle = '#ffffff';
-      layerContext.fillRect(0, 0, artboardSize.width, artboardSize.height);
+      layerContext.fillRect(0, 0, width, height);
       layerContext.drawImage(tempLayerCanvas, 0, 0);
     });
 
     composeLayers();
-  }, [canvas, context, artboardSize, layerContexts, composeLayers]);
-
-  const handleArtboardResize = useCallback(
-    (newWidth: number, newHeight: number) => {
-      setArtboardSize({ width: newWidth, height: newHeight });
-      if (onArtboardResize) {
-        onArtboardResize(newWidth, newHeight);
-      }
-    },
-    [onArtboardResize]
-  );
+  }, [canvas, context, width, height, layerContexts, composeLayers]);
 
   useEffect(() => {
     resizeCanvas();
-  }, [artboardSize, resizeCanvas]);
-
-  useEffect(() => {
-    if (canvas && context) {
-      const image = new Image();
-      image.onload = () => {
-        context.clearRect(0, 0, canvas.width, canvas.height);
-        context.drawImage(
-          image,
-          0,
-          0,
-          image.width,
-          image.height,
-          0,
-          0,
-          canvas.width,
-          canvas.height
-        );
-      };
-      image.src = content || '';
+    if (onResize) {
+      onResize();
     }
-  }, [canvas, context, content]);
-
-  useEffect(() => {
-    if (onContentChange) {
-      onContentChange(canvas?.toDataURL() || '');
-    }
-  }, [canvas, onContentChange]);
+  }, [width, height, resizeCanvas, onResize]);
 
   useImperativeHandle(
     ref,
@@ -397,48 +351,55 @@ export const Artboard = forwardRef(function Artboard(
     [canvas, context, clear]
   );
 
+  useEffect(() => {
+    if (onResize) {
+      onResize();
+    }
+    if (canvas && context) {
+      const image = new Image();
+      image.onload = () => {
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.drawImage(
+          image,
+          0,
+          0,
+          image.width,
+          image.height,
+          0,
+          0,
+          canvas.width,
+          canvas.height
+        ); // Draw the image with scaling
+      };
+      image.src = content || '';
+    }
+  }, [width, height, onResize, canvas, context, content]);
+
+  useEffect(() => {
+    if (onContentChange) {
+      onContentChange(canvas?.toDataURL() || '');
+    }
+  }, [canvas, onContentChange]);
+
   return (
-    <div className={styles.artboardContainer}>
-      <div
-        className={styles.artboardWrapper}
-        style={{
-          width: artboardSize.width,
-          height: artboardSize.height,
-          transform: `scale(${zoom})`,
-          transformOrigin: 'center',
-          position: 'absolute',
-          left: `50%`,
-          top: `50%`,
-          marginLeft: `-${artboardSize.width / 2}px`,
-          marginTop: `-${artboardSize.height / 2}px`
-        }}
-      >
-        <canvas
-          className={styles.canvas}
-          style={{
-            cursor: tool?.cursor,
-            touchAction: 'none',
-            ...style
-          }}
-          width={artboardSize.width}
-          height={artboardSize.height}
-          onTouchStart={touchStart}
-          onMouseDown={mouseDown}
-          onMouseEnter={mouseEnter}
-          onMouseMove={drawing ? mouseMove : undefined}
-          onTouchMove={drawing ? touchMove : undefined}
-          onMouseUp={endStroke}
-          onMouseOut={mouseLeave}
-          onTouchEnd={endStroke}
-          ref={gotRef}
-          {...props}
-        />
-        <ArtboardResizer
-          width={artboardSize.width}
-          height={artboardSize.height}
-          onResize={handleArtboardResize}
-        />
-      </div>
-    </div>
+    <canvas
+      style={{
+        cursor: tool?.cursor,
+        touchAction: 'none',
+        transform: `scale(${zoomLevel})`,
+        transformOrigin: 'top left',
+        ...style
+      }}
+      onTouchStart={touchStart}
+      onMouseDown={mouseDown}
+      onMouseEnter={mouseEnter}
+      onMouseMove={drawing ? mouseMove : undefined}
+      onTouchMove={drawing ? touchMove : undefined}
+      onMouseUp={endStroke}
+      onMouseOut={mouseLeave}
+      onTouchEnd={endStroke}
+      ref={gotRef}
+      {...props}
+    />
   );
 });

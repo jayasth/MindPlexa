@@ -203,9 +203,28 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     debouncedUpdateNodeData
   ]);
 
+  useEffect(() => {
+    if (onResize) {
+      onResize();
+    }
+    const canvas = canvasRef.current;
+    const context = canvas?.getContext('2d');
+    if (canvas && context && drawingData) {
+      const image = new Image();
+      image.onload = () => {
+        setAspectRatio(image.width / image.height);
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+      };
+      image.src = drawingData;
+    }
+  }, [width, height, onResize, drawingData]);
+
   const artboardSize = useMemo(() => {
-    return { width: artboardWidth, height: artboardHeight };
-  }, [artboardWidth, artboardHeight]);
+    const maxWidth = nodeWidth * 0.9;
+    const maxHeight = nodeHeight * 0.7;
+    return { width: maxWidth, height: maxHeight };
+  }, [nodeWidth, nodeHeight]);
 
   const onChangeTitle = useCallback(
     (newTitle: string) => {
@@ -260,17 +279,11 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
 
   const handleResize = useCallback(
     (event, { width, height }) => {
-      const widthRatio = width / nodeWidth;
-      const heightRatio = height / nodeHeight;
-
       setNodeWidth(width);
       setNodeHeight(height);
-      setArtboardWidth((prev) => prev * widthRatio);
-      setArtboardHeight((prev) => prev * heightRatio);
-
       onNodeResizeStop(data.id, { width, height }, position);
     },
-    [data.id, nodeWidth, nodeHeight, onNodeResizeStop, position]
+    [data.id, onNodeResizeStop, position]
   );
 
   const handleContainerClick = useCallback(() => {
@@ -375,23 +388,8 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const download = () => artboardRef.current?.download();
   const clear = () => artboardRef.current?.clear();
 
-  const handleZoomIn = useCallback(() => {
-    setZoom((prevZoom) => Math.min(prevZoom + 0.1, 3));
-  }, []);
-
-  const handleZoomOut = useCallback(() => {
-    setZoom((prevZoom) => Math.max(prevZoom - 0.1, 0.5));
-  }, []);
-
-  const handleArtboardResize = useCallback((width: number, height: number) => {
-    setArtboardWidth(width);
-    setArtboardHeight(height);
-    // Trigger a redraw of the entire canvas
-    if (artboardRef.current) {
-      const dataUrl = artboardRef.current.getImageAsDataUri();
-      setDrawingData(dataUrl || '');
-    }
-  }, []);
+  const handleZoomIn = () => setZoom((prev) => Math.min(prev + 0.1, 3));
+  const handleZoomOut = () => setZoom((prev) => Math.max(prev - 0.1, 0.5));
 
   return (
     <div
@@ -457,17 +455,26 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
               history={history}
               style={{
                 border: '1px solid #ccc',
-                backgroundColor: 'white'
+                backgroundColor: 'white',
+                width: `${artboardSize.width}px`,
+                height: `${artboardSize.height}px`
               }}
               content={drawingData}
-              width={artboardWidth}
-              height={artboardHeight}
+              width={artboardSize.width}
+              height={artboardSize.height}
               layers={layers}
               activeLayerId={activeLayerId}
               zoom={zoom}
-              onArtboardResize={handleArtboardResize}
+              onResize={() => {
+                // Trigger a redraw of the entire canvas
+                if (artboardRef.current) {
+                  const dataUrl = artboardRef.current.getImageAsDataUri();
+                  setDrawingData(dataUrl || '');
+                }
+              }}
             />
           </div>
+          <canvas ref={canvasRef} style={{ display: 'none' }} />
         </div>
       </div>
       {(tags.length > 0 || attachedFiles.length > 0) &&
