@@ -14,7 +14,10 @@ import {
   FaPaintBrush,
   FaMarker,
   FaEraser,
-  FaSprayCan
+  FaSprayCan,
+  FaSquare,
+  FaCircle,
+  FaDrawPolygon
 } from 'react-icons/fa';
 import { IoMdWater } from 'react-icons/io';
 import {
@@ -64,6 +67,9 @@ import { debounce } from 'lodash';
 import useNodeStore from '@/app/store/nodes/useNodeStore';
 import useCanvasStore from '@/app/store/canvas/useCanvasStore';
 import { Layer } from './types';
+import { useRectangle } from './tools/rectangle/useRectangle';
+import { useCircle } from './tools/circle/useCircle';
+import { useLine } from './tools/line/useLine';
 
 interface DrawNodeEditProps extends NodeProps {
   data: any;
@@ -118,7 +124,9 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [color, setColor] = useState('#531B93');
   const [currentTool, setCurrentTool] = useState(0);
-  const [toolSizes, setToolSizes] = useState([5, 10, 15, 20, 10, 40]);
+  const [toolSizes, setToolSizes] = useState([
+    5, 10, 15, 20, 10, 40, 30, 25, 35
+  ]);
   const [strokeWidth, setStrokeWidth] = useState(toolSizes[currentTool]);
   const [zoom, setZoom] = useState(1);
   const [layers, setLayers] = useState<Layer[]>([
@@ -311,6 +319,9 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     spreadFactor: (1 / 45) * strokeWidth,
     distanceThreshold: 100
   });
+  const rectangle = useRectangle({ color, strokeWidth });
+  const circle = useCircle({ color, strokeWidth });
+  const line = useLine({ color, strokeWidth });
 
   const tools: Array<[ToolHandlers, IconType, number]> = [
     [shading, FaPencilAlt, toolSizes[0]],
@@ -318,7 +329,10 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     [brush, FaPaintBrush, toolSizes[2]],
     [marker, FaMarker, toolSizes[3]],
     [airbrush, FaSprayCan, toolSizes[4]],
-    [eraser, FaEraser, toolSizes[5]]
+    [eraser, FaEraser, toolSizes[5]],
+    [rectangle, FaSquare, toolSizes[6]],
+    [circle, FaCircle, toolSizes[7]],
+    [line, FaDrawPolygon, toolSizes[8]]
   ];
 
   const handleSizeChange = useCallback(

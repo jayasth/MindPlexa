@@ -36,7 +36,7 @@ const DrawNodeSidebar: React.FC<DrawNodeSidebarProps> = ({
       { icon: FaEraser, name: 'Eraser' }
     ],
     [
-      { icon: FaSquare, name: 'Square' },
+      { icon: FaSquare, name: 'Rectangle' },
       { icon: FaCircle, name: 'Circle' },
       { icon: FaDrawPolygon, name: 'Polygon' }
     ]
