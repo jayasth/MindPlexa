@@ -38,6 +38,7 @@ interface DrawNodeTopbarProps {
   activeLayerId: string;
   setLayers: React.Dispatch<React.SetStateAction<Layer[]>>;
   setActiveLayerId: (id: string) => void;
+  hasDrawing: boolean;
 }
 
 const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
@@ -58,14 +59,14 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
   layers,
   activeLayerId,
   setLayers,
-  setActiveLayerId
+  setActiveLayerId,
+  hasDrawing
 }) => {
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   const [isStrokeWidthOpen, setIsStrokeWidthOpen] = useState(false);
   const [isLayerModalOpen, setIsLayerModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const iconSize = 16;
-
   return (
     <div className={styles.topbar} style={{ backgroundColor }}>
       <div className={styles.toolGroup}>
@@ -92,6 +93,7 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
         <Tooltip content="Clear">
           <button
             onClick={clear}
+            disabled={!hasDrawing}
             className={styles.toolbarButton}
             style={{ color: textColor }}
           >
@@ -134,15 +136,6 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
         </Tooltip>
       </div>
       <div className={styles.toolGroup}>
-        <Tooltip content="Download">
-          <button
-            onClick={download}
-            className={styles.toolbarButton}
-            style={{ color: textColor }}
-          >
-            <FaDownload size={iconSize} />
-          </button>
-        </Tooltip>
         <Tooltip content="Zoom In">
           <button
             onClick={onZoomIn}
@@ -159,6 +152,15 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
             style={{ color: textColor }}
           >
             <FaSearchMinus size={iconSize} />
+          </button>
+        </Tooltip>
+        <Tooltip content="Download">
+          <button
+            onClick={download}
+            className={styles.toolbarButton}
+            style={{ color: textColor }}
+          >
+            <FaDownload size={iconSize} />
           </button>
         </Tooltip>
         <Tooltip content="Settings">

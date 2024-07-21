@@ -338,6 +338,11 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   }, [currentTool, toolSizes]);
 
   const { undo, redo, history, canUndo, canRedo } = useHistory();
+  const [hasDrawing, setHasDrawing] = useState(false);
+
+  useEffect(() => {
+    setHasDrawing(canUndo || canRedo);
+  }, [canUndo, canRedo]);
 
   const memoizedTagFileContainer = useMemo(
     () => (
@@ -406,6 +411,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         activeLayerId={activeLayerId}
         setLayers={setLayers}
         setActiveLayerId={setActiveLayerId}
+        hasDrawing={hasDrawing}
       />
       <div className={styles.drawContent}>
         <DrawNodeSidebar

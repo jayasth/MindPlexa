@@ -1,7 +1,7 @@
 .topbar {
   display: flex;
   justify-content: space-between;
-  padding: 4px;
+  padding: 4px 8px; /* Reduced vertical padding and added horizontal padding */
   background-color: rgba(240, 240, 240, 0.8);
   border-bottom: 1px solid #ccc;
 }

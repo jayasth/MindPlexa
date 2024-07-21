@@ -34,14 +34,9 @@ export function useHistory(size?: number): HistoryHook {
 
   const pushState = useCallback(
     async (canvas: HTMLCanvasElement) => {
-      const undoCursor = crs.current;
       if (!context) {
         console.error('Context not initialised');
         return false;
-      }
-      if (undoCursor !== 0) {
-        stack.current = stack.current.slice(0, -undoCursor);
-        crs.current = 0;
       }
       const blob = await new Promise<Blob | null>((resolve) =>
         canvas.toBlob(resolve)
@@ -56,7 +51,14 @@ export function useHistory(size?: number): HistoryHook {
           // If the dimensions have changed, clear the stack and push the new state
           stack.current = [blob];
         } else {
-          stack.current.push(blob);
+          // Insert the new state after the current position
+          stack.current.splice(stack.current.length - crs.current, 0, blob);
+          // Remove any redo states
+          stack.current = stack.current.slice(
+            0,
+            stack.current.length - crs.current
+          );
+          crs.current = 0;
         }
       }
       if (size && stack.current.length > size) {
@@ -66,7 +68,7 @@ export function useHistory(size?: number): HistoryHook {
       setCanRedo(false);
       return true;
     },
-    [crs, stack, context]
+    [crs, stack, context, size]
   );
 
   const undo = useCallback(async () => {
