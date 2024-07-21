@@ -72,7 +72,6 @@ import { useRectangle } from './tools/rectangle/useRectangle';
 import { useCircle } from './tools/circle/useCircle';
 import { useLine } from './tools/line/useLine';
 import { usePolygon } from './tools/polygon/usePolygon';
-import ArtboardResizer from './components/ArtboardResizer';
 
 interface DrawNodeEditProps extends NodeProps {
   data: any;

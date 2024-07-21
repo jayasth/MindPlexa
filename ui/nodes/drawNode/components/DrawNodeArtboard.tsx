@@ -81,6 +81,7 @@ export const Artboard = forwardRef(function Artboard(
     [key: string]: CanvasRenderingContext2D;
   }>({});
   const [artboardSize, setArtboardSize] = useState({ width, height });
+  const [artboardPosition, setArtboardPosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     if (!canvas) return;
@@ -112,6 +113,9 @@ export const Artboard = forwardRef(function Artboard(
     context.scale(zoom, zoom);
     context.translate(-centerX, -centerY);
 
+    // Apply artboard position
+    context.translate(artboardPosition.x, artboardPosition.y);
+
     layers.forEach((layer) => {
       if (layer.visible) {
         const layerContext = layerContexts[layer.id];
@@ -121,7 +125,7 @@ export const Artboard = forwardRef(function Artboard(
       }
     });
     context.restore();
-  }, [context, canvas, layers, layerContexts, zoom]);
+  }, [context, canvas, layers, layerContexts, zoom, artboardPosition]);
 
   useEffect(() => {
     composeLayers();
@@ -401,7 +405,12 @@ export const Artboard = forwardRef(function Artboard(
           width: artboardSize.width,
           height: artboardSize.height,
           transform: `scale(${zoom})`,
-          transformOrigin: 'top left'
+          transformOrigin: 'center',
+          position: 'absolute',
+          left: `50%`,
+          top: `50%`,
+          marginLeft: `-${artboardSize.width / 2}px`,
+          marginTop: `-${artboardSize.height / 2}px`
         }}
       >
         <canvas
