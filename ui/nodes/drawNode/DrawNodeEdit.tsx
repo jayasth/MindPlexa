@@ -72,6 +72,7 @@ import { useRectangle } from './tools/rectangle/useRectangle';
 import { useCircle } from './tools/circle/useCircle';
 import { useLine } from './tools/line/useLine';
 import { usePolygon } from './tools/polygon/usePolygon';
+import ArtboardResizer from './components/ArtboardResizer';
 
 interface DrawNodeEditProps extends NodeProps {
   data: any;
@@ -136,6 +137,8 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   ]);
   const [activeLayerId, setActiveLayerId] = useState('1');
   const [aspectRatio, setAspectRatio] = useState(1);
+  const [artboardWidth, setArtboardWidth] = useState(width * 0.9);
+  const [artboardHeight, setArtboardHeight] = useState(height * 0.7);
 
   const artboardRef = useRef<ArtboardRef | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -277,11 +280,17 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
 
   const handleResize = useCallback(
     (event, { width, height }) => {
+      const widthRatio = width / nodeWidth;
+      const heightRatio = height / nodeHeight;
+
       setNodeWidth(width);
       setNodeHeight(height);
+      setArtboardWidth((prev) => prev * widthRatio);
+      setArtboardHeight((prev) => prev * heightRatio);
+
       onNodeResizeStop(data.id, { width, height }, position);
     },
-    [data.id, onNodeResizeStop, position]
+    [data.id, nodeWidth, nodeHeight, onNodeResizeStop, position]
   );
 
   const handleContainerClick = useCallback(() => {
@@ -389,6 +398,11 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const handleZoomIn = () => setZoom((prev) => Math.min(prev + 0.1, 3));
   const handleZoomOut = () => setZoom((prev) => Math.max(prev - 0.1, 0.5));
 
+  const handleArtboardResize = (newWidth: number, newHeight: number) => {
+    setArtboardWidth(newWidth);
+    setArtboardHeight(newHeight);
+  };
+
   return (
     <div
       className={styles.drawNode}
@@ -454,12 +468,12 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
               style={{
                 border: '1px solid #ccc',
                 backgroundColor: 'white',
-                width: `${artboardSize.width}px`,
-                height: `${artboardSize.height}px`
+                width: `${artboardWidth}px`,
+                height: `${artboardHeight}px`
               }}
               content={drawingData}
-              width={artboardSize.width}
-              height={artboardSize.height}
+              width={artboardWidth}
+              height={artboardHeight}
               layers={layers}
               activeLayerId={activeLayerId}
               zoom={zoom}
@@ -470,6 +484,11 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
                   setDrawingData(dataUrl || '');
                 }
               }}
+            />
+            <ArtboardResizer
+              width={artboardWidth}
+              height={artboardHeight}
+              onResize={handleArtboardResize}
             />
           </div>
           <canvas ref={canvasRef} style={{ display: 'none' }} />
