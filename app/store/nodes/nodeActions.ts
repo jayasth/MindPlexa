@@ -12,6 +12,11 @@ import {
 import { handleTags } from '@/utils/canvas/tagService';
 import type { NodeState } from './useNodeStore';
 import { Database } from '@/types_db';
+import {
+  getDrawNodeData,
+  updateDrawNodeData,
+  saveDrawing
+} from '@/utils/canvas/drawNodeService';
 
 type NodeType = Exclude<
   Database['public']['Enums']['node_type'],
@@ -104,18 +109,9 @@ export const updateNode = async (set, get, id, data, canvasId) => {
               break;
             case 'draw':
               specificUpdates = {
-                drawing_data: updatedNode.data.drawingData,
-                background_image_url: updatedNode.data.backgroundImageUrl,
-                brush_presets: JSON.stringify(updatedNode.data.brushPresets),
-                color_palette: JSON.stringify(updatedNode.data.colorPalette),
+                current_tool: updatedNode.data.currentTool,
                 layers: JSON.stringify(updatedNode.data.layers),
-                pan_offset: JSON.stringify(updatedNode.data.panOffset),
-                shape_elements: JSON.stringify(updatedNode.data.shapeElements),
-                symmetry_settings: JSON.stringify(
-                  updatedNode.data.symmetrySettings
-                ),
-                text_elements: JSON.stringify(updatedNode.data.textElements),
-                zoom_level: updatedNode.data.zoomLevel
+                settings: JSON.stringify(updatedNode.data.settings)
               };
               break;
           }
@@ -161,6 +157,14 @@ export const updateNode = async (set, get, id, data, canvasId) => {
               existingNode.type as NodeType,
               specificUpdates
             );
+          }
+
+          // Save drawing if the node type is 'draw'
+          if (existingNode.type === 'draw') {
+            const drawingData = updatedNode.data.drawingData;
+            if (drawingData) {
+              saveDrawing(id, drawingData.drawingFileUrl);
+            }
           }
 
           state.nodeInternals.set(id, updatedNode);

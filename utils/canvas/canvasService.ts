@@ -14,7 +14,11 @@ import {
   processNodeSpecificData
 } from '@/utils/canvas/nodeSpecificDataService';
 import { handleTags } from '@/utils/canvas/tagService';
-import { getDrawNodeData, saveDrawing } from './drawNodeService';
+import {
+  getDrawNodeData,
+  updateDrawNodeData,
+  saveDrawing
+} from './drawNodeService';
 
 const supabase = createClient();
 
@@ -301,9 +305,16 @@ export const saveCanvasState = async (canvasId: string, canvasState: any) => {
 
     // Save drawing if the node type is 'draw'
     if (nodeType === 'draw') {
-      const drawingData = data.drawingData; // Assuming drawingData is part of the node data
+      const drawingData = data.drawingData;
       if (drawingData) {
-        await saveDrawing(nodeId, drawingData);
+        const { currentTool, layers, settings } = drawingData;
+        const drawNodeUpdates = {
+          currentTool,
+          layers,
+          settings
+        };
+        await updateDrawNodeData(nodeId, drawNodeUpdates);
+        await saveDrawing(nodeId, drawingData.drawingFileUrl);
       }
     }
   }
