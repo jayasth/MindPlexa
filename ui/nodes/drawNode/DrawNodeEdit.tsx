@@ -10,7 +10,6 @@ import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
 import styles from './DrawNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 import {
-  FaPencilAlt,
   FaPaintBrush,
   FaMarker,
   FaEraser,
@@ -19,6 +18,7 @@ import {
   FaCircle,
   FaPen
 } from 'react-icons/fa';
+import { TbInnerShadowBottomRightFilled } from 'react-icons/tb';
 import { IoMdWater } from 'react-icons/io';
 import { BsSlashLg } from 'react-icons/bs';
 import {
@@ -72,7 +72,6 @@ import { Layer } from './types';
 import { useRectangle } from './tools/rectangle/useRectangle';
 import { useCircle } from './tools/circle/useCircle';
 import { useLine } from './tools/line/useLine';
-import { usePolygon } from './tools/polygon/usePolygon';
 
 interface DrawNodeEditProps extends NodeProps {
   data: any;
@@ -128,7 +127,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const [color, setColor] = useState('#531B93');
   const [currentTool, setCurrentTool] = useState(0);
   const [toolSizes, setToolSizes] = useState([
-    5, 10, 15, 20, 10, 40, 5, 5, 5, 2
+    5, 2, 2, 2, 20, 20, 20, 20, 20, 40
   ]);
   const [strokeWidth, setStrokeWidth] = useState(toolSizes[currentTool]);
   const [zoom, setZoom] = useState(1);
@@ -137,8 +136,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   ]);
   const [activeLayerId, setActiveLayerId] = useState('1');
   const [aspectRatio, setAspectRatio] = useState(1);
-  const [artboardWidth, setArtboardWidth] = useState(width * 0.9);
-  const [artboardHeight, setArtboardHeight] = useState(height * 0.7);
 
   const artboardRef = useRef<ArtboardRef | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -223,10 +220,15 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   }, [width, height, onResize, drawingData]);
 
   const artboardSize = useMemo(() => {
-    const maxWidth = nodeWidth * 0.9;
-    const maxHeight = nodeHeight * 0.7;
-    return { width: maxWidth, height: maxHeight };
-  }, [nodeWidth, nodeHeight]);
+    const containerWidth =
+      artboardContainerRef.current?.clientWidth || nodeWidth * 0.9;
+    const containerHeight =
+      artboardContainerRef.current?.clientHeight || nodeHeight * 0.7;
+    return {
+      width: containerWidth / zoom,
+      height: containerHeight / zoom
+    };
+  }, [nodeWidth, nodeHeight, zoom, artboardContainerRef]);
 
   const onChangeTitle = useCallback(
     (newTitle: string) => {
@@ -323,33 +325,34 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     setIsDeleteModalOpen(false);
   };
 
-  const brush = useBrush({ color, strokeWidth });
+  const pen = usePen({ color, strokeWidth });
+  const line = useLine({ color, strokeWidth });
+  const rectangle = useRectangle({ color, strokeWidth });
+  const circle = useCircle({ color, strokeWidth });
   const marker = useMarker({ color, strokeWidth });
+  const brush = useBrush({ color, strokeWidth });
   const watercolor = useWatercolor({ color, strokeWidth });
   const airbrush = useAirbrush({ color, strokeWidth });
-  const eraser = useEraser({ strokeWidth });
   const shading = useShadingBrush({
     color,
     spreadFactor: (1 / 45) * strokeWidth,
     distanceThreshold: 100
   });
-  const rectangle = useRectangle({ color, strokeWidth });
-  const circle = useCircle({ color, strokeWidth });
-  const line = useLine({ color, strokeWidth });
-  const polygon = usePolygon({ color, strokeWidth });
-  const pen = usePen({ color, strokeWidth });
+  const eraser = useEraser({ strokeWidth });
 
   const tools: Array<[ToolHandlers, IconType, number]> = [
-    [shading, FaPencilAlt, toolSizes[0]],
-    [watercolor, IoMdWater, toolSizes[1]],
-    [brush, FaPaintBrush, toolSizes[2]],
-    [marker, FaMarker, toolSizes[3]],
-    [airbrush, FaSprayCan, toolSizes[4]],
-    [eraser, FaEraser, toolSizes[5]],
-    [rectangle, FaSquare, toolSizes[6]],
-    [circle, FaCircle, toolSizes[7]],
-    [line, BsSlashLg, toolSizes[8]],
-    [pen, FaPen, toolSizes[9]]
+    [pen, FaPen, toolSizes[0]],
+    [line, BsSlashLg, toolSizes[1]],
+    [rectangle, FaSquare, toolSizes[2]],
+    [circle, FaCircle, toolSizes[3]],
+
+    [marker, FaMarker, toolSizes[4]],
+    [brush, FaPaintBrush, toolSizes[5]],
+    [watercolor, IoMdWater, toolSizes[6]],
+
+    [airbrush, FaSprayCan, toolSizes[7]],
+    [shading, TbInnerShadowBottomRightFilled, toolSizes[8]],
+    [eraser, FaEraser, toolSizes[9]]
   ];
 
   const handleSizeChange = useCallback(
@@ -501,9 +504,8 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
               ref={artboardRef}
               history={history}
               style={{
-                border: '1px solid #ccc',
-                width: `${artboardSize.width}px`,
-                height: `${artboardSize.height}px`
+                transform: `scale(${zoom})`,
+                transformOrigin: 'center'
               }}
               content={drawingData}
               width={artboardSize.width}

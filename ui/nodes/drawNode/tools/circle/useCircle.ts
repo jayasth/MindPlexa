@@ -8,7 +8,7 @@ export interface UseCircleProps {
 }
 
 export function useCircle({
-  color = '#000000',
+  color,
   strokeWidth = 2
 }: UseCircleProps): ToolHandlers {
   const startPoint = useRef<Point | null>(null);
@@ -26,7 +26,7 @@ export function useCircle({
         tempCtx.drawImage(context.canvas, 0, 0);
       }
 
-      context.strokeStyle = color;
+      context.strokeStyle = color || '#000000'; // Set default color if not provided
       context.lineWidth = strokeWidth;
       startPoint.current = point;
       isDrawing.current = true;
