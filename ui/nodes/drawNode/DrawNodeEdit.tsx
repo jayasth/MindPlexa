@@ -501,8 +501,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         const top = (containerHeight - artboardHeight) / 2;
 
         artboard.style.transform = `scale(${zoom})`;
-        artboard.style.transformOrigin = 'top left';
-        artboard.style.position = 'absolute';
+        artboard.style.transformOrigin = 'center center';
         artboard.style.left = `${left}px`;
         artboard.style.top = `${top}px`;
       }
@@ -578,7 +577,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
               history={history}
               style={{
                 transform: `scale(${zoom})`,
-                transformOrigin: 'center'
+                transformOrigin: 'center center'
               }}
               content={drawingData}
               width={artboardSize.width}
