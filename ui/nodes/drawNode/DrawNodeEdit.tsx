@@ -37,6 +37,7 @@ import { useHistory } from '@/ui/nodes/drawNode/drawNodeHistory';
 import type { IconType } from 'react-icons/lib';
 import DrawNodeSidebar from './components/DrawNodeSidebar';
 import DrawNodeTopbar from './components/DrawNodeTopbar';
+import LayerPanel from './components/LayerPanel';
 import {
   DeleteButton,
   ChangeColorButton,
@@ -126,6 +127,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const [isFileModalOpen, setIsFileModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [color, setColor] = useState('#531B93');
+  const [isLayerPanelVisible, setIsLayerPanelVisible] = useState(false);
   const [currentTool, setCurrentTool] = useState(0);
   const [toolSettings, setToolSettings] = useState<ToolSetting[]>([
     {
@@ -507,7 +509,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
       }
     }
   }, [zoom, nodeWidth, nodeHeight]);
-
   return (
     <div
       className={styles.drawNode}
@@ -559,6 +560,8 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         hasDrawing={hasDrawing}
         toolSettings={toolSettings}
         setToolSettings={setToolSettings}
+        isLayerPanelVisible={isLayerPanelVisible}
+        setIsLayerPanelVisible={setIsLayerPanelVisible}
       />
       <div className={styles.drawContent}>
         <DrawNodeSidebar
@@ -595,6 +598,14 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
           </div>
           <canvas ref={canvasRef} style={{ display: 'none' }} />
         </div>
+        {isLayerPanelVisible && (
+          <LayerPanel
+            layers={layers}
+            setLayers={setLayers}
+            activeLayerId={activeLayerId}
+            setActiveLayerId={setActiveLayerId}
+          />
+        )}
       </div>
       {(tags.length > 0 || attachedFiles.length > 0) &&
         memoizedTagFileContainer}

@@ -18,7 +18,6 @@ import Slider from './DrawNodeSlider';
 import LayerPanel from './LayerPanel';
 import { Layer } from '../types';
 import styles from './DrawNodeTopbar.module.css';
-import { Popover } from '@/ui/Popover/Popover';
 import DrawNodeSettings from './DrawNodeSettings';
 
 interface DrawNodeTopbarProps {
@@ -43,6 +42,8 @@ interface DrawNodeTopbarProps {
   hasDrawing: boolean;
   toolSettings: any;
   setToolSettings: (settings: any) => void;
+  isLayerPanelVisible: boolean;
+  setIsLayerPanelVisible: (visible: boolean) => void;
 }
 
 const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
@@ -66,7 +67,9 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
   setActiveLayerId,
   hasDrawing,
   toolSettings,
-  setToolSettings
+  setToolSettings,
+  isLayerPanelVisible,
+  setIsLayerPanelVisible
 }) => {
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   const [isStrokeWidthOpen, setIsStrokeWidthOpen] = useState(false);
@@ -135,6 +138,15 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
           <button
             className={`${styles.toolbarButton}`}
             onClick={() => setIsLayerModalOpen(true)}
+            style={{ color: textColor }}
+          >
+            <FaLayerGroup size={iconSize} />
+          </button>
+        </Tooltip>
+        <Tooltip content="Toggle Layers">
+          <button
+            className={`${styles.toolbarButton}`}
+            onClick={() => setIsLayerPanelVisible(!isLayerPanelVisible)}
             style={{ color: textColor }}
           >
             <FaLayerGroup size={iconSize} />
