@@ -109,22 +109,10 @@ export const processNodeSpecificData = (nodeType: NodeType, data: any) => {
       };
     case 'draw':
       return {
-        drawingData: data.drawing_data || '',
-        backgroundImageUrl: data.background_image_url || '',
-        brushPresets: data.brush_presets ? JSON.parse(data.brush_presets) : [],
-        colorPalette: data.color_palette ? JSON.parse(data.color_palette) : [],
+        currentTool: data.current_tool || '',
+        drawingFileUrl: data.drawing_file_url || '',
         layers: data.layers ? JSON.parse(data.layers) : [],
-        panOffset: data.pan_offset
-          ? JSON.parse(data.pan_offset)
-          : { x: 0, y: 0 },
-        shapeElements: data.shape_elements
-          ? JSON.parse(data.shape_elements)
-          : [],
-        symmetrySettings: data.symmetry_settings
-          ? JSON.parse(data.symmetry_settings)
-          : {},
-        textElements: data.text_elements ? JSON.parse(data.text_elements) : [],
-        zoomLevel: data.zoom_level || 1.0
+        settings: data.settings ? JSON.parse(data.settings) : {}
       };
     default:
       return {};
