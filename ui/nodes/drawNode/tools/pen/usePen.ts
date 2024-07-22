@@ -68,8 +68,7 @@ export function usePen({
 
       tempCtx.stroke();
 
-      // Draw the preview on the main canvas
-      context.clearRect(0, 0, context.canvas.width, context.canvas.height);
+      // Draw the preview on the main canvas without clearing it
       context.drawImage(tempCanvas.current, 0, 0);
     },
     []

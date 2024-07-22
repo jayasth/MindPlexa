@@ -7,7 +7,7 @@ import {
   FaSprayCan,
   FaSquare,
   FaCircle,
-  FaDrawPolygon
+  FaPen
 } from 'react-icons/fa';
 import { IoMdWater } from 'react-icons/io';
 import { BsSlashLg } from 'react-icons/bs';
@@ -40,7 +40,7 @@ const DrawNodeSidebar: React.FC<DrawNodeSidebarProps> = ({
       { icon: FaSquare, name: 'Rectangle' },
       { icon: FaCircle, name: 'Circle' },
       { icon: BsSlashLg, name: 'Line' },
-      { icon: FaDrawPolygon, name: 'Polygon' }
+      { icon: FaPen, name: 'Pen' }
     ]
   ];
 

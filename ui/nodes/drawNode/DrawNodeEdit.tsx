@@ -17,7 +17,6 @@ import {
   FaSprayCan,
   FaSquare,
   FaCircle,
-  FaDrawPolygon,
   FaPen
 } from 'react-icons/fa';
 import { IoMdWater } from 'react-icons/io';
@@ -129,7 +128,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const [color, setColor] = useState('#531B93');
   const [currentTool, setCurrentTool] = useState(0);
   const [toolSizes, setToolSizes] = useState([
-    5, 10, 15, 20, 10, 40, 5, 5, 5, 5, 2
+    5, 10, 15, 20, 10, 40, 5, 5, 5, 2
   ]);
   const [strokeWidth, setStrokeWidth] = useState(toolSizes[currentTool]);
   const [zoom, setZoom] = useState(1);
@@ -350,8 +349,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     [rectangle, FaSquare, toolSizes[6]],
     [circle, FaCircle, toolSizes[7]],
     [line, BsSlashLg, toolSizes[8]],
-    [polygon, FaDrawPolygon, toolSizes[9]],
-    [pen, FaPen, toolSizes[10]]
+    [pen, FaPen, toolSizes[9]]
   ];
 
   const handleSizeChange = useCallback(
