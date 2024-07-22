@@ -4,37 +4,23 @@
   border-radius: 4px;
   max-height: 70vh;
   overflow-y: auto;
-  width: 300px;
+  width: 240px;
 }
 
 .toolSetting {
-  margin-bottom: 24px;
-  border-bottom: 1px solid #e0e0e0;
-  padding-bottom: 16px;
-}
-
-.toolSetting:last-child {
-  border-bottom: none;
-  margin-bottom: 0;
-  padding-bottom: 0;
-}
-
-.settingRow {
-  display: flex;
-  flex-direction: column;
   margin-bottom: 16px;
 }
 
-.settingRow span {
+.toolSetting h4 {
   margin-bottom: 8px;
-  font-weight: bold;
+  font-size: 14px;
+  color: #333;
 }
 
-.colorPickerWrapper {
+.settingRow {
+  margin-bottom: 8px;
+}
+
+.settingRow input {
   width: 100%;
-}
-
-.colorPickerWrapper > div {
-  width: 100% !important;
-  box-sizing: border-box;
 }

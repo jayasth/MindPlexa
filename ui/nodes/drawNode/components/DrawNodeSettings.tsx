@@ -1,6 +1,5 @@
 import React from 'react';
-import { SketchPicker } from 'react-color';
-import Slider from './DrawNodeSlider';
+import Input from '@/ui/Input/Input';
 import styles from './DrawNodeSettings.module.css';
 
 interface ToolSetting {
@@ -19,15 +18,22 @@ const DrawNodeSettings: React.FC<DrawNodeSettingsProps> = ({
   setToolSettings
 }) => {
   const handleColorChange = (index: number, color: string) => {
-    setToolSettings((prev) =>
-      prev.map((tool, i) => (i === index ? { ...tool, color } : tool))
-    );
+    if (/^#[0-9A-F]{6}$/i.test(color)) {
+      setToolSettings((prev) =>
+        prev.map((tool, i) => (i === index ? { ...tool, color } : tool))
+      );
+    }
   };
 
-  const handleStrokeWidthChange = (index: number, strokeWidth: number) => {
-    setToolSettings((prev) =>
-      prev.map((tool, i) => (i === index ? { ...tool, strokeWidth } : tool))
-    );
+  const handleStrokeWidthChange = (index: number, strokeWidth: string) => {
+    const width = parseInt(strokeWidth, 10);
+    if (!isNaN(width) && width > 0 && width <= 100) {
+      setToolSettings((prev) =>
+        prev.map((tool, i) =>
+          i === index ? { ...tool, strokeWidth: width } : tool
+        )
+      );
+    }
   };
 
   return (
@@ -36,21 +42,23 @@ const DrawNodeSettings: React.FC<DrawNodeSettingsProps> = ({
         <div key={tool.name} className={styles.toolSetting}>
           <h4>{tool.name}</h4>
           <div className={styles.settingRow}>
-            <span>Color:</span>
-            <div className={styles.colorPickerWrapper}>
-              <SketchPicker
-                color={tool.color}
-                onChange={(color) => handleColorChange(index, color.hex)}
-              />
-            </div>
+            <Input
+              type="text"
+              placeholder="Color (hex)"
+              value={tool.color}
+              onChange={(value) => handleColorChange(index, value)}
+              variant="slim"
+            />
           </div>
           <div className={styles.settingRow}>
-            <span>Stroke Width:</span>
-            <Slider
+            <Input
+              type="number"
+              placeholder="Stroke Width"
+              value={tool.strokeWidth.toString()}
+              onChange={(value) => handleStrokeWidthChange(index, value)}
+              variant="slim"
               min={1}
               max={100}
-              value={tool.strokeWidth}
-              onChange={(value) => handleStrokeWidthChange(index, value)}
             />
           </div>
         </div>
