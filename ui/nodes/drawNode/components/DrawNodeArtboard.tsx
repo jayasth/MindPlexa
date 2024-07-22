@@ -275,7 +275,18 @@ export const Artboard = forwardRef(function Artboard(
       if (content) {
         const image = new Image();
         image.onload = () => {
-          ctx.drawImage(image, 0, 0, canvasRef.width, canvasRef.height);
+          ctx.clearRect(0, 0, canvasRef.width, canvasRef.height);
+          ctx.drawImage(
+            image,
+            0,
+            0,
+            image.width,
+            image.height,
+            0,
+            0,
+            canvasRef.width,
+            canvasRef.height
+          );
         };
         image.src = content;
       }
@@ -349,26 +360,26 @@ export const Artboard = forwardRef(function Artboard(
     }
   }, [width, height, resizeCanvas, onResize]);
 
-  useImperativeHandle(
-    ref,
-    () => ({
-      download: (filename = 'image.png', type?: string) => {
-        if (!canvas) {
-          return;
-        }
-        const a = document.createElement('a');
-        a.href = canvas.toDataURL(type);
-        a.download = filename;
-        a.click();
-      },
-      clear,
-      getImageAsDataUri: (type?: string) => canvas?.toDataURL(type),
-      context,
-      width: canvas?.width || 0,
-      height: canvas?.height || 0
-    }),
-    [canvas, context, clear]
-  );
+  useEffect(() => {
+    if (canvas && context && content) {
+      const image = new Image();
+      image.onload = () => {
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.drawImage(
+          image,
+          0,
+          0,
+          image.width,
+          image.height,
+          0,
+          0,
+          canvas.width,
+          canvas.height
+        );
+      };
+      image.src = content;
+    }
+  }, [canvas, context, content]);
 
   useEffect(() => {
     if (onResize) {
@@ -399,6 +410,27 @@ export const Artboard = forwardRef(function Artboard(
       onContentChange(canvas?.toDataURL() || '');
     }
   }, [canvas, onContentChange]);
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      download: (filename = 'image.png', type?: string) => {
+        if (!canvas) {
+          return;
+        }
+        const a = document.createElement('a');
+        a.href = canvas.toDataURL(type);
+        a.download = filename;
+        a.click();
+      },
+      clear,
+      getImageAsDataUri: (type?: string) => canvas?.toDataURL(type),
+      context,
+      width: canvas?.width || 0,
+      height: canvas?.height || 0
+    }),
+    [canvas, context, clear]
+  );
 
   return (
     <canvas

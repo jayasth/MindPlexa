@@ -227,7 +227,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
       const fetchedData = await getDrawNodeData(data.id);
       if (fetchedData) {
         setDrawNodeData(fetchedData);
-        setDrawingData(fetchedData.drawingData || '');
+        setDrawingData(fetchedData.drawingFileUrl || '');
         setLayers(
           Array.isArray(fetchedData.layers)
             ? fetchedData.layers

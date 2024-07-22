@@ -113,6 +113,14 @@ export const updateNode = async (set, get, id, data, canvasId) => {
                 layers: JSON.stringify(updatedNode.data.layers),
                 settings: JSON.stringify(updatedNode.data.settings)
               };
+              const drawingData = updatedNode.data.drawingData;
+              if (drawingData) {
+                saveDrawing(id, drawingData).then((result) => {
+                  if (result) {
+                    specificUpdates['drawing_file_url'] = result.drawingFileUrl;
+                  }
+                });
+              }
               break;
           }
 
@@ -157,14 +165,6 @@ export const updateNode = async (set, get, id, data, canvasId) => {
               existingNode.type as NodeType,
               specificUpdates
             );
-          }
-
-          // Save drawing if the node type is 'draw'
-          if (existingNode.type === 'draw') {
-            const drawingData = updatedNode.data.drawingData;
-            if (drawingData) {
-              saveDrawing(id, drawingData.drawingFileUrl);
-            }
           }
 
           state.nodeInternals.set(id, updatedNode);

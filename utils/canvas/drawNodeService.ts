@@ -35,9 +35,7 @@ export const updateDrawNodeData = async (nodeId: string, updates: any) => {
 };
 
 export const saveDrawing = async (nodeId: string, drawingData: string) => {
-  // Check if drawingData is a string and contains a comma to split
   if (typeof drawingData === 'string' && drawingData.includes(',')) {
-    // Convert base64 to Blob
     const base64Data = drawingData.split(',')[1];
     const blob = await fetch(`data:image/png;base64,${base64Data}`).then(
       (res) => res.blob()
@@ -55,15 +53,15 @@ export const saveDrawing = async (nodeId: string, drawingData: string) => {
       return null;
     }
 
-    // Get the public URL of the uploaded file
     const { data: publicUrlData } = supabase.storage
       .from('drawings')
       .getPublicUrl(`${nodeId}.png`);
 
-    // Update the draw_nodes table with the public URL
+    const drawingFileUrl = publicUrlData.publicUrl;
+
     const { data: updateData, error: updateError } = await supabase
       .from('draw_nodes')
-      .update({ drawing_file_url: publicUrlData.publicUrl })
+      .update({ drawing_file_url: drawingFileUrl })
       .eq('node_id', nodeId);
 
     if (updateError) {
@@ -71,7 +69,7 @@ export const saveDrawing = async (nodeId: string, drawingData: string) => {
       return null;
     }
 
-    return data;
+    return { drawingFileUrl };
   } else {
     console.error('Invalid drawing data format');
     return null;

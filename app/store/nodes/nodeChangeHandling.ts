@@ -9,7 +9,10 @@ import {
 import { handleTags } from '@/utils/canvas/tagService';
 import type { NodeState } from './useNodeStore';
 import { Database } from '@/types_db';
-import { updateDrawNodeData } from '@/utils/canvas/drawNodeService';
+import {
+  updateDrawNodeData,
+  saveDrawing
+} from '@/utils/canvas/drawNodeService';
 
 type NodeType = Exclude<
   Database['public']['Enums']['node_type'],
@@ -152,6 +155,15 @@ export const onNodesChange = async (set, get, changes, canvasId) => {
                     layers: JSON.stringify(updatedNode.data.layers),
                     settings: JSON.stringify(updatedNode.data.settings)
                   };
+                  const drawingData = updatedNode.data.drawingData;
+                  if (drawingData) {
+                    saveDrawing(updatedNode.id, drawingData).then((result) => {
+                      if (result) {
+                        specificUpdates['drawing_file_url'] =
+                          result.drawingFileUrl;
+                      }
+                    });
+                  }
                   break;
               }
 
