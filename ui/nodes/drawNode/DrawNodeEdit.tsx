@@ -229,9 +229,9 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         setDrawNodeData(fetchedData);
         setDrawingData(fetchedData.drawingData || '');
         setLayers(
-          fetchedData.layers || [
-            { id: '1', name: 'Layer 1', visible: true, locked: false }
-          ]
+          Array.isArray(fetchedData.layers)
+            ? fetchedData.layers
+            : [{ id: '1', name: 'Layer 1', visible: true, locked: false }]
         );
         setCurrentTool(fetchedData.currentTool || 0);
         setZoom(fetchedData.zoomLevel || 1);
