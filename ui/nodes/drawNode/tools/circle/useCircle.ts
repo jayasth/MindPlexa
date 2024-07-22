@@ -13,12 +13,21 @@ export function useCircle({
 }: UseCircleProps): ToolHandlers {
   const startPoint = useRef<Point | null>(null);
   const isDrawing = useRef(false);
+  const tempCanvas = useRef<HTMLCanvasElement | null>(null);
 
   const startStroke = useCallback(
     (point: Point, context: CanvasRenderingContext2D) => {
+      // Create a temporary canvas
+      tempCanvas.current = document.createElement('canvas');
+      tempCanvas.current.width = context.canvas.width;
+      tempCanvas.current.height = context.canvas.height;
+      const tempCtx = tempCanvas.current.getContext('2d');
+      if (tempCtx) {
+        tempCtx.drawImage(context.canvas, 0, 0);
+      }
+
       context.strokeStyle = color;
       context.lineWidth = strokeWidth;
-      context.beginPath();
       startPoint.current = point;
       isDrawing.current = true;
     },
@@ -27,7 +36,8 @@ export function useCircle({
 
   const continueStroke = useCallback(
     (point: Point, context: CanvasRenderingContext2D) => {
-      if (!isDrawing.current || !startPoint.current) return;
+      if (!isDrawing.current || !startPoint.current || !tempCanvas.current)
+        return;
 
       const radiusX = Math.abs(point[0] - startPoint.current[0]) / 2;
       const radiusY = Math.abs(point[1] - startPoint.current[1]) / 2;
@@ -36,7 +46,10 @@ export function useCircle({
       const centerY =
         startPoint.current[1] + (point[1] - startPoint.current[1]) / 2;
 
+      // Clear the main canvas and redraw the temporary canvas
       context.clearRect(0, 0, context.canvas.width, context.canvas.height);
+      context.drawImage(tempCanvas.current, 0, 0);
+
       context.beginPath();
       context.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, 2 * Math.PI);
       context.stroke();
@@ -47,6 +60,7 @@ export function useCircle({
   const endStroke = useCallback((context: CanvasRenderingContext2D) => {
     isDrawing.current = false;
     startPoint.current = null;
+    tempCanvas.current = null;
   }, []);
 
   const cursor = 'crosshair';

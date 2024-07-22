@@ -13,9 +13,19 @@ export function useLine({
 }: UseLineProps): ToolHandlers {
   const startPoint = useRef<Point | null>(null);
   const isDrawing = useRef(false);
+  const tempCanvas = useRef<HTMLCanvasElement | null>(null);
 
   const startStroke = useCallback(
     (point: Point, context: CanvasRenderingContext2D) => {
+      // Create a temporary canvas
+      tempCanvas.current = document.createElement('canvas');
+      tempCanvas.current.width = context.canvas.width;
+      tempCanvas.current.height = context.canvas.height;
+      const tempCtx = tempCanvas.current.getContext('2d');
+      if (tempCtx) {
+        tempCtx.drawImage(context.canvas, 0, 0);
+      }
+
       context.strokeStyle = color;
       context.lineWidth = strokeWidth;
       context.beginPath();
@@ -27,9 +37,14 @@ export function useLine({
 
   const continueStroke = useCallback(
     (point: Point, context: CanvasRenderingContext2D) => {
-      if (!isDrawing.current || !startPoint.current) return;
+      if (!isDrawing.current || !startPoint.current || !tempCanvas.current)
+        return;
 
+      // Clear the main canvas and redraw the temporary canvas
       context.clearRect(0, 0, context.canvas.width, context.canvas.height);
+      context.drawImage(tempCanvas.current, 0, 0);
+
+      // Draw the new line
       context.beginPath();
       context.moveTo(startPoint.current[0], startPoint.current[1]);
       context.lineTo(point[0], point[1]);
@@ -41,6 +56,7 @@ export function useLine({
   const endStroke = useCallback((context: CanvasRenderingContext2D) => {
     isDrawing.current = false;
     startPoint.current = null;
+    tempCanvas.current = null;
   }, []);
 
   const cursor = 'crosshair';

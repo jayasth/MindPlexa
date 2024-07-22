@@ -26,6 +26,8 @@ export function usePolygon({
       if (tempCtx) {
         tempCtx.strokeStyle = color;
         tempCtx.lineWidth = strokeWidth;
+        tempCtx.lineJoin = 'round';
+        tempCtx.lineCap = 'round';
         tempCtx.clearRect(0, 0, tempCtx.canvas.width, tempCtx.canvas.height);
       }
       points.current = [point];
@@ -41,20 +43,25 @@ export function usePolygon({
       const tempCtx = tempCanvas.current.getContext('2d');
       if (!tempCtx) return;
 
+      // Clear the temporary canvas and redraw the existing points
       tempCtx.clearRect(0, 0, tempCtx.canvas.width, tempCtx.canvas.height);
       tempCtx.beginPath();
       tempCtx.moveTo(points.current[0][0], points.current[0][1]);
 
+      // Draw straight lines to each point using lineTo
       for (let i = 1; i < points.current.length; i++) {
         tempCtx.lineTo(points.current[i][0], points.current[i][1]);
       }
 
+      // Draw the line to the current point using lineTo
       tempCtx.lineTo(point[0], point[1]);
       tempCtx.stroke();
 
-      // Draw the preview on the main canvas
+      // Clear the main canvas and redraw the temporary canvas
       context.clearRect(0, 0, context.canvas.width, context.canvas.height);
       context.drawImage(tempCanvas.current, 0, 0);
+
+      points.current.push(point);
     },
     []
   );
@@ -64,6 +71,8 @@ export function usePolygon({
       if (points.current.length > 2) {
         context.strokeStyle = color;
         context.lineWidth = strokeWidth;
+        context.lineJoin = 'round';
+        context.lineCap = 'round';
         context.beginPath();
         context.moveTo(points.current[0][0], points.current[0][1]);
         for (let i = 1; i < points.current.length; i++) {

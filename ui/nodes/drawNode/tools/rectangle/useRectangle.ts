@@ -13,12 +13,21 @@ export function useRectangle({
 }: UseRectangleProps): ToolHandlers {
   const startPoint = useRef<Point | null>(null);
   const isDrawing = useRef(false);
+  const tempCanvas = useRef<HTMLCanvasElement | null>(null);
 
   const startStroke = useCallback(
     (point: Point, context: CanvasRenderingContext2D) => {
+      // Create a temporary canvas
+      tempCanvas.current = document.createElement('canvas');
+      tempCanvas.current.width = context.canvas.width;
+      tempCanvas.current.height = context.canvas.height;
+      const tempCtx = tempCanvas.current.getContext('2d');
+      if (tempCtx) {
+        tempCtx.drawImage(context.canvas, 0, 0);
+      }
+
       context.strokeStyle = color;
       context.lineWidth = strokeWidth;
-      context.beginPath();
       startPoint.current = point;
       isDrawing.current = true;
     },
@@ -27,12 +36,17 @@ export function useRectangle({
 
   const continueStroke = useCallback(
     (point: Point, context: CanvasRenderingContext2D) => {
-      if (!isDrawing.current || !startPoint.current) return;
+      if (!isDrawing.current || !startPoint.current || !tempCanvas.current)
+        return;
 
       const width = point[0] - startPoint.current[0];
       const height = point[1] - startPoint.current[1];
 
+      // Clear the main canvas and redraw the temporary canvas
       context.clearRect(0, 0, context.canvas.width, context.canvas.height);
+      context.drawImage(tempCanvas.current, 0, 0);
+
+      // Draw the new rectangle
       context.beginPath();
       context.rect(startPoint.current[0], startPoint.current[1], width, height);
       context.stroke();
@@ -43,6 +57,7 @@ export function useRectangle({
   const endStroke = useCallback((context: CanvasRenderingContext2D) => {
     isDrawing.current = false;
     startPoint.current = null;
+    tempCanvas.current = null;
   }, []);
 
   const cursor = 'crosshair';
