@@ -18,6 +18,8 @@ import Slider from './DrawNodeSlider';
 import LayerPanel from './LayerPanel';
 import { Layer } from '../types';
 import styles from './DrawNodeTopbar.module.css';
+import { Popover } from '@/ui/Popover/Popover';
+import DrawNodeSettings from './DrawNodeSettings';
 
 interface DrawNodeTopbarProps {
   undo: () => void;
@@ -39,6 +41,8 @@ interface DrawNodeTopbarProps {
   setLayers: React.Dispatch<React.SetStateAction<Layer[]>>;
   setActiveLayerId: (id: string) => void;
   hasDrawing: boolean;
+  toolSettings: any;
+  setToolSettings: (settings: any) => void;
 }
 
 const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
@@ -60,7 +64,9 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
   activeLayerId,
   setLayers,
   setActiveLayerId,
-  hasDrawing
+  hasDrawing,
+  toolSettings,
+  setToolSettings
 }) => {
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   const [isStrokeWidthOpen, setIsStrokeWidthOpen] = useState(false);
@@ -219,8 +225,11 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
         onClose={() => setIsSettingsOpen(false)}
         center
       >
-        <h2>Settings</h2>
-        {/* Add settings content here */}
+        <h2>Tool Settings</h2>
+        <DrawNodeSettings
+          toolSettings={toolSettings}
+          setToolSettings={setToolSettings}
+        />
       </Modal>
     </div>
   );

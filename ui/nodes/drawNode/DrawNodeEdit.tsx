@@ -72,6 +72,7 @@ import { Layer } from './types';
 import { useRectangle } from './tools/rectangle/useRectangle';
 import { useCircle } from './tools/circle/useCircle';
 import { useLine } from './tools/line/useLine';
+import { ToolSetting } from './types';
 
 interface DrawNodeEditProps extends NodeProps {
   data: any;
@@ -126,10 +127,21 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [color, setColor] = useState('#531B93');
   const [currentTool, setCurrentTool] = useState(0);
-  const [toolSizes, setToolSizes] = useState([
-    5, 2, 2, 2, 20, 20, 20, 20, 20, 40
+  const [toolSettings, setToolSettings] = useState<ToolSetting[]>([
+    { name: 'Pen', color: '#000000', strokeWidth: 5 },
+    { name: 'Line', color: '#000000', strokeWidth: 2 },
+    { name: 'Rectangle', color: '#000000', strokeWidth: 2 },
+    { name: 'Circle', color: '#000000', strokeWidth: 2 },
+    { name: 'Marker', color: '#000000', strokeWidth: 20 },
+    { name: 'Brush', color: '#000000', strokeWidth: 20 },
+    { name: 'Watercolor', color: '#000000', strokeWidth: 20 },
+    { name: 'Airbrush', color: '#000000', strokeWidth: 20 },
+    { name: 'Shading', color: '#000000', strokeWidth: 20 },
+    { name: 'Eraser', color: '#ffffff', strokeWidth: 40 }
   ]);
-  const [strokeWidth, setStrokeWidth] = useState(toolSizes[currentTool]);
+  const [strokeWidth, setStrokeWidth] = useState(
+    toolSettings[currentTool].strokeWidth
+  );
   const [zoom, setZoom] = useState(1);
   const [layers, setLayers] = useState<Layer[]>([
     { id: '1', name: 'Layer 1', visible: true, locked: false }
@@ -341,35 +353,34 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const eraser = useEraser({ strokeWidth });
 
   const tools: Array<[ToolHandlers, IconType, number]> = [
-    [pen, FaPen, toolSizes[0]],
-    [line, BsSlashLg, toolSizes[1]],
-    [rectangle, FaSquare, toolSizes[2]],
-    [circle, FaCircle, toolSizes[3]],
-
-    [marker, FaMarker, toolSizes[4]],
-    [brush, FaPaintBrush, toolSizes[5]],
-    [watercolor, IoMdWater, toolSizes[6]],
-
-    [airbrush, FaSprayCan, toolSizes[7]],
-    [shading, TbInnerShadowBottomRightFilled, toolSizes[8]],
-    [eraser, FaEraser, toolSizes[9]]
+    [pen, FaPen, toolSettings[0].strokeWidth],
+    [line, BsSlashLg, toolSettings[1].strokeWidth],
+    [rectangle, FaSquare, toolSettings[2].strokeWidth],
+    [circle, FaCircle, toolSettings[3].strokeWidth],
+    [marker, FaMarker, toolSettings[4].strokeWidth],
+    [brush, FaPaintBrush, toolSettings[5].strokeWidth],
+    [watercolor, IoMdWater, toolSettings[6].strokeWidth],
+    [airbrush, FaSprayCan, toolSettings[7].strokeWidth],
+    [shading, TbInnerShadowBottomRightFilled, toolSettings[8].strokeWidth],
+    [eraser, FaEraser, toolSettings[9].strokeWidth]
   ];
 
   const handleSizeChange = useCallback(
     (newSize: number) => {
       setStrokeWidth(newSize);
-      setToolSizes((prev) => {
-        const newSizes = [...prev];
-        newSizes[currentTool] = newSize;
-        return newSizes;
+      setToolSettings((prev) => {
+        const newSettings = [...prev];
+        newSettings[currentTool].strokeWidth = newSize;
+        return newSettings;
       });
     },
     [currentTool]
   );
 
   useEffect(() => {
-    setStrokeWidth(toolSizes[currentTool]);
-  }, [currentTool, toolSizes]);
+    setColor(toolSettings[currentTool].color);
+    setStrokeWidth(toolSettings[currentTool].strokeWidth);
+  }, [currentTool, toolSettings]);
 
   const {
     undo,
@@ -487,6 +498,8 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         setLayers={setLayers}
         setActiveLayerId={setActiveLayerId}
         hasDrawing={hasDrawing}
+        toolSettings={toolSettings}
+        setToolSettings={setToolSettings}
       />
       <div className={styles.drawContent}>
         <DrawNodeSidebar
