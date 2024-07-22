@@ -14,11 +14,11 @@ import {
   processNodeSpecificData
 } from '@/utils/canvas/nodeSpecificDataService';
 import { handleTags } from '@/utils/canvas/tagService';
-import { getDrawNodeData } from './drawNodeService';
+import { getDrawNodeData, saveDrawing } from './drawNodeService';
 
 const supabase = createClient();
 
-// Function to handle creating a new canvas, this is working
+// Function to handle creating a new canvas
 export const createCanvas = async (
   canvasTitle: string,
   setIsModalOpen: (isOpen: boolean) => void,
@@ -45,7 +45,7 @@ export const createCanvas = async (
   }
 };
 
-// Function to handle deleting a canvas, updated to handle node_canvas_link
+// Function to handle deleting a canvas and its associated nodes
 export const deleteCanvas = async (
   canvasId: string,
   setCanvases: (canvases: any) => void
@@ -226,6 +226,7 @@ export const fetchCanvas = async (canvasId: string) => {
   };
 };
 
+// Function to save the state of the canvas and its nodes
 export const saveCanvasState = async (canvasId: string, canvasState: any) => {
   const { nodes, ...canvasData } = canvasState;
 
@@ -296,6 +297,14 @@ export const saveCanvasState = async (canvasId: string, canvasState: any) => {
         is_file: attachment.isFile
       }));
       await supabase.from('node_attachments').insert(attachmentsData);
+    }
+
+    // Save drawing if the node type is 'draw'
+    if (nodeType === 'draw') {
+      const drawingData = data.drawingData; // Assuming drawingData is part of the node data
+      if (drawingData) {
+        await saveDrawing(nodeId, drawingData);
+      }
     }
   }
 };

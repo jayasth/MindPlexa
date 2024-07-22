@@ -16,6 +16,12 @@ import {
 } from '@/utils/canvas/nodeSpecificDataService';
 import { duplicateNode } from '@/utils/canvas/nodeDuplicationService';
 import { handleTags } from '@/utils/canvas/tagService';
+import {
+  getDrawNodeData,
+  updateDrawNodeData,
+  saveDrawing,
+  getDrawing
+} from '@/utils/canvas/drawNodeService';
 
 // Add this line to define NodeType
 type NodeType = Exclude<
@@ -264,6 +270,18 @@ export const updateNode = async (
         )
       ) {
         await removeAttachment(existingAttachment.id);
+      }
+    }
+  }
+
+  // Handle draw node
+  if (nodeType === 'draw') {
+    const drawNodeData = specificUpdates.drawData;
+    if (drawNodeData) {
+      const { error: drawError } = await updateDrawNodeData(id, drawNodeData);
+      if (drawError) {
+        console.error('nodeService: Error updating draw node:', drawError);
+        return { error: drawError };
       }
     }
   }
