@@ -1,5 +1,7 @@
 import React from 'react';
 import styles from './DrawNodeSettings.module.css';
+import Input from '@/ui/Input/Input';
+import Dropdown from '@/ui/dropdown/Dropdown';
 
 interface ToolSetting {
   name: string;
@@ -39,58 +41,57 @@ const DrawNodeSettings: React.FC<DrawNodeSettingsProps> = ({
 
   return (
     <div className={styles.settingsContainer}>
+      <div className={styles.header}>
+        <span>Tool</span>
+        <span>Color</span>
+        <span>Width</span>
+        <span>Opacity</span>
+        <span>Blend</span>
+      </div>
       {toolSettings.map((tool, index) => (
         <div key={tool.name} className={styles.toolSetting}>
           <span className={styles.toolName}>{tool.name}</span>
-          <input
+          <Input
             type="color"
             value={tool.color}
-            onChange={(e) =>
-              handleSettingChange(index, 'color', e.target.value)
-            }
+            onChange={(value) => handleSettingChange(index, 'color', value)}
             className={styles.colorInput}
+            variant="slim"
           />
-          <input
+          <Input
             type="number"
-            value={tool.strokeWidth}
-            onChange={(e) =>
-              handleSettingChange(
-                index,
-                'strokeWidth',
-                parseInt(e.target.value, 10)
-              )
+            value={tool.strokeWidth.toString()}
+            onChange={(value) =>
+              handleSettingChange(index, 'strokeWidth', parseInt(value, 10))
             }
             min={1}
             max={100}
             className={styles.widthInput}
+            variant="slim"
           />
-          <input
+          <Input
             type="range"
-            value={tool.opacity || 100}
-            onChange={(e) =>
-              handleSettingChange(
-                index,
-                'opacity',
-                parseInt(e.target.value, 10)
-              )
+            value={(tool.opacity || 100).toString()}
+            onChange={(value) =>
+              handleSettingChange(index, 'opacity', parseInt(value, 10))
             }
             min={0}
             max={100}
             className={styles.opacityInput}
+            variant="slim"
           />
-          <select
+          <Dropdown
             value={tool.blendMode || 'normal'}
-            onChange={(e) =>
-              handleSettingChange(index, 'blendMode', e.target.value)
-            }
+            onChange={(value) => handleSettingChange(index, 'blendMode', value)}
             className={styles.blendModeSelect}
+            variant="slim"
           >
             {blendModes.map((mode) => (
               <option key={mode} value={mode}>
                 {mode}
               </option>
             ))}
-          </select>
+          </Dropdown>
         </div>
       ))}
     </div>

@@ -1,22 +1,22 @@
 .settingsContainer {
-  padding: 15px;
+  padding: 10px;
   background-color: #ffffff;
   border-radius: 8px;
   max-height: 60vh;
   overflow-y: auto;
-  width: 400px;
+  width: 350px;
 }
 
 .toolSetting {
   display: grid;
-  grid-template-columns: 80px 60px 60px 80px 100px;
-  gap: 10px;
+  grid-template-columns: 60px 50px 50px 60px 70px;
+  gap: 5px;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 5px;
 }
 
 .toolName {
-  font-size: 14px;
+  font-size: 12px;
   color: #555;
 }
 
@@ -26,17 +26,22 @@
 .blendModeSelect {
   font-size: 12px;
   padding: 2px;
+  width: 100%;
 }
 
 .colorInput {
-  width: 60px;
+  height: 24px;
+  padding: 0;
 }
 
-.widthInput,
+.widthInput {
+  width: 100%;
+}
+
 .opacityInput {
-  width: 60px;
+  width: 100%;
 }
 
 .blendModeSelect {
-  width: 100px;
+  width: 100%;
 }
