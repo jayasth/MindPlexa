@@ -6,25 +6,32 @@ import { circleCursor } from '../../utils/cursors';
 export interface UseBrushProps {
   color?: string;
   strokeWidth?: number;
+  opacity?: number;
+  blendMode?: GlobalCompositeOperation;
 }
 
 export function useBrush({
   color = '#000000',
-  strokeWidth = 5
+  strokeWidth = 5,
+  opacity = 1,
+  blendMode = 'source-over'
 }: UseBrushProps): ToolHandlers {
   const lastPoints = useRef<Point[]>([]);
   const lastVelocity = useRef<number>(0);
 
   const startStroke = useCallback(
     (point: Point, context: CanvasRenderingContext2D) => {
+      context.save();
       context.strokeStyle = color;
       context.lineWidth = strokeWidth;
+      context.globalAlpha = opacity;
+      context.globalCompositeOperation = blendMode;
       context.lineJoin = context.lineCap = 'round';
       context.beginPath();
       context.moveTo(point[0], point[1]);
       lastPoints.current = [point];
     },
-    [color, strokeWidth]
+    [color, strokeWidth, opacity, blendMode]
   );
 
   const continueStroke = useCallback(
@@ -62,6 +69,7 @@ export function useBrush({
 
   const endStroke = useCallback((context: CanvasRenderingContext2D) => {
     context.stroke();
+    context.restore();
   }, []);
 
   const cursor = circleCursor(strokeWidth);

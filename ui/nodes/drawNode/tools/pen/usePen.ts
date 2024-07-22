@@ -5,11 +5,15 @@ import { Point } from '../../utils/pointUtils';
 export interface UsePenProps {
   color?: string;
   strokeWidth?: number;
+  opacity?: number;
+  blendMode?: GlobalCompositeOperation;
 }
 
 export function usePen({
   color = '#000000',
-  strokeWidth = 2
+  strokeWidth = 2,
+  opacity = 1,
+  blendMode = 'source-over'
 }: UsePenProps): ToolHandlers {
   const points = useRef<Point[]>([]);
   const isDrawing = useRef(false);
@@ -26,12 +30,14 @@ export function usePen({
       if (tempCtx) {
         tempCtx.strokeStyle = color;
         tempCtx.lineWidth = strokeWidth;
+        tempCtx.globalAlpha = opacity;
+        tempCtx.globalCompositeOperation = blendMode;
         tempCtx.clearRect(0, 0, tempCtx.canvas.width, tempCtx.canvas.height);
       }
       points.current = [point];
       isDrawing.current = true;
     },
-    [color, strokeWidth]
+    [color, strokeWidth, opacity, blendMode]
   );
 
   const continueStroke = useCallback(
@@ -77,8 +83,11 @@ export function usePen({
   const endStroke = useCallback(
     (context: CanvasRenderingContext2D) => {
       if (points.current.length > 1) {
+        context.save();
         context.strokeStyle = color;
         context.lineWidth = strokeWidth;
+        context.globalAlpha = opacity;
+        context.globalCompositeOperation = blendMode;
         context.beginPath();
         context.moveTo(points.current[0][0], points.current[0][1]);
 
@@ -103,6 +112,7 @@ export function usePen({
         }
 
         context.stroke();
+        context.restore();
       }
       isDrawing.current = false;
       points.current = [];
@@ -113,7 +123,7 @@ export function usePen({
         }
       }
     },
-    [color, strokeWidth]
+    [color, strokeWidth, opacity, blendMode]
   );
 
   const cursor = 'crosshair';

@@ -5,11 +5,15 @@ import { Point } from '../../utils/pointUtils';
 export interface UseCircleProps {
   color?: string;
   strokeWidth?: number;
+  opacity?: number;
+  blendMode?: GlobalCompositeOperation;
 }
 
 export function useCircle({
   color,
-  strokeWidth = 2
+  strokeWidth = 2,
+  opacity = 1,
+  blendMode = 'source-over'
 }: UseCircleProps): ToolHandlers {
   const startPoint = useRef<Point | null>(null);
   const isDrawing = useRef(false);
@@ -28,10 +32,12 @@ export function useCircle({
 
       context.strokeStyle = color || '#000000'; // Set default color if not provided
       context.lineWidth = strokeWidth;
+      context.globalAlpha = opacity; // Set opacity
+      context.globalCompositeOperation = blendMode; // Set blend mode
       startPoint.current = point;
       isDrawing.current = true;
     },
-    [color, strokeWidth]
+    [color, strokeWidth, opacity, blendMode]
   );
 
   const continueStroke = useCallback(

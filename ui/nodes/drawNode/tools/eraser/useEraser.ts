@@ -1,24 +1,30 @@
-import { useCallback } from "react";
-import { ToolHandlers } from "@/ui/nodes/drawNode/components/DrawNodeArtboard";
-import { Point } from "../../utils/pointUtils";
-import { circleCursor } from "../../utils/cursors";
+import { useCallback } from 'react';
+import { ToolHandlers } from '@/ui/nodes/drawNode/components/DrawNodeArtboard';
+import { Point } from '../../utils/pointUtils';
+import { circleCursor } from '../../utils/cursors';
+
 export interface UseEraserProps {
   color?: string;
   strokeWidth?: number;
+  opacity?: number;
+  blendMode?: GlobalCompositeOperation;
 }
 
-export function useEraser({ strokeWidth = 25 }: UseEraserProps): ToolHandlers {
+export function useEraser({
+  strokeWidth = 25,
+  opacity = 1,
+  blendMode = 'destination-out'
+}: UseEraserProps): ToolHandlers {
   const startStroke = useCallback(
     (point: Point, context: CanvasRenderingContext2D) => {
-      context.globalCompositeOperation = "source-over";
-
+      context.globalCompositeOperation = blendMode;
       context.lineWidth = strokeWidth;
-      context.strokeStyle = "#ffffff";
-      context.lineJoin = context.lineCap = "round";
+      context.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
+      context.lineJoin = context.lineCap = 'round';
       context.moveTo(point[0], point[1]);
       context.beginPath();
     },
-    [strokeWidth]
+    [strokeWidth, opacity, blendMode]
   );
 
   const continueStroke = useCallback(
@@ -31,5 +37,5 @@ export function useEraser({ strokeWidth = 25 }: UseEraserProps): ToolHandlers {
 
   const cursor = circleCursor(strokeWidth);
 
-  return { name: "Eraser", startStroke, continueStroke, cursor };
+  return { name: 'Eraser', startStroke, continueStroke, cursor };
 }

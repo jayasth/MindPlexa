@@ -5,11 +5,15 @@ import { Point } from '../../utils/pointUtils';
 export interface UseLineProps {
   color?: string;
   strokeWidth?: number;
+  opacity?: number;
+  blendMode?: GlobalCompositeOperation;
 }
 
 export function useLine({
   color = '#000000',
-  strokeWidth = 2
+  strokeWidth = 2,
+  opacity = 1,
+  blendMode = 'source-over'
 }: UseLineProps): ToolHandlers {
   const startPoint = useRef<Point | null>(null);
   const isDrawing = useRef(false);
@@ -28,11 +32,13 @@ export function useLine({
 
       context.strokeStyle = color;
       context.lineWidth = strokeWidth;
+      context.globalAlpha = opacity; // Set opacity
+      context.globalCompositeOperation = blendMode; // Set blend mode
       context.beginPath();
       startPoint.current = point;
       isDrawing.current = true;
     },
-    [color, strokeWidth]
+    [color, strokeWidth, opacity, blendMode]
   );
 
   const continueStroke = useCallback(

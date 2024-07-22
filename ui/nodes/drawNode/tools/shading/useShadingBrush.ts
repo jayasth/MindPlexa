@@ -1,22 +1,27 @@
-import { useCallback, useRef } from "react";
-import tinycolor from "tinycolor2";
+import { useCallback, useRef } from 'react';
+import tinycolor from 'tinycolor2';
 
-import { ToolHandlers } from "@/ui/nodes/drawNode/components/DrawNodeArtboard";
-import { Point } from "../../utils/pointUtils";
+import { ToolHandlers } from '@/ui/nodes/drawNode/components/DrawNodeArtboard';
+import { Point } from '../../utils/pointUtils';
+
 export interface UseShadingProps {
   color?: string;
   neighbourColor?: string;
   neighbourStrokeWidth?: number;
   distanceThreshold?: number;
   spreadFactor?: number;
+  opacity?: number;
+  blendMode?: GlobalCompositeOperation;
 }
 
 export function useShadingBrush({
-  color = "#000000",
+  color = '#000000',
   neighbourColor,
   distanceThreshold = 40,
   neighbourStrokeWidth = 1,
   spreadFactor = 0.9,
+  opacity = 1,
+  blendMode = 'darken'
 }: UseShadingProps): ToolHandlers {
   neighbourColor ||= tinycolor(color).setAlpha(0.2).toPercentageRgbString();
   const points = useRef<Array<Point>>([]);
@@ -24,12 +29,13 @@ export function useShadingBrush({
 
   const startStroke = useCallback(
     (point: Point, context: CanvasRenderingContext2D) => {
-      context.globalCompositeOperation = "darken";
+      context.globalCompositeOperation = blendMode;
       context.lineWidth = 1;
-      context.lineJoin = context.lineCap = "round";
+      context.lineJoin = context.lineCap = 'round';
+      context.globalAlpha = opacity;
       points.current = [point];
     },
-    []
+    [blendMode, opacity]
   );
 
   const continueStroke = useCallback(
@@ -65,13 +71,22 @@ export function useShadingBrush({
         }
       }
     },
-    [neighbourStrokeWidth, color, spreadFactor, threshold, neighbourColor]
+    [
+      neighbourStrokeWidth,
+      color,
+      spreadFactor,
+      threshold,
+      neighbourColor,
+      opacity,
+      blendMode
+    ]
   );
 
   const endStroke = useCallback((context: CanvasRenderingContext2D) => {
-    context.globalCompositeOperation = "source-over";
+    context.globalCompositeOperation = 'source-over';
   }, []);
-  const cursor = "crosshair";
 
-  return { name: "Shading", startStroke, continueStroke, endStroke, cursor };
+  const cursor = 'crosshair';
+
+  return { name: 'Shading', startStroke, continueStroke, endStroke, cursor };
 }

@@ -5,11 +5,15 @@ import { Point } from '../../utils/pointUtils';
 export interface UseRectangleProps {
   color?: string;
   strokeWidth?: number;
+  opacity?: number;
+  blendMode?: GlobalCompositeOperation;
 }
 
 export function useRectangle({
   color = '#000000',
-  strokeWidth = 2
+  strokeWidth = 2,
+  opacity = 1,
+  blendMode = 'source-over'
 }: UseRectangleProps): ToolHandlers {
   const startPoint = useRef<Point | null>(null);
   const isDrawing = useRef(false);
@@ -28,10 +32,12 @@ export function useRectangle({
 
       context.strokeStyle = color;
       context.lineWidth = strokeWidth;
+      context.globalAlpha = opacity;
+      context.globalCompositeOperation = blendMode;
       startPoint.current = point;
       isDrawing.current = true;
     },
-    [color, strokeWidth]
+    [color, strokeWidth, opacity, blendMode]
   );
 
   const continueStroke = useCallback(
