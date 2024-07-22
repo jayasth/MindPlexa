@@ -4,20 +4,30 @@
   border-radius: 8px;
   max-height: 60vh;
   overflow-y: auto;
-  width: 350px;
+  width: 400px;
+}
+
+.header {
+  display: grid;
+  grid-template-columns: 80px 60px 60px 70px 80px;
+  gap: 5px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #eee;
 }
 
 .toolSetting {
   display: grid;
-  grid-template-columns: 60px 50px 50px 60px 70px;
+  grid-template-columns: 80px 60px 60px 70px 80px;
   gap: 5px;
   align-items: center;
-  margin-bottom: 5px;
+  margin-bottom: 10px;
 }
 
 .toolName {
-  font-size: 12px;
-  color: #555;
+  font-size: 14px;
+  color: #333;
 }
 
 .colorInput,
@@ -25,12 +35,12 @@
 .opacityInput,
 .blendModeSelect {
   font-size: 12px;
-  padding: 2px;
+  padding: 4px;
   width: 100%;
 }
 
 .colorInput {
-  height: 24px;
+  height: 28px;
   padding: 0;
 }
 
