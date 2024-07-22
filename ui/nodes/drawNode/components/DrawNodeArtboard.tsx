@@ -129,6 +129,7 @@ export const Artboard = forwardRef(function Artboard(
     },
     [canvas, zoomLevel]
   );
+
   const startStroke = useCallback(
     (point: Point) => {
       const activeLayerContext = layerContexts[activeLayerId];
@@ -168,6 +169,7 @@ export const Artboard = forwardRef(function Artboard(
     tool.endStroke?.(activeLayerContext);
     onEndStroke?.();
     activeLayerContext.restore();
+    composeLayers();
     if (canvas && history) {
       history.pushState(canvas);
     }
@@ -180,7 +182,6 @@ export const Artboard = forwardRef(function Artboard(
         })
       );
     }
-    composeLayers();
   }, [
     tool,
     layerContexts,
@@ -324,7 +325,6 @@ export const Artboard = forwardRef(function Artboard(
     context.fillRect(0, 0, canvas.width, canvas.height);
     context.drawImage(tempCanvas, 0, 0);
 
-    // Update layer contexts
     Object.values(layerContexts).forEach((layerContext) => {
       const tempLayerCanvas = document.createElement('canvas');
       const tempLayerContext = tempLayerCanvas.getContext('2d');
@@ -388,7 +388,7 @@ export const Artboard = forwardRef(function Artboard(
           0,
           canvas.width,
           canvas.height
-        ); // Draw the image with scaling
+        );
       };
       image.src = content || '';
     }

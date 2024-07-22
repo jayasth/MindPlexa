@@ -368,7 +368,14 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     setStrokeWidth(toolSizes[currentTool]);
   }, [currentTool, toolSizes]);
 
-  const { undo, redo, history, canUndo, canRedo } = useHistory();
+  const {
+    undo,
+    redo,
+    history,
+    canUndo,
+    canRedo,
+    clear: clearHistory
+  } = useHistory();
   const [hasDrawing, setHasDrawing] = useState(false);
 
   useEffect(() => {
@@ -389,7 +396,14 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   );
 
   const download = () => artboardRef.current?.download();
-  const clear = () => artboardRef.current?.clear();
+  const handleClear = useCallback(() => {
+    if (artboardRef.current) {
+      artboardRef.current.clear();
+      clearHistory();
+      setDrawingData('');
+      setHasDrawing(false);
+    }
+  }, [clearHistory]);
 
   const handleZoomIn = useCallback(() => {
     setZoom((prev) => Math.min(prev + 0.1, 3));
@@ -456,7 +470,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         canUndo={canUndo}
         canRedo={canRedo}
         download={download}
-        clear={clear}
+        clear={handleClear}
         onZoomIn={handleZoomIn}
         onZoomOut={handleZoomOut}
         backgroundColor={backgroundColor}

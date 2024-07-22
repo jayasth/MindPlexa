@@ -72,48 +72,45 @@ export function useHistory(size?: number): HistoryHook {
   );
 
   const undo = useCallback(async () => {
-    const undoCursor = crs.current;
-
-    if (!context) {
-      console.error('Context not initialised');
-      return false;
-    }
-    if (undoCursor + 1 >= stack.current.length) {
-      console.log('nope');
+    if (
+      !context ||
+      stack.current.length <= 1 ||
+      crs.current + 1 >= stack.current.length
+    ) {
       return false;
     }
 
+    crs.current++;
     await applyImage(
       context,
-      stack.current[stack.current.length - (undoCursor + 2)]
+      stack.current[stack.current.length - (crs.current + 1)]
     );
-    crs.current++;
     setCanUndo(crs.current + 1 < stack.current.length);
     setCanRedo(true);
     return true;
-  }, [crs, stack, context]);
+  }, [context]);
 
   const redo = useCallback(async () => {
-    const undoCursor = crs.current;
-
-    if (!context) {
-      console.error('Context not initialised');
-      return false;
-    }
-    if (undoCursor <= 0) {
+    if (!context || crs.current <= 0) {
       return false;
     }
 
-    await applyImage(context, stack.current[stack.current.length - undoCursor]);
     crs.current--;
-    setCanUndo(crs.current + 1 < stack.current.length);
+    await applyImage(
+      context,
+      stack.current[stack.current.length - (crs.current + 1)]
+    );
+    setCanUndo(true);
     setCanRedo(crs.current > 0);
     return true;
-  }, [stack, crs, context]);
+  }, [context]);
 
   const clear = useCallback(() => {
     stack.current = [];
-  }, [stack]);
+    crs.current = 0;
+    setCanUndo(false);
+    setCanRedo(false);
+  }, []);
 
   const history = useMemo<History>(
     () => ({
