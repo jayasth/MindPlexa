@@ -262,18 +262,34 @@ export const saveCanvasState = async (canvasId: string, canvasState: any) => {
 
     // Update node-specific data
     if (nodeType !== 'selection_menu') {
-      const { error: specificNodeUpdateError } = await updateNodeSpecificData(
-        nodeId,
-        nodeType,
-        data
-      );
-
-      if (specificNodeUpdateError) {
-        console.error(
-          `canvasService: Error updating ${nodeType} node:`,
-          specificNodeUpdateError
+      if (nodeType === 'draw') {
+        const drawingData = data.drawingData;
+        if (drawingData) {
+          const { currentTool, layers, settings } = drawingData;
+          const drawNodeUpdates = {
+            currentTool,
+            layers: JSON.stringify(layers),
+            settings: JSON.stringify(settings)
+          };
+          await updateDrawNodeData(nodeId, drawNodeUpdates);
+          if (drawingData.drawingFileUrl) {
+            await saveDrawing(nodeId, drawingData.drawingFileUrl);
+          }
+        }
+      } else {
+        const { error: specificNodeUpdateError } = await updateNodeSpecificData(
+          nodeId,
+          nodeType,
+          data
         );
-        throw specificNodeUpdateError;
+
+        if (specificNodeUpdateError) {
+          console.error(
+            `canvasService: Error updating ${nodeType} node:`,
+            specificNodeUpdateError
+          );
+          throw specificNodeUpdateError;
+        }
       }
     }
 
@@ -301,21 +317,6 @@ export const saveCanvasState = async (canvasId: string, canvasState: any) => {
         is_file: attachment.isFile
       }));
       await supabase.from('node_attachments').insert(attachmentsData);
-    }
-
-    // Save drawing if the node type is 'draw'
-    if (nodeType === 'draw') {
-      const drawingData = data.drawingData;
-      if (drawingData) {
-        const { currentTool, layers, settings } = drawingData;
-        const drawNodeUpdates = {
-          currentTool,
-          layers,
-          settings
-        };
-        await updateDrawNodeData(nodeId, drawNodeUpdates);
-        await saveDrawing(nodeId, drawingData.drawingFileUrl);
-      }
     }
   }
 };
