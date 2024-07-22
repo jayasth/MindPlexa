@@ -107,46 +107,28 @@ export type Database = {
       }
       draw_nodes: {
         Row: {
-          background_image_url: string | null
           brush_presets: Json | null
-          color_palette: Json | null
-          drawing_data: string | null
+          current_tool: string | null
+          drawing_file_url: string | null
           id: string
           layers: Json | null
           node_id: string | null
-          pan_offset: Json | null
-          shape_elements: Json | null
-          symmetry_settings: Json | null
-          text_elements: Json | null
-          zoom_level: number | null
         }
         Insert: {
-          background_image_url?: string | null
           brush_presets?: Json | null
-          color_palette?: Json | null
-          drawing_data?: string | null
+          current_tool?: string | null
+          drawing_file_url?: string | null
           id?: string
           layers?: Json | null
           node_id?: string | null
-          pan_offset?: Json | null
-          shape_elements?: Json | null
-          symmetry_settings?: Json | null
-          text_elements?: Json | null
-          zoom_level?: number | null
         }
         Update: {
-          background_image_url?: string | null
           brush_presets?: Json | null
-          color_palette?: Json | null
-          drawing_data?: string | null
+          current_tool?: string | null
+          drawing_file_url?: string | null
           id?: string
           layers?: Json | null
           node_id?: string | null
-          pan_offset?: Json | null
-          shape_elements?: Json | null
-          symmetry_settings?: Json | null
-          text_elements?: Json | null
-          zoom_level?: number | null
         }
         Relationships: [
           {

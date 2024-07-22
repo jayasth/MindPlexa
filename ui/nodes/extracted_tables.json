@@ -3,15 +3,6 @@
     "table_name": "draw_nodes",
     "columns": [
       {
-        "column_name": "background_image_url",
-        "data_type": "text",
-        "is_nullable": "YES",
-        "default": "None",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      },
-      {
         "column_name": "brush_presets",
         "data_type": "jsonb",
         "is_nullable": "YES",
@@ -21,8 +12,8 @@
         "references_column": null
       },
       {
-        "column_name": "color_palette",
-        "data_type": "jsonb",
+        "column_name": "current_tool",
+        "data_type": "character varying",
         "is_nullable": "YES",
         "default": "None",
         "foreign_key": null,
@@ -30,7 +21,7 @@
         "references_column": null
       },
       {
-        "column_name": "drawing_data",
+        "column_name": "drawing_file_url",
         "data_type": "text",
         "is_nullable": "YES",
         "default": "None",
@@ -64,19 +55,24 @@
         "foreign_key": "draw_nodes_node_id_fkey",
         "references_table": "nodes",
         "references_column": "id"
-      },
+      }
+    ]
+  },
+  {
+    "table_name": "node_attachments",
+    "columns": [
       {
-        "column_name": "pan_offset",
-        "data_type": "jsonb",
+        "column_name": "created_at",
+        "data_type": "timestamp with time zone",
         "is_nullable": "YES",
-        "default": "'{\"x\": 0, \"y\": 0}'::jsonb",
+        "default": "now()",
         "foreign_key": null,
         "references_table": null,
         "references_column": null
       },
       {
-        "column_name": "shape_elements",
-        "data_type": "jsonb",
+        "column_name": "file_name",
+        "data_type": "character varying",
         "is_nullable": "YES",
         "default": "None",
         "foreign_key": null,
@@ -84,8 +80,8 @@
         "references_column": null
       },
       {
-        "column_name": "symmetry_settings",
-        "data_type": "jsonb",
+        "column_name": "file_size",
+        "data_type": "integer",
         "is_nullable": "YES",
         "default": "None",
         "foreign_key": null,
@@ -93,8 +89,26 @@
         "references_column": null
       },
       {
-        "column_name": "text_elements",
-        "data_type": "jsonb",
+        "column_name": "id",
+        "data_type": "uuid",
+        "is_nullable": "NO",
+        "default": "gen_random_uuid()",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      },
+      {
+        "column_name": "is_file",
+        "data_type": "boolean",
+        "is_nullable": "YES",
+        "default": "true",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      },
+      {
+        "column_name": "mime_type",
+        "data_type": "character varying",
         "is_nullable": "YES",
         "default": "None",
         "foreign_key": null,
@@ -102,10 +116,37 @@
         "references_column": null
       },
       {
-        "column_name": "zoom_level",
-        "data_type": "double precision",
+        "column_name": "node_id",
+        "data_type": "uuid",
+        "is_nullable": "NO",
+        "default": "None",
+        "foreign_key": "node_attachments_node_id_fkey",
+        "references_table": "nodes",
+        "references_column": "id"
+      },
+      {
+        "column_name": "storage_path",
+        "data_type": "text",
         "is_nullable": "YES",
-        "default": "1.0",
+        "default": "None",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      },
+      {
+        "column_name": "type",
+        "data_type": "character varying",
+        "is_nullable": "NO",
+        "default": "None",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      },
+      {
+        "column_name": "url",
+        "data_type": "text",
+        "is_nullable": "YES",
+        "default": "None",
         "foreign_key": null,
         "references_table": null,
         "references_column": null
