@@ -5,6 +5,8 @@ interface ToolSetting {
   name: string;
   color: string;
   strokeWidth: number;
+  opacity?: number;
+  blendMode?: string;
 }
 
 interface DrawNodeSettingsProps {
@@ -16,21 +18,24 @@ const DrawNodeSettings: React.FC<DrawNodeSettingsProps> = ({
   toolSettings,
   setToolSettings
 }) => {
-  const handleColorChange = (index: number, color: string) => {
-    if (/^#[0-9A-F]{6}$/i.test(color)) {
-      setToolSettings((prev) =>
-        prev.map((tool, i) => (i === index ? { ...tool, color } : tool))
-      );
-    }
+  const handleSettingChange = (
+    index: number,
+    key: keyof ToolSetting,
+    value: any
+  ) => {
+    setToolSettings((prev) =>
+      prev.map((tool, i) => (i === index ? { ...tool, [key]: value } : tool))
+    );
   };
 
-  const handleStrokeWidthChange = (index: number, strokeWidth: number) => {
-    if (strokeWidth > 0 && strokeWidth <= 100) {
-      setToolSettings((prev) =>
-        prev.map((tool, i) => (i === index ? { ...tool, strokeWidth } : tool))
-      );
-    }
-  };
+  const blendModes = [
+    'normal',
+    'multiply',
+    'screen',
+    'overlay',
+    'darken',
+    'lighten'
+  ];
 
   return (
     <div className={styles.settingsContainer}>
@@ -40,19 +45,52 @@ const DrawNodeSettings: React.FC<DrawNodeSettingsProps> = ({
           <input
             type="color"
             value={tool.color}
-            onChange={(e) => handleColorChange(index, e.target.value)}
+            onChange={(e) =>
+              handleSettingChange(index, 'color', e.target.value)
+            }
             className={styles.colorInput}
           />
           <input
             type="number"
             value={tool.strokeWidth}
             onChange={(e) =>
-              handleStrokeWidthChange(index, parseInt(e.target.value, 10))
+              handleSettingChange(
+                index,
+                'strokeWidth',
+                parseInt(e.target.value, 10)
+              )
             }
             min={1}
             max={100}
             className={styles.widthInput}
           />
+          <input
+            type="range"
+            value={tool.opacity || 100}
+            onChange={(e) =>
+              handleSettingChange(
+                index,
+                'opacity',
+                parseInt(e.target.value, 10)
+              )
+            }
+            min={0}
+            max={100}
+            className={styles.opacityInput}
+          />
+          <select
+            value={tool.blendMode || 'normal'}
+            onChange={(e) =>
+              handleSettingChange(index, 'blendMode', e.target.value)
+            }
+            className={styles.blendModeSelect}
+          >
+            {blendModes.map((mode) => (
+              <option key={mode} value={mode}>
+                {mode}
+              </option>
+            ))}
+          </select>
         </div>
       ))}
     </div>

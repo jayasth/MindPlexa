@@ -128,16 +128,76 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const [color, setColor] = useState('#531B93');
   const [currentTool, setCurrentTool] = useState(0);
   const [toolSettings, setToolSettings] = useState<ToolSetting[]>([
-    { name: 'Pen', color: '#000000', strokeWidth: 5 },
-    { name: 'Line', color: '#000000', strokeWidth: 2 },
-    { name: 'Rectangle', color: '#000000', strokeWidth: 2 },
-    { name: 'Circle', color: '#000000', strokeWidth: 2 },
-    { name: 'Marker', color: '#000000', strokeWidth: 20 },
-    { name: 'Brush', color: '#000000', strokeWidth: 20 },
-    { name: 'Watercolor', color: '#000000', strokeWidth: 20 },
-    { name: 'Airbrush', color: '#000000', strokeWidth: 20 },
-    { name: 'Shading', color: '#000000', strokeWidth: 20 },
-    { name: 'Eraser', color: '#ffffff', strokeWidth: 40 }
+    {
+      name: 'Pen',
+      color: '#000000',
+      strokeWidth: 5,
+      opacity: 100,
+      blendMode: 'normal'
+    },
+    {
+      name: 'Line',
+      color: '#000000',
+      strokeWidth: 2,
+      opacity: 100,
+      blendMode: 'normal'
+    },
+    {
+      name: 'Rectangle',
+      color: '#000000',
+      strokeWidth: 2,
+      opacity: 100,
+      blendMode: 'normal'
+    },
+    {
+      name: 'Circle',
+      color: '#000000',
+      strokeWidth: 2,
+      opacity: 100,
+      blendMode: 'normal'
+    },
+    {
+      name: 'Marker',
+      color: '#000000',
+      strokeWidth: 20,
+      opacity: 50,
+      blendMode: 'multiply'
+    },
+    {
+      name: 'Brush',
+      color: '#000000',
+      strokeWidth: 20,
+      opacity: 100,
+      blendMode: 'normal'
+    },
+    {
+      name: 'Watercolor',
+      color: '#000000',
+      strokeWidth: 20,
+      opacity: 30,
+      blendMode: 'overlay'
+    },
+    {
+      name: 'Airbrush',
+      color: '#000000',
+      strokeWidth: 20,
+      opacity: 20,
+      blendMode: 'screen'
+    },
+    {
+      name: 'Shading',
+      color: '#000000',
+      strokeWidth: 20,
+      opacity: 10,
+      blendMode: 'multiply'
+    },
+    {
+      name: 'Eraser',
+      color: '#ffffff',
+      strokeWidth: 40,
+      opacity: 100,
+      blendMode: 'normal'
+    }
   ]);
   const [strokeWidth, setStrokeWidth] = useState(
     toolSettings[currentTool].strokeWidth

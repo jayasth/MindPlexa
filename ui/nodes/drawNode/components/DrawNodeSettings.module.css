@@ -1,45 +1,42 @@
 .settingsContainer {
-  padding: 20px;
+  padding: 15px;
   background-color: #ffffff;
   border-radius: 8px;
-  max-height: 80vh;
+  max-height: 60vh;
   overflow-y: auto;
-  width: 600px;
-}
-
-.toolSection {
-  margin-bottom: 24px;
-}
-
-.toolSection h3 {
-  font-size: 18px;
-  color: #333;
-  margin-bottom: 12px;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 8px;
+  width: 400px;
 }
 
 .toolSetting {
-  display: flex;
+  display: grid;
+  grid-template-columns: 80px 60px 60px 80px 100px;
+  gap: 10px;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .toolName {
-  width: 100px;
   font-size: 14px;
   color: #555;
 }
 
+.colorInput,
+.widthInput,
+.opacityInput,
+.blendModeSelect {
+  font-size: 12px;
+  padding: 2px;
+}
+
 .colorInput {
-  width: 120px;
-  margin-right: 12px;
+  width: 60px;
 }
 
-.widthInput {
-  width: 80px;
+.widthInput,
+.opacityInput {
+  width: 60px;
 }
 
-.toolSetting input {
-  font-size: 14px;
+.blendModeSelect {
+  width: 100px;
 }
