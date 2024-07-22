@@ -57,6 +57,7 @@ const DrawNodeSettings: React.FC<DrawNodeSettingsProps> = ({
             onChange={(value) => handleSettingChange(index, 'color', value)}
             className={styles.colorInput}
             variant="slim"
+            disabled={tool.name === 'Eraser'}
           />
           <Input
             type="number"
@@ -85,6 +86,7 @@ const DrawNodeSettings: React.FC<DrawNodeSettingsProps> = ({
             onChange={(value) => handleSettingChange(index, 'blendMode', value)}
             className={styles.blendModeSelect}
             variant="slim"
+            disabled={tool.name === 'Eraser'}
           >
             {blendModes.map((mode) => (
               <option key={mode} value={mode}>

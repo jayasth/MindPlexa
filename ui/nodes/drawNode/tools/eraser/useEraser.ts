@@ -4,27 +4,23 @@ import { Point } from '../../utils/pointUtils';
 import { circleCursor } from '../../utils/cursors';
 
 export interface UseEraserProps {
-  color?: string;
   strokeWidth?: number;
   opacity?: number;
-  blendMode?: GlobalCompositeOperation;
 }
 
 export function useEraser({
   strokeWidth = 25,
-  opacity = 1,
-  blendMode = 'destination-out'
+  opacity = 1
 }: UseEraserProps): ToolHandlers {
   const startStroke = useCallback(
     (point: Point, context: CanvasRenderingContext2D) => {
-      context.globalCompositeOperation = blendMode;
+      context.globalCompositeOperation = 'destination-out';
       context.lineWidth = strokeWidth;
-      context.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
       context.lineJoin = context.lineCap = 'round';
       context.moveTo(point[0], point[1]);
       context.beginPath();
     },
-    [strokeWidth, opacity, blendMode]
+    [strokeWidth]
   );
 
   const continueStroke = useCallback(
