@@ -502,7 +502,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
               history={history}
               style={{
                 border: '1px solid #ccc',
-                backgroundColor: 'white',
                 width: `${artboardSize.width}px`,
                 height: `${artboardSize.height}px`
               }}
