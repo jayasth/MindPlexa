@@ -14,9 +14,14 @@ import {
   FaPaintBrush,
   FaMarker,
   FaEraser,
-  FaSprayCan
+  FaSprayCan,
+  FaSquare,
+  FaCircle,
+  FaDrawPolygon,
+  FaPen
 } from 'react-icons/fa';
 import { IoMdWater } from 'react-icons/io';
+import { BsSlashLg } from 'react-icons/bs';
 import {
   useBrush,
   useMarker,
@@ -28,9 +33,11 @@ import {
   useWatercolor,
   ToolHandlers
 } from '@/ui/nodes/drawNode/DrawNodeTools';
+import { usePen } from './tools/pen/usePen';
 import { useHistory } from '@/ui/nodes/drawNode/drawNodeHistory';
 import type { IconType } from 'react-icons/lib';
-import DrawNodeToolbar from '@/ui/nodes/drawNode/components/DrawNodeToolbar';
+import DrawNodeSidebar from './components/DrawNodeSidebar';
+import DrawNodeTopbar from './components/DrawNodeTopbar';
 import {
   DeleteButton,
   ChangeColorButton,
@@ -62,6 +69,11 @@ import { useBackgroundColorChange } from '@/ui/nodes/common/useBackgroundColorCh
 import { debounce } from 'lodash';
 import useNodeStore from '@/app/store/nodes/useNodeStore';
 import useCanvasStore from '@/app/store/canvas/useCanvasStore';
+import { Layer } from './types';
+import { useRectangle } from './tools/rectangle/useRectangle';
+import { useCircle } from './tools/circle/useCircle';
+import { useLine } from './tools/line/useLine';
+import { usePolygon } from './tools/polygon/usePolygon';
 
 interface DrawNodeEditProps extends NodeProps {
   data: any;
@@ -115,12 +127,23 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const [isFileModalOpen, setIsFileModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [color, setColor] = useState('#531B93');
-  const [strokeWidth, setStrokeWidth] = useState(5);
   const [currentTool, setCurrentTool] = useState(0);
-  const [toolSizes, setToolSizes] = useState([5, 10, 15, 20, 10, 40]);
+  const [toolSizes, setToolSizes] = useState([
+    5, 10, 15, 20, 10, 40, 5, 5, 5, 5, 2
+  ]);
+  const [strokeWidth, setStrokeWidth] = useState(toolSizes[currentTool]);
+  const [zoom, setZoom] = useState(1);
+  const [layers, setLayers] = useState<Layer[]>([
+    { id: '1', name: 'Layer 1', visible: true, locked: false }
+  ]);
+  const [activeLayerId, setActiveLayerId] = useState('1');
+  const [aspectRatio, setAspectRatio] = useState(1);
+  const [artboardWidth, setArtboardWidth] = useState(width * 0.9);
+  const [artboardHeight, setArtboardHeight] = useState(height * 0.7);
 
   const artboardRef = useRef<ArtboardRef | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const artboardContainerRef = useRef<HTMLDivElement>(null);
 
   const handleBackgroundColorChange = useBackgroundColorChange(
     data.id,
@@ -192,12 +215,19 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     if (canvas && context && drawingData) {
       const image = new Image();
       image.onload = () => {
+        setAspectRatio(image.width / image.height);
         context.clearRect(0, 0, canvas.width, canvas.height);
         context.drawImage(image, 0, 0, canvas.width, canvas.height);
       };
       image.src = drawingData;
     }
   }, [width, height, onResize, drawingData]);
+
+  const artboardSize = useMemo(() => {
+    const maxWidth = nodeWidth * 0.9;
+    const maxHeight = nodeHeight * 0.7;
+    return { width: maxWidth, height: maxHeight };
+  }, [nodeWidth, nodeHeight]);
 
   const onChangeTitle = useCallback(
     (newTitle: string) => {
@@ -304,6 +334,11 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     spreadFactor: (1 / 45) * strokeWidth,
     distanceThreshold: 100
   });
+  const rectangle = useRectangle({ color, strokeWidth });
+  const circle = useCircle({ color, strokeWidth });
+  const line = useLine({ color, strokeWidth });
+  const polygon = usePolygon({ color, strokeWidth });
+  const pen = usePen({ color, strokeWidth });
 
   const tools: Array<[ToolHandlers, IconType, number]> = [
     [shading, FaPencilAlt, toolSizes[0]],
@@ -311,19 +346,36 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     [brush, FaPaintBrush, toolSizes[2]],
     [marker, FaMarker, toolSizes[3]],
     [airbrush, FaSprayCan, toolSizes[4]],
-    [eraser, FaEraser, toolSizes[5]]
+    [eraser, FaEraser, toolSizes[5]],
+    [rectangle, FaSquare, toolSizes[6]],
+    [circle, FaCircle, toolSizes[7]],
+    [line, BsSlashLg, toolSizes[8]],
+    [polygon, FaDrawPolygon, toolSizes[9]],
+    [pen, FaPen, toolSizes[10]]
   ];
 
-  const handleSizeChange = (index: number, newSize: number) => {
-    setToolSizes((prev) => {
-      const newSizes = [...prev];
-      newSizes[index] = newSize;
-      return newSizes;
-    });
-    setStrokeWidth(newSize);
-  };
+  const handleSizeChange = useCallback(
+    (newSize: number) => {
+      setStrokeWidth(newSize);
+      setToolSizes((prev) => {
+        const newSizes = [...prev];
+        newSizes[currentTool] = newSize;
+        return newSizes;
+      });
+    },
+    [currentTool]
+  );
+
+  useEffect(() => {
+    setStrokeWidth(toolSizes[currentTool]);
+  }, [currentTool, toolSizes]);
 
   const { undo, redo, history, canUndo, canRedo } = useHistory();
+  const [hasDrawing, setHasDrawing] = useState(false);
+
+  useEffect(() => {
+    setHasDrawing(canUndo || canRedo);
+  }, [canUndo, canRedo]);
 
   const memoizedTagFileContainer = useMemo(
     () => (
@@ -338,12 +390,47 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     [tags, attachedFiles, onRemoveTag, onRemoveFile, textColor]
   );
 
+  const download = () => artboardRef.current?.download();
+  const clear = () => artboardRef.current?.clear();
+
+  const handleZoomIn = useCallback(() => {
+    setZoom((prev) => Math.min(prev + 0.1, 3));
+  }, []);
+
+  const handleZoomOut = useCallback(() => {
+    setZoom((prev) => Math.max(prev - 0.1, 0.5));
+  }, []);
+
+  useEffect(() => {
+    if (artboardContainerRef.current) {
+      const container = artboardContainerRef.current;
+      const artboard = container.firstChild as HTMLElement;
+      if (artboard) {
+        const containerWidth = container.clientWidth;
+        const containerHeight = container.clientHeight;
+        const artboardWidth = artboard.clientWidth * zoom;
+        const artboardHeight = artboard.clientHeight * zoom;
+
+        const left = (containerWidth - artboardWidth) / 2;
+        const top = (containerHeight - artboardHeight) / 2;
+
+        artboard.style.transform = `scale(${zoom})`;
+        artboard.style.transformOrigin = 'top left';
+        artboard.style.position = 'absolute';
+        artboard.style.left = `${left}px`;
+        artboard.style.top = `${top}px`;
+      }
+    }
+  }, [zoom, nodeWidth, nodeHeight]);
+
   return (
     <div
       className={styles.drawNode}
       style={customStyles}
       onClick={handleContainerClick}
       onBlur={handleContainerBlur}
+      data-toolbar-background-color={backgroundColor}
+      data-toolbar-text-color={textColor}
     >
       <NodeResizer
         isVisible={isContainerSelected}
@@ -365,32 +452,62 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
           }
         />
       </div>
-      <div className={`${styles.drawContent} nowheel nodrag`}>
-        <DrawNodeToolbar
-          tools={tools}
+      <DrawNodeTopbar
+        undo={undo}
+        redo={redo}
+        canUndo={canUndo}
+        canRedo={canRedo}
+        download={download}
+        clear={clear}
+        onZoomIn={handleZoomIn}
+        onZoomOut={handleZoomOut}
+        backgroundColor={backgroundColor}
+        textColor={textColor}
+        color={color}
+        setColor={setColor}
+        strokeWidth={strokeWidth}
+        setStrokeWidth={handleSizeChange}
+        layers={layers}
+        activeLayerId={activeLayerId}
+        setLayers={setLayers}
+        setActiveLayerId={setActiveLayerId}
+        hasDrawing={hasDrawing}
+      />
+      <div className={styles.drawContent}>
+        <DrawNodeSidebar
           currentTool={currentTool}
           setCurrentTool={setCurrentTool}
-          color={color}
-          setColor={setColor}
-          strokeWidth={strokeWidth}
-          setStrokeWidth={handleSizeChange}
-          undo={undo}
-          redo={redo}
-          canUndo={canUndo}
-          canRedo={canRedo}
-          download={() => artboardRef.current?.download()}
-          clear={() => artboardRef.current?.clear()}
+          textColor={textColor}
         />
-        <div id="artboard" className={styles.artboard}>
-          <Artboard
-            tool={tools[currentTool][0]}
-            ref={artboardRef}
-            history={history}
-            style={{ border: '1px gray solid' }}
-            content={drawingData}
-            width={nodeWidth * 0.5}
-            height={nodeHeight * 0.5}
-          />
+        <div className={styles.mainContent}>
+          <div
+            className={`${styles.artboardContainer} nodrag nowheel`}
+            ref={artboardContainerRef}
+          >
+            <Artboard
+              tool={tools[currentTool][0]}
+              ref={artboardRef}
+              history={history}
+              style={{
+                border: '1px solid #ccc',
+                backgroundColor: 'white',
+                width: `${artboardSize.width}px`,
+                height: `${artboardSize.height}px`
+              }}
+              content={drawingData}
+              width={artboardSize.width}
+              height={artboardSize.height}
+              layers={layers}
+              activeLayerId={activeLayerId}
+              zoom={zoom}
+              onResize={() => {
+                if (artboardRef.current) {
+                  const dataUrl = artboardRef.current.getImageAsDataUri();
+                  setDrawingData(dataUrl || '');
+                }
+              }}
+            />
+          </div>
           <canvas ref={canvasRef} style={{ display: 'none' }} />
         </div>
       </div>
