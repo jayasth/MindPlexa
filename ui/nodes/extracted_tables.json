@@ -1,18 +1,18 @@
 [
   {
-    "table_name": "calendar_nodes",
+    "table_name": "draw_nodes",
     "columns": [
       {
-        "column_name": "default_view",
-        "data_type": "character varying",
+        "column_name": "background_image_url",
+        "data_type": "text",
         "is_nullable": "YES",
-        "default": "'month'::character varying",
+        "default": "None",
         "foreign_key": null,
         "references_table": null,
         "references_column": null
       },
       {
-        "column_name": "events",
+        "column_name": "brush_presets",
         "data_type": "jsonb",
         "is_nullable": "YES",
         "default": "None",
@@ -21,49 +21,8 @@
         "references_column": null
       },
       {
-        "column_name": "id",
-        "data_type": "uuid",
-        "is_nullable": "NO",
-        "default": "gen_random_uuid()",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      },
-      {
-        "column_name": "node_id",
-        "data_type": "uuid",
-        "is_nullable": "YES",
-        "default": "None",
-        "foreign_key": "calendar_nodes_node_id_fkey",
-        "references_table": "nodes",
-        "references_column": "id"
-      },
-      {
-        "column_name": "time_zone",
-        "data_type": "character varying",
-        "is_nullable": "YES",
-        "default": "'UTC'::character varying",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      }
-    ]
-  },
-  {
-    "table_name": "node_attachments",
-    "columns": [
-      {
-        "column_name": "created_at",
-        "data_type": "timestamp with time zone",
-        "is_nullable": "YES",
-        "default": "now()",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      },
-      {
-        "column_name": "file_name",
-        "data_type": "character varying",
+        "column_name": "color_palette",
+        "data_type": "jsonb",
         "is_nullable": "YES",
         "default": "None",
         "foreign_key": null,
@@ -71,8 +30,8 @@
         "references_column": null
       },
       {
-        "column_name": "file_size",
-        "data_type": "integer",
+        "column_name": "drawing_data",
+        "data_type": "text",
         "is_nullable": "YES",
         "default": "None",
         "foreign_key": null,
@@ -89,17 +48,8 @@
         "references_column": null
       },
       {
-        "column_name": "is_file",
-        "data_type": "boolean",
-        "is_nullable": "YES",
-        "default": "true",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      },
-      {
-        "column_name": "mime_type",
-        "data_type": "character varying",
+        "column_name": "layers",
+        "data_type": "jsonb",
         "is_nullable": "YES",
         "default": "None",
         "foreign_key": null,
@@ -109,15 +59,24 @@
       {
         "column_name": "node_id",
         "data_type": "uuid",
-        "is_nullable": "NO",
+        "is_nullable": "YES",
         "default": "None",
-        "foreign_key": "node_attachments_node_id_fkey",
+        "foreign_key": "draw_nodes_node_id_fkey",
         "references_table": "nodes",
         "references_column": "id"
       },
       {
-        "column_name": "storage_path",
-        "data_type": "text",
+        "column_name": "pan_offset",
+        "data_type": "jsonb",
+        "is_nullable": "YES",
+        "default": "'{\"x\": 0, \"y\": 0}'::jsonb",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      },
+      {
+        "column_name": "shape_elements",
+        "data_type": "jsonb",
         "is_nullable": "YES",
         "default": "None",
         "foreign_key": null,
@@ -125,42 +84,28 @@
         "references_column": null
       },
       {
-        "column_name": "type",
-        "data_type": "character varying",
-        "is_nullable": "NO",
-        "default": "None",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      },
-      {
-        "column_name": "url",
-        "data_type": "text",
+        "column_name": "symmetry_settings",
+        "data_type": "jsonb",
         "is_nullable": "YES",
         "default": "None",
         "foreign_key": null,
         "references_table": null,
         "references_column": null
-      }
-    ]
-  },
-  {
-    "table_name": "node_tags",
-    "columns": [
-      {
-        "column_name": "node_id",
-        "data_type": "uuid",
-        "is_nullable": "NO",
-        "default": "None",
-        "foreign_key": "node_tags_node_id_fkey",
-        "references_table": "nodes",
-        "references_column": "id"
       },
       {
-        "column_name": "tag",
-        "data_type": "character varying",
-        "is_nullable": "NO",
+        "column_name": "text_elements",
+        "data_type": "jsonb",
+        "is_nullable": "YES",
         "default": "None",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      },
+      {
+        "column_name": "zoom_level",
+        "data_type": "double precision",
+        "is_nullable": "YES",
+        "default": "1.0",
         "foreign_key": null,
         "references_table": null,
         "references_column": null

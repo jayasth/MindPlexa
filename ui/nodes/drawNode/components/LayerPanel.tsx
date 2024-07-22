@@ -61,29 +61,34 @@ const LayerPanel: React.FC<LayerPanelProps> = ({
 
   return (
     <div className={styles.layerPanel}>
-      <button className={styles.addLayerButton} onClick={addLayer}>
-        <FaPlus /> Add Layer
-      </button>
-      {layers.map((layer) => (
-        <div
-          key={layer.id}
-          className={`${styles.layer} ${layer.id === activeLayerId ? styles.active : ''}`}
-          onClick={() => setActiveLayerId(layer.id)}
-        >
-          <span className={styles.layerName}>{layer.name}</span>
-          <div className={styles.layerControls}>
-            <button onClick={() => toggleVisibility(layer.id)}>
-              {layer.visible ? <FaEye /> : <FaEyeSlash />}
-            </button>
-            <button onClick={() => toggleLock(layer.id)}>
-              {layer.locked ? <FaLock /> : <FaLockOpen />}
-            </button>
-            <button onClick={() => deleteLayer(layer.id)}>
-              <FaTrash />
-            </button>
+      <div className={styles.layerHeader}>
+        <h3>Layers</h3>
+        <button className={styles.addLayerButton} onClick={addLayer}>
+          <FaPlus size={12} />
+        </button>
+      </div>
+      <div className={styles.layerList}>
+        {layers.map((layer) => (
+          <div
+            key={layer.id}
+            className={`${styles.layer} ${layer.id === activeLayerId ? styles.active : ''}`}
+            onClick={() => setActiveLayerId(layer.id)}
+          >
+            <span className={styles.layerName}>{layer.name}</span>
+            <div className={styles.layerControls}>
+              <button onClick={() => toggleVisibility(layer.id)}>
+                {layer.visible ? <FaEye size={12} /> : <FaEyeSlash size={12} />}
+              </button>
+              <button onClick={() => toggleLock(layer.id)}>
+                {layer.locked ? <FaLock size={12} /> : <FaLockOpen size={12} />}
+              </button>
+              <button onClick={() => deleteLayer(layer.id)}>
+                <FaTrash size={12} />
+              </button>
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 };

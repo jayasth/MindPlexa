@@ -73,7 +73,6 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
 }) => {
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   const [isStrokeWidthOpen, setIsStrokeWidthOpen] = useState(false);
-  const [isLayerModalOpen, setIsLayerModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const iconSize = 16;
   return (
@@ -134,18 +133,9 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
             <span className={styles.strokeWidthLabel}>{strokeWidth}</span>
           </button>
         </Tooltip>
-        <Tooltip content="Layers">
-          <button
-            className={`${styles.toolbarButton}`}
-            onClick={() => setIsLayerModalOpen(true)}
-            style={{ color: textColor }}
-          >
-            <FaLayerGroup size={iconSize} />
-          </button>
-        </Tooltip>
         <Tooltip content="Toggle Layers">
           <button
-            className={`${styles.toolbarButton}`}
+            className={`${styles.toolbarButton} ${isLayerPanelVisible ? styles.active : ''}`}
             onClick={() => setIsLayerPanelVisible(!isLayerPanelVisible)}
             style={{ color: textColor }}
           >
@@ -215,20 +205,6 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
           max={100}
           value={strokeWidth}
           onChange={setStrokeWidth}
-        />
-      </Modal>
-
-      <Modal
-        open={isLayerModalOpen}
-        onClose={() => setIsLayerModalOpen(false)}
-        center
-      >
-        <h2>Layers</h2>
-        <LayerPanel
-          layers={layers}
-          setLayers={setLayers}
-          activeLayerId={activeLayerId}
-          setActiveLayerId={setActiveLayerId}
         />
       </Modal>
 

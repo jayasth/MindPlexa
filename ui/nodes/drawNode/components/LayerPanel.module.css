@@ -1,48 +1,63 @@
 .layerPanel {
-  width: 200px;
+  width: 180px;
   height: 100%;
-  overflow-y: auto;
-  background-color: #f0f0f0;
-  padding: 10px;
-  border-left: 1px solid #ccc;
+  background-color: #f8f8f8;
+  border-left: 1px solid #e0e0e0;
   transition: width 0.3s ease-in-out;
+  display: flex;
+  flex-direction: column;
+}
+
+.layerHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.layerHeader h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
 }
 
 .addLayerButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  padding: 4px;
-  margin-bottom: 8px;
-  background-color: #f0f0f0;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  background: none;
+  border: none;
   cursor: pointer;
+  color: #666;
+  padding: 2px;
 }
 
 .addLayerButton:hover {
-  background-color: #e0e0e0;
+  color: #333;
+}
+
+.layerList {
+  overflow-y: auto;
+  flex-grow: 1;
 }
 
 .layer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 4px;
-  margin-bottom: 4px;
-  background-color: #fff;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  padding: 6px 12px;
   cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.layer:hover {
+  background-color: #f0f0f0;
 }
 
 .layer.active {
-  background-color: #e0e0e0;
+  background-color: #e8e8e8;
 }
 
 .layerName {
-  flex-grow: 1;
+  font-size: 12px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -58,9 +73,9 @@
   border: none;
   cursor: pointer;
   padding: 2px;
+  color: #666;
 }
 
 .layerControls button:hover {
-  background-color: rgba(0, 0, 0, 0.1);
-  border-radius: 2px;
+  color: #333;
 }
