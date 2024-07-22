@@ -14,6 +14,7 @@ import {
   processNodeSpecificData
 } from '@/utils/canvas/nodeSpecificDataService';
 import { handleTags } from '@/utils/canvas/tagService';
+import { getDrawNodeData } from './drawNodeService';
 
 const supabase = createClient();
 
@@ -179,7 +180,14 @@ export const fetchCanvas = async (canvasId: string) => {
   const organizedNodes = await Promise.all(
     canvas.nodes.map(async (node) => {
       const nodeType = node.type.toLowerCase();
-      const specificNodeData = await getNodeSpecificData(node.id, nodeType);
+      let specificNodeData;
+
+      if (nodeType === 'draw') {
+        specificNodeData = await getDrawNodeData(node.id);
+      } else {
+        specificNodeData = await getNodeSpecificData(node.id, nodeType);
+      }
+
       const processedData = processNodeSpecificData(nodeType, specificNodeData);
 
       const tags = node.nodeTags ? node.nodeTags.map((tag) => tag.tag) : [];

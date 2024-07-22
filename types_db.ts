@@ -107,28 +107,28 @@ export type Database = {
       }
       draw_nodes: {
         Row: {
-          brush_presets: Json | null
           current_tool: string | null
           drawing_file_url: string | null
           id: string
           layers: Json | null
           node_id: string | null
+          settings: Json | null
         }
         Insert: {
-          brush_presets?: Json | null
           current_tool?: string | null
           drawing_file_url?: string | null
           id?: string
           layers?: Json | null
           node_id?: string | null
+          settings?: Json | null
         }
         Update: {
-          brush_presets?: Json | null
           current_tool?: string | null
           drawing_file_url?: string | null
           id?: string
           layers?: Json | null
           node_id?: string | null
+          settings?: Json | null
         }
         Relationships: [
           {

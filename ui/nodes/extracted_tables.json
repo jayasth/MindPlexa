@@ -3,15 +3,6 @@
     "table_name": "draw_nodes",
     "columns": [
       {
-        "column_name": "brush_presets",
-        "data_type": "jsonb",
-        "is_nullable": "YES",
-        "default": "None",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      },
-      {
         "column_name": "current_tool",
         "data_type": "character varying",
         "is_nullable": "YES",
@@ -55,6 +46,15 @@
         "foreign_key": "draw_nodes_node_id_fkey",
         "references_table": "nodes",
         "references_column": "id"
+      },
+      {
+        "column_name": "settings",
+        "data_type": "jsonb",
+        "is_nullable": "YES",
+        "default": "None",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
       }
     ]
   },

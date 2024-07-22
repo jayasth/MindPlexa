@@ -74,6 +74,12 @@ import { useRectangle } from './tools/rectangle/useRectangle';
 import { useCircle } from './tools/circle/useCircle';
 import { useLine } from './tools/line/useLine';
 import { ToolSetting } from './types';
+import {
+  getDrawNodeData,
+  updateDrawNodeData,
+  saveDrawing,
+  getDrawing
+} from '@/utils/canvas/drawNodeService';
 
 interface DrawNodeEditProps extends NodeProps {
   data: any;
@@ -210,10 +216,45 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   ]);
   const [activeLayerId, setActiveLayerId] = useState('1');
   const [aspectRatio, setAspectRatio] = useState(1);
+  const [drawNodeData, setDrawNodeData] = useState<any>(null);
 
   const artboardRef = useRef<ArtboardRef | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const artboardContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const fetchDrawNodeData = async () => {
+      const fetchedData = await getDrawNodeData(data.id);
+      if (fetchedData) {
+        setDrawNodeData(fetchedData);
+        setDrawingData(fetchedData.drawingData || '');
+        setLayers(
+          fetchedData.layers || [
+            { id: '1', name: 'Layer 1', visible: true, locked: false }
+          ]
+        );
+        setCurrentTool(fetchedData.currentTool || 0);
+        setZoom(fetchedData.zoomLevel || 1);
+      }
+    };
+
+    fetchDrawNodeData();
+  }, [data.id]);
+
+  useEffect(() => {
+    const saveDrawNodeData = async () => {
+      if (drawNodeData) {
+        await updateDrawNodeData(data.id, {
+          drawingData,
+          layers,
+          currentTool,
+          zoomLevel: zoom
+        });
+      }
+    };
+
+    saveDrawNodeData();
+  }, [data.id, drawingData, layers, currentTool, zoom]);
 
   const handleBackgroundColorChange = useBackgroundColorChange(
     data.id,
