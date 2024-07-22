@@ -1,5 +1,4 @@
 import React from 'react';
-import Input from '@/ui/Input/Input';
 import styles from './DrawNodeSettings.module.css';
 
 interface ToolSetting {
@@ -25,13 +24,10 @@ const DrawNodeSettings: React.FC<DrawNodeSettingsProps> = ({
     }
   };
 
-  const handleStrokeWidthChange = (index: number, strokeWidth: string) => {
-    const width = parseInt(strokeWidth, 10);
-    if (!isNaN(width) && width > 0 && width <= 100) {
+  const handleStrokeWidthChange = (index: number, strokeWidth: number) => {
+    if (strokeWidth > 0 && strokeWidth <= 100) {
       setToolSettings((prev) =>
-        prev.map((tool, i) =>
-          i === index ? { ...tool, strokeWidth: width } : tool
-        )
+        prev.map((tool, i) => (i === index ? { ...tool, strokeWidth } : tool))
       );
     }
   };
@@ -40,27 +36,23 @@ const DrawNodeSettings: React.FC<DrawNodeSettingsProps> = ({
     <div className={styles.settingsContainer}>
       {toolSettings.map((tool, index) => (
         <div key={tool.name} className={styles.toolSetting}>
-          <h4>{tool.name}</h4>
-          <div className={styles.settingRow}>
-            <Input
-              type="text"
-              placeholder="Color (hex)"
-              value={tool.color}
-              onChange={(value) => handleColorChange(index, value)}
-              variant="slim"
-            />
-          </div>
-          <div className={styles.settingRow}>
-            <Input
-              type="number"
-              placeholder="Stroke Width"
-              value={tool.strokeWidth.toString()}
-              onChange={(value) => handleStrokeWidthChange(index, value)}
-              variant="slim"
-              min={1}
-              max={100}
-            />
-          </div>
+          <span className={styles.toolName}>{tool.name}</span>
+          <input
+            type="color"
+            value={tool.color}
+            onChange={(e) => handleColorChange(index, e.target.value)}
+            className={styles.colorInput}
+          />
+          <input
+            type="number"
+            value={tool.strokeWidth}
+            onChange={(e) =>
+              handleStrokeWidthChange(index, parseInt(e.target.value, 10))
+            }
+            min={1}
+            max={100}
+            className={styles.widthInput}
+          />
         </div>
       ))}
     </div>
