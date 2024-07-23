@@ -32,6 +32,7 @@ export interface ArtboardProps
   layers: Layer[];
   activeLayerId: string;
   zoom: number;
+  drawingData: string;
 }
 
 export interface ArtboardRef {
@@ -67,6 +68,7 @@ export const Artboard = forwardRef(function Artboard(
     layers,
     activeLayerId,
     zoom,
+    drawingData,
     ...props
   }: ArtboardProps,
   ref: ForwardedRef<ArtboardRef>
@@ -78,6 +80,11 @@ export const Artboard = forwardRef(function Artboard(
     [key: string]: CanvasRenderingContext2D;
   }>({});
   const [zoomLevel, setZoomLevel] = useState(1);
+  const [hasDrawing, setHasDrawing] = useState(false);
+
+  useEffect(() => {
+    setHasDrawing(drawingData !== '');
+  }, [drawingData]);
 
   useEffect(() => {
     if (!canvas) return;

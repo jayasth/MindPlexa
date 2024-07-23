@@ -13,10 +13,10 @@ export interface HistoryHook {
   canRedo: boolean;
 }
 
-export function useHistory(size = 10): HistoryHook {
-  const [undoStack, setUndoStack] = useState<string[]>([]);
+export function useHistory(initialDrawingData = '', size = 10): HistoryHook {
+  const [undoStack, setUndoStack] = useState<string[]>([initialDrawingData]);
   const [redoStack, setRedoStack] = useState<string[]>([]);
-  const [canUndo, setCanUndo] = useState(false);
+  const [canUndo, setCanUndo] = useState(initialDrawingData !== '');
   const [canRedo, setCanRedo] = useState(false);
 
   const pushState = useCallback(

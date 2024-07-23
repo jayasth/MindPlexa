@@ -76,9 +76,7 @@ import { useLine } from './tools/line/useLine';
 import { ToolSetting } from './types';
 import {
   getDrawNodeData,
-  updateDrawNodeData,
-  saveDrawing,
-  getDrawing
+  updateDrawNodeData
 } from '@/utils/canvas/drawNodeService';
 
 interface DrawNodeEditProps extends NodeProps {
@@ -492,12 +490,12 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     canUndo,
     canRedo,
     clear: clearHistory
-  } = useHistory();
+  } = useHistory(drawNodeData?.drawingData || '');
   const [hasDrawing, setHasDrawing] = useState(false);
 
   useEffect(() => {
-    setHasDrawing(canUndo || canRedo);
-  }, [canUndo, canRedo]);
+    setHasDrawing(drawingData !== '');
+  }, [drawingData]);
 
   const memoizedTagFileContainer = useMemo(
     () => (
@@ -550,6 +548,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
       }
     }
   }, [zoom, nodeWidth, nodeHeight]);
+
   return (
     <div
       className={styles.drawNode}
@@ -575,7 +574,13 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         />
         <CloseButton
           onClick={() =>
-            handleClose(data.id, () => {}, title, drawingData, canvasId)
+            handleClose(
+              data.id,
+              () => {},
+              title,
+              drawNodeData?.drawingData || '',
+              canvasId
+            )
           }
         />
       </div>
@@ -623,7 +628,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
                 transform: `scale(${zoom})`,
                 transformOrigin: 'center center'
               }}
-              content={drawingData}
+              drawingData={drawNodeData?.drawingData || ''}
               width={artboardSize.width}
               height={artboardSize.height}
               layers={layers}
