@@ -233,6 +233,12 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         );
         setCurrentTool(fetchedData.currentTool || 0);
         setZoom(fetchedData.zoomLevel || 1);
+        if (history) {
+          history.clear();
+          if (fetchedData.drawingData && artboardRef.current) {
+            history.pushState(artboardRef.current.canvas);
+          }
+        }
       }
     };
 

@@ -1,7 +1,8 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useRef, useState, useEffect } from 'react';
 
 export interface History {
   pushState: (canvas: HTMLCanvasElement) => void;
+  clear: () => void;
 }
 
 export interface HistoryHook {
@@ -14,10 +15,17 @@ export interface HistoryHook {
 }
 
 export function useHistory(initialDrawingData = '', size = 10): HistoryHook {
-  const [undoStack, setUndoStack] = useState<string[]>([initialDrawingData]);
+  const [undoStack, setUndoStack] = useState<string[]>([]);
   const [redoStack, setRedoStack] = useState<string[]>([]);
-  const [canUndo, setCanUndo] = useState(initialDrawingData !== '');
+  const [canUndo, setCanUndo] = useState(false);
   const [canRedo, setCanRedo] = useState(false);
+
+  useEffect(() => {
+    if (initialDrawingData) {
+      setUndoStack([initialDrawingData]);
+      setCanUndo(true);
+    }
+  }, [initialDrawingData]);
 
   const pushState = useCallback(
     (canvas: HTMLCanvasElement) => {
@@ -57,7 +65,7 @@ export function useHistory(initialDrawingData = '', size = 10): HistoryHook {
     setCanRedo(false);
   }, []);
 
-  const history = useRef<History>({ pushState });
+  const history = useRef<History>({ pushState, clear });
 
   return {
     history: history.current,

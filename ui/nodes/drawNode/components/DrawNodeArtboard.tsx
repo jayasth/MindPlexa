@@ -42,6 +42,7 @@ export interface ArtboardRef {
   context?: CanvasRenderingContext2D | null;
   width: number;
   height: number;
+  canvas: HTMLCanvasElement;
 }
 
 export interface ToolHandlers {
@@ -367,25 +368,19 @@ export const Artboard = forwardRef(function Artboard(
   }, [width, height, resizeCanvas, onResize]);
 
   useEffect(() => {
-    if (canvas && context && content) {
+    if (canvas && context && drawingData) {
       const image = new Image();
       image.onload = () => {
         context.clearRect(0, 0, canvas.width, canvas.height);
-        context.drawImage(
-          image,
-          0,
-          0,
-          image.width,
-          image.height,
-          0,
-          0,
-          canvas.width,
-          canvas.height
-        );
+        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+        if (history) {
+          history.clear();
+          history.pushState(canvas);
+        }
       };
-      image.src = content;
+      image.src = drawingData;
     }
-  }, [canvas, context, content]);
+  }, [canvas, context, drawingData, history]);
 
   useEffect(() => {
     if (onResize) {
@@ -430,10 +425,12 @@ export const Artboard = forwardRef(function Artboard(
         a.click();
       },
       clear,
-      getImageAsDataUri: (type?: string) => canvas?.toDataURL(type),
+      getImageAsDataUri: (type?: string) =>
+        canvas ? canvas.toDataURL(type) : undefined,
       context,
-      width: canvas?.width || 0,
-      height: canvas?.height || 0
+      width: canvas ? canvas.width : 0,
+      height: canvas ? canvas.height : 0,
+      canvas: canvas as HTMLCanvasElement 
     }),
     [canvas, context, clear]
   );
