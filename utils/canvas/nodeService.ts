@@ -9,18 +9,13 @@ import {
   getAttachments
 } from '@/utils/canvas/attachmentService';
 import {
-  getNodeSpecificData,
   updateNodeSpecificData,
   createNodeSpecificData,
   deleteNodeSpecificData
 } from '@/utils/canvas/nodeSpecificDataService';
-import { duplicateNode } from '@/utils/canvas/nodeDuplicationService';
 import { handleTags } from '@/utils/canvas/tagService';
 import {
-  getDrawNodeData,
   updateDrawNodeData,
-  saveDrawing,
-  getDrawing,
   removeDrawing
 } from '@/utils/canvas/drawNodeService';
 
@@ -279,7 +274,16 @@ export const updateNode = async (
   if (nodeType === 'draw') {
     const drawNodeData = specificUpdates.drawData;
     if (drawNodeData) {
-      const { error: drawError } = await updateDrawNodeData(id, drawNodeData);
+      const { currentTool, layers, settings } = drawNodeData;
+      const drawNodeUpdates = {
+        currentTool,
+        layers: JSON.stringify(layers),
+        settings: JSON.stringify(settings)
+      };
+      const { error: drawError } = await updateDrawNodeData(
+        id,
+        drawNodeUpdates
+      );
       if (drawError) {
         console.error('nodeService: Error updating draw node:', drawError);
         return { error: drawError };

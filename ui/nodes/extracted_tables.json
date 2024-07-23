@@ -55,6 +55,15 @@
         "foreign_key": null,
         "references_table": null,
         "references_column": null
+      },
+      {
+        "column_name": "zoom_level",
+        "data_type": "integer",
+        "is_nullable": "YES",
+        "default": "None",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
       }
     ]
   },

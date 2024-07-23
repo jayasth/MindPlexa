@@ -17,7 +17,8 @@ import { handleTags } from '@/utils/canvas/tagService';
 import {
   getDrawNodeData,
   updateDrawNodeData,
-  saveDrawing
+  saveDrawing,
+  getDrawing
 } from './drawNodeService';
 
 const supabase = createClient();
@@ -188,6 +189,8 @@ export const fetchCanvas = async (canvasId: string) => {
 
       if (nodeType === 'draw') {
         specificNodeData = await getDrawNodeData(node.id);
+        const drawingData = await getDrawing(node.id);
+        specificNodeData.drawingData = drawingData;
       } else {
         specificNodeData = await getNodeSpecificData(node.id, nodeType);
       }

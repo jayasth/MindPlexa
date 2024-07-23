@@ -74,6 +74,21 @@ export const onNodesChange = async (set, get, changes, canvasId) => {
                   changedProperties['data'] = change.data;
                   hasChanges = true;
                 }
+                if (updatedNode.type === 'draw') {
+                  const drawingData = updatedNode.data.drawingData;
+                  if (drawingData) {
+                    const { currentTool, layers, settings } = drawingData;
+                    const drawNodeUpdates = {
+                      currentTool,
+                      layers: JSON.stringify(layers),
+                      settings: JSON.stringify(settings)
+                    };
+                    updateDrawNodeData(updatedNode.id, drawNodeUpdates);
+                    if (drawingData.drawingFileUrl) {
+                      saveDrawing(updatedNode.id, drawingData.drawingFileUrl);
+                    }
+                  }
+                }
                 break;
               case 'style':
                 if (
