@@ -273,10 +273,12 @@ export const Artboard = forwardRef(function Artboard(
       canvasRef.height = canvasSize;
       const ctx = canvasRef.getContext('2d');
       setCanvas(canvasRef);
-      setContext(ctx);
+
       if (!ctx) {
+        console.error('Failed to get 2D context');
         return;
       }
+      setContext(ctx);
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, canvasRef.width, canvasRef.height);
       ctx.fillStyle = 'transparent';
@@ -299,6 +301,7 @@ export const Artboard = forwardRef(function Artboard(
         image.src = content;
       }
       if (history) {
+        history.setContext(ctx);
         history.pushState(canvasRef);
       }
     },
