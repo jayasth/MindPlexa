@@ -490,12 +490,12 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   }, [currentTool, toolSettings]);
 
   const {
+    history,
     undo,
     redo,
-    history,
+    clear: clearHistory,
     canUndo,
-    canRedo,
-    clear: clearHistory
+    canRedo
   } = useHistory(drawNodeData?.drawingData || '');
   const [hasDrawing, setHasDrawing] = useState(false);
 
@@ -523,8 +523,13 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
       clearHistory();
       setDrawingData('');
       setHasDrawing(false);
+      // Update the node data
+      debouncedUpdateNodeData(
+        { data: { drawingData: '' } },
+        { drawingData: '' }
+      );
     }
-  }, [clearHistory]);
+  }, [clearHistory, debouncedUpdateNodeData]);
 
   const handleZoomIn = useCallback(() => {
     setZoom((prev) => Math.min(prev + 0.1, 3));
@@ -614,6 +619,8 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         setToolSettings={setToolSettings}
         isLayerPanelVisible={isLayerPanelVisible}
         setIsLayerPanelVisible={setIsLayerPanelVisible}
+        artboardRef={artboardRef}
+        setDrawingData={setDrawingData}
       />
       <div className={styles.drawContent}>
         <DrawNodeSidebar

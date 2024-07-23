@@ -19,6 +19,7 @@ import LayerPanel from './LayerPanel';
 import { Layer } from '../types';
 import styles from './DrawNodeTopbar.module.css';
 import DrawNodeSettings from './DrawNodeSettings';
+import { ArtboardRef } from '@/ui/nodes/drawNode/DrawNodeTools';
 
 interface DrawNodeTopbarProps {
   undo: () => void;
@@ -44,6 +45,8 @@ interface DrawNodeTopbarProps {
   setToolSettings: (settings: any) => void;
   isLayerPanelVisible: boolean;
   setIsLayerPanelVisible: (visible: boolean) => void;
+  artboardRef: React.RefObject<ArtboardRef | null>; // Updated interface
+  setDrawingData: (data: string) => void;
 }
 
 const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
@@ -69,7 +72,9 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
   toolSettings,
   setToolSettings,
   isLayerPanelVisible,
-  setIsLayerPanelVisible
+  setIsLayerPanelVisible,
+  artboardRef,
+  setDrawingData
 }) => {
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   const [isStrokeWidthOpen, setIsStrokeWidthOpen] = useState(false);
@@ -80,7 +85,13 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
       <div className={styles.toolGroup}>
         <Tooltip content="Undo">
           <button
-            onClick={undo}
+            onClick={() => {
+              undo();
+              if (artboardRef.current) {
+                const newDrawingData = artboardRef.current.getImageAsDataUri();
+                setDrawingData(newDrawingData || '');
+              }
+            }}
             disabled={!canUndo}
             className={styles.toolbarButton}
             style={{ color: textColor }}
@@ -90,7 +101,13 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
         </Tooltip>
         <Tooltip content="Redo">
           <button
-            onClick={redo}
+            onClick={() => {
+              redo();
+              if (artboardRef.current) {
+                const newDrawingData = artboardRef.current.getImageAsDataUri();
+                setDrawingData(newDrawingData || '');
+              }
+            }}
             disabled={!canRedo}
             className={styles.toolbarButton}
             style={{ color: textColor }}

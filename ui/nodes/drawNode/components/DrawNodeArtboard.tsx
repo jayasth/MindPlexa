@@ -430,7 +430,7 @@ export const Artboard = forwardRef(function Artboard(
       context,
       width: canvas ? canvas.width : 0,
       height: canvas ? canvas.height : 0,
-      canvas: canvas as HTMLCanvasElement 
+      canvas: canvas as HTMLCanvasElement
     }),
     [canvas, context, clear]
   );
