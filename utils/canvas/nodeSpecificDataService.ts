@@ -1,14 +1,25 @@
 import { createClient } from '@/utils/supabase/supabaseClient';
 import { Database } from '@/types_db';
+import { saveDrawing, getDrawing } from '@/utils/canvas/drawNodeService';
 
 const supabase = createClient();
 
 type NodeType = 'note' | 'task' | 'calendar' | 'table' | 'draw';
 
+interface DrawNodeData {
+  id: string;
+  node_id: string | null;
+  current_tool: string | null;
+  drawing_file_url: string | null;
+  layers: string | null; // JSON string
+  settings: string | null; // JSON string
+  zoom_level: number | null;
+}
+
 export const getNodeSpecificData = async (
   nodeId: string,
   nodeType: NodeType
-) => {
+): Promise<DrawNodeData | null> => {
   const { data, error } = await supabase
     .from(`${nodeType}_nodes`)
     .select('*')
@@ -20,7 +31,7 @@ export const getNodeSpecificData = async (
     return null;
   }
 
-  return data;
+  return data as DrawNodeData;
 };
 
 export const updateNodeSpecificData = async (
@@ -28,6 +39,17 @@ export const updateNodeSpecificData = async (
   nodeType: NodeType,
   updates: any
 ) => {
+  if (nodeType === 'draw') {
+    const { drawingData, ...otherUpdates } = updates;
+    if (drawingData) {
+      const result = await saveDrawing(nodeId, drawingData);
+      if (result) {
+        otherUpdates.drawing_file_url = result.drawingFileUrl;
+      }
+    }
+    updates = otherUpdates;
+  }
+
   const { data, error } = await supabase
     .from(`${nodeType}_nodes`)
     .update(updates)
@@ -117,4 +139,10 @@ export const processNodeSpecificData = (nodeType: NodeType, data: any) => {
     default:
       return {};
   }
+};
+
+// Function to fetch drawing data
+export const getNodeDrawingData = async (nodeId: string) => {
+  const drawingData = await getDrawing(nodeId);
+  return drawingData;
 };

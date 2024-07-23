@@ -6,6 +6,7 @@ import type { Node } from 'reactflow';
 import useNodeStore from '../nodes/useNodeStore';
 import useEdgeStore from '../edges/useEdgeStore';
 import { enableMapSet } from 'immer';
+import { getNodeDrawingData } from '@/utils/canvas/nodeSpecificDataService';
 
 // Enable the MapSet plugin for Immer
 enableMapSet();
@@ -20,7 +21,7 @@ interface CanvasState {
   saveCanvasTimeout?: NodeJS.Timeout;
 }
 
-const processNode = (node: any) => {
+const processNode = async (node: any) => {
   if (!node) return null;
 
   console.log('useCanvasStore: Processing node:', node);
@@ -64,6 +65,11 @@ const processNode = (node: any) => {
     }
   }
 
+  if (node.type === 'draw') {
+    const drawingData = await getNodeDrawingData(node.id);
+    node.data.drawingData = drawingData;
+  }
+
   return {
     id: node.id,
     type: node.type,
@@ -93,7 +99,8 @@ const processNode = (node: any) => {
       showCompletedTasks: node.data?.showCompletedTasks ?? true,
       showDueDate: node.data?.showDueDate ?? true,
       showPriority: node.data?.showPriority ?? true,
-      sortBy: node.data?.sortBy || ''
+      sortBy: node.data?.sortBy || '',
+      drawingData: node.data?.drawingData // Added line
     },
     width: node.isEditing
       ? (isDesktop ? node.editWidth : node.mobileEditWidth) || node.viewWidth
@@ -155,7 +162,7 @@ const useCanvasStore = create<CanvasState>()(
           const canvasData = await fetchCanvas(canvasId);
           console.log('useCanvasStore: Fetched canvas data:', canvasData);
 
-          const nodes = canvasData.nodes.map(processNode);
+          const nodes = await Promise.all(canvasData.nodes.map(processNode));
           console.log('useCanvasStore: Processed nodes:', nodes);
 
           const edges = canvasData.edges.map(processEdge);

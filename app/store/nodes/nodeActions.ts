@@ -12,11 +12,7 @@ import {
 import { handleTags } from '@/utils/canvas/tagService';
 import type { NodeState } from './useNodeStore';
 import { Database } from '@/types_db';
-import {
-  getDrawNodeData,
-  updateDrawNodeData,
-  saveDrawing
-} from '@/utils/canvas/drawNodeService';
+import { saveDrawing } from '@/utils/canvas/drawNodeService';
 
 type NodeType = Exclude<
   Database['public']['Enums']['node_type'],
@@ -111,7 +107,8 @@ export const updateNode = async (set, get, id, data, canvasId) => {
               specificUpdates = {
                 current_tool: updatedNode.data.currentTool,
                 layers: JSON.stringify(updatedNode.data.layers),
-                settings: JSON.stringify(updatedNode.data.settings)
+                settings: JSON.stringify(updatedNode.data.settings),
+                drawingData: updatedNode.data.drawingData
               };
               const drawingData = updatedNode.data.drawingData;
               if (drawingData) {
