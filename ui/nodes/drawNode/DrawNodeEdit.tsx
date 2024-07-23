@@ -207,7 +207,9 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
       blendMode: 'normal'
     }
   ]);
-  const [strokeWidth, setStrokeWidth] = useState(5);
+  const [strokeWidth, setStrokeWidth] = useState(
+    toolSettings[currentTool].strokeWidth
+  );
   const [zoom, setZoom] = useState(1);
   const [layers, setLayers] = useState<Layer[]>([
     { id: '1', name: 'Layer 1', visible: true, locked: false }
@@ -225,20 +227,14 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
       const fetchedData = await getDrawNodeData(data.id);
       if (fetchedData) {
         setDrawNodeData(fetchedData);
-        if (typeof fetchedData.currentTool === 'number') {
-          setCurrentTool(fetchedData.currentTool);
-        }
+        setDrawingData(fetchedData.drawingFileUrl || '');
+        setLayers(
+          Array.isArray(fetchedData.layers)
+            ? fetchedData.layers
+            : [{ id: '1', name: 'Layer 1', visible: true, locked: false }]
+        );
+        setCurrentTool(fetchedData.currentTool || 0);
         setZoom(fetchedData.zoomLevel || 1);
-        if (fetchedData.settings) {
-          const parsedSettings = JSON.parse(fetchedData.settings);
-          setToolSettings(parsedSettings);
-          if (parsedSettings[fetchedData.currentTool]) {
-            setStrokeWidth(parsedSettings[fetchedData.currentTool].strokeWidth);
-          }
-        }
-        if (fetchedData.layers) {
-          setLayers(JSON.parse(fetchedData.layers));
-        }
       }
     };
 
@@ -246,31 +242,19 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   }, [data.id]);
 
   useEffect(() => {
-    const fetchDrawing = async () => {
-      const drawing = await getDrawing(data.id);
-      if (drawing) {
-        setDrawingData(drawing);
-      }
-    };
-
-    fetchDrawing();
-  }, [data.id]);
-
-  useEffect(() => {
     const saveDrawNodeData = async () => {
-      if (drawingData) {
-        await saveDrawing(data.id, drawingData);
+      if (drawNodeData) {
         await updateDrawNodeData(data.id, {
+          drawingData,
+          layers,
           currentTool,
-          layers: JSON.stringify(layers),
-          settings: JSON.stringify(toolSettings),
           zoomLevel: zoom
         });
       }
     };
 
     saveDrawNodeData();
-  }, [data.id, drawingData, currentTool, layers, toolSettings, zoom]);
+  }, [data.id, drawingData, layers, currentTool, zoom]);
 
   const handleBackgroundColorChange = useBackgroundColorChange(
     data.id,
