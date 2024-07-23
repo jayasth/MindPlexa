@@ -19,9 +19,12 @@ export const getDrawNodeData = async (nodeId: string) => {
 };
 
 export const updateDrawNodeData = async (nodeId: string, updates: any) => {
+  // Remove 'drawingData' from updates if it exists
+  const { drawingData, ...validUpdates } = updates;
+
   const { data, error } = await supabase
     .from('draw_nodes')
-    .update(toSnakeCase(updates))
+    .update(toSnakeCase(validUpdates))
     .eq('node_id', nodeId)
     .select()
     .single();
@@ -87,4 +90,17 @@ export const getDrawing = async (nodeId: string) => {
   }
 
   return data;
+};
+
+export const removeDrawing = async (nodeId: string) => {
+  const { error } = await supabase.storage
+    .from('drawings')
+    .remove([`${nodeId}.png`]);
+
+  if (error) {
+    console.error('Error removing drawing:', error);
+    return false;
+  }
+
+  return true;
 };

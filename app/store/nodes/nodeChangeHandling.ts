@@ -161,6 +161,15 @@ export const onNodesChange = async (set, get, changes, canvasId) => {
                       if (result) {
                         specificUpdates['drawing_file_url'] =
                           result.drawingFileUrl;
+                        updateNodeInDB(
+                          updatedNode.id,
+                          nodeUpdates,
+                          {
+                            ...specificUpdates,
+                            drawing_file_url: result.drawingFileUrl
+                          },
+                          updatedNode.type as NodeType
+                        );
                       }
                     });
                   }
@@ -212,19 +221,6 @@ export const onNodesChange = async (set, get, changes, canvasId) => {
                     }
                   }
                 })();
-              }
-
-              // Update draw node data if the node type is 'draw'
-              if (updatedNode.type === 'draw') {
-                const drawingData = updatedNode.data.drawingData;
-                if (drawingData) {
-                  const drawNodeUpdates = {
-                    currentTool: drawingData.currentTool,
-                    layers: JSON.stringify(drawingData.layers),
-                    settings: JSON.stringify(drawingData.settings)
-                  };
-                  updateDrawNodeData(updatedNode.id, drawNodeUpdates);
-                }
               }
             }
 

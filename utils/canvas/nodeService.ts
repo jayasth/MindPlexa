@@ -20,7 +20,8 @@ import {
   getDrawNodeData,
   updateDrawNodeData,
   saveDrawing,
-  getDrawing
+  getDrawing,
+  removeDrawing
 } from '@/utils/canvas/drawNodeService';
 
 // Add this line to define NodeType
@@ -331,6 +332,10 @@ export const deleteNode = async (
       );
       return { error: specificError };
     }
+  }
+
+  if (nodeType === 'draw') {
+    await removeDrawing(nodeId);
   }
 
   const { error: nodeError } = await supabase
