@@ -291,7 +291,6 @@ export const Artboard = forwardRef(function Artboard(
         image.src = content;
       }
       if (history) {
-        history.setContext(ctx);
         history.pushState(canvasRef);
       }
     },

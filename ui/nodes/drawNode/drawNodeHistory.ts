@@ -1,126 +1,70 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
-
-async function applyImage(context: CanvasRenderingContext2D, blob: Blob) {
-  const img = new Image();
-  img.onload = () => {
-    context.canvas.width = img.width;
-    context.canvas.height = img.height;
-    context.drawImage(img, 0, 0);
-    URL.revokeObjectURL(img.src);
-  };
-  img.src = URL.createObjectURL(blob);
-}
+import { useCallback, useRef, useState } from 'react';
 
 export interface History {
-  setContext: (context: CanvasRenderingContext2D) => void;
-  pushState: (canvas: HTMLCanvasElement) => Promise<boolean>;
+  pushState: (canvas: HTMLCanvasElement) => void;
 }
+
 export interface HistoryHook {
   history: History;
-
-  undo: () => Promise<boolean>;
-  redo: () => Promise<boolean>;
+  undo: () => void;
+  redo: () => void;
   clear: () => void;
   canUndo: boolean;
   canRedo: boolean;
 }
 
-export function useHistory(size?: number): HistoryHook {
-  const stack = useRef<Array<Blob>>([]);
-  const crs = useRef(0);
-  const [context, setContext] = useState<CanvasRenderingContext2D>();
+export function useHistory(size = 10): HistoryHook {
+  const [undoStack, setUndoStack] = useState<string[]>([]);
+  const [redoStack, setRedoStack] = useState<string[]>([]);
   const [canUndo, setCanUndo] = useState(false);
   const [canRedo, setCanRedo] = useState(false);
 
   const pushState = useCallback(
-    async (canvas: HTMLCanvasElement) => {
-      if (!context) {
-        console.error('Context not initialised');
-        return false;
-      }
-      const blob = await new Promise<Blob | null>((resolve) =>
-        canvas.toBlob(resolve)
-      );
-      if (blob) {
-        // Check if the canvas dimensions have changed
-        if (
-          stack.current.length === 0 ||
-          canvas.width !== context.canvas.width ||
-          canvas.height !== context.canvas.height
-        ) {
-          // If the dimensions have changed, clear the stack and push the new state
-          stack.current = [blob];
-        } else {
-          // Insert the new state after the current position
-          stack.current.splice(stack.current.length - crs.current, 0, blob);
-          // Remove any redo states
-          stack.current = stack.current.slice(
-            0,
-            stack.current.length - crs.current
-          );
-          crs.current = 0;
-        }
-      }
-      if (size && stack.current.length > size) {
-        stack.current = stack.current.slice(-size);
-      }
-      setCanUndo(stack.current.length > 1);
+    (canvas: HTMLCanvasElement) => {
+      const dataUrl = canvas.toDataURL();
+      setUndoStack((prevStack) => [...prevStack.slice(-size), dataUrl]);
+      setRedoStack([]);
+      setCanUndo(true);
       setCanRedo(false);
-      return true;
     },
-    [crs, stack, context, size]
+    [size]
   );
 
-  const undo = useCallback(async () => {
-    if (
-      !context ||
-      stack.current.length <= 1 ||
-      crs.current + 1 >= stack.current.length
-    ) {
-      return false;
+  const undo = useCallback(() => {
+    if (undoStack.length > 1) {
+      const currentState = undoStack[undoStack.length - 1];
+      setRedoStack((prevStack) => [currentState, ...prevStack]);
+      setUndoStack((prevStack) => prevStack.slice(0, -1));
+      setCanUndo(undoStack.length > 2);
+      setCanRedo(true);
     }
+  }, [undoStack]);
 
-    crs.current++;
-    await applyImage(
-      context,
-      stack.current[stack.current.length - (crs.current + 1)]
-    );
-    setCanUndo(crs.current + 1 < stack.current.length);
-    setCanRedo(true);
-    return true;
-  }, [context]);
-
-  const redo = useCallback(async () => {
-    if (!context || crs.current <= 0) {
-      return false;
+  const redo = useCallback(() => {
+    if (redoStack.length > 0) {
+      const stateToRedo = redoStack[0];
+      setUndoStack((prevStack) => [...prevStack, stateToRedo]);
+      setRedoStack((prevStack) => prevStack.slice(1));
+      setCanUndo(true);
+      setCanRedo(redoStack.length > 1);
     }
-
-    crs.current--;
-    await applyImage(
-      context,
-      stack.current[stack.current.length - (crs.current + 1)]
-    );
-    setCanUndo(true);
-    setCanRedo(crs.current > 0);
-    return true;
-  }, [context]);
+  }, [redoStack]);
 
   const clear = useCallback(() => {
-    stack.current = [];
-    crs.current = 0;
+    setUndoStack([]);
+    setRedoStack([]);
     setCanUndo(false);
     setCanRedo(false);
   }, []);
 
-  const history = useMemo<History>(
-    () => ({
-      setContext: (context: CanvasRenderingContext2D) => {
-        setContext(context);
-      },
-      pushState
-    }),
-    [setContext, pushState]
-  );
+  const history = useRef<History>({ pushState });
 
-  return { history, undo, redo, clear, canUndo, canRedo };
+  return {
+    history: history.current,
+    undo,
+    redo,
+    clear,
+    canUndo,
+    canRedo
+  };
 }
