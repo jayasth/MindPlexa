@@ -79,7 +79,7 @@ export const saveDrawing = async (nodeId: string, drawingData: string) => {
   }
 };
 
-export const getDrawing = async (nodeId: string) => {
+export const getDrawing = async (nodeId: string): Promise<string | null> => {
   const { data, error } = await supabase.storage
     .from('drawings')
     .download(`${nodeId}.png`);
@@ -89,7 +89,16 @@ export const getDrawing = async (nodeId: string) => {
     return null;
   }
 
-  return data;
+  if (data) {
+    const blob = new Blob([data], { type: 'image/png' });
+    return new Promise<string>((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.readAsDataURL(blob);
+    });
+  }
+
+  return null;
 };
 
 export const removeDrawing = async (nodeId: string) => {

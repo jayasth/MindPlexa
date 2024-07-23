@@ -232,7 +232,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         if (fetchedData.settings) {
           const parsedSettings = JSON.parse(fetchedData.settings);
           setToolSettings(parsedSettings);
-          // Update strokeWidth based on the current tool
           if (parsedSettings[fetchedData.currentTool]) {
             setStrokeWidth(parsedSettings[fetchedData.currentTool].strokeWidth);
           }
@@ -250,11 +249,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     const fetchDrawing = async () => {
       const drawing = await getDrawing(data.id);
       if (drawing) {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setDrawingData(reader.result as string);
-        };
-        reader.readAsDataURL(drawing);
+        setDrawingData(drawing);
       }
     };
 
