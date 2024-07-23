@@ -497,6 +497,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     canUndo,
     canRedo
   } = useHistory(drawNodeData?.drawingData || '');
+
   const [hasDrawing, setHasDrawing] = useState(false);
 
   useEffect(() => {
@@ -559,6 +560,12 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
       }
     }
   }, [zoom, nodeWidth, nodeHeight]);
+
+  useEffect(() => {
+    if (drawingData) {
+      debouncedUpdateNodeData({ data: { drawingData } }, { drawingData });
+    }
+  }, [drawingData, debouncedUpdateNodeData]);
 
   return (
     <div

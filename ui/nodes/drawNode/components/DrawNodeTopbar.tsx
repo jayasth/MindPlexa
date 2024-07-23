@@ -80,18 +80,37 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
   const [isStrokeWidthOpen, setIsStrokeWidthOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const iconSize = 16;
+
+  const handleUndo = () => {
+    undo();
+    if (artboardRef.current) {
+      const newDrawingData = artboardRef.current.getImageAsDataUri();
+      setDrawingData(newDrawingData || '');
+    }
+  };
+
+  const handleRedo = () => {
+    redo();
+    if (artboardRef.current) {
+      const newDrawingData = artboardRef.current.getImageAsDataUri();
+      setDrawingData(newDrawingData || '');
+    }
+  };
+
+  const handleClear = () => {
+    clear();
+    if (artboardRef.current) {
+      artboardRef.current.clear();
+      setDrawingData('');
+    }
+  };
+
   return (
     <div className={styles.topbar} style={{ backgroundColor }}>
       <div className={styles.toolGroup}>
         <Tooltip content="Undo">
           <button
-            onClick={() => {
-              undo();
-              if (artboardRef.current) {
-                const newDrawingData = artboardRef.current.getImageAsDataUri();
-                setDrawingData(newDrawingData || '');
-              }
-            }}
+            onClick={handleUndo}
             disabled={!canUndo}
             className={styles.toolbarButton}
             style={{ color: textColor }}
@@ -101,13 +120,7 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
         </Tooltip>
         <Tooltip content="Redo">
           <button
-            onClick={() => {
-              redo();
-              if (artboardRef.current) {
-                const newDrawingData = artboardRef.current.getImageAsDataUri();
-                setDrawingData(newDrawingData || '');
-              }
-            }}
+            onClick={handleRedo}
             disabled={!canRedo}
             className={styles.toolbarButton}
             style={{ color: textColor }}
@@ -117,7 +130,7 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
         </Tooltip>
         <Tooltip content="Clear">
           <button
-            onClick={clear}
+            onClick={handleClear}
             disabled={!hasDrawing}
             className={styles.toolbarButton}
             style={{ color: textColor }}
