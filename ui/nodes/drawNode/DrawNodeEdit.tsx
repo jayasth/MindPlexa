@@ -518,19 +518,37 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   );
 
   const download = () => artboardRef.current?.download();
+
+  const handleUndo = () => {
+    if (canUndo) {
+      undo().then(() => {
+        if (artboardRef.current) {
+          const newDrawingData = artboardRef.current.getImageAsDataUri();
+          setDrawingData(newDrawingData || '');
+        }
+      });
+    }
+  };
+
+  const handleRedo = () => {
+    if (canRedo) {
+      redo().then(() => {
+        if (artboardRef.current) {
+          const newDrawingData = artboardRef.current.getImageAsDataUri();
+          setDrawingData(newDrawingData || '');
+        }
+      });
+    }
+  };
+
   const handleClear = useCallback(() => {
     if (artboardRef.current) {
       artboardRef.current.clear();
       clearHistory();
       setDrawingData('');
       setHasDrawing(false);
-      // Update the node data
-      debouncedUpdateNodeData(
-        { data: { drawingData: '' } },
-        { drawingData: '' }
-      );
     }
-  }, [clearHistory, debouncedUpdateNodeData]);
+  }, [clearHistory]);
 
   const handleZoomIn = useCallback(() => {
     setZoom((prev) => Math.min(prev + 0.1, 3));
@@ -603,8 +621,8 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         />
       </div>
       <DrawNodeTopbar
-        undo={undo}
-        redo={redo}
+        undo={handleUndo}
+        redo={handleRedo}
         canUndo={canUndo}
         canRedo={canRedo}
         download={download}
