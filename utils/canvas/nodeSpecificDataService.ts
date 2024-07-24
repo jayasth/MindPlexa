@@ -10,8 +10,8 @@ interface DrawNodeData {
   node_id: string | null;
   current_tool: string | null;
   drawing_file_url: string | null;
-  layers: string | null; // JSON string
-  settings: string | null; // JSON string
+  layers: string | null;
+  settings: string | null;
   zoom_level: number | null;
 }
 
@@ -100,7 +100,6 @@ export const deleteNodeSpecificData = async (
   return { success: true };
 };
 
-// Helper function to process node-specific data
 export const processNodeSpecificData = (nodeType: NodeType, data: any) => {
   switch (nodeType) {
     case 'note':
@@ -140,7 +139,6 @@ export const processNodeSpecificData = (nodeType: NodeType, data: any) => {
   }
 };
 
-// Function to fetch drawing data
 export const getNodeDrawingData = async (nodeId: string) => {
   const drawingData = await getDrawing(nodeId);
   return drawingData;
