@@ -11,15 +11,13 @@ import {
 import {
   getNodeSpecificData,
   updateNodeSpecificData,
-  processNodeSpecificData
+  processNodeSpecificData,
+  getNodeDrawingData,
+  saveDrawing,
+  getDrawing,
+  removeDrawing
 } from '@/utils/canvas/nodeSpecificDataService';
 import { handleTags } from '@/utils/canvas/tagService';
-import {
-  getDrawNodeData,
-  updateDrawNodeData,
-  saveDrawing,
-  getDrawing
-} from './drawNodeService';
 
 const supabase = createClient();
 
@@ -188,7 +186,7 @@ export const fetchCanvas = async (canvasId: string) => {
       let specificNodeData;
 
       if (nodeType === 'draw') {
-        specificNodeData = await getDrawNodeData(node.id);
+        specificNodeData = await getNodeSpecificData(node.id, nodeType);
         const drawingData = await getDrawing(node.id);
         specificNodeData.drawingData = drawingData;
       } else {
@@ -274,7 +272,7 @@ export const saveCanvasState = async (canvasId: string, canvasState: any) => {
             layers: JSON.stringify(layers),
             settings: JSON.stringify(settings)
           };
-          await updateDrawNodeData(nodeId, drawNodeUpdates);
+          await updateNodeSpecificData(nodeId, nodeType, drawNodeUpdates);
           if (drawingData.drawingFileUrl) {
             await saveDrawing(nodeId, drawingData.drawingFileUrl);
           }

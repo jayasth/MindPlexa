@@ -3,40 +3,6 @@ import { toCamelCase, toSnakeCase } from '@/utils/caseConversion';
 
 const supabase = createClient();
 
-export const getDrawNodeData = async (nodeId: string) => {
-  const { data, error } = await supabase
-    .from('draw_nodes')
-    .select('*')
-    .eq('node_id', nodeId)
-    .single();
-
-  if (error) {
-    console.error('Error fetching draw node data:', error);
-    return null;
-  }
-
-  return toCamelCase(data);
-};
-
-export const updateDrawNodeData = async (nodeId: string, updates: any) => {
-  // Remove 'drawingData' from updates if it exists
-  const { drawingData, ...validUpdates } = updates;
-
-  const { data, error } = await supabase
-    .from('draw_nodes')
-    .update(toSnakeCase(validUpdates))
-    .eq('node_id', nodeId)
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error updating draw node data:', error);
-    return null;
-  }
-
-  return toCamelCase(data);
-};
-
 export const saveDrawing = async (nodeId: string, drawingData: string) => {
   if (typeof drawingData === 'string' && drawingData.includes(',')) {
     const base64Data = drawingData.split(',')[1];

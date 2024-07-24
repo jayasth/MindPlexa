@@ -1,6 +1,5 @@
 import { produce } from 'immer';
 import { updateNode as updateNodeInDB } from '@/utils/canvas/nodeService';
-import * as nodeSpecificDataService from '@/utils/canvas/nodeSpecificDataService';
 import {
   addAttachment,
   removeAttachment,
@@ -9,10 +8,7 @@ import {
 import { handleTags } from '@/utils/canvas/tagService';
 import type { NodeState } from './useNodeStore';
 import { Database } from '@/types_db';
-import {
-  updateDrawNodeData,
-  saveDrawing
-} from '@/utils/canvas/drawNodeService';
+import * as nodeSpecificDataService from '@/utils/canvas/nodeSpecificDataService';
 
 type NodeType = Exclude<
   Database['public']['Enums']['node_type'],
@@ -73,22 +69,6 @@ export const onNodesChange = async (set, get, changes, canvasId) => {
                   };
                   changedProperties['data'] = change.data;
                   hasChanges = true;
-                }
-                if (updatedNode.type === 'draw') {
-                  const drawingData = updatedNode.data.drawingData;
-                  if (drawingData) {
-                    const { currentTool, layers, settings } = drawingData;
-                    const drawNodeUpdates = {
-                      currentTool,
-                      layers: JSON.stringify(layers),
-                      settings: JSON.stringify(settings),
-                      zoom_level: updatedNode.data.zoomLevel
-                    };
-                    updateDrawNodeData(updatedNode.id, drawNodeUpdates);
-                    if (drawingData.drawingFileUrl) {
-                      saveDrawing(updatedNode.id, drawingData.drawingFileUrl);
-                    }
-                  }
                 }
                 break;
               case 'style':
@@ -174,18 +154,14 @@ export const onNodesChange = async (set, get, changes, canvasId) => {
                   };
                   const drawingData = updatedNode.data.drawingData;
                   if (drawingData) {
-                    saveDrawing(updatedNode.id, drawingData).then((result) => {
-                      if (result) {
-                        specificUpdates['drawing_file_url'] =
-                          result.drawingFileUrl;
-                        updateNodeInDB(
-                          updatedNode.id,
-                          nodeUpdates,
-                          specificUpdates,
-                          updatedNode.type as NodeType
-                        );
-                      }
-                    });
+                    nodeSpecificDataService
+                      .saveDrawing(updatedNode.id, drawingData)
+                      .then((result) => {
+                        if (result) {
+                          specificUpdates['drawing_file_url'] =
+                            result.drawingFileUrl;
+                        }
+                      });
                   }
                   break;
               }

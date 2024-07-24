@@ -14,10 +14,6 @@ import {
   deleteNodeSpecificData
 } from '@/utils/canvas/nodeSpecificDataService';
 import { handleTags } from '@/utils/canvas/tagService';
-import {
-  updateDrawNodeData,
-  removeDrawing
-} from '@/utils/canvas/drawNodeService';
 
 // Add this line to define NodeType
 type NodeType = Exclude<
@@ -270,27 +266,6 @@ export const updateNode = async (
     }
   }
 
-  // Handle draw node
-  if (nodeType === 'draw') {
-    const drawNodeData = specificUpdates.drawData;
-    if (drawNodeData) {
-      const { currentTool, layers, settings } = drawNodeData;
-      const drawNodeUpdates = {
-        currentTool,
-        layers: JSON.stringify(layers),
-        settings: JSON.stringify(settings)
-      };
-      const { error: drawError } = await updateDrawNodeData(
-        id,
-        drawNodeUpdates
-      );
-      if (drawError) {
-        console.error('nodeService: Error updating draw node:', drawError);
-        return { error: drawError };
-      }
-    }
-  }
-
   return { data: { ...nodeData, ...specificUpdates } };
 };
 
@@ -336,10 +311,6 @@ export const deleteNode = async (
       );
       return { error: specificError };
     }
-  }
-
-  if (nodeType === 'draw') {
-    await removeDrawing(nodeId);
   }
 
   const { error: nodeError } = await supabase

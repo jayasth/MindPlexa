@@ -3,7 +3,6 @@ import {
   updateNode as updateNodeInDB,
   deleteNode as deleteNodeInDB
 } from '@/utils/canvas/nodeService';
-import * as nodeSpecificDataService from '@/utils/canvas/nodeSpecificDataService';
 import {
   addAttachment,
   removeAttachment,
@@ -12,7 +11,7 @@ import {
 import { handleTags } from '@/utils/canvas/tagService';
 import type { NodeState } from './useNodeStore';
 import { Database } from '@/types_db';
-import { saveDrawing } from '@/utils/canvas/drawNodeService';
+import * as nodeSpecificDataService from '@/utils/canvas/nodeSpecificDataService';
 
 type NodeType = Exclude<
   Database['public']['Enums']['node_type'],
@@ -107,17 +106,8 @@ export const updateNode = async (set, get, id, data, canvasId) => {
               specificUpdates = {
                 current_tool: updatedNode.data.currentTool,
                 layers: JSON.stringify(updatedNode.data.layers),
-                settings: JSON.stringify(updatedNode.data.settings),
-                drawingData: updatedNode.data.drawingData
+                settings: JSON.stringify(updatedNode.data.settings)
               };
-              const drawingData = updatedNode.data.drawingData;
-              if (drawingData) {
-                saveDrawing(id, drawingData).then((result) => {
-                  if (result) {
-                    specificUpdates['drawing_file_url'] = result.drawingFileUrl;
-                  }
-                });
-              }
               break;
           }
 
