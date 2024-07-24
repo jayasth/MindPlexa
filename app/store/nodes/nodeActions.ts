@@ -105,8 +105,10 @@ export const updateNode = async (set, get, id, data, canvasId) => {
             case 'draw':
               specificUpdates = {
                 current_tool: updatedNode.data.currentTool,
+                drawing_file_url: updatedNode.data.drawingFileUrl,
                 layers: JSON.stringify(updatedNode.data.layers),
-                settings: JSON.stringify(updatedNode.data.settings)
+                settings: JSON.stringify(updatedNode.data.settings),
+                zoom_level: updatedNode.data.zoomLevel
               };
               break;
           }

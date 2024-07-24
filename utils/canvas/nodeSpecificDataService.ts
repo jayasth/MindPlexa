@@ -14,7 +14,6 @@ interface DrawNodeData {
   settings: string | null;
   zoom_level: number | null;
 }
-
 export const getNodeSpecificData = async (
   nodeId: string,
   nodeType: NodeType
