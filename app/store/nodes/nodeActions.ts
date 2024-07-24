@@ -195,6 +195,11 @@ export const removeNode = async (set, get, id, canvasId) => {
           state.nodeInternals.delete(id);
           console.log(`useNodeStore: Node with id ${id} removed`, nodeToRemove);
           state.nodes = state.nodes.filter((node) => node.id !== id);
+
+          // Ensure the drawing is deleted from the bucket when the node is deleted
+          if (nodeToRemove.type === 'draw') {
+            nodeSpecificDataService.removeDrawing(id);
+          }
         }
       })
     );
