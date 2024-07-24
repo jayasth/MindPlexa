@@ -81,7 +81,8 @@ export const onNodesChange = async (set, get, changes, canvasId) => {
                     const drawNodeUpdates = {
                       currentTool,
                       layers: JSON.stringify(layers),
-                      settings: JSON.stringify(settings)
+                      settings: JSON.stringify(settings),
+                      zoom_level: updatedNode.data.zoomLevel
                     };
                     updateDrawNodeData(updatedNode.id, drawNodeUpdates);
                     if (drawingData.drawingFileUrl) {
@@ -168,7 +169,8 @@ export const onNodesChange = async (set, get, changes, canvasId) => {
                   specificUpdates = {
                     current_tool: updatedNode.data.currentTool,
                     layers: JSON.stringify(updatedNode.data.layers),
-                    settings: JSON.stringify(updatedNode.data.settings)
+                    settings: JSON.stringify(updatedNode.data.settings),
+                    zoom_level: updatedNode.data.zoomLevel
                   };
                   const drawingData = updatedNode.data.drawingData;
                   if (drawingData) {
@@ -179,10 +181,7 @@ export const onNodesChange = async (set, get, changes, canvasId) => {
                         updateNodeInDB(
                           updatedNode.id,
                           nodeUpdates,
-                          {
-                            ...specificUpdates,
-                            drawing_file_url: result.drawingFileUrl
-                          },
+                          specificUpdates,
                           updatedNode.type as NodeType
                         );
                       }

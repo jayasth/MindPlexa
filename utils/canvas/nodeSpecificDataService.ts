@@ -1,5 +1,4 @@
 import { createClient } from '@/utils/supabase/supabaseClient';
-import { Database } from '@/types_db';
 import { saveDrawing, getDrawing } from '@/utils/canvas/drawNodeService';
 
 const supabase = createClient();
