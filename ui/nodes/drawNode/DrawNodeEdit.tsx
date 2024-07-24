@@ -348,7 +348,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
             <Artboard
               ref={artboardRef}
               tool={tools[currentTool].tool}
-              history={history}
               content={drawingData}
               onContentChange={handleDrawingChange}
               width={nodeWidth / 2}
