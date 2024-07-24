@@ -147,11 +147,19 @@ export const getNodeDrawingData = async (nodeId: string) => {
 
 export const saveDrawing = async (nodeId: string, drawingData: string) => {
   try {
-    // Convert base64 to blob
-    const base64Data = drawingData.split(',')[1];
-    const blob = await fetch(`data:image/png;base64,${base64Data}`).then(
-      (res) => res.blob()
-    );
+    // Check if drawingData is already a base64 string or a full data URL
+    const base64Data = drawingData.startsWith('data:image/png;base64,')
+      ? drawingData.split(',')[1]
+      : drawingData;
+
+    // Convert base64 to blob directly without using fetch
+    const byteCharacters = atob(base64Data);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], { type: 'image/png' });
 
     const { data, error } = await supabase.storage
       .from('drawings')
