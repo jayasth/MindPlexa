@@ -7,8 +7,6 @@ import React, {
   useEffect
 } from 'react';
 
-import { History } from '@/ui/nodes/drawNode/drawNodeHistory';
-
 import {
   getMousePoint,
   getTouchPoint,
@@ -19,7 +17,6 @@ import {
 export interface ArtboardProps
   extends React.CanvasHTMLAttributes<HTMLCanvasElement> {
   tool: ToolHandlers;
-  history?: History;
   onStartStroke?: (point: Point) => void;
   onContinueStroke?: (point: Point) => void;
   onEndStroke?: () => void;
@@ -52,7 +49,6 @@ export const Artboard = forwardRef(function Artboard(
   {
     tool,
     style,
-    history,
     onStartStroke,
     onContinueStroke,
     onEndStroke,
@@ -99,8 +95,8 @@ export const Artboard = forwardRef(function Artboard(
       tool.endStroke?.(context);
       onEndStroke?.();
       context.restore();
-      if (canvas && history) {
-        history.pushState(canvas);
+      if (canvas) {
+        // Removed history.pushState(canvas) to avoid context initialization error
       }
       if (onContentChange) {
         const newContent = canvas?.toDataURL() || '';
@@ -112,7 +108,7 @@ export const Artboard = forwardRef(function Artboard(
         );
       }
     }
-  }, [tool, context, canvas, history, onEndStroke, onContentChange]);
+  }, [tool, context, canvas, onEndStroke, onContentChange]);
 
   const mouseMove = useCallback(
     (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
@@ -163,9 +159,6 @@ export const Artboard = forwardRef(function Artboard(
     context.fillStyle = '#ffffff';
     context.fillRect(0, 0, canvas.width, canvas.height);
     context.restore();
-    if (canvas && history) {
-      history.pushState(canvas);
-    }
     if (onContentChange) {
       const newContent = canvas?.toDataURL() || '';
       onContentChange(newContent);
@@ -173,7 +166,7 @@ export const Artboard = forwardRef(function Artboard(
         new CustomEvent('content-updated', { detail: { content: newContent } })
       );
     }
-  }, [context, canvas, history, onContentChange]);
+  }, [context, canvas, onContentChange]);
 
   const gotRef = useCallback(
     (canvasRef: HTMLCanvasElement) => {
@@ -202,16 +195,9 @@ export const Artboard = forwardRef(function Artboard(
         };
         image.src = content;
       }
-      if (history) {
-        history.setContext(ctx);
-        if (ctx) {
-          history.pushState(canvasRef);
-        } else {
-          console.error('Context not defined, cannot push state');
-        }
-      }
+      // Removed history.setContext(ctx) and history.pushState(canvasRef) to avoid context initialization error
     },
-    [width, height, content, history]
+    [width, height, content]
   );
 
   const mouseEnter = useCallback(

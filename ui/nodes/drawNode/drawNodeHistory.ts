@@ -1,11 +1,6 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 
 async function applyImage(context: CanvasRenderingContext2D, blob: Blob) {
-  if (!context) {
-    console.error('Context not initialised');
-    return false;
-  }
-
   const img = new Image();
   img.onload = () => {
     context.canvas.width = img.width;
@@ -40,10 +35,6 @@ export function useHistory(size?: number): HistoryHook {
 
   const pushState = useCallback(
     async (canvas: HTMLCanvasElement) => {
-      if (!context) {
-        console.error('Context not initialised');
-        return false;
-      }
       const blob = await new Promise<Blob | null>((resolve) =>
         canvas.toBlob(resolve)
       );
@@ -51,8 +42,8 @@ export function useHistory(size?: number): HistoryHook {
         // Check if the canvas dimensions have changed
         if (
           stack.current.length === 0 ||
-          canvas.width !== context.canvas.width ||
-          canvas.height !== context.canvas.height
+          canvas.width !== context?.canvas.width ||
+          canvas.height !== context?.canvas.height
         ) {
           // If the dimensions have changed, clear the stack and push the new state
           stack.current = [blob];
@@ -78,18 +69,13 @@ export function useHistory(size?: number): HistoryHook {
   );
 
   const undo = useCallback(async () => {
-    if (
-      !context ||
-      stack.current.length <= 1 ||
-      crs.current + 1 >= stack.current.length
-    ) {
-      console.error('Context not initialised or no states to undo');
+    if (stack.current.length <= 1 || crs.current + 1 >= stack.current.length) {
       return false;
     }
 
     crs.current++;
     await applyImage(
-      context,
+      context!,
       stack.current[stack.current.length - (crs.current + 1)]
     );
     setCanUndo(crs.current + 1 < stack.current.length);
@@ -98,14 +84,13 @@ export function useHistory(size?: number): HistoryHook {
   }, [context]);
 
   const redo = useCallback(async () => {
-    if (!context || crs.current <= 0) {
-      console.error('Context not initialised or no states to redo');
+    if (crs.current <= 0) {
       return false;
     }
 
     crs.current--;
     await applyImage(
-      context,
+      context!,
       stack.current[stack.current.length - (crs.current + 1)]
     );
     setCanUndo(true);
