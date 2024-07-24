@@ -81,7 +81,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   });
 
   const { canvasId } = useCanvasStore();
-  const [isSelected, setIsSelected] = useState(selected);
   const [title, setTitle] = useState(data.title || 'Untitled Drawing');
   const [drawingData, setDrawingData] = useState(data.drawingData || '');
   const [backgroundColor, setBackgroundColor] = useState(

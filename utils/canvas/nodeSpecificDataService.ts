@@ -132,7 +132,8 @@ export const processNodeSpecificData = (nodeType: NodeType, data: any) => {
         currentTool: data.current_tool || '',
         drawingFileUrl: data.drawing_file_url || '',
         layers: data.layers ? JSON.parse(data.layers) : [],
-        settings: data.settings ? JSON.parse(data.settings) : {}
+        settings: data.settings ? JSON.parse(data.settings) : {},
+        zoomLevel: data.zoom_level || 1
       };
     default:
       return {};

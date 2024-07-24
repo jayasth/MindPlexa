@@ -83,7 +83,6 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
   });
 
   const { canvasId } = useCanvasStore();
-  const [isSelected, setIsSelected] = useState(selected);
   const [title, setTitle] = useState(data.title || 'Untitled Task');
   const [tasks, setTasks] = useState(data.tasks || []);
   const [backgroundColor, setBackgroundColor] = useState(
