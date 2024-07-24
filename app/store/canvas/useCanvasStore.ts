@@ -6,7 +6,6 @@ import type { Node } from 'reactflow';
 import useNodeStore from '../nodes/useNodeStore';
 import useEdgeStore from '../edges/useEdgeStore';
 import { enableMapSet } from 'immer';
-import { getNodeDrawingData } from '@/utils/canvas/nodeSpecificDataService';
 
 // Enable the MapSet plugin for Immer
 enableMapSet();
@@ -65,12 +64,6 @@ const processNode = async (node: any) => {
     }
   }
 
-  // Only fetch drawing data if it's a draw node and data is not already present
-  if (node.type === 'draw' && !node.data?.drawingData) {
-    const drawingData = await getNodeDrawingData(node.id);
-    node.data = { ...node.data, drawingData };
-  }
-
   return {
     id: node.id,
     type: node.type,
@@ -100,8 +93,7 @@ const processNode = async (node: any) => {
       showCompletedTasks: node.data?.showCompletedTasks ?? true,
       showDueDate: node.data?.showDueDate ?? true,
       showPriority: node.data?.showPriority ?? true,
-      sortBy: node.data?.sortBy || '',
-      drawingData: node.data?.drawingData // Added line
+      sortBy: node.data?.sortBy || ''
     },
     width: node.isEditing
       ? (isDesktop ? node.editWidth : node.mobileEditWidth) || node.viewWidth
