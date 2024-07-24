@@ -1,6 +1,11 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 
 async function applyImage(context: CanvasRenderingContext2D, blob: Blob) {
+  if (!context) {
+    console.error('Context not initialised');
+    return false;
+  }
+
   const img = new Image();
   img.onload = () => {
     context.canvas.width = img.width;
@@ -78,6 +83,7 @@ export function useHistory(size?: number): HistoryHook {
       stack.current.length <= 1 ||
       crs.current + 1 >= stack.current.length
     ) {
+      console.error('Context not initialised or no states to undo');
       return false;
     }
 
@@ -93,6 +99,7 @@ export function useHistory(size?: number): HistoryHook {
 
   const redo = useCallback(async () => {
     if (!context || crs.current <= 0) {
+      console.error('Context not initialised or no states to redo');
       return false;
     }
 

@@ -204,7 +204,11 @@ export const Artboard = forwardRef(function Artboard(
       }
       if (history) {
         history.setContext(ctx);
-        history.pushState(canvasRef);
+        if (ctx) {
+          history.pushState(canvasRef);
+        } else {
+          console.error('Context not defined, cannot push state');
+        }
       }
     },
     [width, height, content, history]
