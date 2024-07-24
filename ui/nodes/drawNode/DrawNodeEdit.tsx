@@ -353,6 +353,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
               width={nodeWidth / 2}
               height={nodeHeight / 2}
               style={{ border: '1px gray solid' }}
+              history={history}
             />
           </div>
         </div>
