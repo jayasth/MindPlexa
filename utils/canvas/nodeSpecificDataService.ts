@@ -145,12 +145,17 @@ export const getNodeDrawingData = async (nodeId: string) => {
   return drawingData;
 };
 
-export const saveDrawing = async (nodeId: string, drawingData: any) => {
+export const saveDrawing = async (nodeId: string, drawingData: string) => {
   try {
-    const blob = new Blob([drawingData], { type: 'image/png' });
+    // Convert base64 to blob
+    const base64Data = drawingData.split(',')[1];
+    const blob = await fetch(`data:image/png;base64,${base64Data}`).then(
+      (res) => res.blob()
+    );
+
     const { data, error } = await supabase.storage
       .from('drawings')
-      .upload(`${nodeId}.png`, blob);
+      .upload(`${nodeId}.png`, blob, { upsert: true });
 
     if (error) {
       console.error('Error saving drawing:', error);
@@ -181,22 +186,12 @@ export const getDrawing = async (nodeId: string) => {
       return null;
     }
 
-    const blob = await data.arrayBuffer();
-    const drawingDataUrl = await blobToDataURL(blob);
-    return drawingDataUrl;
+    const url = URL.createObjectURL(data);
+    return url;
   } catch (error) {
     console.error('Error fetching drawing:', error);
     return null;
   }
-};
-
-const blobToDataURL = async (blob: ArrayBuffer): Promise<string> => {
-  const blobData = new Blob([new Uint8Array(blob)], { type: 'image/png' });
-  return new Promise<string>((resolve) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result as string);
-    reader.readAsDataURL(blobData);
-  });
 };
 
 export const removeDrawing = async (nodeId: string) => {
