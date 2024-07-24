@@ -102,7 +102,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const [currentTool, setCurrentTool] = useState(0);
 
   const artboardRef = useRef<ArtboardRef | null>(null);
-  const { undo, redo, history, canUndo, canRedo } = useHistory();
 
   const handleBackgroundColorChange = useBackgroundColorChange(
     data.id,
@@ -262,9 +261,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
 
   const tools = initializeTools(color, strokeWidth);
 
-  const handleDrawingChange = useCallback((newDrawingData: string) => {
-    setDrawingData(newDrawingData);
-  }, []);
+  const { undo, redo, history, canUndo, canRedo } = useHistory();
 
   const memoizedTagFileContainer = useMemo(
     () => (
@@ -346,14 +343,13 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         <div className={styles.mainContent}>
           <div className={`${styles.artboardContainer} nodrag nowheel`}>
             <Artboard
-              ref={artboardRef}
               tool={tools[currentTool].tool}
+              ref={artboardRef}
+              history={history}
+              style={{ border: '1px gray solid' }}
               content={drawingData}
-              onContentChange={handleDrawingChange}
               width={nodeWidth / 2}
               height={nodeHeight / 2}
-              style={{ border: '1px gray solid' }}
-              history={history}
             />
           </div>
         </div>

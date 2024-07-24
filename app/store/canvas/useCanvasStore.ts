@@ -65,9 +65,10 @@ const processNode = async (node: any) => {
     }
   }
 
-  if (node.type === 'draw') {
+  // Only fetch drawing data if it's a draw node and data is not already present
+  if (node.type === 'draw' && !node.data?.drawingData) {
     const drawingData = await getNodeDrawingData(node.id);
-    node.data.drawingData = drawingData;
+    node.data = { ...node.data, drawingData };
   }
 
   return {
@@ -163,10 +164,7 @@ const useCanvasStore = create<CanvasState>()(
           console.log('useCanvasStore: Fetched canvas data:', canvasData);
 
           const nodes = await Promise.all(canvasData.nodes.map(processNode));
-          console.log('useCanvasStore: Processed nodes:', nodes);
-
           const edges = canvasData.edges.map(processEdge);
-          console.log('useCanvasStore: Processed edges:', edges);
 
           useNodeStore.getState().setNodes(nodes);
           useEdgeStore.getState().setEdges(edges);
