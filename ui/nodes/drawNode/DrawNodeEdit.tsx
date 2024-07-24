@@ -44,6 +44,7 @@ import { debounce } from 'lodash';
 import useNodeStore from '@/app/store/nodes/useNodeStore';
 import useCanvasStore from '@/app/store/canvas/useCanvasStore';
 import { initializeTools } from './toolInitialization';
+import { saveDrawing } from '@/utils/canvas/nodeSpecificDataService';
 
 interface DrawNodeEditProps extends NodeProps {
   data: any;
@@ -272,6 +273,14 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     [tags, attachedFiles, onRemoveTag, onRemoveFile, textColor]
   );
 
+  const handleDrawingChange = useCallback(
+    (newDrawingData: string) => {
+      setDrawingData(newDrawingData);
+      saveDrawing(data.id, newDrawingData); // Save the drawing data
+    },
+    [data.id]
+  );
+
   return (
     <div
       className={styles.drawNode}
@@ -343,6 +352,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
               ref={artboardRef}
               style={{ border: '1px gray solid' }}
               content={drawingData}
+              onContentChange={handleDrawingChange}
               width={nodeWidth / 2}
               height={nodeHeight / 2}
             />

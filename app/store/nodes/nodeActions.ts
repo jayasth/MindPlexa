@@ -110,6 +110,14 @@ export const updateNode = async (set, get, id, data, canvasId) => {
                 settings: JSON.stringify(updatedNode.data.settings),
                 zoom_level: updatedNode.data.zoomLevel
               };
+              // Adjusted to handle draw node's specific data
+              if (data.data?.drawingData) {
+                nodeSpecificDataService.updateNodeSpecificData(
+                  id,
+                  existingNode.type as NodeType,
+                  { drawing_file_url: data.data.drawingData }
+                );
+              }
               break;
           }
 

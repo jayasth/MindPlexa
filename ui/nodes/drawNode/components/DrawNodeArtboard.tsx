@@ -52,7 +52,7 @@ export const Artboard = forwardRef(function Artboard(
     onStartStroke,
     onContinueStroke,
     onEndStroke,
-    content,
+    content: initialContent,
     onContentChange,
     width,
     height,
@@ -64,6 +64,15 @@ export const Artboard = forwardRef(function Artboard(
   const [context, setContext] = useState<CanvasRenderingContext2D | null>();
   const [canvas, setCanvas] = useState<HTMLCanvasElement>();
   const [drawing, setDrawing] = useState(false);
+  const [content, setContent] = useState(initialContent || '');
+
+  const handleContentChange = useCallback(
+    (newContent: string) => {
+      setContent(newContent);
+      onContentChange?.(newContent);
+    },
+    [onContentChange]
+  );
 
   const startStroke = useCallback(
     (point: Point) => {
@@ -98,17 +107,15 @@ export const Artboard = forwardRef(function Artboard(
       if (canvas) {
         // Removed history.pushState(canvas) to avoid context initialization error
       }
-      if (onContentChange) {
-        const newContent = canvas?.toDataURL() || '';
-        onContentChange(newContent);
-        window.dispatchEvent(
-          new CustomEvent('content-updated', {
-            detail: { content: newContent }
-          })
-        );
-      }
+      const newContent = canvas?.toDataURL() || '';
+      handleContentChange(newContent);
+      window.dispatchEvent(
+        new CustomEvent('content-updated', {
+          detail: { content: newContent }
+        })
+      );
     }
-  }, [tool, context, canvas, onEndStroke, onContentChange]);
+  }, [tool, context, canvas, onEndStroke, handleContentChange]);
 
   const mouseMove = useCallback(
     (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
@@ -159,14 +166,12 @@ export const Artboard = forwardRef(function Artboard(
     context.fillStyle = '#ffffff';
     context.fillRect(0, 0, canvas.width, canvas.height);
     context.restore();
-    if (onContentChange) {
-      const newContent = canvas?.toDataURL() || '';
-      onContentChange(newContent);
-      window.dispatchEvent(
-        new CustomEvent('content-updated', { detail: { content: newContent } })
-      );
-    }
-  }, [context, canvas, onContentChange]);
+    const newContent = canvas?.toDataURL() || '';
+    handleContentChange(newContent);
+    window.dispatchEvent(
+      new CustomEvent('content-updated', { detail: { content: newContent } })
+    );
+  }, [context, canvas, handleContentChange]);
 
   const gotRef = useCallback(
     (canvasRef: HTMLCanvasElement) => {
@@ -270,10 +275,8 @@ export const Artboard = forwardRef(function Artboard(
   }, [width, height, onResize, canvas, context, content]);
 
   useEffect(() => {
-    if (onContentChange) {
-      onContentChange(canvas?.toDataURL() || '');
-    }
-  }, [canvas, onContentChange]);
+    handleContentChange(canvas?.toDataURL() || '');
+  }, [canvas, handleContentChange]);
 
   return (
     <canvas
@@ -291,3 +294,5 @@ export const Artboard = forwardRef(function Artboard(
     />
   );
 });
+
+export default Artboard;
