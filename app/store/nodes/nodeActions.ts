@@ -102,15 +102,14 @@ export const updateNode = async (set, get, id, data, canvasId) => {
                 default_locale: updatedNode.data.defaultLocale
               };
               break;
+            // In the updateNode function, replace the draw case with:
             case 'draw':
               specificUpdates = {
                 current_tool: updatedNode.data.currentTool,
-                drawing_file_url: updatedNode.data.drawingFileUrl,
                 layers: JSON.stringify(updatedNode.data.layers),
                 settings: JSON.stringify(updatedNode.data.settings),
                 zoom_level: updatedNode.data.zoomLevel
               };
-              // Adjusted to handle draw node's specific data
               if (data.data?.drawingData) {
                 const svgPath = nodeSpecificDataService.uploadSVGToBucket(
                   id,
