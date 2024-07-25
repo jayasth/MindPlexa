@@ -25,6 +25,15 @@ export interface ArtboardProps
   width: number;
   height: number;
   onResize?: () => void;
+  zoomLevel: number;
+}
+
+export interface ToolHandlers {
+  name: string;
+  startStroke?: (point: Point, context: CanvasRenderingContext2D) => void;
+  continueStroke?: (point: Point, context: CanvasRenderingContext2D) => void;
+  endStroke?: (context: CanvasRenderingContext2D) => void;
+  cursor?: string;
 }
 
 export interface ArtboardRef {
@@ -35,14 +44,6 @@ export interface ArtboardRef {
   width: number;
   height: number;
   canvas: HTMLCanvasElement;
-}
-
-export interface ToolHandlers {
-  name: string;
-  startStroke?: (point: Point, context: CanvasRenderingContext2D) => void;
-  continueStroke?: (point: Point, context: CanvasRenderingContext2D) => void;
-  endStroke?: (context: CanvasRenderingContext2D) => void;
-  cursor?: string;
 }
 
 export const Artboard = forwardRef(function Artboard(
@@ -57,6 +58,7 @@ export const Artboard = forwardRef(function Artboard(
     width,
     height,
     onResize,
+    zoomLevel,
     ...props
   }: ArtboardProps,
   ref: ForwardedRef<ArtboardRef>
@@ -162,8 +164,8 @@ export const Artboard = forwardRef(function Artboard(
       return;
     }
     context.save();
-    context.fillStyle = '#ffffff';
-    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.setTransform(1, 0, 0, 1, 0, 0);
+    context.clearRect(0, 0, canvas.width, canvas.height);
     context.restore();
     const newContent = canvas.toDataURL() || '';
     handleContentChange(newContent);
@@ -224,6 +226,26 @@ export const Artboard = forwardRef(function Artboard(
     },
     [continueStroke, drawing, endStroke]
   );
+
+  useEffect(() => {
+    if (context && canvas) {
+      context.setTransform(zoomLevel, 0, 0, zoomLevel, 0, 0);
+      redrawCanvas();
+    }
+  }, [zoomLevel, context, canvas]);
+
+  const redrawCanvas = useCallback(() => {
+    if (!context || !canvas) return;
+
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    if (content) {
+      const image = new Image();
+      image.onload = () => {
+        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+      };
+      image.src = content;
+    }
+  }, [context, canvas, content]);
 
   useImperativeHandle(
     ref,

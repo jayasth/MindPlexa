@@ -9,6 +9,21 @@ export const getNodeSpecificData = async (
   nodeId: string,
   nodeType: NodeType
 ): Promise<any | null> => {
+  if (nodeType === 'draw') {
+    const { data: drawData, error: drawError } = await supabase
+      .from('draw_nodes')
+      .select('*')
+      .eq('node_id', nodeId)
+      .single();
+
+    if (drawError) {
+      console.error('Error fetching draw node data:', drawError);
+      return null;
+    }
+
+    return drawData;
+  }
+
   const { data, error } = await supabase
     .from(`${nodeType}_nodes`)
     .select('*')
@@ -28,6 +43,22 @@ export const updateNodeSpecificData = async (
   nodeType: NodeType,
   updates: any
 ) => {
+  if (nodeType === 'draw') {
+    const { data, error } = await supabase
+      .from('draw_nodes')
+      .update(toSnakeCase(updates))
+      .eq('node_id', nodeId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error updating draw node data:', error);
+      return { error };
+    }
+
+    return { data };
+  }
+
   const { data, error } = await supabase
     .from(`${nodeType}_nodes`)
     .update(toSnakeCase(updates))
@@ -48,6 +79,21 @@ export const createNodeSpecificData = async (
   nodeType: NodeType,
   initialData: any
 ) => {
+  if (nodeType === 'draw') {
+    const { data, error } = await supabase
+      .from('draw_nodes')
+      .insert({ ...initialData, node_id: nodeId })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating draw node data:', error);
+      return { error };
+    }
+
+    return { data };
+  }
+
   const { data, error } = await supabase
     .from(`${nodeType}_nodes`)
     .insert({ ...initialData, node_id: nodeId })
@@ -66,6 +112,20 @@ export const deleteNodeSpecificData = async (
   nodeId: string,
   nodeType: NodeType
 ) => {
+  if (nodeType === 'draw') {
+    const { error } = await supabase
+      .from('draw_nodes')
+      .delete()
+      .eq('node_id', nodeId);
+
+    if (error) {
+      console.error('Error deleting draw node data:', error);
+      return { error };
+    }
+
+    return { success: true };
+  }
+
   const { error } = await supabase
     .from(`${nodeType}_nodes`)
     .delete()
@@ -101,7 +161,11 @@ export const processNodeSpecificData = (nodeType: NodeType, data: any) => {
       };
     case 'draw':
       return {
-        // Add table-specific data processing here
+        currentTool: data.current_tool || '',
+        drawingFileUrl: data.drawing_file_url || '',
+        layers: data.layers || [],
+        settings: data.settings || {},
+        zoomLevel: data.zoom_level || 1
       };
     case 'table':
       return {

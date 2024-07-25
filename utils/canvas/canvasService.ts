@@ -199,6 +199,18 @@ export const fetchCanvas = async (canvasId: string) => {
       delete node.nodeTags;
       delete node.nodeAttachments;
 
+      // Handle draw node specific processing
+      if (nodeType === 'draw') {
+        const drawData = await getNodeSpecificData(node.id, 'draw');
+        if (drawData) {
+          processedData.drawingFileUrl = drawData.drawing_file_url;
+          processedData.currentTool = drawData.current_tool;
+          processedData.layers = drawData.layers;
+          processedData.settings = drawData.settings;
+          processedData.zoomLevel = drawData.zoom_level;
+        }
+      }
+
       return {
         ...node,
         data: {
@@ -250,10 +262,24 @@ export const saveCanvasState = async (canvasId: string, canvasState: any) => {
 
     // Update node-specific data
     if (nodeType !== 'selection_menu') {
+      let specificUpdates = {};
+
+      if (nodeType === 'draw') {
+        specificUpdates = {
+          drawing_file_url: data.drawingFileUrl,
+          current_tool: data.currentTool,
+          layers: data.layers,
+          settings: data.settings,
+          zoom_level: data.zoomLevel
+        };
+      } else {
+        specificUpdates = data;
+      }
+
       const { error: specificNodeUpdateError } = await updateNodeSpecificData(
         nodeId,
         nodeType,
-        data
+        specificUpdates
       );
 
       if (specificNodeUpdateError) {

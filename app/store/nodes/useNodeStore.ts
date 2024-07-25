@@ -38,6 +38,11 @@ export interface NodeState {
     canvasId: string
   ) => Promise<void>;
   onNodesChange: (changes: any, canvasId: string) => Promise<void>;
+  updateDrawNodeData: (
+    id: string,
+    drawingData: string,
+    canvasId: string
+  ) => Promise<void>;
 }
 
 const useNodeStore = create<NodeState>()(
@@ -64,7 +69,23 @@ const useNodeStore = create<NodeState>()(
         canvasId
       ),
     onNodesChange: (changes, canvasId) =>
-      onNodesChange(set, get, changes, canvasId)
+      onNodesChange(set, get, changes, canvasId),
+    updateDrawNodeData: async (id, drawingData, canvasId) => {
+      set((state) => ({
+        nodes: state.nodes.map((node) =>
+          node.id === id
+            ? {
+                ...node,
+                data: {
+                  ...node.data,
+                  drawingData
+                }
+              }
+            : node
+        )
+      }));
+      await updateNode(set, get, id, { data: { drawingData } }, canvasId);
+    }
   }))
 );
 

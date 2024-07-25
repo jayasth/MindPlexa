@@ -44,6 +44,7 @@ import { debounce } from 'lodash';
 import useNodeStore from '@/app/store/nodes/useNodeStore';
 import useCanvasStore from '@/app/store/canvas/useCanvasStore';
 import { initializeTools } from './toolInitialization';
+import { useHistory } from './drawNodeHistory';
 
 interface DrawNodeEditProps extends NodeProps {
   data: any;
@@ -68,17 +69,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   position,
   onResize
 }) => {
-  console.log('DrawNodeEdit: Node details:', {
-    id: data.id,
-    title: data.title,
-    drawingData: data.drawingData,
-    backgroundColor: data.backgroundColor,
-    textColor: data.textColor,
-    width,
-    height,
-    position
-  });
-
   const { canvasId } = useCanvasStore();
   const [title, setTitle] = useState(data.title || 'Untitled Drawing');
   const [drawingData, setDrawingData] = useState(data.drawingData || '');
@@ -98,8 +88,10 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const [color, setColor] = useState('#531B93');
   const [strokeWidth, setStrokeWidth] = useState(5);
   const [currentTool, setCurrentTool] = useState(0);
+  const [zoomLevel, setZoomLevel] = useState(1);
 
   const artboardRef = useRef<ArtboardRef | null>(null);
+  const { history, undo, redo, clear, canUndo, canRedo } = useHistory();
 
   const handleBackgroundColorChange = useBackgroundColorChange(
     data.id,
@@ -276,6 +268,14 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     setDrawingData(newDrawingData);
   }, []);
 
+  const handleZoomIn = () => {
+    setZoomLevel((prevZoom) => Math.min(prevZoom * 1.1, 5));
+  };
+
+  const handleZoomOut = () => {
+    setZoomLevel((prevZoom) => Math.max(prevZoom / 1.1, 0.1));
+  };
+
   return (
     <div
       className={styles.drawNode}
@@ -304,14 +304,18 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         />
       </div>
       <DrawNodeTopbar
-        undo={() => {}}
-        redo={() => {}}
-        canUndo={false}
-        canRedo={false}
+        undo={undo}
+        redo={redo}
+        canUndo={canUndo}
+        canRedo={canRedo}
         download={() => artboardRef.current?.download()}
-        clear={() => artboardRef.current?.clear()}
-        onZoomIn={() => {}}
-        onZoomOut={() => {}}
+        clear={() => {
+          clear();
+          artboardRef.current?.clear();
+          setDrawingData('');
+        }}
+        onZoomIn={handleZoomIn}
+        onZoomOut={handleZoomOut}
         backgroundColor={backgroundColor}
         textColor={textColor}
         color={color}
@@ -350,6 +354,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
               onContentChange={handleDrawingChange}
               width={nodeWidth / 2}
               height={nodeHeight / 2}
+              zoomLevel={zoomLevel}
             />
           </div>
         </div>

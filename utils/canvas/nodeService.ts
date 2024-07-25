@@ -152,14 +152,11 @@ export const createNode = async (
         );
 
       if (specificNodeError) {
-        console.error(
-          `nodeService: Error inserting ${nodeType} node:`,
-          specificNodeError
-        );
+        console.error(`Error creating ${nodeType} node:`, specificNodeError);
         return { error: specificNodeError };
       }
 
-      console.log(`nodeService: ${nodeType} node created:`, specificNodeData);
+      console.log(`${nodeType} node created:`, specificNodeData);
 
       return {
         data: {
@@ -186,9 +183,9 @@ export const createNode = async (
 
 export const updateNode = async (
   id: string,
-  updates: Partial<Database['public']['Tables']['nodes']['Update']>,
-  specificUpdates: any,
-  nodeType: Database['public']['Enums']['node_type']
+  nodeType: Database['public']['Enums']['node_type'],
+  updates: any,
+  specificUpdates: any
 ): Promise<{ data?: any; error?: any }> => {
   console.log('nodeService: Updating node:', {
     id,
@@ -333,7 +330,9 @@ export const deleteNodes = async (nodeIds: string[]) => {
   await Promise.all([
     supabase.from('note_nodes').delete().in('node_id', nodeIds),
     supabase.from('task_nodes').delete().in('node_id', nodeIds),
-    supabase.from('calendar_nodes').delete().in('node_id', nodeIds)
+    supabase.from('calendar_nodes').delete().in('node_id', nodeIds),
+    supabase.from('draw_nodes').delete().in('node_id', nodeIds),
+    supabase.from('table_nodes').delete().in('node_id', nodeIds)
   ]);
 
   // Delete node attachments and tags
