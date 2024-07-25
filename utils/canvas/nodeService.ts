@@ -393,7 +393,9 @@ export const deleteNodes = async (nodeIds: string[]) => {
   await Promise.all([
     supabase.from('note_nodes').delete().in('node_id', nodeIds),
     supabase.from('task_nodes').delete().in('node_id', nodeIds),
-    supabase.from('calendar_nodes').delete().in('node_id', nodeIds)
+    supabase.from('calendar_nodes').delete().in('node_id', nodeIds),
+    supabase.from('draw_nodes').delete().in('node_id', nodeIds),
+    supabase.from('table_nodes').delete().in('node_id', nodeIds)
   ]);
 
   // Delete node attachments and tags

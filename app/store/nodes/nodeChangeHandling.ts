@@ -154,13 +154,13 @@ export const onNodesChange = async (set, get, changes, canvasId) => {
                   };
                   const drawingData = updatedNode.data.drawingData;
                   if (drawingData) {
-                    nodeSpecificDataService
-                      .uploadSVGToBucket(updatedNode.id, drawingData)
-                      .then((result) => {
-                        if (result) {
-                          specificUpdates['drawing_file_url'] = result;
-                        }
-                      });
+                    const svgPath = nodeSpecificDataService.uploadSVGToBucket(
+                      updatedNode.id,
+                      drawingData
+                    );
+                    if (svgPath) {
+                      specificUpdates['drawing_file_url'] = svgPath;
+                    }
                   }
                   break;
               }

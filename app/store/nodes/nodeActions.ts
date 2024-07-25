@@ -112,11 +112,13 @@ export const updateNode = async (set, get, id, data, canvasId) => {
               };
               // Adjusted to handle draw node's specific data
               if (data.data?.drawingData) {
-                nodeSpecificDataService.updateNodeSpecificData(
+                const svgPath = nodeSpecificDataService.uploadSVGToBucket(
                   id,
-                  existingNode.type as NodeType,
-                  { drawing_file_url: data.data.drawingData }
+                  data.data.drawingData
                 );
+                if (svgPath) {
+                  specificUpdates['drawing_file_url'] = svgPath;
+                }
               }
               break;
           }
