@@ -214,24 +214,44 @@ export const updateNode = async (
 
   // Update or create node-specific data
   if (nodeType !== 'selection_menu') {
-    const nodeSpecificUpdates = { ...specificUpdates, node_id: id };
+    if (nodeType === 'draw') {
+      const drawNodeUpdates = {
+        drawing_file_url: specificUpdates.drawingFileUrl,
+        current_tool: specificUpdates.currentTool,
+        layers: specificUpdates.layers,
+        settings: specificUpdates.settings,
+        zoom_level: specificUpdates.zoomLevel
+      };
 
-    const { data: specificNodeData, error: specificNodeError } =
-      await updateNodeSpecificData(
-        id,
-        nodeType as NodeType,
-        nodeSpecificUpdates
-      );
+      const { data: drawNodeData, error: drawNodeError } =
+        await updateNodeSpecificData(id, 'draw', drawNodeUpdates);
 
-    if (specificNodeError) {
-      console.error(
-        `nodeService: Error updating ${nodeType} node:`,
-        specificNodeError
-      );
-      return { error: specificNodeError };
+      if (drawNodeError) {
+        console.error('nodeService: Error updating draw node:', drawNodeError);
+        return { error: drawNodeError };
+      }
+
+      console.log('nodeService: Draw node updated:', drawNodeData);
+    } else {
+      const nodeSpecificUpdates = { ...specificUpdates, node_id: id };
+
+      const { data: specificNodeData, error: specificNodeError } =
+        await updateNodeSpecificData(
+          id,
+          nodeType as NodeType,
+          nodeSpecificUpdates
+        );
+
+      if (specificNodeError) {
+        console.error(
+          `nodeService: Error updating ${nodeType} node:`,
+          specificNodeError
+        );
+        return { error: specificNodeError };
+      }
+
+      console.log(`nodeService: ${nodeType} node updated:`, specificNodeData);
     }
-
-    console.log(`nodeService: ${nodeType} node updated:`, specificNodeData);
   }
 
   if (specificUpdates?.tags && Array.isArray(specificUpdates.tags)) {

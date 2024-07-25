@@ -137,6 +137,15 @@ export const onNodesChange = async (set, get, changes, canvasId) => {
                     time_zone: updatedNode.data.timeZone
                   };
                   break;
+                case 'draw':
+                  specificUpdates = {
+                    drawing_file_url: updatedNode.data.drawingFileUrl,
+                    current_tool: updatedNode.data.currentTool,
+                    layers: updatedNode.data.layers,
+                    settings: updatedNode.data.settings,
+                    zoom_level: updatedNode.data.zoomLevel
+                  };
+                  break;
               }
 
               // Update node in database
