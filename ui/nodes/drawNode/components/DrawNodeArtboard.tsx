@@ -248,34 +248,6 @@ export const Artboard = forwardRef(function Artboard(
     [canvas, context, clear]
   );
 
-  useEffect(() => {
-    if (onResize) {
-      onResize();
-    }
-    if (canvas && context) {
-      const image = new Image();
-      image.onload = () => {
-        context.clearRect(0, 0, canvas.width, canvas.height);
-        context.drawImage(
-          image,
-          0,
-          0,
-          image.width,
-          image.height,
-          0,
-          0,
-          canvas.width,
-          canvas.height
-        );
-      };
-      image.src = content || '';
-    }
-  }, [width, height, onResize, canvas, context, content]);
-
-  useEffect(() => {
-    handleContentChange(canvas?.toDataURL() || '');
-  }, [canvas, handleContentChange]);
-
   return (
     <canvas
       style={{ cursor: tool?.cursor, touchAction: 'none', ...style }}
