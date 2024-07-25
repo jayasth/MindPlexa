@@ -15,7 +15,6 @@ import {
 } from '@/utils/canvas/nodeSpecificDataService';
 import { handleTags } from '@/utils/canvas/tagService';
 
-// Add this line to define NodeType
 type NodeType = Exclude<
   Database['public']['Enums']['node_type'],
   'selection_menu'
@@ -57,8 +56,8 @@ export const createNode = async (
     noteData?: Database['public']['Tables']['note_nodes']['Insert'];
     taskData?: Database['public']['Tables']['task_nodes']['Insert'];
     calendarData?: Database['public']['Tables']['calendar_nodes']['Insert'];
-    tableData?: Database['public']['Tables']['table_nodes']['Insert'];
     drawData?: Database['public']['Tables']['draw_nodes']['Insert'];
+    tableData?: Database['public']['Tables']['table_nodes']['Insert'];
   }
 ): Promise<{ data?: any; error?: any }> => {
   console.log('nodeService: Creating node:', {
@@ -104,7 +103,7 @@ export const createNode = async (
         : null,
     background_color: data.background_color || '#F4F4F4',
     text_color: data.text_color || '#575757',
-    title: data.title || defaultTitle, // Use the provided title or the default
+    title: data.title || defaultTitle,
     is_editing: data.is_editing || false,
     is_temporary:
       nodeType === 'selection_menu' ? true : data.is_temporary || false,
@@ -198,7 +197,6 @@ export const updateNode = async (
     specificUpdates
   });
 
-  // Update the main nodes table
   const { data: nodeData, error: nodeError } = await supabase
     .from('nodes')
     .update(toSnakeCase(updates))
@@ -236,7 +234,6 @@ export const updateNode = async (
     console.log(`nodeService: ${nodeType} node updated:`, specificNodeData);
   }
 
-  // Handle tags
   if (specificUpdates?.tags && Array.isArray(specificUpdates.tags)) {
     const { error: tagError } = await handleTags(id, specificUpdates.tags);
     if (tagError) {
@@ -244,7 +241,6 @@ export const updateNode = async (
     }
   }
 
-  // Handle attachments
   if (specificUpdates?.attachedFiles) {
     const existingAttachments = await getAttachments(id);
     const existingIds = new Set(existingAttachments.map((a) => a.id));
@@ -275,7 +271,6 @@ export const deleteNode = async (
 ): Promise<{ success?: boolean; error?: any }> => {
   console.log('nodeService: Deleting node:', { nodeId, nodeType });
 
-  // Delete attachments from storage
   const { data: attachments, error: attachmentsError } = await supabase
     .from('node_attachments')
     .select('storage_path')
@@ -335,13 +330,10 @@ export const deleteNode = async (
 };
 
 export const deleteNodes = async (nodeIds: string[]) => {
-  // Delete node-specific data
   await Promise.all([
     supabase.from('note_nodes').delete().in('node_id', nodeIds),
     supabase.from('task_nodes').delete().in('node_id', nodeIds),
-    supabase.from('calendar_nodes').delete().in('node_id', nodeIds),
-    supabase.from('table_nodes').delete().in('node_id', nodeIds),
-    supabase.from('draw_nodes').delete().in('node_id', nodeIds)
+    supabase.from('calendar_nodes').delete().in('node_id', nodeIds)
   ]);
 
   // Delete node attachments and tags
@@ -350,6 +342,5 @@ export const deleteNodes = async (nodeIds: string[]) => {
     supabase.from('node_tags').delete().in('node_id', nodeIds)
   ]);
 
-  // Delete nodes
   await supabase.from('nodes').delete().in('id', nodeIds);
 };

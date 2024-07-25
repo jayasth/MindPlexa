@@ -105,15 +105,14 @@ export const Artboard = forwardRef(function Artboard(
       onEndStroke?.();
       context.restore();
       if (canvas) {
-        // Removed history.pushState(canvas) to avoid context initialization error
+        const newContent = canvas.toDataURL() || '';
+        handleContentChange(newContent);
+        window.dispatchEvent(
+          new CustomEvent('content-updated', {
+            detail: { content: newContent }
+          })
+        );
       }
-      const newContent = canvas?.toDataURL() || '';
-      handleContentChange(newContent);
-      window.dispatchEvent(
-        new CustomEvent('content-updated', {
-          detail: { content: newContent }
-        })
-      );
     }
   }, [tool, context, canvas, onEndStroke, handleContentChange]);
 
@@ -166,7 +165,7 @@ export const Artboard = forwardRef(function Artboard(
     context.fillStyle = '#ffffff';
     context.fillRect(0, 0, canvas.width, canvas.height);
     context.restore();
-    const newContent = canvas?.toDataURL() || '';
+    const newContent = canvas.toDataURL() || '';
     handleContentChange(newContent);
     window.dispatchEvent(
       new CustomEvent('content-updated', { detail: { content: newContent } })
@@ -200,7 +199,6 @@ export const Artboard = forwardRef(function Artboard(
         };
         image.src = content;
       }
-      // Removed history.setContext(ctx) and history.pushState(canvasRef) to avoid context initialization error
     },
     [width, height, content]
   );

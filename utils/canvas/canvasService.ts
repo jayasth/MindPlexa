@@ -11,11 +11,7 @@ import {
 import {
   getNodeSpecificData,
   updateNodeSpecificData,
-  processNodeSpecificData,
-  getNodeDrawingData,
-  saveDrawing,
-  getDrawing,
-  removeDrawing
+  processNodeSpecificData
 } from '@/utils/canvas/nodeSpecificDataService';
 import { handleTags } from '@/utils/canvas/tagService';
 
@@ -183,16 +179,7 @@ export const fetchCanvas = async (canvasId: string) => {
   const organizedNodes = await Promise.all(
     canvas.nodes.map(async (node) => {
       const nodeType = node.type.toLowerCase();
-      let specificNodeData;
-
-      if (nodeType === 'draw') {
-        specificNodeData = await getNodeSpecificData(node.id, nodeType);
-        const drawingData = await getDrawing(node.id);
-        specificNodeData.drawingData = drawingData;
-      } else {
-        specificNodeData = await getNodeSpecificData(node.id, nodeType);
-      }
-
+      const specificNodeData = await getNodeSpecificData(node.id, nodeType);
       const processedData = processNodeSpecificData(nodeType, specificNodeData);
 
       const tags = node.nodeTags ? node.nodeTags.map((tag) => tag.tag) : [];
@@ -263,34 +250,18 @@ export const saveCanvasState = async (canvasId: string, canvasState: any) => {
 
     // Update node-specific data
     if (nodeType !== 'selection_menu') {
-      if (nodeType === 'draw') {
-        const drawingData = data.drawingData;
-        if (drawingData) {
-          const { currentTool, layers, settings } = drawingData;
-          const drawNodeUpdates = {
-            currentTool,
-            layers: JSON.stringify(layers),
-            settings: JSON.stringify(settings)
-          };
-          await updateNodeSpecificData(nodeId, nodeType, drawNodeUpdates);
-          if (drawingData.drawingFileUrl) {
-            await saveDrawing(nodeId, drawingData.drawingFileUrl);
-          }
-        }
-      } else {
-        const { error: specificNodeUpdateError } = await updateNodeSpecificData(
-          nodeId,
-          nodeType,
-          data
-        );
+      const { error: specificNodeUpdateError } = await updateNodeSpecificData(
+        nodeId,
+        nodeType,
+        data
+      );
 
-        if (specificNodeUpdateError) {
-          console.error(
-            `canvasService: Error updating ${nodeType} node:`,
-            specificNodeUpdateError
-          );
-          throw specificNodeUpdateError;
-        }
+      if (specificNodeUpdateError) {
+        console.error(
+          `canvasService: Error updating ${nodeType} node:`,
+          specificNodeUpdateError
+        );
+        throw specificNodeUpdateError;
       }
     }
 

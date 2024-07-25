@@ -5,20 +5,10 @@ const supabase = createClient();
 
 type NodeType = 'note' | 'task' | 'calendar' | 'table' | 'draw';
 
-interface DrawNodeData {
-  id: string;
-  node_id: string | null;
-  current_tool: string | null;
-  drawing_file_url: string | null;
-  layers: string | null;
-  settings: string | null;
-  zoom_level: number | null;
-}
-
 export const getNodeSpecificData = async (
   nodeId: string,
   nodeType: NodeType
-): Promise<DrawNodeData | null> => {
+): Promise<any | null> => {
   const { data, error } = await supabase
     .from(`${nodeType}_nodes`)
     .select('*')
@@ -30,7 +20,7 @@ export const getNodeSpecificData = async (
     return null;
   }
 
-  return data as DrawNodeData;
+  return data;
 };
 
 export const updateNodeSpecificData = async (
@@ -38,17 +28,6 @@ export const updateNodeSpecificData = async (
   nodeType: NodeType,
   updates: any
 ) => {
-  if (nodeType === 'draw') {
-    const { drawingData, ...otherUpdates } = updates;
-    if (drawingData) {
-      const result = await saveDrawing(nodeId, drawingData);
-      if (result) {
-        otherUpdates.drawing_file_url = result.drawingFileUrl;
-      }
-    }
-    updates = otherUpdates;
-  }
-
   const { data, error } = await supabase
     .from(`${nodeType}_nodes`)
     .update(toSnakeCase(updates))
@@ -120,94 +99,15 @@ export const processNodeSpecificData = (nodeType: NodeType, data: any) => {
         defaultView: data.default_view || 'month',
         timeZone: data.time_zone || 'UTC'
       };
-    case 'table':
-      return {
-        columns: data.columns ? JSON.parse(data.columns) : [],
-        rows: data.rows ? JSON.parse(data.rows) : [],
-        defaultColumnType: data.default_column_type || 'text',
-        defaultLocale: data.default_locale || 'en-US'
-      };
     case 'draw':
       return {
-        currentTool: data.current_tool || '',
-        drawingFileUrl: data.drawing_file_url || '',
-        layers: data.layers ? JSON.parse(data.layers) : [],
-        settings: data.settings ? JSON.parse(data.settings) : {},
-        zoomLevel: data.zoom_level || 1
+        // Add table-specific data processing here
+      };
+    case 'table':
+      return {
+        // Add table-specific data processing here
       };
     default:
       return {};
   }
-};
-
-export const getNodeDrawingData = async (nodeId: string) => {
-  const drawingData = await getDrawing(nodeId);
-  return drawingData;
-};
-
-export const saveDrawing = async (nodeId: string, drawingData: string) => {
-  try {
-    // Ensure drawingData is a base64 string without the data URL prefix
-    const base64Data = drawingData.startsWith('data:image/png;base64,')
-      ? drawingData.split(',')[1]
-      : drawingData;
-
-    const { data, error } = await supabase.storage
-      .from('drawings')
-      .upload(`${nodeId}.png`, base64Data, {
-        contentType: 'image/png',
-        upsert: true
-      });
-
-    if (error) {
-      console.error('Error saving drawing:', error);
-      return null;
-    }
-
-    const { data: urlData } = await supabase.storage
-      .from('drawings')
-      .getPublicUrl(`${nodeId}.png`);
-
-    return {
-      drawingFileUrl: urlData.publicUrl
-    };
-  } catch (error) {
-    console.error('Error saving drawing:', error);
-    return null;
-  }
-};
-
-export const getDrawing = async (nodeId: string) => {
-  try {
-    const { data, error } = await supabase.storage
-      .from('drawings')
-      .download(`${nodeId}.png`);
-
-    if (error) {
-      console.error('Error fetching drawing:', error);
-      return null;
-    }
-
-    const reader = new FileReader();
-    return new Promise((resolve) => {
-      reader.onloadend = () => resolve(reader.result as string);
-      reader.readAsDataURL(data);
-    });
-  } catch (error) {
-    console.error('Error fetching drawing:', error);
-    return null;
-  }
-};
-
-export const removeDrawing = async (nodeId: string) => {
-  const { error } = await supabase.storage
-    .from('drawings')
-    .remove([`${nodeId}.png`]);
-
-  if (error) {
-    console.error('Error removing drawing:', error);
-    return false;
-  }
-
-  return true;
 };

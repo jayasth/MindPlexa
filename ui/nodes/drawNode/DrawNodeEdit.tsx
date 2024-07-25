@@ -44,7 +44,6 @@ import { debounce } from 'lodash';
 import useNodeStore from '@/app/store/nodes/useNodeStore';
 import useCanvasStore from '@/app/store/canvas/useCanvasStore';
 import { initializeTools } from './toolInitialization';
-import { saveDrawing } from '@/utils/canvas/nodeSpecificDataService';
 
 interface DrawNodeEditProps extends NodeProps {
   data: any;
@@ -273,13 +272,9 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     [tags, attachedFiles, onRemoveTag, onRemoveFile, textColor]
   );
 
-  const handleDrawingChange = useCallback(
-    (newDrawingData: string) => {
-      setDrawingData(newDrawingData);
-      saveDrawing(data.id, newDrawingData); // Save the drawing data
-    },
-    [data.id]
-  );
+  const handleDrawingChange = useCallback((newDrawingData: string) => {
+    setDrawingData(newDrawingData);
+  }, []);
 
   return (
     <div

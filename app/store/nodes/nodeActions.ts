@@ -94,31 +94,6 @@ export const updateNode = async (set, get, id, data, canvasId) => {
                 time_zone: updatedNode.data.timeZone
               };
               break;
-            case 'table':
-              specificUpdates = {
-                columns: JSON.stringify(updatedNode.data.columns),
-                rows: JSON.stringify(updatedNode.data.rows),
-                default_column_type: updatedNode.data.defaultColumnType,
-                default_locale: updatedNode.data.defaultLocale
-              };
-              break;
-            case 'draw':
-              specificUpdates = {
-                current_tool: updatedNode.data.currentTool,
-                drawing_file_url: updatedNode.data.drawingFileUrl,
-                layers: JSON.stringify(updatedNode.data.layers),
-                settings: JSON.stringify(updatedNode.data.settings),
-                zoom_level: updatedNode.data.zoomLevel
-              };
-              // Adjusted to handle draw node's specific data
-              if (data.data?.drawingData) {
-                nodeSpecificDataService.updateNodeSpecificData(
-                  id,
-                  existingNode.type as NodeType,
-                  { drawing_file_url: data.data.drawingData }
-                );
-              }
-              break;
           }
 
           // Handle tags
@@ -195,11 +170,6 @@ export const removeNode = async (set, get, id, canvasId) => {
           state.nodeInternals.delete(id);
           console.log(`useNodeStore: Node with id ${id} removed`, nodeToRemove);
           state.nodes = state.nodes.filter((node) => node.id !== id);
-
-          // Ensure the drawing is deleted from the bucket when the node is deleted
-          if (nodeToRemove.type === 'draw') {
-            nodeSpecificDataService.removeDrawing(id);
-          }
         }
       })
     );

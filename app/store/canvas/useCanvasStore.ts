@@ -93,13 +93,7 @@ const processNode = async (node: any) => {
       showCompletedTasks: node.data?.showCompletedTasks ?? true,
       showDueDate: node.data?.showDueDate ?? true,
       showPriority: node.data?.showPriority ?? true,
-      sortBy: node.data?.sortBy || '',
-      currentTool: node.data?.currentTool || '',
-      drawingFileUrl: node.data?.drawingFileUrl || '',
-      layers: node.data?.layers ? JSON.parse(node.data.layers) : [],
-      settings: node.data?.settings ? JSON.parse(node.data.settings) : {},
-      zoomLevel: node.data?.zoomLevel || 1,
-      drawingData: node.data?.drawingData || null
+      sortBy: node.data?.sortBy || ''
     },
     width: node.isEditing
       ? (isDesktop ? node.editWidth : node.mobileEditWidth) || node.viewWidth

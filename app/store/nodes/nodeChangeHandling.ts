@@ -137,33 +137,6 @@ export const onNodesChange = async (set, get, changes, canvasId) => {
                     time_zone: updatedNode.data.timeZone
                   };
                   break;
-                case 'table':
-                  specificUpdates = {
-                    columns: JSON.stringify(updatedNode.data.columns),
-                    rows: JSON.stringify(updatedNode.data.rows),
-                    default_column_type: updatedNode.data.defaultColumnType,
-                    default_locale: updatedNode.data.defaultLocale
-                  };
-                  break;
-                case 'draw':
-                  specificUpdates = {
-                    current_tool: updatedNode.data.currentTool,
-                    layers: JSON.stringify(updatedNode.data.layers),
-                    settings: JSON.stringify(updatedNode.data.settings),
-                    zoom_level: updatedNode.data.zoomLevel
-                  };
-                  const drawingData = updatedNode.data.drawingData;
-                  if (drawingData) {
-                    nodeSpecificDataService
-                      .saveDrawing(updatedNode.id, drawingData)
-                      .then((result) => {
-                        if (result) {
-                          specificUpdates['drawing_file_url'] =
-                            result.drawingFileUrl;
-                        }
-                      });
-                  }
-                  break;
               }
 
               // Update node in database
