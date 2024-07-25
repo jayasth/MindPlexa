@@ -142,12 +142,9 @@ export const onNodesChange = async (set, get, changes, canvasId) => {
               // Update node in database
               updateNodeInDB(
                 updatedNode.id,
-                updatedNode.type as NodeType,
-                {
-                  ...nodeUpdates,
-                  ...specificUpdates
-                },
-                specificUpdates
+                nodeUpdates,
+                specificUpdates,
+                updatedNode.type as NodeType
               );
 
               nodeSpecificDataService.updateNodeSpecificData(

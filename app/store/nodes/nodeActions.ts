@@ -71,41 +71,30 @@ export const updateNode = async (set, get, id, data, canvasId) => {
             };
 
             let specificUpdates = {};
-
-            if (existingNode.type === 'draw') {
-              specificUpdates = {
-                drawing_file_url: updatedNode.data.drawingFileUrl,
-                current_tool: updatedNode.data.currentTool,
-                layers: updatedNode.data.layers,
-                settings: updatedNode.data.settings,
-                zoom_level: updatedNode.data.zoomLevel
-              };
-            } else {
-              switch (existingNode.type) {
-                case 'note':
-                  specificUpdates = {
-                    content: updatedNode.data.content
-                  };
-                  break;
-                case 'task':
-                  specificUpdates = {
-                    tasks: JSON.stringify(updatedNode.data.tasks),
-                    completed_tasks: updatedNode.data.completedTasks,
-                    total_tasks: updatedNode.data.totalTasks,
-                    show_completed_tasks: updatedNode.data.showCompletedTasks,
-                    show_due_date: updatedNode.data.showDueDate,
-                    show_priority: updatedNode.data.showPriority,
-                    sort_by: updatedNode.data.sortBy
-                  };
-                  break;
-                case 'calendar':
-                  specificUpdates = {
-                    events: JSON.stringify(updatedNode.data.events),
-                    default_view: updatedNode.data.defaultView,
-                    time_zone: updatedNode.data.timeZone
-                  };
-                  break;
-              }
+            switch (existingNode.type) {
+              case 'note':
+                specificUpdates = {
+                  content: updatedNode.data.content
+                };
+                break;
+              case 'task':
+                specificUpdates = {
+                  tasks: JSON.stringify(updatedNode.data.tasks),
+                  completed_tasks: updatedNode.data.completedTasks,
+                  total_tasks: updatedNode.data.totalTasks,
+                  show_completed_tasks: updatedNode.data.showCompletedTasks,
+                  show_due_date: updatedNode.data.showDueDate,
+                  show_priority: updatedNode.data.showPriority,
+                  sort_by: updatedNode.data.sortBy
+                };
+                break;
+              case 'calendar':
+                specificUpdates = {
+                  events: JSON.stringify(updatedNode.data.events),
+                  default_view: updatedNode.data.defaultView,
+                  time_zone: updatedNode.data.timeZone
+                };
+                break;
             }
 
             // Handle tags
@@ -142,14 +131,10 @@ export const updateNode = async (set, get, id, data, canvasId) => {
             if (existingNode.type && existingNode.type !== 'selection_menu') {
               updateNodeInDB(
                 id,
-                existingNode.type as NodeType,
-                {
-                  ...nodeUpdates,
-                  ...specificUpdates
-                },
-                specificUpdates
+                nodeUpdates,
+                specificUpdates,
+                existingNode.type as NodeType
               );
-
               nodeSpecificDataService.updateNodeSpecificData(
                 id,
                 existingNode.type as NodeType,
