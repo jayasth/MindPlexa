@@ -91,7 +91,7 @@ const useNodeStore = create<NodeState>()(
           set,
           get,
           id,
-          { data: { drawingFileUrl: svgPath } },
+          { data: { drawing_file_url: svgPath } },
           canvasId
         );
       }
