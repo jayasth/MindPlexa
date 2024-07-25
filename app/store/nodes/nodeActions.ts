@@ -110,10 +110,10 @@ export const updateNode = async (set, get, id, data, canvasId) => {
                 settings: JSON.stringify(updatedNode.data.settings),
                 zoom_level: updatedNode.data.zoomLevel
               };
-              if (data.data?.drawingData) {
+              if (updatedNode.data.drawingData) {
                 const svgPath = nodeSpecificDataService.uploadSVGToBucket(
-                  id,
-                  data.data.drawingData
+                  updatedNode.id,
+                  updatedNode.data.drawingData
                 );
                 if (svgPath) {
                   specificUpdates['drawing_file_url'] = svgPath;

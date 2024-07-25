@@ -94,7 +94,7 @@ const processNode = async (node: any) => {
       showDueDate: node.data?.showDueDate ?? true,
       showPriority: node.data?.showPriority ?? true,
       sortBy: node.data?.sortBy || '',
-      drawingFileUrl: node.data?.drawingFileUrl || '',
+      drawingFileUrl: node.data?.drawingFileUrl || node.drawingFileUrl || '',
       currentTool: node.data?.currentTool || '',
       layers: node.data?.layers || [],
       settings: node.data?.settings || {},
