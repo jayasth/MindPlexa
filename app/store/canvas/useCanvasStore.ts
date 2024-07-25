@@ -127,26 +127,26 @@ const useCanvasStore = create<CanvasState>()(
         const { edges } = useEdgeStore.getState();
 
         if (
-          JSON.stringify(nodes) === JSON.stringify(previousNodes) &&
-          JSON.stringify(edges) === JSON.stringify(previousEdges)
+          JSON.stringify(nodes) !== JSON.stringify(previousNodes) ||
+          JSON.stringify(edges) !== JSON.stringify(previousEdges)
         ) {
+          // Only save if there are changes
+          previousNodes = nodes;
+          previousEdges = edges;
+
+          const canvasState = {
+            nodes,
+            edges
+          };
+
+          try {
+            await saveCanvasState(canvasId, canvasState);
+            console.log('useCanvasStore: Canvas state saved successfully');
+          } catch (error) {
+            console.error('useCanvasStore: Error saving canvas state:', error);
+          }
+        } else {
           console.log('useCanvasStore: No changes detected, skipping save');
-          return;
-        }
-
-        previousNodes = nodes;
-        previousEdges = edges;
-
-        const canvasState = {
-          nodes,
-          edges
-        };
-
-        try {
-          await saveCanvasState(canvasId, canvasState);
-          console.log('useCanvasStore: Canvas state saved successfully');
-        } catch (error) {
-          console.error('useCanvasStore: Error saving canvas state:', error);
         }
       },
       loadCanvas: async (canvasId: string) => {

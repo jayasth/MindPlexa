@@ -22,7 +22,7 @@ export const onNodesChange = async (set, get, changes, canvasId) => {
       produce((state: NodeState) => {
         const updatedNodes = state.nodes.map((node) => {
           const change = changes.find((change) => change.id === node.id);
-          if (change) {
+          if (change && JSON.stringify(node) !== JSON.stringify(change)) {
             let updatedNode = { ...node };
             let hasChanges = false;
             let changedProperties = {};

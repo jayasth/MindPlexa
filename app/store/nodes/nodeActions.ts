@@ -34,118 +34,122 @@ export const addNode = async (set, node, canvasId) => {
 
 export const updateNode = async (set, get, id, data, canvasId) => {
   try {
-    set(
-      produce((state: NodeState) => {
-        const existingNodeIndex = state.nodes.findIndex(
-          (node) => node.id === id
-        );
-        if (existingNodeIndex !== -1) {
-          const existingNode = state.nodes[existingNodeIndex];
-          const updatedNode = {
-            ...existingNode,
-            ...data,
-            position: data.position || existingNode.position,
-            data: {
-              ...existingNode.data,
-              ...data.data
+    const existingNode = get().nodes.find((node) => node.id === id);
+    if (existingNode && JSON.stringify(existingNode) !== JSON.stringify(data)) {
+      set(
+        produce((state: NodeState) => {
+          const existingNodeIndex = state.nodes.findIndex(
+            (node) => node.id === id
+          );
+          if (existingNodeIndex !== -1) {
+            const updatedNode = {
+              ...existingNode,
+              ...data,
+              position: data.position || existingNode.position,
+              data: {
+                ...existingNode.data,
+                ...data.data
+              }
+            };
+
+            const nodeUpdates = {
+              position: JSON.stringify(updatedNode.position),
+              background_color: updatedNode.data.backgroundColor,
+              text_color: updatedNode.data.textColor,
+              title: updatedNode.data.title,
+              is_editing: updatedNode.data.isEditing,
+              z_index: updatedNode.data.zIndex,
+              edit_width: updatedNode.data.editWidth,
+              edit_height: updatedNode.data.editHeight,
+              mobile_edit_width: updatedNode.data.mobileEditWidth,
+              mobile_edit_height: updatedNode.data.mobileEditHeight,
+              parent_node_id: updatedNode.data.parentNodeId,
+              is_temporary: updatedNode.data.isTemporary,
+              view_width: updatedNode.data.viewWidth,
+              view_height: updatedNode.data.viewHeight,
+              version: updatedNode.data.version
+            };
+
+            let specificUpdates = {};
+            switch (existingNode.type) {
+              case 'note':
+                specificUpdates = {
+                  content: updatedNode.data.content
+                };
+                break;
+              case 'task':
+                specificUpdates = {
+                  tasks: JSON.stringify(updatedNode.data.tasks),
+                  completed_tasks: updatedNode.data.completedTasks,
+                  total_tasks: updatedNode.data.totalTasks,
+                  show_completed_tasks: updatedNode.data.showCompletedTasks,
+                  show_due_date: updatedNode.data.showDueDate,
+                  show_priority: updatedNode.data.showPriority,
+                  sort_by: updatedNode.data.sortBy
+                };
+                break;
+              case 'calendar':
+                specificUpdates = {
+                  events: JSON.stringify(updatedNode.data.events),
+                  default_view: updatedNode.data.defaultView,
+                  time_zone: updatedNode.data.timeZone
+                };
+                break;
             }
-          };
 
-          const nodeUpdates = {
-            position: JSON.stringify(updatedNode.position),
-            background_color: updatedNode.data.backgroundColor,
-            text_color: updatedNode.data.textColor,
-            title: updatedNode.data.title,
-            is_editing: updatedNode.data.isEditing,
-            z_index: updatedNode.data.zIndex,
-            edit_width: updatedNode.data.editWidth,
-            edit_height: updatedNode.data.editHeight,
-            mobile_edit_width: updatedNode.data.mobileEditWidth,
-            mobile_edit_height: updatedNode.data.mobileEditHeight,
-            parent_node_id: updatedNode.data.parentNodeId,
-            is_temporary: updatedNode.data.isTemporary,
-            view_width: updatedNode.data.viewWidth,
-            view_height: updatedNode.data.viewHeight,
-            version: updatedNode.data.version
-          };
+            // Handle tags
+            if (data.data?.tags) {
+              handleTags(id, [...data.data.tags]);
+            }
 
-          let specificUpdates = {};
-          switch (existingNode.type) {
-            case 'note':
-              specificUpdates = {
-                content: updatedNode.data.content
-              };
-              break;
-            case 'task':
-              specificUpdates = {
-                tasks: JSON.stringify(updatedNode.data.tasks),
-                completed_tasks: updatedNode.data.completedTasks,
-                total_tasks: updatedNode.data.totalTasks,
-                show_completed_tasks: updatedNode.data.showCompletedTasks,
-                show_due_date: updatedNode.data.showDueDate,
-                show_priority: updatedNode.data.showPriority,
-                sort_by: updatedNode.data.sortBy
-              };
-              break;
-            case 'calendar':
-              specificUpdates = {
-                events: JSON.stringify(updatedNode.data.events),
-                default_view: updatedNode.data.defaultView,
-                time_zone: updatedNode.data.timeZone
-              };
-              break;
-          }
+            // Handle attachments
+            if (data.data?.attachedFiles) {
+              (async () => {
+                const existingAttachments = await getAttachments(id);
+                const existingIds = new Set(
+                  existingAttachments.map((a) => a.id)
+                );
 
-          // Handle tags
-          if (data.data?.tags) {
-            handleTags(id, [...data.data.tags]);
-          }
-
-          // Handle attachments
-          if (data.data?.attachedFiles) {
-            (async () => {
-              const existingAttachments = await getAttachments(id);
-              const existingIds = new Set(existingAttachments.map((a) => a.id));
-
-              for (const attachment of data.data.attachedFiles) {
-                if (!existingIds.has(attachment.id)) {
-                  await addAttachment(id, attachment);
+                for (const attachment of data.data.attachedFiles) {
+                  if (!existingIds.has(attachment.id)) {
+                    await addAttachment(id, attachment);
+                  }
                 }
-              }
 
-              for (const existingAttachment of existingAttachments) {
-                if (
-                  !data.data.attachedFiles.some(
-                    (a) => a.id === existingAttachment.id
-                  )
-                ) {
-                  await removeAttachment(existingAttachment.id);
+                for (const existingAttachment of existingAttachments) {
+                  if (
+                    !data.data.attachedFiles.some(
+                      (a) => a.id === existingAttachment.id
+                    )
+                  ) {
+                    await removeAttachment(existingAttachment.id);
+                  }
                 }
-              }
-            })();
-          }
+              })();
+            }
 
-          if (existingNode.type && existingNode.type !== 'selection_menu') {
-            updateNodeInDB(
-              id,
-              nodeUpdates,
-              specificUpdates,
-              existingNode.type as NodeType
-            );
-            nodeSpecificDataService.updateNodeSpecificData(
-              id,
-              existingNode.type as NodeType,
-              specificUpdates
-            );
-          }
+            if (existingNode.type && existingNode.type !== 'selection_menu') {
+              updateNodeInDB(
+                id,
+                nodeUpdates,
+                specificUpdates,
+                existingNode.type as NodeType
+              );
+              nodeSpecificDataService.updateNodeSpecificData(
+                id,
+                existingNode.type as NodeType,
+                specificUpdates
+              );
+            }
 
-          state.nodeInternals.set(id, updatedNode);
-          console.log('useNodeStore: Node updated', updatedNode);
-          state.nodes[existingNodeIndex] = updatedNode;
-        }
-      })
-    );
-    console.log('useNodeStore: After updateNode', get().nodes);
+            state.nodeInternals.set(id, updatedNode);
+            console.log('useNodeStore: Node updated', updatedNode);
+            state.nodes[existingNodeIndex] = updatedNode;
+          }
+        })
+      );
+      console.log('useNodeStore: After updateNode', get().nodes);
+    }
   } catch (error) {
     console.error('useNodeStore: Error updating node', error);
   }
