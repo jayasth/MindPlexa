@@ -17,6 +17,22 @@ import { handleTags } from '@/utils/canvas/tagService';
 
 const supabase = createClient();
 
+const uploadSVGToBucket = async (nodeId: string, svgContent: string) => {
+  const { data, error } = await supabase.storage
+    .from('drawings')
+    .upload(`${nodeId}.svg`, svgContent, {
+      contentType: 'image/svg+xml',
+      upsert: true
+    });
+
+  if (error) {
+    console.error('Error uploading SVG to bucket:', error);
+    return null;
+  }
+
+  return data.path;
+};
+
 // Function to handle creating a new canvas
 export const createCanvas = async (
   canvasTitle: string,
@@ -265,6 +281,13 @@ export const saveCanvasState = async (canvasId: string, canvasState: any) => {
       let specificUpdates = {};
 
       if (nodeType === 'draw') {
+        if (data.drawingFileUrl) {
+          const svgPath = await uploadSVGToBucket(nodeId, data.drawingFileUrl);
+          if (svgPath) {
+            data.drawingFileUrl = svgPath;
+          }
+        }
+
         specificUpdates = {
           drawing_file_url: data.drawingFileUrl,
           current_tool: data.currentTool,

@@ -12,11 +12,30 @@ import { handleTags } from '@/utils/canvas/tagService';
 import type { NodeState } from './useNodeStore';
 import { Database } from '@/types_db';
 import * as nodeSpecificDataService from '@/utils/canvas/nodeSpecificDataService';
+import { createClient } from '@/utils/supabase/supabaseClient';
+
+const supabase = createClient();
 
 type NodeType = Exclude<
   Database['public']['Enums']['node_type'],
   'selection_menu'
 >;
+
+const uploadSVGToBucket = async (nodeId: string, svgContent: string) => {
+  const { data, error } = await supabase.storage
+    .from('drawings')
+    .upload(`${nodeId}.svg`, svgContent, {
+      contentType: 'image/svg+xml',
+      upsert: true
+    });
+
+  if (error) {
+    console.error('Error uploading SVG to bucket:', error);
+    return null;
+  }
+
+  return data.path;
+};
 
 export const addNode = async (set, node, canvasId) => {
   try {
@@ -96,8 +115,20 @@ export const updateNode = async (set, get, id, data, canvasId) => {
                 };
                 break;
               case 'draw':
+                if (updatedNode.data.drawingFileUrl) {
+                  const svgPath = uploadSVGToBucket(
+                    id,
+                    updatedNode.data.drawingFileUrl
+                  );
+                  if (svgPath) {
+                    specificUpdates = {
+                      ...specificUpdates,
+                      drawing_file_url: svgPath
+                    };
+                  }
+                }
                 specificUpdates = {
-                  drawing_file_url: updatedNode.data.drawingFileUrl,
+                  ...specificUpdates,
                   current_tool: updatedNode.data.currentTool,
                   layers: updatedNode.data.layers,
                   settings: updatedNode.data.settings,

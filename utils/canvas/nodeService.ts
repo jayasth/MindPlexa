@@ -22,6 +22,22 @@ type NodeType = Exclude<
 
 const supabase = createClient();
 
+const uploadSVGToBucket = async (nodeId: string, svgContent: string) => {
+  const { data, error } = await supabase.storage
+    .from('drawings')
+    .upload(`${nodeId}.svg`, svgContent, {
+      contentType: 'image/svg+xml',
+      upsert: true
+    });
+
+  if (error) {
+    console.error('Error uploading SVG to bucket:', error);
+    return null;
+  }
+
+  return data.path;
+};
+
 /* Node related functions */
 
 export const insertNode = async (
@@ -144,6 +160,20 @@ export const createNode = async (
         ...(data[`${nodeType}Data`] || {})
       };
 
+      if (
+        nodeType === 'draw' &&
+        'drawing_file_url' in specificNodeInsert &&
+        specificNodeInsert.drawing_file_url
+      ) {
+        const svgPath = await uploadSVGToBucket(
+          nodeId,
+          specificNodeInsert.drawing_file_url
+        );
+        if (svgPath) {
+          specificNodeInsert.drawing_file_url = svgPath;
+        }
+      }
+
       const { data: specificNodeData, error: specificNodeError } =
         await createNodeSpecificData(
           nodeId,
@@ -215,6 +245,16 @@ export const updateNode = async (
   // Update or create node-specific data
   if (nodeType !== 'selection_menu') {
     if (nodeType === 'draw') {
+      if (specificUpdates.drawingFileUrl) {
+        const svgPath = await uploadSVGToBucket(
+          id,
+          specificUpdates.drawingFileUrl
+        );
+        if (svgPath) {
+          specificUpdates.drawingFileUrl = svgPath;
+        }
+      }
+
       const drawNodeUpdates = {
         drawing_file_url: specificUpdates.drawingFileUrl,
         current_tool: specificUpdates.currentTool,

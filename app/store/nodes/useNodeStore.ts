@@ -10,6 +10,7 @@ import {
 import { addChildNode, createChildNodeFromDrag } from './nodeChildOperations';
 import { onNodesChange } from './nodeChangeHandling';
 import type { Node, XYPosition } from 'reactflow';
+import { uploadSVGToBucket } from '@/utils/canvas/nodeSpecificDataService';
 
 export interface NodeState {
   nodes: Node[];
@@ -71,20 +72,29 @@ const useNodeStore = create<NodeState>()(
     onNodesChange: (changes, canvasId) =>
       onNodesChange(set, get, changes, canvasId),
     updateDrawNodeData: async (id, drawingData, canvasId) => {
-      set((state) => ({
-        nodes: state.nodes.map((node) =>
-          node.id === id
-            ? {
-                ...node,
-                data: {
-                  ...node.data,
-                  drawingData
+      const svgPath = await uploadSVGToBucket(id, drawingData);
+      if (svgPath) {
+        set((state) => ({
+          nodes: state.nodes.map((node) =>
+            node.id === id
+              ? {
+                  ...node,
+                  data: {
+                    ...node.data,
+                    drawingFileUrl: svgPath
+                  }
                 }
-              }
-            : node
-        )
-      }));
-      await updateNode(set, get, id, { data: { drawingData } }, canvasId);
+              : node
+          )
+        }));
+        await updateNode(
+          set,
+          get,
+          id,
+          { data: { drawingFileUrl: svgPath } },
+          canvasId
+        );
+      }
     }
   }))
 );

@@ -5,6 +5,22 @@ const supabase = createClient();
 
 type NodeType = 'note' | 'task' | 'calendar' | 'table' | 'draw';
 
+export const uploadSVGToBucket = async (nodeId: string, svgContent: string) => {
+  const { data, error } = await supabase.storage
+    .from('drawings')
+    .upload(`${nodeId}.svg`, svgContent, {
+      contentType: 'image/svg+xml',
+      upsert: true
+    });
+
+  if (error) {
+    console.error('Error uploading SVG to bucket:', error);
+    return null;
+  }
+
+  return data.path;
+};
+
 export const getNodeSpecificData = async (
   nodeId: string,
   nodeType: NodeType
@@ -44,6 +60,13 @@ export const updateNodeSpecificData = async (
   updates: any
 ) => {
   if (nodeType === 'draw') {
+    if (updates.drawingFileUrl) {
+      const svgPath = await uploadSVGToBucket(nodeId, updates.drawingFileUrl);
+      if (svgPath) {
+        updates.drawingFileUrl = svgPath;
+      }
+    }
+
     const { data, error } = await supabase
       .from('draw_nodes')
       .update(toSnakeCase(updates))
@@ -80,6 +103,16 @@ export const createNodeSpecificData = async (
   initialData: any
 ) => {
   if (nodeType === 'draw') {
+    if (initialData.drawingFileUrl) {
+      const svgPath = await uploadSVGToBucket(
+        nodeId,
+        initialData.drawingFileUrl
+      );
+      if (svgPath) {
+        initialData.drawingFileUrl = svgPath;
+      }
+    }
+
     const { data, error } = await supabase
       .from('draw_nodes')
       .insert({ ...initialData, node_id: nodeId })
@@ -121,6 +154,15 @@ export const deleteNodeSpecificData = async (
     if (error) {
       console.error('Error deleting draw node data:', error);
       return { error };
+    }
+
+    // Delete the SVG file from the bucket
+    const { error: deleteError } = await supabase.storage
+      .from('drawings')
+      .remove([`${nodeId}.svg`]);
+
+    if (deleteError) {
+      console.error('Error deleting SVG file from bucket:', deleteError);
     }
 
     return { success: true };
