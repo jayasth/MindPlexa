@@ -125,7 +125,7 @@ export const createNodeSpecificData = async (
 
     const { data, error } = await supabase
       .from('draw_nodes')
-      .insert({ ...initialData, node_id: nodeId })
+      .insert({ ...toSnakeCase(initialData), node_id: nodeId })
       .select()
       .single();
 
@@ -134,12 +134,12 @@ export const createNodeSpecificData = async (
       return { error };
     }
 
-    return { data };
+    return { data: toCamelCase(data) };
   }
 
   const { data, error } = await supabase
     .from(`${nodeType}_nodes`)
-    .insert({ ...initialData, node_id: nodeId })
+    .insert({ ...toSnakeCase(initialData), node_id: nodeId })
     .select()
     .single();
 
@@ -148,7 +148,7 @@ export const createNodeSpecificData = async (
     return { error };
   }
 
-  return { data };
+  return { data: toCamelCase(data) };
 };
 
 export const deleteNodeSpecificData = async (
