@@ -272,6 +272,10 @@ export const updateNode = async (
       }
 
       console.log('nodeService: Draw node updated:', drawNodeData);
+      console.log('Draw node IDs:', {
+        nodesTableId: id,
+        drawNodesTableId: drawNodeData?.id
+      });
     } else {
       const nodeSpecificUpdates = { ...specificUpdates, node_id: id };
 

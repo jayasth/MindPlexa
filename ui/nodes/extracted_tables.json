@@ -163,29 +163,6 @@
     ]
   },
   {
-    "table_name": "node_tags",
-    "columns": [
-      {
-        "column_name": "node_id",
-        "data_type": "uuid",
-        "is_nullable": "NO",
-        "default": "None",
-        "foreign_key": "node_tags_node_id_fkey",
-        "references_table": "nodes",
-        "references_column": "id"
-      },
-      {
-        "column_name": "tag",
-        "data_type": "character varying",
-        "is_nullable": "NO",
-        "default": "None",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      }
-    ]
-  },
-  {
     "table_name": "nodes",
     "columns": [
       {
@@ -358,38 +335,6 @@
         "foreign_key": null,
         "references_table": null,
         "references_column": null
-      }
-    ]
-  },
-  {
-    "table_name": "note_nodes",
-    "columns": [
-      {
-        "column_name": "content",
-        "data_type": "text",
-        "is_nullable": "YES",
-        "default": "None",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      },
-      {
-        "column_name": "id",
-        "data_type": "uuid",
-        "is_nullable": "NO",
-        "default": "gen_random_uuid()",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      },
-      {
-        "column_name": "node_id",
-        "data_type": "uuid",
-        "is_nullable": "YES",
-        "default": "None",
-        "foreign_key": "note_nodes_node_id_fkey",
-        "references_table": "nodes",
-        "references_column": "id"
       }
     ]
   }
