@@ -145,7 +145,6 @@ export const onNodesChange = async (set, get, changes, canvasId) => {
                     default_locale: updatedNode.data.defaultLocale
                   };
                   break;
-                // In the onNodesChange function, replace the draw case with:
                 case 'draw':
                   specificUpdates = {
                     current_tool: updatedNode.data.currentTool,
@@ -153,14 +152,15 @@ export const onNodesChange = async (set, get, changes, canvasId) => {
                     settings: JSON.stringify(updatedNode.data.settings),
                     zoom_level: updatedNode.data.zoomLevel
                   };
-                  if (updatedNode.data.drawingData) {
-                    const svgPath = nodeSpecificDataService.uploadSVGToBucket(
-                      updatedNode.id,
-                      updatedNode.data.drawingData
-                    );
-                    if (svgPath) {
-                      specificUpdates['drawing_file_url'] = svgPath;
-                    }
+                  const drawingData = updatedNode.data.drawingData;
+                  if (drawingData) {
+                    nodeSpecificDataService
+                      .uploadSVGToBucket(updatedNode.id, drawingData)
+                      .then((result) => {
+                        if (result) {
+                          specificUpdates['drawing_file_url'] = result;
+                        }
+                      });
                   }
                   break;
               }
