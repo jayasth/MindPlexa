@@ -264,11 +264,14 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     ),
     [tags, attachedFiles, onRemoveTag, onRemoveFile, textColor]
   );
-
-  const handleDrawingChange = useCallback((newDrawingData: string) => {
-    const svgContent = exportSVG(artboardRef.current?.canvas);
-    setDrawingData(svgContent);
-  }, []);
+  const handleDrawingChange = useCallback(
+    (newDrawingData: string) => {
+      const svgContent = exportSVG(artboardRef.current?.canvas);
+      setDrawingData(svgContent);
+      debouncedUpdateNodeData({ data: { drawingData: svgContent } }, 'draw');
+    },
+    [debouncedUpdateNodeData]
+  );
 
   const handleZoomIn = () => {
     setZoomLevel((prevZoom) => Math.min(prevZoom * 1.1, 5));

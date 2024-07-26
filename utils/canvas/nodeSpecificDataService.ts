@@ -63,16 +63,23 @@ export const updateNodeSpecificData = async (
   updates: any
 ) => {
   if (nodeType === 'draw') {
-    if (updates.drawingFileUrl) {
-      const svgPath = await uploadSVGToBucket(nodeId, updates.drawingFileUrl);
-      if (svgPath) {
-        updates.drawingFileUrl = svgPath;
-      }
+    let svgPath = updates.drawingFileUrl;
+    if (
+      updates.drawingFileUrl &&
+      typeof updates.drawingFileUrl === 'string' &&
+      updates.drawingFileUrl.startsWith('data:image/svg+xml')
+    ) {
+      svgPath = await uploadSVGToBucket(nodeId, updates.drawingFileUrl);
     }
+
+    const updateData = {
+      ...toSnakeCase(updates),
+      drawing_file_url: svgPath
+    };
 
     const { data, error } = await supabase
       .from('draw_nodes')
-      .update(toSnakeCase(updates))
+      .update(updateData)
       .eq('node_id', nodeId)
       .select()
       .single();
