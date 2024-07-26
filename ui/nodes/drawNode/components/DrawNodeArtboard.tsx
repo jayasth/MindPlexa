@@ -229,13 +229,6 @@ export const Artboard = forwardRef(function Artboard(
     [continueStroke, drawing, endStroke]
   );
 
-  useEffect(() => {
-    if (context && canvas) {
-      context.setTransform(zoomLevel, 0, 0, zoomLevel, 0, 0);
-      redrawCanvas();
-    }
-  }, [zoomLevel, context, canvas]);
-
   const redrawCanvas = useCallback(() => {
     if (!context || !canvas) return;
 

@@ -265,10 +265,13 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     [tags, attachedFiles, onRemoveTag, onRemoveFile, textColor]
   );
   const handleDrawingChange = useCallback(
-    (newDrawingData: string) => {
+    async (newDrawingData: string) => {
       const svgContent = exportSVG(artboardRef.current?.canvas);
       setDrawingData(svgContent);
-      debouncedUpdateNodeData({ data: { drawingData: svgContent } }, 'draw');
+      await debouncedUpdateNodeData(
+        { data: { drawingData: svgContent } },
+        'draw'
+      );
     },
     [debouncedUpdateNodeData]
   );
