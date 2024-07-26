@@ -6,9 +6,12 @@ const supabase = createClient();
 type NodeType = 'note' | 'task' | 'calendar' | 'table' | 'draw';
 
 export const uploadSVGToBucket = async (nodeId: string, svgContent: string) => {
+  // Remove the data URL prefix if present
+  const svgData = svgContent.replace(/^data:image\/svg\+xml;base64,/, '');
+
   const { data, error } = await supabase.storage
     .from('drawings')
-    .upload(`${nodeId}.svg`, svgContent, {
+    .upload(`${nodeId}.svg`, Buffer.from(svgData, 'base64'), {
       contentType: 'image/svg+xml',
       upsert: true
     });

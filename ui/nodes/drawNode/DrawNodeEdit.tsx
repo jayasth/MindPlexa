@@ -45,6 +45,7 @@ import useNodeStore from '@/app/store/nodes/useNodeStore';
 import useCanvasStore from '@/app/store/canvas/useCanvasStore';
 import { initializeTools } from './toolInitialization';
 import { useHistory } from './drawNodeHistory';
+import { exportSVG } from './utils/svgExport';
 
 interface DrawNodeEditProps extends NodeProps {
   data: any;
@@ -265,7 +266,8 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   );
 
   const handleDrawingChange = useCallback((newDrawingData: string) => {
-    setDrawingData(newDrawingData);
+    const svgContent = exportSVG(artboardRef.current?.canvas);
+    setDrawingData(svgContent);
   }, []);
 
   const handleZoomIn = () => {

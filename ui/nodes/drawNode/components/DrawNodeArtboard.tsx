@@ -6,6 +6,7 @@ import React, {
   useState,
   useEffect
 } from 'react';
+import { exportSVG } from '../utils/svgExport';
 
 import {
   getMousePoint,
@@ -39,6 +40,7 @@ export interface ToolHandlers {
 export interface ArtboardRef {
   download: (filename?: string, type?: string) => void;
   getImageAsDataUri: (type?: string) => string | undefined;
+  getImageAsSVG: () => string;
   clear: () => void;
   context?: CanvasRenderingContext2D | null;
   width: number;
@@ -259,9 +261,10 @@ export const Artboard = forwardRef(function Artboard(
         a.download = filename;
         a.click();
       },
-      clear,
       getImageAsDataUri: (type?: string) =>
         canvas ? canvas.toDataURL(type) : undefined,
+      getImageAsSVG: () => exportSVG(canvas),
+      clear,
       context,
       width: canvas ? canvas.width : 0,
       height: canvas ? canvas.height : 0,
