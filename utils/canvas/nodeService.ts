@@ -72,7 +72,6 @@ export const createNode = async (
     noteData?: Database['public']['Tables']['note_nodes']['Insert'];
     taskData?: Database['public']['Tables']['task_nodes']['Insert'];
     calendarData?: Database['public']['Tables']['calendar_nodes']['Insert'];
-    drawData?: Database['public']['Tables']['draw_nodes']['Insert'];
     tableData?: Database['public']['Tables']['table_nodes']['Insert'];
   }
 ): Promise<{ data?: any; error?: any }> => {
@@ -154,60 +153,36 @@ export const createNode = async (
       }
     }
 
-    if (nodeType !== 'selection_menu') {
-      const specificNodeInsert = {
-        node_id: nodeId,
-        ...(data[`${nodeType}Data`] || {})
-      };
+    const specificNodeInsert = {
+      node_id: nodeId,
+      ...(data[`${nodeType}Data`] || {})
+    };
 
-      if (
-        nodeType === 'draw' &&
-        'drawing_file_url' in specificNodeInsert &&
-        specificNodeInsert.drawing_file_url
-      ) {
-        const svgPath = await uploadSVGToBucket(
-          nodeId,
-          specificNodeInsert.drawing_file_url
-        );
-        if (svgPath) {
-          specificNodeInsert.drawing_file_url = svgPath;
-        }
-      }
+    const { data: specificNodeData, error: specificNodeError } =
+      await createNodeSpecificData(
+        nodeId,
+        nodeType as NodeType,
+        specificNodeInsert
+      );
 
-      const { data: specificNodeData, error: specificNodeError } =
-        await createNodeSpecificData(
-          nodeId,
-          nodeType as NodeType,
-          specificNodeInsert
-        );
-
-      if (specificNodeError) {
-        console.error(
-          `nodeService: Error inserting ${nodeType} node:`,
-          specificNodeError
-        );
-        return { error: specificNodeError };
-      }
-
-      console.log(`nodeService: ${nodeType} node created:`, specificNodeData);
-
-      return {
-        data: {
-          ...nodeData,
-          ...specificNodeData,
-          id: nodeId,
-          nodeId: nodeId
-        }
-      };
-    } else {
-      return {
-        data: {
-          ...nodeData,
-          id: nodeId,
-          nodeId: nodeId
-        }
-      };
+    if (specificNodeError) {
+      console.error(
+        `nodeService: Error inserting ${nodeType} node:`,
+        specificNodeError
+      );
+      return { error: specificNodeError };
     }
+
+    console.log(`nodeService: ${nodeType} node created:`, specificNodeData);
+
+    return {
+      data: {
+        ...nodeData,
+        ...specificNodeData,
+        id: nodeId,
+        nodeId: nodeId
+      }
+    };
   } catch (error) {
     console.error('nodeService: Unexpected error:', error);
     return { error };
@@ -244,58 +219,24 @@ export const updateNode = async (
 
   // Update or create node-specific data
   if (nodeType !== 'selection_menu') {
-    if (nodeType === 'draw') {
-      if (specificUpdates.drawingFileUrl) {
-        const svgPath = await uploadSVGToBucket(
-          id,
-          specificUpdates.drawingFileUrl
-        );
-        if (svgPath) {
-          specificUpdates.drawingFileUrl = svgPath;
-        }
-      }
+    const nodeSpecificUpdates = { ...specificUpdates, node_id: id };
 
-      const drawNodeUpdates = {
-        drawing_file_url: specificUpdates.drawingFileUrl,
-        current_tool: specificUpdates.currentTool,
-        layers: specificUpdates.layers,
-        settings: specificUpdates.settings,
-        zoom_level: specificUpdates.zoomLevel
-      };
+    const { data: specificNodeData, error: specificNodeError } =
+      await updateNodeSpecificData(
+        id,
+        nodeType as NodeType,
+        nodeSpecificUpdates
+      );
 
-      const { data: drawNodeData, error: drawNodeError } =
-        await updateNodeSpecificData(id, 'draw', drawNodeUpdates);
-
-      if (drawNodeError) {
-        console.error('nodeService: Error updating draw node:', drawNodeError);
-        return { error: drawNodeError };
-      }
-
-      console.log('nodeService: Draw node updated:', drawNodeData);
-      console.log('Draw node IDs:', {
-        nodesTableId: id,
-        drawNodesTableId: drawNodeData?.id
-      });
-    } else {
-      const nodeSpecificUpdates = { ...specificUpdates, node_id: id };
-
-      const { data: specificNodeData, error: specificNodeError } =
-        await updateNodeSpecificData(
-          id,
-          nodeType as NodeType,
-          nodeSpecificUpdates
-        );
-
-      if (specificNodeError) {
-        console.error(
-          `nodeService: Error updating ${nodeType} node:`,
-          specificNodeError
-        );
-        return { error: specificNodeError };
-      }
-
-      console.log(`nodeService: ${nodeType} node updated:`, specificNodeData);
+    if (specificNodeError) {
+      console.error(
+        `nodeService: Error updating ${nodeType} node:`,
+        specificNodeError
+      );
+      return { error: specificNodeError };
     }
+
+    console.log(`nodeService: ${nodeType} node updated:`, specificNodeData);
   }
 
   if (specificUpdates?.tags && Array.isArray(specificUpdates.tags)) {
@@ -398,7 +339,6 @@ export const deleteNodes = async (nodeIds: string[]) => {
     supabase.from('note_nodes').delete().in('node_id', nodeIds),
     supabase.from('task_nodes').delete().in('node_id', nodeIds),
     supabase.from('calendar_nodes').delete().in('node_id', nodeIds),
-    supabase.from('draw_nodes').delete().in('node_id', nodeIds),
     supabase.from('table_nodes').delete().in('node_id', nodeIds)
   ]);
 
