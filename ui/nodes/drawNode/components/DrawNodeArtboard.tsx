@@ -116,6 +116,9 @@ export const Artboard = forwardRef(function Artboard(
             detail: { content: newContent }
           })
         );
+
+        // Log SVG drawing
+        console.log('DrawNodeArtboard SVG Drawing:', exportSVG(canvas));
       }
     }
   }, [tool, context, canvas, onEndStroke, handleContentChange]);
@@ -174,6 +177,9 @@ export const Artboard = forwardRef(function Artboard(
     window.dispatchEvent(
       new CustomEvent('content-updated', { detail: { content: newContent } })
     );
+
+    // Log cleared SVG
+    console.log('DrawNodeArtboardCleared SVG:', exportSVG(canvas));
   }, [context, canvas, handleContentChange]);
 
   const gotRef = useCallback(
@@ -200,6 +206,8 @@ export const Artboard = forwardRef(function Artboard(
         const image = new Image();
         image.onload = () => {
           ctx.drawImage(image, 0, 0, canvasRef.width, canvasRef.height);
+          // Log initial SVG
+          console.log('DrawNodeArtboardInitial SVG:', exportSVG(canvasRef));
         };
         image.src = content;
       }
@@ -237,6 +245,8 @@ export const Artboard = forwardRef(function Artboard(
       const image = new Image();
       image.onload = () => {
         context.drawImage(image, 0, 0, canvas.width, canvas.height);
+        // Log redrawn SVG
+        console.log('Redrawn SVG:', exportSVG(canvas));
       };
       image.src = content;
     }
