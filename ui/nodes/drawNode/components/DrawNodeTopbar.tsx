@@ -32,21 +32,9 @@ interface DrawNodeTopbarProps {
   onZoomOut: () => void;
   backgroundColor: string;
   textColor: string;
-  color: string;
-  setColor: (color: string) => void;
-  strokeWidth: number;
-  setStrokeWidth: (width: number) => void;
-  layers: Layer[];
-  activeLayerId: string;
-  setLayers: React.Dispatch<React.SetStateAction<Layer[]>>;
-  setActiveLayerId: (id: string) => void;
-  hasDrawing: boolean;
-  toolSettings: any;
-  setToolSettings: (settings: any) => void;
-  isLayerPanelVisible: boolean;
-  setIsLayerPanelVisible: (visible: boolean) => void;
-  artboardRef: React.RefObject<ArtboardRef | null>;
-  setDrawingData: (data: string) => void;
+  currentTool: any;
+  currentToolSetting: any;
+  onToolSettingChange: (key: string, value: any) => void;
 }
 
 const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
@@ -60,21 +48,9 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
   onZoomOut,
   backgroundColor,
   textColor,
-  color,
-  setColor,
-  strokeWidth,
-  setStrokeWidth,
-  layers,
-  activeLayerId,
-  setLayers,
-  setActiveLayerId,
-  hasDrawing,
-  toolSettings,
-  setToolSettings,
-  isLayerPanelVisible,
-  setIsLayerPanelVisible,
-  artboardRef,
-  setDrawingData
+  currentTool,
+  currentToolSetting,
+  onToolSettingChange
 }) => {
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   const [isStrokeWidthOpen, setIsStrokeWidthOpen] = useState(false);
@@ -83,26 +59,14 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
 
   const handleUndo = () => {
     undo();
-    if (artboardRef.current) {
-      const newDrawingData = artboardRef.current.getImageAsDataUri();
-      setDrawingData(newDrawingData || '');
-    }
   };
 
   const handleRedo = () => {
     redo();
-    if (artboardRef.current) {
-      const newDrawingData = artboardRef.current.getImageAsDataUri();
-      setDrawingData(newDrawingData || '');
-    }
   };
 
   const handleClear = () => {
     clear();
-    if (artboardRef.current) {
-      artboardRef.current.clear();
-      setDrawingData('');
-    }
   };
 
   return (
@@ -131,7 +95,7 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
         <Tooltip content="Clear">
           <button
             onClick={handleClear}
-            disabled={!hasDrawing}
+            disabled={!canUndo}
             className={styles.toolbarButton}
             style={{ color: textColor }}
           >
@@ -149,7 +113,7 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
             <GrPaint size={iconSize} />
             <div
               className={styles.colorPreview}
-              style={{ backgroundColor: color }}
+              style={{ backgroundColor: currentToolSetting.color }}
             />
           </button>
         </Tooltip>
@@ -160,13 +124,15 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
             style={{ color: textColor }}
           >
             <FaRuler size={iconSize} />
-            <span className={styles.strokeWidthLabel}>{strokeWidth}</span>
+            <span className={styles.strokeWidthLabel}>
+              {currentToolSetting.strokeWidth}
+            </span>
           </button>
         </Tooltip>
         <Tooltip content="Toggle Layers">
           <button
-            className={`${styles.toolbarButton} ${isLayerPanelVisible ? styles.active : ''}`}
-            onClick={() => setIsLayerPanelVisible(!isLayerPanelVisible)}
+            className={`${styles.toolbarButton} ${styles.active}`}
+            onClick={() => setIsSettingsOpen(true)}
             style={{ color: textColor }}
           >
             <FaLayerGroup size={iconSize} />
@@ -219,8 +185,8 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
       >
         <h2>Change Drawing Color</h2>
         <SketchPicker
-          color={color}
-          onChange={(newColor) => setColor(newColor.hex)}
+          color={currentToolSetting.color}
+          onChange={(newColor) => onToolSettingChange('color', newColor.hex)}
         />
       </Modal>
 
@@ -233,8 +199,8 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
         <Slider
           min={1}
           max={100}
-          value={strokeWidth}
-          onChange={setStrokeWidth}
+          value={currentToolSetting.strokeWidth}
+          onChange={(value) => onToolSettingChange('strokeWidth', value)}
         />
       </Modal>
 
@@ -245,8 +211,9 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
       >
         <h2>Tool Settings</h2>
         <DrawNodeSettings
-          toolSettings={toolSettings}
-          setToolSettings={setToolSettings}
+          currentTool={currentTool}
+          currentToolSetting={currentToolSetting}
+          onToolSettingChange={onToolSettingChange}
         />
       </Modal>
     </div>

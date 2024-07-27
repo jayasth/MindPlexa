@@ -87,14 +87,20 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const [isFileModalOpen, setIsFileModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(1);
+  const [tools] = useState(initializeTools());
+  const [currentToolIndex, setCurrentToolIndex] = useState(0);
   const [toolSettings, setToolSettings] = useState(
-    initializeTools().map((tool) => ({
+    tools.map((tool) => ({
       name: tool.tool.name,
       color: tool.defaultColor,
-      strokeWidth: tool.defaultStrokeWidth
+      strokeWidth: tool.defaultStrokeWidth,
+      opacity: 100,
+      blendMode: 'normal'
     }))
   );
-  const [currentToolIndex, setCurrentToolIndex] = useState(0);
+
+  const currentTool = tools[currentToolIndex];
+  const currentToolSetting = toolSettings[currentToolIndex];
 
   const artboardRef = useRef<ArtboardRef | null>(null);
   const { history, undo, redo, clear, canUndo, canRedo } = useHistory();
@@ -288,13 +294,16 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     setZoomLevel((prevZoom) => Math.max(prevZoom / 1.1, 0.1));
   };
 
+  const handleToolSettingChange = (key: string, value: any) => {
+    setToolSettings((prev) =>
+      prev.map((setting, index) =>
+        index === currentToolIndex ? { ...setting, [key]: value } : setting
+      )
+    );
+  };
+
   return (
-    <div
-      className={styles.drawNode}
-      style={customStyles}
-      onClick={handleContainerClick}
-      onBlur={handleContainerBlur}
-    >
+    <div className={styles.drawNode} style={customStyles}>
       <NodeResizer
         isVisible={isContainerSelected}
         minWidth={200}
@@ -328,47 +337,22 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         onZoomOut={handleZoomOut}
         backgroundColor={backgroundColor}
         textColor={textColor}
-        color={toolSettings[currentToolIndex].color}
-        setColor={(newColor) => {
-          setToolSettings((prev) =>
-            prev.map((tool, index) =>
-              index === currentToolIndex ? { ...tool, color: newColor } : tool
-            )
-          );
-        }}
-        strokeWidth={toolSettings[currentToolIndex].strokeWidth}
-        setStrokeWidth={(newWidth) => {
-          setToolSettings((prev) =>
-            prev.map((tool, index) =>
-              index === currentToolIndex
-                ? { ...tool, strokeWidth: newWidth }
-                : tool
-            )
-          );
-        }}
-        layers={[]}
-        activeLayerId="0"
-        setLayers={() => {}}
-        setActiveLayerId={() => {}}
-        hasDrawing={drawingData !== ''}
-        toolSettings={toolSettings}
-        setToolSettings={setToolSettings}
-        isLayerPanelVisible={false}
-        setIsLayerPanelVisible={() => {}}
-        artboardRef={artboardRef}
-        setDrawingData={setDrawingData}
+        currentTool={currentTool}
+        currentToolSetting={currentToolSetting}
+        onToolSettingChange={handleToolSettingChange}
       />
       <div className={styles.drawContent}>
         <DrawNodeSidebar
-          currentTool={currentToolIndex}
-          setCurrentTool={setCurrentToolIndex}
+          tools={tools}
+          currentToolIndex={currentToolIndex}
+          setCurrentToolIndex={setCurrentToolIndex}
           textColor={textColor}
           backgroundColor={backgroundColor}
         />
         <div className={styles.mainContent}>
           <div className={`${styles.artboardContainer} nodrag nowheel`}>
             <Artboard
-              tool={initializeTools()[currentToolIndex].tool}
+              tool={currentTool.tool}
               ref={artboardRef}
               style={{ border: '1px gray solid' }}
               content={drawingData}
@@ -376,8 +360,10 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
               width={nodeWidth / 2}
               height={nodeHeight / 2}
               zoomLevel={zoomLevel}
-              color={toolSettings[currentToolIndex].color}
-              strokeWidth={toolSettings[currentToolIndex].strokeWidth}
+              color={currentToolSetting.color}
+              strokeWidth={currentToolSetting.strokeWidth}
+              opacity={currentToolSetting.opacity}
+              blendMode={currentToolSetting.blendMode}
             />
           </div>
         </div>

@@ -29,6 +29,8 @@ export interface ArtboardProps
   zoomLevel: number;
   color: string;
   strokeWidth: number;
+  opacity: number;
+  blendMode: string;
 }
 
 export interface ToolHandlers {
@@ -65,6 +67,8 @@ export const Artboard = forwardRef(function Artboard(
     zoomLevel,
     color,
     strokeWidth,
+    opacity,
+    blendMode,
     ...props
   }: ArtboardProps,
   ref: ForwardedRef<ArtboardRef>
@@ -90,11 +94,13 @@ export const Artboard = forwardRef(function Artboard(
       context.save();
       context.strokeStyle = color;
       context.lineWidth = strokeWidth;
+      context.globalAlpha = opacity / 100;
+      context.globalCompositeOperation = blendMode as GlobalCompositeOperation;
       setDrawing(true);
       tool.startStroke?.(point, context);
       onStartStroke?.(point);
     },
-    [tool, context, onStartStroke, color, strokeWidth]
+    [tool, context, onStartStroke, color, strokeWidth, opacity, blendMode]
   );
 
   const continueStroke = useCallback(
