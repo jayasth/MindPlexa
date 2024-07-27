@@ -18,12 +18,14 @@ interface DrawNodeSidebarProps {
   currentTool: number;
   setCurrentTool: (index: number) => void;
   textColor: string;
+  backgroundColor: string;
 }
 
 const DrawNodeSidebar: React.FC<DrawNodeSidebarProps> = ({
   currentTool,
   setCurrentTool,
-  textColor
+  textColor,
+  backgroundColor
 }) => {
   const iconSize = 16;
 
