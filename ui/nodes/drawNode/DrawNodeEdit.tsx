@@ -345,7 +345,20 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         <DrawNodeSidebar
           tools={tools}
           currentToolIndex={currentToolIndex}
-          setCurrentToolIndex={setCurrentToolIndex}
+          setCurrentToolIndex={(index) => {
+            setCurrentToolIndex(index);
+            setToolSettings((prev) =>
+              prev.map((setting, i) =>
+                i === index
+                  ? {
+                      ...setting,
+                      color: tools[i].defaultColor,
+                      strokeWidth: tools[i].defaultStrokeWidth
+                    }
+                  : setting
+              )
+            );
+          }}
           textColor={textColor}
           backgroundColor={backgroundColor}
         />

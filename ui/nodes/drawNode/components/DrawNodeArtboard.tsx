@@ -73,8 +73,8 @@ export const Artboard = forwardRef(function Artboard(
   }: ArtboardProps,
   ref: ForwardedRef<ArtboardRef>
 ) {
-  const [context, setContext] = useState<CanvasRenderingContext2D | null>();
-  const [canvas, setCanvas] = useState<HTMLCanvasElement>();
+  const [context, setContext] = useState<CanvasRenderingContext2D | null>(null);
+  const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null);
   const [drawing, setDrawing] = useState(false);
   const [content, setContent] = useState(initialContent || '');
 
@@ -86,53 +86,52 @@ export const Artboard = forwardRef(function Artboard(
     [onContentChange]
   );
 
+  const setupStroke = useCallback(() => {
+    if (!context) return;
+    context.save();
+    context.strokeStyle = color;
+    context.lineWidth = strokeWidth;
+    context.globalAlpha = opacity / 100;
+    context.globalCompositeOperation = blendMode as GlobalCompositeOperation;
+  }, [context, color, strokeWidth, opacity, blendMode]);
+
   const startStroke = useCallback(
     (point: Point) => {
-      if (!context) {
-        return;
-      }
-      context.save();
-      context.strokeStyle = color;
-      context.lineWidth = strokeWidth;
-      context.globalAlpha = opacity / 100;
-      context.globalCompositeOperation = blendMode as GlobalCompositeOperation;
+      if (!context) return;
+      setupStroke();
       setDrawing(true);
       tool.startStroke?.(point, context);
       onStartStroke?.(point);
     },
-    [tool, context, onStartStroke, color, strokeWidth, opacity, blendMode]
+    [tool, context, onStartStroke, setupStroke]
   );
 
   const continueStroke = useCallback(
     (newPoint: Point) => {
-      if (!context) {
-        return;
-      }
+      if (!context) return;
+      setupStroke();
       tool.continueStroke?.(newPoint, context);
       onContinueStroke?.(newPoint);
     },
-    [tool, context, onContinueStroke]
+    [tool, context, onContinueStroke, setupStroke]
   );
 
   const endStroke = useCallback(() => {
+    if (!context || !canvas) return;
     setDrawing(false);
-    if (context) {
-      tool.endStroke?.(context);
-      onEndStroke?.();
-      context.restore();
-      if (canvas) {
-        const newContent = canvas.toDataURL() || '';
-        handleContentChange(newContent);
-        window.dispatchEvent(
-          new CustomEvent('content-updated', {
-            detail: { content: newContent }
-          })
-        );
+    tool.endStroke?.(context);
+    onEndStroke?.();
+    context.restore();
+    const newContent = canvas.toDataURL() || '';
+    handleContentChange(newContent);
+    window.dispatchEvent(
+      new CustomEvent('content-updated', {
+        detail: { content: newContent }
+      })
+    );
 
-        // Log SVG drawing
-        console.log('DrawNodeArtboard SVG Drawing:', exportSVG(canvas));
-      }
-    }
+    // Log SVG drawing
+    console.log('DrawNodeArtboard SVG Drawing:', exportSVG(canvas));
   }, [tool, context, canvas, onEndStroke, handleContentChange]);
 
   const mouseMove = useCallback(
@@ -177,9 +176,7 @@ export const Artboard = forwardRef(function Artboard(
   );
 
   const clear = useCallback(() => {
-    if (!context || !canvas) {
-      return;
-    }
+    if (!context || !canvas) return;
     context.save();
     context.setTransform(1, 0, 0, 1, 0, 0);
     context.clearRect(0, 0, canvas.width, canvas.height);
@@ -195,10 +192,8 @@ export const Artboard = forwardRef(function Artboard(
   }, [context, canvas, handleContentChange]);
 
   const gotRef = useCallback(
-    (canvasRef: HTMLCanvasElement) => {
-      if (!canvasRef) {
-        return;
-      }
+    (canvasRef: HTMLCanvasElement | null) => {
+      if (!canvasRef) return;
       const aspectRatio = 16 / 9;
       const canvasSize = Math.min(width, height);
       canvasRef.width = canvasSize * aspectRatio;
@@ -256,9 +251,11 @@ export const Artboard = forwardRef(function Artboard(
     if (content) {
       const image = new Image();
       image.onload = () => {
-        context.drawImage(image, 0, 0, canvas.width, canvas.height);
-        // Log redrawn SVG
-        console.log('Redrawn SVG:', exportSVG(canvas));
+        if (context && canvas) {
+          context.drawImage(image, 0, 0, canvas.width, canvas.height);
+          // Log redrawn SVG
+          console.log('Redrawn SVG:', exportSVG(canvas));
+        }
       };
       image.src = content;
     }
@@ -278,7 +275,7 @@ export const Artboard = forwardRef(function Artboard(
       },
       getImageAsDataUri: (type?: string) =>
         canvas ? canvas.toDataURL(type) : undefined,
-      getImageAsSVG: () => exportSVG(canvas),
+      getImageAsSVG: () => (canvas ? exportSVG(canvas) : ''),
       clear,
       context,
       width: canvas ? canvas.width : 0,

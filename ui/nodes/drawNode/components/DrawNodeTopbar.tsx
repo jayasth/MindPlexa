@@ -69,6 +69,14 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
     clear();
   };
 
+  const handleColorChange = (color: { hex: string }) => {
+    onToolSettingChange('color', color.hex);
+  };
+
+  const handleStrokeWidthChange = (value: number) => {
+    onToolSettingChange('strokeWidth', value);
+  };
+
   return (
     <div className={styles.topbar} style={{ backgroundColor }}>
       <div className={styles.toolGroup}>
@@ -186,7 +194,7 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
         <h2>Change Drawing Color</h2>
         <SketchPicker
           color={currentToolSetting.color}
-          onChange={(newColor) => onToolSettingChange('color', newColor.hex)}
+          onChange={handleColorChange}
         />
       </Modal>
 
@@ -200,7 +208,7 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
           min={1}
           max={100}
           value={currentToolSetting.strokeWidth}
-          onChange={(value) => onToolSettingChange('strokeWidth', value)}
+          onChange={handleStrokeWidthChange}
         />
       </Modal>
 
