@@ -7,6 +7,7 @@ import React, {
   useEffect
 } from 'react';
 import { exportSVG } from '../utils/svgExport';
+import styles from './DrawNodeArtboard.module.css';
 
 import {
   getMousePoint,
@@ -77,6 +78,8 @@ export const Artboard = forwardRef(function Artboard(
   const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null);
   const [drawing, setDrawing] = useState(false);
   const [content, setContent] = useState(initialContent || '');
+  const [artboardSize, setArtboardSize] = useState({ width, height });
+  const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
 
   const handleContentChange = useCallback(
     (newContent: string) => {
@@ -195,9 +198,11 @@ export const Artboard = forwardRef(function Artboard(
     (canvasRef: HTMLCanvasElement | null) => {
       if (!canvasRef) return;
       const aspectRatio = 16 / 9;
-      const canvasSize = Math.min(width, height);
-      canvasRef.width = canvasSize * aspectRatio;
-      canvasRef.height = canvasSize;
+      const canvasWidth = artboardSize.width * 0.8;
+      const canvasHeight = canvasWidth / aspectRatio;
+      canvasRef.width = canvasWidth;
+      canvasRef.height = canvasHeight;
+      setCanvasSize({ width: canvasWidth, height: canvasHeight });
       const ctx = canvasRef.getContext('2d');
       setCanvas(canvasRef);
 
@@ -219,7 +224,7 @@ export const Artboard = forwardRef(function Artboard(
         image.src = content;
       }
     },
-    [width, height, content]
+    [artboardSize, content]
   );
 
   const mouseEnter = useCallback(
@@ -261,6 +266,39 @@ export const Artboard = forwardRef(function Artboard(
     }
   }, [context, canvas, content]);
 
+  const handleResize = useCallback(
+    (event: React.MouseEvent<HTMLDivElement>, direction: string) => {
+      const startX = event.clientX;
+      const startY = event.clientY;
+      const startWidth = artboardSize.width;
+      const startHeight = artboardSize.height;
+
+      const handleMouseMove = (moveEvent: MouseEvent) => {
+        const deltaX = moveEvent.clientX - startX;
+        const deltaY = moveEvent.clientY - startY;
+
+        if (direction === 'left' || direction === 'right') {
+          const newWidth =
+            startWidth + (direction === 'right' ? deltaX : -deltaX);
+          setArtboardSize((prevSize) => ({ ...prevSize, width: newWidth }));
+        } else if (direction === 'top' || direction === 'bottom') {
+          const newHeight =
+            startHeight + (direction === 'bottom' ? deltaY : -deltaY);
+          setArtboardSize((prevSize) => ({ ...prevSize, height: newHeight }));
+        }
+      };
+
+      const handleMouseUp = () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+      };
+
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    },
+    [artboardSize]
+  );
+
   useImperativeHandle(
     ref,
     () => ({
@@ -286,19 +324,51 @@ export const Artboard = forwardRef(function Artboard(
   );
 
   return (
-    <canvas
-      style={{ cursor: tool?.cursor, touchAction: 'none', ...style }}
-      onTouchStart={touchStart}
-      onMouseDown={mouseDown}
-      onMouseEnter={mouseEnter}
-      onMouseMove={drawing ? mouseMove : undefined}
-      onTouchMove={drawing ? touchMove : undefined}
-      onMouseUp={endStroke}
-      onMouseOut={mouseLeave}
-      onTouchEnd={endStroke}
-      ref={gotRef}
-      {...props}
-    />
+    <div className={styles.artboardContainer}>
+      <div
+        className={styles.artboardWrapper}
+        style={{ width: artboardSize.width, height: artboardSize.height }}
+      >
+        <div className={styles.canvasWrapper}>
+          <canvas
+            className={styles.canvas}
+            style={{
+              cursor: tool?.cursor,
+              touchAction: 'none',
+              ...style,
+              width: canvasSize.width,
+              height: canvasSize.height
+            }}
+            onTouchStart={touchStart}
+            onMouseDown={mouseDown}
+            onMouseEnter={mouseEnter}
+            onMouseMove={drawing ? mouseMove : undefined}
+            onTouchMove={drawing ? touchMove : undefined}
+            onMouseUp={endStroke}
+            onMouseOut={mouseLeave}
+            onTouchEnd={endStroke}
+            ref={gotRef}
+            {...props}
+          />
+        </div>
+        <div
+          className={`${styles.resizeHandle} ${styles.top}`}
+          onMouseDown={(event) => handleResize(event, 'top')}
+        />
+        <div
+          className={`${styles.resizeHandle} ${styles.right}`}
+          onMouseDown={(event) => handleResize(event, 'right')}
+        />
+        <div
+          className={`${styles.resizeHandle} ${styles.bottom}`}
+          onMouseDown={(event) => handleResize(event, 'bottom')}
+        />
+        <div
+          className={`${styles.resizeHandle} ${styles.left}`}
+          onMouseDown={(event) => handleResize(event, 'left')}
+        />
+      </div>
+    </div>
   );
 });
 
