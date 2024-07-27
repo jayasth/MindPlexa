@@ -264,6 +264,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     ),
     [tags, attachedFiles, onRemoveTag, onRemoveFile, textColor]
   );
+
   const handleDrawingChange = useCallback(
     async (newDrawingData: string) => {
       const svgContent = exportSVG(artboardRef.current?.canvas);
@@ -319,8 +320,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         download={() => artboardRef.current?.download()}
         clear={() => {
           clear();
-          artboardRef.current?.clear();
-          setDrawingData('');
         }}
         onZoomIn={handleZoomIn}
         onZoomOut={handleZoomOut}
