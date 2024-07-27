@@ -45,7 +45,7 @@ interface DrawNodeTopbarProps {
   setToolSettings: (settings: any) => void;
   isLayerPanelVisible: boolean;
   setIsLayerPanelVisible: (visible: boolean) => void;
-  artboardRef: React.RefObject<ArtboardRef | null>; // Updated interface
+  artboardRef: React.RefObject<ArtboardRef | null>;
   setDrawingData: (data: string) => void;
 }
 

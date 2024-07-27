@@ -27,6 +27,8 @@ export interface ArtboardProps
   height: number;
   onResize?: () => void;
   zoomLevel: number;
+  color: string;
+  strokeWidth: number;
 }
 
 export interface ToolHandlers {
@@ -61,6 +63,8 @@ export const Artboard = forwardRef(function Artboard(
     height,
     onResize,
     zoomLevel,
+    color,
+    strokeWidth,
     ...props
   }: ArtboardProps,
   ref: ForwardedRef<ArtboardRef>
@@ -84,11 +88,13 @@ export const Artboard = forwardRef(function Artboard(
         return;
       }
       context.save();
+      context.strokeStyle = color;
+      context.lineWidth = strokeWidth;
       setDrawing(true);
       tool.startStroke?.(point, context);
       onStartStroke?.(point);
     },
-    [tool, context, onStartStroke]
+    [tool, context, onStartStroke, color, strokeWidth]
   );
 
   const continueStroke = useCallback(

@@ -28,37 +28,70 @@ interface ToolConfig {
   tool: ToolHandlers;
   icon: IconType;
   defaultStrokeWidth: number;
+  defaultColor: string;
 }
 
-export const initializeTools = (
-  color: string,
-  strokeWidth: number
-): Array<ToolConfig> => {
-  const pen = usePen({ color, strokeWidth });
-  const line = useLine({ color, strokeWidth });
-  const rectangle = useRectangle({ color, strokeWidth });
-  const circle = useCircle({ color, strokeWidth });
-  const marker = useMarker({ color, strokeWidth });
-  const brush = useBrush({ color, strokeWidth });
-  const watercolor = useWatercolor({ color, strokeWidth });
-  const airbrush = useAirbrush({ color, strokeWidth });
-  const shading = useShadingBrush({
-    color,
-    spreadFactor: (1 / 45) * strokeWidth,
-    distanceThreshold: 100
-  });
-  const eraser = useEraser({ strokeWidth });
-
+export const initializeTools = (): Array<ToolConfig> => {
   return [
-    { tool: pen, icon: FaPen, defaultStrokeWidth: 5 },
-    { tool: line, icon: BsSlashLg, defaultStrokeWidth: 2 },
-    { tool: rectangle, icon: FaSquare, defaultStrokeWidth: 2 },
-    { tool: circle, icon: FaCircle, defaultStrokeWidth: 2 },
-    { tool: marker, icon: FaMarker, defaultStrokeWidth: 20 },
-    { tool: brush, icon: FaPaintBrush, defaultStrokeWidth: 20 },
-    { tool: watercolor, icon: IoMdWater, defaultStrokeWidth: 20 },
-    { tool: airbrush, icon: FaSprayCan, defaultStrokeWidth: 20 },
-    { tool: shading, icon: FaPen, defaultStrokeWidth: 20 },
-    { tool: eraser, icon: FaEraser, defaultStrokeWidth: 40 }
+    {
+      tool: usePen({}),
+      icon: FaPen,
+      defaultStrokeWidth: 2,
+      defaultColor: '#575757'
+    },
+    {
+      tool: useLine({}),
+      icon: BsSlashLg,
+      defaultStrokeWidth: 2,
+      defaultColor: '#636363'
+    },
+    {
+      tool: useRectangle({}),
+      icon: FaSquare,
+      defaultStrokeWidth: 2,
+      defaultColor: '#989FF0'
+    },
+    {
+      tool: useCircle({}),
+      icon: FaCircle,
+      defaultStrokeWidth: 2,
+      defaultColor: '#60A5FA'
+    },
+    {
+      tool: useMarker({}),
+      icon: FaMarker,
+      defaultStrokeWidth: 20,
+      defaultColor: '#A78BFA'
+    },
+    {
+      tool: useBrush({}),
+      icon: FaPaintBrush,
+      defaultStrokeWidth: 20,
+      defaultColor: '#F472B6'
+    },
+    {
+      tool: useWatercolor({}),
+      icon: IoMdWater,
+      defaultStrokeWidth: 20,
+      defaultColor: '#8BD8BD'
+    },
+    {
+      tool: useAirbrush({}),
+      icon: FaSprayCan,
+      defaultStrokeWidth: 20,
+      defaultColor: '#F9D342'
+    },
+    {
+      tool: useShadingBrush({}),
+      icon: FaPen,
+      defaultStrokeWidth: 20,
+      defaultColor: '#A1A1A1'
+    },
+    {
+      tool: useEraser({}),
+      icon: FaEraser,
+      defaultStrokeWidth: 40,
+      defaultColor: '#FFFFFF'
+    }
   ];
 };

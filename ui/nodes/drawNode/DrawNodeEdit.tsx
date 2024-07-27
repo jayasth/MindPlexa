@@ -86,10 +86,15 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const [isTagModalOpen, setIsTagModalOpen] = useState(false);
   const [isFileModalOpen, setIsFileModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [color, setColor] = useState('#531B93');
-  const [strokeWidth, setStrokeWidth] = useState(5);
-  const [currentTool, setCurrentTool] = useState(0);
   const [zoomLevel, setZoomLevel] = useState(1);
+  const [toolSettings, setToolSettings] = useState(
+    initializeTools().map((tool) => ({
+      name: tool.tool.name,
+      color: tool.defaultColor,
+      strokeWidth: tool.defaultStrokeWidth
+    }))
+  );
+  const [currentToolIndex, setCurrentToolIndex] = useState(0);
 
   const artboardRef = useRef<ArtboardRef | null>(null);
   const { history, undo, redo, clear, canUndo, canRedo } = useHistory();
@@ -250,8 +255,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     setIsDeleteModalOpen(false);
   };
 
-  const tools = initializeTools(color, strokeWidth);
-
   const memoizedTagFileContainer = useMemo(
     () => (
       <TagFileContainer
@@ -325,21 +328,31 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         onZoomOut={handleZoomOut}
         backgroundColor={backgroundColor}
         textColor={textColor}
-        color={color}
-        setColor={setColor}
-        strokeWidth={strokeWidth}
-        setStrokeWidth={setStrokeWidth}
+        color={toolSettings[currentToolIndex].color}
+        setColor={(newColor) => {
+          setToolSettings((prev) =>
+            prev.map((tool, index) =>
+              index === currentToolIndex ? { ...tool, color: newColor } : tool
+            )
+          );
+        }}
+        strokeWidth={toolSettings[currentToolIndex].strokeWidth}
+        setStrokeWidth={(newWidth) => {
+          setToolSettings((prev) =>
+            prev.map((tool, index) =>
+              index === currentToolIndex
+                ? { ...tool, strokeWidth: newWidth }
+                : tool
+            )
+          );
+        }}
         layers={[]}
         activeLayerId="0"
         setLayers={() => {}}
         setActiveLayerId={() => {}}
         hasDrawing={drawingData !== ''}
-        toolSettings={tools.map(({ tool, defaultStrokeWidth }) => ({
-          name: tool.name,
-          color,
-          strokeWidth: defaultStrokeWidth
-        }))}
-        setToolSettings={() => {}}
+        toolSettings={toolSettings}
+        setToolSettings={setToolSettings}
         isLayerPanelVisible={false}
         setIsLayerPanelVisible={() => {}}
         artboardRef={artboardRef}
@@ -347,14 +360,15 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
       />
       <div className={styles.drawContent}>
         <DrawNodeSidebar
-          currentTool={currentTool}
-          setCurrentTool={setCurrentTool}
+          currentTool={currentToolIndex}
+          setCurrentTool={setCurrentToolIndex}
           textColor={textColor}
+          backgroundColor={backgroundColor}
         />
         <div className={styles.mainContent}>
           <div className={`${styles.artboardContainer} nodrag nowheel`}>
             <Artboard
-              tool={tools[currentTool].tool}
+              tool={initializeTools()[currentToolIndex].tool}
               ref={artboardRef}
               style={{ border: '1px gray solid' }}
               content={drawingData}
@@ -362,6 +376,8 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
               width={nodeWidth / 2}
               height={nodeHeight / 2}
               zoomLevel={zoomLevel}
+              color={toolSettings[currentToolIndex].color}
+              strokeWidth={toolSettings[currentToolIndex].strokeWidth}
             />
           </div>
         </div>
