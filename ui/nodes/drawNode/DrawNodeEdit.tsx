@@ -71,6 +71,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   onResize
 }) => {
   const { canvasId } = useCanvasStore();
+  const [isSelected, setIsSelected] = useState(selected);
   const [title, setTitle] = useState(data.title || 'Untitled Drawing');
   const [drawingData, setDrawingData] = useState(data.drawingData || '');
   const [backgroundColor, setBackgroundColor] = useState(
@@ -222,8 +223,11 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
       setNodeWidth(width);
       setNodeHeight(height);
       onNodeResizeStop(data.id, { width, height }, position);
+      if (onResize) {
+        onResize();
+      }
     },
-    [data.id, onNodeResizeStop, position]
+    [data.id, onNodeResizeStop, position, onResize]
   );
 
   const handleContainerClick = useCallback(() => {
@@ -303,7 +307,14 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   };
 
   return (
-    <div className={styles.drawNode} style={customStyles}>
+    <div
+      className={styles.drawNode}
+      style={customStyles}
+      onClick={handleContainerClick}
+      onBlur={handleContainerBlur}
+      data-toolbar-background-color={backgroundColor}
+      data-toolbar-text-color={textColor}
+    >
       <NodeResizer
         isVisible={isContainerSelected}
         minWidth={200}
