@@ -29,18 +29,7 @@ export const getNodeSpecificData = async (
   nodeType: NodeType
 ): Promise<any | null> => {
   if (nodeType === 'draw') {
-    const { data: drawData, error: drawError } = await supabase
-      .from('draw_nodes')
-      .select('*')
-      .eq('node_id', nodeId)
-      .single();
-
-    if (drawError) {
-      console.error('Error fetching draw node data:', drawError);
-      return null;
-    }
-
-    return drawData;
+    return getDrawNodeData(nodeId);
   }
 
   const { data, error } = await supabase
@@ -55,6 +44,39 @@ export const getNodeSpecificData = async (
   }
 
   return data;
+};
+
+export const getDrawNodeData = async (nodeId: string) => {
+  try {
+    const { data, error } = await supabase
+      .from('draw_nodes')
+      .select('*')
+      .eq('node_id', nodeId)
+      .single();
+
+    if (error) throw error;
+
+    let drawingData = '';
+    if (data && data.drawing_file_url) {
+      const { data: fileData, error: fileError } = await supabase.storage
+        .from('drawings')
+        .download(data.drawing_file_url);
+
+      if (fileError) throw fileError;
+
+      const svgContent = await fileData.text();
+      const base64Content = btoa(svgContent);
+      drawingData = `data:image/svg+xml;base64,${base64Content}`;
+    }
+
+    return {
+      ...data,
+      drawingData
+    };
+  } catch (error) {
+    console.error('Error fetching draw node data:', error);
+    throw error;
+  }
 };
 
 export const updateNodeSpecificData = async (
@@ -215,6 +237,7 @@ export const processNodeSpecificData = (nodeType: NodeType, data: any) => {
       return {
         currentTool: data.current_tool || '',
         drawingFileUrl: data.drawing_file_url || '',
+        drawingData: data.drawingData || '',
         layers: data.layers || [],
         settings: data.settings || {},
         zoomLevel: data.zoom_level || 1
