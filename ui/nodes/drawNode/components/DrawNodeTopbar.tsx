@@ -32,9 +32,10 @@ interface DrawNodeTopbarProps {
   onZoomOut: () => void;
   backgroundColor: string;
   textColor: string;
-  currentTool: any;
-  currentToolSetting: any;
-  onToolSettingChange: (key: string, value: any) => void;
+  tools: any[];
+  toolSettings: any[];
+  onToolSettingChange: (toolIndex: number, key: string, value: any) => void;
+  currentToolIndex: number;
   layers: Layer[];
   setLayers: React.Dispatch<React.SetStateAction<Layer[]>>;
   activeLayerId: string;
@@ -54,9 +55,10 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
   onZoomOut,
   backgroundColor,
   textColor,
-  currentTool,
-  currentToolSetting,
+  tools,
+  toolSettings,
   onToolSettingChange,
+  currentToolIndex,
   layers,
   setLayers,
   activeLayerId,
@@ -68,6 +70,8 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
   const [isStrokeWidthOpen, setIsStrokeWidthOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const iconSize = 16;
+
+  const currentToolSetting = toolSettings[currentToolIndex];
 
   const handleUndo = () => {
     undo();
@@ -82,11 +86,11 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
   };
 
   const handleColorChange = (color: { hex: string }) => {
-    onToolSettingChange('color', color.hex);
+    onToolSettingChange(currentToolIndex, 'color', color.hex);
   };
 
   const handleStrokeWidthChange = (value: number) => {
-    onToolSettingChange('strokeWidth', value);
+    onToolSettingChange(currentToolIndex, 'strokeWidth', value);
   };
 
   return (
@@ -231,8 +235,8 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
       >
         <h2>Tool Settings</h2>
         <DrawNodeSettings
-          currentTool={currentTool}
-          currentToolSetting={currentToolSetting}
+          tools={tools}
+          toolSettings={toolSettings}
           onToolSettingChange={onToolSettingChange}
         />
       </Modal>

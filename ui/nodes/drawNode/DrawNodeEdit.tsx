@@ -303,13 +303,17 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     setZoomLevel((prevZoom) => Math.max(prevZoom / 1.1, 0.1));
   };
 
-  const handleToolSettingChange = (key: string, value: any) => {
-    setToolSettings((prev) =>
-      prev.map((setting, index) =>
-        index === currentToolIndex ? { ...setting, [key]: value } : setting
-      )
-    );
-  };
+  const handleToolSettingChange = useCallback(
+    (toolIndex: number, key: string, value: any) => {
+      setToolSettings((prev) =>
+        prev.map((setting, index) =>
+          index === toolIndex ? { ...setting, [key]: value } : setting
+        )
+      );
+    },
+    []
+  );
+
   const addLayer = useCallback(() => {
     const newLayer: Layer = {
       id: Date.now().toString(),
@@ -391,9 +395,10 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         onZoomOut={handleZoomOut}
         backgroundColor={backgroundColor}
         textColor={textColor}
-        currentTool={currentTool}
-        currentToolSetting={currentToolSetting}
+        tools={tools}
+        toolSettings={toolSettings}
         onToolSettingChange={handleToolSettingChange}
+        currentToolIndex={currentToolIndex}
         toggleLayerPanel={toggleLayerPanel}
         showLayerPanel={showLayerPanel}
         layers={layers}
