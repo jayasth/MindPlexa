@@ -63,3 +63,12 @@
 .deleteButton:hover {
   background-color: #d0d0d0;
 }
+
+.dragHandle {
+  cursor: grab;
+  margin-right: 4px;
+}
+
+.dragHandle:active {
+  cursor: grabbing;
+}
