@@ -12,7 +12,6 @@ import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 import { Artboard, ArtboardRef } from '@/ui/nodes/drawNode/DrawNodeTools';
 import DrawNodeSidebar from './components/DrawNodeSidebar';
 import DrawNodeTopbar from './components/DrawNodeTopbar';
-import LayerPanel from './components/LayerPanel';
 import {
   DeleteButton,
   ChangeColorButton,
@@ -47,7 +46,6 @@ import useCanvasStore from '@/app/store/canvas/useCanvasStore';
 import { initializeTools } from './toolInitialization';
 import { useHistory } from './drawNodeHistory';
 import { exportSVG } from './utils/svgExport';
-import { Layer } from './types';
 import ResizableArtboardMask from './components/ResizableArtboardMask';
 
 interface DrawNodeEditProps extends NodeProps {
@@ -105,13 +103,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
       }))
     );
   });
-  const [showLayerPanel, setShowLayerPanel] = useState(false);
-  const [layers, setLayers] = useState<Layer[]>(
-    Array.isArray(data.layers) && data.layers.length > 0
-      ? data.layers
-      : [{ id: '1', name: 'Layer 1', visible: true, content: '', zIndex: 0 }]
-  );
-  const [activeLayerId, setActiveLayerId] = useState('1');
 
   const currentTool = tools[currentToolIndex];
   const currentToolSetting = toolSettings[currentToolIndex];
@@ -272,10 +263,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     setIsColorPickerVisible((prev) => !prev);
   }, []);
 
-  const toggleLayerPanel = useCallback(() => {
-    setShowLayerPanel((prev) => !prev);
-  }, []);
-
   const customStyles: CSSProperties = useMemo(
     () => ({
       width: nodeWidth,
@@ -329,45 +316,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     setZoomLevel((prevZoom) => Math.max(prevZoom / 1.1, 0.1));
   };
 
-  const addLayer = useCallback(() => {
-    const newLayer: Layer = {
-      id: Date.now().toString(),
-      name: `Layer ${layers.length + 1}`,
-      visible: true,
-      content: '',
-      zIndex: layers.length
-    };
-    setLayers((prevLayers) => [newLayer, ...prevLayers]);
-    setActiveLayerId(newLayer.id);
-    updateDrawNodeData({ layers: [newLayer, ...layers] });
-  }, [layers, updateDrawNodeData]);
-
-  const toggleLayerVisibility = useCallback(
-    (id: string) => {
-      setLayers((prevLayers) =>
-        prevLayers.map((layer) =>
-          layer.id === id ? { ...layer, visible: !layer.visible } : layer
-        )
-      );
-      updateDrawNodeData({ layers });
-    },
-    [layers, updateDrawNodeData]
-  );
-
-  const deleteLayer = useCallback(
-    (id: string) => {
-      if (layers.length > 1) {
-        const newLayers = layers.filter((layer) => layer.id !== id);
-        setLayers(newLayers);
-        if (activeLayerId === id) {
-          setActiveLayerId(newLayers[0].id);
-        }
-        updateDrawNodeData({ layers: newLayers });
-      }
-    },
-    [layers, activeLayerId, updateDrawNodeData]
-  );
-
   return (
     <div
       className={styles.drawNode}
@@ -414,12 +362,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         toolSettings={toolSettings}
         onToolSettingChange={handleToolSettingChange}
         currentToolIndex={currentToolIndex}
-        toggleLayerPanel={toggleLayerPanel}
-        showLayerPanel={showLayerPanel}
-        layers={layers}
-        setLayers={setLayers}
-        activeLayerId={activeLayerId}
-        setActiveLayerId={setActiveLayerId}
       />
       <div className={styles.drawContent}>
         <DrawNodeSidebar
@@ -431,9 +373,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
           textColor={textColor}
           backgroundColor={backgroundColor}
         />
-        <div
-          className={`${styles.mainContent} ${showLayerPanel ? styles.withLayerPanel : ''}`}
-        >
+        <div className={styles.mainContent}>
           <div className={`${styles.artboardContainer} nodrag nowheel`}>
             <ResizableArtboardMask
               initialWidth={nodeWidth * 0.8}
@@ -452,34 +392,12 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
                 strokeWidth={currentToolSetting.strokeWidth}
                 opacity={currentToolSetting.opacity}
                 blendMode={currentToolSetting.blendMode}
-                layers={layers}
-                activeLayerId={activeLayerId}
-                onLayerContentChange={(layerId, content) => {
-                  const updatedLayers = layers.map((layer) =>
-                    layer.id === layerId ? { ...layer, content } : layer
-                  );
-                  setLayers(updatedLayers);
-                  updateDrawNodeData({ layers: updatedLayers });
-                }}
                 settings={toolSettings}
                 toolSettings={toolSettings}
                 currentToolIndex={currentToolIndex}
               />
             </ResizableArtboardMask>
           </div>
-          {showLayerPanel && (
-            <div className={styles.layerPanelContainer}>
-              <LayerPanel
-                layers={layers}
-                setLayers={setLayers}
-                activeLayerId={activeLayerId}
-                setActiveLayerId={setActiveLayerId}
-                addLayer={addLayer}
-                toggleLayerVisibility={toggleLayerVisibility}
-                deleteLayer={deleteLayer}
-              />
-            </div>
-          )}
         </div>
       </div>
       {(tags.length > 0 || attachedFiles.length > 0) &&

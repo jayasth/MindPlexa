@@ -15,7 +15,7 @@ import {
   mouseButtonIsDown,
   Point
 } from '@/ui/nodes/drawNode/utils/pointUtils';
-import { Layer, ToolSetting } from '../types';
+import { ToolSetting } from '../types';
 import { ToolHandlers } from '../DrawNodeTools';
 
 export interface ArtboardProps
@@ -34,9 +34,6 @@ export interface ArtboardProps
   strokeWidth: number;
   opacity: number;
   blendMode: string;
-  layers: Layer[];
-  activeLayerId: string;
-  onLayerContentChange: (layerId: string, content: string) => void;
   settings: ToolSetting[];
   toolSettings: any[];
   currentToolIndex: number;
@@ -70,9 +67,6 @@ export const Artboard = forwardRef(function Artboard(
     strokeWidth,
     opacity,
     blendMode,
-    layers,
-    activeLayerId,
-    onLayerContentChange,
     settings,
     toolSettings,
     currentToolIndex,
@@ -312,32 +306,6 @@ export const Artboard = forwardRef(function Artboard(
     }
   }, [context, canvas, content]);
 
-  const drawLayers = useCallback(() => {
-    if (!context || !canvas) return;
-
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    layers.forEach((layer) => {
-      if (layer.visible) {
-        const image = new Image();
-        image.onload = () => {
-          context.drawImage(image, 0, 0);
-        };
-        image.src = layer.content;
-      }
-    });
-  }, [context, canvas, layers]);
-
-  useEffect(() => {
-    drawLayers();
-  }, [drawLayers]);
-
-  const handleDrawingChange = useCallback(
-    (newDrawingData: string) => {
-      onLayerContentChange(activeLayerId, newDrawingData);
-    },
-    [activeLayerId, onLayerContentChange]
-  );
-
   useEffect(() => {
     if (context) {
       history.setContext(context);
@@ -372,11 +340,7 @@ export const Artboard = forwardRef(function Artboard(
     <canvas
       style={{ cursor: tool?.cursor, touchAction: 'none', ...style }}
       onTouchStart={touchStart}
-      onMouseDown={(e) => {
-        if (activeLayerId) {
-          mouseDown(e);
-        }
-      }}
+      onMouseDown={mouseDown}
       onMouseEnter={mouseEnter}
       onMouseMove={drawing ? mouseMove : undefined}
       onTouchMove={drawing ? touchMove : undefined}

@@ -6,7 +6,6 @@ import {
   FaSearchPlus,
   FaSearchMinus,
   FaRuler,
-  FaLayerGroup,
   FaCog
 } from 'react-icons/fa';
 import { RiCheckboxBlankLine } from 'react-icons/ri';
@@ -15,8 +14,6 @@ import { Tooltip } from '@/ui/Tooltip/Tooltip';
 import Modal from 'react-responsive-modal';
 import { SketchPicker } from 'react-color';
 import Slider from './DrawNodeSlider';
-import LayerPanel from './LayerPanel';
-import { Layer } from '../types';
 import styles from './DrawNodeTopbar.module.css';
 import DrawNodeSettings from './DrawNodeSettings';
 import { ArtboardRef } from '@/ui/nodes/drawNode/DrawNodeTools';
@@ -36,12 +33,6 @@ interface DrawNodeTopbarProps {
   toolSettings: any[];
   onToolSettingChange: (toolIndex: number, key: string, value: any) => void;
   currentToolIndex: number;
-  layers: Layer[];
-  setLayers: React.Dispatch<React.SetStateAction<Layer[]>>;
-  activeLayerId: string;
-  setActiveLayerId: (id: string) => void;
-  toggleLayerPanel: () => void;
-  showLayerPanel: boolean;
 }
 
 const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
@@ -58,13 +49,7 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
   tools,
   toolSettings,
   onToolSettingChange,
-  currentToolIndex,
-  layers,
-  setLayers,
-  activeLayerId,
-  setActiveLayerId,
-  toggleLayerPanel,
-  showLayerPanel
+  currentToolIndex
 }) => {
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   const [isStrokeWidthOpen, setIsStrokeWidthOpen] = useState(false);
@@ -151,15 +136,6 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
             <span className={styles.strokeWidthLabel}>
               {currentToolSetting.strokeWidth}
             </span>
-          </button>
-        </Tooltip>
-        <Tooltip content="Toggle Layers">
-          <button
-            className={`${styles.toolbarButton} ${showLayerPanel ? styles.active : ''}`}
-            onClick={toggleLayerPanel}
-            style={{ color: textColor }}
-          >
-            <FaLayerGroup size={iconSize} />
           </button>
         </Tooltip>
       </div>
