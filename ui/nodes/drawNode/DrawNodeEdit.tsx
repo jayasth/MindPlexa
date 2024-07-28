@@ -295,21 +295,20 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
       const svgContent = exportSVG(artboardRef.current?.canvas);
       setDrawingData(svgContent);
       await debouncedUpdateNodeData(
-        { data: { drawingData: svgContent, layers } },
+        { data: { drawingData: svgContent } },
         'draw'
       );
-      history.pushState(artboardRef.current?.canvas as HTMLCanvasElement);
     },
-    [debouncedUpdateNodeData, history, layers]
+    [debouncedUpdateNodeData]
   );
 
-  const handleZoomIn = useCallback(() => {
+  const handleZoomIn = () => {
     setZoomLevel((prevZoom) => Math.min(prevZoom * 1.1, 5));
-  }, []);
+  };
 
-  const handleZoomOut = useCallback(() => {
+  const handleZoomOut = () => {
     setZoomLevel((prevZoom) => Math.max(prevZoom / 1.1, 0.1));
-  }, []);
+  };
 
   const handleToolSettingChange = (key: string, value: any) => {
     setToolSettings((prev) =>
@@ -318,14 +317,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
       )
     );
   };
-
-  const handleClear = useCallback(() => {
-    if (artboardRef.current) {
-      artboardRef.current.clear();
-      setDrawingData('');
-      history.clear();
-    }
-  }, [history]);
 
   return (
     <div
@@ -362,7 +353,9 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         canUndo={canUndo}
         canRedo={canRedo}
         download={() => artboardRef.current?.download()}
-        clear={handleClear}
+        clear={() => {
+          clear();
+        }}
         onZoomIn={handleZoomIn}
         onZoomOut={handleZoomOut}
         backgroundColor={backgroundColor}
@@ -381,7 +374,20 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         <DrawNodeSidebar
           tools={tools}
           currentToolIndex={currentToolIndex}
-          setCurrentToolIndex={setCurrentToolIndex}
+          setCurrentToolIndex={(index) => {
+            setCurrentToolIndex(index);
+            setToolSettings((prev) =>
+              prev.map((setting, i) =>
+                i === index
+                  ? {
+                      ...setting,
+                      color: tools[i].defaultColor,
+                      strokeWidth: tools[i].defaultStrokeWidth
+                    }
+                  : setting
+              )
+            );
+          }}
           textColor={textColor}
           backgroundColor={backgroundColor}
         />
