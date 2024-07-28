@@ -127,29 +127,25 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     [handleBackgroundColorChange]
   );
 
-  const debouncedUpdateNodeData = useMemo(
-    () =>
-      debounce(async (commonData, specificData) => {
-        try {
-          const updateNode = useNodeStore.getState().updateNode;
-          await updateNode(
-            data.id,
-            { ...commonData, data: specificData },
-            'draw'
-          );
-        } catch (error) {
-          console.error('Error updating node:', error);
-        }
-      }, 500),
-    [data.id]
+  const updateNode = useNodeStore((state) => state.updateNode);
+
+  const updateDrawNodeData = useCallback(
+    debounce(async (newData: Partial<any>) => {
+      try {
+        await updateNode(data.id, { data: { ...data, ...newData } }, 'draw');
+      } catch (error) {
+        console.error('Error updating draw node:', error);
+      }
+    }, 500),
+    [data.id, updateNode]
   );
 
   useEffect(() => {
     return () => {
-      debouncedUpdateNodeData.cancel();
+      updateDrawNodeData.cancel();
       removeAllPreviews();
     };
-  }, [debouncedUpdateNodeData]);
+  }, [updateDrawNodeData]);
 
   useEffect(() => {
     const commonData = {
@@ -162,7 +158,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
 
     const specificData = { drawingData, tags, attachedFiles };
 
-    debouncedUpdateNodeData(commonData, specificData);
+    updateDrawNodeData({ ...commonData, ...specificData });
   }, [
     title,
     drawingData,
@@ -172,7 +168,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     nodeHeight,
     tags,
     attachedFiles,
-    debouncedUpdateNodeData
+    updateDrawNodeData
   ]);
 
   const onChangeTitle = useCallback(
@@ -294,12 +290,9 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     async (newDrawingData: string) => {
       const svgContent = exportSVG(artboardRef.current?.canvas);
       setDrawingData(svgContent);
-      await debouncedUpdateNodeData(
-        { data: { drawingData: svgContent } },
-        'draw'
-      );
+      updateDrawNodeData({ drawingData: svgContent, layers });
     },
-    [debouncedUpdateNodeData]
+    [updateDrawNodeData, layers]
   );
 
   const handleZoomIn = () => {
@@ -317,6 +310,43 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
       )
     );
   };
+
+  const addLayer = useCallback(() => {
+    const newLayer: Layer = {
+      id: Date.now().toString(),
+      name: `Layer ${layers.length + 1}`,
+      visible: true
+    };
+    setLayers((prevLayers) => [newLayer, ...prevLayers]);
+    setActiveLayerId(newLayer.id);
+    updateDrawNodeData({ layers: [newLayer, ...layers] });
+  }, [layers, updateDrawNodeData]);
+
+  const toggleLayerVisibility = useCallback(
+    (id: string) => {
+      setLayers((prevLayers) =>
+        prevLayers.map((layer) =>
+          layer.id === id ? { ...layer, visible: !layer.visible } : layer
+        )
+      );
+      updateDrawNodeData({ layers });
+    },
+    [layers, updateDrawNodeData]
+  );
+
+  const deleteLayer = useCallback(
+    (id: string) => {
+      if (layers.length > 1) {
+        const newLayers = layers.filter((layer) => layer.id !== id);
+        setLayers(newLayers);
+        if (activeLayerId === id) {
+          setActiveLayerId(newLayers[0].id);
+        }
+        updateDrawNodeData({ layers: newLayers });
+      }
+    },
+    [layers, activeLayerId, updateDrawNodeData]
+  );
 
   return (
     <div
@@ -414,6 +444,10 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
                 blendMode={currentToolSetting.blendMode}
                 layers={layers}
                 activeLayerId={activeLayerId}
+                onLayerChange={(updatedLayers) => {
+                  setLayers(updatedLayers);
+                  updateDrawNodeData({ layers: updatedLayers });
+                }}
               />
             </ResizableArtboardMask>
           </div>
@@ -424,6 +458,9 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
                 setLayers={setLayers}
                 activeLayerId={activeLayerId}
                 setActiveLayerId={setActiveLayerId}
+                addLayer={addLayer}
+                toggleLayerVisibility={toggleLayerVisibility}
+                deleteLayer={deleteLayer}
               />
             </div>
           )}

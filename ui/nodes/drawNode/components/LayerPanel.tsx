@@ -25,6 +25,9 @@ interface LayerPanelProps {
   setLayers: React.Dispatch<React.SetStateAction<Layer[]>>;
   activeLayerId: string;
   setActiveLayerId: (id: string) => void;
+  addLayer: () => void;
+  toggleLayerVisibility: (id: string) => void;
+  deleteLayer: (id: string) => void;
 }
 
 const SortableLayer = ({
@@ -80,7 +83,10 @@ const LayerPanel: React.FC<LayerPanelProps> = ({
   layers,
   setLayers,
   activeLayerId,
-  setActiveLayerId
+  setActiveLayerId,
+  addLayer,
+  toggleLayerVisibility,
+  deleteLayer
 }) => {
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -88,33 +94,6 @@ const LayerPanel: React.FC<LayerPanelProps> = ({
       coordinateGetter: sortableKeyboardCoordinates
     })
   );
-
-  const addLayer = () => {
-    const newLayer: Layer = {
-      id: Date.now().toString(),
-      name: `Layer ${layers.length + 1}`,
-      visible: true
-    };
-    setLayers([newLayer, ...layers]);
-    setActiveLayerId(newLayer.id);
-  };
-
-  const toggleVisibility = (id: string) => {
-    setLayers(
-      layers.map((layer) =>
-        layer.id === id ? { ...layer, visible: !layer.visible } : layer
-      )
-    );
-  };
-
-  const deleteLayer = (id: string) => {
-    if (layers.length > 1) {
-      setLayers(layers.filter((layer) => layer.id !== id));
-      if (activeLayerId === id) {
-        setActiveLayerId(layers[0].id);
-      }
-    }
-  };
 
   const handleDragEnd = (event) => {
     const { active, over } = event;
@@ -151,7 +130,7 @@ const LayerPanel: React.FC<LayerPanelProps> = ({
               <SortableLayer
                 key={layer.id}
                 layer={layer}
-                toggleVisibility={toggleVisibility}
+                toggleVisibility={toggleLayerVisibility}
                 deleteLayer={deleteLayer}
                 setActiveLayerId={setActiveLayerId}
                 isActive={layer.id === activeLayerId}

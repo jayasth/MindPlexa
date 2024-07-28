@@ -35,6 +35,7 @@ export interface ArtboardProps
   blendMode: string;
   layers: Layer[];
   activeLayerId: string;
+  onLayerChange?: (layers: Layer[]) => void;
 }
 
 export interface ToolHandlers {
@@ -75,6 +76,7 @@ export const Artboard = forwardRef(function Artboard(
     blendMode,
     layers,
     activeLayerId,
+    onLayerChange,
     ...props
   }: ArtboardProps,
   ref: ForwardedRef<ArtboardRef>
@@ -138,7 +140,10 @@ export const Artboard = forwardRef(function Artboard(
       })
     );
 
-    console.log('DrawNodeArtboard SVG Drawing:', exportSVG(canvas));
+    console.log(
+      'DrawNodeArtboard SVG Drawing:',
+      canvas ? exportSVG(canvas) : ''
+    );
   }, [tool, context, canvas, onEndStroke, handleContentChange, history]);
 
   const mouseMove = useCallback(
@@ -195,7 +200,10 @@ export const Artboard = forwardRef(function Artboard(
       new CustomEvent('content-updated', { detail: { content: newContent } })
     );
 
-    console.log('DrawNodeArtboardCleared SVG:', exportSVG(canvas));
+    console.log(
+      'DrawNodeArtboardCleared SVG:',
+      canvas ? exportSVG(canvas) : ''
+    );
   }, [context, canvas, handleContentChange, history]);
 
   const gotRef = useCallback(
@@ -221,7 +229,10 @@ export const Artboard = forwardRef(function Artboard(
         const image = new Image();
         image.onload = () => {
           ctx.drawImage(image, 0, 0, canvasRef.width, canvasRef.height);
-          console.log('DrawNodeArtboardInitial SVG:', exportSVG(canvasRef));
+          console.log(
+            'DrawNodeArtboardInitial SVG:',
+            canvasRef ? exportSVG(canvasRef) : ''
+          );
         };
         image.src = content;
       }
@@ -260,12 +271,41 @@ export const Artboard = forwardRef(function Artboard(
       image.onload = () => {
         if (context && canvas) {
           context.drawImage(image, 0, 0, canvas.width, canvas.height);
-          console.log('Redrawn SVG:', exportSVG(canvas));
+          console.log('Redrawn SVG:', canvas ? exportSVG(canvas) : '');
         }
       };
       image.src = content;
     }
   }, [context, canvas, content]);
+
+  const drawLayers = useCallback(() => {
+    if (!context || !canvas) return;
+
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    layers.forEach((layer) => {
+      if (layer.visible) {
+        // Draw layer content here
+        // You'll need to store and retrieve layer-specific drawing data
+      }
+    });
+  }, [context, canvas, layers]);
+
+  useEffect(() => {
+    drawLayers();
+  }, [drawLayers, layers]);
+
+  const handleDrawingChange = useCallback(
+    async (newDrawingData: string) => {
+      const svgContent = canvas ? exportSVG(canvas) : '';
+      onContentChange?.(svgContent);
+      // Update the active layer's content
+      const updatedLayers = layers.map((layer) =>
+        layer.id === activeLayerId ? { ...layer, content: svgContent } : layer
+      );
+      onLayerChange?.(updatedLayers);
+    },
+    [canvas, onContentChange, layers, activeLayerId, onLayerChange]
+  );
 
   useEffect(() => {
     if (context) {
@@ -301,7 +341,11 @@ export const Artboard = forwardRef(function Artboard(
     <canvas
       style={{ cursor: tool?.cursor, touchAction: 'none', ...style }}
       onTouchStart={touchStart}
-      onMouseDown={mouseDown}
+      onMouseDown={(e) => {
+        if (activeLayerId) {
+          mouseDown(e);
+        }
+      }}
       onMouseEnter={mouseEnter}
       onMouseMove={drawing ? mouseMove : undefined}
       onTouchMove={drawing ? touchMove : undefined}
