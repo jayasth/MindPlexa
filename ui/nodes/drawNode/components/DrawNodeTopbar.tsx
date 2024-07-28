@@ -35,6 +35,10 @@ interface DrawNodeTopbarProps {
   currentTool: any;
   currentToolSetting: any;
   onToolSettingChange: (key: string, value: any) => void;
+  layers: Layer[];
+  setLayers: React.Dispatch<React.SetStateAction<Layer[]>>;
+  activeLayerId: string;
+  setActiveLayerId: (id: string) => void;
   toggleLayerPanel: () => void;
   showLayerPanel: boolean;
 }
@@ -53,6 +57,10 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
   currentTool,
   currentToolSetting,
   onToolSettingChange,
+  layers,
+  setLayers,
+  activeLayerId,
+  setActiveLayerId,
   toggleLayerPanel,
   showLayerPanel
 }) => {

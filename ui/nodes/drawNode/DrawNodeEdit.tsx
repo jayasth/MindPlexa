@@ -295,12 +295,12 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
       const svgContent = exportSVG(artboardRef.current?.canvas);
       setDrawingData(svgContent);
       await debouncedUpdateNodeData(
-        { data: { drawingData: svgContent } },
+        { data: { drawingData: svgContent, layers } },
         'draw'
       );
       history.pushState(artboardRef.current?.canvas as HTMLCanvasElement);
     },
-    [debouncedUpdateNodeData, history]
+    [debouncedUpdateNodeData, history, layers]
   );
 
   const handleZoomIn = useCallback(() => {
@@ -372,6 +372,10 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         onToolSettingChange={handleToolSettingChange}
         toggleLayerPanel={toggleLayerPanel}
         showLayerPanel={showLayerPanel}
+        layers={layers}
+        setLayers={setLayers}
+        activeLayerId={activeLayerId}
+        setActiveLayerId={setActiveLayerId}
       />
       <div className={styles.drawContent}>
         <DrawNodeSidebar
