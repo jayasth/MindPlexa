@@ -1,20 +1,33 @@
-.maskContainer {
+.maskOuterContainer {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  border: 2px solid purple;
+}
+
+.maskContainer {
+  border: 4px solid purple;
   overflow: hidden;
   box-sizing: border-box;
 }
 
+.handleContainer {
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  pointer-events: none;
+}
+
 .resizeHandle {
   position: absolute;
-  width: 10px;
-  height: 10px;
+  width: 12px;
+  height: 12px;
   background-color: purple;
   border: 1px solid white;
   z-index: 10;
+  pointer-events: auto;
 }
 
 .resizeHandle.top,
@@ -32,17 +45,35 @@
 }
 
 .resizeHandle.top {
-  top: -5px;
+  top: -6px;
 }
-
 .resizeHandle.right {
-  right: -5px;
+  right: -6px;
 }
-
 .resizeHandle.bottom {
-  bottom: -5px;
+  bottom: -6px;
+}
+.resizeHandle.left {
+  left: -6px;
 }
 
-.resizeHandle.left {
-  left: -5px;
+.resizeHandle.topLeft {
+  top: -6px;
+  left: -6px;
+  cursor: nwse-resize;
+}
+.resizeHandle.topRight {
+  top: -6px;
+  right: -6px;
+  cursor: nesw-resize;
+}
+.resizeHandle.bottomLeft {
+  bottom: -6px;
+  left: -6px;
+  cursor: nesw-resize;
+}
+.resizeHandle.bottomRight {
+  bottom: -6px;
+  right: -6px;
+  cursor: nwse-resize;
 }
