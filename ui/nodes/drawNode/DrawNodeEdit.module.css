@@ -29,7 +29,7 @@
 }
 
 .mainContent.withLayerPanel {
-  padding-right: 120px; /* Adjust this value based on your desired layer panel width */
+  padding-right: 100px; /* Adjust this value based on your desired layer panel width */
 }
 
 .artboardContainer {
@@ -107,7 +107,7 @@
   right: 0;
   top: 0;
   bottom: 0;
-  width: 120px; /* Adjust this value to match the padding-right in .mainContent.withLayerPanel */
+  width: 100px; /* Adjust this value to match the padding-right in .mainContent.withLayerPanel */
   background-color: #f0f0f0;
   border-left: 1px solid #ccc;
   overflow-y: auto;

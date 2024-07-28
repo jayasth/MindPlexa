@@ -1,9 +1,9 @@
 .layerPanel {
-  width: 100px;
+  width: 90px; /* Reduced from 100px */
   padding: 4px;
   background-color: #f0f0f0;
   border-left: 1px solid #ccc;
-  font-size: 10px;
+  font-size: 9px; /* Reduced from 10px */
 }
 
 .layerHeader {
@@ -44,7 +44,7 @@
 
 .layerName {
   flex-grow: 1;
-  font-size: 10px;
+  font-size: 9px; /* Reduced from 10px */
   margin: 0 2px;
   white-space: nowrap;
   overflow: hidden;
