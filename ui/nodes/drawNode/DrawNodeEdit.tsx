@@ -378,7 +378,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
           <div className={`${styles.artboardContainer} nodrag nowheel`}>
             <ResizableArtboardMask
               initialWidth={nodeWidth * 0.8}
-              initialHeight={nodeHeight * 0.8}
+              initialHeight={nodeHeight * 0.6}
             >
               <Artboard
                 tool={currentTool.tool}
