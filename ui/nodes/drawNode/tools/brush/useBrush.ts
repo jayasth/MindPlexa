@@ -1,7 +1,8 @@
 import { useCallback, useRef } from 'react';
-import { ToolHandlers } from '@/ui/nodes/drawNode/components/DrawNodeArtboard';
+import { ToolHandlers } from '@/ui/nodes/drawNode/DrawNodeTools';
 import { Point } from '../../utils/pointUtils';
 import { circleCursor } from '../../utils/cursors';
+import { ToolSetting } from '../../types';
 
 export interface UseBrushProps {
   color?: string;
@@ -11,8 +12,8 @@ export interface UseBrushProps {
 }
 
 export function useBrush({
-  color,
-  strokeWidth,
+  color = '#000000',
+  strokeWidth = 20,
   opacity = 1,
   blendMode = 'source-over'
 }: UseBrushProps = {}): ToolHandlers {
@@ -20,12 +21,23 @@ export function useBrush({
   const lastVelocity = useRef<number>(0);
 
   const startStroke = useCallback(
-    (point: Point, context: CanvasRenderingContext2D) => {
+    (
+      point: Point,
+      context: CanvasRenderingContext2D,
+      settings: ToolSetting
+    ) => {
+      const {
+        color: settingsColor,
+        strokeWidth: settingsStrokeWidth,
+        opacity: settingsOpacity,
+        blendMode: settingsBlendMode
+      } = settings;
       context.save();
-      context.strokeStyle = color || context.strokeStyle;
-      context.lineWidth = strokeWidth || context.lineWidth;
-      context.globalAlpha = opacity;
-      context.globalCompositeOperation = blendMode;
+      context.strokeStyle = settingsColor || color;
+      context.lineWidth = settingsStrokeWidth || strokeWidth;
+      context.globalAlpha = settingsOpacity ?? opacity;
+      context.globalCompositeOperation = (settingsBlendMode ||
+        blendMode) as GlobalCompositeOperation;
       context.lineJoin = context.lineCap = 'round';
       context.beginPath();
       context.moveTo(point[0], point[1]);
@@ -35,7 +47,12 @@ export function useBrush({
   );
 
   const continueStroke = useCallback(
-    (point: Point, context: CanvasRenderingContext2D) => {
+    (
+      point: Point,
+      context: CanvasRenderingContext2D,
+      settings: ToolSetting
+    ) => {
+      const { strokeWidth: settingsStrokeWidth } = settings;
       lastPoints.current.push(point);
       if (lastPoints.current.length > 3) {
         const xc = (lastPoints.current[2][0] + point[0]) / 2;
@@ -47,12 +64,12 @@ export function useBrush({
 
         const smoothingFactor = 0.2;
         const lineWidth =
-          (strokeWidth || context.lineWidth) -
+          (settingsStrokeWidth || strokeWidth) -
           (velocity - lastVelocity.current) * smoothingFactor;
 
         context.lineWidth = Math.max(
           0.5,
-          Math.min((strokeWidth || context.lineWidth) * 2, lineWidth)
+          Math.min((settingsStrokeWidth || strokeWidth) * 2, lineWidth)
         );
         context.quadraticCurveTo(
           lastPoints.current[2][0],
@@ -71,12 +88,12 @@ export function useBrush({
     [strokeWidth]
   );
 
-  const endStroke = useCallback((context: CanvasRenderingContext2D) => {
-    context.stroke();
-    context.restore();
+  const endStroke = useCallback(() => {
+    lastPoints.current = [];
+    lastVelocity.current = 0;
   }, []);
 
-  const cursor = circleCursor(strokeWidth || 20);
+  const cursor = circleCursor(strokeWidth);
 
   return { name: 'Brush', startStroke, continueStroke, endStroke, cursor };
 }

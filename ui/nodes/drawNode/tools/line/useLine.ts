@@ -1,6 +1,7 @@
 import { useCallback, useRef } from 'react';
-import { ToolHandlers } from '@/ui/nodes/drawNode/components/DrawNodeArtboard';
+import { ToolHandlers } from '@/ui/nodes/drawNode/DrawNodeTools';
 import { Point } from '../../utils/pointUtils';
+import { ToolSetting } from '../../types';
 
 export interface UseLineProps {
   color?: string;
@@ -14,13 +15,17 @@ export function useLine({
   strokeWidth = 2,
   opacity = 1,
   blendMode = 'source-over'
-}: UseLineProps): ToolHandlers {
+}: UseLineProps = {}): ToolHandlers {
   const startPoint = useRef<Point | null>(null);
   const isDrawing = useRef(false);
   const tempCanvas = useRef<HTMLCanvasElement | null>(null);
 
   const startStroke = useCallback(
-    (point: Point, context: CanvasRenderingContext2D) => {
+    (
+      point: Point,
+      context: CanvasRenderingContext2D,
+      settings: ToolSetting
+    ) => {
       // Create a temporary canvas
       tempCanvas.current = document.createElement('canvas');
       tempCanvas.current.width = context.canvas.width;
@@ -30,10 +35,18 @@ export function useLine({
         tempCtx.drawImage(context.canvas, 0, 0);
       }
 
-      context.strokeStyle = color;
-      context.lineWidth = strokeWidth;
-      context.globalAlpha = opacity; // Set opacity
-      context.globalCompositeOperation = blendMode; // Set blend mode
+      const {
+        color: settingsColor,
+        strokeWidth: settingsStrokeWidth,
+        opacity: settingsOpacity,
+        blendMode: settingsBlendMode
+      } = settings;
+
+      context.strokeStyle = settingsColor || color;
+      context.lineWidth = settingsStrokeWidth || strokeWidth;
+      context.globalAlpha = settingsOpacity ?? opacity;
+      context.globalCompositeOperation = (settingsBlendMode ||
+        blendMode) as GlobalCompositeOperation;
       context.beginPath();
       startPoint.current = point;
       isDrawing.current = true;
@@ -42,7 +55,11 @@ export function useLine({
   );
 
   const continueStroke = useCallback(
-    (point: Point, context: CanvasRenderingContext2D) => {
+    (
+      point: Point,
+      context: CanvasRenderingContext2D,
+      settings: ToolSetting
+    ) => {
       if (!isDrawing.current || !startPoint.current || !tempCanvas.current)
         return;
 

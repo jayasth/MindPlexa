@@ -1,8 +1,9 @@
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 import tinycolor from 'tinycolor2';
-import { ToolHandlers } from '@/ui/nodes/drawNode/components/DrawNodeArtboard';
+import { ToolHandlers } from '@/ui/nodes/drawNode/DrawNodeTools';
 import { Point } from '../../utils/pointUtils';
 import { circleCursor } from '../../utils/cursors';
+import { ToolSetting } from '../../types';
 
 export interface UseAirbrushProps {
   color?: string;
@@ -16,29 +17,48 @@ export function useAirbrush({
   strokeWidth = 25,
   opacity = 1,
   blendMode = 'darken'
-}: UseAirbrushProps): ToolHandlers {
+}: UseAirbrushProps = {}): ToolHandlers {
+  const isDrawing = useRef(false);
+
   const startStroke = useCallback(
-    (point: Point, context: CanvasRenderingContext2D) => {
-      context.globalCompositeOperation = blendMode;
-      context.lineWidth = strokeWidth;
+    (
+      point: Point,
+      context: CanvasRenderingContext2D,
+      settings: ToolSetting
+    ) => {
+      const {
+        color: settingsColor,
+        strokeWidth: settingsStrokeWidth,
+        opacity: settingsOpacity,
+        blendMode: settingsBlendMode
+      } = settings;
+      context.globalCompositeOperation = (settingsBlendMode ||
+        blendMode) as GlobalCompositeOperation;
+      context.lineWidth = settingsStrokeWidth || strokeWidth;
       context.lineJoin = context.lineCap = 'round';
-      context.strokeStyle = color;
-      context.shadowBlur = strokeWidth * 0.5;
-      context.shadowColor = tinycolor(color)
-        .setAlpha(opacity * 0.5)
+      context.strokeStyle = settingsColor || color;
+      context.shadowBlur = (settingsStrokeWidth || strokeWidth) * 0.5;
+      context.shadowColor = tinycolor(settingsColor || color)
+        .setAlpha((settingsOpacity ?? opacity) * 0.5)
         .toPercentageRgbString();
       context.moveTo(point[0], point[1]);
       context.beginPath();
+      isDrawing.current = true;
     },
     [color, strokeWidth, opacity, blendMode]
   );
 
-  const endStroke = useCallback((context: CanvasRenderingContext2D) => {
-    context.globalCompositeOperation = 'source-over';
+  const endStroke = useCallback(() => {
+    isDrawing.current = false;
   }, []);
 
   const continueStroke = useCallback(
-    (point: Point, context: CanvasRenderingContext2D) => {
+    (
+      point: Point,
+      context: CanvasRenderingContext2D,
+      settings: ToolSetting
+    ) => {
+      if (!isDrawing.current) return;
       context.lineTo(point[0], point[1]);
       context.stroke();
     },

@@ -1,6 +1,7 @@
 import { useCallback, useRef } from 'react';
-import { ToolHandlers } from '@/ui/nodes/drawNode/components/DrawNodeArtboard';
+import { ToolHandlers } from '@/ui/nodes/drawNode/DrawNodeTools';
 import { Point } from '../../utils/pointUtils';
+import { ToolSetting } from '../../types';
 
 export interface UseCircleProps {
   color?: string;
@@ -10,17 +11,21 @@ export interface UseCircleProps {
 }
 
 export function useCircle({
-  color,
+  color = '#000000',
   strokeWidth = 2,
   opacity = 1,
   blendMode = 'source-over'
-}: UseCircleProps): ToolHandlers {
+}: UseCircleProps = {}): ToolHandlers {
   const startPoint = useRef<Point | null>(null);
   const isDrawing = useRef(false);
   const tempCanvas = useRef<HTMLCanvasElement | null>(null);
 
   const startStroke = useCallback(
-    (point: Point, context: CanvasRenderingContext2D) => {
+    (
+      point: Point,
+      context: CanvasRenderingContext2D,
+      settings: ToolSetting
+    ) => {
       // Create a temporary canvas
       tempCanvas.current = document.createElement('canvas');
       tempCanvas.current.width = context.canvas.width;
@@ -30,10 +35,18 @@ export function useCircle({
         tempCtx.drawImage(context.canvas, 0, 0);
       }
 
-      context.strokeStyle = color || '#000000'; // Set default color if not provided
-      context.lineWidth = strokeWidth;
-      context.globalAlpha = opacity; // Set opacity
-      context.globalCompositeOperation = blendMode; // Set blend mode
+      const {
+        color: settingsColor,
+        strokeWidth: settingsStrokeWidth,
+        opacity: settingsOpacity,
+        blendMode: settingsBlendMode
+      } = settings;
+
+      context.strokeStyle = settingsColor || color;
+      context.lineWidth = settingsStrokeWidth || strokeWidth;
+      context.globalAlpha = settingsOpacity ?? opacity;
+      context.globalCompositeOperation = (settingsBlendMode ||
+        blendMode) as GlobalCompositeOperation;
       startPoint.current = point;
       isDrawing.current = true;
     },
@@ -41,7 +54,11 @@ export function useCircle({
   );
 
   const continueStroke = useCallback(
-    (point: Point, context: CanvasRenderingContext2D) => {
+    (
+      point: Point,
+      context: CanvasRenderingContext2D,
+      settings: ToolSetting
+    ) => {
       if (!isDrawing.current || !startPoint.current || !tempCanvas.current)
         return;
 
@@ -63,7 +80,7 @@ export function useCircle({
     []
   );
 
-  const endStroke = useCallback((context: CanvasRenderingContext2D) => {
+  const endStroke = useCallback(() => {
     isDrawing.current = false;
     startPoint.current = null;
     tempCanvas.current = null;

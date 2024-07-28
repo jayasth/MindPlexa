@@ -1,7 +1,7 @@
 import { useCallback, useRef } from 'react';
 import tinycolor from 'tinycolor2';
 
-import { ToolHandlers } from '@/ui/nodes/drawNode/components/DrawNodeArtboard';
+import { ToolHandlers } from '@/ui/nodes/drawNode/DrawNodeTools';
 import { Point } from '../../utils/pointUtils';
 
 export interface UseShadingProps {
