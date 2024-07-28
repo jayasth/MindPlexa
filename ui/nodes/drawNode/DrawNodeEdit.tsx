@@ -104,7 +104,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   );
   const [showLayerPanel, setShowLayerPanel] = useState(false);
   const [layers, setLayers] = useState<Layer[]>([
-    { id: '1', name: 'Layer 1', visible: true, locked: false }
+    { id: '1', name: 'Layer 1', visible: true }
   ]);
   const [activeLayerId, setActiveLayerId] = useState('1');
 
@@ -377,20 +377,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         <DrawNodeSidebar
           tools={tools}
           currentToolIndex={currentToolIndex}
-          setCurrentToolIndex={(index) => {
-            setCurrentToolIndex(index);
-            setToolSettings((prev) =>
-              prev.map((setting, i) =>
-                i === index
-                  ? {
-                      ...setting,
-                      color: tools[i].defaultColor,
-                      strokeWidth: tools[i].defaultStrokeWidth
-                    }
-                  : setting
-              )
-            );
-          }}
+          setCurrentToolIndex={setCurrentToolIndex}
           textColor={textColor}
           backgroundColor={backgroundColor}
         />
@@ -419,12 +406,14 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
             </ResizableArtboardMask>
           </div>
           {showLayerPanel && (
-            <LayerPanel
-              layers={layers}
-              setLayers={setLayers}
-              activeLayerId={activeLayerId}
-              setActiveLayerId={setActiveLayerId}
-            />
+            <div className={styles.layerPanelContainer}>
+              <LayerPanel
+                layers={layers}
+                setLayers={setLayers}
+                activeLayerId={activeLayerId}
+                setActiveLayerId={setActiveLayerId}
+              />
+            </div>
           )}
         </div>
       </div>

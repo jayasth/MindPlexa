@@ -4,11 +4,11 @@ import React, {
   useCallback,
   useImperativeHandle,
   useState,
-  useEffect
+  useEffect,
+  useRef
 } from 'react';
 import { exportSVG } from '../utils/svgExport';
 import { useHistory } from '../drawNodeHistory';
-
 import {
   getMousePoint,
   getTouchPoint,
@@ -79,11 +79,46 @@ export const Artboard = forwardRef(function Artboard(
   }: ArtboardProps,
   ref: ForwardedRef<ArtboardRef>
 ) {
-  const [context, setContext] = useState<CanvasRenderingContext2D | null>(null);
-  const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null);
+  const [canvasLayers, setCanvasLayers] = useState<{
+    [key: string]: HTMLCanvasElement;
+  }>({});
   const [drawing, setDrawing] = useState(false);
   const [content, setContent] = useState(initialContent || '');
   const { history } = useHistory();
+  const containerRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const newCanvasLayers: { [key: string]: HTMLCanvasElement } = {};
+    layers.forEach((layer) => {
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      canvas.style.position = 'absolute';
+      canvas.style.top = '0';
+      canvas.style.left = '0';
+      canvas.style.display = layer.visible ? 'block' : 'none';
+      newCanvasLayers[layer.id] = canvas;
+    });
+    setCanvasLayers(newCanvasLayers);
+  }, [layers, width, height]);
+
+  useEffect(() => {
+    if (containerRef.current) {
+      containerRef.current.innerHTML = '';
+      Object.values(canvasLayers).forEach((canvas) => {
+        containerRef.current?.appendChild(canvas);
+      });
+    }
+  }, [canvasLayers]);
+
+  const getActiveCanvas = useCallback(() => {
+    return canvasLayers[activeLayerId];
+  }, [canvasLayers, activeLayerId]);
+
+  const getActiveContext = useCallback(() => {
+    const canvas = getActiveCanvas();
+    return canvas ? canvas.getContext('2d') : null;
+  }, [getActiveCanvas]);
 
   const handleContentChange = useCallback(
     (newContent: string) => {
@@ -94,42 +129,47 @@ export const Artboard = forwardRef(function Artboard(
   );
 
   const setupStroke = useCallback(() => {
+    const context = getActiveContext();
     if (!context) return;
     context.save();
     context.strokeStyle = color;
     context.lineWidth = strokeWidth;
     context.globalAlpha = opacity / 100;
     context.globalCompositeOperation = blendMode as GlobalCompositeOperation;
-  }, [context, color, strokeWidth, opacity, blendMode]);
+  }, [getActiveContext, color, strokeWidth, opacity, blendMode]);
 
   const startStroke = useCallback(
     (point: Point) => {
+      const context = getActiveContext();
       if (!context) return;
       setupStroke();
       setDrawing(true);
       tool.startStroke?.(point, context);
       onStartStroke?.(point);
     },
-    [tool, context, onStartStroke, setupStroke]
+    [tool, getActiveContext, onStartStroke, setupStroke]
   );
 
   const continueStroke = useCallback(
     (newPoint: Point) => {
+      const context = getActiveContext();
       if (!context) return;
       setupStroke();
       tool.continueStroke?.(newPoint, context);
       onContinueStroke?.(newPoint);
     },
-    [tool, context, onContinueStroke, setupStroke]
+    [tool, getActiveContext, onContinueStroke, setupStroke]
   );
 
   const endStroke = useCallback(() => {
+    const context = getActiveContext();
+    const canvas = getActiveCanvas();
     if (!context || !canvas) return;
     setDrawing(false);
     tool.endStroke?.(context);
     onEndStroke?.();
     context.restore();
-    const newContent = canvas.toDataURL() || '';
+    const newContent = compositeLayersToDataURL();
     handleContentChange(newContent);
     history.pushState(canvas);
     window.dispatchEvent(
@@ -137,25 +177,26 @@ export const Artboard = forwardRef(function Artboard(
         detail: { content: newContent }
       })
     );
-
-    console.log('DrawNodeArtboard SVG Drawing:', exportSVG(canvas));
-  }, [tool, context, canvas, onEndStroke, handleContentChange, history]);
+  }, [
+    tool,
+    getActiveContext,
+    getActiveCanvas,
+    onEndStroke,
+    handleContentChange,
+    history
+  ]);
 
   const mouseMove = useCallback(
     (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
-      if (!drawing) {
-        return;
-      }
+      if (!drawing) return;
       continueStroke(getMousePoint(event));
     },
     [continueStroke, drawing]
   );
 
   const touchMove = useCallback(
-    (event: React.TouchEvent) => {
-      if (!drawing) {
-        return;
-      }
+    (event: React.TouchEvent<HTMLCanvasElement>) => {
+      if (!drawing) return;
       continueStroke(getTouchPoint(event));
     },
     [continueStroke, drawing]
@@ -163,9 +204,7 @@ export const Artboard = forwardRef(function Artboard(
 
   const mouseDown = useCallback(
     (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
-      if (drawing) {
-        return;
-      }
+      if (drawing) return;
       event.preventDefault();
       startStroke(getMousePoint(event));
     },
@@ -173,61 +212,45 @@ export const Artboard = forwardRef(function Artboard(
   );
 
   const touchStart = useCallback(
-    (event: React.TouchEvent) => {
-      if (drawing) {
-        return;
-      }
+    (event: React.TouchEvent<HTMLCanvasElement>) => {
+      if (drawing) return;
       startStroke(getTouchPoint(event));
     },
     [drawing, startStroke]
   );
 
   const clear = useCallback(() => {
-    if (!context || !canvas) return;
-    context.save();
-    context.setTransform(1, 0, 0, 1, 0, 0);
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    context.restore();
-    const newContent = canvas.toDataURL() || '';
+    Object.values(canvasLayers).forEach((canvas) => {
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.restore();
+      }
+    });
+    const newContent = compositeLayersToDataURL();
     handleContentChange(newContent);
     history.clear();
     window.dispatchEvent(
       new CustomEvent('content-updated', { detail: { content: newContent } })
     );
+  }, [canvasLayers, handleContentChange, history]);
 
-    console.log('DrawNodeArtboardCleared SVG:', exportSVG(canvas));
-  }, [context, canvas, handleContentChange, history]);
-
-  const gotRef = useCallback(
-    (canvasRef: HTMLCanvasElement | null) => {
-      if (!canvasRef) return;
-      const aspectRatio = 16 / 9;
-      const canvasSize = Math.min(width, height);
-      canvasRef.width = canvasSize * aspectRatio;
-      canvasRef.height = canvasSize;
-      const ctx = canvasRef.getContext('2d');
-      setCanvas(canvasRef);
-
-      if (!ctx) {
-        console.error('Failed to get 2D context');
-        return;
-      }
-      setContext(ctx);
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, canvasRef.width, canvasRef.height);
-      ctx.fillStyle = 'transparent';
-      ctx.scale(zoomLevel, zoomLevel);
-      if (content) {
-        const image = new Image();
-        image.onload = () => {
-          ctx.drawImage(image, 0, 0, canvasRef.width, canvasRef.height);
-          console.log('DrawNodeArtboardInitial SVG:', exportSVG(canvasRef));
-        };
-        image.src = content;
-      }
-    },
-    [width, height, content, zoomLevel]
-  );
+  const compositeLayersToDataURL = useCallback(() => {
+    const compositeCanvas = document.createElement('canvas');
+    compositeCanvas.width = width;
+    compositeCanvas.height = height;
+    const ctx = compositeCanvas.getContext('2d');
+    if (ctx) {
+      layers.forEach((layer) => {
+        if (layer.visible) {
+          ctx.drawImage(canvasLayers[layer.id], 0, 0);
+        }
+      });
+    }
+    return compositeCanvas.toDataURL();
+  }, [canvasLayers, layers, width, height]);
 
   const mouseEnter = useCallback(
     (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
@@ -242,64 +265,52 @@ export const Artboard = forwardRef(function Artboard(
 
   const mouseLeave = useCallback(
     (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
-      if (!drawing) {
-        return;
-      }
+      if (!drawing) return;
       continueStroke(getMousePoint(event));
       endStroke();
     },
     [continueStroke, drawing, endStroke]
   );
 
-  const redrawCanvas = useCallback(() => {
-    if (!context || !canvas) return;
-
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    if (content) {
-      const image = new Image();
-      image.onload = () => {
-        if (context && canvas) {
-          context.drawImage(image, 0, 0, canvas.width, canvas.height);
-          console.log('Redrawn SVG:', exportSVG(canvas));
-        }
-      };
-      image.src = content;
-    }
-  }, [context, canvas, content]);
-
-  useEffect(() => {
-    if (context) {
-      history.setContext(context);
-    }
-  }, [context, history]);
-
   useImperativeHandle(
     ref,
     () => ({
       download: (filename = 'image.png', type?: string) => {
-        if (!canvas) {
-          return;
-        }
+        const dataUrl = compositeLayersToDataURL();
         const a = document.createElement('a');
-        a.href = canvas.toDataURL(type);
+        a.href = dataUrl;
         a.download = filename;
         a.click();
       },
-      getImageAsDataUri: (type?: string) =>
-        canvas ? canvas.toDataURL(type) : undefined,
-      getImageAsSVG: () => (canvas ? exportSVG(canvas) : ''),
+      getImageAsDataUri: compositeLayersToDataURL,
+      getImageAsSVG: () => exportSVG(getActiveCanvas()),
       clear,
-      context,
-      width: canvas ? canvas.width : 0,
-      height: canvas ? canvas.height : 0,
-      canvas: canvas as HTMLCanvasElement
+      context: getActiveContext(),
+      width,
+      height,
+      canvas: getActiveCanvas()
     }),
-    [canvas, context, clear]
+    [
+      compositeLayersToDataURL,
+      getActiveCanvas,
+      getActiveContext,
+      clear,
+      width,
+      height
+    ]
   );
 
   return (
     <canvas
-      style={{ cursor: tool?.cursor, touchAction: 'none', ...style }}
+      ref={containerRef}
+      style={{
+        ...style,
+        position: 'relative',
+        width,
+        height,
+        cursor: tool?.cursor,
+        touchAction: 'none'
+      }}
       onTouchStart={touchStart}
       onMouseDown={mouseDown}
       onMouseEnter={mouseEnter}
@@ -308,7 +319,6 @@ export const Artboard = forwardRef(function Artboard(
       onMouseUp={endStroke}
       onMouseOut={mouseLeave}
       onTouchEnd={endStroke}
-      ref={gotRef}
       {...props}
     />
   );

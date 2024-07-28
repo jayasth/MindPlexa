@@ -6,8 +6,8 @@ import React, {
   useState,
   useEffect
 } from 'react';
-
-import { History } from '@/ui/nodes/drawNode/drawNodeHistory';
+import { exportSVG } from '../utils/svgExport';
+import { useHistory } from '../drawNodeHistory';
 
 import {
   getMousePoint,
@@ -15,11 +15,11 @@ import {
   mouseButtonIsDown,
   Point
 } from '@/ui/nodes/drawNode/utils/pointUtils';
+import { Layer } from '../types';
 
 export interface ArtboardProps
   extends React.CanvasHTMLAttributes<HTMLCanvasElement> {
   tool: ToolHandlers;
-  history?: History;
   onStartStroke?: (point: Point) => void;
   onContinueStroke?: (point: Point) => void;
   onEndStroke?: () => void;
@@ -28,16 +28,13 @@ export interface ArtboardProps
   width: number;
   height: number;
   onResize?: () => void;
-}
-
-export interface ArtboardRef {
-  download: (filename?: string, type?: string) => void;
-  getImageAsDataUri: (type?: string) => string | undefined;
-  clear: () => void;
-  context?: CanvasRenderingContext2D | null;
-  width: number;
-  height: number;
-  canvas: HTMLCanvasElement;
+  zoomLevel: number;
+  color: string;
+  strokeWidth: number;
+  opacity: number;
+  blendMode: string;
+  layers: Layer[];
+  activeLayerId: string;
 }
 
 export interface ToolHandlers {
@@ -48,71 +45,101 @@ export interface ToolHandlers {
   cursor?: string;
 }
 
+export interface ArtboardRef {
+  download: (filename?: string, type?: string) => void;
+  getImageAsDataUri: (type?: string) => string | undefined;
+  getImageAsSVG: () => string;
+  clear: () => void;
+  context?: CanvasRenderingContext2D | null;
+  width: number;
+  height: number;
+  canvas: HTMLCanvasElement;
+}
+
 export const Artboard = forwardRef(function Artboard(
   {
     tool,
     style,
-    history,
     onStartStroke,
     onContinueStroke,
     onEndStroke,
-    content,
+    content: initialContent,
     onContentChange,
     width,
     height,
     onResize,
+    zoomLevel,
+    color,
+    strokeWidth,
+    opacity,
+    blendMode,
+    layers,
+    activeLayerId,
     ...props
   }: ArtboardProps,
   ref: ForwardedRef<ArtboardRef>
 ) {
-  const [context, setContext] = useState<CanvasRenderingContext2D | null>();
-  const [canvas, setCanvas] = useState<HTMLCanvasElement>();
+  const [context, setContext] = useState<CanvasRenderingContext2D | null>(null);
+  const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null);
   const [drawing, setDrawing] = useState(false);
+  const [content, setContent] = useState(initialContent || '');
+  const { history } = useHistory();
+
+  const handleContentChange = useCallback(
+    (newContent: string) => {
+      setContent(newContent);
+      onContentChange?.(newContent);
+    },
+    [onContentChange]
+  );
+
+  const setupStroke = useCallback(() => {
+    if (!context) return;
+    context.save();
+    context.strokeStyle = color;
+    context.lineWidth = strokeWidth;
+    context.globalAlpha = opacity / 100;
+    context.globalCompositeOperation = blendMode as GlobalCompositeOperation;
+  }, [context, color, strokeWidth, opacity, blendMode]);
 
   const startStroke = useCallback(
     (point: Point) => {
-      if (!context) {
-        return;
-      }
-      context.save();
+      if (!context) return;
+      setupStroke();
       setDrawing(true);
       tool.startStroke?.(point, context);
       onStartStroke?.(point);
     },
-    [tool, context, onStartStroke]
+    [tool, context, onStartStroke, setupStroke]
   );
 
   const continueStroke = useCallback(
     (newPoint: Point) => {
-      if (!context) {
-        return;
-      }
+      if (!context) return;
+      setupStroke();
       tool.continueStroke?.(newPoint, context);
       onContinueStroke?.(newPoint);
     },
-    [tool, context, onContinueStroke]
+    [tool, context, onContinueStroke, setupStroke]
   );
 
   const endStroke = useCallback(() => {
+    if (!context || !canvas) return;
     setDrawing(false);
-    if (context) {
-      tool.endStroke?.(context);
-      onEndStroke?.();
-      context.restore();
-      if (canvas && history) {
-        history.pushState(canvas);
-      }
-      if (onContentChange) {
-        const newContent = canvas?.toDataURL() || '';
-        onContentChange(newContent);
-        window.dispatchEvent(
-          new CustomEvent('content-updated', {
-            detail: { content: newContent }
-          })
-        );
-      }
-    }
-  }, [tool, context, canvas, history, onEndStroke, onContentChange]);
+    tool.endStroke?.(context);
+    onEndStroke?.();
+    context.restore();
+    const newContent = canvas.toDataURL() || '';
+    handleContentChange(newContent);
+    history.pushState(canvas);
+    window.dispatchEvent(
+      new CustomEvent('content-updated', {
+        detail: { content: newContent }
+      })
+    );
+
+    console.log('DrawNodeArtboard SVG Drawing:', exportSVG(canvas));
+  }, [tool, context, canvas, onEndStroke, handleContentChange, history]);
 
   const mouseMove = useCallback(
     (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
@@ -156,30 +183,24 @@ export const Artboard = forwardRef(function Artboard(
   );
 
   const clear = useCallback(() => {
-    if (!context || !canvas) {
-      return;
-    }
+    if (!context || !canvas) return;
     context.save();
-    context.fillStyle = '#ffffff';
-    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.setTransform(1, 0, 0, 1, 0, 0);
+    context.clearRect(0, 0, canvas.width, canvas.height);
     context.restore();
-    if (canvas && history) {
-      history.pushState(canvas);
-    }
-    if (onContentChange) {
-      const newContent = canvas?.toDataURL() || '';
-      onContentChange(newContent);
-      window.dispatchEvent(
-        new CustomEvent('content-updated', { detail: { content: newContent } })
-      );
-    }
-  }, [context, canvas, history, onContentChange]);
+    const newContent = canvas.toDataURL() || '';
+    handleContentChange(newContent);
+    history.clear();
+    window.dispatchEvent(
+      new CustomEvent('content-updated', { detail: { content: newContent } })
+    );
+
+    console.log('DrawNodeArtboardCleared SVG:', exportSVG(canvas));
+  }, [context, canvas, handleContentChange, history]);
 
   const gotRef = useCallback(
-    (canvasRef: HTMLCanvasElement) => {
-      if (!canvasRef) {
-        return;
-      }
+    (canvasRef: HTMLCanvasElement | null) => {
+      if (!canvasRef) return;
       const aspectRatio = 16 / 9;
       const canvasSize = Math.min(width, height);
       canvasRef.width = canvasSize * aspectRatio;
@@ -195,23 +216,17 @@ export const Artboard = forwardRef(function Artboard(
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, canvasRef.width, canvasRef.height);
       ctx.fillStyle = 'transparent';
+      ctx.scale(zoomLevel, zoomLevel);
       if (content) {
         const image = new Image();
         image.onload = () => {
           ctx.drawImage(image, 0, 0, canvasRef.width, canvasRef.height);
+          console.log('DrawNodeArtboardInitial SVG:', exportSVG(canvasRef));
         };
         image.src = content;
       }
-      if (history) {
-        history.setContext(ctx);
-        if (ctx) {
-          history.pushState(canvasRef);
-        } else {
-          console.error('Context not defined, cannot push state');
-        }
-      }
     },
-    [width, height, content, history]
+    [width, height, content, zoomLevel]
   );
 
   const mouseEnter = useCallback(
@@ -236,6 +251,28 @@ export const Artboard = forwardRef(function Artboard(
     [continueStroke, drawing, endStroke]
   );
 
+  const redrawCanvas = useCallback(() => {
+    if (!context || !canvas) return;
+
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    if (content) {
+      const image = new Image();
+      image.onload = () => {
+        if (context && canvas) {
+          context.drawImage(image, 0, 0, canvas.width, canvas.height);
+          console.log('Redrawn SVG:', exportSVG(canvas));
+        }
+      };
+      image.src = content;
+    }
+  }, [context, canvas, content]);
+
+  useEffect(() => {
+    if (context) {
+      history.setContext(context);
+    }
+  }, [context, history]);
+
   useImperativeHandle(
     ref,
     () => ({
@@ -248,9 +285,10 @@ export const Artboard = forwardRef(function Artboard(
         a.download = filename;
         a.click();
       },
-      clear,
       getImageAsDataUri: (type?: string) =>
         canvas ? canvas.toDataURL(type) : undefined,
+      getImageAsSVG: () => (canvas ? exportSVG(canvas) : ''),
+      clear,
       context,
       width: canvas ? canvas.width : 0,
       height: canvas ? canvas.height : 0,
@@ -258,36 +296,6 @@ export const Artboard = forwardRef(function Artboard(
     }),
     [canvas, context, clear]
   );
-
-  useEffect(() => {
-    if (onResize) {
-      onResize();
-    }
-    if (canvas && context) {
-      const image = new Image();
-      image.onload = () => {
-        context.clearRect(0, 0, canvas.width, canvas.height);
-        context.drawImage(
-          image,
-          0,
-          0,
-          image.width,
-          image.height,
-          0,
-          0,
-          canvas.width,
-          canvas.height
-        );
-      };
-      image.src = content || '';
-    }
-  }, [width, height, onResize, canvas, context, content]);
-
-  useEffect(() => {
-    if (onContentChange) {
-      onContentChange(canvas?.toDataURL() || '');
-    }
-  }, [canvas, onContentChange]);
 
   return (
     <canvas
