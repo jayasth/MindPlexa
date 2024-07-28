@@ -11,19 +11,19 @@ export interface UseBrushProps {
 }
 
 export function useBrush({
-  color = '#000000',
-  strokeWidth = 5,
+  color,
+  strokeWidth,
   opacity = 1,
   blendMode = 'source-over'
-}: UseBrushProps): ToolHandlers {
+}: UseBrushProps = {}): ToolHandlers {
   const lastPoints = useRef<Point[]>([]);
   const lastVelocity = useRef<number>(0);
 
   const startStroke = useCallback(
     (point: Point, context: CanvasRenderingContext2D) => {
       context.save();
-      context.strokeStyle = color;
-      context.lineWidth = strokeWidth;
+      context.strokeStyle = color || context.strokeStyle;
+      context.lineWidth = strokeWidth || context.lineWidth;
       context.globalAlpha = opacity;
       context.globalCompositeOperation = blendMode;
       context.lineJoin = context.lineCap = 'round';
@@ -47,9 +47,13 @@ export function useBrush({
 
         const smoothingFactor = 0.2;
         const lineWidth =
-          strokeWidth - (velocity - lastVelocity.current) * smoothingFactor;
+          (strokeWidth || context.lineWidth) -
+          (velocity - lastVelocity.current) * smoothingFactor;
 
-        context.lineWidth = Math.max(0.5, Math.min(strokeWidth * 2, lineWidth));
+        context.lineWidth = Math.max(
+          0.5,
+          Math.min((strokeWidth || context.lineWidth) * 2, lineWidth)
+        );
         context.quadraticCurveTo(
           lastPoints.current[2][0],
           lastPoints.current[2][1],
@@ -72,7 +76,7 @@ export function useBrush({
     context.restore();
   }, []);
 
-  const cursor = circleCursor(strokeWidth);
+  const cursor = circleCursor(strokeWidth || 20);
 
   return { name: 'Brush', startStroke, continueStroke, endStroke, cursor };
 }

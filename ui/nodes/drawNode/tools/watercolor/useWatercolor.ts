@@ -22,6 +22,8 @@ export function useWatercolor({
   const startStroke = useCallback(
     (point: Point, context: CanvasRenderingContext2D) => {
       context.fillStyle = color;
+      context.strokeStyle = color;
+      context.lineWidth = strokeWidth;
       context.shadowColor = color;
       context.globalAlpha = opacity;
       points.current = [point];

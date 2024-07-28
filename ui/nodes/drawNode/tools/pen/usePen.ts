@@ -10,11 +10,11 @@ export interface UsePenProps {
 }
 
 export function usePen({
-  color = '#000000',
-  strokeWidth = 2,
+  color,
+  strokeWidth,
   opacity = 1,
   blendMode = 'source-over'
-}: UsePenProps): ToolHandlers {
+}: UsePenProps = {}): ToolHandlers {
   const points = useRef<Point[]>([]);
   const isDrawing = useRef(false);
   const tempCanvas = useRef<HTMLCanvasElement | null>(null);
@@ -28,8 +28,8 @@ export function usePen({
       }
       const tempCtx = tempCanvas.current.getContext('2d');
       if (tempCtx) {
-        tempCtx.strokeStyle = color;
-        tempCtx.lineWidth = strokeWidth;
+        tempCtx.strokeStyle = color || context.strokeStyle;
+        tempCtx.lineWidth = strokeWidth || context.lineWidth;
         tempCtx.globalAlpha = opacity;
         tempCtx.globalCompositeOperation = blendMode;
         tempCtx.clearRect(0, 0, tempCtx.canvas.width, tempCtx.canvas.height);
@@ -84,8 +84,8 @@ export function usePen({
     (context: CanvasRenderingContext2D) => {
       if (points.current.length > 1) {
         context.save();
-        context.strokeStyle = color;
-        context.lineWidth = strokeWidth;
+        context.strokeStyle = color || context.strokeStyle;
+        context.lineWidth = strokeWidth || context.lineWidth;
         context.globalAlpha = opacity;
         context.globalCompositeOperation = blendMode;
         context.beginPath();

@@ -43,7 +43,7 @@ export const initializeTools = (): Array<ToolConfig> => {
       tool: useLine({}),
       icon: BsSlashLg,
       defaultStrokeWidth: 2,
-      defaultColor: '#636363'
+      defaultColor: '#8B0000'
     },
     {
       tool: useRectangle({}),
