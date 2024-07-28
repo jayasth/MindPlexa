@@ -35,7 +35,7 @@ export interface ArtboardProps
   blendMode: string;
   layers: Layer[];
   activeLayerId: string;
-  onLayerChange?: (layers: Layer[]) => void;
+  onLayerContentChange: (layerId: string, content: string) => void;
 }
 
 export interface ToolHandlers {
@@ -76,7 +76,7 @@ export const Artboard = forwardRef(function Artboard(
     blendMode,
     layers,
     activeLayerId,
-    onLayerChange,
+    onLayerContentChange,
     ...props
   }: ArtboardProps,
   ref: ForwardedRef<ArtboardRef>
@@ -284,27 +284,24 @@ export const Artboard = forwardRef(function Artboard(
     context.clearRect(0, 0, canvas.width, canvas.height);
     layers.forEach((layer) => {
       if (layer.visible) {
-        // Draw layer content here
-        // You'll need to store and retrieve layer-specific drawing data
+        const image = new Image();
+        image.onload = () => {
+          context.drawImage(image, 0, 0);
+        };
+        image.src = layer.content;
       }
     });
   }, [context, canvas, layers]);
 
   useEffect(() => {
     drawLayers();
-  }, [drawLayers, layers]);
+  }, [drawLayers]);
 
   const handleDrawingChange = useCallback(
-    async (newDrawingData: string) => {
-      const svgContent = canvas ? exportSVG(canvas) : '';
-      onContentChange?.(svgContent);
-      // Update the active layer's content
-      const updatedLayers = layers.map((layer) =>
-        layer.id === activeLayerId ? { ...layer, content: svgContent } : layer
-      );
-      onLayerChange?.(updatedLayers);
+    (newDrawingData: string) => {
+      onLayerContentChange(activeLayerId, newDrawingData);
     },
-    [canvas, onContentChange, layers, activeLayerId, onLayerChange]
+    [activeLayerId, onLayerContentChange]
   );
 
   useEffect(() => {

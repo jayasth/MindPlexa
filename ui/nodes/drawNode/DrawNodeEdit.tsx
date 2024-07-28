@@ -104,7 +104,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   );
   const [showLayerPanel, setShowLayerPanel] = useState(false);
   const [layers, setLayers] = useState<Layer[]>([
-    { id: '1', name: 'Layer 1', visible: true }
+    { id: '1', name: 'Layer 1', visible: true, content: '', zIndex: 0 }
   ]);
   const [activeLayerId, setActiveLayerId] = useState('1');
 
@@ -310,12 +310,13 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
       )
     );
   };
-
   const addLayer = useCallback(() => {
     const newLayer: Layer = {
       id: Date.now().toString(),
       name: `Layer ${layers.length + 1}`,
-      visible: true
+      visible: true,
+      content: '',
+      zIndex: layers.length
     };
     setLayers((prevLayers) => [newLayer, ...prevLayers]);
     setActiveLayerId(newLayer.id);
@@ -444,7 +445,10 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
                 blendMode={currentToolSetting.blendMode}
                 layers={layers}
                 activeLayerId={activeLayerId}
-                onLayerChange={(updatedLayers) => {
+                onLayerContentChange={(layerId, content) => {
+                  const updatedLayers = layers.map((layer) =>
+                    layer.id === layerId ? { ...layer, content } : layer
+                  );
                   setLayers(updatedLayers);
                   updateDrawNodeData({ layers: updatedLayers });
                 }}

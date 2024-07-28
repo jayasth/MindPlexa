@@ -10,4 +10,6 @@ export interface Layer {
   id: string;
   name: string;
   visible: boolean;
+  content: string;
+  zIndex: number;
 }
