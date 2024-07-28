@@ -33,54 +33,59 @@ const DrawNodeSettings: React.FC<DrawNodeSettingsProps> = ({
         <span>Opacity</span>
         <span>Blend</span>
       </div>
-      {tools.map((tool, index) => (
-        <div key={tool.tool.name} className={styles.toolSetting}>
-          <span className={styles.toolName}>{tool.tool.name}</span>
-          <Input
-            type="color"
-            value={toolSettings[index].color}
-            onChange={(value) => onToolSettingChange(index, 'color', value)}
-            className={styles.colorInput}
-            variant="slim"
-            disabled={tool.tool.name === 'Eraser'}
-          />
-          <Input
-            type="number"
-            value={toolSettings[index].strokeWidth.toString()}
-            onChange={(value) =>
-              onToolSettingChange(index, 'strokeWidth', parseInt(value, 10))
-            }
-            min={1}
-            max={100}
-            className={styles.widthInput}
-            variant="slim"
-          />
-          <Input
-            type="number"
-            value={toolSettings[index].opacity.toString()}
-            onChange={(value) =>
-              onToolSettingChange(index, 'opacity', parseInt(value, 10))
-            }
-            min={0}
-            max={100}
-            className={styles.opacityInput}
-            variant="slim"
-          />
-          <Dropdown
-            value={toolSettings[index].blendMode}
-            onChange={(value) => onToolSettingChange(index, 'blendMode', value)}
-            className={styles.blendModeSelect}
-            variant="slim"
-            disabled={tool.tool.name === 'Eraser'}
-          >
-            {blendModes.map((mode) => (
-              <option key={mode} value={mode}>
-                {mode}
-              </option>
-            ))}
-          </Dropdown>
-        </div>
-      ))}
+      {tools.map((tool, index) => {
+        const setting = toolSettings[index];
+        return (
+          <div key={tool.tool.name} className={styles.toolSetting}>
+            <span className={styles.toolName}>{tool.tool.name}</span>
+            <Input
+              type="color"
+              value={setting.color}
+              onChange={(value) => onToolSettingChange(index, 'color', value)}
+              className={styles.colorInput}
+              variant="slim"
+              disabled={tool.tool.name === 'Eraser'}
+            />
+            <Input
+              type="number"
+              value={(setting.strokeWidth || 1).toString()}
+              onChange={(value) =>
+                onToolSettingChange(index, 'strokeWidth', parseInt(value, 10))
+              }
+              min={1}
+              max={100}
+              className={styles.widthInput}
+              variant="slim"
+            />
+            <Input
+              type="number"
+              value={(setting.opacity || 100).toString()}
+              onChange={(value) =>
+                onToolSettingChange(index, 'opacity', parseInt(value, 10))
+              }
+              min={0}
+              max={100}
+              className={styles.opacityInput}
+              variant="slim"
+            />
+            <Dropdown
+              value={setting.blendMode || 'normal'}
+              onChange={(value) =>
+                onToolSettingChange(index, 'blendMode', value)
+              }
+              className={styles.blendModeSelect}
+              variant="slim"
+              disabled={tool.tool.name === 'Eraser'}
+            >
+              {blendModes.map((mode) => (
+                <option key={mode} value={mode}>
+                  {mode}
+                </option>
+              ))}
+            </Dropdown>
+          </div>
+        );
+      })}
     </div>
   );
 };

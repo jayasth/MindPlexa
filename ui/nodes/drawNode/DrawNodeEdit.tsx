@@ -93,15 +93,18 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const [zoomLevel, setZoomLevel] = useState(data.zoomLevel || 1);
   const [tools] = useState(initializeTools());
   const [currentToolIndex, setCurrentToolIndex] = useState(0);
-  const [toolSettings, setToolSettings] = useState(
-    tools.map((tool) => ({
-      name: tool.tool.name,
-      color: tool.defaultColor,
-      strokeWidth: tool.defaultStrokeWidth,
-      opacity: 100,
-      blendMode: 'normal'
-    }))
-  );
+  const [toolSettings, setToolSettings] = useState(() => {
+    return (
+      data.settings ||
+      tools.map((tool) => ({
+        name: tool.tool.name,
+        color: tool.defaultColor,
+        strokeWidth: tool.defaultStrokeWidth,
+        opacity: 100,
+        blendMode: 'normal'
+      }))
+    );
+  });
   const [showLayerPanel, setShowLayerPanel] = useState(false);
   const [layers, setLayers] = useState<Layer[]>(
     Array.isArray(data.layers) && data.layers.length > 0
@@ -140,6 +143,21 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
       }
     }, 500),
     [data.id, updateNode]
+  );
+
+  useEffect(() => {
+    updateDrawNodeData({ settings: toolSettings });
+  }, [toolSettings, updateDrawNodeData]);
+
+  const handleToolSettingChange = useCallback(
+    (toolIndex: number, key: string, value: any) => {
+      setToolSettings((prevSettings) => {
+        const newSettings = [...prevSettings];
+        newSettings[toolIndex] = { ...newSettings[toolIndex], [key]: value };
+        return newSettings;
+      });
+    },
+    []
   );
 
   useEffect(() => {
@@ -311,17 +329,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     setZoomLevel((prevZoom) => Math.max(prevZoom / 1.1, 0.1));
   };
 
-  const handleToolSettingChange = useCallback(
-    (toolIndex: number, key: string, value: any) => {
-      setToolSettings((prev) =>
-        prev.map((setting, index) =>
-          index === toolIndex ? { ...setting, [key]: value } : setting
-        )
-      );
-    },
-    []
-  );
-
   const addLayer = useCallback(() => {
     const newLayer: Layer = {
       id: Date.now().toString(),
@@ -420,17 +427,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
           currentToolIndex={currentToolIndex}
           setCurrentToolIndex={(index) => {
             setCurrentToolIndex(index);
-            setToolSettings((prev) =>
-              prev.map((setting, i) =>
-                i === index
-                  ? {
-                      ...setting,
-                      color: tools[i].defaultColor,
-                      strokeWidth: tools[i].defaultStrokeWidth
-                    }
-                  : setting
-              )
-            );
           }}
           textColor={textColor}
           backgroundColor={backgroundColor}
@@ -466,6 +462,8 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
                   updateDrawNodeData({ layers: updatedLayers });
                 }}
                 settings={toolSettings}
+                toolSettings={toolSettings}
+                currentToolIndex={currentToolIndex}
               />
             </ResizableArtboardMask>
           </div>

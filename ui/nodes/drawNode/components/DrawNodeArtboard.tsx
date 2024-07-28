@@ -38,6 +38,8 @@ export interface ArtboardProps
   activeLayerId: string;
   onLayerContentChange: (layerId: string, content: string) => void;
   settings: ToolSetting[];
+  toolSettings: any[];
+  currentToolIndex: number;
 }
 
 export interface ArtboardRef {
@@ -72,6 +74,8 @@ export const Artboard = forwardRef(function Artboard(
     activeLayerId,
     onLayerContentChange,
     settings,
+    toolSettings,
+    currentToolIndex,
     ...props
   }: ArtboardProps,
   ref: ForwardedRef<ArtboardRef>
@@ -81,6 +85,8 @@ export const Artboard = forwardRef(function Artboard(
   const [drawing, setDrawing] = useState(false);
   const [content, setContent] = useState(initialContent || '');
   const { history } = useHistory();
+
+  const currentToolSetting = toolSettings[currentToolIndex];
 
   const handleContentChange = useCallback(
     (newContent: string) => {
@@ -93,11 +99,12 @@ export const Artboard = forwardRef(function Artboard(
   const setupStroke = useCallback(() => {
     if (!context) return;
     context.save();
-    context.strokeStyle = color;
-    context.lineWidth = strokeWidth;
-    context.globalAlpha = opacity / 100;
-    context.globalCompositeOperation = blendMode as GlobalCompositeOperation;
-  }, [context, color, strokeWidth, opacity, blendMode]);
+    context.strokeStyle = currentToolSetting.color;
+    context.lineWidth = currentToolSetting.strokeWidth;
+    context.globalAlpha = currentToolSetting.opacity / 100;
+    context.globalCompositeOperation =
+      currentToolSetting.blendMode as GlobalCompositeOperation;
+  }, [context, currentToolSetting]);
 
   const startStroke = useCallback(
     (point: Point) => {
