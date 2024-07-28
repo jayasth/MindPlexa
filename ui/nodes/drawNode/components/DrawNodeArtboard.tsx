@@ -16,9 +16,9 @@ import {
   Point
 } from '@/ui/nodes/drawNode/utils/pointUtils';
 import { Layer } from '../types';
+import styles from './DrawNodeArtboard.module.css';
 
-export interface ArtboardProps
-  extends React.CanvasHTMLAttributes<HTMLCanvasElement> {
+export interface ArtboardProps extends React.HTMLAttributes<HTMLDivElement> {
   tool: ToolHandlers;
   onStartStroke?: (point: Point) => void;
   onContinueStroke?: (point: Point) => void;
@@ -79,13 +79,13 @@ export const Artboard = forwardRef(function Artboard(
   }: ArtboardProps,
   ref: ForwardedRef<ArtboardRef>
 ) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const [canvasLayers, setCanvasLayers] = useState<{
     [key: string]: HTMLCanvasElement;
   }>({});
   const [drawing, setDrawing] = useState(false);
   const [content, setContent] = useState(initialContent || '');
   const { history } = useHistory();
-  const containerRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     const newCanvasLayers: { [key: string]: HTMLCanvasElement } = {};
@@ -186,38 +186,20 @@ export const Artboard = forwardRef(function Artboard(
     history
   ]);
 
-  const mouseMove = useCallback(
-    (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
-      if (!drawing) return;
-      continueStroke(getMousePoint(event));
-    },
-    [continueStroke, drawing]
-  );
-
-  const touchMove = useCallback(
-    (event: React.TouchEvent<HTMLCanvasElement>) => {
-      if (!drawing) return;
-      continueStroke(getTouchPoint(event));
-    },
-    [continueStroke, drawing]
-  );
-
-  const mouseDown = useCallback(
-    (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
-      if (drawing) return;
-      event.preventDefault();
-      startStroke(getMousePoint(event));
-    },
-    [drawing, startStroke]
-  );
-
-  const touchStart = useCallback(
-    (event: React.TouchEvent<HTMLCanvasElement>) => {
-      if (drawing) return;
-      startStroke(getTouchPoint(event));
-    },
-    [drawing, startStroke]
-  );
+  const compositeLayersToDataURL = useCallback(() => {
+    const compositeCanvas = document.createElement('canvas');
+    compositeCanvas.width = width;
+    compositeCanvas.height = height;
+    const ctx = compositeCanvas.getContext('2d');
+    if (ctx) {
+      layers.forEach((layer) => {
+        if (layer.visible) {
+          ctx.drawImage(canvasLayers[layer.id], 0, 0);
+        }
+      });
+    }
+    return compositeCanvas.toDataURL();
+  }, [canvasLayers, layers, width, height]);
 
   const clear = useCallback(() => {
     Object.values(canvasLayers).forEach((canvas) => {
@@ -235,25 +217,43 @@ export const Artboard = forwardRef(function Artboard(
     window.dispatchEvent(
       new CustomEvent('content-updated', { detail: { content: newContent } })
     );
-  }, [canvasLayers, handleContentChange, history]);
+  }, [canvasLayers, handleContentChange, history, compositeLayersToDataURL]);
 
-  const compositeLayersToDataURL = useCallback(() => {
-    const compositeCanvas = document.createElement('canvas');
-    compositeCanvas.width = width;
-    compositeCanvas.height = height;
-    const ctx = compositeCanvas.getContext('2d');
-    if (ctx) {
-      layers.forEach((layer) => {
-        if (layer.visible) {
-          ctx.drawImage(canvasLayers[layer.id], 0, 0);
-        }
-      });
-    }
-    return compositeCanvas.toDataURL();
-  }, [canvasLayers, layers, width, height]);
+  const mouseMove = useCallback(
+    (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+      if (!drawing) return;
+      continueStroke(getMousePoint(event));
+    },
+    [continueStroke, drawing]
+  );
+
+  const touchMove = useCallback(
+    (event: React.TouchEvent<HTMLDivElement>) => {
+      if (!drawing) return;
+      continueStroke(getTouchPoint(event));
+    },
+    [continueStroke, drawing]
+  );
+
+  const mouseDown = useCallback(
+    (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+      if (drawing) return;
+      event.preventDefault();
+      startStroke(getMousePoint(event));
+    },
+    [drawing, startStroke]
+  );
+
+  const touchStart = useCallback(
+    (event: React.TouchEvent<HTMLDivElement>) => {
+      if (drawing) return;
+      startStroke(getTouchPoint(event));
+    },
+    [drawing, startStroke]
+  );
 
   const mouseEnter = useCallback(
-    (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
+    (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
       if (mouseButtonIsDown(event.buttons)) {
         mouseDown(event);
       } else if (drawing) {
@@ -264,7 +264,7 @@ export const Artboard = forwardRef(function Artboard(
   );
 
   const mouseLeave = useCallback(
-    (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
+    (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
       if (!drawing) return;
       continueStroke(getMousePoint(event));
       endStroke();
@@ -301,15 +301,15 @@ export const Artboard = forwardRef(function Artboard(
   );
 
   return (
-    <canvas
+    <div
       ref={containerRef}
+      className={styles.artboardContainer}
       style={{
-        ...style,
-        position: 'relative',
         width,
         height,
         cursor: tool?.cursor,
-        touchAction: 'none'
+        touchAction: 'none',
+        ...style
       }}
       onTouchStart={touchStart}
       onMouseDown={mouseDown}
@@ -317,7 +317,7 @@ export const Artboard = forwardRef(function Artboard(
       onMouseMove={drawing ? mouseMove : undefined}
       onTouchMove={drawing ? touchMove : undefined}
       onMouseUp={endStroke}
-      onMouseOut={mouseLeave}
+      onMouseLeave={mouseLeave}
       onTouchEnd={endStroke}
       {...props}
     />

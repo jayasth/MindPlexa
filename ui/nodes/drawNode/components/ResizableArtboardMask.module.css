@@ -1,3 +1,8 @@
+.resizableArtboardMask {
+  position: relative;
+  z-index: 10;
+}
+
 .maskOuterContainer {
   position: absolute;
   top: 50%;
