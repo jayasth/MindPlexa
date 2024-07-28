@@ -1,0 +1,48 @@
+.maskContainer {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 2px solid purple;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.resizeHandle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background-color: purple;
+  border: 1px solid white;
+  z-index: 10;
+}
+
+.resizeHandle.top,
+.resizeHandle.bottom {
+  left: 50%;
+  transform: translateX(-50%);
+  cursor: ns-resize;
+}
+
+.resizeHandle.left,
+.resizeHandle.right {
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: ew-resize;
+}
+
+.resizeHandle.top {
+  top: -5px;
+}
+
+.resizeHandle.right {
+  right: -5px;
+}
+
+.resizeHandle.bottom {
+  bottom: -5px;
+}
+
+.resizeHandle.left {
+  left: -5px;
+}

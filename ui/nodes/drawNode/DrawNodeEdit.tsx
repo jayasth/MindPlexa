@@ -46,6 +46,7 @@ import useCanvasStore from '@/app/store/canvas/useCanvasStore';
 import { initializeTools } from './toolInitialization';
 import { useHistory } from './drawNodeHistory';
 import { exportSVG } from './utils/svgExport';
+import ResizableArtboardMask from './components/ResizableArtboardMask';
 
 interface DrawNodeEditProps extends NodeProps {
   data: any;
@@ -375,20 +376,25 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         />
         <div className={styles.mainContent}>
           <div className={`${styles.artboardContainer} nodrag nowheel`}>
-            <Artboard
-              tool={currentTool.tool}
-              ref={artboardRef}
-              style={{ border: '1px gray solid' }}
-              content={drawingData}
-              onContentChange={handleDrawingChange}
-              width={nodeWidth / 2}
-              height={nodeHeight / 2}
-              zoomLevel={zoomLevel}
-              color={currentToolSetting.color}
-              strokeWidth={currentToolSetting.strokeWidth}
-              opacity={currentToolSetting.opacity}
-              blendMode={currentToolSetting.blendMode}
-            />
+            <ResizableArtboardMask
+              initialWidth={nodeWidth * 0.8}
+              initialHeight={nodeHeight * 0.8}
+            >
+              <Artboard
+                tool={currentTool.tool}
+                ref={artboardRef}
+                style={{ border: '1px gray solid' }}
+                content={drawingData}
+                onContentChange={handleDrawingChange}
+                width={nodeWidth}
+                height={nodeHeight}
+                zoomLevel={zoomLevel}
+                color={currentToolSetting.color}
+                strokeWidth={currentToolSetting.strokeWidth}
+                opacity={currentToolSetting.opacity}
+                blendMode={currentToolSetting.blendMode}
+              />
+            </ResizableArtboardMask>
           </div>
         </div>
       </div>
