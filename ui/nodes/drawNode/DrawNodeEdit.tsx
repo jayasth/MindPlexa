@@ -90,7 +90,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const [isTagModalOpen, setIsTagModalOpen] = useState(false);
   const [isFileModalOpen, setIsFileModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [zoomLevel, setZoomLevel] = useState(1);
+  const [zoomLevel, setZoomLevel] = useState(data.zoomLevel || 1);
   const [tools] = useState(initializeTools());
   const [currentToolIndex, setCurrentToolIndex] = useState(0);
   const [toolSettings, setToolSettings] = useState(
@@ -103,9 +103,11 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     }))
   );
   const [showLayerPanel, setShowLayerPanel] = useState(false);
-  const [layers, setLayers] = useState<Layer[]>([
-    { id: '1', name: 'Layer 1', visible: true, content: '', zIndex: 0 }
-  ]);
+  const [layers, setLayers] = useState<Layer[]>(
+    Array.isArray(data.layers) && data.layers.length > 0
+      ? data.layers
+      : [{ id: '1', name: 'Layer 1', visible: true, content: '', zIndex: 0 }]
+  );
   const [activeLayerId, setActiveLayerId] = useState('1');
 
   const currentTool = tools[currentToolIndex];
@@ -156,7 +158,12 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
       editHeight: nodeHeight
     };
 
-    const specificData = { drawingData, tags, attachedFiles };
+    const specificData = {
+      drawingData,
+      tags,
+      attachedFiles,
+      zoomLevel
+    };
 
     updateDrawNodeData({ ...commonData, ...specificData });
   }, [
@@ -168,6 +175,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     nodeHeight,
     tags,
     attachedFiles,
+    zoomLevel,
     updateDrawNodeData
   ]);
 
@@ -290,9 +298,9 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     async (newDrawingData: string) => {
       const svgContent = exportSVG(artboardRef.current?.canvas);
       setDrawingData(svgContent);
-      updateDrawNodeData({ drawingData: svgContent, layers });
+      updateDrawNodeData({ drawingData: svgContent });
     },
-    [updateDrawNodeData, layers]
+    [updateDrawNodeData]
   );
 
   const handleZoomIn = () => {
@@ -457,6 +465,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
                   setLayers(updatedLayers);
                   updateDrawNodeData({ layers: updatedLayers });
                 }}
+                settings={toolSettings}
               />
             </ResizableArtboardMask>
           </div>

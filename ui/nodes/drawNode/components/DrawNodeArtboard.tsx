@@ -37,6 +37,7 @@ export interface ArtboardProps
   layers: Layer[];
   activeLayerId: string;
   onLayerContentChange: (layerId: string, content: string) => void;
+  settings: ToolSetting[];
 }
 
 export interface ArtboardRef {
@@ -70,6 +71,7 @@ export const Artboard = forwardRef(function Artboard(
     layers,
     activeLayerId,
     onLayerContentChange,
+    settings,
     ...props
   }: ArtboardProps,
   ref: ForwardedRef<ArtboardRef>
