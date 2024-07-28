@@ -15,7 +15,7 @@ export interface UseShadingProps {
 }
 
 export function useShadingBrush({
-  color = '#000000',
+  color,
   neighbourColor,
   distanceThreshold = 40,
   neighbourStrokeWidth,
@@ -23,7 +23,6 @@ export function useShadingBrush({
   opacity = 1,
   blendMode = 'darken'
 }: UseShadingProps = {}): ToolHandlers {
-  neighbourColor ||= tinycolor(color).setAlpha(0.2).toPercentageRgbString();
   const points = useRef<Array<Point>>([]);
   const threshold = distanceThreshold * distanceThreshold;
 
@@ -40,7 +39,7 @@ export function useShadingBrush({
 
   const continueStroke = useCallback(
     (newPoint: Point, context: CanvasRenderingContext2D) => {
-      context.strokeStyle = color;
+      context.strokeStyle = color || context.strokeStyle;
       context.lineWidth = neighbourStrokeWidth || 1;
 
       points.current.push(newPoint);
@@ -58,7 +57,11 @@ export function useShadingBrush({
 
         if (distance < threshold && Math.random() > distance / threshold) {
           context.beginPath();
-          context.strokeStyle = neighbourColor as string;
+          context.strokeStyle =
+            neighbourColor ||
+            tinycolor(color || context.strokeStyle)
+              .setAlpha(0.2)
+              .toPercentageRgbString();
           context.moveTo(
             newPoint[0] + dx * spreadFactor,
             newPoint[1] + dy * spreadFactor
