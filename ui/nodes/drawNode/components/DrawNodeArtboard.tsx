@@ -7,6 +7,7 @@ import React, {
   useEffect
 } from 'react';
 import { exportSVG } from '../utils/svgExport';
+import { useHistory } from '../drawNodeHistory';
 
 import {
   getMousePoint,
@@ -14,6 +15,7 @@ import {
   mouseButtonIsDown,
   Point
 } from '@/ui/nodes/drawNode/utils/pointUtils';
+import { Layer } from '../types';
 
 export interface ArtboardProps
   extends React.CanvasHTMLAttributes<HTMLCanvasElement> {
@@ -31,6 +33,8 @@ export interface ArtboardProps
   strokeWidth: number;
   opacity: number;
   blendMode: string;
+  layers: Layer[];
+  activeLayerId: string;
 }
 
 export interface ToolHandlers {
@@ -69,6 +73,8 @@ export const Artboard = forwardRef(function Artboard(
     strokeWidth,
     opacity,
     blendMode,
+    layers,
+    activeLayerId,
     ...props
   }: ArtboardProps,
   ref: ForwardedRef<ArtboardRef>
@@ -77,6 +83,7 @@ export const Artboard = forwardRef(function Artboard(
   const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null);
   const [drawing, setDrawing] = useState(false);
   const [content, setContent] = useState(initialContent || '');
+  const { history } = useHistory();
 
   const handleContentChange = useCallback(
     (newContent: string) => {
@@ -124,15 +131,15 @@ export const Artboard = forwardRef(function Artboard(
     context.restore();
     const newContent = canvas.toDataURL() || '';
     handleContentChange(newContent);
+    history.pushState(canvas);
     window.dispatchEvent(
       new CustomEvent('content-updated', {
         detail: { content: newContent }
       })
     );
 
-    // Log SVG drawing
     console.log('DrawNodeArtboard SVG Drawing:', exportSVG(canvas));
-  }, [tool, context, canvas, onEndStroke, handleContentChange]);
+  }, [tool, context, canvas, onEndStroke, handleContentChange, history]);
 
   const mouseMove = useCallback(
     (event: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
@@ -183,13 +190,13 @@ export const Artboard = forwardRef(function Artboard(
     context.restore();
     const newContent = canvas.toDataURL() || '';
     handleContentChange(newContent);
+    history.clear();
     window.dispatchEvent(
       new CustomEvent('content-updated', { detail: { content: newContent } })
     );
 
-    // Log cleared SVG
     console.log('DrawNodeArtboardCleared SVG:', exportSVG(canvas));
-  }, [context, canvas, handleContentChange]);
+  }, [context, canvas, handleContentChange, history]);
 
   const gotRef = useCallback(
     (canvasRef: HTMLCanvasElement | null) => {
@@ -209,17 +216,17 @@ export const Artboard = forwardRef(function Artboard(
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, canvasRef.width, canvasRef.height);
       ctx.fillStyle = 'transparent';
+      ctx.scale(zoomLevel, zoomLevel);
       if (content) {
         const image = new Image();
         image.onload = () => {
           ctx.drawImage(image, 0, 0, canvasRef.width, canvasRef.height);
-          // Log initial SVG
           console.log('DrawNodeArtboardInitial SVG:', exportSVG(canvasRef));
         };
         image.src = content;
       }
     },
-    [width, height, content]
+    [width, height, content, zoomLevel]
   );
 
   const mouseEnter = useCallback(
@@ -253,13 +260,18 @@ export const Artboard = forwardRef(function Artboard(
       image.onload = () => {
         if (context && canvas) {
           context.drawImage(image, 0, 0, canvas.width, canvas.height);
-          // Log redrawn SVG
           console.log('Redrawn SVG:', exportSVG(canvas));
         }
       };
       image.src = content;
     }
   }, [context, canvas, content]);
+
+  useEffect(() => {
+    if (context) {
+      history.setContext(context);
+    }
+  }, [context, history]);
 
   useImperativeHandle(
     ref,

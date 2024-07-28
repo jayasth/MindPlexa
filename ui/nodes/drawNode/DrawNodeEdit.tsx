@@ -12,6 +12,7 @@ import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 import { Artboard, ArtboardRef } from '@/ui/nodes/drawNode/DrawNodeTools';
 import DrawNodeSidebar from './components/DrawNodeSidebar';
 import DrawNodeTopbar from './components/DrawNodeTopbar';
+import LayerPanel from './components/LayerPanel';
 import {
   DeleteButton,
   ChangeColorButton,
@@ -46,6 +47,7 @@ import useCanvasStore from '@/app/store/canvas/useCanvasStore';
 import { initializeTools } from './toolInitialization';
 import { useHistory } from './drawNodeHistory';
 import { exportSVG } from './utils/svgExport';
+import { Layer } from './types';
 import ResizableArtboardMask from './components/ResizableArtboardMask';
 
 interface DrawNodeEditProps extends NodeProps {
@@ -100,6 +102,11 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
       blendMode: 'normal'
     }))
   );
+  const [showLayerPanel, setShowLayerPanel] = useState(false);
+  const [layers, setLayers] = useState<Layer[]>([
+    { id: '1', name: 'Layer 1', visible: true, locked: false }
+  ]);
+  const [activeLayerId, setActiveLayerId] = useState('1');
 
   const currentTool = tools[currentToolIndex];
   const currentToolSetting = toolSettings[currentToolIndex];
@@ -243,6 +250,10 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     setIsColorPickerVisible((prev) => !prev);
   }, []);
 
+  const toggleLayerPanel = useCallback(() => {
+    setShowLayerPanel((prev) => !prev);
+  }, []);
+
   const customStyles: CSSProperties = useMemo(
     () => ({
       width: nodeWidth,
@@ -287,17 +298,18 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         { data: { drawingData: svgContent } },
         'draw'
       );
+      history.pushState(artboardRef.current?.canvas as HTMLCanvasElement);
     },
-    [debouncedUpdateNodeData]
+    [debouncedUpdateNodeData, history]
   );
 
-  const handleZoomIn = () => {
+  const handleZoomIn = useCallback(() => {
     setZoomLevel((prevZoom) => Math.min(prevZoom * 1.1, 5));
-  };
+  }, []);
 
-  const handleZoomOut = () => {
+  const handleZoomOut = useCallback(() => {
     setZoomLevel((prevZoom) => Math.max(prevZoom / 1.1, 0.1));
-  };
+  }, []);
 
   const handleToolSettingChange = (key: string, value: any) => {
     setToolSettings((prev) =>
@@ -306,6 +318,14 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
       )
     );
   };
+
+  const handleClear = useCallback(() => {
+    if (artboardRef.current) {
+      artboardRef.current.clear();
+      setDrawingData('');
+      history.clear();
+    }
+  }, [history]);
 
   return (
     <div
@@ -342,9 +362,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         canUndo={canUndo}
         canRedo={canRedo}
         download={() => artboardRef.current?.download()}
-        clear={() => {
-          clear();
-        }}
+        clear={handleClear}
         onZoomIn={handleZoomIn}
         onZoomOut={handleZoomOut}
         backgroundColor={backgroundColor}
@@ -352,6 +370,8 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         currentTool={currentTool}
         currentToolSetting={currentToolSetting}
         onToolSettingChange={handleToolSettingChange}
+        toggleLayerPanel={toggleLayerPanel}
+        showLayerPanel={showLayerPanel}
       />
       <div className={styles.drawContent}>
         <DrawNodeSidebar
@@ -393,9 +413,19 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
                 strokeWidth={currentToolSetting.strokeWidth}
                 opacity={currentToolSetting.opacity}
                 blendMode={currentToolSetting.blendMode}
+                layers={layers}
+                activeLayerId={activeLayerId}
               />
             </ResizableArtboardMask>
           </div>
+          {showLayerPanel && (
+            <LayerPanel
+              layers={layers}
+              setLayers={setLayers}
+              activeLayerId={activeLayerId}
+              setActiveLayerId={setActiveLayerId}
+            />
+          )}
         </div>
       </div>
       {(tags.length > 0 || attachedFiles.length > 0) &&

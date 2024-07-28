@@ -35,6 +35,8 @@ interface DrawNodeTopbarProps {
   currentTool: any;
   currentToolSetting: any;
   onToolSettingChange: (key: string, value: any) => void;
+  toggleLayerPanel: () => void;
+  showLayerPanel: boolean;
 }
 
 const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
@@ -50,7 +52,9 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
   textColor,
   currentTool,
   currentToolSetting,
-  onToolSettingChange
+  onToolSettingChange,
+  toggleLayerPanel,
+  showLayerPanel
 }) => {
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   const [isStrokeWidthOpen, setIsStrokeWidthOpen] = useState(false);
@@ -139,8 +143,8 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
         </Tooltip>
         <Tooltip content="Toggle Layers">
           <button
-            className={`${styles.toolbarButton} ${styles.active}`}
-            onClick={() => setIsSettingsOpen(true)}
+            className={`${styles.toolbarButton} ${showLayerPanel ? styles.active : ''}`}
+            onClick={toggleLayerPanel}
             style={{ color: textColor }}
           >
             <FaLayerGroup size={iconSize} />
