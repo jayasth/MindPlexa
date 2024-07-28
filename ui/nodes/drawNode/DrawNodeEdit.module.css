@@ -25,6 +25,11 @@
   flex-direction: row;
   flex-grow: 1;
   overflow: hidden;
+  transition: padding-right 0.3s ease;
+}
+
+.mainContent.withLayerPanel {
+  padding-right: 120px; /* Adjust this value based on your desired layer panel width */
 }
 
 .artboardContainer {
@@ -98,9 +103,20 @@
 }
 
 .layerPanelContainer {
-  width: 150px;
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 120px; /* Adjust this value to match the padding-right in .mainContent.withLayerPanel */
+  background-color: #f0f0f0;
   border-left: 1px solid #ccc;
   overflow-y: auto;
+  transition: transform 0.3s ease;
+  transform: translateX(100%);
+}
+
+.withLayerPanel .layerPanelContainer {
+  transform: translateX(0);
 }
 
 /* common on all nodes */

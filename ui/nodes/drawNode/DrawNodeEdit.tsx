@@ -381,7 +381,9 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
           textColor={textColor}
           backgroundColor={backgroundColor}
         />
-        <div className={styles.mainContent}>
+        <div
+          className={`${styles.mainContent} ${showLayerPanel ? styles.withLayerPanel : ''}`}
+        >
           <div className={`${styles.artboardContainer} nodrag nowheel`}>
             <ResizableArtboardMask
               initialWidth={nodeWidth * 0.8}
