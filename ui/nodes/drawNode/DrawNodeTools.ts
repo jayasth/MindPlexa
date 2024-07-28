@@ -1,3 +1,6 @@
+import { Point } from './utils/pointUtils';
+import { ToolSetting } from './types';
+
 // Export tools
 export { useBrush } from './tools/brush/useBrush';
 export { useMarker } from './tools/marker/useMarker';
@@ -12,7 +15,24 @@ export { usePen } from './tools/pen/usePen';
 
 // Export components
 export { Artboard } from './components/DrawNodeArtboard';
-export type { ArtboardRef, ToolHandlers } from './components/DrawNodeArtboard';
+export type { ArtboardRef } from './components/DrawNodeArtboard';
+
+// Export interfaces
+export interface ToolHandlers {
+  name: string;
+  startStroke?: (
+    point: Point,
+    context: CanvasRenderingContext2D,
+    settings: ToolSetting
+  ) => void;
+  continueStroke?: (
+    point: Point,
+    context: CanvasRenderingContext2D,
+    settings: ToolSetting
+  ) => void;
+  endStroke?: (context: CanvasRenderingContext2D) => void;
+  cursor?: string;
+}
 
 // Export utilities
 export {

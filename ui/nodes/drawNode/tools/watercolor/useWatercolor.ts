@@ -1,35 +1,30 @@
 import { useCallback, useRef } from 'react';
-import { ToolHandlers } from '@/ui/nodes/drawNode/components/DrawNodeArtboard';
+import { ToolHandlers } from '@/ui/nodes/drawNode/DrawNodeTools';
 import { Point } from '../../utils/pointUtils';
 import { circleCursor } from '../../utils/cursors';
 import { splodgeTrail } from './watercolor';
+import { ToolSetting } from '../../types';
 
-export interface UseWatercolorProps {
-  color?: string;
-  strokeWidth?: number;
-  opacity?: number;
-  blendMode?: GlobalCompositeOperation;
-}
-
-export function useWatercolor({
-  color = '#000000',
-  strokeWidth = 25,
-  opacity = 1,
-  blendMode = 'source-over'
-}: UseWatercolorProps): ToolHandlers {
+export function useWatercolor(): ToolHandlers {
   const points = useRef<Array<Point>>([]);
 
   const startStroke = useCallback(
-    (point: Point, context: CanvasRenderingContext2D) => {
+    (
+      point: Point,
+      context: CanvasRenderingContext2D,
+      settings: ToolSetting
+    ) => {
+      const { color, strokeWidth, opacity, blendMode } = settings;
       context.fillStyle = color;
       context.strokeStyle = color;
       context.lineWidth = strokeWidth;
       context.shadowColor = color;
-      context.globalAlpha = opacity;
+      context.globalAlpha = opacity ?? 1;
+      context.globalCompositeOperation = blendMode as GlobalCompositeOperation;
       points.current = [point];
-      splodgeTrail(points.current, strokeWidth * 1.1, 1, context);
+      splodgeTrail(points.current, (strokeWidth ?? 1) * 1.1, 1, context);
     },
-    [color, strokeWidth, opacity]
+    []
   );
 
   const endStroke = useCallback(() => {
@@ -37,15 +32,20 @@ export function useWatercolor({
   }, []);
 
   const continueStroke = useCallback(
-    (point: Point, context: CanvasRenderingContext2D) => {
+    (
+      point: Point,
+      context: CanvasRenderingContext2D,
+      settings: ToolSetting
+    ) => {
+      const { strokeWidth, blendMode } = settings;
       points.current.push(point);
-      context.globalCompositeOperation = blendMode;
+      context.globalCompositeOperation = blendMode as GlobalCompositeOperation;
       splodgeTrail(points.current, strokeWidth, 5, context);
     },
-    [strokeWidth, blendMode]
+    []
   );
 
-  const cursor = circleCursor(strokeWidth);
+  const cursor = circleCursor(25); // Default stroke width
 
   return { name: 'Watercolor', startStroke, continueStroke, endStroke, cursor };
 }

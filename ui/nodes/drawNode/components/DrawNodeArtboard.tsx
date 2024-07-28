@@ -15,7 +15,8 @@ import {
   mouseButtonIsDown,
   Point
 } from '@/ui/nodes/drawNode/utils/pointUtils';
-import { Layer } from '../types';
+import { Layer, ToolSetting } from '../types';
+import { ToolHandlers } from '../DrawNodeTools';
 
 export interface ArtboardProps
   extends React.CanvasHTMLAttributes<HTMLCanvasElement> {
@@ -36,14 +37,6 @@ export interface ArtboardProps
   layers: Layer[];
   activeLayerId: string;
   onLayerContentChange: (layerId: string, content: string) => void;
-}
-
-export interface ToolHandlers {
-  name: string;
-  startStroke?: (point: Point, context: CanvasRenderingContext2D) => void;
-  continueStroke?: (point: Point, context: CanvasRenderingContext2D) => void;
-  endStroke?: (context: CanvasRenderingContext2D) => void;
-  cursor?: string;
 }
 
 export interface ArtboardRef {
@@ -109,20 +102,52 @@ export const Artboard = forwardRef(function Artboard(
       if (!context) return;
       setupStroke();
       setDrawing(true);
-      tool.startStroke?.(point, context);
+      const settings: ToolSetting = {
+        name: tool.name,
+        color,
+        strokeWidth,
+        opacity,
+        blendMode
+      };
+      tool.startStroke?.(point, context, settings);
       onStartStroke?.(point);
     },
-    [tool, context, onStartStroke, setupStroke]
+    [
+      tool,
+      context,
+      onStartStroke,
+      setupStroke,
+      color,
+      strokeWidth,
+      opacity,
+      blendMode
+    ]
   );
 
   const continueStroke = useCallback(
     (newPoint: Point) => {
       if (!context) return;
       setupStroke();
-      tool.continueStroke?.(newPoint, context);
+      const settings: ToolSetting = {
+        name: tool.name,
+        color,
+        strokeWidth,
+        opacity,
+        blendMode
+      };
+      tool.continueStroke?.(newPoint, context, settings);
       onContinueStroke?.(newPoint);
     },
-    [tool, context, onContinueStroke, setupStroke]
+    [
+      tool,
+      context,
+      onContinueStroke,
+      setupStroke,
+      color,
+      strokeWidth,
+      opacity,
+      blendMode
+    ]
   );
 
   const endStroke = useCallback(() => {
