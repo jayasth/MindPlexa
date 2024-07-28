@@ -5,7 +5,19 @@ import { circleCursor } from '../../utils/cursors';
 import { splodgeTrail } from './watercolor';
 import { ToolSetting } from '../../types';
 
-export function useWatercolor(): ToolHandlers {
+export interface UseWatercolorProps {
+  color?: string;
+  strokeWidth?: number;
+  opacity?: number;
+  blendMode?: GlobalCompositeOperation;
+}
+
+export function useWatercolor({
+  color = '#000000',
+  strokeWidth = 25,
+  opacity = 1,
+  blendMode = 'source-over'
+}: UseWatercolorProps = {}): ToolHandlers {
   const points = useRef<Array<Point>>([]);
 
   const startStroke = useCallback(
@@ -14,17 +26,28 @@ export function useWatercolor(): ToolHandlers {
       context: CanvasRenderingContext2D,
       settings: ToolSetting
     ) => {
-      const { color, strokeWidth, opacity, blendMode } = settings;
-      context.fillStyle = color;
-      context.strokeStyle = color;
-      context.lineWidth = strokeWidth;
-      context.shadowColor = color;
-      context.globalAlpha = opacity ?? 1;
-      context.globalCompositeOperation = blendMode as GlobalCompositeOperation;
+      const {
+        color: settingsColor,
+        strokeWidth: settingsStrokeWidth,
+        opacity: settingsOpacity,
+        blendMode: settingsBlendMode
+      } = settings;
+      context.fillStyle = settingsColor || color;
+      context.strokeStyle = settingsColor || color;
+      context.lineWidth = settingsStrokeWidth || strokeWidth;
+      context.shadowColor = settingsColor || color;
+      context.globalAlpha = settingsOpacity ?? opacity;
+      context.globalCompositeOperation = (settingsBlendMode ||
+        blendMode) as GlobalCompositeOperation;
       points.current = [point];
-      splodgeTrail(points.current, (strokeWidth ?? 1) * 1.1, 1, context);
+      splodgeTrail(
+        points.current,
+        ((settingsStrokeWidth || strokeWidth) ?? 1) * 1.1,
+        1,
+        context
+      );
     },
-    []
+    [color, strokeWidth, opacity, blendMode]
   );
 
   const endStroke = useCallback(() => {
@@ -37,15 +60,22 @@ export function useWatercolor(): ToolHandlers {
       context: CanvasRenderingContext2D,
       settings: ToolSetting
     ) => {
-      const { strokeWidth, blendMode } = settings;
+      const { strokeWidth: settingsStrokeWidth, blendMode: settingsBlendMode } =
+        settings;
       points.current.push(point);
-      context.globalCompositeOperation = blendMode as GlobalCompositeOperation;
-      splodgeTrail(points.current, strokeWidth, 5, context);
+      context.globalCompositeOperation = (settingsBlendMode ||
+        blendMode) as GlobalCompositeOperation;
+      splodgeTrail(
+        points.current,
+        settingsStrokeWidth || strokeWidth,
+        5,
+        context
+      );
     },
-    []
+    [strokeWidth, blendMode]
   );
 
-  const cursor = circleCursor(25); // Default stroke width
+  const cursor = circleCursor(strokeWidth);
 
   return { name: 'Watercolor', startStroke, continueStroke, endStroke, cursor };
 }
