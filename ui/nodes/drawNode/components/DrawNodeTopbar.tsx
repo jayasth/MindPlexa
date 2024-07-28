@@ -104,7 +104,6 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
         <Tooltip content="Clear">
           <button
             onClick={handleClear}
-            disabled={!canUndo}
             className={styles.toolbarButton}
             style={{ color: textColor }}
           >

@@ -304,8 +304,11 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
       const svgContent = exportSVG(artboardRef.current?.canvas);
       setDrawingData(svgContent);
       updateDrawNodeData({ drawingData: svgContent });
+      if (artboardRef.current?.canvas) {
+        history.pushState(artboardRef.current.canvas);
+      }
     },
-    [updateDrawNodeData]
+    [updateDrawNodeData, history]
   );
 
   const handleZoomIn = () => {
@@ -353,6 +356,9 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         download={() => artboardRef.current?.download()}
         clear={() => {
           clear();
+          if (artboardRef.current) {
+            artboardRef.current.clear();
+          }
         }}
         onZoomIn={handleZoomIn}
         onZoomOut={handleZoomOut}
@@ -388,10 +394,10 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
                 width={nodeWidth}
                 height={nodeHeight}
                 zoomLevel={zoomLevel}
-                color={currentToolSetting.color}
-                strokeWidth={currentToolSetting.strokeWidth}
-                opacity={currentToolSetting.opacity}
-                blendMode={currentToolSetting.blendMode}
+                color={currentToolSetting?.color || '#000000'}
+                strokeWidth={currentToolSetting?.strokeWidth || 1}
+                opacity={currentToolSetting?.opacity || 100}
+                blendMode={currentToolSetting?.blendMode || 'normal'}
                 settings={toolSettings}
                 toolSettings={toolSettings}
                 currentToolIndex={currentToolIndex}
