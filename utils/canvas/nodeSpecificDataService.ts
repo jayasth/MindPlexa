@@ -158,9 +158,10 @@ export const createNodeSpecificData = async (
       .insert({
         ...toSnakeCase(initialData),
         node_id: nodeId,
-        current_color: initialData.currentColor || 'None',
-        current_stroke_width: initialData.currentStrokeWidth || 1,
-        current_tool: initialData.currentTool || 'None'
+        current_color: initialData.currentColor || '#F472B6',
+        current_stroke_width: initialData.currentStrokeWidth || 2,
+        current_tool: initialData.currentTool || 'pen',
+        settings: JSON.stringify(initialData.settings || [])
       })
       .select()
       .single();
