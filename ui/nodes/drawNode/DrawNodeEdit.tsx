@@ -150,65 +150,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     if (data.settings) setToolSettings(data.settings);
   }, [data, tools]);
 
-  // Add this effect to initialize and persist tool settings
-  useEffect(() => {
-    const initializeToolSettings = async () => {
-      if (!data.settings) {
-        const initialSettings = tools.map((tool) => ({
-          name: tool.tool.name,
-          color: tool.defaultColor,
-          strokeWidth: tool.defaultStrokeWidth,
-          opacity: 100
-        }));
-
-        await updateNodeSpecificData(id, 'draw', {
-          settings: initialSettings,
-          current_tool: tools[0].tool.name,
-          current_color: tools[0].defaultColor,
-          current_stroke_width: tools[0].defaultStrokeWidth
-        });
-
-        setToolSettings(initialSettings);
-        setCurrentToolIndex(0);
-        setCurrentColor(tools[0].defaultColor);
-        setCurrentStrokeWidth(tools[0].defaultStrokeWidth);
-      } else {
-        setToolSettings(data.settings);
-        setCurrentToolIndex(
-          tools.findIndex((t) => t.tool.name === data.current_tool) || 0
-        );
-        setCurrentColor(data.current_color || tools[0].defaultColor);
-        setCurrentStrokeWidth(
-          data.current_stroke_width || tools[0].defaultStrokeWidth
-        );
-      }
-    };
-
-    initializeToolSettings();
-  }, [id, tools, data]);
-
-  // Modify the existing useEffect for updating draw node data
-  useEffect(() => {
-    const updateDrawNodeData = async () => {
-      const updatedData = {
-        current_tool: tools[currentToolIndex].tool.name,
-        current_color: currentColor,
-        current_stroke_width: currentStrokeWidth,
-        settings: toolSettings
-      };
-      await updateNodeSpecificData(id, 'draw', updatedData);
-    };
-
-    updateDrawNodeData();
-  }, [
-    id,
-    currentToolIndex,
-    currentColor,
-    currentStrokeWidth,
-    toolSettings,
-    tools
-  ]);
-
   const saveSettings = async () => {
     const updatedData = {
       current_tool: tools[currentToolIndex].tool.name,
