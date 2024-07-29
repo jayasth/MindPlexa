@@ -37,7 +37,7 @@ export const initializeTools = (): Array<ToolConfig> => {
       tool: usePen({}),
       icon: FaPen,
       defaultStrokeWidth: 2,
-      defaultColor: '#F472B6'
+      defaultColor: '#635E87'
     },
     {
       tool: useLine({}),

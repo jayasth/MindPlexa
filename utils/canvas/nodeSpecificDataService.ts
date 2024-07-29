@@ -158,10 +158,9 @@ export const createNodeSpecificData = async (
       .insert({
         ...toSnakeCase(initialData),
         node_id: nodeId,
-        current_color: initialData.currentColor || '#F472B6',
-        current_stroke_width: initialData.currentStrokeWidth || 2,
-        current_tool: initialData.currentTool || 'pen',
-        settings: JSON.stringify(initialData.settings || [])
+        current_color: initialData.currentColor || 'None',
+        current_stroke_width: initialData.currentStrokeWidth || 1,
+        current_tool: initialData.currentTool || 'None'
       })
       .select()
       .single();
@@ -250,11 +249,11 @@ export const processNodeSpecificData = (nodeType: NodeType, data: any) => {
       };
     case 'draw':
       return {
-        currentTool: data.current_tool || '',
+        currentTool: data.current_tool || 'pen',
         drawingFileUrl: data.drawing_file_url || '',
         drawingData: data.drawingData || '',
         settings: data.settings || {},
-        currentColor: data.current_color || '',
+        currentColor: data.current_color || '#635E87',
         currentStrokeWidth: data.current_stroke_width || 2
       };
     case 'table':
