@@ -103,7 +103,8 @@ export const updateNodeSpecificData = async (
       drawing_file_url: svgPath,
       current_color: updates.currentColor || 'None',
       current_stroke_width: updates.currentStrokeWidth || 1,
-      current_tool: updates.currentTool || 'None'
+      current_tool: updates.currentTool || 'None',
+      settings: JSON.stringify(updates.settings || {})
     };
 
     const { data, error } = await supabase

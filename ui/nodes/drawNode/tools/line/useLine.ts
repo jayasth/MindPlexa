@@ -7,14 +7,12 @@ export interface UseLineProps {
   color?: string;
   strokeWidth?: number;
   opacity?: number;
-  blendMode?: GlobalCompositeOperation;
 }
 
 export function useLine({
   color = '#000000',
   strokeWidth = 2,
-  opacity = 1,
-  blendMode = 'source-over'
+  opacity = 1
 }: UseLineProps = {}): ToolHandlers {
   const startPoint = useRef<Point | null>(null);
   const isDrawing = useRef(false);
@@ -38,20 +36,17 @@ export function useLine({
       const {
         color: settingsColor,
         strokeWidth: settingsStrokeWidth,
-        opacity: settingsOpacity,
-        blendMode: settingsBlendMode
+        opacity: settingsOpacity
       } = settings;
 
       context.strokeStyle = settingsColor || color;
       context.lineWidth = settingsStrokeWidth || strokeWidth;
       context.globalAlpha = settingsOpacity ?? opacity;
-      context.globalCompositeOperation = (settingsBlendMode ||
-        blendMode) as GlobalCompositeOperation;
       context.beginPath();
       startPoint.current = point;
       isDrawing.current = true;
     },
-    [color, strokeWidth, opacity, blendMode]
+    [color, strokeWidth, opacity]
   );
 
   const continueStroke = useCallback(

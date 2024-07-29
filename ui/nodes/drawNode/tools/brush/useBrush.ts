@@ -8,14 +8,12 @@ export interface UseBrushProps {
   color?: string;
   strokeWidth?: number;
   opacity?: number;
-  blendMode?: GlobalCompositeOperation;
 }
 
 export function useBrush({
   color = '#000000',
   strokeWidth = 20,
-  opacity = 1,
-  blendMode = 'source-over'
+  opacity = 1
 }: UseBrushProps = {}): ToolHandlers {
   const lastPoints = useRef<Point[]>([]);
   const lastVelocity = useRef<number>(0);
@@ -29,21 +27,18 @@ export function useBrush({
       const {
         color: settingsColor,
         strokeWidth: settingsStrokeWidth,
-        opacity: settingsOpacity,
-        blendMode: settingsBlendMode
+        opacity: settingsOpacity
       } = settings;
       context.save();
       context.strokeStyle = settingsColor || color;
       context.lineWidth = settingsStrokeWidth || strokeWidth;
       context.globalAlpha = settingsOpacity ?? opacity;
-      context.globalCompositeOperation = (settingsBlendMode ||
-        blendMode) as GlobalCompositeOperation;
       context.lineJoin = context.lineCap = 'round';
       context.beginPath();
       context.moveTo(point[0], point[1]);
       lastPoints.current = [point];
     },
-    [color, strokeWidth, opacity, blendMode]
+    [color, strokeWidth, opacity]
   );
 
   const continueStroke = useCallback(

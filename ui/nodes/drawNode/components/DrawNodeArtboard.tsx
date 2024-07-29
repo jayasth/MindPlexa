@@ -32,7 +32,6 @@ export interface ArtboardProps
   color: string;
   strokeWidth: number;
   opacity: number;
-  blendMode: string;
   settings: ToolSetting[];
   toolSettings: any[];
   currentToolIndex: number;
@@ -64,7 +63,6 @@ export const Artboard = forwardRef(function Artboard(
     color,
     strokeWidth,
     opacity,
-    blendMode,
     settings,
     toolSettings,
     currentToolIndex,
@@ -93,8 +91,6 @@ export const Artboard = forwardRef(function Artboard(
     context.strokeStyle = currentToolSetting.color;
     context.lineWidth = currentToolSetting.strokeWidth;
     context.globalAlpha = currentToolSetting.opacity / 100;
-    context.globalCompositeOperation =
-      currentToolSetting.blendMode as GlobalCompositeOperation;
   }, [context, toolSettings, currentToolIndex]);
 
   const startStroke = useCallback(
@@ -106,22 +102,12 @@ export const Artboard = forwardRef(function Artboard(
         name: tool.name,
         color,
         strokeWidth,
-        opacity,
-        blendMode
+        opacity
       };
       tool.startStroke?.(point, context, settings);
       onStartStroke?.(point);
     },
-    [
-      tool,
-      context,
-      onStartStroke,
-      setupStroke,
-      color,
-      strokeWidth,
-      opacity,
-      blendMode
-    ]
+    [tool, context, onStartStroke, setupStroke, color, strokeWidth, opacity]
   );
 
   const continueStroke = useCallback(
@@ -132,22 +118,12 @@ export const Artboard = forwardRef(function Artboard(
         name: tool.name,
         color,
         strokeWidth,
-        opacity,
-        blendMode
+        opacity
       };
       tool.continueStroke?.(newPoint, context, settings);
       onContinueStroke?.(newPoint);
     },
-    [
-      tool,
-      context,
-      onContinueStroke,
-      setupStroke,
-      color,
-      strokeWidth,
-      opacity,
-      blendMode
-    ]
+    [tool, context, onContinueStroke, setupStroke, color, strokeWidth, opacity]
   );
 
   const endStroke = useCallback(() => {

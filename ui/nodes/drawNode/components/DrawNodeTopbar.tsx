@@ -1,12 +1,5 @@
 import React, { useState } from 'react';
-import {
-  FaUndo,
-  FaRedo,
-  FaDownload,
-  // Removed FaSearchPlus and FaSearchMinus
-  FaRuler,
-  FaCog
-} from 'react-icons/fa';
+import { FaUndo, FaRedo, FaDownload, FaRuler, FaCog } from 'react-icons/fa';
 import { RiCheckboxBlankLine } from 'react-icons/ri';
 import { GrPaint } from 'react-icons/gr';
 import { Tooltip } from '@/ui/Tooltip/Tooltip';
@@ -24,13 +17,18 @@ interface DrawNodeTopbarProps {
   canRedo: boolean;
   download: () => void;
   clear: () => void;
-  // Removed onZoomIn and onZoomOut
   backgroundColor: string;
   textColor: string;
   tools: any[];
   toolSettings: any[];
   onToolSettingChange: (toolIndex: number, key: string, value: any) => void;
   currentToolIndex: number;
+  currentTool: string;
+  currentColor: string;
+  currentStrokeWidth: number;
+  onToolChange: (toolIndex: number) => void;
+  onColorChange: (color: string) => void;
+  onStrokeWidthChange: (width: number) => void;
 }
 
 const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
@@ -40,13 +38,18 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
   canRedo,
   download,
   clear,
-  // Removed onZoomIn and onZoomOut
   backgroundColor,
   textColor,
   tools,
   toolSettings,
   onToolSettingChange,
-  currentToolIndex
+  currentToolIndex,
+  currentTool,
+  currentColor,
+  currentStrokeWidth,
+  onToolChange,
+  onColorChange,
+  onStrokeWidthChange
 }) => {
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   const [isStrokeWidthOpen, setIsStrokeWidthOpen] = useState(false);
@@ -68,10 +71,12 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
   };
 
   const handleColorChange = (color: { hex: string }) => {
+    onColorChange(color.hex);
     onToolSettingChange(currentToolIndex, 'color', color.hex);
   };
 
   const handleStrokeWidthChange = (value: number) => {
+    onStrokeWidthChange(value);
     onToolSettingChange(currentToolIndex, 'strokeWidth', value);
   };
 
@@ -118,7 +123,7 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
             <GrPaint size={iconSize} />
             <div
               className={styles.colorPreview}
-              style={{ backgroundColor: currentToolSetting.color }}
+              style={{ backgroundColor: currentColor }}
             />
           </button>
         </Tooltip>
@@ -130,13 +135,12 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
           >
             <FaRuler size={iconSize} />
             <span className={styles.strokeWidthLabel}>
-              {currentToolSetting.strokeWidth}
+              {currentStrokeWidth}
             </span>
           </button>
         </Tooltip>
       </div>
       <div className={styles.toolGroup}>
-        {/* Removed zoom buttons */}
         <Tooltip content="Download">
           <button
             onClick={download}
@@ -163,10 +167,7 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
         center
       >
         <h2>Change Drawing Color</h2>
-        <SketchPicker
-          color={currentToolSetting.color}
-          onChange={handleColorChange}
-        />
+        <SketchPicker color={currentColor} onChange={handleColorChange} />
       </Modal>
 
       <Modal
@@ -178,7 +179,7 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
         <Slider
           min={1}
           max={100}
-          value={currentToolSetting.strokeWidth}
+          value={currentStrokeWidth}
           onChange={handleStrokeWidthChange}
         />
       </Modal>

@@ -3,7 +3,6 @@ export interface ToolSetting {
   color: string;
   strokeWidth: number;
   opacity?: number;
-  blendMode?: string;
 }
 
 export interface Layer {

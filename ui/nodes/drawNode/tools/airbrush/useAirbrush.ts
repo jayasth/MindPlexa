@@ -9,14 +9,12 @@ export interface UseAirbrushProps {
   color?: string;
   strokeWidth?: number;
   opacity?: number;
-  blendMode?: GlobalCompositeOperation;
 }
 
 export function useAirbrush({
   color = '#000000',
   strokeWidth = 25,
-  opacity = 1,
-  blendMode = 'darken'
+  opacity = 1
 }: UseAirbrushProps = {}): ToolHandlers {
   const isDrawing = useRef(false);
 
@@ -29,11 +27,8 @@ export function useAirbrush({
       const {
         color: settingsColor,
         strokeWidth: settingsStrokeWidth,
-        opacity: settingsOpacity,
-        blendMode: settingsBlendMode
+        opacity: settingsOpacity
       } = settings;
-      context.globalCompositeOperation = (settingsBlendMode ||
-        blendMode) as GlobalCompositeOperation;
       context.lineWidth = settingsStrokeWidth || strokeWidth;
       context.lineJoin = context.lineCap = 'round';
       context.strokeStyle = settingsColor || color;
@@ -45,7 +40,7 @@ export function useAirbrush({
       context.beginPath();
       isDrawing.current = true;
     },
-    [color, strokeWidth, opacity, blendMode]
+    [color, strokeWidth, opacity]
   );
 
   const endStroke = useCallback(() => {

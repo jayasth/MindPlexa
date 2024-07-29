@@ -7,13 +7,11 @@ import { ToolSetting } from '../../types';
 export interface UseEraserProps {
   strokeWidth?: number;
   opacity?: number;
-  blendMode?: GlobalCompositeOperation;
 }
 
 export function useEraser({
   strokeWidth = 40,
-  opacity = 1,
-  blendMode = 'destination-out'
+  opacity = 1
 }: UseEraserProps = {}): ToolHandlers {
   const startStroke = useCallback(
     (
@@ -21,20 +19,16 @@ export function useEraser({
       context: CanvasRenderingContext2D,
       settings: ToolSetting
     ) => {
-      const {
-        strokeWidth: settingsStrokeWidth,
-        opacity: settingsOpacity,
-        blendMode: settingsBlendMode
-      } = settings;
-      context.globalCompositeOperation = (settingsBlendMode ||
-        blendMode) as GlobalCompositeOperation;
+      const { strokeWidth: settingsStrokeWidth, opacity: settingsOpacity } =
+        settings;
+      context.globalCompositeOperation = 'destination-out';
       context.lineWidth = settingsStrokeWidth || strokeWidth;
       context.globalAlpha = settingsOpacity ?? opacity;
       context.lineJoin = context.lineCap = 'round';
       context.moveTo(point[0], point[1]);
       context.beginPath();
     },
-    [strokeWidth, opacity, blendMode]
+    [strokeWidth, opacity]
   );
 
   const continueStroke = useCallback(

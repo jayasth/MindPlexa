@@ -11,7 +11,6 @@ export interface UseShadingProps {
   distanceThreshold?: number;
   spreadFactor?: number;
   opacity?: number;
-  blendMode?: GlobalCompositeOperation;
 }
 
 export function useShadingBrush({
@@ -20,21 +19,19 @@ export function useShadingBrush({
   distanceThreshold = 40,
   neighbourStrokeWidth,
   spreadFactor = 0.9,
-  opacity = 1,
-  blendMode = 'darken'
+  opacity = 1
 }: UseShadingProps = {}): ToolHandlers {
   const points = useRef<Array<Point>>([]);
   const threshold = distanceThreshold * distanceThreshold;
 
   const startStroke = useCallback(
     (point: Point, context: CanvasRenderingContext2D) => {
-      context.globalCompositeOperation = blendMode;
       context.lineWidth = 1;
       context.lineJoin = context.lineCap = 'round';
       context.globalAlpha = opacity;
       points.current = [point];
     },
-    [blendMode, opacity]
+    [opacity]
   );
 
   const continueStroke = useCallback(
@@ -80,14 +77,11 @@ export function useShadingBrush({
       spreadFactor,
       threshold,
       neighbourColor,
-      opacity,
-      blendMode
+      opacity
     ]
   );
 
-  const endStroke = useCallback((context: CanvasRenderingContext2D) => {
-    context.globalCompositeOperation = 'source-over';
-  }, []);
+  const endStroke = useCallback((context: CanvasRenderingContext2D) => {}, []);
 
   const cursor = 'crosshair';
 

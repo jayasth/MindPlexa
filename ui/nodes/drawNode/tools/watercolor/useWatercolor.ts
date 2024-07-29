@@ -9,14 +9,12 @@ export interface UseWatercolorProps {
   color?: string;
   strokeWidth?: number;
   opacity?: number;
-  blendMode?: GlobalCompositeOperation;
 }
 
 export function useWatercolor({
   color = '#000000',
   strokeWidth = 25,
-  opacity = 1,
-  blendMode = 'source-over'
+  opacity = 1
 }: UseWatercolorProps = {}): ToolHandlers {
   const points = useRef<Array<Point>>([]);
 
@@ -29,16 +27,13 @@ export function useWatercolor({
       const {
         color: settingsColor,
         strokeWidth: settingsStrokeWidth,
-        opacity: settingsOpacity,
-        blendMode: settingsBlendMode
+        opacity: settingsOpacity
       } = settings;
       context.fillStyle = settingsColor || color;
       context.strokeStyle = settingsColor || color;
       context.lineWidth = settingsStrokeWidth || strokeWidth;
       context.shadowColor = settingsColor || color;
       context.globalAlpha = settingsOpacity ?? opacity;
-      context.globalCompositeOperation = (settingsBlendMode ||
-        blendMode) as GlobalCompositeOperation;
       points.current = [point];
       splodgeTrail(
         points.current,
@@ -47,7 +42,7 @@ export function useWatercolor({
         context
       );
     },
-    [color, strokeWidth, opacity, blendMode]
+    [color, strokeWidth, opacity]
   );
 
   const endStroke = useCallback(() => {
@@ -60,11 +55,8 @@ export function useWatercolor({
       context: CanvasRenderingContext2D,
       settings: ToolSetting
     ) => {
-      const { strokeWidth: settingsStrokeWidth, blendMode: settingsBlendMode } =
-        settings;
+      const { strokeWidth: settingsStrokeWidth } = settings;
       points.current.push(point);
-      context.globalCompositeOperation = (settingsBlendMode ||
-        blendMode) as GlobalCompositeOperation;
       splodgeTrail(
         points.current,
         settingsStrokeWidth || strokeWidth,
@@ -72,7 +64,7 @@ export function useWatercolor({
         context
       );
     },
-    [strokeWidth, blendMode]
+    [strokeWidth]
   );
 
   const cursor = circleCursor(strokeWidth);

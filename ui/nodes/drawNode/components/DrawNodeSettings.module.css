@@ -9,7 +9,7 @@
 
 .header {
   display: grid;
-  grid-template-columns: 80px 60px 60px 70px 80px;
+  grid-template-columns: 80px 60px 60px 70px;
   gap: 5px;
   font-weight: bold;
   margin-bottom: 10px;
@@ -19,7 +19,7 @@
 
 .toolSetting {
   display: grid;
-  grid-template-columns: 80px 60px 60px 70px 80px;
+  grid-template-columns: 80px 60px 60px 70px;
   gap: 5px;
   align-items: center;
   margin-bottom: 10px;
@@ -32,8 +32,7 @@
 
 .colorInput,
 .widthInput,
-.opacityInput,
-.blendModeSelect {
+.opacityInput {
   font-size: 12px;
   padding: 4px;
   width: 100%;
@@ -49,9 +48,5 @@
 }
 
 .opacityInput {
-  width: 100%;
-}
-
-.blendModeSelect {
   width: 100%;
 }

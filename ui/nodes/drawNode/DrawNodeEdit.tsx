@@ -97,14 +97,20 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         name: tool.tool.name,
         color: tool.defaultColor,
         strokeWidth: tool.defaultStrokeWidth,
-        opacity: 100,
-        blendMode: 'normal'
+        opacity: 100
       }))
     );
   });
 
-  const currentTool = tools[currentToolIndex];
-  const currentToolSetting = toolSettings[currentToolIndex];
+  const [currentTool, setCurrentTool] = useState(
+    data.currentTool || tools[0].tool.name
+  );
+  const [currentColor, setCurrentColor] = useState(
+    data.currentColor || tools[0].defaultColor
+  );
+  const [currentStrokeWidth, setCurrentStrokeWidth] = useState(
+    data.currentStrokeWidth || tools[0].defaultStrokeWidth
+  );
 
   const artboardRef = useRef<ArtboardRef | null>(null);
   const { history, undo, redo, clear, canUndo, canRedo } = useHistory();
@@ -127,17 +133,38 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const updateDrawNodeData = useCallback(
     debounce(async (newData: Partial<any>) => {
       try {
-        await updateNode(data.id, { data: { ...data, ...newData } }, 'draw');
+        await updateNode(data.id, { data: { ...data, ...newData } }, canvasId);
       } catch (error) {
         console.error('Error updating draw node:', error);
       }
     }, 500),
-    [data.id, updateNode]
+    [data.id, updateNode, canvasId]
   );
 
   useEffect(() => {
-    updateDrawNodeData({ settings: toolSettings });
-  }, [toolSettings, updateDrawNodeData]);
+    updateDrawNodeData({
+      currentTool,
+      currentColor,
+      currentStrokeWidth,
+      settings: toolSettings
+    });
+  }, [
+    currentTool,
+    currentColor,
+    currentStrokeWidth,
+    toolSettings,
+    updateDrawNodeData
+  ]);
+
+  const handleToolChange = useCallback(
+    (toolIndex: number) => {
+      setCurrentToolIndex(toolIndex);
+      setCurrentTool(tools[toolIndex].tool.name);
+      setCurrentColor(toolSettings[toolIndex].color);
+      setCurrentStrokeWidth(toolSettings[toolIndex].strokeWidth);
+    },
+    [tools, toolSettings]
+  );
 
   const handleToolSettingChange = useCallback(
     (toolIndex: number, key: string, value: any) => {
@@ -146,8 +173,13 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         newSettings[toolIndex] = { ...newSettings[toolIndex], [key]: value };
         return newSettings;
       });
+
+      if (toolIndex === currentToolIndex) {
+        if (key === 'color') setCurrentColor(value);
+        if (key === 'strokeWidth') setCurrentStrokeWidth(value);
+      }
     },
-    []
+    [currentToolIndex]
   );
 
   useEffect(() => {
@@ -355,6 +387,12 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         toolSettings={toolSettings}
         onToolSettingChange={handleToolSettingChange}
         currentToolIndex={currentToolIndex}
+        currentTool={currentTool}
+        currentColor={currentColor}
+        currentStrokeWidth={currentStrokeWidth}
+        onToolChange={handleToolChange}
+        onColorChange={(color) => setCurrentColor(color)}
+        onStrokeWidthChange={(width) => setCurrentStrokeWidth(width)}
       />
       <div className={styles.drawContent}>
         <DrawNodeSidebar
@@ -373,17 +411,16 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
               initialHeight={nodeHeight * 0.6}
             >
               <Artboard
-                tool={currentTool.tool}
+                tool={tools[currentToolIndex].tool}
                 ref={artboardRef}
                 style={{ border: '1px gray solid' }}
                 content={drawingData}
                 onContentChange={handleDrawingChange}
                 width={nodeWidth}
                 height={nodeHeight}
-                color={currentToolSetting?.color || '#000000'}
-                strokeWidth={currentToolSetting?.strokeWidth || 1}
-                opacity={currentToolSetting?.opacity || 100}
-                blendMode={currentToolSetting?.blendMode || 'normal'}
+                color={currentColor}
+                strokeWidth={currentStrokeWidth}
+                opacity={toolSettings[currentToolIndex].opacity}
                 settings={toolSettings}
                 toolSettings={toolSettings}
                 currentToolIndex={currentToolIndex}

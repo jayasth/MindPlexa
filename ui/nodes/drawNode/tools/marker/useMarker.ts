@@ -8,14 +8,12 @@ export interface UseMarkerProps {
   color?: string;
   strokeWidth?: number;
   opacity?: number;
-  blendMode?: GlobalCompositeOperation;
 }
 
 export function useMarker({
   color = '#000000',
   strokeWidth = 20,
-  opacity = 1,
-  blendMode = 'source-over'
+  opacity = 1
 }: UseMarkerProps = {}): ToolHandlers {
   const lastPoint = useRef<Point>();
 
@@ -28,18 +26,15 @@ export function useMarker({
       const {
         color: settingsColor,
         strokeWidth: settingsStrokeWidth,
-        opacity: settingsOpacity,
-        blendMode: settingsBlendMode
+        opacity: settingsOpacity
       } = settings;
       context.lineWidth = settingsStrokeWidth || strokeWidth;
       context.lineJoin = context.lineCap = 'round';
       lastPoint.current = point;
       context.strokeStyle = settingsColor || color;
       context.globalAlpha = settingsOpacity ?? opacity;
-      context.globalCompositeOperation = (settingsBlendMode ||
-        blendMode) as GlobalCompositeOperation;
     },
-    [color, strokeWidth, opacity, blendMode]
+    [color, strokeWidth, opacity]
   );
 
   const continueStroke = useCallback(
