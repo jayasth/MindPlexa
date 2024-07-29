@@ -88,7 +88,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const [isTagModalOpen, setIsTagModalOpen] = useState(false);
   const [isFileModalOpen, setIsFileModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [zoomLevel, setZoomLevel] = useState(data.zoomLevel || 1);
   const [tools] = useState(initializeTools());
   const [currentToolIndex, setCurrentToolIndex] = useState(0);
   const [toolSettings, setToolSettings] = useState(() => {
@@ -170,8 +169,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     const specificData = {
       drawingData,
       tags,
-      attachedFiles,
-      zoomLevel
+      attachedFiles
     };
 
     updateDrawNodeData({ ...commonData, ...specificData });
@@ -184,7 +182,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     nodeHeight,
     tags,
     attachedFiles,
-    zoomLevel,
     updateDrawNodeData
   ]);
 
@@ -311,14 +308,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     [updateDrawNodeData, history]
   );
 
-  const handleZoomIn = () => {
-    setZoomLevel((prevZoom) => Math.min(prevZoom * 1.1, 5));
-  };
-
-  const handleZoomOut = () => {
-    setZoomLevel((prevZoom) => Math.max(prevZoom / 1.1, 0.1));
-  };
-
   return (
     <div
       className={styles.drawNode}
@@ -360,8 +349,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
             artboardRef.current.clear();
           }
         }}
-        onZoomIn={handleZoomIn}
-        onZoomOut={handleZoomOut}
         backgroundColor={backgroundColor}
         textColor={textColor}
         tools={tools}
@@ -393,7 +380,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
                 onContentChange={handleDrawingChange}
                 width={nodeWidth}
                 height={nodeHeight}
-                zoomLevel={zoomLevel}
                 color={currentToolSetting?.color || '#000000'}
                 strokeWidth={currentToolSetting?.strokeWidth || 1}
                 opacity={currentToolSetting?.opacity || 100}

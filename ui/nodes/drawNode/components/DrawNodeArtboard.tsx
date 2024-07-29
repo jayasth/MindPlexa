@@ -29,7 +29,7 @@ export interface ArtboardProps
   width: number;
   height: number;
   onResize?: () => void;
-  zoomLevel: number;
+  // Removed zoomLevel prop
   color: string;
   strokeWidth: number;
   opacity: number;
@@ -62,7 +62,7 @@ export const Artboard = forwardRef(function Artboard(
     width,
     height,
     onResize,
-    zoomLevel,
+    // Removed zoomLevel,
     color,
     strokeWidth,
     opacity,
@@ -252,7 +252,7 @@ export const Artboard = forwardRef(function Artboard(
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, canvasRef.width, canvasRef.height);
       ctx.fillStyle = 'transparent';
-      ctx.scale(zoomLevel, zoomLevel);
+      // Removed this line
       if (content) {
         const image = new Image();
         image.onload = () => {
@@ -265,7 +265,7 @@ export const Artboard = forwardRef(function Artboard(
         image.src = content;
       }
     },
-    [width, height, content, zoomLevel]
+    [width, height, content]
   );
 
   const mouseEnter = useCallback(

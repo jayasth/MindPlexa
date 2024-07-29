@@ -3,8 +3,7 @@ import {
   FaUndo,
   FaRedo,
   FaDownload,
-  FaSearchPlus,
-  FaSearchMinus,
+  // Removed FaSearchPlus and FaSearchMinus
   FaRuler,
   FaCog
 } from 'react-icons/fa';
@@ -25,8 +24,7 @@ interface DrawNodeTopbarProps {
   canRedo: boolean;
   download: () => void;
   clear: () => void;
-  onZoomIn: () => void;
-  onZoomOut: () => void;
+  // Removed onZoomIn and onZoomOut
   backgroundColor: string;
   textColor: string;
   tools: any[];
@@ -42,8 +40,7 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
   canRedo,
   download,
   clear,
-  onZoomIn,
-  onZoomOut,
+  // Removed onZoomIn and onZoomOut
   backgroundColor,
   textColor,
   tools,
@@ -139,24 +136,7 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
         </Tooltip>
       </div>
       <div className={styles.toolGroup}>
-        <Tooltip content="Zoom In">
-          <button
-            onClick={onZoomIn}
-            className={styles.toolbarButton}
-            style={{ color: textColor }}
-          >
-            <FaSearchPlus size={iconSize} />
-          </button>
-        </Tooltip>
-        <Tooltip content="Zoom Out">
-          <button
-            onClick={onZoomOut}
-            className={styles.toolbarButton}
-            style={{ color: textColor }}
-          >
-            <FaSearchMinus size={iconSize} />
-          </button>
-        </Tooltip>
+        {/* Removed zoom buttons */}
         <Tooltip content="Download">
           <button
             onClick={download}
