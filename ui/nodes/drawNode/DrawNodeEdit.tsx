@@ -92,6 +92,9 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [tools] = useState(initializeTools());
   const [currentToolIndex, setCurrentToolIndex] = useState(0);
+  const [currentTool, setCurrentTool] = useState(
+    data.currentTool || tools[0].tool.name
+  );
   const [currentColor, setCurrentColor] = useState(
     data.currentColor || '#635E87'
   );
@@ -152,7 +155,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
 
   const saveSettings = async () => {
     const updatedData = {
-      current_tool: tools[currentToolIndex].tool.name,
+      current_tool: currentTool,
       current_color: currentColor,
       current_stroke_width: currentStrokeWidth,
       settings: toolSettings
@@ -161,6 +164,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   };
 
   const handleToolChange = (index: number) => {
+    setCurrentTool(tools[index].tool.name);
     setCurrentToolIndex(index);
     saveSettings();
   };
@@ -393,7 +397,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         toolSettings={toolSettings}
         onToolSettingChange={handleToolSettingChange}
         currentToolIndex={currentToolIndex}
-        currentTool={tools[currentToolIndex].tool.name}
+        currentTool={currentTool}
         currentColor={currentColor}
         currentStrokeWidth={currentStrokeWidth}
         onToolChange={handleToolChange}
@@ -404,11 +408,10 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         <DrawNodeSidebar
           tools={tools}
           currentToolIndex={currentToolIndex}
-          setCurrentToolIndex={(index) => {
-            setCurrentToolIndex(index);
-          }}
           textColor={textColor}
           backgroundColor={backgroundColor}
+          currentTool={currentTool}
+          onToolChange={handleToolChange}
         />
         <div className={styles.mainContent}>
           <div className={`${styles.artboardContainer} nodrag nowheel`}>

@@ -5,15 +5,16 @@ import styles from './DrawNodeSidebar.module.css';
 interface DrawNodeSidebarProps {
   tools: any[];
   currentToolIndex: number;
-  setCurrentToolIndex: (index: number) => void;
+  currentTool: string;
+  onToolChange: (index: number) => void;
   textColor: string;
   backgroundColor: string;
 }
 
 const DrawNodeSidebar: React.FC<DrawNodeSidebarProps> = ({
   tools,
-  currentToolIndex,
-  setCurrentToolIndex,
+  currentTool,
+  onToolChange,
   textColor,
   backgroundColor
 }) => {
@@ -25,9 +26,9 @@ const DrawNodeSidebar: React.FC<DrawNodeSidebarProps> = ({
         <Tooltip key={tool.tool.name} content={tool.tool.name}>
           <button
             className={`${styles.toolbarButton} ${
-              currentToolIndex === index ? styles.selected : ''
+              currentTool === tool.tool.name ? styles.selected : ''
             }`}
-            onClick={() => setCurrentToolIndex(index)}
+            onClick={() => onToolChange(index)}
             style={{ color: textColor }}
           >
             <tool.icon size={iconSize} />

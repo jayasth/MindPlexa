@@ -25,7 +25,7 @@ interface DrawNodeTopbarProps {
   currentTool: string;
   currentColor: string;
   currentStrokeWidth: number;
-  onToolChange: (toolIndex: number) => void;
+  onToolChange: (index: number) => void;
   onColorChange: (color: string) => void;
   onStrokeWidthChange: (width: number) => void;
 }
@@ -81,12 +81,10 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
 
   const handleColorChange = (color: { hex: string }) => {
     onColorChange(color.hex);
-    onToolSettingChange(currentToolIndex, 'color', color.hex);
   };
 
   const handleStrokeWidthChange = (value: number) => {
     onStrokeWidthChange(value);
-    onToolSettingChange(currentToolIndex, 'strokeWidth', value);
   };
 
   return (
