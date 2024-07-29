@@ -148,7 +148,9 @@ export const onNodesChange = async (set, get, changes, canvasId) => {
                 case 'draw':
                   specificUpdates = {
                     current_tool: updatedNode.data.currentTool,
-                    settings: JSON.stringify(updatedNode.data.settings)
+                    settings: JSON.stringify(updatedNode.data.settings),
+                    current_color: updatedNode.data.currentColor,
+                    current_stroke_width: updatedNode.data.currentStrokeWidth
                   };
                   const drawingData = updatedNode.data.drawingData;
                   if (drawingData) {

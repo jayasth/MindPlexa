@@ -222,6 +222,8 @@ export const fetchCanvas = async (canvasId: string) => {
           processedData.drawingFileUrl = drawData.drawing_file_url;
           processedData.currentTool = drawData.current_tool;
           processedData.settings = drawData.settings;
+          processedData.currentColor = drawData.current_color;
+          processedData.currentStrokeWidth = drawData.current_stroke_width;
         }
       }
 
@@ -289,7 +291,9 @@ export const saveCanvasState = async (canvasId: string, canvasState: any) => {
         specificUpdates = {
           drawing_file_url: data.drawingFileUrl,
           current_tool: data.currentTool,
-          settings: data.settings
+          settings: data.settings,
+          current_color: data.currentColor || 'None', // Added current_color
+          current_stroke_width: data.currentStrokeWidth || 1 // Added current_stroke_width
         };
       } else {
         specificUpdates = data;

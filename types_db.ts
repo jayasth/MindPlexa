@@ -107,6 +107,8 @@ export type Database = {
       }
       draw_nodes: {
         Row: {
+          current_color: string | null
+          current_stroke_width: number | null
           current_tool: string | null
           drawing_file_url: string | null
           id: string
@@ -114,6 +116,8 @@ export type Database = {
           settings: Json | null
         }
         Insert: {
+          current_color?: string | null
+          current_stroke_width?: number | null
           current_tool?: string | null
           drawing_file_url?: string | null
           id?: string
@@ -121,6 +125,8 @@ export type Database = {
           settings?: Json | null
         }
         Update: {
+          current_color?: string | null
+          current_stroke_width?: number | null
           current_tool?: string | null
           drawing_file_url?: string | null
           id?: string

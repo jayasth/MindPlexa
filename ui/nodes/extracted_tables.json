@@ -3,6 +3,24 @@
     "table_name": "draw_nodes",
     "columns": [
       {
+        "column_name": "current_color",
+        "data_type": "character varying",
+        "is_nullable": "YES",
+        "default": "None",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      },
+      {
+        "column_name": "current_stroke_width",
+        "data_type": "integer",
+        "is_nullable": "YES",
+        "default": "None",
+        "foreign_key": null,
+        "references_table": null,
+        "references_column": null
+      },
+      {
         "column_name": "current_tool",
         "data_type": "character varying",
         "is_nullable": "YES",

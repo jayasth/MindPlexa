@@ -71,7 +71,11 @@ export const getDrawNodeData = async (nodeId: string) => {
 
     return {
       ...data,
-      drawingData
+      drawingData,
+      currentColor: data.current_color || 'None',
+      currentStrokeWidth: data.current_stroke_width || 1,
+      currentTool: data.current_tool || 'None',
+      settings: data.settings || {}
     };
   } catch (error) {
     console.error('Error fetching draw node data:', error);
@@ -96,7 +100,10 @@ export const updateNodeSpecificData = async (
 
     const updateData = {
       ...toSnakeCase(updates),
-      drawing_file_url: svgPath
+      drawing_file_url: svgPath,
+      current_color: updates.currentColor || 'None',
+      current_stroke_width: updates.currentStrokeWidth || 1,
+      current_tool: updates.currentTool || 'None'
     };
 
     const { data, error } = await supabase
@@ -147,7 +154,13 @@ export const createNodeSpecificData = async (
 
     const { data, error } = await supabase
       .from('draw_nodes')
-      .insert({ ...toSnakeCase(initialData), node_id: nodeId })
+      .insert({
+        ...toSnakeCase(initialData),
+        node_id: nodeId,
+        current_color: initialData.currentColor || 'None',
+        current_stroke_width: initialData.currentStrokeWidth || 1,
+        current_tool: initialData.currentTool || 'None'
+      })
       .select()
       .single();
 
@@ -238,7 +251,9 @@ export const processNodeSpecificData = (nodeType: NodeType, data: any) => {
         currentTool: data.current_tool || '',
         drawingFileUrl: data.drawing_file_url || '',
         drawingData: data.drawingData || '',
-        settings: data.settings || {}
+        settings: data.settings || {},
+        currentColor: data.current_color || '',
+        currentStrokeWidth: data.current_stroke_width || 2
       };
     case 'table':
       return {

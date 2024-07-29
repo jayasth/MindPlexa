@@ -106,7 +106,9 @@ export const updateNode = async (set, get, id, data, canvasId) => {
               specificUpdates = {
                 current_tool: updatedNode.data.currentTool,
                 drawing_file_url: updatedNode.data.drawingFileUrl,
-                settings: JSON.stringify(updatedNode.data.settings)
+                settings: JSON.stringify(updatedNode.data.settings),
+                current_color: updatedNode.data.currentColor,
+                current_stroke_width: updatedNode.data.currentStrokeWidth
               };
               // Adjusted to handle draw node's specific data
               if (data.data?.drawingData) {
