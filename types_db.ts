@@ -110,28 +110,22 @@ export type Database = {
           current_tool: string | null
           drawing_file_url: string | null
           id: string
-          layers: Json | null
           node_id: string | null
           settings: Json | null
-          zoom_level: number | null
         }
         Insert: {
           current_tool?: string | null
           drawing_file_url?: string | null
           id?: string
-          layers?: Json | null
           node_id?: string | null
           settings?: Json | null
-          zoom_level?: number | null
         }
         Update: {
           current_tool?: string | null
           drawing_file_url?: string | null
           id?: string
-          layers?: Json | null
           node_id?: string | null
           settings?: Json | null
-          zoom_level?: number | null
         }
         Relationships: [
           {

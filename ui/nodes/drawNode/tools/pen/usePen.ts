@@ -1,7 +1,6 @@
 import { useCallback, useRef } from 'react';
 import { ToolHandlers } from '@/ui/nodes/drawNode/DrawNodeTools';
 import { Point } from '../../utils/pointUtils';
-import { ToolSetting } from '../../types';
 
 export interface UsePenProps {
   color?: string;
@@ -11,8 +10,8 @@ export interface UsePenProps {
 }
 
 export function usePen({
-  color = '#000000',
-  strokeWidth = 2,
+  color,
+  strokeWidth,
   opacity = 1,
   blendMode = 'source-over'
 }: UsePenProps = {}): ToolHandlers {
@@ -21,11 +20,7 @@ export function usePen({
   const tempCanvas = useRef<HTMLCanvasElement | null>(null);
 
   const startStroke = useCallback(
-    (
-      point: Point,
-      context: CanvasRenderingContext2D,
-      settings: ToolSetting
-    ) => {
+    (point: Point, context: CanvasRenderingContext2D) => {
       if (!tempCanvas.current) {
         tempCanvas.current = document.createElement('canvas');
         tempCanvas.current.width = context.canvas.width;
@@ -33,11 +28,10 @@ export function usePen({
       }
       const tempCtx = tempCanvas.current.getContext('2d');
       if (tempCtx) {
-        tempCtx.strokeStyle = settings.color || color;
-        tempCtx.lineWidth = settings.strokeWidth || strokeWidth;
-        tempCtx.globalAlpha = settings.opacity ?? opacity;
-        tempCtx.globalCompositeOperation = (settings.blendMode ||
-          blendMode) as GlobalCompositeOperation;
+        tempCtx.strokeStyle = color || context.strokeStyle;
+        tempCtx.lineWidth = strokeWidth || context.lineWidth;
+        tempCtx.globalAlpha = opacity;
+        tempCtx.globalCompositeOperation = blendMode;
         tempCtx.clearRect(0, 0, tempCtx.canvas.width, tempCtx.canvas.height);
       }
       points.current = [point];
@@ -47,11 +41,7 @@ export function usePen({
   );
 
   const continueStroke = useCallback(
-    (
-      point: Point,
-      context: CanvasRenderingContext2D,
-      settings: ToolSetting
-    ) => {
+    (point: Point, context: CanvasRenderingContext2D) => {
       if (!isDrawing.current || !tempCanvas.current) return;
 
       points.current.push(point);
@@ -94,8 +84,8 @@ export function usePen({
     (context: CanvasRenderingContext2D) => {
       if (points.current.length > 1) {
         context.save();
-        context.strokeStyle = color;
-        context.lineWidth = strokeWidth;
+        context.strokeStyle = color || context.strokeStyle;
+        context.lineWidth = strokeWidth || context.lineWidth;
         context.globalAlpha = opacity;
         context.globalCompositeOperation = blendMode;
         context.beginPath();

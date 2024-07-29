@@ -37,25 +37,25 @@ export const initializeTools = (): Array<ToolConfig> => {
       tool: usePen({}),
       icon: FaPen,
       defaultStrokeWidth: 2,
-      defaultColor: '#575757'
+      defaultColor: '#F472B6'
     },
     {
       tool: useLine({}),
       icon: BsSlashLg,
       defaultStrokeWidth: 2,
-      defaultColor: '#8B0000'
+      defaultColor: '#FF6347'
     },
     {
       tool: useRectangle({}),
       icon: FaSquare,
       defaultStrokeWidth: 2,
-      defaultColor: '#989FF0'
+      defaultColor: '#4682B4'
     },
     {
       tool: useCircle({}),
       icon: FaCircle,
       defaultStrokeWidth: 2,
-      defaultColor: '#60A5FA'
+      defaultColor: '#32CD32'
     },
     {
       tool: useMarker({}),

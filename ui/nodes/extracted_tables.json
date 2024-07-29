@@ -30,15 +30,6 @@
         "references_column": null
       },
       {
-        "column_name": "layers",
-        "data_type": "jsonb",
-        "is_nullable": "YES",
-        "default": "None",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      },
-      {
         "column_name": "node_id",
         "data_type": "uuid",
         "is_nullable": "YES",
@@ -50,15 +41,6 @@
       {
         "column_name": "settings",
         "data_type": "jsonb",
-        "is_nullable": "YES",
-        "default": "None",
-        "foreign_key": null,
-        "references_table": null,
-        "references_column": null
-      },
-      {
-        "column_name": "zoom_level",
-        "data_type": "integer",
         "is_nullable": "YES",
         "default": "None",
         "foreign_key": null,
