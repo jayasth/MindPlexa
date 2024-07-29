@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaUndo, FaRedo, FaDownload, FaRuler, FaCog } from 'react-icons/fa';
 import { RiCheckboxBlankLine } from 'react-icons/ri';
 import { GrPaint } from 'react-icons/gr';
@@ -8,7 +8,6 @@ import { SketchPicker } from 'react-color';
 import Slider from './DrawNodeSlider';
 import styles from './DrawNodeTopbar.module.css';
 import DrawNodeSettings from './DrawNodeSettings';
-import { ArtboardRef } from '@/ui/nodes/drawNode/DrawNodeTools';
 
 interface DrawNodeTopbarProps {
   undo: () => void;
@@ -57,6 +56,16 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
   const iconSize = 16;
 
   const currentToolSetting = toolSettings[currentToolIndex];
+
+  useEffect(() => {
+    onColorChange(currentToolSetting.color);
+    onStrokeWidthChange(currentToolSetting.strokeWidth);
+  }, [
+    currentToolIndex,
+    currentToolSetting,
+    onColorChange,
+    onStrokeWidthChange
+  ]);
 
   const handleUndo = () => {
     undo();
