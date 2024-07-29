@@ -96,9 +96,7 @@ const processNode = async (node: any) => {
       sortBy: node.data?.sortBy || '',
       drawingFileUrl: node.data?.drawingFileUrl || node.drawingFileUrl || '',
       currentTool: node.data?.currentTool || '',
-      layers: node.data?.layers || [],
-      settings: node.data?.settings || {},
-      zoomLevel: node.data?.zoomLevel || 0
+      settings: node.data?.settings || {}
     },
     width: node.isEditing
       ? (isDesktop ? node.editWidth : node.mobileEditWidth) || node.viewWidth

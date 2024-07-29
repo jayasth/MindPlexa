@@ -238,9 +238,7 @@ export const processNodeSpecificData = (nodeType: NodeType, data: any) => {
         currentTool: data.current_tool || '',
         drawingFileUrl: data.drawing_file_url || '',
         drawingData: data.drawingData || '',
-        layers: data.layers || [],
-        settings: data.settings || {},
-        zoomLevel: data.zoom_level || 1
+        settings: data.settings || {}
       };
     case 'table':
       return {

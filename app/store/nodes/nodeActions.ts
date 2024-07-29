@@ -106,9 +106,7 @@ export const updateNode = async (set, get, id, data, canvasId) => {
               specificUpdates = {
                 current_tool: updatedNode.data.currentTool,
                 drawing_file_url: updatedNode.data.drawingFileUrl,
-                layers: JSON.stringify(updatedNode.data.layers),
-                settings: JSON.stringify(updatedNode.data.settings),
-                zoom_level: updatedNode.data.zoomLevel
+                settings: JSON.stringify(updatedNode.data.settings)
               };
               // Adjusted to handle draw node's specific data
               if (data.data?.drawingData) {

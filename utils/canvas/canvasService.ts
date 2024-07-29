@@ -221,9 +221,7 @@ export const fetchCanvas = async (canvasId: string) => {
         if (drawData) {
           processedData.drawingFileUrl = drawData.drawing_file_url;
           processedData.currentTool = drawData.current_tool;
-          processedData.layers = drawData.layers;
           processedData.settings = drawData.settings;
-          processedData.zoomLevel = drawData.zoom_level;
         }
       }
 
@@ -291,9 +289,7 @@ export const saveCanvasState = async (canvasId: string, canvasState: any) => {
         specificUpdates = {
           drawing_file_url: data.drawingFileUrl,
           current_tool: data.currentTool,
-          layers: data.layers,
-          settings: data.settings,
-          zoom_level: data.zoomLevel
+          settings: data.settings
         };
       } else {
         specificUpdates = data;

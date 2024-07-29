@@ -29,7 +29,6 @@ export interface ArtboardProps
   width: number;
   height: number;
   onResize?: () => void;
-  // Removed zoomLevel prop
   color: string;
   strokeWidth: number;
   opacity: number;
@@ -62,7 +61,6 @@ export const Artboard = forwardRef(function Artboard(
     width,
     height,
     onResize,
-    // Removed zoomLevel,
     color,
     strokeWidth,
     opacity,
@@ -80,8 +78,6 @@ export const Artboard = forwardRef(function Artboard(
   const [content, setContent] = useState(initialContent || '');
   const { history } = useHistory();
 
-  const currentToolSetting = toolSettings[currentToolIndex];
-
   const handleContentChange = useCallback(
     (newContent: string) => {
       setContent(newContent);
@@ -92,13 +88,14 @@ export const Artboard = forwardRef(function Artboard(
 
   const setupStroke = useCallback(() => {
     if (!context) return;
+    const currentToolSetting = toolSettings[currentToolIndex];
     context.save();
     context.strokeStyle = currentToolSetting.color;
     context.lineWidth = currentToolSetting.strokeWidth;
     context.globalAlpha = currentToolSetting.opacity / 100;
     context.globalCompositeOperation =
       currentToolSetting.blendMode as GlobalCompositeOperation;
-  }, [context, currentToolSetting]);
+  }, [context, toolSettings, currentToolIndex]);
 
   const startStroke = useCallback(
     (point: Point) => {
@@ -252,7 +249,6 @@ export const Artboard = forwardRef(function Artboard(
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, canvasRef.width, canvasRef.height);
       ctx.fillStyle = 'transparent';
-      // Removed this line
       if (content) {
         const image = new Image();
         image.onload = () => {
