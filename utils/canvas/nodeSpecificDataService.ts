@@ -72,10 +72,10 @@ export const getDrawNodeData = async (nodeId: string) => {
     return {
       ...data,
       drawingData,
-      currentColor: data.current_color || 'None',
-      currentStrokeWidth: data.current_stroke_width || 1,
-      currentTool: data.current_tool || 'None',
-      settings: data.settings || {}
+      currentColor: data.current_color,
+      currentStrokeWidth: data.current_stroke_width,
+      currentTool: data.current_tool,
+      settings: data.settings
     };
   } catch (error) {
     console.error('Error fetching draw node data:', error);
@@ -101,10 +101,10 @@ export const updateNodeSpecificData = async (
     const updateData = {
       ...toSnakeCase(updates),
       drawing_file_url: svgPath,
-      current_color: updates.currentColor || 'None',
-      current_stroke_width: updates.currentStrokeWidth || 1,
-      current_tool: updates.currentTool || 'None',
-      settings: JSON.stringify(updates.settings || {})
+      current_color: updates.currentColor,
+      current_stroke_width: updates.currentStrokeWidth,
+      current_tool: updates.currentTool,
+      settings: JSON.stringify(updates.settings)
     };
 
     const { data, error } = await supabase
@@ -158,9 +158,9 @@ export const createNodeSpecificData = async (
       .insert({
         ...toSnakeCase(initialData),
         node_id: nodeId,
-        current_color: initialData.currentColor || 'None',
-        current_stroke_width: initialData.currentStrokeWidth || 1,
-        current_tool: initialData.currentTool || 'None'
+        current_color: initialData.currentColor,
+        current_stroke_width: initialData.currentStrokeWidth,
+        current_tool: initialData.currentTool
       })
       .select()
       .single();
@@ -249,12 +249,12 @@ export const processNodeSpecificData = (nodeType: NodeType, data: any) => {
       };
     case 'draw':
       return {
-        currentTool: data.current_tool || 'pen',
-        drawingFileUrl: data.drawing_file_url || '',
-        drawingData: data.drawingData || '',
-        settings: data.settings || {},
-        currentColor: data.current_color || '#635E87',
-        currentStrokeWidth: data.current_stroke_width || 2
+        currentTool: data.current_tool,
+        drawingFileUrl: data.drawing_file_url,
+        drawingData: data.drawingData,
+        settings: data.settings,
+        currentColor: data.current_color,
+        currentStrokeWidth: data.current_stroke_width
       };
     case 'table':
       return {
