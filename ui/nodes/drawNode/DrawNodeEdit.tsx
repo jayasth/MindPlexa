@@ -152,7 +152,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
           current_tool: newData.currentTool,
           current_color: newData.currentColor,
           current_stroke_width: newData.currentStrokeWidth,
-          settings: JSON.stringify(newData.settings)
+          settings: newData.settings
         });
       } catch (error) {
         console.error('Error updating draw node:', error);
