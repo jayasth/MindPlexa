@@ -47,8 +47,10 @@ import { initializeTools } from './toolInitialization';
 import { useHistory } from './drawNodeHistory';
 import { exportSVG } from './utils/svgExport';
 import ResizableArtboardMask from './components/ResizableArtboardMask';
-import { updateNodeSpecificData } from '@/utils/canvas/nodeSpecificDataService';
-import { getNodeSpecificData } from '@/utils/canvas/nodeSpecificDataService';
+import {
+  updateNodeSpecificData,
+  getNodeSpecificData
+} from '@/utils/canvas/nodeSpecificDataService';
 
 interface DrawNodeEditProps extends NodeProps {
   data: any;
@@ -163,7 +165,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     const loadDrawNodeData = async () => {
       const drawNodeData = await getNodeSpecificData(id, 'draw');
       if (drawNodeData) {
-        // Existing node
         setCurrentTool(drawNodeData.current_tool || tools[0].tool.name);
         setCurrentColor(drawNodeData.current_color || tools[0].defaultColor);
         setCurrentStrokeWidth(
@@ -180,7 +181,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
               }))
         );
       } else {
-        // New node
         const initialSettings = tools.map((tool) => ({
           name: tool.tool.name,
           color: tool.defaultColor,
