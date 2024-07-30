@@ -97,19 +97,20 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     data.currentTool || tools[0].tool.name
   );
   const [currentColor, setCurrentColor] = useState(
-    data.currentColor || '#635E87'
+    data.currentColor || tools[0].defaultColor
   );
   const [currentStrokeWidth, setCurrentStrokeWidth] = useState(
-    data.currentStrokeWidth || 2
+    data.currentStrokeWidth || tools[0].defaultStrokeWidth
   );
-  const [toolSettings, setToolSettings] = useState(
-    data.settings ||
-      tools.map((tool) => ({
-        name: tool.tool.name,
-        color: tool.defaultColor,
-        strokeWidth: tool.defaultStrokeWidth,
-        opacity: 100
-      }))
+  const [toolSettings, setToolSettings] = useState(() =>
+    data.settings
+      ? JSON.parse(data.settings)
+      : tools.map((tool) => ({
+          name: tool.tool.name,
+          color: tool.defaultColor,
+          strokeWidth: tool.defaultStrokeWidth,
+          opacity: 100
+        }))
   );
 
   const artboardRef = useRef<ArtboardRef | null>(null);
@@ -151,14 +152,36 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     const loadDrawNodeData = async () => {
       const drawNodeData = await getNodeSpecificData(id, 'draw');
       if (drawNodeData) {
+        // Existing node
         setCurrentTool(drawNodeData.current_tool || tools[0].tool.name);
-        setCurrentColor(drawNodeData.current_color || '#635E87');
-        setCurrentStrokeWidth(drawNodeData.current_stroke_width || 2);
-        setToolSettings(JSON.parse(drawNodeData.settings) || []);
+        setCurrentColor(drawNodeData.current_color || tools[0].defaultColor);
+        setCurrentStrokeWidth(
+          drawNodeData.current_stroke_width || tools[0].defaultStrokeWidth
+        );
+        setToolSettings(
+          drawNodeData.settings && Array.isArray(drawNodeData.settings)
+            ? drawNodeData.settings
+            : tools.map((tool) => ({
+                name: tool.tool.name,
+                color: tool.defaultColor,
+                strokeWidth: tool.defaultStrokeWidth,
+                opacity: 100
+              }))
+        );
+      } else {
+        // New node
+        const initialSettings = tools.map((tool) => ({
+          name: tool.tool.name,
+          color: tool.defaultColor,
+          strokeWidth: tool.defaultStrokeWidth,
+          opacity: 100
+        }));
+        setToolSettings(initialSettings);
+        saveSettings(); // Save initial settings to the database
       }
     };
     loadDrawNodeData();
-  }, [id]);
+  }, [id, tools]);
 
   useEffect(() => {
     // Load settings from data when component mounts
@@ -180,7 +203,12 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
       current_stroke_width: currentStrokeWidth,
       settings: toolSettings
     };
-    await updateNodeSpecificData(id, 'draw', updatedData);
+    await updateNodeSpecificData(id, 'draw', {
+      current_tool: updatedData.current_tool,
+      current_color: updatedData.current_color,
+      current_stroke_width: updatedData.current_stroke_width,
+      settings: JSON.stringify(updatedData.settings)
+    });
   };
 
   const handleToolChange = (index: number) => {
@@ -457,7 +485,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
                 height={nodeHeight}
                 color={currentColor}
                 strokeWidth={currentStrokeWidth}
-                opacity={toolSettings[currentToolIndex].opacity}
+                opacity={toolSettings[currentToolIndex]?.opacity ?? 100}
                 settings={toolSettings}
                 toolSettings={toolSettings}
                 currentToolIndex={currentToolIndex}
