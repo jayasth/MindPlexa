@@ -81,10 +81,12 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
 
   const handleColorChange = (color: { hex: string }) => {
     onColorChange(color.hex);
+    onToolSettingChange(currentToolIndex, 'color', color.hex);
   };
 
   const handleStrokeWidthChange = (value: number) => {
     onStrokeWidthChange(value);
+    onToolSettingChange(currentToolIndex, 'strokeWidth', value);
   };
 
   return (
