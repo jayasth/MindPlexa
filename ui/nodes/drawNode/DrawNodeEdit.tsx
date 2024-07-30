@@ -65,7 +65,6 @@ interface DrawNodeEditProps extends NodeProps {
   position: { x: number; y: number };
   onResize?: () => void;
 }
-
 const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   data,
   id,
@@ -95,36 +94,19 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [tools] = useState(initializeTools());
   const [currentToolIndex, setCurrentToolIndex] = useState(0);
-  const [currentTool, setCurrentTool] = useState(
-    data.currentTool || tools[0].tool.name
-  );
-  const [currentColor, setCurrentColor] = useState(
-    data.currentColor || tools[0].defaultColor
-  );
+  const [currentTool, setCurrentTool] = useState(tools[0].tool.name);
+  const [currentColor, setCurrentColor] = useState(tools[0].defaultColor);
   const [currentStrokeWidth, setCurrentStrokeWidth] = useState(
-    data.currentStrokeWidth || tools[0].defaultStrokeWidth
+    tools[0].defaultStrokeWidth
   );
-  const [toolSettings, setToolSettings] = useState(() => {
-    try {
-      return typeof data.settings === 'string'
-        ? JSON.parse(data.settings)
-        : data.settings ||
-            tools.map((tool) => ({
-              name: tool.tool.name,
-              color: tool.defaultColor,
-              strokeWidth: tool.defaultStrokeWidth,
-              opacity: 100
-            }));
-    } catch (error) {
-      console.error('Error parsing settings JSON:', error);
-      return tools.map((tool) => ({
-        name: tool.tool.name,
-        color: tool.defaultColor,
-        strokeWidth: tool.defaultStrokeWidth,
-        opacity: 100
-      }));
-    }
-  });
+  const [toolSettings, setToolSettings] = useState(() =>
+    tools.map((tool) => ({
+      name: tool.tool.name,
+      color: tool.defaultColor,
+      strokeWidth: tool.defaultStrokeWidth,
+      opacity: 100
+    }))
+  );
 
   const artboardRef = useRef<ArtboardRef | null>(null);
   const { history, undo, redo, clear, canUndo, canRedo } = useHistory();
@@ -188,53 +170,36 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
           opacity: 100
         }));
         setToolSettings(initialSettings);
-        saveSettings(); // Save initial settings to the database
+        await saveSettings(initialSettings); // Save initial settings to the database only once
       }
     };
     loadDrawNodeData();
   }, [id, tools]);
 
-  useEffect(() => {
-    // Load settings from data when component mounts
-    if (data.currentTool) {
-      const toolIndex = tools.findIndex(
-        (tool) => tool.tool.name === data.currentTool
-      );
-      if (toolIndex !== -1) setCurrentToolIndex(toolIndex);
-    }
-    if (data.currentColor) setCurrentColor(data.currentColor);
-    if (data.currentStrokeWidth) setCurrentStrokeWidth(data.currentStrokeWidth);
-    if (data.settings) setToolSettings(data.settings);
-  }, [data, tools]);
-
-  const saveSettings = async () => {
+  const saveSettings = async (settingsToSave: any) => {
     const updatedData = {
       current_tool: currentTool,
       current_color: currentColor,
       current_stroke_width: currentStrokeWidth,
-      settings: toolSettings
+      settings: settingsToSave
     };
-    await updateNodeSpecificData(id, 'draw', {
-      current_tool: updatedData.current_tool,
-      current_color: updatedData.current_color,
-      current_stroke_width: updatedData.current_stroke_width,
-      settings: JSON.stringify(updatedData.settings)
-    });
+    await updateNodeSpecificData(id, 'draw', updatedData);
   };
+
   const handleToolChange = (index: number) => {
     setCurrentTool(tools[index].tool.name);
     setCurrentToolIndex(index);
-    saveSettings();
+    saveSettings(toolSettings); // Save updated settings
   };
 
   const handleColorChange = (color: string) => {
     setCurrentColor(color);
-    saveSettings();
+    saveSettings(toolSettings); // Save updated settings
   };
 
   const handleStrokeWidthChange = (width: number) => {
     setCurrentStrokeWidth(width);
-    saveSettings();
+    saveSettings(toolSettings); // Save updated settings
   };
 
   const handleToolSettingChange = (
@@ -247,7 +212,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
       newSettings[toolIndex] = { ...newSettings[toolIndex], [key]: value };
       return newSettings;
     });
-    saveSettings();
+    saveSettings(toolSettings); // Save updated settings
   };
 
   useEffect(() => {
