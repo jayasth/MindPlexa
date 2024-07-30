@@ -32,8 +32,8 @@ export interface ArtboardProps
   color: string;
   strokeWidth: number;
   opacity: number;
-  settings: ToolSetting[];
-  toolSettings: any[];
+  settings?: ToolSetting[];
+  toolSettings?: any[];
   currentToolIndex: number;
 }
 
@@ -63,8 +63,8 @@ export const Artboard = forwardRef(function Artboard(
     color,
     strokeWidth,
     opacity,
-    settings,
-    toolSettings,
+    settings = [],
+    toolSettings = [],
     currentToolIndex,
     ...props
   }: ArtboardProps,

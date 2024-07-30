@@ -102,16 +102,27 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const [currentStrokeWidth, setCurrentStrokeWidth] = useState(
     data.currentStrokeWidth || tools[0].defaultStrokeWidth
   );
-  const [toolSettings, setToolSettings] = useState(() =>
-    data.settings
-      ? JSON.parse(data.settings)
-      : tools.map((tool) => ({
-          name: tool.tool.name,
-          color: tool.defaultColor,
-          strokeWidth: tool.defaultStrokeWidth,
-          opacity: 100
-        }))
-  );
+  const [toolSettings, setToolSettings] = useState(() => {
+    try {
+      return typeof data.settings === 'string'
+        ? JSON.parse(data.settings)
+        : data.settings ||
+            tools.map((tool) => ({
+              name: tool.tool.name,
+              color: tool.defaultColor,
+              strokeWidth: tool.defaultStrokeWidth,
+              opacity: 100
+            }));
+    } catch (error) {
+      console.error('Error parsing settings JSON:', error);
+      return tools.map((tool) => ({
+        name: tool.tool.name,
+        color: tool.defaultColor,
+        strokeWidth: tool.defaultStrokeWidth,
+        opacity: 100
+      }));
+    }
+  });
 
   const artboardRef = useRef<ArtboardRef | null>(null);
   const { history, undo, redo, clear, canUndo, canRedo } = useHistory();
