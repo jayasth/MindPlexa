@@ -104,27 +104,16 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const [currentStrokeWidth, setCurrentStrokeWidth] = useState(
     data.currentStrokeWidth || tools[0].defaultStrokeWidth
   );
-  const [toolSettings, setToolSettings] = useState(() => {
-    try {
-      return typeof data.settings === 'string'
-        ? JSON.parse(data.settings)
-        : data.settings ||
-            tools.map((tool) => ({
-              name: tool.tool.name,
-              color: tool.defaultColor,
-              strokeWidth: tool.defaultStrokeWidth,
-              opacity: 100
-            }));
-    } catch (error) {
-      console.error('Error parsing settings JSON:', error);
-      return tools.map((tool) => ({
-        name: tool.tool.name,
-        color: tool.defaultColor,
-        strokeWidth: tool.defaultStrokeWidth,
-        opacity: 100
-      }));
-    }
-  });
+  const getDefaultToolSettings = () => {
+    return tools.map((tool) => ({
+      name: tool.tool.name,
+      color: tool.defaultColor,
+      strokeWidth: tool.defaultStrokeWidth,
+      opacity: 100
+    }));
+  };
+
+  const [toolSettings, setToolSettings] = useState(getDefaultToolSettings());
 
   const artboardRef = useRef<ArtboardRef | null>(null);
   const { history, undo, redo, clear, canUndo, canRedo } = useHistory();
@@ -161,38 +150,35 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     [data.id, updateNode, canvasId]
   );
 
-  useEffect(() => {
-    const loadDrawNodeData = async () => {
-      const drawNodeData = await getNodeSpecificData(id, 'draw');
-      if (drawNodeData) {
-        setCurrentTool(drawNodeData.current_tool || tools[0].tool.name);
-        setCurrentColor(drawNodeData.current_color || tools[0].defaultColor);
-        setCurrentStrokeWidth(
-          drawNodeData.current_stroke_width || tools[0].defaultStrokeWidth
-        );
-        setToolSettings(
-          drawNodeData.settings && Array.isArray(drawNodeData.settings)
-            ? drawNodeData.settings
-            : tools.map((tool) => ({
-                name: tool.tool.name,
-                color: tool.defaultColor,
-                strokeWidth: tool.defaultStrokeWidth,
-                opacity: 100
-              }))
-        );
+  const loadDrawNodeData = async () => {
+    const drawNodeData = await getNodeSpecificData(id, 'draw');
+    console.log('Loaded draw node data:', drawNodeData);
+    if (drawNodeData) {
+      setCurrentTool(drawNodeData.currentTool || tools[0].tool.name);
+      setCurrentColor(drawNodeData.currentColor || tools[0].defaultColor);
+      setCurrentStrokeWidth(
+        drawNodeData.currentStrokeWidth || tools[0].defaultStrokeWidth
+      );
+      if (drawNodeData.settings) {
+        try {
+          const parsedSettings =
+            typeof drawNodeData.settings === 'string'
+              ? JSON.parse(drawNodeData.settings)
+              : drawNodeData.settings;
+          setToolSettings(parsedSettings);
+          console.log('Parsed settings:', parsedSettings);
+        } catch (error) {
+          console.error('Error parsing settings:', error);
+          setToolSettings(getDefaultToolSettings());
+        }
       } else {
-        const initialSettings = tools.map((tool) => ({
-          name: tool.tool.name,
-          color: tool.defaultColor,
-          strokeWidth: tool.defaultStrokeWidth,
-          opacity: 100
-        }));
-        setToolSettings(initialSettings);
-        saveSettings(); // Save initial settings to the database
+        setToolSettings(getDefaultToolSettings());
       }
-    };
-    loadDrawNodeData();
-  }, [id, tools]);
+    } else {
+      setToolSettings(getDefaultToolSettings());
+      saveSettings(); // Save initial settings to the database
+    }
+  };
 
   useEffect(() => {
     // Load settings from data when component mounts
@@ -212,14 +198,10 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
       current_tool: currentTool,
       current_color: currentColor,
       current_stroke_width: currentStrokeWidth,
-      settings: toolSettings
+      settings: JSON.stringify(toolSettings)
     };
-    await updateNodeSpecificData(id, 'draw', {
-      current_tool: updatedData.current_tool,
-      current_color: updatedData.current_color,
-      current_stroke_width: updatedData.current_stroke_width,
-      settings: JSON.stringify(updatedData.settings)
-    });
+    await updateNodeSpecificData(id, 'draw', updatedData);
+    console.log('Settings saved:', updatedData);
   };
   const handleToolChange = (index: number) => {
     setCurrentTool(tools[index].tool.name);
