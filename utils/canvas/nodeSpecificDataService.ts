@@ -77,8 +77,8 @@ export const getDrawNodeData = async (nodeId: string) => {
       currentTool: data.current_tool,
       settings:
         typeof data.settings === 'string'
-          ? data.settings
-          : JSON.stringify(data.settings)
+          ? JSON.parse(data.settings)
+          : data.settings
     };
   } catch (error) {
     console.error('Error fetching draw node data:', error);

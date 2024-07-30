@@ -221,7 +221,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
       settings: JSON.stringify(updatedData.settings)
     });
   };
-
   const handleToolChange = (index: number) => {
     setCurrentTool(tools[index].tool.name);
     setCurrentToolIndex(index);
