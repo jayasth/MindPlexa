@@ -48,6 +48,7 @@ import { useHistory } from './drawNodeHistory';
 import { exportSVG } from './utils/svgExport';
 import ResizableArtboardMask from './components/ResizableArtboardMask';
 import { updateNodeSpecificData } from '@/utils/canvas/nodeSpecificDataService';
+import { getNodeSpecificData } from '@/utils/canvas/nodeSpecificDataService';
 
 interface DrawNodeEditProps extends NodeProps {
   data: any;
@@ -133,12 +134,31 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     debounce(async (newData: Partial<any>) => {
       try {
         await updateNode(data.id, { data: { ...data, ...newData } }, canvasId);
+        await updateNodeSpecificData(id, 'draw', {
+          current_tool: newData.currentTool,
+          current_color: newData.currentColor,
+          current_stroke_width: newData.currentStrokeWidth,
+          settings: JSON.stringify(newData.settings)
+        });
       } catch (error) {
         console.error('Error updating draw node:', error);
       }
     }, 500),
     [data.id, updateNode, canvasId]
   );
+
+  useEffect(() => {
+    const loadDrawNodeData = async () => {
+      const drawNodeData = await getNodeSpecificData(id, 'draw');
+      if (drawNodeData) {
+        setCurrentTool(drawNodeData.current_tool || tools[0].tool.name);
+        setCurrentColor(drawNodeData.current_color || '#635E87');
+        setCurrentStrokeWidth(drawNodeData.current_stroke_width || 2);
+        setToolSettings(JSON.parse(drawNodeData.settings) || []);
+      }
+    };
+    loadDrawNodeData();
+  }, [id]);
 
   useEffect(() => {
     // Load settings from data when component mounts
@@ -211,7 +231,11 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     const specificData = {
       drawingData,
       tags,
-      attachedFiles
+      attachedFiles,
+      currentTool,
+      currentColor,
+      currentStrokeWidth,
+      settings: toolSettings
     };
 
     updateDrawNodeData({ ...commonData, ...specificData });
@@ -224,6 +248,10 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     nodeHeight,
     tags,
     attachedFiles,
+    currentTool,
+    currentColor,
+    currentStrokeWidth,
+    toolSettings,
     updateDrawNodeData
   ]);
 
