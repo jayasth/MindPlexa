@@ -100,14 +100,20 @@ export const updateNodeSpecificData = async (
       svgPath = await uploadSVGToBucket(nodeId, updates.drawingFileUrl);
     }
 
+    const updateData = {
+      current_tool: updates.currentTool,
+      current_color: updates.currentColor,
+      current_stroke_width: updates.currentStrokeWidth,
+      settings:
+        typeof updates.settings === 'string'
+          ? updates.settings
+          : JSON.stringify(updates.settings),
+      drawing_file_url: svgPath
+    };
+
     const { data, error } = await supabase
       .from('draw_nodes')
-      .update({
-        current_tool: updates.currentTool,
-        current_color: updates.currentColor,
-        current_stroke_width: updates.currentStrokeWidth,
-        settings: updates.settings // This should already be a JSON string
-      })
+      .update(updateData)
       .eq('node_id', nodeId)
       .select()
       .single();
