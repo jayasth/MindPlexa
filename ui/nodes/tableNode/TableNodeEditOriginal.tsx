@@ -7,11 +7,11 @@ import React, {
   useMemo
 } from 'react';
 import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
+import { AgGridReact } from 'ag-grid-react';
 import useNodeStore from '@/app/store/nodes/useNodeStore';
 import useCanvasStore from '@/app/store/canvas/useCanvasStore';
 import styles from '@/ui/nodes/tableNode/styles/TableNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
-import { Node } from 'reactflow';
 import {
   DeleteButton,
   ChangeColorButton,
@@ -40,22 +40,46 @@ import {
   removeAllPreviews
 } from '@/utils/canvas/attachmentService';
 import { useBackgroundColorChange } from '@/ui/nodes/common/useBackgroundColorChange';
-import TableNodeGrid from '@/ui/nodes/tableNode/TableNodeGrid';
+
+import {
+  AddTableButton,
+  AddColumnButton,
+  AddRowButton,
+  ExportButton,
+  ImportButton,
+  DeleteTableButton,
+  SettingsButton
+} from '@/ui/nodes/tableNode/components/TableNodeToolbar';
+import AddTableModal from '@/ui/nodes/tableNode/components/AddTableModal';
 import DeleteTableModal from '@/ui/nodes/tableNode/components/DeleteTableModal';
 import SettingsModal from '@/ui/nodes/tableNode/components/SettingsModal';
+import 'ag-grid-community/styles/ag-grid.css';
+import 'ag-grid-community/styles/ag-theme-alpine.css';
+
+import {
+  addColumn,
+  addRow,
+  importTableData,
+  exportTableData,
+  onCellValueChanged,
+  validateCellValue,
+  getColumnDefs,
+  gridOptions as existingOptions
+} from '@/ui/nodes/tableNode/utils/TableFunctions';
+
+import CustomHeader from '@/ui/nodes/tableNode/components/CustomHeader';
+import HeaderContextMenu from '@/ui/nodes/tableNode/components/HeaderContextMenu';
+import CellContextMenu from '@/ui/nodes/tableNode/components/CellContextMenu';
+
+import {
+  useKeyPressHandler,
+  onCellKeyDown
+} from '@/ui/nodes/tableNode/utils/KeyboardMouseHandlers';
+
 import debounce from 'lodash/debounce';
 
 interface TableNodeEditProps extends NodeProps {
-  data: {
-    id: string;
-    title: string;
-    columns: any[];
-    rows: any[];
-    backgroundColor: string;
-    textColor: string;
-    tags: string[];
-    attachedFiles: Attachment[];
-  };
+  data: any;
   width: number;
   height: number;
   selected: boolean;
@@ -87,7 +111,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     position
   });
 
-  const { canvasId } = useCanvasStore() as { canvasId: string };
+  const { canvasId } = useCanvasStore();
   const [isSelected, setIsSelected] = useState(selected);
   const [title, setTitle] = useState(data.title || 'Untitled Table');
   const [content, setContent] = useState({
@@ -99,33 +123,26 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   );
   const [textColor, setTextColor] = useState(data.textColor || '#575757');
   const [tags, setTags] = useState<string[]>(data.tags || []);
-  const [attachedFiles, setAttachedFiles] = useState<Attachment[]>(
-    data.attachedFiles || []
-  );
+  const [attachedFiles, setAttachedFiles] = useState<Attachment[]>([]);
   const [isContainerSelected, setIsContainerSelected] = useState(false);
   const [nodeWidth, setNodeWidth] = useState(width);
   const [nodeHeight, setNodeHeight] = useState(height);
   const [isColorPickerVisible, setIsColorPickerVisible] = useState(false);
   const [isTagModalOpen, setIsTagModalOpen] = useState(false);
   const [isFileModalOpen, setIsFileModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [locale, setLocale] = useState('en-US'); // Default locale
   const [errorMessage, setErrorMessage] = useState('');
+
   const [cellContextMenuPosition, setCellContextMenuPosition] = useState<{
     x: number;
     y: number;
   } | null>(null);
   const [cellContextMenuParams, setCellContextMenuParams] = useState<any>(null);
 
-  const updateNode = useNodeStore(
-    (state) =>
-      state.updateNode as (
-        id: string,
-        data: Partial<Node>,
-        canvasId: string
-      ) => Promise<void>
-  );
+  const updateNode = useNodeStore((state) => state.updateNode);
   const tableRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<any>(null);
 
@@ -145,7 +162,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   const debouncedUpdateNode = useMemo(
     () =>
       debounce((nodeId, canvasId, updates) => {
-        updateNode(nodeId, updates, canvasId);
+        updateNode(nodeId, canvasId, updates);
       }, 500),
     [updateNode]
   );
@@ -188,15 +205,55 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     };
   }, []);
 
+  const columnDefs = getColumnDefs(content, setContent, updateNode, gridRef);
+
+  useKeyPressHandler(content, setContent, updateNode, gridRef);
+  const handleCellClick = useCallback(
+    (event) => {
+      if (gridRef.current) {
+        gridRef.current.api.deselectAll();
+      }
+    },
+    [gridRef]
+  );
+
+  const gridOptions = {
+    ...existingOptions,
+    onCellClicked: handleCellClick
+  };
+
+  const updateColumnState = () => {
+    if (gridRef.current) {
+      gridRef.current.api.refreshHeader();
+    }
+  };
+
   const handleDeleteTable = () => {
     setContent({ columns: [], rows: [] });
     setIsDeleteModalOpen(false);
   };
 
-  const handleLocaleChange = (newLocale: string) => {
+  const handleLocaleChange = (newLocale) => {
     setLocale(newLocale);
     // Apply locale settings to existing columns and rows if necessary
   };
+
+  const handleCellContextMenu = useCallback(
+    (event: React.MouseEvent, params: any) => {
+      event.preventDefault();
+      console.log('TableNodeEdit: handleCellContextMenu params:', params);
+      setCellContextMenuPosition({ x: event.clientX, y: event.clientY });
+      setCellContextMenuParams(params);
+    },
+    [setCellContextMenuPosition, setCellContextMenuParams]
+  );
+
+  const handleCellContextMenuClose = () => {
+    setCellContextMenuPosition(null);
+    setCellContextMenuParams(null);
+  };
+
+  /*Common node functions*/
 
   const onChangeTitle = useCallback(
     (newTitle: string) => {
@@ -293,17 +350,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     setIsDeleteModalOpen(false);
   };
 
-  const handleCellContextMenu = (event: any) => {
-    event.preventDefault();
-    setCellContextMenuPosition({ x: event.clientX, y: event.clientY });
-    setCellContextMenuParams(event);
-  };
-
-  const handleCellContextMenuClose = () => {
-    setCellContextMenuPosition(null);
-    setCellContextMenuParams(null);
-  };
-
   const memoizedTagFileContainer = useMemo(
     () => (
       <TagFileContainer
@@ -316,7 +362,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     ),
     [tags, attachedFiles, onRemoveTag, onRemoveFile, textColor]
   );
-
   return (
     <div>
       {errorMessage && (
@@ -355,28 +400,85 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           />
         </div>
 
-        <TableNodeGrid
-          content={content}
-          setContent={setContent}
-          updateNode={(id: string, updates: Partial<Node>) => {
-            updateNode(id, updates, canvasId);
-          }}
-          locale={locale}
-          gridRef={gridRef}
-          onCellClick={() => {}}
-          handleCellContextMenu={handleCellContextMenu}
-          handleCellContextMenuClose={handleCellContextMenuClose}
-          cellContextMenuPosition={cellContextMenuPosition}
-          cellContextMenuParams={cellContextMenuParams}
-          errorMessage={errorMessage}
-          handleLocaleChange={handleLocaleChange}
-          isDeleteModalOpen={isDeleteModalOpen}
-          setIsDeleteModalOpen={setIsDeleteModalOpen}
-          isSettingsModalOpen={isSettingsModalOpen}
-          setIsSettingsModalOpen={setIsSettingsModalOpen}
-          handleDeleteTable={handleDeleteTable}
-        />
+        <div
+          className={`${styles.tableContent} nowheel nodrag`}
+          onContextMenu={(event) => handleCellContextMenu(event, event)}
+        >
+          <div className={styles.toolbar}>
+            <AddTableButton
+              onClick={() => setIsModalOpen(true)}
+              aria-label="Add Table"
+            />
+            <AddColumnButton
+              onClick={(columnType) => {
+                addColumn(content, setContent, updateNode, columnType, locale);
+                updateColumnState();
+              }}
+              aria-label="Add Column"
+              locale={locale} // Pass locale to AddColumnButton
+            />
+            <AddRowButton
+              onClick={() => addRow(content, setContent, updateNode)}
+              aria-label="Add Row"
+            />
+            <ImportButton
+              onChange={(e) => importTableData(e, setContent)}
+              content={content}
+              setContent={setContent}
+              aria-label="Import Table"
+            />
+            <ExportButton
+              onClick={() => exportTableData(content)}
+              aria-label="Export Table"
+            />
 
+            <DeleteTableButton
+              onClick={() => {
+                if (content.columns.length > 0 || content.rows.length > 0) {
+                  setIsDeleteModalOpen(true);
+                } else {
+                  handleDeleteTable();
+                }
+              }}
+              aria-label="Delete Table"
+            />
+            <SettingsButton onClick={() => setIsSettingsModalOpen(true)} />
+          </div>
+
+          <div
+            className="ag-theme-alpine"
+            style={{ height: '100%', width: '100%' }}
+            role="grid"
+            aria-label="Data Table"
+          >
+            <AgGridReact
+              gridOptions={gridOptions}
+              columnDefs={columnDefs as any}
+              rowData={content.rows}
+              domLayout="autoHeight"
+              rowHeight={30}
+              headerHeight={30}
+              floatingFiltersHeight={30}
+              defaultColDef={{
+                resizable: true,
+                editable: true,
+                headerComponent: CustomHeader,
+                headerComponentParams: {
+                  menuIcon: 'fa-bars'
+                }
+              }}
+              onGridReady={(params) => {
+                gridRef.current = params;
+                params.api.sizeColumnsToFit();
+              }}
+              onCellValueChanged={(event) => {
+                onCellValueChanged(event, setContent);
+              }}
+              onCellKeyDown={onCellKeyDown}
+              ref={gridRef}
+            />
+          </div>
+        </div>
         {(tags.length > 0 || attachedFiles.length > 0) &&
           memoizedTagFileContainer}
         <div className={styles.footer}>
@@ -423,6 +525,35 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           onClose={handleDeleteCancel}
           onConfirm={handleDeleteConfirm}
         />
+        {isModalOpen && (
+          <AddTableModal
+            onClose={() => setIsModalOpen(false)}
+            onAddTable={(columns, rows) => {
+              const newColumns = columns.map((col, index) => ({
+                headerName: col.name || `Column ${index + 1}`,
+                field: `col${index + 1}`,
+                editable: true,
+                type: col.type,
+                defaultValue: col.defaultValue,
+                locale // Pass locale to column definition
+              }));
+
+              const newRows = Array.from({ length: rows }, () =>
+                newColumns.reduce((acc, col) => {
+                  acc[col.field] = col.defaultValue || '';
+                  return acc;
+                }, {})
+              );
+
+              setContent({ columns: newColumns, rows: newRows });
+              updateColumnState();
+            }}
+            hasExistingData={
+              content.columns.length > 0 || content.rows.length > 0
+            }
+            locale={locale} // Pass locale to AddTableModal
+          />
+        )}
         <DeleteTableModal
           isOpen={isDeleteModalOpen}
           onClose={() => setIsDeleteModalOpen(false)}
@@ -434,6 +565,34 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           onSave={handleLocaleChange}
           initialLocale={locale}
         />
+        {gridRef.current &&
+          content.columns.map((col) => (
+            <HeaderContextMenu
+              key={col.field}
+              id={`header-context-menu-${col.field}`}
+              params={{
+                column: gridRef.current.api
+                  ?.getColumnState()
+                  ?.find((c) => c.colId === col.field),
+                api: gridRef.current.api
+              }}
+              content={content}
+              setContent={setContent}
+              updateNode={updateNode}
+              gridRef={gridRef}
+            />
+          ))}
+        {cellContextMenuPosition && cellContextMenuParams && (
+          <CellContextMenu
+            id="cell-context-menu"
+            position={cellContextMenuPosition}
+            params={cellContextMenuParams}
+            onClose={handleCellContextMenuClose}
+            setContent={setContent}
+            content={content}
+            gridRef={gridRef}
+          />
+        )}
       </div>
     </div>
   );

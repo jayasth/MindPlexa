@@ -7,11 +7,11 @@ import React, {
   useMemo
 } from 'react';
 import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
+import { AgGridReact } from 'ag-grid-react';
 import useNodeStore from '@/app/store/nodes/useNodeStore';
 import useCanvasStore from '@/app/store/canvas/useCanvasStore';
 import styles from '@/ui/nodes/tableNode/styles/TableNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
-import { Node } from 'reactflow';
 import {
   DeleteButton,
   ChangeColorButton,
@@ -41,21 +41,10 @@ import {
 } from '@/utils/canvas/attachmentService';
 import { useBackgroundColorChange } from '@/ui/nodes/common/useBackgroundColorChange';
 import TableNodeGrid from '@/ui/nodes/tableNode/TableNodeGrid';
-import DeleteTableModal from '@/ui/nodes/tableNode/components/DeleteTableModal';
-import SettingsModal from '@/ui/nodes/tableNode/components/SettingsModal';
-import debounce from 'lodash/debounce';
+import debounce from 'lodash.debounce';
 
 interface TableNodeEditProps extends NodeProps {
-  data: {
-    id: string;
-    title: string;
-    columns: any[];
-    rows: any[];
-    backgroundColor: string;
-    textColor: string;
-    tags: string[];
-    attachedFiles: Attachment[];
-  };
+  data: any;
   width: number;
   height: number;
   selected: boolean;
@@ -87,7 +76,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     position
   });
 
-  const { canvasId } = useCanvasStore() as { canvasId: string };
+  const { canvasId } = useCanvasStore();
   const [isSelected, setIsSelected] = useState(selected);
   const [title, setTitle] = useState(data.title || 'Untitled Table');
   const [content, setContent] = useState({
@@ -99,33 +88,26 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   );
   const [textColor, setTextColor] = useState(data.textColor || '#575757');
   const [tags, setTags] = useState<string[]>(data.tags || []);
-  const [attachedFiles, setAttachedFiles] = useState<Attachment[]>(
-    data.attachedFiles || []
-  );
+  const [attachedFiles, setAttachedFiles] = useState<Attachment[]>([]);
   const [isContainerSelected, setIsContainerSelected] = useState(false);
   const [nodeWidth, setNodeWidth] = useState(width);
   const [nodeHeight, setNodeHeight] = useState(height);
   const [isColorPickerVisible, setIsColorPickerVisible] = useState(false);
   const [isTagModalOpen, setIsTagModalOpen] = useState(false);
   const [isFileModalOpen, setIsFileModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [locale, setLocale] = useState('en-US'); // Default locale
   const [errorMessage, setErrorMessage] = useState('');
+
   const [cellContextMenuPosition, setCellContextMenuPosition] = useState<{
     x: number;
     y: number;
   } | null>(null);
   const [cellContextMenuParams, setCellContextMenuParams] = useState<any>(null);
 
-  const updateNode = useNodeStore(
-    (state) =>
-      state.updateNode as (
-        id: string,
-        data: Partial<Node>,
-        canvasId: string
-      ) => Promise<void>
-  );
+  const updateNode = useNodeStore((state) => state.updateNode);
   const tableRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<any>(null);
 
@@ -145,7 +127,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   const debouncedUpdateNode = useMemo(
     () =>
       debounce((nodeId, canvasId, updates) => {
-        updateNode(nodeId, updates, canvasId);
+        updateNode(nodeId, canvasId, updates);
       }, 500),
     [updateNode]
   );
@@ -188,15 +170,31 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     };
   }, []);
 
-  const handleDeleteTable = () => {
-    setContent({ columns: [], rows: [] });
-    setIsDeleteModalOpen(false);
+  const handleCellClick = useCallback(
+    (event) => {
+      if (gridRef.current) {
+        gridRef.current.api.deselectAll();
+      }
+    },
+    [gridRef]
+  );
+
+  const handleCellContextMenu = useCallback(
+    (event: React.MouseEvent, params: any) => {
+      event.preventDefault();
+      console.log('TableNodeEdit: handleCellContextMenu params:', params);
+      setCellContextMenuPosition({ x: event.clientX, y: event.clientY });
+      setCellContextMenuParams(params);
+    },
+    [setCellContextMenuPosition, setCellContextMenuParams]
+  );
+
+  const handleCellContextMenuClose = () => {
+    setCellContextMenuPosition(null);
+    setCellContextMenuParams(null);
   };
 
-  const handleLocaleChange = (newLocale: string) => {
-    setLocale(newLocale);
-    // Apply locale settings to existing columns and rows if necessary
-  };
+  /*Common node functions*/
 
   const onChangeTitle = useCallback(
     (newTitle: string) => {
@@ -293,17 +291,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     setIsDeleteModalOpen(false);
   };
 
-  const handleCellContextMenu = (event: any) => {
-    event.preventDefault();
-    setCellContextMenuPosition({ x: event.clientX, y: event.clientY });
-    setCellContextMenuParams(event);
-  };
-
-  const handleCellContextMenuClose = () => {
-    setCellContextMenuPosition(null);
-    setCellContextMenuParams(null);
-  };
-
   const memoizedTagFileContainer = useMemo(
     () => (
       <TagFileContainer
@@ -316,12 +303,8 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     ),
     [tags, attachedFiles, onRemoveTag, onRemoveFile, textColor]
   );
-
   return (
     <div>
-      {errorMessage && (
-        <div className={styles.errorMessage}>{errorMessage}</div>
-      )}
       <div
         className={`${styles.tableNode} ${isSelected ? styles.selected : ''}`}
         style={customStyles}
@@ -358,23 +341,16 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
         <TableNodeGrid
           content={content}
           setContent={setContent}
-          updateNode={(id: string, updates: Partial<Node>) => {
-            updateNode(id, updates, canvasId);
-          }}
+          updateNode={updateNode}
           locale={locale}
           gridRef={gridRef}
-          onCellClick={() => {}}
+          onCellClick={handleCellClick}
           handleCellContextMenu={handleCellContextMenu}
           handleCellContextMenuClose={handleCellContextMenuClose}
           cellContextMenuPosition={cellContextMenuPosition}
           cellContextMenuParams={cellContextMenuParams}
           errorMessage={errorMessage}
-          handleLocaleChange={handleLocaleChange}
-          isDeleteModalOpen={isDeleteModalOpen}
-          setIsDeleteModalOpen={setIsDeleteModalOpen}
-          isSettingsModalOpen={isSettingsModalOpen}
-          setIsSettingsModalOpen={setIsSettingsModalOpen}
-          handleDeleteTable={handleDeleteTable}
+          setErrorMessage={setErrorMessage}
         />
 
         {(tags.length > 0 || attachedFiles.length > 0) &&
@@ -422,17 +398,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           isOpen={isDeleteModalOpen}
           onClose={handleDeleteCancel}
           onConfirm={handleDeleteConfirm}
-        />
-        <DeleteTableModal
-          isOpen={isDeleteModalOpen}
-          onClose={() => setIsDeleteModalOpen(false)}
-          onConfirm={handleDeleteTable}
-        />
-        <SettingsModal
-          isOpen={isSettingsModalOpen}
-          onClose={() => setIsSettingsModalOpen(false)}
-          onSave={handleLocaleChange}
-          initialLocale={locale}
         />
       </div>
     </div>
