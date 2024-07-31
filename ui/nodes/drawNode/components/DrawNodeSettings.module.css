@@ -2,14 +2,13 @@
   padding: 10px;
   background-color: #ffffff;
   border-radius: 8px;
-  max-height: 60vh;
+  max-height: 50vh;
   overflow-y: auto;
-  width: 400px;
 }
 
 .header {
   display: grid;
-  grid-template-columns: 80px 60px 60px 70px;
+  grid-template-columns: 70px 50px 50px 60px; /* Adjusted column widths */
   gap: 5px;
   font-weight: bold;
   margin-bottom: 10px;
@@ -19,7 +18,7 @@
 
 .toolSetting {
   display: grid;
-  grid-template-columns: 80px 60px 60px 70px;
+  grid-template-columns: 70px 50px 50px 60px; /* Adjusted column widths */
   gap: 5px;
   align-items: center;
   margin-bottom: 10px;
