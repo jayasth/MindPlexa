@@ -101,6 +101,7 @@ export const updateNodeSpecificData = async (
     }
 
     const updateData = {
+      ...toSnakeCase(updates),
       current_tool: updates.currentTool,
       current_color: updates.currentColor,
       current_stroke_width: updates.currentStrokeWidth,
