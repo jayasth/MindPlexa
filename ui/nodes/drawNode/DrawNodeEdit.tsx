@@ -111,6 +111,46 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const artboardRef = useRef<ArtboardRef | null>(null);
   const { history, undo, redo, clear, canUndo, canRedo } = useHistory();
 
+  useEffect(() => {
+    const loadDrawNodeData = async () => {
+      const drawNodeData = await getNodeSpecificData(id, 'draw');
+      if (drawNodeData) {
+        setCurrentTool(drawNodeData.current_tool || tools[0].tool.name);
+        setCurrentColor(drawNodeData.current_color || tools[0].defaultColor);
+        setCurrentStrokeWidth(
+          drawNodeData.current_stroke_width || tools[0].defaultStrokeWidth
+        );
+        if (drawNodeData.settings && Array.isArray(drawNodeData.settings)) {
+          setToolSettings(drawNodeData.settings);
+        }
+      }
+    };
+    loadDrawNodeData();
+  }, [id, tools]);
+
+  const saveSettings = async (settingsToSave: any) => {
+    const updatedData = {
+      current_tool: currentTool,
+      current_color: currentColor,
+      current_stroke_width: currentStrokeWidth,
+      settings: settingsToSave
+    };
+    await updateNodeSpecificData(id, 'draw', updatedData);
+  };
+
+  const handleToolSettingChange = (
+    toolIndex: number,
+    key: string,
+    value: any
+  ) => {
+    setToolSettings((prevSettings) => {
+      const newSettings = [...prevSettings];
+      newSettings[toolIndex] = { ...newSettings[toolIndex], [key]: value };
+      saveSettings(newSettings);
+      return newSettings;
+    });
+  };
+
   const handleBackgroundColorChange = useBackgroundColorChange(
     data.id,
     setBackgroundColor,
@@ -143,76 +183,20 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     [data.id, updateNode, canvasId]
   );
 
-  useEffect(() => {
-    const loadDrawNodeData = async () => {
-      const drawNodeData = await getNodeSpecificData(id, 'draw');
-      if (drawNodeData) {
-        setCurrentTool(drawNodeData.current_tool || tools[0].tool.name);
-        setCurrentColor(drawNodeData.current_color || tools[0].defaultColor);
-        setCurrentStrokeWidth(
-          drawNodeData.current_stroke_width || tools[0].defaultStrokeWidth
-        );
-        setToolSettings(
-          drawNodeData.settings && Array.isArray(drawNodeData.settings)
-            ? drawNodeData.settings
-            : tools.map((tool) => ({
-                name: tool.tool.name,
-                color: tool.defaultColor,
-                strokeWidth: tool.defaultStrokeWidth,
-                opacity: 100
-              }))
-        );
-      } else {
-        const initialSettings = tools.map((tool) => ({
-          name: tool.tool.name,
-          color: tool.defaultColor,
-          strokeWidth: tool.defaultStrokeWidth,
-          opacity: 100
-        }));
-        setToolSettings(initialSettings);
-        await saveSettings(initialSettings); // Save initial settings to the database only once
-      }
-    };
-    loadDrawNodeData();
-  }, [id, tools]);
-
-  const saveSettings = async (settingsToSave: any) => {
-    const updatedData = {
-      current_tool: currentTool,
-      current_color: currentColor,
-      current_stroke_width: currentStrokeWidth,
-      settings: settingsToSave
-    };
-    await updateNodeSpecificData(id, 'draw', updatedData);
-  };
-
   const handleToolChange = (index: number) => {
     setCurrentTool(tools[index].tool.name);
     setCurrentToolIndex(index);
-    saveSettings(toolSettings); // Save updated settings
+    saveSettings(toolSettings);
   };
 
   const handleColorChange = (color: string) => {
     setCurrentColor(color);
-    saveSettings(toolSettings); // Save updated settings
+    saveSettings(toolSettings);
   };
 
   const handleStrokeWidthChange = (width: number) => {
     setCurrentStrokeWidth(width);
-    saveSettings(toolSettings); // Save updated settings
-  };
-
-  const handleToolSettingChange = (
-    toolIndex: number,
-    key: string,
-    value: any
-  ) => {
-    setToolSettings((prevSettings) => {
-      const newSettings = [...prevSettings];
-      newSettings[toolIndex] = { ...newSettings[toolIndex], [key]: value };
-      return newSettings;
-    });
-    saveSettings(toolSettings); // Save updated settings
+    saveSettings(toolSettings);
   };
 
   useEffect(() => {
