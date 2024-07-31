@@ -152,16 +152,20 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         setCurrentStrokeWidth(
           drawNodeData.current_stroke_width || tools[0].defaultStrokeWidth
         );
-        setToolSettings(
-          drawNodeData.settings && Array.isArray(drawNodeData.settings)
-            ? drawNodeData.settings
-            : tools.map((tool) => ({
-                name: tool.tool.name,
-                color: tool.defaultColor,
-                strokeWidth: tool.defaultStrokeWidth,
-                opacity: 100
-              }))
-        );
+
+        // Fetch and update toolSettings
+        if (drawNodeData.settings && Array.isArray(drawNodeData.settings)) {
+          setToolSettings(drawNodeData.settings);
+        } else {
+          const defaultSettings = tools.map((tool) => ({
+            name: tool.tool.name,
+            color: tool.defaultColor,
+            strokeWidth: tool.defaultStrokeWidth,
+            opacity: 100
+          }));
+          setToolSettings(defaultSettings);
+          await saveSettings(defaultSettings);
+        }
       } else {
         const initialSettings = tools.map((tool) => ({
           name: tool.tool.name,
@@ -170,7 +174,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
           opacity: 100
         }));
         setToolSettings(initialSettings);
-        await saveSettings(initialSettings); // Save initial settings to the database only once
+        await saveSettings(initialSettings);
       }
     };
     loadDrawNodeData();
