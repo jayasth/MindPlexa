@@ -65,8 +65,7 @@ export const getDrawNodeData = async (nodeId: string) => {
       if (fileError) throw fileError;
 
       const svgContent = await fileData.text();
-      const base64Content = btoa(svgContent);
-      drawingData = `data:image/svg+xml;base64,${base64Content}`;
+      drawingData = `data:image/svg+xml;base64,${btoa(svgContent)}`;
     }
 
     return {
@@ -101,14 +100,18 @@ export const updateNodeSpecificData = async (
       svgPath = await uploadSVGToBucket(nodeId, updates.drawingFileUrl);
     }
 
+    const updateData = {
+      ...toSnakeCase(updates),
+      drawing_file_url: svgPath,
+      current_color: updates.currentColor,
+      current_stroke_width: updates.currentStrokeWidth,
+      current_tool: updates.currentTool,
+      settings: JSON.stringify(updates.settings)
+    };
+
     const { data, error } = await supabase
       .from('draw_nodes')
-      .update({
-        current_tool: updates.currentTool,
-        current_color: updates.currentColor,
-        current_stroke_width: updates.currentStrokeWidth,
-        settings: updates.settings // This should already be a JSON string
-      })
+      .update(updateData)
       .eq('node_id', nodeId)
       .select()
       .single();
@@ -118,7 +121,7 @@ export const updateNodeSpecificData = async (
       return { error };
     }
 
-    return { data: toCamelCase(data) };
+    return { data };
   }
 
   const { data, error } = await supabase
