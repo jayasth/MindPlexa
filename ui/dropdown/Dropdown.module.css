@@ -41,3 +41,22 @@
 .gradient:focus {
   @apply ring-2 ring-lavender-500 ring-opacity-50;
 }
+
+/* New datepicker variant styles */
+.datepicker {
+  @apply py-0 px-1 text-xs bg-transparent text-myGray-800 border border-transparent rounded-sm transition duration-150 ease-in-out;
+  min-width: 50px;
+  max-width: 70px;
+}
+
+.datepicker:focus {
+  @apply outline-none border-light-primary;
+}
+
+.datepicker:hover {
+  @apply bg-light-background;
+}
+
+.label {
+  @apply inline-block;
+}

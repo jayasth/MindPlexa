@@ -1,12 +1,9 @@
 .dateEditorContainer {
   display: flex;
   align-items: center;
-  background-color: #fff;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  overflow: hidden;
   width: 100%;
   height: 100%;
+  position: relative;
 }
 
 .dateInput {
@@ -14,45 +11,40 @@
   border: none;
   padding: 2px 4px;
   font-size: 12px;
-  width: calc(100% - 24px);
   height: 100%;
 }
 
-.calendarIcon {
-  padding: 2px 4px;
+.calendarButton {
+  background: none;
+  border: none;
   cursor: pointer;
-  user-select: none;
   font-size: 12px;
+  padding: 0 4px;
 }
 
-.calendarIcon:hover {
-  background-color: #f0f0f0;
+.popupContainer {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  padding: 4px;
+  display: flex;
+  flex-direction: row;
+  gap: 2px;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* Remove :global() and use regular selectors */
-.react-datepicker {
-  font-size: 0.8rem;
+.yearSelect {
+  width: 60px;
 }
 
-.react-datepicker__header {
-  padding-top: 4px;
+.monthSelect {
+  width: 50px;
 }
 
-.react-datepicker__month {
-  margin: 0;
-}
-
-.react-datepicker__day-name,
-.react-datepicker__day {
-  width: 1.5rem;
-  line-height: 1.5rem;
-  margin: 0.1rem;
-}
-
-.react-datepicker__current-month {
-  font-size: 0.9rem;
-}
-
-.react-datepicker__navigation {
-  top: 4px;
+.daySelect {
+  width: 40px;
 }

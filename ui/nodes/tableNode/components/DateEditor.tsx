@@ -1,21 +1,40 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ICellEditorParams } from 'ag-grid-community';
-import DatePicker from 'react-datepicker';
-import { format, parse, isValid } from 'date-fns';
-import 'react-datepicker/dist/react-datepicker.css';
+import { format, parse, isValid, getDaysInMonth } from 'date-fns';
+import Dropdown from 'ui/dropdown/Dropdown';
 import styles from '../styles/DateEditor.module.css';
 
 export const DateEditor = (props: ICellEditorParams) => {
   const [date, setDate] = useState(() => {
-    return props.value ? parse(props.value, 'yyyy-MM-dd', new Date()) : null;
+    return props.value
+      ? parse(props.value, 'yyyy-MM-dd', new Date())
+      : new Date();
   });
   const [inputValue, setInputValue] = useState(props.value || '');
+  const [showPopup, setShowPopup] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const popupRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (inputRef.current) {
       inputRef.current.focus();
     }
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        popupRef.current &&
+        !popupRef.current.contains(event.target as Node)
+      ) {
+        setShowPopup(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, []);
 
   const updateCellValue = (value: string) => {
@@ -26,14 +45,11 @@ export const DateEditor = (props: ICellEditorParams) => {
     props.api.applyTransaction({ update: [updatedData] });
   };
 
-  const handleDateChange = (newDate: Date | null) => {
+  const handleDateChange = (newDate: Date) => {
     setDate(newDate);
-    if (newDate) {
-      const formattedDate = format(newDate, 'yyyy-MM-dd');
-      setInputValue(formattedDate);
-      updateCellValue(formattedDate);
-      props.api.stopEditing();
-    }
+    const formattedDate = format(newDate, 'yyyy-MM-dd');
+    setInputValue(formattedDate);
+    updateCellValue(formattedDate);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -55,6 +71,59 @@ export const DateEditor = (props: ICellEditorParams) => {
     }
   };
 
+  const years = Array.from(
+    { length: 10 },
+    (_, i) => new Date().getFullYear() + i
+  );
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec'
+  ];
+  const days = Array.from({ length: getDaysInMonth(date) }, (_, i) => i + 1);
+
+  const handleYearChange = (selectedYear: string) => {
+    handleDateChange(
+      new Date(
+        parseInt(selectedYear),
+        date.getMonth(),
+        Math.min(
+          date.getDate(),
+          getDaysInMonth(new Date(parseInt(selectedYear), date.getMonth()))
+        )
+      )
+    );
+  };
+
+  const handleMonthChange = (selectedMonth: string) => {
+    const monthIndex = months.indexOf(selectedMonth);
+    handleDateChange(
+      new Date(
+        date.getFullYear(),
+        monthIndex,
+        Math.min(
+          date.getDate(),
+          getDaysInMonth(new Date(date.getFullYear(), monthIndex))
+        )
+      )
+    );
+  };
+
+  const handleDayChange = (selectedDay: string) => {
+    handleDateChange(
+      new Date(date.getFullYear(), date.getMonth(), parseInt(selectedDay))
+    );
+  };
+
   return (
     <div className={styles.dateEditorContainer}>
       <input
@@ -66,44 +135,52 @@ export const DateEditor = (props: ICellEditorParams) => {
         className={styles.dateInput}
         placeholder="YYYY-MM-DD"
       />
-      <DatePicker
-        selected={date}
-        onChange={handleDateChange}
-        dateFormat="yyyy-MM-dd"
-        customInput={<div className={styles.calendarIcon}>📅</div>}
-        popperPlacement="bottom-start"
-        popperModifiers={[
-          {
-            name: 'offset',
-            options: {
-              offset: [0, 5]
-            },
-            fn: ({ x, y, placement }) => {
-              return {
-                x,
-                y,
-                placement
-              };
-            }
-          },
-          {
-            name: 'preventOverflow',
-            options: {
-              rootBoundary: 'viewport',
-              tether: false,
-              altAxis: true
-            },
-            fn: ({ x, y, placement }) => ({
-              x,
-              y,
-              placement,
-              data: {}
-            })
-          }
-        ]}
-        portalId="datepicker-portal"
-        calendarClassName={styles.smallCalendar}
-      />
+      <button
+        className={styles.calendarButton}
+        onClick={() => setShowPopup(!showPopup)}
+      >
+        📅
+      </button>
+      {showPopup && (
+        <div ref={popupRef} className={styles.popupContainer}>
+          <Dropdown
+            variant="datepicker"
+            value={date.getFullYear().toString()}
+            onChange={handleYearChange}
+            className={styles.yearSelect}
+          >
+            {years.map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+            ))}
+          </Dropdown>
+          <Dropdown
+            variant="datepicker"
+            value={months[date.getMonth()]}
+            onChange={handleMonthChange}
+            className={styles.monthSelect}
+          >
+            {months.map((month) => (
+              <option key={month} value={month}>
+                {month}
+              </option>
+            ))}
+          </Dropdown>
+          <Dropdown
+            variant="datepicker"
+            value={date.getDate().toString()}
+            onChange={handleDayChange}
+            className={styles.daySelect}
+          >
+            {days.map((day) => (
+              <option key={day} value={day}>
+                {day}
+              </option>
+            ))}
+          </Dropdown>
+        </div>
+      )}
     </div>
   );
 };
