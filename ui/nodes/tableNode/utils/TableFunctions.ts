@@ -2,7 +2,7 @@ import Papa from 'papaparse';
 import { CSSProperties } from 'react';
 import { toast } from '@/ui/Toasts/use-toast';
 import CustomHeader from '@/ui/nodes/tableNode/components/CustomHeader';
-import { DateEditor } from '@/ui/nodes/tableNode/utils/CustomCellEditors';
+import { DateEditor } from '../components/DateEditor';
 import { GridOptions, ColDef } from 'ag-grid-community';
 import CustomCellRenderer from '@/ui/nodes/tableNode/components/CustomCellRenderer';
 import CustomFloatingFilter from '@/ui/nodes/tableNode/components/CustomFloatingFilter';
@@ -271,12 +271,26 @@ export const getColumnDefs = (
     if (col.type === 'date') {
       return {
         ...baseColumnDef,
-        cellEditor: 'dateEditor',
+        cellEditor: DateEditor,
         cellEditorPopup: true,
         cellRenderer: (params) => {
           return params.value
-            ? format(parse(params.value, 'yyyy-MM-dd', new Date()), 'PP')
+            ? format(parse(params.value, 'yyyy-MM-dd', new Date()), 'PP', {
+                locale: locales[locale] || enUS
+              })
             : '';
+        },
+        filter: 'agDateColumnFilter',
+        filterParams: {
+          comparator: (filterLocalDateAtMidnight: Date, cellValue: string) => {
+            const cellDate = parse(cellValue, 'yyyy-MM-dd', new Date());
+            if (cellDate < filterLocalDateAtMidnight) {
+              return -1;
+            } else if (cellDate > filterLocalDateAtMidnight) {
+              return 1;
+            }
+            return 0;
+          }
         }
       };
     }
