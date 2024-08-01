@@ -6,6 +6,21 @@ import { DateEditor } from '@/ui/nodes/tableNode/utils/CustomCellEditors';
 import { GridOptions, ColDef } from 'ag-grid-community';
 import CustomCellRenderer from '@/ui/nodes/tableNode/components/CustomCellRenderer';
 import CustomFloatingFilter from '@/ui/nodes/tableNode/components/CustomFloatingFilter';
+import { format, isValid, parse, Locale } from 'date-fns';
+import { enUS, fr, enGB, de, es, it, ja, ko, ru, zhCN } from 'date-fns/locale';
+
+const locales: { [key: string]: Locale } = {
+  'en-US': enUS,
+  'en-GB': enGB,
+  'fr-FR': fr,
+  'de-DE': de,
+  'es-ES': es,
+  'it-IT': it,
+  'ja-JP': ja,
+  'ko-KR': ko,
+  'ru-RU': ru,
+  'zh-CN': zhCN
+};
 
 /* Cell Operations */
 
@@ -22,7 +37,11 @@ export const validateCellValue = (value: any, type: string): boolean => {
       const emailRegex = /^[^\s@]+@[^\s@]+.[^\s@]+$/;
       return emailRegex.test(value);
     case 'date':
-      return !isNaN(Date.parse(value));
+      if (typeof value === 'string') {
+        const parsedDate = parse(value, 'yyyy-MM-dd', new Date());
+        return isValid(parsedDate);
+      }
+      return false;
     case 'currency':
       return (
         !isNaN(parseFloat(value.replace(/[^0-9.-]+/g, ''))) &&
@@ -43,21 +62,24 @@ export const validateCellValue = (value: any, type: string): boolean => {
 export const formatCellValue = (
   value: any,
   type: string,
-  locale: string = 'en-US',
-  currencyCode: string = 'USD'
+  locale: string = 'en-US'
 ): any => {
   switch (type) {
     case 'currency':
       return value
         ? new Intl.NumberFormat(locale, {
             style: 'currency',
-            currency: currencyCode
+            currency: 'USD'
           }).format(parseFloat(value.replace(/[^0-9.-]+/g, '')))
         : '';
     case 'date':
-      return value
-        ? new Intl.DateTimeFormat(locale).format(new Date(value))
-        : '';
+      if (value) {
+        const parsedDate = parse(value, 'yyyy-MM-dd', new Date());
+        return isValid(parsedDate)
+          ? format(parsedDate, 'PP', { locale: locales[locale] || enUS })
+          : '';
+      }
+      return '';
     case 'percentage':
       return `${Number(value).toFixed(2)}%`;
     default:
@@ -117,7 +139,14 @@ export const onCellValueChanged = (event, setContent) => {
       variant: 'warning'
     });
   } else {
-    const formattedValue = formatCellValue(newValue, columnType, locale, 'USD');
+    let formattedValue = formatCellValue(newValue, columnType, locale);
+
+    if (columnType === 'date') {
+      formattedValue = format(
+        parse(newValue, 'yyyy-MM-dd', new Date()),
+        'yyyy-MM-dd'
+      );
+    }
 
     setContent((prevContent) => {
       const updatedRows = prevContent.rows.map((row, index) => {
@@ -151,7 +180,18 @@ export const gridOptions: GridOptions = {
     },
     date: {
       filter: 'agDateColumnFilter',
-      cellEditor: 'agDateCellEditor'
+      filterParams: {
+        comparator: (filterLocalDateAtMidnight: Date, cellValue: string) => {
+          const cellDate = parse(cellValue, 'yyyy-MM-dd', new Date());
+          if (cellDate < filterLocalDateAtMidnight) {
+            return -1;
+          } else if (cellDate > filterLocalDateAtMidnight) {
+            return 1;
+          }
+          return 0;
+        }
+      },
+      cellEditor: DateEditor
     },
     currency: {
       filter: 'agNumberColumnFilter',
@@ -168,6 +208,9 @@ export const gridOptions: GridOptions = {
     filter: true,
     sortable: true,
     resizable: true
+  },
+  components: {
+    dateEditor: DateEditor
   }
 };
 
@@ -175,11 +218,12 @@ export const getColumnDefs = (
   content,
   setContent,
   updateNode,
-  gridRef
+  gridRef,
+  locale = 'en-US'
 ): ColDef[] => {
   return content.columns.map((col) => {
-    const { locale, ...restCol } = col;
-    return {
+    const { locale: colLocale, ...restCol } = col;
+    const baseColumnDef = {
       ...restCol,
       type: col.type,
       headerName: col.headerName,
@@ -189,7 +233,7 @@ export const getColumnDefs = (
       floatingFilter: true,
       filterParams: getFilterParams(col.type),
       cellEditor: getCellEditor(col.type),
-      valueFormatter: getValueFormatter(col.type, locale),
+      valueFormatter: getValueFormatter(col.type, colLocale || locale),
       headerComponent: CustomHeader,
       headerComponentParams: {
         menuIcon: 'fa-bars',
@@ -223,6 +267,21 @@ export const getColumnDefs = (
           : { ...invalidCellStyle, ...(isFocused ? focusStyle : {}) };
       }
     };
+
+    if (col.type === 'date') {
+      return {
+        ...baseColumnDef,
+        cellEditor: 'dateEditor',
+        cellEditorPopup: true,
+        cellRenderer: (params) => {
+          return params.value
+            ? format(parse(params.value, 'yyyy-MM-dd', new Date()), 'PP')
+            : '';
+        }
+      };
+    }
+
+    return baseColumnDef;
   });
 };
 
@@ -338,10 +397,15 @@ function getValueFormatter(type: string, locale: string) {
             }).format(parseFloat(params.value.replace(/[^0-9.-]+/g, '')))
           : '';
     case 'date':
-      return (params) =>
-        params.value
-          ? new Intl.DateTimeFormat(locale).format(new Date(params.value))
-          : '';
+      return (params) => {
+        if (params.value) {
+          const parsedDate = parse(params.value, 'yyyy-MM-dd', new Date());
+          return isValid(parsedDate)
+            ? format(parsedDate, 'PP', { locale: locales[locale] || enUS })
+            : '';
+        }
+        return '';
+      };
     default:
       return null;
   }

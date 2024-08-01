@@ -6,6 +6,7 @@ import React, {
   useCallback,
   useMemo
 } from 'react';
+import moment from 'moment-timezone';
 import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
 import useNodeStore from '@/app/store/nodes/useNodeStore';
 import useCanvasStore from '@/app/store/canvas/useCanvasStore';
@@ -101,7 +102,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
-  const [locale, setLocale] = useState('en-US'); // Default locale
+  const [locale, setLocale] = useState(data.locale || 'en-US');
   const [errorMessage, setErrorMessage] = useState('');
 
   const updateNode = useNodeStore((state) => state.updateNode);
@@ -136,7 +137,8 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
       tags !== data.tags ||
       attachedFiles !== data.attachedFiles ||
       backgroundColor !== data.backgroundColor ||
-      textColor !== data.textColor
+      textColor !== data.textColor ||
+      locale !== data.locale
     ) {
       debouncedUpdateNode(data.id, canvasId, {
         title,
@@ -145,7 +147,8 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
         tags,
         attachedFiles,
         backgroundColor,
-        textColor
+        textColor,
+        locale
       });
     }
   }, [
@@ -155,6 +158,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     attachedFiles,
     backgroundColor,
     textColor,
+    locale,
     data.id,
     canvasId,
     debouncedUpdateNode
@@ -166,14 +170,25 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     };
   }, []);
 
+  useEffect(() => {
+    moment.locale(locale);
+  }, [locale]);
+
   const handleDeleteTable = () => {
     setContent({ columns: [], rows: [] });
     setIsDeleteModalOpen(false);
   };
 
-  const handleLocaleChange = (newLocale) => {
+  const handleLocaleChange = (newLocale: string) => {
     setLocale(newLocale);
-    // Apply locale settings to existing columns and rows if necessary
+    // Update the locale for existing date columns
+    const updatedColumns = content.columns.map((col) => {
+      if (col.type === 'date') {
+        return { ...col, locale: newLocale };
+      }
+      return col;
+    });
+    setContent({ ...content, columns: updatedColumns });
   };
 
   /*Common node functions*/
@@ -294,142 +309,134 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   );
 
   return (
-    <div>
+    <div className={styles.tableNode} style={customStyles}>
       {errorMessage && (
         <div className={styles.errorMessage}>{errorMessage}</div>
       )}
-      <div
-        className={`${styles.tableNode} ${isSelected ? styles.selected : ''}`}
-        style={customStyles}
-        onClick={handleContainerClick}
-        onBlur={handleContainerBlur}
-        ref={tableRef}
-      >
-        <NodeResizer
-          isVisible={isContainerSelected}
-          minWidth={200}
-          minHeight={200}
-          onResize={handleResize}
-          onResizeEnd={(event, { width, height }) => {
-            onNodeResizeStop(data.id, { width, height }, position);
-          }}
+      <NodeResizer
+        isVisible={isContainerSelected}
+        minWidth={200}
+        minHeight={200}
+        onResize={handleResize}
+        onResizeEnd={(event, { width, height }) => {
+          onNodeResizeStop(data.id, { width, height }, position);
+        }}
+      />
+      <div className={styles.header}>
+        <input
+          type="text"
+          value={title}
+          onChange={(e) => onChangeTitle(e.target.value)}
+          className={`${styles.titleInput} nodrag`}
+          style={{ color: textColor }}
+          aria-label="Table Title"
         />
-        <div className={styles.header}>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => onChangeTitle(e.target.value)}
-            className={`${styles.titleInput} nodrag`}
-            style={{ color: textColor }}
-            aria-label="Table Title"
-          />
-          <CloseButton
-            onClick={() =>
-              handleClose(data.id, () => {}, title, content, canvasId)
-            }
-            aria-label="Close Table"
-          />
-        </div>
-
-        <TableNodeGrid
-          content={content}
-          setContent={setContent}
-          updateNode={handleUpdateNode}
-          locale={locale}
-          nodeId={data.id}
-          canvasId={canvasId}
-          setIsModalOpen={setIsModalOpen}
-          setIsDeleteModalOpen={setIsDeleteModalOpen}
-          setIsSettingsModalOpen={setIsSettingsModalOpen}
-          handleDeleteTable={handleDeleteTable}
-        />
-
-        {(tags.length > 0 || attachedFiles.length > 0) &&
-          memoizedTagFileContainer}
-        <div className={styles.footer}>
-          <DeleteButton onClick={() => handleDeleteNode(data.id, canvasId)} />
-          <ChangeColorButton onClick={toggleColorPicker} />
-          <AddTagButton onClick={() => setIsTagModalOpen(true)} />
-          <AttachFileButton onClick={() => setIsFileModalOpen(true)} />
-          <DuplicateButton onClick={() => handleDuplicate(data.id, canvasId)} />
-          <ColorPickerModal
-            isOpen={isColorPickerVisible}
-            onClose={() => setIsColorPickerVisible(false)}
-            currentColor={backgroundColor}
-            onChangeColor={onChangeColor}
-            colorCombinations={colorCombinations}
-          />
-        </div>
-        <Handle
-          type="target"
-          position={Position.Top}
-          className={`${edgeStyles.reactFlowHandle} ${edgeStyles.reactFlowHandleTop}`}
-        />
-        <Handle
-          type="source"
-          position={Position.Bottom}
-          className={`${edgeStyles.reactFlowHandle} ${edgeStyles.reactFlowHandleBottom}`}
-        />
-        <TagModal
-          isOpen={isTagModalOpen}
-          onClose={() => setIsTagModalOpen(false)}
-          onAddTag={onAddTag}
-          onRemoveTag={onRemoveTag}
-          existingTags={tags}
-        />
-        <FileModal
-          isOpen={isFileModalOpen}
-          onClose={() => setIsFileModalOpen(false)}
-          onAttachFiles={onAttachFiles}
-          onRemoveFile={onRemoveFile}
-          existingFiles={attachedFiles}
-          nodeId={data.id}
-        />
-        <NodeDeleteConfirmationModal
-          isOpen={isDeleteModalOpen}
-          onClose={handleDeleteCancel}
-          onConfirm={handleDeleteConfirm}
-        />
-        {isModalOpen && (
-          <AddTableModal
-            onClose={() => setIsModalOpen(false)}
-            onAddTable={(columns, rows) => {
-              const newColumns = columns.map((col, index) => ({
-                headerName: col.name || `Column ${index + 1}`,
-                field: `col${index + 1}`,
-                editable: true,
-                type: col.type,
-                defaultValue: col.defaultValue,
-                locale
-              }));
-
-              const newRows = Array.from({ length: rows }, () =>
-                newColumns.reduce((acc, col) => {
-                  acc[col.field] = col.defaultValue || '';
-                  return acc;
-                }, {})
-              );
-
-              setContent({ columns: newColumns, rows: newRows });
-            }}
-            hasExistingData={
-              content.columns.length > 0 || content.rows.length > 0
-            }
-            locale={locale}
-          />
-        )}
-        <DeleteTableModal
-          isOpen={isDeleteModalOpen}
-          onClose={() => setIsDeleteModalOpen(false)}
-          onConfirm={handleDeleteTable}
-        />
-        <SettingsModal
-          isOpen={isSettingsModalOpen}
-          onClose={() => setIsSettingsModalOpen(false)}
-          onSave={handleLocaleChange}
-          initialLocale={locale}
+        <CloseButton
+          onClick={() =>
+            handleClose(data.id, () => {}, title, content, canvasId)
+          }
+          aria-label="Close Table"
         />
       </div>
+
+      <TableNodeGrid
+        content={content}
+        setContent={setContent}
+        updateNode={handleUpdateNode}
+        locale={locale}
+        nodeId={data.id}
+        canvasId={canvasId}
+        setIsModalOpen={setIsModalOpen}
+        setIsDeleteModalOpen={setIsDeleteModalOpen}
+        setIsSettingsModalOpen={setIsSettingsModalOpen}
+        handleDeleteTable={handleDeleteTable}
+      />
+
+      {(tags.length > 0 || attachedFiles.length > 0) &&
+        memoizedTagFileContainer}
+      <div className={styles.footer}>
+        <DeleteButton onClick={() => handleDeleteNode(data.id, canvasId)} />
+        <ChangeColorButton onClick={toggleColorPicker} />
+        <AddTagButton onClick={() => setIsTagModalOpen(true)} />
+        <AttachFileButton onClick={() => setIsFileModalOpen(true)} />
+        <DuplicateButton onClick={() => handleDuplicate(data.id, canvasId)} />
+        <ColorPickerModal
+          isOpen={isColorPickerVisible}
+          onClose={() => setIsColorPickerVisible(false)}
+          currentColor={backgroundColor}
+          onChangeColor={onChangeColor}
+          colorCombinations={colorCombinations}
+        />
+      </div>
+      <Handle
+        type="target"
+        position={Position.Top}
+        className={`${edgeStyles.reactFlowHandle} ${edgeStyles.reactFlowHandleTop}`}
+      />
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        className={`${edgeStyles.reactFlowHandle} ${edgeStyles.reactFlowHandleBottom}`}
+      />
+      <TagModal
+        isOpen={isTagModalOpen}
+        onClose={() => setIsTagModalOpen(false)}
+        onAddTag={onAddTag}
+        onRemoveTag={onRemoveTag}
+        existingTags={tags}
+      />
+      <FileModal
+        isOpen={isFileModalOpen}
+        onClose={() => setIsFileModalOpen(false)}
+        onAttachFiles={onAttachFiles}
+        onRemoveFile={onRemoveFile}
+        existingFiles={attachedFiles}
+        nodeId={data.id}
+      />
+      <NodeDeleteConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+      />
+      {isModalOpen && (
+        <AddTableModal
+          onClose={() => setIsModalOpen(false)}
+          onAddTable={(columns, rows) => {
+            const newColumns = columns.map((col, index) => ({
+              headerName: col.name || `Column ${index + 1}`,
+              field: `col${index + 1}`,
+              editable: true,
+              type: col.type,
+              defaultValue: col.defaultValue,
+              locale
+            }));
+
+            const newRows = Array.from({ length: rows }, () =>
+              newColumns.reduce((acc, col) => {
+                acc[col.field] = col.defaultValue || '';
+                return acc;
+              }, {})
+            );
+
+            setContent({ columns: newColumns, rows: newRows });
+          }}
+          hasExistingData={
+            content.columns.length > 0 || content.rows.length > 0
+          }
+          locale={locale}
+        />
+      )}
+      <DeleteTableModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDeleteTable}
+      />
+      <SettingsModal
+        isOpen={isSettingsModalOpen}
+        onClose={() => setIsSettingsModalOpen(false)}
+        onSave={handleLocaleChange}
+        initialLocale={locale}
+      />
     </div>
   );
 };
