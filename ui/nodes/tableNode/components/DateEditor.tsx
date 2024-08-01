@@ -23,10 +23,8 @@ export const DateEditor = (props: ICellEditorParams) => {
       parse(value, 'yyyy-MM-dd', new Date()),
       'yyyy-MM-dd'
     );
+    props.node.setDataValue(props.column.getColId(), formattedDate);
     props.api.stopEditing();
-    props.api.applyTransaction({
-      update: [{ ...props.node.data, [props.column.getColId()]: formattedDate }]
-    });
   };
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -35,6 +33,7 @@ export const DateEditor = (props: ICellEditorParams) => {
     const parsedDate = parse(value, 'yyyy-MM-dd', new Date());
     if (isValid(parsedDate)) {
       setDate(parsedDate);
+      updateCellValue(value);
     }
   };
 
@@ -51,6 +50,9 @@ export const DateEditor = (props: ICellEditorParams) => {
     const parsedDate = parse(inputValue, 'yyyy-MM-dd', new Date());
     if (isValid(parsedDate)) {
       updateCellValue(format(parsedDate, 'yyyy-MM-dd'));
+    } else {
+      // If the date is invalid, revert to the original value
+      setInputValue(props.value || '');
     }
   };
 
