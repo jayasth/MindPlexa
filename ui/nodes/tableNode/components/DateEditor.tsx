@@ -72,6 +72,37 @@ export const DateEditor = (props: ICellEditorParams) => {
         dateFormat="yyyy-MM-dd"
         customInput={<div className={styles.calendarIcon}>📅</div>}
         popperPlacement="bottom-start"
+        popperModifiers={[
+          {
+            name: 'offset',
+            options: {
+              offset: [0, 5]
+            },
+            fn: ({ x, y, placement }) => {
+              return {
+                x,
+                y,
+                placement
+              };
+            }
+          },
+          {
+            name: 'preventOverflow',
+            options: {
+              rootBoundary: 'viewport',
+              tether: false,
+              altAxis: true
+            },
+            fn: ({ x, y, placement }) => ({
+              x,
+              y,
+              placement,
+              data: {}
+            })
+          }
+        ]}
+        portalId="datepicker-portal"
+        calendarClassName={styles.smallCalendar}
       />
     </div>
   );
