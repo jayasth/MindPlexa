@@ -288,7 +288,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
 
   const handleUpdateNode = useCallback(
     (id: string, canvasId: string, updates: any) => {
-      updateNode(id, canvasId, updates);
+      updateNode(id, updates, canvasId);
     },
     [updateNode]
   );
