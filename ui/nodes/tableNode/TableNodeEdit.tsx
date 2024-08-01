@@ -7,7 +7,6 @@ import React, {
   useMemo
 } from 'react';
 import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
-import { AgGridReact } from 'ag-grid-react';
 import useNodeStore from '@/app/store/nodes/useNodeStore';
 import useCanvasStore from '@/app/store/canvas/useCanvasStore';
 import styles from '@/ui/nodes/tableNode/styles/TableNodeEdit.module.css';
@@ -23,6 +22,9 @@ import {
   FileModal,
   ColorPickerModal
 } from '@/ui/nodes/common/CommonNodeComponents';
+import AddTableModal from '@/ui/nodes/tableNode/components/AddTableModal';
+import SettingsModal from '@/ui/nodes/tableNode/components/SettingsModal';
+import DeleteTableModal from '@/ui/nodes/tableNode/components/DeleteTableModal';
 import NodeDeleteConfirmationModal from '@/ui/nodes/common/NodeDeleteConfirmationModal';
 import TagFileContainer from '@/ui/nodes/common/TagFileContainer';
 import {
@@ -40,41 +42,7 @@ import {
   removeAllPreviews
 } from '@/utils/canvas/attachmentService';
 import { useBackgroundColorChange } from '@/ui/nodes/common/useBackgroundColorChange';
-
-import {
-  AddTableButton,
-  AddColumnButton,
-  AddRowButton,
-  ExportButton,
-  ImportButton,
-  DeleteTableButton,
-  SettingsButton
-} from '@/ui/nodes/tableNode/components/TableNodeToolbar';
-import AddTableModal from '@/ui/nodes/tableNode/components/AddTableModal';
-import DeleteTableModal from '@/ui/nodes/tableNode/components/DeleteTableModal';
-import SettingsModal from '@/ui/nodes/tableNode/components/SettingsModal';
-import 'ag-grid-community/styles/ag-grid.css';
-import 'ag-grid-community/styles/ag-theme-alpine.css';
-
-import {
-  addColumn,
-  addRow,
-  importTableData,
-  exportTableData,
-  onCellValueChanged,
-  validateCellValue,
-  getColumnDefs,
-  gridOptions as existingOptions
-} from '@/ui/nodes/tableNode/utils/TableFunctions';
-
-import CustomHeader from '@/ui/nodes/tableNode/components/CustomHeader';
-import HeaderContextMenu from '@/ui/nodes/tableNode/components/HeaderContextMenu';
-import CellContextMenu from '@/ui/nodes/tableNode/components/CellContextMenu';
-
-import {
-  useKeyPressHandler,
-  onCellKeyDown
-} from '@/ui/nodes/tableNode/utils/KeyboardMouseHandlers';
+import TableNodeGrid from '@/ui/nodes/tableNode/TableNodeGrid';
 
 import debounce from 'lodash/debounce';
 
@@ -136,15 +104,8 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   const [locale, setLocale] = useState('en-US'); // Default locale
   const [errorMessage, setErrorMessage] = useState('');
 
-  const [cellContextMenuPosition, setCellContextMenuPosition] = useState<{
-    x: number;
-    y: number;
-  } | null>(null);
-  const [cellContextMenuParams, setCellContextMenuParams] = useState<any>(null);
-
   const updateNode = useNodeStore((state) => state.updateNode);
   const tableRef = useRef<HTMLDivElement>(null);
-  const gridRef = useRef<any>(null);
 
   const handleBackgroundColorChange = useBackgroundColorChange(
     data.id,
@@ -205,29 +166,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     };
   }, []);
 
-  const columnDefs = getColumnDefs(content, setContent, updateNode, gridRef);
-
-  useKeyPressHandler(content, setContent, updateNode, gridRef);
-  const handleCellClick = useCallback(
-    (event) => {
-      if (gridRef.current) {
-        gridRef.current.api.deselectAll();
-      }
-    },
-    [gridRef]
-  );
-
-  const gridOptions = {
-    ...existingOptions,
-    onCellClicked: handleCellClick
-  };
-
-  const updateColumnState = () => {
-    if (gridRef.current) {
-      gridRef.current.api.refreshHeader();
-    }
-  };
-
   const handleDeleteTable = () => {
     setContent({ columns: [], rows: [] });
     setIsDeleteModalOpen(false);
@@ -236,21 +174,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   const handleLocaleChange = (newLocale) => {
     setLocale(newLocale);
     // Apply locale settings to existing columns and rows if necessary
-  };
-
-  const handleCellContextMenu = useCallback(
-    (event: React.MouseEvent, params: any) => {
-      event.preventDefault();
-      console.log('TableNodeEdit: handleCellContextMenu params:', params);
-      setCellContextMenuPosition({ x: event.clientX, y: event.clientY });
-      setCellContextMenuParams(params);
-    },
-    [setCellContextMenuPosition, setCellContextMenuParams]
-  );
-
-  const handleCellContextMenuClose = () => {
-    setCellContextMenuPosition(null);
-    setCellContextMenuParams(null);
   };
 
   /*Common node functions*/
@@ -362,6 +285,14 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     ),
     [tags, attachedFiles, onRemoveTag, onRemoveFile, textColor]
   );
+
+  const handleUpdateNode = useCallback(
+    (id: string, canvasId: string, updates: any) => {
+      updateNode(id, canvasId, updates);
+    },
+    [updateNode]
+  );
+
   return (
     <div>
       {errorMessage && (
@@ -400,85 +331,19 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           />
         </div>
 
-        <div
-          className={`${styles.tableContent} nowheel nodrag`}
-          onContextMenu={(event) => handleCellContextMenu(event, event)}
-        >
-          <div className={styles.toolbar}>
-            <AddTableButton
-              onClick={() => setIsModalOpen(true)}
-              aria-label="Add Table"
-            />
-            <AddColumnButton
-              onClick={(columnType) => {
-                addColumn(content, setContent, updateNode, columnType, locale);
-                updateColumnState();
-              }}
-              aria-label="Add Column"
-              locale={locale} // Pass locale to AddColumnButton
-            />
-            <AddRowButton
-              onClick={() => addRow(content, setContent, updateNode)}
-              aria-label="Add Row"
-            />
-            <ImportButton
-              onChange={(e) => importTableData(e, setContent)}
-              content={content}
-              setContent={setContent}
-              aria-label="Import Table"
-            />
-            <ExportButton
-              onClick={() => exportTableData(content)}
-              aria-label="Export Table"
-            />
+        <TableNodeGrid
+          content={content}
+          setContent={setContent}
+          updateNode={handleUpdateNode}
+          locale={locale}
+          nodeId={data.id}
+          canvasId={canvasId}
+          setIsModalOpen={setIsModalOpen}
+          setIsDeleteModalOpen={setIsDeleteModalOpen}
+          setIsSettingsModalOpen={setIsSettingsModalOpen}
+          handleDeleteTable={handleDeleteTable}
+        />
 
-            <DeleteTableButton
-              onClick={() => {
-                if (content.columns.length > 0 || content.rows.length > 0) {
-                  setIsDeleteModalOpen(true);
-                } else {
-                  handleDeleteTable();
-                }
-              }}
-              aria-label="Delete Table"
-            />
-            <SettingsButton onClick={() => setIsSettingsModalOpen(true)} />
-          </div>
-
-          <div
-            className="ag-theme-alpine"
-            style={{ height: '100%', width: '100%' }}
-            role="grid"
-            aria-label="Data Table"
-          >
-            <AgGridReact
-              gridOptions={gridOptions}
-              columnDefs={columnDefs as any}
-              rowData={content.rows}
-              domLayout="autoHeight"
-              rowHeight={30}
-              headerHeight={30}
-              floatingFiltersHeight={30}
-              defaultColDef={{
-                resizable: true,
-                editable: true,
-                headerComponent: CustomHeader,
-                headerComponentParams: {
-                  menuIcon: 'fa-bars'
-                }
-              }}
-              onGridReady={(params) => {
-                gridRef.current = params;
-                params.api.sizeColumnsToFit();
-              }}
-              onCellValueChanged={(event) => {
-                onCellValueChanged(event, setContent);
-              }}
-              onCellKeyDown={onCellKeyDown}
-              ref={gridRef}
-            />
-          </div>
-        </div>
         {(tags.length > 0 || attachedFiles.length > 0) &&
           memoizedTagFileContainer}
         <div className={styles.footer}>
@@ -535,7 +400,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
                 editable: true,
                 type: col.type,
                 defaultValue: col.defaultValue,
-                locale // Pass locale to column definition
+                locale
               }));
 
               const newRows = Array.from({ length: rows }, () =>
@@ -546,12 +411,11 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
               );
 
               setContent({ columns: newColumns, rows: newRows });
-              updateColumnState();
             }}
             hasExistingData={
               content.columns.length > 0 || content.rows.length > 0
             }
-            locale={locale} // Pass locale to AddTableModal
+            locale={locale}
           />
         )}
         <DeleteTableModal
@@ -565,34 +429,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           onSave={handleLocaleChange}
           initialLocale={locale}
         />
-        {gridRef.current &&
-          content.columns.map((col) => (
-            <HeaderContextMenu
-              key={col.field}
-              id={`header-context-menu-${col.field}`}
-              params={{
-                column: gridRef.current.api
-                  ?.getColumnState()
-                  ?.find((c) => c.colId === col.field),
-                api: gridRef.current.api
-              }}
-              content={content}
-              setContent={setContent}
-              updateNode={updateNode}
-              gridRef={gridRef}
-            />
-          ))}
-        {cellContextMenuPosition && cellContextMenuParams && (
-          <CellContextMenu
-            id="cell-context-menu"
-            position={cellContextMenuPosition}
-            params={cellContextMenuParams}
-            onClose={handleCellContextMenuClose}
-            setContent={setContent}
-            content={content}
-            gridRef={gridRef}
-          />
-        )}
       </div>
     </div>
   );
