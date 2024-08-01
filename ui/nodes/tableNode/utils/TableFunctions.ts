@@ -123,7 +123,6 @@ export const onCellValueChanged = (event, setContent) => {
   }
 
   if (!validateCellValue(newValue, columnType)) {
-    // Do not revert the value, let it display as is
     event.node.data.invalid = true;
     event.api.refreshCells({
       rowNodes: [event.node],
@@ -142,10 +141,18 @@ export const onCellValueChanged = (event, setContent) => {
     let formattedValue = formatCellValue(newValue, columnType, locale);
 
     if (columnType === 'date') {
-      formattedValue = format(
-        parse(newValue, 'yyyy-MM-dd', new Date()),
-        'yyyy-MM-dd'
-      );
+      const parsedDate = parse(newValue, 'yyyy-MM-dd', new Date());
+      if (isValid(parsedDate)) {
+        formattedValue = format(parsedDate, 'yyyy-MM-dd');
+      } else {
+        event.node.data.invalid = true;
+        toast({
+          title: 'Invalid Date',
+          description: `The date "${newValue}" is not valid.`,
+          variant: 'warning'
+        });
+        return;
+      }
     }
 
     setContent((prevContent) => {
@@ -166,6 +173,7 @@ export const onCellValueChanged = (event, setContent) => {
     });
   }
 };
+
 /* Column Operations */
 
 export const gridOptions: GridOptions = {
