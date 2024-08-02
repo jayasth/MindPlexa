@@ -142,7 +142,7 @@ export const onNodesChange = async (set, get, changes, canvasId) => {
                     columns: JSON.stringify(updatedNode.data.columns),
                     rows: JSON.stringify(updatedNode.data.rows),
                     default_column_type: updatedNode.data.defaultColumnType,
-                    default_locale: updatedNode.data.defaultLocale
+                    settings: JSON.stringify(updatedNode.data.settings)
                   };
                   break;
                 case 'draw':

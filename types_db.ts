@@ -685,28 +685,31 @@ export type Database = {
       }
       table_nodes: {
         Row: {
-          columns: Json | null
+          columns: Json
+          date_format: string | null
           default_column_type: string | null
-          default_locale: string | null
           id: string
           node_id: string | null
-          rows: Json | null
+          rows: Json
+          settings: Json | null
         }
         Insert: {
-          columns?: Json | null
+          columns?: Json
+          date_format?: string | null
           default_column_type?: string | null
-          default_locale?: string | null
           id?: string
           node_id?: string | null
-          rows?: Json | null
+          rows?: Json
+          settings?: Json | null
         }
         Update: {
-          columns?: Json | null
+          columns?: Json
+          date_format?: string | null
           default_column_type?: string | null
-          default_locale?: string | null
           id?: string
           node_id?: string | null
-          rows?: Json | null
+          rows?: Json
+          settings?: Json | null
         }
         Relationships: [
           {

@@ -263,7 +263,9 @@ export const processNodeSpecificData = (nodeType: NodeType, data: any) => {
       };
     case 'table':
       return {
-        // Add table-specific data processing here
+        columns: data.columns || [],
+        rows: data.rows || [],
+        settings: data.settings || {}
       };
     default:
       return {};

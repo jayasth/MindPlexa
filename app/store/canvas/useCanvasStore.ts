@@ -64,6 +64,18 @@ const processNode = async (node: any) => {
     }
   }
 
+  // Parse columns and rows JSON strings if they exist
+  let columns = [],
+    rows = [];
+  if (node.type === 'table' && node.data) {
+    try {
+      columns = node.data.columns ? JSON.parse(node.data.columns) : [];
+      rows = node.data.rows ? JSON.parse(node.data.rows) : [];
+    } catch (error) {
+      console.error('Error parsing table data JSON:', error);
+    }
+  }
+
   return {
     id: node.id,
     type: node.type,
@@ -98,7 +110,10 @@ const processNode = async (node: any) => {
       currentTool: node.data?.currentTool || '',
       settings: node.data?.settings || {},
       currentColor: node.data?.currentColor || '',
-      currentStrokeWidth: node.data?.currentStrokeWidth || 0
+      currentStrokeWidth: node.data?.currentStrokeWidth || 0,
+      columns: columns,
+      rows: rows,
+      defaultColumnType: node.data?.defaultColumnType || 'text'
     },
     width: node.isEditing
       ? (isDesktop ? node.editWidth : node.mobileEditWidth) || node.viewWidth
