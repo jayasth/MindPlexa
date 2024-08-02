@@ -3,15 +3,14 @@ import { ICellEditorParams } from 'ag-grid-community';
 import { format, parse, isValid } from 'date-fns';
 import styles from '../styles/DateEditor.module.css';
 
-export const DateEditor = (
-  props: ICellEditorParams & { dateFormat: string }
-) => {
+export const DateEditor = (props: ICellEditorParams) => {
   const [date, setDate] = useState(() => {
     return props.value
-      ? parse(props.value, props.dateFormat, new Date())
+      ? parse(props.value, 'yyyy-MM-dd', new Date())
       : new Date();
   });
   const [inputValue, setInputValue] = useState(props.value || '');
+  const [dateFormat, setDateFormat] = useState('yyyy-MM-dd');
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -22,7 +21,7 @@ export const DateEditor = (
 
   const updateCellValue = (value: string) => {
     const formattedDate = format(
-      parse(value, props.dateFormat, new Date()),
+      parse(value, dateFormat, new Date()),
       'yyyy-MM-dd'
     );
     props.node.setDataValue(props.column.getColId(), formattedDate);
@@ -32,7 +31,7 @@ export const DateEditor = (
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setInputValue(value);
-    const parsedDate = parse(value, props.dateFormat, new Date());
+    const parsedDate = parse(value, dateFormat, new Date());
     if (isValid(parsedDate)) {
       setDate(parsedDate);
     }
@@ -40,7 +39,7 @@ export const DateEditor = (
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
-      const parsedDate = parse(inputValue, props.dateFormat, new Date());
+      const parsedDate = parse(inputValue, dateFormat, new Date());
       if (isValid(parsedDate)) {
         updateCellValue(format(parsedDate, 'yyyy-MM-dd'));
       }
@@ -48,7 +47,7 @@ export const DateEditor = (
   };
 
   const handleBlur = () => {
-    const parsedDate = parse(inputValue, props.dateFormat, new Date());
+    const parsedDate = parse(inputValue, dateFormat, new Date());
     if (isValid(parsedDate)) {
       updateCellValue(format(parsedDate, 'yyyy-MM-dd'));
     } else {
@@ -61,7 +60,7 @@ export const DateEditor = (
     <div className={styles.dateEditorContainer}>
       <input
         ref={inputRef}
-        type="text"
+        type="date"
         value={inputValue}
         onChange={handleDateChange}
         onKeyDown={handleKeyDown}
