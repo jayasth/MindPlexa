@@ -43,7 +43,6 @@ interface TableNodeGridProps {
     canvasId: string,
     updates: Partial<Node>
   ) => void;
-  locale: string;
   nodeId: string;
   canvasId: string;
   setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -56,7 +55,6 @@ const TableNodeGrid: React.FC<TableNodeGridProps> = ({
   content,
   setContent,
   updateNode,
-  locale,
   nodeId,
   canvasId,
   setIsModalOpen,
@@ -124,11 +122,10 @@ const TableNodeGrid: React.FC<TableNodeGridProps> = ({
           />
           <AddColumnButton
             onClick={(columnType) => {
-              addColumn(content, setContent, updateNode, columnType, locale);
+              addColumn(content, setContent, updateNode, columnType);
               updateColumnState();
             }}
             aria-label="Add Column"
-            locale={locale}
           />
           <AddRowButton
             onClick={() => addRow(content, setContent, updateNode)}
@@ -225,7 +222,6 @@ const TableNodeGrid: React.FC<TableNodeGridProps> = ({
       content,
       setContent,
       updateNode,
-      locale,
       handleCellContextMenu,
       cellContextMenuPosition,
       cellContextMenuParams

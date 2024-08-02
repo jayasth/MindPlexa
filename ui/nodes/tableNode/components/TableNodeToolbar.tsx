@@ -22,14 +22,14 @@ export const AddTableButton = ({ onClick }) => (
   </button>
 );
 
-export const AddColumnButton = ({ onClick, locale }) => {
+export const AddColumnButton = ({ onClick }) => {
   const columnType = 'text';
 
   return (
     <div className={styles.addColumnContainer}>
       <button
         className={styles.actionButton}
-        onClick={() => onClick(columnType, locale)}
+        onClick={() => onClick(columnType)}
         title="Add Column"
       >
         <MdOutlineViewColumn size={iconSize} />

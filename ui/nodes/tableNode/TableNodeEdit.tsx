@@ -101,8 +101,8 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
-  const [locale, setLocale] = useState('en-US'); // Default locale
   const [errorMessage, setErrorMessage] = useState('');
+  const [dateFormat, setDateFormat] = useState('yyyy-MM-dd');
 
   const updateNode = useNodeStore((state) => state.updateNode);
   const tableRef = useRef<HTMLDivElement>(null);
@@ -136,7 +136,8 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
       tags !== data.tags ||
       attachedFiles !== data.attachedFiles ||
       backgroundColor !== data.backgroundColor ||
-      textColor !== data.textColor
+      textColor !== data.textColor ||
+      dateFormat !== data.dateFormat
     ) {
       debouncedUpdateNode(data.id, canvasId, {
         title,
@@ -145,7 +146,8 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
         tags,
         attachedFiles,
         backgroundColor,
-        textColor
+        textColor,
+        dateFormat
       });
     }
   }, [
@@ -155,6 +157,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     attachedFiles,
     backgroundColor,
     textColor,
+    dateFormat,
     data.id,
     canvasId,
     debouncedUpdateNode
@@ -169,11 +172,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   const handleDeleteTable = () => {
     setContent({ columns: [], rows: [] });
     setIsDeleteModalOpen(false);
-  };
-
-  const handleLocaleChange = (newLocale) => {
-    setLocale(newLocale);
-    // Apply locale settings to existing columns and rows if necessary
   };
 
   /*Common node functions*/
@@ -293,6 +291,10 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     [updateNode]
   );
 
+  const handleDateFormatChange = useCallback((newDateFormat: string) => {
+    setDateFormat(newDateFormat);
+  }, []);
+
   return (
     <div>
       {errorMessage && (
@@ -335,7 +337,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           content={content}
           setContent={setContent}
           updateNode={handleUpdateNode}
-          locale={locale}
           nodeId={data.id}
           canvasId={canvasId}
           setIsModalOpen={setIsModalOpen}
@@ -399,8 +400,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
                 field: `col${index + 1}`,
                 editable: true,
                 type: col.type,
-                defaultValue: col.defaultValue,
-                locale
+                defaultValue: col.defaultValue
               }));
 
               const newRows = Array.from({ length: rows }, () =>
@@ -415,7 +415,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
             hasExistingData={
               content.columns.length > 0 || content.rows.length > 0
             }
-            locale={locale}
           />
         )}
         <DeleteTableModal
@@ -426,8 +425,8 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
         <SettingsModal
           isOpen={isSettingsModalOpen}
           onClose={() => setIsSettingsModalOpen(false)}
-          onSave={handleLocaleChange}
-          initialLocale={locale}
+          onSave={(settings) => handleDateFormatChange(settings.dateFormat)}
+          initialDateFormat={dateFormat}
         />
       </div>
     </div>

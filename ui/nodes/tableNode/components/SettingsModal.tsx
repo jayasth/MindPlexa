@@ -5,18 +5,17 @@ import Button from '@/ui/Button/Button';
 import Dropdown from '@/ui/dropdown/Dropdown';
 import styles from '@/ui/Modal/Modal.module.css';
 
-const locales = [
-  { value: 'en-US', label: 'English (United States)' },
-  { value: 'en-GB', label: 'English (United Kingdom)' },
-  { value: 'fr-FR', label: 'French (France)' }
-  // Add more locales as needed
+const dateFormats = [
+  { value: 'yyyy-MM-dd', label: 'YYYY-MM-DD' },
+  { value: 'dd/MM/yyyy', label: 'DD/MM/YYYY' },
+  { value: 'MM/dd/yyyy', label: 'MM/DD/YYYY' }
 ];
 
-const SettingsModal = ({ isOpen, onClose, onSave, initialLocale }) => {
-  const [locale, setLocale] = useState(initialLocale);
+const SettingsModal = ({ isOpen, onClose, onSave, initialDateFormat }) => {
+  const [dateFormat, setDateFormat] = useState(initialDateFormat);
 
   const handleSave = () => {
-    onSave(locale);
+    onSave({ dateFormat });
     onClose();
   };
 
@@ -25,15 +24,15 @@ const SettingsModal = ({ isOpen, onClose, onSave, initialLocale }) => {
       <div className={styles.modalContent}>
         <h2>Settings</h2>
         <div className={styles.formGroup}>
-          <label>Locale:</label>
+          <label>Date Format:</label>
           <Dropdown
-            value={locale}
-            onChange={(value) => setLocale(value)}
+            value={dateFormat}
+            onChange={(value) => setDateFormat(value)}
             variant="slim"
           >
-            {locales.map((loc) => (
-              <option key={loc.value} value={loc.value}>
-                {loc.label}
+            {dateFormats.map((format) => (
+              <option key={format.value} value={format.value}>
+                {format.label}
               </option>
             ))}
           </Dropdown>
