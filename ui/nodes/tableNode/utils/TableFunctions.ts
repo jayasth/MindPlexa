@@ -62,7 +62,8 @@ export const validateCellValue = (value: any, type: string): boolean => {
 export const formatCellValue = (
   value: any,
   type: string,
-  locale: string = 'en-US'
+  locale: string = 'en-US',
+  dateFormat: string = 'yyyy-MM-dd'
 ): any => {
   switch (type) {
     case 'currency':
@@ -76,7 +77,7 @@ export const formatCellValue = (
       if (value) {
         const parsedDate = parse(value, 'yyyy-MM-dd', new Date());
         return isValid(parsedDate)
-          ? format(parsedDate, 'PP', { locale: locales[locale] || enUS })
+          ? format(parsedDate, dateFormat, { locale: locales[locale] || enUS })
           : '';
       }
       return '';
@@ -227,7 +228,8 @@ export const getColumnDefs = (
   setContent,
   updateNode,
   gridRef,
-  locale = 'en-US'
+  locale = 'en-US',
+  dateFormat = 'yyyy-MM-dd'
 ): ColDef[] => {
   return content.columns.map((col) => {
     const { locale: colLocale, ...restCol } = col;
@@ -280,12 +282,17 @@ export const getColumnDefs = (
       return {
         ...baseColumnDef,
         cellEditor: DateEditor,
+        cellEditorParams: { dateFormat },
         cellEditorPopup: true,
         cellRenderer: (params) => {
           return params.value
-            ? format(parse(params.value, 'yyyy-MM-dd', new Date()), 'PP', {
-                locale: locales[locale] || enUS
-              })
+            ? format(
+                parse(params.value, 'yyyy-MM-dd', new Date()),
+                dateFormat,
+                {
+                  locale: locales[locale] || enUS
+                }
+              )
             : '';
         },
         filter: 'agDateColumnFilter',
