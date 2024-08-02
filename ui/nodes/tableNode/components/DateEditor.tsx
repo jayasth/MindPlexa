@@ -3,6 +3,7 @@ import { ICellEditorParams } from 'ag-grid-community';
 import { format, parse, isValid } from 'date-fns';
 import styles from '../styles/DateEditor.module.css';
 import { enUS, fr, enGB, de, es, it, ja, ko, ru, zhCN } from 'date-fns/locale';
+import Dropdown from '@/ui/dropdown/Dropdown';
 
 const locales = { enUS, fr, enGB, de, es, it, ja, ko, ru, zhCN };
 
@@ -59,8 +60,8 @@ export const DateEditor = (props: ICellEditorParams) => {
     }
   };
 
-  const handleFormatChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setDateFormat(e.target.value);
+  const handleFormatChange = (value: string) => {
+    setDateFormat(value);
   };
 
   return (
@@ -74,15 +75,16 @@ export const DateEditor = (props: ICellEditorParams) => {
         onBlur={handleBlur}
         className={styles.dateInput}
       />
-      <select
+      <Dropdown
         value={dateFormat}
         onChange={handleFormatChange}
         className={styles.formatSelect}
+        variant="datepicker"
       >
         <option value="yyyy-MM-dd">YYYY-MM-DD</option>
         <option value="dd/MM/yyyy">DD/MM/YYYY</option>
         <option value="MM/dd/yyyy">MM/DD/YYYY</option>
-      </select>
+      </Dropdown>
     </div>
   );
 };
