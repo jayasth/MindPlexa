@@ -125,6 +125,7 @@ export const onCellValueChanged = (event, setContent) => {
 
   if (!validateCellValue(newValue, columnType)) {
     event.node.data.invalid = true;
+    event.api.stopEditing();
     event.api.refreshCells({
       rowNodes: [event.node],
       columns: [event.colDef.field]

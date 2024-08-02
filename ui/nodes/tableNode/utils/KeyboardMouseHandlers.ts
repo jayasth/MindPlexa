@@ -60,6 +60,13 @@ export const onCellKeyDown = (params) => {
     );
 
   if (currentCell) {
+    const rowNode = api.getRowNode(currentRow);
+    const isInvalid = rowNode.data.invalid;
+    if (isInvalid) {
+      // Prevent navigation if the current cell value is invalid
+      params.event.preventDefault();
+      return;
+    }
     switch (key) {
       case 'ArrowDown':
         if (isEditing && currentRow < maxRow) {
