@@ -294,24 +294,39 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
 
   const handleDateFormatChange = useCallback(
     (newDateFormat: string) => {
-      setDateFormat(newDateFormat);
-      const updatedRows = content.rows.map((row) => {
-        return content.columns.reduce((acc, col) => {
-          if (col.type === 'date' && row[col.field]) {
-            acc[col.field] = format(
-              parse(row[col.field], newDateFormat, new Date()),
-              newDateFormat
-            );
-          } else {
-            acc[col.field] = row[col.field];
-          }
-          return acc;
-        }, {});
-      });
-      setContent({ ...content, rows: updatedRows });
+      // Validate the newDateFormat here
+      if (isValidDateFormat(newDateFormat)) {
+        setDateFormat(newDateFormat);
+        const updatedRows = content.rows.map((row) => {
+          return content.columns.reduce((acc, col) => {
+            if (col.type === 'date' && row[col.field]) {
+              acc[col.field] = format(
+                parse(row[col.field], newDateFormat, new Date()),
+                newDateFormat
+              );
+            } else {
+              acc[col.field] = row[col.field];
+            }
+            return acc;
+          }, {});
+        });
+        setContent({ ...content, rows: updatedRows });
+      } else {
+        // Handle invalid date format
+        console.error(`Invalid date format: ${newDateFormat}`);
+        // You can either use a default date format or display an error message to the user
+      }
     },
     [content, setDateFormat]
   );
+
+  // Add a function to validate the date format
+  const isValidDateFormat = (dateFormat: string): boolean => {
+    // Implement your date format validation logic here
+    // For example, you can check if the dateFormat is one of the allowed formats
+    const allowedFormats = ['yyyy-MM-dd', 'dd/MM/yyyy', 'MM/dd/yyyy'];
+    return allowedFormats.includes(dateFormat);
+  };
 
   return (
     <div>
