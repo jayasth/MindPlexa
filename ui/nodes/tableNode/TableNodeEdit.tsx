@@ -68,18 +68,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   onNodeResizeStop,
   position
 }) => {
-  console.log('TableNodeEdit: Node details:', {
-    id: data.id,
-    title: data.title,
-    columns: data.columns,
-    rows: data.rows,
-    backgroundColor: data.backgroundColor,
-    textColor: data.textColor,
-    width,
-    height,
-    position
-  });
-
   const { canvasId } = useCanvasStore();
   const [isSelected, setIsSelected] = useState(selected);
   const [title, setTitle] = useState(data.title || 'Untitled Table');
@@ -103,7 +91,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [dateFormat, setDateFormat] = useState('yyyy-MM-dd');
+  const [dateFormat, setDateFormat] = useState(data.dateFormat || 'YYYY-MM-DD');
 
   const updateNode = useNodeStore((state) => state.updateNode);
   const tableRef = useRef<HTMLDivElement>(null);
@@ -174,8 +162,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     setContent({ columns: [], rows: [] });
     setIsDeleteModalOpen(false);
   };
-
-  /*Common node functions*/
 
   const onChangeTitle = useCallback(
     (newTitle: string) => {
@@ -294,14 +280,13 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
 
   const handleDateFormatChange = useCallback(
     (newDateFormat: string) => {
-      // Validate the newDateFormat here
       if (isValidDateFormat(newDateFormat)) {
         setDateFormat(newDateFormat);
         const updatedRows = content.rows.map((row) => {
           return content.columns.reduce((acc, col) => {
             if (col.type === 'date' && row[col.field]) {
               acc[col.field] = format(
-                parse(row[col.field], newDateFormat, new Date()),
+                parse(row[col.field], 'YYYY-MM-DD', new Date()),
                 newDateFormat
               );
             } else {
@@ -312,19 +297,14 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
         });
         setContent({ ...content, rows: updatedRows });
       } else {
-        // Handle invalid date format
         console.error(`Invalid date format: ${newDateFormat}`);
-        // You can either use a default date format or display an error message to the user
       }
     },
     [content, setDateFormat]
   );
 
-  // Add a function to validate the date format
   const isValidDateFormat = (dateFormat: string): boolean => {
-    // Implement your date format validation logic here
-    // For example, you can check if the dateFormat is one of the allowed formats
-    const allowedFormats = ['yyyy-MM-dd', 'dd/MM/yyyy', 'MM/dd/yyyy'];
+    const allowedFormats = ['YYYY-MM-DD', 'DD/MM/YYYY', 'MM/DD/YYYY'];
     return allowedFormats.includes(dateFormat);
   };
 

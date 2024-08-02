@@ -6,9 +6,9 @@ import Dropdown from '@/ui/dropdown/Dropdown';
 import styles from '@/ui/Modal/Modal.module.css';
 
 const dateFormats = [
-  { value: 'yyyy-MM-dd', label: 'YYYY-MM-DD' },
-  { value: 'dd/MM/yyyy', label: 'DD/MM/YYYY' },
-  { value: 'MM/dd/yyyy', label: 'MM/DD/YYYY' }
+  { value: 'YYYY-MM-DD', label: 'YYYY-MM-DD' },
+  { value: 'DD/MM/YYYY', label: 'DD/MM/YYYY' },
+  { value: 'MM/DD/YYYY', label: 'MM/DD/YYYY' }
 ];
 
 const SettingsModal = ({

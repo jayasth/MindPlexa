@@ -24,7 +24,7 @@ export const validateCellValue = (value: any, type: string): boolean => {
       return emailRegex.test(value);
     case 'date':
       if (typeof value === 'string') {
-        const parsedDate = parse(value, 'yyyy-MM-dd', new Date());
+        const parsedDate = parse(value, 'YYYY-MM-DD', new Date());
         return isValid(parsedDate);
       }
       return false;
@@ -48,7 +48,7 @@ export const validateCellValue = (value: any, type: string): boolean => {
 export const formatCellValue = (
   value: any,
   type: string,
-  dateFormat: string = 'yyyy-MM-dd'
+  dateFormat: string = 'YYYY-MM-DD'
 ): any => {
   switch (type) {
     case 'currency':
@@ -60,7 +60,7 @@ export const formatCellValue = (
         : '';
     case 'date':
       if (value) {
-        const parsedDate = parse(value, 'yyyy-MM-dd', new Date());
+        const parsedDate = parse(value, 'YYYY-MM-DD', new Date());
         return isValid(parsedDate) ? format(parsedDate, dateFormat) : '';
       }
       return '';
@@ -125,9 +125,9 @@ export const onCellValueChanged = (event, setContent) => {
     let formattedValue = formatCellValue(newValue, columnType);
 
     if (columnType === 'date') {
-      const parsedDate = parse(newValue, 'yyyy-MM-dd', new Date());
+      const parsedDate = parse(newValue, 'YYYY-MM-DD', new Date());
       if (isValid(parsedDate)) {
-        formattedValue = format(parsedDate, 'yyyy-MM-dd');
+        formattedValue = format(parsedDate, 'YYYY-MM-DD');
       } else {
         event.node.data.invalid = true;
         toast({
@@ -174,7 +174,7 @@ export const gridOptions: GridOptions = {
       filter: 'agDateColumnFilter',
       filterParams: {
         comparator: (filterLocalDateAtMidnight: Date, cellValue: string) => {
-          const cellDate = parse(cellValue, 'yyyy-MM-dd', new Date());
+          const cellDate = parse(cellValue, 'YYYY-MM-DD', new Date());
           if (cellDate < filterLocalDateAtMidnight) {
             return -1;
           } else if (cellDate > filterLocalDateAtMidnight) {
@@ -211,7 +211,7 @@ export const getColumnDefs = (
   setContent,
   updateNode,
   gridRef,
-  dateFormat: string = 'yyyy-MM-dd'
+  dateFormat: string = 'YYYY-MM-DD'
 ): ColDef[] => {
   return content.columns.map((col) => {
     const { ...restCol } = col;
@@ -268,13 +268,13 @@ export const getColumnDefs = (
         cellEditorPopup: true,
         cellRenderer: (params) => {
           return params.value
-            ? format(parse(params.value, 'yyyy-MM-dd', new Date()), dateFormat)
+            ? format(parse(params.value, 'YYYY-MM-DD', new Date()), dateFormat)
             : '';
         },
         filter: 'agDateColumnFilter',
         filterParams: {
           comparator: (filterLocalDateAtMidnight: Date, cellValue: string) => {
-            const cellDate = parse(cellValue, 'yyyy-MM-dd', new Date());
+            const cellDate = parse(cellValue, 'YYYY-MM-DD', new Date());
             if (cellDate < filterLocalDateAtMidnight) {
               return -1;
             } else if (cellDate > filterLocalDateAtMidnight) {
@@ -404,7 +404,7 @@ function getValueFormatter(type: string, dateFormat: string) {
     case 'date':
       return (params) => {
         if (params.value) {
-          const parsedDate = parse(params.value, 'yyyy-MM-dd', new Date());
+          const parsedDate = parse(params.value, 'YYYY-MM-DD', new Date());
           return isValid(parsedDate) ? format(parsedDate, dateFormat) : '';
         }
         return '';

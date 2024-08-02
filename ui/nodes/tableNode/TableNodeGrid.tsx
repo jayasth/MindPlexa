@@ -42,7 +42,7 @@ interface TableNodeGridProps {
   updateNode: (
     nodeId: string,
     canvasId: string,
-    updates: Partial<Node>
+    updates: { columns: any[]; rows: any[] }
   ) => void;
   nodeId: string;
   canvasId: string;
@@ -188,6 +188,10 @@ const TableNodeGrid: React.FC<TableNodeGridProps> = ({
             }}
             onCellValueChanged={(event) => {
               onCellValueChanged(event, setContent);
+              updateNode(nodeId, canvasId, {
+                columns: content.columns,
+                rows: content.rows
+              });
             }}
             onCellKeyDown={onCellKeyDown}
             ref={gridRef}
@@ -231,7 +235,9 @@ const TableNodeGrid: React.FC<TableNodeGridProps> = ({
       handleCellContextMenu,
       cellContextMenuPosition,
       cellContextMenuParams,
-      dateFormat
+      dateFormat,
+      nodeId,
+      canvasId
     ]
   );
 
