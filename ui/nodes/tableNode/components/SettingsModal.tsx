@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal } from 'react-responsive-modal';
 import 'react-responsive-modal/styles.css';
 import Button from '@/ui/Button/Button';
@@ -11,12 +11,27 @@ const dateFormats = [
   { value: 'MM/dd/yyyy', label: 'MM/DD/YYYY' }
 ];
 
-const SettingsModal = ({ isOpen, onClose, onSave, initialDateFormat }) => {
+const SettingsModal = ({
+  isOpen,
+  onClose,
+  onSave,
+  initialDateFormat,
+  handleDateFormatChange
+}) => {
   const [dateFormat, setDateFormat] = useState(initialDateFormat);
+
+  useEffect(() => {
+    setDateFormat(initialDateFormat);
+  }, [initialDateFormat]);
 
   const handleSave = () => {
     onSave({ dateFormat });
     onClose();
+  };
+
+  const handleLocalDateFormatChange = (newDateFormat) => {
+    setDateFormat(newDateFormat);
+    handleDateFormatChange(newDateFormat);
   };
 
   return (
@@ -27,7 +42,7 @@ const SettingsModal = ({ isOpen, onClose, onSave, initialDateFormat }) => {
           <label>Date Format:</label>
           <Dropdown
             value={dateFormat}
-            onChange={(value) => setDateFormat(value)}
+            onChange={handleLocalDateFormatChange}
             variant="slim"
           >
             {dateFormats.map((format) => (

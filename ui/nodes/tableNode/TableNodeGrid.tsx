@@ -17,6 +17,7 @@ import {
 import CustomHeader from '@/ui/nodes/tableNode/components/CustomHeader';
 import HeaderContextMenu from '@/ui/nodes/tableNode/components/HeaderContextMenu';
 import CellContextMenu from '@/ui/nodes/tableNode/components/CellContextMenu';
+import { DateEditor } from '@/ui/nodes/tableNode/components/DateEditor';
 
 import {
   useKeyPressHandler,
@@ -49,6 +50,7 @@ interface TableNodeGridProps {
   setIsDeleteModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setIsSettingsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   handleDeleteTable: () => void;
+  dateFormat: string;
 }
 
 const TableNodeGrid: React.FC<TableNodeGridProps> = ({
@@ -60,7 +62,8 @@ const TableNodeGrid: React.FC<TableNodeGridProps> = ({
   setIsModalOpen,
   setIsDeleteModalOpen,
   setIsSettingsModalOpen,
-  handleDeleteTable
+  handleDeleteTable,
+  dateFormat
 }) => {
   const gridRef = useRef<any>(null);
 
@@ -77,7 +80,10 @@ const TableNodeGrid: React.FC<TableNodeGridProps> = ({
 
   const gridOptions = {
     ...existingOptions,
-    onCellClicked: handleCellClick
+    onCellClicked: handleCellClick,
+    components: {
+      dateEditor: (props) => <DateEditor {...props} dateFormat={dateFormat} />
+    }
   };
 
   const columnDefs = getColumnDefs(content, setContent, updateNode, gridRef);
@@ -224,7 +230,8 @@ const TableNodeGrid: React.FC<TableNodeGridProps> = ({
       updateNode,
       handleCellContextMenu,
       cellContextMenuPosition,
-      cellContextMenuParams
+      cellContextMenuParams,
+      dateFormat
     ]
   );
 

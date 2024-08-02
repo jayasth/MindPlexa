@@ -43,6 +43,7 @@ import {
 } from '@/utils/canvas/attachmentService';
 import { useBackgroundColorChange } from '@/ui/nodes/common/useBackgroundColorChange';
 import TableNodeGrid from '@/ui/nodes/tableNode/TableNodeGrid';
+import { format, parse } from 'date-fns';
 
 import debounce from 'lodash/debounce';
 
@@ -291,9 +292,26 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     [updateNode]
   );
 
-  const handleDateFormatChange = useCallback((newDateFormat: string) => {
-    setDateFormat(newDateFormat);
-  }, []);
+  const handleDateFormatChange = useCallback(
+    (newDateFormat: string) => {
+      setDateFormat(newDateFormat);
+      const updatedRows = content.rows.map((row) => {
+        return content.columns.reduce((acc, col) => {
+          if (col.type === 'date' && row[col.field]) {
+            acc[col.field] = format(
+              parse(row[col.field], newDateFormat, new Date()),
+              newDateFormat
+            );
+          } else {
+            acc[col.field] = row[col.field];
+          }
+          return acc;
+        }, {});
+      });
+      setContent({ ...content, rows: updatedRows });
+    },
+    [content, setDateFormat]
+  );
 
   return (
     <div>
@@ -343,6 +361,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           setIsDeleteModalOpen={setIsDeleteModalOpen}
           setIsSettingsModalOpen={setIsSettingsModalOpen}
           handleDeleteTable={handleDeleteTable}
+          dateFormat={dateFormat}
         />
 
         {(tags.length > 0 || attachedFiles.length > 0) &&
@@ -427,6 +446,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           onClose={() => setIsSettingsModalOpen(false)}
           onSave={(settings) => handleDateFormatChange(settings.dateFormat)}
           initialDateFormat={dateFormat}
+          handleDateFormatChange={handleDateFormatChange}
         />
       </div>
     </div>
