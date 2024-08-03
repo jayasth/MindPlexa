@@ -91,7 +91,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [dateFormat, setDateFormat] = useState(data.dateFormat || 'YYYY-MM-DD');
+  const [dateFormat, setDateFormat] = useState(data.dateFormat || 'yyyy-MM-dd');
 
   const updateNode = useNodeStore((state) => state.updateNode);
   const tableRef = useRef<HTMLDivElement>(null);
@@ -283,7 +283,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           return content.columns.reduce((acc, col) => {
             if (col.type === 'date' && row[col.field]) {
               acc[col.field] = format(
-                parse(row[col.field], 'YYYY-MM-DD', new Date()),
+                parse(row[col.field], 'yyyy-MM-dd', new Date()),
                 newDateFormat
               );
             } else {
@@ -301,7 +301,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   );
 
   const isValidDateFormat = (dateFormat: string): boolean => {
-    const allowedFormats = ['YYYY-MM-DD', 'DD/MM/YYYY', 'MM/DD/YYYY'];
+    const allowedFormats = ['yyyy-MM-dd', 'dd/MM/yyyy', 'MM/dd/yyyy'];
     return allowedFormats.includes(dateFormat);
   };
 
