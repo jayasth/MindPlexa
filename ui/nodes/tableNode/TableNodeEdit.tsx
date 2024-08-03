@@ -111,44 +111,41 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
 
   const debouncedUpdateNode = useMemo(
     () =>
-      debounce((nodeId, canvasId, updates) => {
-        updateNode(nodeId, canvasId, updates);
+      debounce((nodeId, updates) => {
+        updateNode(nodeId, updates, 'table');
       }, 500),
     [updateNode]
   );
 
   useEffect(() => {
-    if (
-      title !== data.title ||
-      content.columns !== data.columns ||
-      content.rows !== data.rows ||
-      tags !== data.tags ||
-      attachedFiles !== data.attachedFiles ||
-      backgroundColor !== data.backgroundColor ||
-      textColor !== data.textColor ||
-      dateFormat !== data.dateFormat
-    ) {
-      debouncedUpdateNode(data.id, canvasId, {
-        title,
-        columns: content.columns,
-        rows: content.rows,
-        tags,
-        attachedFiles,
-        backgroundColor,
-        textColor,
-        dateFormat
-      });
-    }
+    const commonData = {
+      title,
+      backgroundColor,
+      textColor,
+      editWidth: nodeWidth,
+      editHeight: nodeHeight
+    };
+
+    const specificData = {
+      columns: content.columns,
+      rows: content.rows,
+      tags,
+      attachedFiles,
+      dateFormat
+    };
+
+    debouncedUpdateNode(data.id, { ...commonData, data: specificData });
   }, [
     title,
     content,
-    tags,
-    attachedFiles,
     backgroundColor,
     textColor,
+    nodeWidth,
+    nodeHeight,
+    tags,
+    attachedFiles,
     dateFormat,
     data.id,
-    canvasId,
     debouncedUpdateNode
   ]);
 
@@ -272,8 +269,8 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   );
 
   const handleUpdateNode = useCallback(
-    (id: string, canvasId: string, updates: any) => {
-      updateNode(id, updates, canvasId);
+    (id: string, updates: any) => {
+      updateNode(id, updates, 'table');
     },
     [updateNode]
   );
@@ -351,7 +348,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           setContent={setContent}
           updateNode={handleUpdateNode}
           nodeId={data.id}
-          canvasId={canvasId}
           setIsModalOpen={setIsModalOpen}
           setIsDeleteModalOpen={setIsDeleteModalOpen}
           setIsSettingsModalOpen={setIsSettingsModalOpen}
