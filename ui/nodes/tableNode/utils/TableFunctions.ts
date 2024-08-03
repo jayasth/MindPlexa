@@ -215,7 +215,7 @@ export const getColumnDefs = (
 ): ColDef[] => {
   return content.columns.map((col) => {
     const { ...restCol } = col;
-    const baseColumnDef = {
+    const baseColumnDef: ColDef = {
       ...restCol,
       type: col.type,
       headerName: col.headerName,
@@ -235,9 +235,7 @@ export const getColumnDefs = (
       colId: col.field,
       cellRenderer: CustomCellRenderer,
       floatingFilterComponent: CustomFloatingFilter,
-      floatingFilterComponentParams: {
-        suppressFilterButton: true
-      },
+      suppressFloatingFilterButton: true,
       cellStyle: (params) => {
         const isValid = validateCellValue(params.value, col.type);
         const invalidCellStyle: CSSProperties = {
