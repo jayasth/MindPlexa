@@ -39,8 +39,13 @@ interface TableNodeGridProps {
   setContent: React.Dispatch<
     React.SetStateAction<{ columns: any[]; rows: any[] }>
   >;
-  updateNode: (nodeId: string, updates: any) => void;
+  updateNode: (
+    nodeId: string,
+    canvasId: string,
+    updates: { columns: any[]; rows: any[] }
+  ) => void;
   nodeId: string;
+  canvasId: string;
   setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setIsDeleteModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setIsSettingsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -53,6 +58,7 @@ const TableNodeGrid: React.FC<TableNodeGridProps> = ({
   setContent,
   updateNode,
   nodeId,
+  canvasId,
   setIsModalOpen,
   setIsDeleteModalOpen,
   setIsSettingsModalOpen,
@@ -182,11 +188,9 @@ const TableNodeGrid: React.FC<TableNodeGridProps> = ({
             }}
             onCellValueChanged={(event) => {
               onCellValueChanged(event, setContent);
-              updateNode(nodeId, {
-                data: {
-                  columns: content.columns,
-                  rows: content.rows
-                }
+              updateNode(nodeId, canvasId, {
+                columns: content.columns,
+                rows: content.rows
               });
             }}
             onCellKeyDown={onCellKeyDown}
@@ -231,8 +235,7 @@ const TableNodeGrid: React.FC<TableNodeGridProps> = ({
       handleCellContextMenu,
       cellContextMenuPosition,
       cellContextMenuParams,
-      dateFormat,
-      nodeId
+      dateFormat
     ]
   );
 

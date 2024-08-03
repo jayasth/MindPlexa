@@ -348,6 +348,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           setContent={setContent}
           updateNode={handleUpdateNode}
           nodeId={data.id}
+          canvasId={canvasId}
           setIsModalOpen={setIsModalOpen}
           setIsDeleteModalOpen={setIsDeleteModalOpen}
           setIsSettingsModalOpen={setIsSettingsModalOpen}
