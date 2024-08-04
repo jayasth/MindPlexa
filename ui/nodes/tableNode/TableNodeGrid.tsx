@@ -169,7 +169,7 @@ const TableNodeGrid: React.FC<TableNodeGridProps> = ({
           <AgGridReact
             gridOptions={gridOptions}
             columnDefs={columnDefs as any}
-            rowData={content.rows}
+            rowData={content.rows.map((row) => ({ ...row }))}
             domLayout="autoHeight"
             rowHeight={30}
             headerHeight={30}
@@ -187,11 +187,13 @@ const TableNodeGrid: React.FC<TableNodeGridProps> = ({
               params.api.sizeColumnsToFit();
             }}
             onCellValueChanged={(event) => {
-              onCellValueChanged(event, setContent);
-              updateNode(nodeId, canvasId, {
-                columns: content.columns,
-                rows: content.rows
-              });
+              onCellValueChanged(
+                event,
+                setContent,
+                nodeId,
+                canvasId,
+                updateNode
+              );
             }}
             onCellKeyDown={onCellKeyDown}
             ref={gridRef}

@@ -71,7 +71,13 @@ export const formatCellValue = (
   }
 };
 
-export const onCellValueChanged = (event, setContent) => {
+export const onCellValueChanged = (
+  event,
+  setContent,
+  nodeId,
+  canvasId,
+  updateNode
+) => {
   console.log('TableonCellValueChanged triggered');
   const oldValue = event.oldValue;
   let newValue = event.newValue;
@@ -87,32 +93,8 @@ export const onCellValueChanged = (event, setContent) => {
     newValue = '';
   }
 
-  if (newValue === '') {
-    event.node.data.invalid = false;
-    event.api.refreshCells({
-      rowNodes: [event.node],
-      columns: [event.colDef.field]
-    });
-    setContent((prevContent) => {
-      const updatedRows = prevContent.rows.map((row, index) => {
-        if (index === event.rowIndex) {
-          return { ...row, [event.colDef.field]: '' };
-        }
-        return row;
-      });
-      return { ...prevContent, rows: updatedRows };
-    });
-    return;
-  }
-
   if (!validateCellValue(newValue, columnType)) {
-    event.node.data.invalid = true;
-    event.api.stopEditing();
-    event.api.refreshCells({
-      rowNodes: [event.node],
-      columns: [event.colDef.field]
-    });
-
+    event.node.setDataValue(event.colDef.field, oldValue);
     console.log(
       `TableFunctions: Invalid value for column type "${columnType}": ${newValue}`
     );
@@ -121,41 +103,42 @@ export const onCellValueChanged = (event, setContent) => {
       description: `Invalid value for column type "${columnType}": ${newValue}`,
       variant: 'warning'
     });
-  } else {
-    let formattedValue = formatCellValue(newValue, columnType);
-
-    if (columnType === 'date') {
-      const parsedDate = parse(newValue, 'yyyy-MM-dd', new Date());
-      if (isValid(parsedDate)) {
-        formattedValue = format(parsedDate, 'yyyy-MM-dd');
-      } else {
-        event.node.data.invalid = true;
-        toast({
-          title: 'Invalid Date',
-          description: `The date "${newValue}" is not valid.`,
-          variant: 'warning'
-        });
-        return;
-      }
-    }
-
-    setContent((prevContent) => {
-      const updatedRows = prevContent.rows.map((row, index) => {
-        if (index === event.rowIndex) {
-          return { ...row, [event.colDef.field]: formattedValue };
-        }
-        return row;
-      });
-      return { ...prevContent, rows: updatedRows };
-    });
-
-    event.node.setDataValue(event.colDef.field, formattedValue);
-    event.node.data.invalid = false;
-    event.api.refreshCells({
-      rowNodes: [event.node],
-      columns: [event.colDef.field]
-    });
+    return;
   }
+
+  let formattedValue = formatCellValue(newValue, columnType);
+
+  if (columnType === 'date') {
+    const parsedDate = parse(newValue, 'yyyy-MM-dd', new Date());
+    if (isValid(parsedDate)) {
+      formattedValue = format(parsedDate, 'yyyy-MM-dd');
+    } else {
+      toast({
+        title: 'Invalid Date',
+        description: `The date "${newValue}" is not valid.`,
+        variant: 'warning'
+      });
+      return;
+    }
+  }
+
+  setContent((prevContent) => {
+    const newRows = prevContent.rows.map((row, index) =>
+      index === event.rowIndex
+        ? { ...row, [event.colDef.field]: formattedValue }
+        : { ...row }
+    );
+
+    const newContent = {
+      ...prevContent,
+      rows: newRows
+    };
+
+    // Update the node with the new content
+    updateNode(nodeId, canvasId, newContent);
+
+    return newContent;
+  });
 };
 
 /* Column Operations */
