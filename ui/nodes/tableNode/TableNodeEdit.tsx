@@ -43,7 +43,7 @@ import {
 } from '@/utils/canvas/attachmentService';
 import { useBackgroundColorChange } from '@/ui/nodes/common/useBackgroundColorChange';
 import TableNodeGrid from '@/ui/nodes/tableNode/TableNodeGrid';
-import { format, parse } from 'date-fns';
+import { format, parse, isValid } from 'date-fns';
 
 import debounce from 'lodash/debounce';
 
@@ -112,9 +112,9 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   const debouncedUpdateNode = useMemo(
     () =>
       debounce((nodeId, updates) => {
-        updateNode(nodeId, updates, 'table');
+        updateNode(nodeId, updates, canvasId);
       }, 500),
-    [updateNode]
+    [updateNode, canvasId]
   );
 
   useEffect(() => {
@@ -270,40 +270,38 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
 
   const handleUpdateNode = useCallback(
     (id: string, updates: any) => {
-      updateNode(id, updates, 'table');
+      updateNode(id, updates, canvasId);
     },
-    [updateNode]
+    [updateNode, canvasId]
   );
 
   const handleDateFormatChange = useCallback(
     (newDateFormat: string) => {
-      if (isValidDateFormat(newDateFormat)) {
-        setDateFormat(newDateFormat);
-        const updatedRows = content.rows.map((row) => {
-          return content.columns.reduce((acc, col) => {
-            if (col.type === 'date' && row[col.field]) {
-              acc[col.field] = format(
-                parse(row[col.field], 'yyyy-MM-dd', new Date()),
-                newDateFormat
-              );
-            } else {
-              acc[col.field] = row[col.field];
-            }
-            return acc;
-          }, {});
-        });
-        setContent({ ...content, rows: updatedRows });
-      } else {
-        console.error(`Invalid date format: ${newDateFormat}`);
-      }
+      setDateFormat(newDateFormat);
+      const updatedRows = content.rows.map((row) => {
+        return content.columns.reduce((acc, col) => {
+          if (col.type === 'date' && row[col.field]) {
+            const date = parse(row[col.field], 'yyyy-MM-dd', new Date());
+            acc[col.field] = isValid(date)
+              ? format(date, 'yyyy-MM-dd')
+              : row[col.field];
+          } else {
+            acc[col.field] = row[col.field];
+          }
+          return acc;
+        }, {});
+      });
+      setContent({ ...content, rows: updatedRows });
+      updateNode(
+        data.id,
+        {
+          data: { ...content, rows: updatedRows, dateFormat: newDateFormat }
+        },
+        canvasId
+      );
     },
-    [content, setDateFormat]
+    [content, setContent, updateNode, data.id, canvasId]
   );
-
-  const isValidDateFormat = (dateFormat: string): boolean => {
-    const allowedFormats = ['yyyy-MM-dd', 'dd/MM/yyyy', 'MM/dd/yyyy'];
-    return allowedFormats.includes(dateFormat);
-  };
 
   return (
     <div>
@@ -436,7 +434,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
         <SettingsModal
           isOpen={isSettingsModalOpen}
           onClose={() => setIsSettingsModalOpen(false)}
-          onSave={(settings) => handleDateFormatChange(settings.dateFormat)}
+          onSave={({ dateFormat }) => handleDateFormatChange(dateFormat)}
           initialDateFormat={dateFormat}
           handleDateFormatChange={handleDateFormatChange}
         />

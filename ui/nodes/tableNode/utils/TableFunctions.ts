@@ -76,7 +76,8 @@ export const onCellValueChanged = (
   setContent,
   nodeId,
   canvasId,
-  updateNode
+  updateNode,
+  dateFormat
 ) => {
   console.log('TableonCellValueChanged triggered');
   const oldValue = event.oldValue;
@@ -109,13 +110,13 @@ export const onCellValueChanged = (
   let formattedValue = formatCellValue(newValue, columnType);
 
   if (columnType === 'date') {
-    const parsedDate = parse(newValue, 'yyyy-MM-dd', new Date());
+    const parsedDate = parse(newValue, dateFormat, new Date());
     if (isValid(parsedDate)) {
       formattedValue = format(parsedDate, 'yyyy-MM-dd');
     } else {
       toast({
         title: 'Invalid Date',
-        description: `The date "${newValue}" is not valid.`,
+        description: `The date "${newValue}" is not valid. Please use the format ${dateFormat}.`,
         variant: 'warning'
       });
       return;
@@ -244,13 +245,14 @@ export const getColumnDefs = (
     if (col.type === 'date') {
       return {
         ...baseColumnDef,
-        cellEditor: DateEditor,
+        cellEditor: 'dateEditor',
         cellEditorParams: { dateFormat },
-        cellEditorPopup: true,
         cellRenderer: (params) => {
-          return params.value
-            ? format(parse(params.value, 'yyyy-MM-dd', new Date()), dateFormat)
-            : '';
+          if (params.value) {
+            const date = parse(params.value, 'yyyy-MM-dd', new Date());
+            return isValid(date) ? format(date, dateFormat) : params.value;
+          }
+          return '';
         },
         filter: 'agDateColumnFilter',
         filterParams: {

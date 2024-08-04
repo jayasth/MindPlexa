@@ -86,7 +86,13 @@ const TableNodeGrid: React.FC<TableNodeGridProps> = ({
     }
   };
 
-  const columnDefs = getColumnDefs(content, setContent, updateNode, gridRef);
+  const columnDefs = getColumnDefs(
+    content,
+    setContent,
+    updateNode,
+    gridRef,
+    dateFormat
+  );
 
   const updateColumnState = () => {
     if (gridRef.current) {
@@ -192,7 +198,8 @@ const TableNodeGrid: React.FC<TableNodeGridProps> = ({
                 setContent,
                 nodeId,
                 canvasId,
-                updateNode
+                updateNode,
+                dateFormat
               );
             }}
             onCellKeyDown={onCellKeyDown}
