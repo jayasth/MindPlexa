@@ -109,3 +109,7 @@ p a {
 .ag-floating-filter {
   border-right: 1px solid #ccc !important;
 }
+
+.ag-theme-alpine .ag-cell-focus {
+  border: 2px solid theme('colors.lavender.600') !important;
+}

@@ -10,8 +10,17 @@
   flex-grow: 1;
   border: none;
   padding: 2px 4px;
+  padding-right: 30px;
   font-size: 12px;
   height: 100%;
+}
+
+.datePickerIcon {
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
 }
 
 .calendarButton {

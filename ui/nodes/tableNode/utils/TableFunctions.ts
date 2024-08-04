@@ -104,6 +104,13 @@ export const onCellValueChanged = (
       description: `Invalid value for column type "${columnType}": ${newValue}`,
       variant: 'warning'
     });
+    // Prevent focus from moving to the next cell and keep editing mode
+    setTimeout(() => {
+      event.api.startEditingCell({
+        rowIndex: event.rowIndex,
+        colKey: event.column.getColId()
+      });
+    }, 0);
     return;
   }
 
@@ -228,8 +235,8 @@ export const getColumnDefs = (
           color: '#721c24'
         };
         const focusStyle: CSSProperties = {
-          outline: '2px solid #7c3aed',
-          outlineOffset: '-1px'
+          // outline: '2px solid #7c3aed',
+          // outlineOffset: '-1px'
         };
         const isFocused =
           params.api.getFocusedCell()?.rowIndex === params.rowIndex &&

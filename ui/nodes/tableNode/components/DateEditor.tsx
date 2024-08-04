@@ -34,6 +34,7 @@ export const DateEditor = (props: ICellEditorParams) => {
     const parsedDate = parse(value, dateFormat, new Date());
     if (isValid(parsedDate)) {
       setDate(parsedDate);
+      updateCellValue(format(parsedDate, 'yyyy-MM-dd'));
     }
   };
 
@@ -42,17 +43,10 @@ export const DateEditor = (props: ICellEditorParams) => {
       const parsedDate = parse(inputValue, dateFormat, new Date());
       if (isValid(parsedDate)) {
         updateCellValue(format(parsedDate, 'yyyy-MM-dd'));
+        props.api.stopEditing();
+      } else {
+        e.preventDefault();
       }
-    }
-  };
-
-  const handleBlur = () => {
-    const parsedDate = parse(inputValue, dateFormat, new Date());
-    if (isValid(parsedDate)) {
-      updateCellValue(format(parsedDate, 'yyyy-MM-dd'));
-    } else {
-      // If the date is invalid, revert to the original value
-      setInputValue(props.value || '');
     }
   };
 
@@ -64,7 +58,6 @@ export const DateEditor = (props: ICellEditorParams) => {
         value={inputValue}
         onChange={handleDateChange}
         onKeyDown={handleKeyDown}
-        onBlur={handleBlur}
         className={styles.dateInput}
       />
     </div>
