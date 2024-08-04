@@ -142,7 +142,8 @@ export const onNodesChange = async (set, get, changes, canvasId) => {
                     columns: JSON.stringify(updatedNode.data.columns),
                     rows: JSON.stringify(updatedNode.data.rows),
                     default_column_type: updatedNode.data.defaultColumnType,
-                    settings: JSON.stringify(updatedNode.data.settings)
+                    settings: JSON.stringify(updatedNode.data.settings),
+                    date_format: updatedNode.data.dateFormat
                   };
                   break;
                 case 'draw':

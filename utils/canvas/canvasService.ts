@@ -292,8 +292,16 @@ export const saveCanvasState = async (canvasId: string, canvasState: any) => {
           drawing_file_url: data.drawingFileUrl,
           current_tool: data.currentTool,
           settings: data.settings,
-          current_color: data.currentColor || 'None', // Added current_color
-          current_stroke_width: data.currentStrokeWidth || 1 // Added current_stroke_width
+          current_color: data.currentColor || 'None',
+          current_stroke_width: data.currentStrokeWidth || 1
+        };
+      } else if (nodeType === 'table') {
+        specificUpdates = {
+          columns: data.columns,
+          rows: data.rows,
+          default_column_type: data.defaultColumnType,
+          settings: data.settings,
+          date_format: data.dateFormat
         };
       } else {
         specificUpdates = data;

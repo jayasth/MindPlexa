@@ -66,11 +66,13 @@ const processNode = async (node: any) => {
 
   // Parse columns and rows JSON strings if they exist
   let columns = [],
-    rows = [];
+    rows = [],
+    tableSettings = {};
   if (node.type === 'table' && node.data) {
     try {
       columns = node.data.columns ? JSON.parse(node.data.columns) : [];
       rows = node.data.rows ? JSON.parse(node.data.rows) : [];
+      tableSettings = node.data.settings ? JSON.parse(node.data.settings) : {};
     } catch (error) {
       console.error('Error parsing table data JSON:', error);
     }
@@ -113,7 +115,9 @@ const processNode = async (node: any) => {
       currentStrokeWidth: node.data?.currentStrokeWidth || 0,
       columns: columns,
       rows: rows,
-      defaultColumnType: node.data?.defaultColumnType || 'text'
+      defaultColumnType: node.data?.defaultColumnType || 'text',
+      dateFormat: node.data?.dateFormat || 'yyyy-MM-dd',
+      tableSettings: tableSettings
     },
     width: node.isEditing
       ? (isDesktop ? node.editWidth : node.mobileEditWidth) || node.viewWidth

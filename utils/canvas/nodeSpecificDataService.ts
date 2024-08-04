@@ -265,6 +265,8 @@ export const processNodeSpecificData = (nodeType: NodeType, data: any) => {
       return {
         columns: data.columns || [],
         rows: data.rows || [],
+        defaultColumnType: data.default_column_type || 'text',
+        dateFormat: data.date_format || 'yyyy-MM-dd',
         settings: data.settings || {}
       };
     default:
