@@ -8,7 +8,9 @@ import styles from '@/ui/Modal/Modal.module.css';
 const dateFormats = [
   { value: 'yyyy-MM-dd', label: 'YYYY-MM-DD' },
   { value: 'dd/MM/yyyy', label: 'DD/MM/YYYY' },
-  { value: 'MM/dd/yyyy', label: 'MM/DD/YYYY' }
+  { value: 'MM/dd/yyyy', label: 'MM/DD/YYYY' },
+  { value: 'dd.MM.yyyy', label: 'DD.MM.YYYY' },
+  { value: 'yyyy/MM/dd', label: 'YYYY/MM/DD' }
 ];
 
 const SettingsModal = ({

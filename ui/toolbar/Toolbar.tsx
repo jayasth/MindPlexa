@@ -7,7 +7,6 @@ import { PiNetworkFill } from 'react-icons/pi';
 import {
   IoHome,
   IoList,
-  IoCalendar,
   IoBrush,
   IoArrowUndo,
   IoArrowRedo,
@@ -16,7 +15,8 @@ import {
   IoApps
 } from 'react-icons/io5';
 import { PiNotepadFill } from 'react-icons/pi';
-import { FaTable } from 'react-icons/fa6';
+import { MdCalendarMonth } from 'react-icons/md';
+import { AiOutlineTable } from 'react-icons/ai';
 
 import Link from 'next/link';
 import {
@@ -168,14 +168,14 @@ const Toolbar: React.FC<ToolbarProps> = ({
               className={buttonClass}
               title="Table"
             >
-              <FaTable size={iconSize} />
+              <AiOutlineTable size={iconSize} />
             </button>
             <button
               onClick={() => handleAddNode('calendar')}
               className={buttonClass}
               title="Calendar"
             >
-              <IoCalendar size={iconSize} />
+              <MdCalendarMonth size={iconSize} />
             </button>
             <button
               onClick={() => handleAddNode('draw')}
