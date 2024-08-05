@@ -23,22 +23,28 @@ export const DateEditor: React.FC<DateEditorProps> = (props) => {
   }, []);
 
   const parseDate = (value: string): Date | null => {
+    // Try parsing with the current dateFormat
+    let parsedDate = parse(value, dateFormat, new Date());
+    if (isValid(parsedDate)) {
+      return parsedDate;
+    }
+
+    // If that fails, try parsing with all possible formats
     const possibleFormats = [
       'yyyy-MM-dd',
       'dd/MM/yyyy',
       'MM/dd/yyyy',
       'dd.MM.yyyy',
-      'yyyy/MM/dd',
-      'yyyyMMdd',
-      'ddMMyyyy',
-      'MMddyyyy'
+      'yyyy/MM/dd'
     ];
     for (const fmt of possibleFormats) {
-      const parsedDate = parse(value, fmt, new Date());
+      parsedDate = parse(value, fmt, new Date());
       if (isValid(parsedDate)) {
         return parsedDate;
       }
     }
+
+    // If all fail, return null
     return null;
   };
 
@@ -72,28 +78,12 @@ export const DateEditor: React.FC<DateEditorProps> = (props) => {
     const formattedInput = formatInput(e.target.value);
     setInputValue(formattedInput);
     setPlaceholder('');
-
-    // Auto-advance logic
-    const [yearFormat, monthFormat, dayFormat] = dateFormat.split(/[-/.]/);
-    const [year, month, day] = formattedInput.split(/[-/.]/);
-
-    if (monthFormat === 'MM' && month.length === 2 && parseInt(month) > 12) {
-      const correctedMonth = '0' + month[0];
-      const newValue = formattedInput.replace(month, correctedMonth);
-      setInputValue(newValue);
-    }
-
-    if (dayFormat === 'dd' && day && day.length === 2 && parseInt(day) > 31) {
-      const correctedDay = '0' + day[0];
-      const newValue = formattedInput.replace(day, correctedDay);
-      setInputValue(newValue);
-    }
   };
 
   const updateCellValue = (value: string) => {
     const parsedDate = parseDate(value);
     if (parsedDate) {
-      const formattedDate = format(parsedDate, 'yyyy-MM-dd');
+      const formattedDate = format(parsedDate, dateFormat);
       props.stopEditing();
       props.node.setDataValue(props.column.getColId(), formattedDate);
     } else {
@@ -116,8 +106,8 @@ export const DateEditor: React.FC<DateEditorProps> = (props) => {
   const handleDatePickerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedDate = new Date(e.target.value);
     if (isValid(selectedDate)) {
-      const formattedDate = format(selectedDate, 'yyyy-MM-dd');
-      setInputValue(format(selectedDate, dateFormat));
+      const formattedDate = format(selectedDate, dateFormat);
+      setInputValue(formattedDate);
       updateCellValue(formattedDate);
     }
   };
