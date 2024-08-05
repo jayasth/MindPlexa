@@ -153,32 +153,42 @@ export const createNode = async (
       }
     }
 
-    const specificNodeInsert = {
-      node_id: nodeId,
-      ...(data[`${nodeType}Data`] || {})
-    };
+    if (nodeType !== 'selection_menu') {
+      const specificNodeInsert = {
+        node_id: nodeId,
+        ...(data[`${nodeType}Data`] || {})
+      };
 
-    const { data: specificNodeData, error: specificNodeError } =
-      await createNodeSpecificData(
-        nodeId,
-        nodeType as NodeType,
-        specificNodeInsert
-      );
+      const { data: specificNodeData, error: specificNodeError } =
+        await createNodeSpecificData(
+          nodeId,
+          nodeType as NodeType,
+          specificNodeInsert
+        );
 
-    if (specificNodeError) {
-      console.error(
-        `nodeService: Error inserting ${nodeType} node:`,
-        specificNodeError
-      );
-      return { error: specificNodeError };
+      if (specificNodeError) {
+        console.error(
+          `nodeService: Error inserting ${nodeType} node:`,
+          specificNodeError
+        );
+        return { error: specificNodeError };
+      }
+
+      console.log(`nodeService: ${nodeType} node created:`, specificNodeData);
+
+      return {
+        data: {
+          ...nodeData,
+          ...specificNodeData,
+          id: nodeId,
+          nodeId: nodeId
+        }
+      };
     }
-
-    console.log(`nodeService: ${nodeType} node created:`, specificNodeData);
 
     return {
       data: {
         ...nodeData,
-        ...specificNodeData,
         id: nodeId,
         nodeId: nodeId
       }

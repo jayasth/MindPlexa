@@ -115,7 +115,7 @@ export const createNode = async (
       positionAsXYPosition,
       {
         ...newNodeData,
-        type: nodeType === 'selection_menu' ? 'selection_menu' : nodeType
+        type: nodeType
       }
     );
 
