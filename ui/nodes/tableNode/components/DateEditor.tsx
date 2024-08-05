@@ -28,7 +28,10 @@ export const DateEditor: React.FC<DateEditorProps> = (props) => {
       'dd/MM/yyyy',
       'MM/dd/yyyy',
       'dd.MM.yyyy',
-      'yyyy/MM/dd'
+      'yyyy/MM/dd',
+      'yyyyMMdd',
+      'ddMMyyyy',
+      'MMddyyyy'
     ];
     for (const fmt of possibleFormats) {
       const parsedDate = parse(value, fmt, new Date());
@@ -87,20 +90,28 @@ export const DateEditor: React.FC<DateEditorProps> = (props) => {
     }
   };
 
+  const updateCellValue = (value: string) => {
+    const parsedDate = parseDate(value);
+    if (parsedDate) {
+      const formattedDate = format(parsedDate, 'yyyy-MM-dd');
+      props.stopEditing();
+      props.api.setFocusedCell(props.rowIndex + 1, props.column);
+      props.node.setDataValue(props.column.getColId(), formattedDate);
+    } else {
+      setInputValue('');
+      setPlaceholder(dateFormat.toLowerCase());
+      // Show warning toast here
+    }
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
-      const parsedDate = parseDate(inputValue);
-      if (parsedDate) {
-        const formattedDate = format(parsedDate, 'yyyy-MM-dd');
-        props.stopEditing();
-        props.api.setFocusedCell(props.rowIndex + 1, props.column);
-        props.node.setDataValue(props.column.getColId(), formattedDate);
-      } else {
-        setInputValue('');
-        setPlaceholder(dateFormat.toLowerCase());
-        // Show warning toast here
-      }
+      updateCellValue(inputValue);
     }
+  };
+
+  const handleBlur = () => {
+    updateCellValue(inputValue);
   };
 
   const handleDatePickerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -108,9 +119,7 @@ export const DateEditor: React.FC<DateEditorProps> = (props) => {
     if (isValid(selectedDate)) {
       const formattedDate = format(selectedDate, 'yyyy-MM-dd');
       setInputValue(format(selectedDate, dateFormat));
-      props.stopEditing();
-      props.api.setFocusedCell(props.rowIndex + 1, props.column);
-      props.node.setDataValue(props.column.getColId(), formattedDate);
+      updateCellValue(formattedDate);
     }
   };
 
@@ -128,6 +137,7 @@ export const DateEditor: React.FC<DateEditorProps> = (props) => {
         value={inputValue}
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
+        onBlur={handleBlur}
         className={styles.dateInput}
         placeholder={placeholder}
       />
