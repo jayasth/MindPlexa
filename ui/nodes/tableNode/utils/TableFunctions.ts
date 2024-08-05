@@ -24,8 +24,16 @@ export const validateCellValue = (value: any, type: string): boolean => {
       return emailRegex.test(value);
     case 'date':
       if (typeof value === 'string') {
-        const parsedDate = parse(value, 'yyyy-MM-dd', new Date());
-        return isValid(parsedDate);
+        const possibleFormats = [
+          'yyyy-MM-dd',
+          'dd/MM/yyyy',
+          'MM/dd/yyyy',
+          'dd.MM.yyyy',
+          'yyyy/MM/dd'
+        ];
+        return possibleFormats.some((fmt) =>
+          isValid(parse(value, fmt, new Date()))
+        );
       }
       return false;
     case 'currency':
@@ -60,7 +68,18 @@ export const formatCellValue = (
         : '';
     case 'date':
       if (value) {
-        const parsedDate = parse(value, 'yyyy-MM-dd', new Date());
+        const possibleFormats = [
+          'yyyy-MM-dd',
+          'dd/MM/yyyy',
+          'MM/dd/yyyy',
+          'dd.MM.yyyy',
+          'yyyy/MM/dd'
+        ];
+        let parsedDate;
+        for (const fmt of possibleFormats) {
+          parsedDate = parse(value, fmt, new Date());
+          if (isValid(parsedDate)) break;
+        }
         return isValid(parsedDate) ? format(parsedDate, dateFormat) : '';
       }
       return '';
@@ -114,22 +133,41 @@ export const onCellValueChanged = (
     return;
   }
 
-  let formattedValue = formatCellValue(newValue, columnType);
+  let formattedValue = formatCellValue(newValue, columnType, dateFormat);
 
   if (columnType === 'date') {
     if (newValue === '') {
       formattedValue = '';
     } else {
-      const parsedDate = parse(newValue, 'yyyy-MM-dd', new Date());
+      const possibleFormats = [
+        'yyyy-MM-dd',
+        'dd/MM/yyyy',
+        'MM/dd/yyyy',
+        'dd.MM.yyyy',
+        'yyyy/MM/dd'
+      ];
+      let parsedDate;
+
+      for (const fmt of possibleFormats) {
+        parsedDate = parse(newValue, fmt, new Date());
+        if (isValid(parsedDate)) break;
+      }
+
       if (isValid(parsedDate)) {
         formattedValue = format(parsedDate, dateFormat);
       } else {
         event.node.setDataValue(event.colDef.field, '');
         toast({
           title: 'Invalid Date',
-          description: `The date "${newValue}" is not valid. Please use the format ${dateFormat}.`,
+          description: `The date "${newValue}" is not valid. Please enter a valid date.`,
           variant: 'warning'
         });
+        setTimeout(() => {
+          event.api.startEditingCell({
+            rowIndex: event.rowIndex,
+            colKey: event.column.getColId()
+          });
+        }, 0);
         return;
       }
     }
@@ -261,15 +299,40 @@ export const getColumnDefs = (
         cellEditorParams: { dateFormat },
         cellRenderer: (params) => {
           if (params.value) {
-            const date = parse(params.value, 'yyyy-MM-dd', new Date());
-            return isValid(date) ? format(date, dateFormat) : params.value;
+            const possibleFormats = [
+              'yyyy-MM-dd',
+              'dd/MM/yyyy',
+              'MM/dd/yyyy',
+              'dd.MM.yyyy',
+              'yyyy/MM/dd'
+            ];
+            let parsedDate;
+            for (const fmt of possibleFormats) {
+              parsedDate = parse(params.value, fmt, new Date());
+              if (isValid(parsedDate)) break;
+            }
+            return isValid(parsedDate)
+              ? format(parsedDate, dateFormat)
+              : params.value;
           }
           return '';
         },
         filter: 'agDateColumnFilter',
         filterParams: {
           comparator: (filterLocalDateAtMidnight: Date, cellValue: string) => {
-            const cellDate = parse(cellValue, 'yyyy-MM-dd', new Date());
+            const possibleFormats = [
+              'yyyy-MM-dd',
+              'dd/MM/yyyy',
+              'MM/dd/yyyy',
+              'dd.MM.yyyy',
+              'yyyy/MM/dd'
+            ];
+            let cellDate;
+            for (const fmt of possibleFormats) {
+              cellDate = parse(cellValue, fmt, new Date());
+              if (isValid(cellDate)) break;
+            }
+            if (!isValid(cellDate)) return 0;
             if (cellDate < filterLocalDateAtMidnight) {
               return -1;
             } else if (cellDate > filterLocalDateAtMidnight) {
@@ -298,15 +361,20 @@ function getFilterParams(type: string) {
           'inRange'
         ],
         comparator: (filterLocalDateAtMidnight, cellValue) => {
-          const dateAsString = cellValue;
-          if (dateAsString == null) return -1;
-          const dateParts = dateAsString.split('-');
-          const cellDate = new Date(
-            Number(dateParts[0]),
-            Number(dateParts[1]) - 1,
-            Number(dateParts[2])
-          );
-          if (filterLocalDateAtMidnight.getTime() === cellDate.getTime()) {
+          const possibleFormats = [
+            'yyyy-MM-dd',
+            'dd/MM/yyyy',
+            'MM/dd/yyyy',
+            'dd.MM.yyyy',
+            'yyyy/MM/dd'
+          ];
+          let cellDate;
+          for (const fmt of possibleFormats) {
+            cellDate = parse(cellValue, fmt, new Date());
+            if (isValid(cellDate)) break;
+          }
+          if (!isValid(cellDate)) return 0;
+          if (cellDate.getTime() === filterLocalDateAtMidnight.getTime()) {
             return 0;
           }
           if (cellDate < filterLocalDateAtMidnight) {
@@ -399,7 +467,18 @@ function getValueFormatter(type: string, dateFormat: string) {
     case 'date':
       return (params) => {
         if (params.value) {
-          const parsedDate = parse(params.value, 'yyyy-MM-dd', new Date());
+          const possibleFormats = [
+            'yyyy-MM-dd',
+            'dd/MM/yyyy',
+            'MM/dd/yyyy',
+            'dd.MM.yyyy',
+            'yyyy/MM/dd'
+          ];
+          let parsedDate;
+          for (const fmt of possibleFormats) {
+            parsedDate = parse(params.value, fmt, new Date());
+            if (isValid(parsedDate)) break;
+          }
           return isValid(parsedDate) ? format(parsedDate, dateFormat) : '';
         }
         return '';
