@@ -24,16 +24,7 @@ export const validateCellValue = (value: any, type: string): boolean => {
       return emailRegex.test(value);
     case 'date':
       if (typeof value === 'string') {
-        const possibleFormats = [
-          'yyyy-MM-dd',
-          'dd/MM/yyyy',
-          'MM/dd/yyyy',
-          'dd.MM.yyyy',
-          'yyyy/MM/dd'
-        ];
-        return possibleFormats.some((fmt) =>
-          isValid(parse(value, fmt, new Date()))
-        );
+        return validateDate(value);
       }
       return false;
     case 'currency':
@@ -53,6 +44,17 @@ export const validateCellValue = (value: any, type: string): boolean => {
   }
 };
 
+const validateDate = (value: string): boolean => {
+  const possibleFormats = [
+    'yyyy-MM-dd',
+    'dd/MM/yyyy',
+    'MM/dd/yyyy',
+    'dd.MM.yyyy',
+    'yyyy/MM/dd'
+  ];
+  return possibleFormats.some((fmt) => isValid(parse(value, fmt, new Date())));
+};
+
 export const formatCellValue = (
   value: any,
   type: string,
@@ -68,26 +70,34 @@ export const formatCellValue = (
         : '';
     case 'date':
       if (value) {
-        const possibleFormats = [
-          'yyyy-MM-dd',
-          'dd/MM/yyyy',
-          'MM/dd/yyyy',
-          'dd.MM.yyyy',
-          'yyyy/MM/dd'
-        ];
-        let parsedDate;
-        for (const fmt of possibleFormats) {
-          parsedDate = parse(value, fmt, new Date());
-          if (isValid(parsedDate)) break;
-        }
-        return isValid(parsedDate) ? format(parsedDate, dateFormat) : '';
+        const parsedDate = parseDate(value);
+        return parsedDate ? format(parsedDate, dateFormat) : '';
       }
       return '';
     case 'percentage':
-      return `${Number(value).toFixed(2)}%`;
+      return value ? `${Number(value).toFixed(2)}%` : '';
     default:
-      return value;
+      return value ?? '';
   }
+};
+
+const parseDate = (value: string | null): Date | null => {
+  if (!value) return null;
+
+  const possibleFormats = [
+    'yyyy-MM-dd',
+    'dd/MM/yyyy',
+    'MM/dd/yyyy',
+    'dd.MM.yyyy',
+    'yyyy/MM/dd'
+  ];
+  for (const fmt of possibleFormats) {
+    const parsedDate = parse(value, fmt, new Date());
+    if (isValid(parsedDate)) {
+      return parsedDate;
+    }
+  }
+  return null;
 };
 
 export const onCellValueChanged = (
@@ -139,21 +149,8 @@ export const onCellValueChanged = (
     if (newValue === '') {
       formattedValue = '';
     } else {
-      const possibleFormats = [
-        'yyyy-MM-dd',
-        'dd/MM/yyyy',
-        'MM/dd/yyyy',
-        'dd.MM.yyyy',
-        'yyyy/MM/dd'
-      ];
-      let parsedDate;
-
-      for (const fmt of possibleFormats) {
-        parsedDate = parse(newValue, fmt, new Date());
-        if (isValid(parsedDate)) break;
-      }
-
-      if (isValid(parsedDate)) {
+      const parsedDate = parseDate(newValue);
+      if (parsedDate) {
         formattedValue = format(parsedDate, dateFormat);
       } else {
         event.node.setDataValue(event.colDef.field, '');
@@ -208,7 +205,8 @@ export const gridOptions: GridOptions = {
       filter: 'agDateColumnFilter',
       filterParams: {
         comparator: (filterLocalDateAtMidnight: Date, cellValue: string) => {
-          const cellDate = parse(cellValue, 'yyyy-MM-dd', new Date());
+          const cellDate = parseDate(cellValue);
+          if (!cellDate) return 0;
           if (cellDate < filterLocalDateAtMidnight) {
             return -1;
           } else if (cellDate > filterLocalDateAtMidnight) {
@@ -298,41 +296,14 @@ export const getColumnDefs = (
         cellEditor: 'dateEditor',
         cellEditorParams: { dateFormat },
         cellRenderer: (params) => {
-          if (params.value) {
-            const possibleFormats = [
-              'yyyy-MM-dd',
-              'dd/MM/yyyy',
-              'MM/dd/yyyy',
-              'dd.MM.yyyy',
-              'yyyy/MM/dd'
-            ];
-            let parsedDate;
-            for (const fmt of possibleFormats) {
-              parsedDate = parse(params.value, fmt, new Date());
-              if (isValid(parsedDate)) break;
-            }
-            return isValid(parsedDate)
-              ? format(parsedDate, dateFormat)
-              : params.value;
-          }
-          return '';
+          const parsedDate = parseDate(params.value);
+          return parsedDate ? format(parsedDate, dateFormat) : params.value;
         },
         filter: 'agDateColumnFilter',
         filterParams: {
           comparator: (filterLocalDateAtMidnight: Date, cellValue: string) => {
-            const possibleFormats = [
-              'yyyy-MM-dd',
-              'dd/MM/yyyy',
-              'MM/dd/yyyy',
-              'dd.MM.yyyy',
-              'yyyy/MM/dd'
-            ];
-            let cellDate;
-            for (const fmt of possibleFormats) {
-              cellDate = parse(cellValue, fmt, new Date());
-              if (isValid(cellDate)) break;
-            }
-            if (!isValid(cellDate)) return 0;
+            const cellDate = parseDate(cellValue);
+            if (!cellDate) return 0;
             if (cellDate < filterLocalDateAtMidnight) {
               return -1;
             } else if (cellDate > filterLocalDateAtMidnight) {
@@ -361,19 +332,8 @@ function getFilterParams(type: string) {
           'inRange'
         ],
         comparator: (filterLocalDateAtMidnight, cellValue) => {
-          const possibleFormats = [
-            'yyyy-MM-dd',
-            'dd/MM/yyyy',
-            'MM/dd/yyyy',
-            'dd.MM.yyyy',
-            'yyyy/MM/dd'
-          ];
-          let cellDate;
-          for (const fmt of possibleFormats) {
-            cellDate = parse(cellValue, fmt, new Date());
-            if (isValid(cellDate)) break;
-          }
-          if (!isValid(cellDate)) return 0;
+          const cellDate = parseDate(cellValue);
+          if (!cellDate) return 0;
           if (cellDate.getTime() === filterLocalDateAtMidnight.getTime()) {
             return 0;
           }
@@ -466,22 +426,8 @@ function getValueFormatter(type: string, dateFormat: string) {
           : '';
     case 'date':
       return (params) => {
-        if (params.value) {
-          const possibleFormats = [
-            'yyyy-MM-dd',
-            'dd/MM/yyyy',
-            'MM/dd/yyyy',
-            'dd.MM.yyyy',
-            'yyyy/MM/dd'
-          ];
-          let parsedDate;
-          for (const fmt of possibleFormats) {
-            parsedDate = parse(params.value, fmt, new Date());
-            if (isValid(parsedDate)) break;
-          }
-          return isValid(parsedDate) ? format(parsedDate, dateFormat) : '';
-        }
-        return '';
+        const parsedDate = parseDate(params.value);
+        return parsedDate ? format(parsedDate, dateFormat) : '';
       };
     default:
       return null;

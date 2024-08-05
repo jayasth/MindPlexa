@@ -9,6 +9,9 @@ interface DateEditorProps extends ICellEditorParams {
 
 export const DateEditor: React.FC<DateEditorProps> = (props) => {
   const [inputValue, setInputValue] = useState(props.value || '');
+  const [placeholder, setPlaceholder] = useState(
+    props.dateFormat.toLowerCase()
+  );
   const inputRef = useRef<HTMLInputElement>(null);
   const datePickerRef = useRef<HTMLInputElement>(null);
   const dateFormat = props.dateFormat || 'yyyy-MM-dd';
@@ -36,20 +39,49 @@ export const DateEditor: React.FC<DateEditorProps> = (props) => {
     return null;
   };
 
+  const formatInput = (input: string): string => {
+    const digits = input.replace(/\D/g, '');
+    const formatChars = dateFormat.replace(/[a-zA-Z]/g, '');
+    let result = '';
+    let digitIndex = 0;
+
+    for (let i = 0; i < dateFormat.length; i++) {
+      if (
+        dateFormat[i] === 'y' ||
+        dateFormat[i] === 'M' ||
+        dateFormat[i] === 'd'
+      ) {
+        if (digitIndex < digits.length) {
+          result += digits[digitIndex];
+          digitIndex++;
+        } else {
+          result += dateFormat[i];
+        }
+      } else {
+        result += formatChars[i] || dateFormat[i];
+      }
+    }
+
+    return result;
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setInputValue(e.target.value);
+    const formattedInput = formatInput(e.target.value);
+    setInputValue(formattedInput);
+    setPlaceholder('');
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       const parsedDate = parseDate(inputValue);
       if (parsedDate) {
-        const formattedDate = format(parsedDate, dateFormat);
+        const formattedDate = format(parsedDate, 'yyyy-MM-dd');
         props.stopEditing();
         props.api.setFocusedCell(props.rowIndex + 1, props.column);
         props.node.setDataValue(props.column.getColId(), formattedDate);
       } else {
         setInputValue('');
+        setPlaceholder(dateFormat.toLowerCase());
         // Show warning toast here
       }
     }
@@ -58,8 +90,8 @@ export const DateEditor: React.FC<DateEditorProps> = (props) => {
   const handleDatePickerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedDate = new Date(e.target.value);
     if (isValid(selectedDate)) {
-      const formattedDate = format(selectedDate, dateFormat);
-      setInputValue(formattedDate);
+      const formattedDate = format(selectedDate, 'yyyy-MM-dd');
+      setInputValue(format(selectedDate, dateFormat));
       props.stopEditing();
       props.api.setFocusedCell(props.rowIndex + 1, props.column);
       props.node.setDataValue(props.column.getColId(), formattedDate);
@@ -81,7 +113,7 @@ export const DateEditor: React.FC<DateEditorProps> = (props) => {
         onChange={handleInputChange}
         onKeyDown={handleKeyDown}
         className={styles.dateInput}
-        placeholder={dateFormat.toLowerCase()}
+        placeholder={placeholder}
       />
       <button onClick={toggleDatePicker} className={styles.calendarButton}>
         📅
