@@ -95,7 +95,6 @@ export const DateEditor: React.FC<DateEditorProps> = (props) => {
     if (parsedDate) {
       const formattedDate = format(parsedDate, 'yyyy-MM-dd');
       props.stopEditing();
-      props.api.setFocusedCell(props.rowIndex + 1, props.column);
       props.node.setDataValue(props.column.getColId(), formattedDate);
     } else {
       setInputValue('');
