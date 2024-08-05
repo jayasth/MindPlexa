@@ -24,8 +24,16 @@ export const validateCellValue = (value: any, type: string): boolean => {
       return emailRegex.test(value);
     case 'date':
       if (typeof value === 'string') {
-        const parsedDate = parse(value, 'yyyy-MM-dd', new Date());
-        return isValid(parsedDate);
+        const possibleFormats = [
+          'yyyy-MM-dd',
+          'dd/MM/yyyy',
+          'MM/dd/yyyy',
+          'dd.MM.yyyy',
+          'yyyy/MM/dd'
+        ];
+        return possibleFormats.some((fmt) =>
+          isValid(parse(value, fmt, new Date()))
+        );
       }
       return false;
     case 'currency':
@@ -60,7 +68,18 @@ export const formatCellValue = (
         : '';
     case 'date':
       if (value) {
-        const parsedDate = parse(value, 'yyyy-MM-dd', new Date());
+        const possibleFormats = [
+          'yyyy-MM-dd',
+          'dd/MM/yyyy',
+          'MM/dd/yyyy',
+          'dd.MM.yyyy',
+          'yyyy/MM/dd'
+        ];
+        let parsedDate;
+        for (const fmt of possibleFormats) {
+          parsedDate = parse(value, fmt, new Date());
+          if (isValid(parsedDate)) break;
+        }
         return isValid(parsedDate) ? format(parsedDate, dateFormat) : '';
       }
       return '';
@@ -71,7 +90,14 @@ export const formatCellValue = (
   }
 };
 
-export const onCellValueChanged = (event, setContent) => {
+export const onCellValueChanged = (
+  event,
+  setContent,
+  nodeId,
+  canvasId,
+  updateNode,
+  dateFormat
+) => {
   console.log('TableonCellValueChanged triggered');
   const oldValue = event.oldValue;
   let newValue = event.newValue;
@@ -87,32 +113,8 @@ export const onCellValueChanged = (event, setContent) => {
     newValue = '';
   }
 
-  if (newValue === '') {
-    event.node.data.invalid = false;
-    event.api.refreshCells({
-      rowNodes: [event.node],
-      columns: [event.colDef.field]
-    });
-    setContent((prevContent) => {
-      const updatedRows = prevContent.rows.map((row, index) => {
-        if (index === event.rowIndex) {
-          return { ...row, [event.colDef.field]: '' };
-        }
-        return row;
-      });
-      return { ...prevContent, rows: updatedRows };
-    });
-    return;
-  }
-
   if (!validateCellValue(newValue, columnType)) {
-    event.node.data.invalid = true;
-    event.api.stopEditing();
-    event.api.refreshCells({
-      rowNodes: [event.node],
-      columns: [event.colDef.field]
-    });
-
+    event.node.setDataValue(event.colDef.field, oldValue);
     console.log(
       `TableFunctions: Invalid value for column type "${columnType}": ${newValue}`
     );
@@ -121,41 +123,73 @@ export const onCellValueChanged = (event, setContent) => {
       description: `Invalid value for column type "${columnType}": ${newValue}`,
       variant: 'warning'
     });
-  } else {
-    let formattedValue = formatCellValue(newValue, columnType);
+    // Prevent focus from moving to the next cell and keep editing mode
+    setTimeout(() => {
+      event.api.startEditingCell({
+        rowIndex: event.rowIndex,
+        colKey: event.column.getColId()
+      });
+    }, 0);
+    return;
+  }
 
-    if (columnType === 'date') {
-      const parsedDate = parse(newValue, 'yyyy-MM-dd', new Date());
+  let formattedValue = formatCellValue(newValue, columnType, dateFormat);
+
+  if (columnType === 'date') {
+    if (newValue === '') {
+      formattedValue = '';
+    } else {
+      const possibleFormats = [
+        'yyyy-MM-dd',
+        'dd/MM/yyyy',
+        'MM/dd/yyyy',
+        'dd.MM.yyyy',
+        'yyyy/MM/dd'
+      ];
+      let parsedDate;
+
+      for (const fmt of possibleFormats) {
+        parsedDate = parse(newValue, fmt, new Date());
+        if (isValid(parsedDate)) break;
+      }
+
       if (isValid(parsedDate)) {
-        formattedValue = format(parsedDate, 'yyyy-MM-dd');
+        formattedValue = format(parsedDate, dateFormat);
       } else {
-        event.node.data.invalid = true;
+        event.node.setDataValue(event.colDef.field, '');
         toast({
           title: 'Invalid Date',
-          description: `The date "${newValue}" is not valid.`,
+          description: `The date "${newValue}" is not valid. Please enter a valid date.`,
           variant: 'warning'
         });
+        setTimeout(() => {
+          event.api.startEditingCell({
+            rowIndex: event.rowIndex,
+            colKey: event.column.getColId()
+          });
+        }, 0);
         return;
       }
     }
-
-    setContent((prevContent) => {
-      const updatedRows = prevContent.rows.map((row, index) => {
-        if (index === event.rowIndex) {
-          return { ...row, [event.colDef.field]: formattedValue };
-        }
-        return row;
-      });
-      return { ...prevContent, rows: updatedRows };
-    });
-
-    event.node.setDataValue(event.colDef.field, formattedValue);
-    event.node.data.invalid = false;
-    event.api.refreshCells({
-      rowNodes: [event.node],
-      columns: [event.colDef.field]
-    });
   }
+
+  setContent((prevContent) => {
+    const newRows = prevContent.rows.map((row, index) =>
+      index === event.rowIndex
+        ? { ...row, [event.colDef.field]: formattedValue }
+        : { ...row }
+    );
+
+    const newContent = {
+      ...prevContent,
+      rows: newRows
+    };
+
+    // Update the node with the new content
+    updateNode(nodeId, canvasId, newContent);
+
+    return newContent;
+  });
 };
 
 /* Column Operations */
@@ -215,7 +249,7 @@ export const getColumnDefs = (
 ): ColDef[] => {
   return content.columns.map((col) => {
     const { ...restCol } = col;
-    const baseColumnDef = {
+    const baseColumnDef: ColDef = {
       ...restCol,
       type: col.type,
       headerName: col.headerName,
@@ -235,9 +269,7 @@ export const getColumnDefs = (
       colId: col.field,
       cellRenderer: CustomCellRenderer,
       floatingFilterComponent: CustomFloatingFilter,
-      floatingFilterComponentParams: {
-        suppressFilterButton: true
-      },
+      suppressFloatingFilterButton: true,
       cellStyle: (params) => {
         const isValid = validateCellValue(params.value, col.type);
         const invalidCellStyle: CSSProperties = {
@@ -246,8 +278,8 @@ export const getColumnDefs = (
           color: '#721c24'
         };
         const focusStyle: CSSProperties = {
-          outline: '2px solid #7c3aed',
-          outlineOffset: '-1px'
+          // outline: '2px solid #7c3aed',
+          // outlineOffset: '-1px'
         };
         const isFocused =
           params.api.getFocusedCell()?.rowIndex === params.rowIndex &&
@@ -261,20 +293,40 @@ export const getColumnDefs = (
     };
 
     if (col.type === 'date') {
+      const parseDate = (value: string) => {
+        const possibleFormats = [
+          'yyyy-MM-dd',
+          'dd/MM/yyyy',
+          'MM/dd/yyyy',
+          'dd.MM.yyyy',
+          'yyyy/MM/dd'
+        ];
+        let parsedDate;
+        for (const fmt of possibleFormats) {
+          parsedDate = parse(value, fmt, new Date());
+          if (isValid(parsedDate)) return parsedDate;
+        }
+        return null;
+      };
+
       return {
         ...baseColumnDef,
         cellEditor: DateEditor,
-        cellEditorParams: { dateFormat },
-        cellEditorPopup: true,
+        cellEditorParams: {
+          dateFormat: dateFormat
+        },
         cellRenderer: (params) => {
-          return params.value
-            ? format(parse(params.value, 'yyyy-MM-dd', new Date()), dateFormat)
-            : '';
+          if (params.value) {
+            const parsedDate = parseDate(params.value);
+            return parsedDate ? format(parsedDate, dateFormat) : params.value;
+          }
+          return '';
         },
         filter: 'agDateColumnFilter',
         filterParams: {
           comparator: (filterLocalDateAtMidnight: Date, cellValue: string) => {
-            const cellDate = parse(cellValue, 'yyyy-MM-dd', new Date());
+            const cellDate = parseDate(cellValue);
+            if (!cellDate) return 0;
             if (cellDate < filterLocalDateAtMidnight) {
               return -1;
             } else if (cellDate > filterLocalDateAtMidnight) {
@@ -303,15 +355,20 @@ function getFilterParams(type: string) {
           'inRange'
         ],
         comparator: (filterLocalDateAtMidnight, cellValue) => {
-          const dateAsString = cellValue;
-          if (dateAsString == null) return -1;
-          const dateParts = dateAsString.split('-');
-          const cellDate = new Date(
-            Number(dateParts[0]),
-            Number(dateParts[1]) - 1,
-            Number(dateParts[2])
-          );
-          if (filterLocalDateAtMidnight.getTime() === cellDate.getTime()) {
+          const possibleFormats = [
+            'yyyy-MM-dd',
+            'dd/MM/yyyy',
+            'MM/dd/yyyy',
+            'dd.MM.yyyy',
+            'yyyy/MM/dd'
+          ];
+          let cellDate;
+          for (const fmt of possibleFormats) {
+            cellDate = parse(cellValue, fmt, new Date());
+            if (isValid(cellDate)) break;
+          }
+          if (!isValid(cellDate)) return 0;
+          if (cellDate.getTime() === filterLocalDateAtMidnight.getTime()) {
             return 0;
           }
           if (cellDate < filterLocalDateAtMidnight) {
@@ -404,7 +461,18 @@ function getValueFormatter(type: string, dateFormat: string) {
     case 'date':
       return (params) => {
         if (params.value) {
-          const parsedDate = parse(params.value, 'yyyy-MM-dd', new Date());
+          const possibleFormats = [
+            'yyyy-MM-dd',
+            'dd/MM/yyyy',
+            'MM/dd/yyyy',
+            'dd.MM.yyyy',
+            'yyyy/MM/dd'
+          ];
+          let parsedDate;
+          for (const fmt of possibleFormats) {
+            parsedDate = parse(params.value, fmt, new Date());
+            if (isValid(parsedDate)) break;
+          }
           return isValid(parsedDate) ? format(parsedDate, dateFormat) : '';
         }
         return '';

@@ -1,17 +1,18 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ICellEditorParams } from 'ag-grid-community';
-import { format, parse, isValid } from 'date-fns';
-import styles from '../styles/DateEditor.module.css';
+import { parse, format, isValid } from 'date-fns';
+import styles from '@/ui/nodes/tableNode/styles/DateEditor.module.css';
 
-export const DateEditor = (props: ICellEditorParams) => {
-  const [date, setDate] = useState(() => {
-    return props.value
-      ? parse(props.value, 'yyyy-MM-dd', new Date())
-      : new Date();
-  });
+interface DateEditorProps extends ICellEditorParams {
+  dateFormat: string;
+}
+
+export const DateEditor: React.FC<DateEditorProps> = (props) => {
   const [inputValue, setInputValue] = useState(props.value || '');
-  const [dateFormat, setDateFormat] = useState('yyyy-MM-dd');
+  const [isPickerVisible, setIsPickerVisible] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const datePickerRef = useRef<HTMLInputElement>(null);
+  const dateFormat = props.dateFormat || 'yyyy-MM-dd';
 
   useEffect(() => {
     if (inputRef.current) {
@@ -19,36 +20,61 @@ export const DateEditor = (props: ICellEditorParams) => {
     }
   }, []);
 
-  const updateCellValue = (value: string) => {
-    const formattedDate = format(
-      parse(value, dateFormat, new Date()),
-      'yyyy-MM-dd'
-    );
-    props.node.setDataValue(props.column.getColId(), formattedDate);
-    props.api.stopEditing();
+  const parseDate = (value: string): Date | null => {
+    const possibleFormats = [
+      'yyyy-MM-dd',
+      'dd/MM/yyyy',
+      'MM/dd/yyyy',
+      'dd.MM.yyyy',
+      'yyyy/MM/dd'
+    ];
+    for (const fmt of possibleFormats) {
+      const parsedDate = parse(value, fmt, new Date());
+      if (isValid(parsedDate)) {
+        return parsedDate;
+      }
+    }
+    return null;
   };
 
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setInputValue(value);
+
+    // Auto-insert separators
+    if (value.length === 4 || value.length === 7) {
+      setInputValue(value + '-');
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
-      const parsedDate = parse(inputValue, dateFormat, new Date());
-      if (isValid(parsedDate)) {
-        updateCellValue(format(parsedDate, 'yyyy-MM-dd'));
-        props.api.stopEditing();
+      const parsedDate = parseDate(inputValue);
+      if (parsedDate) {
+        const formattedDate = format(parsedDate, dateFormat);
+        props.stopEditing();
+        props.api.setFocusedCell(props.rowIndex + 1, props.column);
       } else {
-        e.preventDefault();
+        setInputValue('');
+        // Show warning toast here
       }
     }
   };
 
-  const handleBlur = () => {
-    const parsedDate = parse(inputValue, dateFormat, new Date());
-    if (isValid(parsedDate)) {
-      updateCellValue(format(parsedDate, 'yyyy-MM-dd'));
+  const handleDatePickerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedDate = new Date(e.target.value);
+    if (isValid(selectedDate)) {
+      const formattedDate = format(selectedDate, dateFormat);
+      setInputValue(formattedDate);
+      props.stopEditing();
+      props.api.setFocusedCell(props.rowIndex + 1, props.column);
+    }
+  };
+
+  const toggleDatePicker = () => {
+    setIsPickerVisible(!isPickerVisible);
+    if (!isPickerVisible && datePickerRef.current) {
+      datePickerRef.current.showPicker();
     }
   };
 
@@ -56,13 +82,25 @@ export const DateEditor = (props: ICellEditorParams) => {
     <div className={styles.dateEditorContainer}>
       <input
         ref={inputRef}
-        type="date"
+        type="text"
         value={inputValue}
-        onChange={handleDateChange}
+        onChange={handleInputChange}
         onKeyDown={handleKeyDown}
-        onBlur={handleBlur}
         className={styles.dateInput}
+        placeholder={dateFormat.toLowerCase()}
+      />
+      <button onClick={toggleDatePicker} className={styles.calendarButton}>
+        📅
+      </button>
+      <input
+        ref={datePickerRef}
+        type="date"
+        onChange={handleDatePickerChange}
+        className={styles.datePicker}
+        style={{ display: 'none' }}
       />
     </div>
   );
 };
+
+export default DateEditor;
