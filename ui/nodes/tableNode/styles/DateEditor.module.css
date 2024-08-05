@@ -15,14 +15,6 @@
   height: 100%;
 }
 
-.datePickerIcon {
-  position: absolute;
-  right: 5px;
-  top: 50%;
-  transform: translateY(-50%);
-  pointer-events: none;
-}
-
 .calendarButton {
   position: absolute;
   right: 5px;
@@ -37,31 +29,9 @@
   top: 100%;
   left: 0;
   z-index: 1000;
-}
-
-.popupContainer {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  background-color: white;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  padding: 4px;
-  display: flex;
-  flex-direction: row;
-  gap: 2px;
-  z-index: 1000;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.yearSelect {
-  width: 60px;
-}
-
-.monthSelect {
-  width: 50px;
-}
-
-.daySelect {
-  width: 40px;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  padding: 0;
+  border: none;
 }

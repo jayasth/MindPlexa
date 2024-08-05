@@ -9,7 +9,6 @@ interface DateEditorProps extends ICellEditorParams {
 
 export const DateEditor: React.FC<DateEditorProps> = (props) => {
   const [inputValue, setInputValue] = useState(props.value || '');
-  const [isPickerVisible, setIsPickerVisible] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const datePickerRef = useRef<HTMLInputElement>(null);
   const dateFormat = props.dateFormat || 'yyyy-MM-dd';
@@ -38,13 +37,7 @@ export const DateEditor: React.FC<DateEditorProps> = (props) => {
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setInputValue(value);
-
-    // Auto-insert separators
-    if (value.length === 4 || value.length === 7) {
-      setInputValue(value + '-');
-    }
+    setInputValue(e.target.value);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -54,6 +47,7 @@ export const DateEditor: React.FC<DateEditorProps> = (props) => {
         const formattedDate = format(parsedDate, dateFormat);
         props.stopEditing();
         props.api.setFocusedCell(props.rowIndex + 1, props.column);
+        props.node.setDataValue(props.column.getColId(), formattedDate);
       } else {
         setInputValue('');
         // Show warning toast here
@@ -68,12 +62,12 @@ export const DateEditor: React.FC<DateEditorProps> = (props) => {
       setInputValue(formattedDate);
       props.stopEditing();
       props.api.setFocusedCell(props.rowIndex + 1, props.column);
+      props.node.setDataValue(props.column.getColId(), formattedDate);
     }
   };
 
   const toggleDatePicker = () => {
-    setIsPickerVisible(!isPickerVisible);
-    if (!isPickerVisible && datePickerRef.current) {
+    if (datePickerRef.current) {
       datePickerRef.current.showPicker();
     }
   };
@@ -97,7 +91,6 @@ export const DateEditor: React.FC<DateEditorProps> = (props) => {
         type="date"
         onChange={handleDatePickerChange}
         className={styles.datePicker}
-        style={{ display: 'none' }}
       />
     </div>
   );
