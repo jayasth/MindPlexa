@@ -31,11 +31,6 @@ export const DateEditor = (props: ICellEditorParams) => {
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setInputValue(value);
-    const parsedDate = parse(value, dateFormat, new Date());
-    if (isValid(parsedDate)) {
-      setDate(parsedDate);
-      updateCellValue(format(parsedDate, 'yyyy-MM-dd'));
-    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -50,6 +45,13 @@ export const DateEditor = (props: ICellEditorParams) => {
     }
   };
 
+  const handleBlur = () => {
+    const parsedDate = parse(inputValue, dateFormat, new Date());
+    if (isValid(parsedDate)) {
+      updateCellValue(format(parsedDate, 'yyyy-MM-dd'));
+    }
+  };
+
   return (
     <div className={styles.dateEditorContainer}>
       <input
@@ -58,6 +60,7 @@ export const DateEditor = (props: ICellEditorParams) => {
         value={inputValue}
         onChange={handleDateChange}
         onKeyDown={handleKeyDown}
+        onBlur={handleBlur}
         className={styles.dateInput}
       />
     </div>
