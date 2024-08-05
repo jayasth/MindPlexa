@@ -69,6 +69,22 @@ export const DateEditor: React.FC<DateEditorProps> = (props) => {
     const formattedInput = formatInput(e.target.value);
     setInputValue(formattedInput);
     setPlaceholder('');
+
+    // Auto-advance logic
+    const [yearFormat, monthFormat, dayFormat] = dateFormat.split(/[-/.]/);
+    const [year, month, day] = formattedInput.split(/[-/.]/);
+
+    if (monthFormat === 'MM' && month.length === 2 && parseInt(month) > 12) {
+      const correctedMonth = '0' + month[0];
+      const newValue = formattedInput.replace(month, correctedMonth);
+      setInputValue(newValue);
+    }
+
+    if (dayFormat === 'dd' && day && day.length === 2 && parseInt(day) > 31) {
+      const correctedDay = '0' + day[0];
+      const newValue = formattedInput.replace(day, correctedDay);
+      setInputValue(newValue);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {

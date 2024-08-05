@@ -10,6 +10,25 @@ import { format, isValid, parse } from 'date-fns';
 
 /* Cell Operations */
 
+const parseDate = (value: string | null): Date | null => {
+  if (!value) return null;
+
+  const possibleFormats = [
+    'yyyy-MM-dd',
+    'dd/MM/yyyy',
+    'MM/dd/yyyy',
+    'dd.MM.yyyy',
+    'yyyy/MM/dd'
+  ];
+  for (const fmt of possibleFormats) {
+    const parsedDate = parse(value, fmt, new Date());
+    if (isValid(parsedDate)) {
+      return parsedDate;
+    }
+  }
+  return null;
+};
+
 export const validateCellValue = (value: any, type: string): boolean => {
   if (value === '' || value == null) {
     return true;
@@ -24,7 +43,7 @@ export const validateCellValue = (value: any, type: string): boolean => {
       return emailRegex.test(value);
     case 'date':
       if (typeof value === 'string') {
-        return validateDate(value);
+        return parseDate(value) !== null;
       }
       return false;
     case 'currency':
@@ -79,25 +98,6 @@ export const formatCellValue = (
     default:
       return value ?? '';
   }
-};
-
-const parseDate = (value: string | null): Date | null => {
-  if (!value) return null;
-
-  const possibleFormats = [
-    'yyyy-MM-dd',
-    'dd/MM/yyyy',
-    'MM/dd/yyyy',
-    'dd.MM.yyyy',
-    'yyyy/MM/dd'
-  ];
-  for (const fmt of possibleFormats) {
-    const parsedDate = parse(value, fmt, new Date());
-    if (isValid(parsedDate)) {
-      return parsedDate;
-    }
-  }
-  return null;
 };
 
 export const onCellValueChanged = (
@@ -293,7 +293,7 @@ export const getColumnDefs = (
     if (col.type === 'date') {
       return {
         ...baseColumnDef,
-        cellEditor: 'dateEditor',
+        cellEditor: DateEditor,
         cellEditorParams: { dateFormat },
         cellRenderer: (params) => {
           const parsedDate = parseDate(params.value);
