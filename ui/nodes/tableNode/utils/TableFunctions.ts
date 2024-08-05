@@ -117,16 +117,21 @@ export const onCellValueChanged = (
   let formattedValue = formatCellValue(newValue, columnType);
 
   if (columnType === 'date') {
-    const parsedDate = parse(newValue, dateFormat, new Date());
-    if (isValid(parsedDate)) {
-      formattedValue = format(parsedDate, 'yyyy-MM-dd');
+    if (newValue === '') {
+      formattedValue = '';
     } else {
-      toast({
-        title: 'Invalid Date',
-        description: `The date "${newValue}" is not valid. Please use the format ${dateFormat}.`,
-        variant: 'warning'
-      });
-      return;
+      const parsedDate = parse(newValue, 'yyyy-MM-dd', new Date());
+      if (isValid(parsedDate)) {
+        formattedValue = format(parsedDate, dateFormat);
+      } else {
+        event.node.setDataValue(event.colDef.field, '');
+        toast({
+          title: 'Invalid Date',
+          description: `The date "${newValue}" is not valid. Please use the format ${dateFormat}.`,
+          variant: 'warning'
+        });
+        return;
+      }
     }
   }
 

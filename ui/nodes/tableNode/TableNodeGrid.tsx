@@ -80,19 +80,29 @@ const TableNodeGrid: React.FC<TableNodeGridProps> = ({
 
   const gridOptions = {
     ...existingOptions,
-    onCellClicked: handleCellClick,
-    components: {
-      dateEditor: (props) => <DateEditor {...props} dateFormat={dateFormat} />
-    }
+    onCellClicked: handleCellClick
   };
 
-  const columnDefs = getColumnDefs(
-    content,
-    setContent,
-    updateNode,
-    gridRef,
-    dateFormat
-  );
+  const columnDefs = useMemo(() => {
+    return getColumnDefs(
+      content,
+      setContent,
+      updateNode,
+      gridRef,
+      dateFormat
+    ).map((colDef) => {
+      if (colDef.type === 'date') {
+        return {
+          ...colDef,
+          cellEditor: DateEditor,
+          cellEditorParams: {
+            dateFormat: dateFormat
+          }
+        };
+      }
+      return colDef;
+    });
+  }, [content, setContent, updateNode, gridRef, dateFormat]);
 
   const updateColumnState = () => {
     if (gridRef.current) {
