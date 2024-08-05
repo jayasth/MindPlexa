@@ -86,7 +86,7 @@ export const createNode = async (
     isTemporary: isTemporary,
     parentNodeId: parentNode ? parentNode.id : null,
     zIndex: 0,
-    title: defaultTitle, // Add this line
+    title: defaultTitle,
     viewWidth:
       'width' in nodeDimension ? nodeDimension.width : nodeDimension.viewWidth,
     viewHeight:
