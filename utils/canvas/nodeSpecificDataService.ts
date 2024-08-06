@@ -30,7 +30,6 @@ export const getNodeSpecificData = async (
   nodeType: NodeType | SpecialNodeType
 ): Promise<any | null> => {
   if (nodeType === 'selection_menu') {
-    // Return an empty object or null for selection_menu
     return {};
   }
 

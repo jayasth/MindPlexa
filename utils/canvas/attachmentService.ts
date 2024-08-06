@@ -20,6 +20,7 @@ export const addAttachment = async (
   nodeId: string,
   attachment: { type: 'file' | 'url'; content: File | string }
 ): Promise<Attachment | null> => {
+  const attachmentId = uuidv4();
   if (attachment.type === 'file' && attachment.content instanceof File) {
     const file = attachment.content;
     const filePath = `node-attachments/${nodeId}/${file.name}`;
@@ -36,9 +37,9 @@ export const addAttachment = async (
     const { data, error: insertError } = await supabase
       .from('node_attachments')
       .insert({
-        id: uuidv4(),
+        id: attachmentId,
         node_id: nodeId,
-        type: 'file' as 'file',
+        type: 'file',
         file_name: file.name,
         file_size: file.size,
         storage_path: filePath,
@@ -58,9 +59,9 @@ export const addAttachment = async (
     const { data, error: insertError } = await supabase
       .from('node_attachments')
       .insert({
-        id: uuidv4(),
+        id: attachmentId,
         node_id: nodeId,
-        type: 'url' as 'url',
+        type: 'url',
         url: attachment.content as string,
         is_file: false
       })

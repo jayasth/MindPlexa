@@ -64,7 +64,6 @@ export const createNode = async (
   const nodeId = temporaryNodeId || uuidv4();
   const nodeDimension = nodeDimensions[nodeType];
 
-  // Use the provided position directly for selection_menu, otherwise find optimal position
   const positionAsXYPosition =
     nodeType === 'selection_menu'
       ? position

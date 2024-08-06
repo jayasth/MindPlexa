@@ -128,6 +128,7 @@ export const createNode = async (
     parent_node_id: data.parent_node_id || null,
     z_index: data.z_index || 0
   };
+
   try {
     const { data: nodeData, error: nodeError } = await insertNode(nodeInsert);
 
