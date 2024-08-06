@@ -246,7 +246,6 @@ export const fetchCanvas = async (canvasId: string) => {
   };
 };
 
-// Function to save the state of the canvas and its nodes
 export const saveCanvasState = async (canvasId: string, canvasState: any) => {
   const { nodes, ...canvasData } = canvasState;
 

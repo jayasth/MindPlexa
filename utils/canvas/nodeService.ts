@@ -9,7 +9,6 @@ import {
   getAttachments
 } from '@/utils/canvas/attachmentService';
 import {
-  updateNodeSpecificData,
   createNodeSpecificData,
   deleteNodeSpecificData
 } from '@/utils/canvas/nodeSpecificDataService';
@@ -137,19 +136,12 @@ export const createNode = async (
       return { error: nodeError };
     }
 
-    console.log('nodeService: Node created:', nodeData);
-
     const { error: linkError } = await insertNodeCanvasLink(nodeId, canvasId);
 
     if (linkError) {
       console.error('nodeService: Error linking node to canvas:', linkError);
       return { error: linkError };
     }
-
-    console.log('nodeService: Node linked to canvas:', {
-      node_id: nodeId,
-      canvas_id: canvasId
-    });
 
     if ('attachedFiles' in data && Array.isArray(data.attachedFiles)) {
       for (const attachment of data.attachedFiles) {
@@ -177,8 +169,6 @@ export const createNode = async (
         );
         return { error: specificNodeError };
       }
-
-      console.log(`nodeService: ${nodeType} node created:`, specificNodeData);
 
       return {
         data: {

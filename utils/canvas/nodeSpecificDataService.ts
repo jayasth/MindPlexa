@@ -3,13 +3,8 @@ import { toCamelCase, toSnakeCase } from '@/utils/caseConversion';
 
 const supabase = createClient();
 
-type NodeType =
-  | 'note'
-  | 'task'
-  | 'calendar'
-  | 'table'
-  | 'draw'
-  | 'selection_menu';
+type NodeType = 'note' | 'task' | 'calendar' | 'table' | 'draw';
+type SpecialNodeType = 'selection_menu';
 
 export const uploadSVGToBucket = async (nodeId: string, svgContent: string) => {
   // Remove the data URL prefix if present
@@ -32,7 +27,7 @@ export const uploadSVGToBucket = async (nodeId: string, svgContent: string) => {
 
 export const getNodeSpecificData = async (
   nodeId: string,
-  nodeType: NodeType
+  nodeType: NodeType | SpecialNodeType
 ): Promise<any | null> => {
   if (nodeType === 'selection_menu') {
     // Return an empty object or null for selection_menu
@@ -98,7 +93,7 @@ export const getDrawNodeData = async (nodeId: string) => {
 
 export const updateNodeSpecificData = async (
   nodeId: string,
-  nodeType: NodeType,
+  nodeType: NodeType | SpecialNodeType,
   updates: any
 ) => {
   if (nodeType === 'selection_menu') {
@@ -160,7 +155,7 @@ export const updateNodeSpecificData = async (
 
 export const createNodeSpecificData = async (
   nodeId: string,
-  nodeType: NodeType,
+  nodeType: NodeType | SpecialNodeType,
   initialData: any
 ) => {
   if (nodeType === 'selection_menu') {
@@ -243,7 +238,7 @@ export const createNodeSpecificData = async (
 
 export const deleteNodeSpecificData = async (
   nodeId: string,
-  nodeType: NodeType
+  nodeType: NodeType | SpecialNodeType
 ) => {
   if (nodeType === 'selection_menu') {
     // No specific data to delete for selection_menu
@@ -286,7 +281,10 @@ export const deleteNodeSpecificData = async (
   return { success: true };
 };
 
-export const processNodeSpecificData = (nodeType: NodeType, data: any) => {
+export const processNodeSpecificData = (
+  nodeType: NodeType | SpecialNodeType,
+  data: any
+) => {
   switch (nodeType) {
     case 'note':
       return { content: data.content || '' };
