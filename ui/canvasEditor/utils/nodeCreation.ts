@@ -296,8 +296,13 @@ export const replaceNodeWithType = async (
 
   if (updatedNode) {
     // Create node-specific data
+    const specificDataInsert = {};
     const { data: specificData, error: specificError } =
-      await nodeSpecificDataService.createNodeSpecificData(id, nodeType, {});
+      await nodeSpecificDataService.createNodeSpecificData(
+        id,
+        nodeType,
+        specificDataInsert
+      );
 
     if (specificError) {
       console.error(
@@ -316,7 +321,8 @@ export const replaceNodeWithType = async (
         backgroundColor: updatedNode.backgroundColor,
         textColor: updatedNode.textColor,
         isTemporary: updatedNode.isTemporary,
-        ...getNodeSpecificProperties(nodeType, false)
+        ...getNodeSpecificProperties(nodeType, false),
+        ...specificData
       }
     };
 
