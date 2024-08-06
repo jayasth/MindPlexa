@@ -168,6 +168,27 @@ export const createNodeSpecificData = async (
     return { data: initialData };
   }
 
+  // Check if a record already exists for the given nodeId
+  const { data: existingData, error: fetchError } = await supabase
+    .from(`${nodeType}_nodes`)
+    .select('*')
+    .eq('node_id', nodeId)
+    .single();
+
+  if (fetchError && fetchError.code !== 'PGRST116') {
+    // PGRST116 is the code for "No rows found"
+    console.error(`Error fetching ${nodeType} data:`, fetchError);
+    return { error: fetchError };
+  }
+
+  if (existingData) {
+    console.log(
+      `Record already exists for node_id ${nodeId} in ${nodeType}_nodes`
+    );
+    return { data: toCamelCase(existingData) };
+  }
+
+  // Proceed with insertion if no existing record is found
   if (nodeType === 'draw') {
     if (initialData.drawingFileUrl) {
       const svgPath = await uploadSVGToBucket(
