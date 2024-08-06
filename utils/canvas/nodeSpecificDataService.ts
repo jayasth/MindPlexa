@@ -3,13 +3,7 @@ import { toCamelCase, toSnakeCase } from '@/utils/caseConversion';
 
 const supabase = createClient();
 
-type NodeType =
-  | 'note'
-  | 'task'
-  | 'calendar'
-  | 'table'
-  | 'draw'
-  | 'selection_menu';
+type NodeType = 'note' | 'task' | 'calendar' | 'table' | 'draw';
 
 export const uploadSVGToBucket = async (nodeId: string, svgContent: string) => {
   // Remove the data URL prefix if present
@@ -34,11 +28,6 @@ export const getNodeSpecificData = async (
   nodeId: string,
   nodeType: NodeType
 ): Promise<any | null> => {
-  if (nodeType === 'selection_menu') {
-    // Return an empty object or null for selection_menu
-    return {};
-  }
-
   if (nodeType === 'draw') {
     return getDrawNodeData(nodeId);
   }
@@ -98,7 +87,7 @@ export const getDrawNodeData = async (nodeId: string) => {
 
 export const updateNodeSpecificData = async (
   nodeId: string,
-  nodeType: NodeType,
+  nodeType: NodeType | 'selection_menu',
   updates: any
 ) => {
   if (nodeType === 'selection_menu') {
@@ -160,7 +149,7 @@ export const updateNodeSpecificData = async (
 
 export const createNodeSpecificData = async (
   nodeId: string,
-  nodeType: NodeType,
+  nodeType: NodeType | 'selection_menu',
   initialData: any
 ) => {
   if (nodeType === 'selection_menu') {
@@ -168,27 +157,6 @@ export const createNodeSpecificData = async (
     return { data: initialData };
   }
 
-  // Check if a record already exists for the given nodeId
-  const { data: existingData, error: fetchError } = await supabase
-    .from(`${nodeType}_nodes`)
-    .select('*')
-    .eq('node_id', nodeId)
-    .single();
-
-  if (fetchError && fetchError.code !== 'PGRST116') {
-    // PGRST116 is the code for "No rows found"
-    console.error(`Error fetching ${nodeType} data:`, fetchError);
-    return { error: fetchError };
-  }
-
-  if (existingData) {
-    console.log(
-      `Record already exists for node_id ${nodeId} in ${nodeType}_nodes`
-    );
-    return { data: toCamelCase(existingData) };
-  }
-
-  // Proceed with insertion if no existing record is found
   if (nodeType === 'draw') {
     if (initialData.drawingFileUrl) {
       const svgPath = await uploadSVGToBucket(
@@ -245,11 +213,6 @@ export const deleteNodeSpecificData = async (
   nodeId: string,
   nodeType: NodeType
 ) => {
-  if (nodeType === 'selection_menu') {
-    // No specific data to delete for selection_menu
-    return { success: true };
-  }
-
   if (nodeType === 'draw') {
     const { error } = await supabase
       .from('draw_nodes')
@@ -323,8 +286,6 @@ export const processNodeSpecificData = (nodeType: NodeType, data: any) => {
         dateFormat: data.date_format || 'yyyy-MM-dd',
         settings: data.settings || {}
       };
-    case 'selection_menu':
-      return {};
     default:
       return {};
   }

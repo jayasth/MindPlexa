@@ -87,9 +87,14 @@ export const getDrawNodeData = async (nodeId: string) => {
 
 export const updateNodeSpecificData = async (
   nodeId: string,
-  nodeType: NodeType,
+  nodeType: NodeType | 'selection_menu',
   updates: any
 ) => {
+  if (nodeType === 'selection_menu') {
+    // For selection_menu, we don't need to update any specific data
+    return { data: updates };
+  }
+
   if (nodeType === 'draw') {
     let svgPath = updates.drawingFileUrl;
     if (
@@ -102,11 +107,14 @@ export const updateNodeSpecificData = async (
 
     const updateData = {
       ...toSnakeCase(updates),
-      drawing_file_url: svgPath,
+      current_tool: updates.currentTool,
       current_color: updates.currentColor,
       current_stroke_width: updates.currentStrokeWidth,
-      current_tool: updates.currentTool,
-      settings: JSON.stringify(updates.settings)
+      settings:
+        typeof updates.settings === 'string'
+          ? updates.settings
+          : JSON.stringify(updates.settings),
+      drawing_file_url: svgPath
     };
 
     const { data, error } = await supabase
@@ -121,7 +129,7 @@ export const updateNodeSpecificData = async (
       return { error };
     }
 
-    return { data };
+    return { data: toCamelCase(data) };
   }
 
   const { data, error } = await supabase
@@ -141,9 +149,14 @@ export const updateNodeSpecificData = async (
 
 export const createNodeSpecificData = async (
   nodeId: string,
-  nodeType: NodeType,
+  nodeType: NodeType | 'selection_menu',
   initialData: any
 ) => {
+  if (nodeType === 'selection_menu') {
+    // Skip insertion for selection_menu nodes
+    return { data: initialData };
+  }
+
   if (nodeType === 'draw') {
     if (initialData.drawingFileUrl) {
       const svgPath = await uploadSVGToBucket(
@@ -176,7 +189,14 @@ export const createNodeSpecificData = async (
   }
 
   const { data, error } = await supabase
-    .from(`${nodeType}_nodes`)
+    .from(
+      `${nodeType}_nodes` as
+        | 'note_nodes'
+        | 'task_nodes'
+        | 'calendar_nodes'
+        | 'table_nodes'
+        | 'draw_nodes'
+    )
     .insert({ ...toSnakeCase(initialData), node_id: nodeId })
     .select()
     .single();
@@ -260,7 +280,11 @@ export const processNodeSpecificData = (nodeType: NodeType, data: any) => {
       };
     case 'table':
       return {
-        // Add table-specific data processing here
+        columns: data.columns || [],
+        rows: data.rows || [],
+        defaultColumnType: data.default_column_type || 'text',
+        dateFormat: data.date_format || 'yyyy-MM-dd',
+        settings: data.settings || {}
       };
     default:
       return {};
