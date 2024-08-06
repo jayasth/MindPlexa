@@ -231,26 +231,27 @@ export const updateNode = async (
 
   console.log('nodeService: Node properties updated:', nodeData);
 
-  // Update or create node-specific data
+  // Insert a new record in the node-specific table
   if (nodeType !== 'selection_menu') {
-    const nodeSpecificUpdates = { ...specificUpdates, node_id: id };
+    const nodeSpecificInsert = { node_id: id, ...specificUpdates };
 
-    const { data: specificNodeData, error: specificNodeError } =
-      await updateNodeSpecificData(
-        id,
-        nodeType as NodeType,
-        nodeSpecificUpdates
-      );
+    const { data: specificNodeData, error: specificNodeError } = await supabase
+      .from(`${nodeType}_nodes`)
+      .insert(nodeSpecificInsert)
+      .single();
 
     if (specificNodeError) {
       console.error(
-        `nodeService: Error updating ${nodeType} node:`,
+        `nodeService: Error inserting ${nodeType} node data:`,
         specificNodeError
       );
       return { error: specificNodeError };
     }
 
-    console.log(`nodeService: ${nodeType} node updated:`, specificNodeData);
+    console.log(
+      `nodeService: ${nodeType} node data inserted:`,
+      specificNodeData
+    );
   }
 
   if (specificUpdates?.tags && Array.isArray(specificUpdates.tags)) {

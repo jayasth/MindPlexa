@@ -3,7 +3,13 @@ import { toCamelCase, toSnakeCase } from '@/utils/caseConversion';
 
 const supabase = createClient();
 
-type NodeType = 'note' | 'task' | 'calendar' | 'table' | 'draw';
+type NodeType =
+  | 'note'
+  | 'task'
+  | 'calendar'
+  | 'table'
+  | 'draw'
+  | 'selection_menu';
 
 export const uploadSVGToBucket = async (nodeId: string, svgContent: string) => {
   // Remove the data URL prefix if present
@@ -28,6 +34,11 @@ export const getNodeSpecificData = async (
   nodeId: string,
   nodeType: NodeType
 ): Promise<any | null> => {
+  if (nodeType === 'selection_menu') {
+    // Return an empty object or null for selection_menu
+    return {};
+  }
+
   if (nodeType === 'draw') {
     return getDrawNodeData(nodeId);
   }
@@ -87,7 +98,7 @@ export const getDrawNodeData = async (nodeId: string) => {
 
 export const updateNodeSpecificData = async (
   nodeId: string,
-  nodeType: NodeType | 'selection_menu',
+  nodeType: NodeType,
   updates: any
 ) => {
   if (nodeType === 'selection_menu') {
@@ -149,7 +160,7 @@ export const updateNodeSpecificData = async (
 
 export const createNodeSpecificData = async (
   nodeId: string,
-  nodeType: NodeType | 'selection_menu',
+  nodeType: NodeType,
   initialData: any
 ) => {
   if (nodeType === 'selection_menu') {
@@ -213,6 +224,11 @@ export const deleteNodeSpecificData = async (
   nodeId: string,
   nodeType: NodeType
 ) => {
+  if (nodeType === 'selection_menu') {
+    // No specific data to delete for selection_menu
+    return { success: true };
+  }
+
   if (nodeType === 'draw') {
     const { error } = await supabase
       .from('draw_nodes')
@@ -286,6 +302,8 @@ export const processNodeSpecificData = (nodeType: NodeType, data: any) => {
         dateFormat: data.date_format || 'yyyy-MM-dd',
         settings: data.settings || {}
       };
+    case 'selection_menu':
+      return {};
     default:
       return {};
   }
