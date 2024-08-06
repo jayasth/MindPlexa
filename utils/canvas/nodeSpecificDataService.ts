@@ -144,9 +144,14 @@ export const updateNodeSpecificData = async (
 
 export const createNodeSpecificData = async (
   nodeId: string,
-  nodeType: NodeType,
+  nodeType: NodeType | 'selection_menu',
   initialData: any
 ) => {
+  if (nodeType === 'selection_menu') {
+    // Skip insertion for selection_menu nodes
+    return { data: initialData };
+  }
+
   if (nodeType === 'draw') {
     if (initialData.drawingFileUrl) {
       const svgPath = await uploadSVGToBucket(
@@ -179,7 +184,14 @@ export const createNodeSpecificData = async (
   }
 
   const { data, error } = await supabase
-    .from(`${nodeType}_nodes`)
+    .from(
+      `${nodeType}_nodes` as
+        | 'note_nodes'
+        | 'task_nodes'
+        | 'calendar_nodes'
+        | 'table_nodes'
+        | 'draw_nodes'
+    )
     .insert({ ...toSnakeCase(initialData), node_id: nodeId })
     .select()
     .single();

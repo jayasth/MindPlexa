@@ -11,6 +11,7 @@ import {
 import { createEdgeBetweenNodes } from '@/utils/canvas/edgeService';
 import { v4 as uuidv4 } from 'uuid';
 import useEdgeStore from '@/app/store/edges/useEdgeStore';
+import * as nodeSpecificDataService from '@/utils/canvas/nodeSpecificDataService'; // Import node specific data service
 
 const setPosition = (x: number, y: number): XYPosition => ({ x, y });
 
@@ -111,7 +112,7 @@ export const createNode = async (
   try {
     const { data: createdNode, error } = await createNodeInDatabase(
       canvasId,
-      nodeType === 'selection_menu' ? 'selection_menu' : nodeType,
+      nodeType,
       positionAsXYPosition,
       {
         ...newNodeData,
@@ -294,12 +295,25 @@ export const replaceNodeWithType = async (
   }
 
   if (updatedNode) {
+    // Create node-specific data
+    const { data: specificData, error: specificError } =
+      await nodeSpecificDataService.createNodeSpecificData(id, nodeType, {});
+
+    if (specificError) {
+      console.error(
+        'nodeCreation: Error creating node-specific data:',
+        specificError
+      );
+      return;
+    }
+
     const newNode: Node = {
       id: id,
       type: nodeType,
       position: position,
       data: {
         ...updatedNode,
+        ...specificData,
         ...getNodeSpecificProperties(nodeType, false)
       }
     };
