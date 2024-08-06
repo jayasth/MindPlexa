@@ -6,6 +6,7 @@ import type { Node } from 'reactflow';
 import useNodeStore from '../nodes/useNodeStore';
 import useEdgeStore from '../edges/useEdgeStore';
 import { enableMapSet } from 'immer';
+import { produce } from 'immer';
 
 // Enable the MapSet plugin for Immer
 enableMapSet();
@@ -18,6 +19,7 @@ interface CanvasState {
   isLoading: boolean;
   lastLoadTime: number;
   saveCanvasTimeout?: NodeJS.Timeout;
+  toggleEditMode: (nodeId: string) => void; // Added toggleEditMode method
 }
 
 const processNode = async (node: any) => {
@@ -196,6 +198,34 @@ const useCanvasStore = create<CanvasState>()(
           console.error('useCanvasStore: Error loading canvas:', error);
           set({ isLoading: false });
         }
+      },
+      toggleEditMode: (nodeId) => {
+        // Implemented toggleEditMode
+        set(
+          produce((state) => {
+            const node = state.nodes.find((n) => n.id === nodeId);
+            if (node && node.type !== 'selection_menu') {
+              const updatedNode = {
+                ...node,
+                data: {
+                  ...node.data,
+                  isEditing: !node.data?.isEditing
+                }
+              };
+              state.nodeInternals.set(nodeId, updatedNode);
+              state.nodes = state.nodes.map((n) =>
+                n.id === nodeId ? updatedNode : n
+              );
+
+              // Use the updateNode function instead of directly calling updateNodeInDB
+              useNodeStore.getState().updateNode(
+                nodeId,
+                { data: { isEditing: updatedNode.data.isEditing } },
+                '' // Pass an empty string or the actual canvasId if available
+              );
+            }
+          })
+        );
       }
     };
   })

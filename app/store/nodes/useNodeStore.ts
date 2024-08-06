@@ -39,9 +39,10 @@ export interface NodeState {
     canvasId: string
   ) => Promise<void>;
   onNodesChange: (changes: any, canvasId: string) => Promise<void>;
-  updateDrawNodeData: (
+  updateNodeSpecificData: (
     id: string,
-    drawingData: string,
+    nodeType: string,
+    data: any,
     canvasId: string
   ) => Promise<void>;
 }
@@ -71,30 +72,31 @@ const useNodeStore = create<NodeState>()(
       ),
     onNodesChange: (changes, canvasId) =>
       onNodesChange(set, get, changes, canvasId),
-    updateDrawNodeData: async (id, drawingData, canvasId) => {
-      const svgPath = await uploadSVGToBucket(id, drawingData);
-      if (svgPath) {
-        set((state) => ({
-          nodes: state.nodes.map((node) =>
-            node.id === id
-              ? {
-                  ...node,
-                  data: {
-                    ...node.data,
-                    drawingFileUrl: svgPath
-                  }
-                }
-              : node
-          )
-        }));
-        await updateNode(
-          set,
-          get,
-          id,
-          { data: { drawing_file_url: svgPath } },
-          canvasId
-        );
+    updateNodeSpecificData: async (id, nodeType, data, canvasId) => {
+      let updatedData = { ...data };
+
+      if (nodeType === 'draw' && data.drawingData) {
+        const svgPath = await uploadSVGToBucket(id, data.drawingData);
+        if (svgPath) {
+          updatedData.drawingFileUrl = svgPath;
+        }
       }
+
+      set((state) => ({
+        nodes: state.nodes.map((node) =>
+          node.id === id
+            ? {
+                ...node,
+                data: {
+                  ...node.data,
+                  ...updatedData
+                }
+              }
+            : node
+        )
+      }));
+
+      await updateNode(set, get, id, { data: updatedData }, canvasId);
     }
   }))
 );

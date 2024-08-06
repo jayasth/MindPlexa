@@ -9,6 +9,7 @@ import { handleTags } from '@/utils/canvas/tagService';
 import type { NodeState } from './useNodeStore';
 import { Database } from '@/types_db';
 import * as nodeSpecificDataService from '@/utils/canvas/nodeSpecificDataService';
+import { getNodeSpecificUpdates } from './nodeActions';
 
 type NodeType = Exclude<
   Database['public']['Enums']['node_type'],
@@ -92,82 +93,11 @@ export const onNodesChange = async (set, get, changes, canvasId) => {
                 changedProperties
               });
 
-              // Prepare updates for nodes table
-              const nodeUpdates = {
-                position: JSON.stringify(updatedNode.position),
-                background_color: updatedNode.data?.backgroundColor,
-                text_color: updatedNode.data?.textColor,
-                title: updatedNode.data?.title,
-                is_editing: updatedNode.data?.isEditing,
-                z_index: updatedNode.data?.zIndex,
-                edit_width: updatedNode.data?.editWidth,
-                edit_height: updatedNode.data?.editHeight,
-                mobile_edit_width: updatedNode.data?.mobileEditWidth,
-                mobile_edit_height: updatedNode.data?.mobileEditHeight,
-                parent_node_id: updatedNode.data?.parentNodeId,
-                view_width: updatedNode.data?.viewWidth,
-                view_height: updatedNode.data?.viewHeight,
-                is_temporary: updatedNode.data?.isTemporary,
-                version: updatedNode.data?.version
-              };
-
-              // Prepare specific updates based on node type
-              let specificUpdates = {};
-              switch (updatedNode.type) {
-                case 'note':
-                  specificUpdates = {
-                    content: updatedNode.data.content
-                  };
-                  break;
-                case 'task':
-                  specificUpdates = {
-                    tasks: JSON.stringify(updatedNode.data.tasks),
-                    completed_tasks: updatedNode.data.completedTasks,
-                    total_tasks: updatedNode.data.totalTasks,
-                    show_completed_tasks: updatedNode.data.showCompletedTasks,
-                    show_due_date: updatedNode.data.showDueDate,
-                    show_priority: updatedNode.data.showPriority,
-                    sort_by: updatedNode.data.sortBy
-                  };
-                  break;
-                case 'calendar':
-                  specificUpdates = {
-                    events: JSON.stringify(updatedNode.data.events),
-                    default_view: updatedNode.data.defaultView,
-                    time_zone: updatedNode.data.timeZone
-                  };
-                  break;
-                case 'table':
-                  specificUpdates = {
-                    columns: JSON.stringify(updatedNode.data.columns),
-                    rows: JSON.stringify(updatedNode.data.rows),
-                    default_column_type: updatedNode.data.defaultColumnType,
-                    settings: JSON.stringify(updatedNode.data.settings),
-                    date_format: updatedNode.data.dateFormat
-                  };
-                  break;
-                case 'draw':
-                  specificUpdates = {
-                    current_tool: updatedNode.data.currentTool,
-                    current_color: updatedNode.data.currentColor,
-                    current_stroke_width: updatedNode.data.currentStrokeWidth,
-                    settings: JSON.stringify(updatedNode.data.settings)
-                  };
-                  const drawingData = updatedNode.data.drawingData;
-                  if (drawingData) {
-                    nodeSpecificDataService
-                      .uploadSVGToBucket(updatedNode.id, drawingData)
-                      .then((result) => {
-                        if (result) {
-                          specificUpdates['drawing_file_url'] = result;
-                        }
-                      });
-                  }
-                  break;
-                case 'selection_menu':
-                  // No specific updates for selection_menu
-                  break;
-              }
+              const nodeUpdates = getNodeUpdates(updatedNode);
+              const specificUpdates = getNodeSpecificUpdates(
+                updatedNode.type as NodeType,
+                updatedNode.data
+              );
 
               // Update node in database
               updateNodeInDatabase(
@@ -239,3 +169,21 @@ export const onNodesChange = async (set, get, changes, canvasId) => {
     console.error('useNodeStore: Error updating nodes', error);
   }
 };
+
+const getNodeUpdates = (node) => ({
+  position: JSON.stringify(node.position),
+  background_color: node.data?.backgroundColor,
+  text_color: node.data?.textColor,
+  title: node.data?.title,
+  is_editing: node.data?.isEditing,
+  z_index: node.data?.zIndex,
+  edit_width: node.data?.editWidth,
+  edit_height: node.data?.editHeight,
+  mobile_edit_width: node.data?.mobileEditWidth,
+  mobile_edit_height: node.data?.mobileEditHeight,
+  parent_node_id: node.data?.parentNodeId,
+  view_width: node.data?.viewWidth,
+  view_height: node.data?.viewHeight,
+  is_temporary: node.data?.isTemporary,
+  version: node.data?.version
+});
