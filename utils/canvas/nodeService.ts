@@ -72,6 +72,7 @@ export const createNode = async (
     taskData?: Database['public']['Tables']['task_nodes']['Insert'];
     calendarData?: Database['public']['Tables']['calendar_nodes']['Insert'];
     tableData?: Database['public']['Tables']['table_nodes']['Insert'];
+    drawData?: Database['public']['Tables']['draw_nodes']['Insert'];
   }
 ): Promise<{ data?: any; error?: any }> => {
   console.log('nodeService: Creating node:', {
@@ -368,7 +369,8 @@ export const deleteNodes = async (nodeIds: string[]) => {
     supabase.from('note_nodes').delete().in('node_id', nodeIds),
     supabase.from('task_nodes').delete().in('node_id', nodeIds),
     supabase.from('calendar_nodes').delete().in('node_id', nodeIds),
-    supabase.from('table_nodes').delete().in('node_id', nodeIds)
+    supabase.from('table_nodes').delete().in('node_id', nodeIds),
+    supabase.from('draw_nodes').delete().in('node_id', nodeIds)
   ]);
 
   // Delete node attachments and tags
