@@ -3,20 +3,19 @@ import {
   MdOutlineKeyboardDoubleArrowLeft,
   MdOutlineKeyboardDoubleArrowRight
 } from 'react-icons/md';
-import { PiNetworkFill } from 'react-icons/pi';
+import { LuNetwork } from 'react-icons/lu';
 import {
-  IoHome,
   IoList,
-  IoBrush,
   IoArrowUndo,
   IoArrowRedo,
   IoShare,
-  IoDownload,
-  IoApps
+  IoDownload
 } from 'react-icons/io5';
-import { PiNotepadFill } from 'react-icons/pi';
+import { PiNotepad } from 'react-icons/pi';
 import { MdCalendarMonth } from 'react-icons/md';
-import { AiOutlineTable } from 'react-icons/ai';
+import { AiOutlineTable, AiOutlineHome } from 'react-icons/ai';
+import { GiPencilBrush } from 'react-icons/gi';
+import { HiOutlineViewGridAdd } from 'react-icons/hi';
 
 import Link from 'next/link';
 import {
@@ -132,7 +131,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
           <>
             <Link href="/workspace/canvases" passHref>
               <button className={buttonClass} title="Open Editor">
-                <IoHome size={iconSize} />
+                <AiOutlineHome size={iconSize} />
               </button>
             </Link>
             <button
@@ -140,21 +139,21 @@ const Toolbar: React.FC<ToolbarProps> = ({
               className={buttonClass}
               title="Generate Mindmap"
             >
-              <PiNetworkFill size={iconSize} />
+              <LuNetwork size={iconSize} />
             </button>
             <button
               onClick={() => handleAddNode('selection_menu')}
               className={buttonClass}
               title="Selection Menu"
             >
-              <IoApps size={iconSize} />
+              <HiOutlineViewGridAdd size={iconSize} />
             </button>
             <button
               onClick={() => handleAddNode('note')}
               className={buttonClass}
               title="Note"
             >
-              <PiNotepadFill size={iconSize} />
+              <PiNotepad size={iconSize} />
             </button>
             <button
               onClick={() => handleAddNode('task')}
@@ -182,7 +181,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
               className={buttonClass}
               title="Draw"
             >
-              <IoBrush size={iconSize} />
+              <GiPencilBrush size={iconSize} />
             </button>
 
             <button onClick={onUndo} className={buttonClass} title="Undo">
