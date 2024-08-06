@@ -231,26 +231,50 @@ export const updateNode = async (
 
   console.log('nodeService: Node properties updated:', nodeData);
 
-  // Update or create node-specific data
+  // Update or insert the node-specific data
   if (nodeType !== 'selection_menu') {
-    const nodeSpecificUpdates = { ...specificUpdates, node_id: id };
+    const nodeSpecificData = { node_id: id, ...specificUpdates };
 
-    const { data: specificNodeData, error: specificNodeError } =
-      await updateNodeSpecificData(
-        id,
-        nodeType as NodeType,
-        nodeSpecificUpdates
-      );
+    const { data: existingData, error: fetchError } = await supabase
+      .from(`${nodeType}_nodes`)
+      .select('*')
+      .eq('node_id', id)
+      .single();
+
+    if (fetchError && fetchError.code !== 'PGRST116') {
+      console.error(`Error fetching ${nodeType} data:`, fetchError);
+      return { error: fetchError };
+    }
+
+    let specificNodeData, specificNodeError;
+
+    if (existingData) {
+      // Update existing record
+      ({ data: specificNodeData, error: specificNodeError } = await supabase
+        .from(`${nodeType}_nodes`)
+        .update(nodeSpecificData)
+        .eq('node_id', id)
+        .single());
+    } else {
+      // Insert new record
+      ({ data: specificNodeData, error: specificNodeError } = await supabase
+        .from(`${nodeType}_nodes`)
+        .insert(nodeSpecificData)
+        .single());
+    }
 
     if (specificNodeError) {
       console.error(
-        `nodeService: Error updating ${nodeType} node:`,
+        `nodeService: Error updating/inserting ${nodeType} node data:`,
         specificNodeError
       );
       return { error: specificNodeError };
     }
 
-    console.log(`nodeService: ${nodeType} node updated:`, specificNodeData);
+    console.log(
+      `nodeService: ${nodeType} node data updated/inserted:`,
+      specificNodeData
+    );
   }
 
   if (specificUpdates?.tags && Array.isArray(specificUpdates.tags)) {
