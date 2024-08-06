@@ -1,5 +1,5 @@
 import { produce } from 'immer';
-import { updateNode as updateNodeInDB } from '@/utils/canvas/nodeService';
+import { updateNode as updateNodeInDatabase } from '@/utils/canvas/nodeService';
 import {
   addAttachment,
   removeAttachment,
@@ -164,22 +164,27 @@ export const onNodesChange = async (set, get, changes, canvasId) => {
                       });
                   }
                   break;
+                case 'selection_menu':
+                  // No specific updates for selection_menu
+                  break;
               }
 
               // Update node in database
-              updateNodeInDB(
+              updateNodeInDatabase(
                 updatedNode.id,
                 nodeUpdates,
                 specificUpdates,
-                updatedNode.type as NodeType
+                updatedNode.type as NodeType | 'selection_menu'
               );
 
               // Update node specific data
-              nodeSpecificDataService.updateNodeSpecificData(
-                updatedNode.id,
-                updatedNode.type as NodeType,
-                specificUpdates
-              );
+              if (updatedNode.type !== 'selection_menu') {
+                nodeSpecificDataService.updateNodeSpecificData(
+                  updatedNode.id,
+                  updatedNode.type as NodeType,
+                  specificUpdates
+                );
+              }
 
               // Handle tags
               if (updatedNode.data?.tags) {

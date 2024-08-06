@@ -87,9 +87,14 @@ export const getDrawNodeData = async (nodeId: string) => {
 
 export const updateNodeSpecificData = async (
   nodeId: string,
-  nodeType: NodeType,
+  nodeType: NodeType | 'selection_menu',
   updates: any
 ) => {
+  if (nodeType === 'selection_menu') {
+    // For selection_menu, we don't need to update any specific data
+    return { data: updates };
+  }
+
   if (nodeType === 'draw') {
     let svgPath = updates.drawingFileUrl;
     if (

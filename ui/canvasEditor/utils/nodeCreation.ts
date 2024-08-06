@@ -281,11 +281,11 @@ export const replaceNodeWithType = async (
     mobileEditHeight: nodeDimension.mobileEditHeight
   };
 
-  console.log('nodeCreation: Updating node with data:', newNodeData);
+  console.log('nodeCreation: Replacing node with data:', newNodeData);
   const { data: updatedNode, error: updateError } = await updateNodeInDatabase(
     id,
     newNodeData,
-    {},
+    { nodeType }, // Pass nodeType to update node-specific data
     nodeType
   );
 
@@ -313,7 +313,9 @@ export const replaceNodeWithType = async (
       position: position,
       data: {
         ...updatedNode,
-        ...specificData,
+        backgroundColor: updatedNode.backgroundColor,
+        textColor: updatedNode.textColor,
+        isTemporary: updatedNode.isTemporary,
         ...getNodeSpecificProperties(nodeType, false)
       }
     };
