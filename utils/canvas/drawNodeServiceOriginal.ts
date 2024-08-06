@@ -4,17 +4,16 @@ import { toCamelCase, toSnakeCase } from '@/utils/caseConversion';
 const supabase = createClient();
 
 export const saveDrawing = async (nodeId: string, drawingData: string) => {
-  if (
-    typeof drawingData === 'string' &&
-    drawingData.startsWith('data:image/svg+xml')
-  ) {
+  if (typeof drawingData === 'string' && drawingData.includes(',')) {
     const base64Data = drawingData.split(',')[1];
-    const svgContent = atob(base64Data);
+    const blob = await fetch(`data:image/png;base64,${base64Data}`).then(
+      (res) => res.blob()
+    );
 
     const { data, error } = await supabase.storage
       .from('drawings')
-      .upload(`${nodeId}.svg`, svgContent, {
-        contentType: 'image/svg+xml',
+      .upload(`${nodeId}.png`, blob, {
+        contentType: 'image/png',
         upsert: true
       });
 
@@ -25,7 +24,7 @@ export const saveDrawing = async (nodeId: string, drawingData: string) => {
 
     const { data: publicUrlData } = supabase.storage
       .from('drawings')
-      .getPublicUrl(`${nodeId}.svg`);
+      .getPublicUrl(`${nodeId}.png`);
 
     const drawingFileUrl = publicUrlData.publicUrl;
 
@@ -49,7 +48,7 @@ export const saveDrawing = async (nodeId: string, drawingData: string) => {
 export const getDrawing = async (nodeId: string): Promise<string | null> => {
   const { data, error } = await supabase.storage
     .from('drawings')
-    .download(`${nodeId}.svg`);
+    .download(`${nodeId}.png`);
 
   if (error) {
     console.error('Error fetching drawing:', error);
@@ -57,8 +56,12 @@ export const getDrawing = async (nodeId: string): Promise<string | null> => {
   }
 
   if (data) {
-    const text = await data.text();
-    return `data:image/svg+xml;base64,${btoa(text)}`;
+    const blob = new Blob([data], { type: 'image/png' });
+    return new Promise<string>((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.readAsDataURL(blob);
+    });
   }
 
   return null;
@@ -67,7 +70,7 @@ export const getDrawing = async (nodeId: string): Promise<string | null> => {
 export const removeDrawing = async (nodeId: string) => {
   const { error } = await supabase.storage
     .from('drawings')
-    .remove([`${nodeId}.svg`]);
+    .remove([`${nodeId}.png`]);
 
   if (error) {
     console.error('Error removing drawing:', error);

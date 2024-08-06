@@ -1,6 +1,6 @@
 import { createClient } from '@/utils/supabase/supabaseClient';
 import { toCamelCase, toSnakeCase } from '@/utils/caseConversion';
-
+import { getDrawing } from './drawNodeService';
 const supabase = createClient();
 
 type NodeType = 'note' | 'task' | 'calendar' | 'table' | 'draw';
@@ -34,7 +34,9 @@ export const getNodeSpecificData = async (
   }
 
   if (nodeType === 'draw') {
-    return getDrawNodeData(nodeId);
+    const drawData = await getDrawNodeData(nodeId);
+    const drawingData = await getDrawing(nodeId);
+    return { ...drawData, drawingData };
   }
 
   const { data, error } = await supabase
