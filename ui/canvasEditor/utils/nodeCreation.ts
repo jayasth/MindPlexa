@@ -115,8 +115,7 @@ export const createNode = async (
       positionAsXYPosition,
       {
         ...newNodeData,
-        type: nodeType,
-        [`${nodeType}Data`]: getNodeSpecificProperties(nodeType, isEditing)
+        type: nodeType
       }
     );
 

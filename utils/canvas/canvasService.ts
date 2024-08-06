@@ -277,19 +277,39 @@ export const saveCanvasState = async (canvasId: string, canvasState: any) => {
 
     // Update node-specific data
     if (nodeType !== 'selection_menu') {
-      let specificUpdates = { ...data };
+      let specificUpdates = {};
 
-      if (nodeType === 'draw' && data.drawingFileUrl) {
-        const svgPath = await uploadSVGToBucket(nodeId, data.drawingFileUrl);
-        if (svgPath) {
-          specificUpdates.drawingFileUrl = svgPath;
+      if (nodeType === 'draw') {
+        if (data.drawingFileUrl) {
+          const svgPath = await uploadSVGToBucket(nodeId, data.drawingFileUrl);
+          if (svgPath) {
+            data.drawingFileUrl = svgPath;
+          }
         }
+
+        specificUpdates = {
+          drawing_file_url: data.drawingFileUrl,
+          current_tool: data.currentTool,
+          settings: data.settings,
+          current_color: data.currentColor || 'None',
+          current_stroke_width: data.currentStrokeWidth || 1
+        };
+      } else if (nodeType === 'table') {
+        specificUpdates = {
+          columns: data.columns,
+          rows: data.rows,
+          default_column_type: data.defaultColumnType,
+          settings: data.settings,
+          date_format: data.dateFormat
+        };
+      } else {
+        specificUpdates = data;
       }
 
       const { error: specificNodeUpdateError } = await updateNodeSpecificData(
         nodeId,
         nodeType,
-        toSnakeCase(specificUpdates)
+        specificUpdates
       );
 
       if (specificNodeUpdateError) {

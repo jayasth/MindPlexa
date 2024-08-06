@@ -70,12 +70,88 @@ export const updateNode = async (set, get, id, data, canvasId) => {
           };
 
           let specificUpdates = {};
-          if (existingNode.type && existingNode.type !== 'selection_menu') {
-            specificUpdates = getNodeSpecificUpdates(
-              existingNode.type as NodeType,
-              updatedNode.data
-            );
+          switch (existingNode.type) {
+            case 'note':
+              specificUpdates = {
+                content: updatedNode.data.content
+              };
+              break;
+            case 'task':
+              specificUpdates = {
+                tasks: JSON.stringify(updatedNode.data.tasks),
+                completed_tasks: updatedNode.data.completedTasks,
+                total_tasks: updatedNode.data.totalTasks,
+                show_completed_tasks: updatedNode.data.showCompletedTasks,
+                show_due_date: updatedNode.data.showDueDate,
+                show_priority: updatedNode.data.showPriority,
+                sort_by: updatedNode.data.sortBy
+              };
+              break;
+            case 'calendar':
+              specificUpdates = {
+                events: JSON.stringify(updatedNode.data.events),
+                default_view: updatedNode.data.defaultView,
+                time_zone: updatedNode.data.timeZone
+              };
+              break;
+            case 'table':
+              specificUpdates = {
+                columns: JSON.stringify(updatedNode.data.columns),
+                rows: JSON.stringify(updatedNode.data.rows),
+                default_column_type: updatedNode.data.defaultColumnType,
+                settings: JSON.stringify(updatedNode.data.settings),
+                date_format: updatedNode.data.dateFormat
+              };
+              break;
+            case 'draw':
+              specificUpdates = {
+                current_tool: updatedNode.data.currentTool,
+                drawing_file_url: updatedNode.data.drawingFileUrl,
+                settings: JSON.stringify(updatedNode.data.settings),
+                current_color: updatedNode.data.currentColor,
+                current_stroke_width: updatedNode.data.currentStrokeWidth
+              };
+              // Adjusted to handle draw node's specific data
+              if (data.data?.drawingData) {
+                nodeSpecificDataService.updateNodeSpecificData(
+                  id,
+                  existingNode.type as NodeType,
+                  { drawingFileUrl: data.data.drawingData }
+                );
+              }
+              break;
+          }
 
+          // Handle tags
+          if (data.data?.tags) {
+            handleTags(id, [...data.data.tags]);
+          }
+
+          // Handle attachments
+          if (data.data?.attachedFiles) {
+            (async () => {
+              const existingAttachments = await getAttachments(id);
+              const existingIds = new Set(existingAttachments.map((a) => a.id));
+
+              for (const attachment of data.data.attachedFiles) {
+                if (!existingIds.has(attachment.id)) {
+                  await addAttachment(id, attachment);
+                }
+              }
+
+              for (const existingAttachment of existingAttachments) {
+                if (
+                  !data.data.attachedFiles.some(
+                    (a) => a.id === existingAttachment.id
+                  )
+                ) {
+                  await removeAttachment(existingAttachment.id);
+                }
+              }
+            })();
+          }
+
+          if (existingNode.type && existingNode.type !== 'selection_menu') {
             updateNodeInDB(
               id,
               nodeUpdates,
@@ -98,47 +174,6 @@ export const updateNode = async (set, get, id, data, canvasId) => {
     console.log('useNodeStore: After updateNode', get().nodes);
   } catch (error) {
     console.error('useNodeStore: Error updating node', error);
-  }
-};
-
-const getNodeSpecificUpdates = (nodeType: NodeType, data: any) => {
-  switch (nodeType) {
-    case 'note':
-      return { content: data.content };
-    case 'task':
-      return {
-        tasks: JSON.stringify(data.tasks),
-        completed_tasks: data.completedTasks,
-        total_tasks: data.totalTasks,
-        show_completed_tasks: data.showCompletedTasks,
-        show_due_date: data.showDueDate,
-        show_priority: data.showPriority,
-        sort_by: data.sortBy
-      };
-    case 'calendar':
-      return {
-        events: JSON.stringify(data.events),
-        default_view: data.defaultView,
-        time_zone: data.timeZone
-      };
-    case 'table':
-      return {
-        columns: JSON.stringify(data.columns),
-        rows: JSON.stringify(data.rows),
-        default_column_type: data.defaultColumnType,
-        settings: JSON.stringify(data.settings),
-        date_format: data.dateFormat
-      };
-    case 'draw':
-      return {
-        current_tool: data.currentTool,
-        drawing_file_url: data.drawingFileUrl,
-        settings: JSON.stringify(data.settings),
-        current_color: data.currentColor,
-        current_stroke_width: data.currentStrokeWidth
-      };
-    default:
-      return {};
   }
 };
 
@@ -172,5 +207,3 @@ export const removeNode = async (set, get, id, canvasId) => {
     console.error('useNodeStore: Error removing node', error);
   }
 };
-
-export { getNodeSpecificUpdates };
