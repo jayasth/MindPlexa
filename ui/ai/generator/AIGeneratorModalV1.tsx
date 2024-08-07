@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Edge, Node } from 'reactflow';
 import { useCompletion } from 'ai/react';
 import { parseMermaidCode } from './mermaidGeneratorUtilsV1';
+import { promptTemplateV1 } from '@/app/prompts/generatorPromptV1';
 import {
   useNodeStore,
   useEdgeStore,
@@ -13,11 +14,11 @@ import ConfirmIntegrationModal from './ConfirmIntegrationModal';
 import { findOptimalPosition } from '@/ui/canvasEditor/utils/positioningUtils';
 import styles from './AIGeneratorModal.module.css';
 
-interface AIAssistanceModalProps {
+interface AIGeneratorModalV1Props {
   onClose: () => void;
 }
 
-const AIAssistanceModalV1: React.FC<AIAssistanceModalProps> = ({ onClose }) => {
+const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({ onClose }) => {
   const [topic, setTopic] = useState('');
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [generatedNodes, setGeneratedNodes] = useState<Node[]>([]);
@@ -40,12 +41,13 @@ const AIAssistanceModalV1: React.FC<AIAssistanceModalProps> = ({ onClose }) => {
     setIsLoading(true);
 
     try {
+      const prompt = promptTemplateV1(topic);
       const response = await fetch('/api/completion', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ prompt: topic })
+        body: JSON.stringify({ prompt })
       });
 
       if (!response.ok) {
@@ -53,7 +55,7 @@ const AIAssistanceModalV1: React.FC<AIAssistanceModalProps> = ({ onClose }) => {
       }
 
       const data = await response.json();
-      console.log('AIGeneratorModal Response data:', data);
+      console.log('AIGeneratorModalV1 Response data:', data);
       const { nodes: newNodes, edges: newEdges } = await parseMermaidCode(
         data.mermaidCode
       );
@@ -62,8 +64,8 @@ const AIAssistanceModalV1: React.FC<AIAssistanceModalProps> = ({ onClose }) => {
       const updatedNodes = newNodes.map((node) => {
         const title = node.data?.title || 'Untitled';
         const content = node.data?.content || 'No description available';
-        console.log(`AIGeneratorModal Node title: ${title}`);
-        console.log(`AIGeneratorModal Node content: ${content}`);
+        console.log(`AIGeneratorModalV1 Node title: ${title}`);
+        console.log(`AIGeneratorModalV1 Node content: ${content}`);
         return {
           ...node,
           data: {
@@ -86,7 +88,7 @@ const AIAssistanceModalV1: React.FC<AIAssistanceModalProps> = ({ onClose }) => {
         handleConfirmIntegration(updatedNodes, newEdges);
       }
     } catch (error) {
-      console.error('AIGeneratorModal: Error generating mindmap:', error);
+      console.error('AIGeneratorModalV1: Error generating mindmap:', error);
       // Handle error state
     } finally {
       setIsLoading(false);
@@ -103,8 +105,8 @@ const AIAssistanceModalV1: React.FC<AIAssistanceModalProps> = ({ onClose }) => {
     const offsetNodes = newNodes.map((node) => {
       const title = node.data?.title || 'Untitled';
       const content = node.data?.content || 'No description available';
-      console.log(`AIGeneratorModal Node title: ${title}`);
-      console.log(`AIGeneratorModal Node content: ${content}`);
+      console.log(`AIGeneratorModalV1 Node title: ${title}`);
+      console.log(`AIGeneratorModalV1 Node content: ${content}`);
       return {
         ...node,
         position: {
@@ -133,7 +135,7 @@ const AIAssistanceModalV1: React.FC<AIAssistanceModalProps> = ({ onClose }) => {
     <div className={styles.modalOverlay}>
       {!showConfirmModal && (
         <div className={styles.modalContent}>
-          <h2 className={styles.modalHeader}>Generate Mindmap</h2>
+          <h2 className={styles.modalHeader}>Generate Mindmap (V1)</h2>
           <form onSubmit={handleGenerateMindmap}>
             <textarea
               className={styles.textarea}
@@ -174,4 +176,4 @@ const AIAssistanceModalV1: React.FC<AIAssistanceModalProps> = ({ onClose }) => {
   );
 };
 
-export default AIAssistanceModalV1;
+export default AIGeneratorModalV1;

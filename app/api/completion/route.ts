@@ -1,16 +1,13 @@
 import OpenAI from 'openai';
-import { promptTemplateV1 } from '@/app/prompts/generatorPromptV1';
-import { promptTemplateV2 } from '@/app/prompts/generatorPromptV2';
+import { promptTemplate } from '@/app/prompts/generatorPrompt';
 
 const openai = new OpenAI({
   apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY
 });
 
 export async function POST(req: Request) {
-  const { prompt, version } = await req.json();
+  const { prompt } = await req.json();
   console.log('Prompt sent to OpenAI:', prompt);
-
-  const promptTemplate = version === 'v1' ? promptTemplateV1 : promptTemplateV2;
 
   try {
     const response = await openai.chat.completions.create({

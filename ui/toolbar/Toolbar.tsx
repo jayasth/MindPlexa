@@ -19,6 +19,7 @@ import { findOptimalPosition } from '@/ui/canvasEditor/utils/positioningUtils';
 import { getNodeSpecificProperties } from '@/ui/canvasEditor/utils/nodeProperties';
 import styles from './Toolbar.module.css';
 import { Tooltip } from '@/ui/Tooltip/Tooltip';
+import AIGeneratorController from '@/ui/ai/generator/AIGeneratorController';
 
 interface ToolbarProps {
   canvasId: string;
@@ -38,6 +39,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
   onGenerateAIMapV2
 }) => {
   const [isOpen, setIsOpen] = useState(true);
+  const [aiVersion, setAIVersion] = useState<'v1' | 'v2' | null>(null);
   const addNode = useNodeStore((state) => state.addNode);
   const nodes = useNodeStore((state) => state.nodes);
   const setCanvasId = useCanvasStore((state) => state.setCanvasId);
@@ -127,12 +129,18 @@ const Toolbar: React.FC<ToolbarProps> = ({
               </button>
             </Tooltip>
             <Tooltip content="Generate AI Map (V1)">
-              <button onClick={onGenerateAIMapV1} className={buttonClass}>
+              <button
+                onClick={() => setAIVersion('v1')}
+                className={buttonClass}
+              >
                 <FaRobot size={iconSize} /> V1
               </button>
             </Tooltip>
             <Tooltip content="Generate AI Map (V2)">
-              <button onClick={onGenerateAIMapV2} className={buttonClass}>
+              <button
+                onClick={() => setAIVersion('v2')}
+                className={buttonClass}
+              >
                 <FaRobot size={iconSize} /> V2
               </button>
             </Tooltip>
@@ -193,6 +201,12 @@ const Toolbar: React.FC<ToolbarProps> = ({
           </>
         )}
       </div>
+      {aiVersion && (
+        <AIGeneratorController
+          version={aiVersion}
+          onClose={() => setAIVersion(null)}
+        />
+      )}
     </>
   );
 };

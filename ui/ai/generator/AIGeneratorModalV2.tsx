@@ -1,28 +1,39 @@
 import React, { useState } from 'react';
 import { Edge, Node } from 'reactflow';
+import { useCompletion } from 'ai/react';
 import { parseMermaidCode } from './mermaidGeneratorUtilsV2';
-import { useNodeStore, useEdgeStore } from '@/app/store';
+import { promptTemplateV2 } from '@/app/prompts/generatorPromptV2';
+import {
+  useNodeStore,
+  useEdgeStore,
+  useUIStore,
+  useCanvasStore
+} from '@/app/store';
 import Button from '@/ui/Button/Button';
 import ConfirmIntegrationModal from './ConfirmIntegrationModal';
 import { findOptimalPosition } from '@/ui/canvasEditor/utils/positioningUtils';
 import styles from './AIGeneratorModal.module.css';
 
-interface AIAssistanceModalProps {
+interface AIGeneratorModalV2Props {
   onClose: () => void;
 }
 
-const AIAssistanceModalV2: React.FC<AIAssistanceModalProps> = ({ onClose }) => {
+const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({ onClose }) => {
   const [topic, setTopic] = useState('');
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [generatedNodes, setGeneratedNodes] = useState<Node[]>([]);
   const [generatedEdges, setGeneratedEdges] = useState<Edge[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const { completion, input, handleInputChange, handleSubmit, isLoading } =
+    useCompletion();
 
   const { setNodes } = useNodeStore();
   const { setEdges } = useEdgeStore();
+  const { isLoading: uiIsLoading, setIsLoading } = useUIStore();
+  const { canvasId } = useCanvasStore();
 
   const handleTopicChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setTopic(e.target.value);
+    handleInputChange(e);
   };
 
   const handleGenerateMindmap = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -30,51 +41,88 @@ const AIAssistanceModalV2: React.FC<AIAssistanceModalProps> = ({ onClose }) => {
     setIsLoading(true);
 
     try {
-      // Simulate API call
-      const mockMermaidCode = `
-        graph TD
-          A[note::Digital Marketing::Overview of digital marketing strategies]
-          B[task::SEO::Optimize website content for search engines]
-          C[calendar::Content Calendar::Plan and schedule content creation]
-          D[draw::Marketing Funnel::Visualize customer journey]
-          E[table::Analytics::Track key performance indicators]
-          A --> B
-          A --> C
-          A --> D
-          A --> E
-      `;
+      const prompt = promptTemplateV2(topic);
+      const response = await fetch('/api/completion', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ prompt })
+      });
 
-      const { nodes: newNodes, edges: newEdges } =
-        await parseMermaidCode(mockMermaidCode);
+      if (!response.ok) {
+        throw new Error('Failed to generate mindmap');
+      }
 
-      setGeneratedNodes(newNodes);
-      setGeneratedEdges(newEdges);
-      setShowConfirmModal(true);
+      const data = await response.json();
+      console.log('AIGeneratorModalV2 Response data:', data);
+      const { nodes: newNodes, edges: newEdges } = await parseMermaidCode(
+        data.mermaidCode
+      );
+
+      // Ensure nodes have the correct data properties
+      const updatedNodes = newNodes.map((node) => {
+        const title = node.data?.title || 'Untitled';
+        const content = node.data?.content || 'No description available';
+        console.log(`AIGeneratorModalV2 Node title: ${title}`);
+        console.log(`AIGeneratorModalV2 Node content: ${content}`);
+        return {
+          ...node,
+          data: {
+            ...node.data,
+            title,
+            content
+          }
+        };
+      });
+
+      // Check if there are existing nodes on the canvas before setting new nodes
+      const existingNodes = useNodeStore.getState().nodes;
+
+      if (existingNodes.length > 0) {
+        setGeneratedNodes(updatedNodes);
+        setGeneratedEdges(newEdges);
+        setShowConfirmModal(true);
+      } else {
+        // Directly integrate the generated nodes and edges if the canvas is empty
+        handleConfirmIntegration(updatedNodes, newEdges);
+      }
     } catch (error) {
-      console.error('AIGeneratorModal: Error generating mindmap:', error);
+      console.error('AIGeneratorModalV2: Error generating mindmap:', error);
       // Handle error state
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleConfirmIntegration = () => {
+  const handleConfirmIntegration = (newNodes, newEdges) => {
     const canvasSize = { width: window.innerWidth, height: window.innerHeight };
     const optimalPosition = findOptimalPosition(
       useNodeStore.getState().nodes,
       canvasSize
     );
 
-    const offsetNodes = generatedNodes.map((node) => ({
-      ...node,
-      position: {
-        x: node.position.x + optimalPosition.x,
-        y: node.position.y + optimalPosition.y
-      }
-    }));
+    const offsetNodes = newNodes.map((node) => {
+      const title = node.data?.title || 'Untitled';
+      const content = node.data?.content || 'No description available';
+      console.log(`AIGeneratorModalV2 Node title: ${title}`);
+      console.log(`AIGeneratorModalV2 Node content: ${content}`);
+      return {
+        ...node,
+        position: {
+          x: node.position.x + optimalPosition.x,
+          y: node.position.y + optimalPosition.y
+        },
+        data: {
+          ...node.data,
+          title,
+          content
+        }
+      };
+    });
 
     setNodes((currentNodes) => [...currentNodes, ...offsetNodes]);
-    setEdges((currentEdges) => [...currentEdges, ...generatedEdges]);
+    setEdges((currentEdges) => [...currentEdges, ...newEdges]);
     setShowConfirmModal(false);
     onClose();
   };
@@ -99,10 +147,10 @@ const AIAssistanceModalV2: React.FC<AIAssistanceModalProps> = ({ onClose }) => {
               <Button
                 className={styles.iconButton}
                 type="submit"
-                disabled={isLoading}
+                disabled={uiIsLoading}
                 variant="slim"
               >
-                {isLoading ? 'Generating' : 'Generate'}
+                {uiIsLoading ? 'Generating' : 'Generate'}
               </Button>
               <Button
                 className={styles.iconButton}
@@ -118,7 +166,9 @@ const AIAssistanceModalV2: React.FC<AIAssistanceModalProps> = ({ onClose }) => {
       )}
       {showConfirmModal && (
         <ConfirmIntegrationModal
-          onConfirm={handleConfirmIntegration}
+          onConfirm={() =>
+            handleConfirmIntegration(generatedNodes, generatedEdges)
+          }
           onCancel={handleCancelIntegration}
         />
       )}
@@ -126,4 +176,4 @@ const AIAssistanceModalV2: React.FC<AIAssistanceModalProps> = ({ onClose }) => {
   );
 };
 
-export default AIAssistanceModalV2;
+export default AIGeneratorModalV2;

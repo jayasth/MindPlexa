@@ -17,8 +17,11 @@ import ReactFlow, {
   applyEdgeChanges
 } from 'reactflow';
 import Toolbar from '@/ui/toolbar/Toolbar';
-import AIGeneratorController from '@/ui/ai/generator/AIGeneratorController';
-import { handleDownload } from '@/ui/canvasEditor/utils/canvasUtils';
+import AIAssistanceModal from '@/ui/ai/generator/AIGeneratorModal';
+import {
+  handleDownload,
+  handleShare
+} from '@/ui/canvasEditor/utils/canvasUtils';
 import NodeRenderer from '@/ui/canvasEditor/NodeRenderer';
 import CustomEdge from '@/ui/edges/CustomEdge';
 import useNodeStore from '@/app/store/nodes/useNodeStore';
@@ -37,10 +40,7 @@ const defaultEdgeOptions = {
 export default function CanvasEditor({ canvasId: initialCanvasId }) {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const reactFlowInstance = useRef<ReactFlowInstance | null>(null);
-  const [showAIGenerator, setShowAIGenerator] = useState(false);
-  const [aiGeneratorVersion, setAIGeneratorVersion] = useState<
-    'v1' | 'v2' | null
-  >(null);
+  const [showAIAssistanceModal, setShowAIAssistanceModal] = useState(false);
   const [canvasSize, setCanvasSize] = useState({
     width: window.innerWidth,
     height: window.innerHeight
@@ -85,19 +85,12 @@ export default function CanvasEditor({ canvasId: initialCanvasId }) {
     return () => window.removeEventListener('resize', updateCanvasSize);
   }, []);
 
-  const handleGenerateAIMapV1 = () => {
-    setAIGeneratorVersion('v1');
-    setShowAIGenerator(true);
+  const handleOpenAIAssistanceModal = () => {
+    setShowAIAssistanceModal(true);
   };
 
-  const handleGenerateAIMapV2 = () => {
-    setAIGeneratorVersion('v2');
-    setShowAIGenerator(true);
-  };
-
-  const handleCloseAIGenerator = () => {
-    setShowAIGenerator(false);
-    setAIGeneratorVersion(null);
+  const handleCloseAIAssistanceModal = () => {
+    setShowAIAssistanceModal(false);
   };
 
   const handleAddNode = useCallback(
@@ -332,8 +325,9 @@ export default function CanvasEditor({ canvasId: initialCanvasId }) {
           <Toolbar
             canvasId={initialCanvasId}
             onDownload={() => handleDownload({ nodes, edges })}
-            onGenerateAIMapV1={handleGenerateAIMapV1}
-            onGenerateAIMapV2={handleGenerateAIMapV2}
+            onGenerateMindmap={handleOpenAIAssistanceModal}
+            onGenerateAIMapV1={handleOpenAIAssistanceModal}
+            onGenerateAIMapV2={handleOpenAIAssistanceModal}
             reactFlowInstance={reactFlowInstance.current}
           />
         </div>
@@ -372,11 +366,8 @@ export default function CanvasEditor({ canvasId: initialCanvasId }) {
             <Controls />
           </ReactFlow>
         </div>
-        {showAIGenerator && (
-          <AIGeneratorController
-            version={aiGeneratorVersion}
-            onClose={handleCloseAIGenerator}
-          />
+        {showAIAssistanceModal && (
+          <AIAssistanceModal onClose={handleCloseAIAssistanceModal} />
         )}
       </ReactFlowProvider>
     </div>
