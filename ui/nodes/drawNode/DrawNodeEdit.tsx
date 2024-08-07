@@ -51,6 +51,7 @@ import {
   updateNodeSpecificData,
   getNodeSpecificData
 } from '@/utils/canvas/nodeSpecificDataService';
+import { saveDrawing } from '@/utils/canvas/drawNodeService';
 
 interface DrawNodeEditProps extends NodeProps {
   data: any;
@@ -377,15 +378,15 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     async (newDrawingData: string) => {
       setDrawingData(newDrawingData);
       try {
-        const result = await updateNodeSpecificData(id, 'draw', {
-          drawingFileUrl: newDrawingData,
-          currentTool,
-          currentColor,
-          currentStrokeWidth,
-          settings: toolSettings
-        });
-        if (result.error) {
-          console.error('Error updating drawing:', result.error);
+        const result = await saveDrawing(id, newDrawingData);
+        if (result?.drawingFileUrl) {
+          await updateNodeSpecificData(id, 'draw', {
+            drawing_file_url: result.drawingFileUrl,
+            currentTool,
+            currentColor,
+            currentStrokeWidth,
+            settings: toolSettings
+          });
         }
       } catch (error) {
         console.error('Error updating drawing:', error);
