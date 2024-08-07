@@ -9,7 +9,7 @@ import React, {
 import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
 import styles from './DrawNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
-import Artboard, { ArtboardRef } from './components/DrawNodeArtboard';
+import { Artboard, ArtboardRef } from '@/ui/nodes/drawNode/DrawNodeTools';
 import DrawNodeSidebar from './components/DrawNodeSidebar';
 import DrawNodeTopbar from './components/DrawNodeTopbar';
 import {
@@ -375,26 +375,14 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
 
   const handleDrawingChange = useCallback(
     async (newDrawingData: string) => {
-      setDrawingData(newDrawingData);
-      try {
-        const result = await updateNodeSpecificData(id, 'draw', {
-          drawingFileUrl: newDrawingData,
-          currentTool,
-          currentColor,
-          currentStrokeWidth,
-          settings: toolSettings
-        });
-        if (result.error) {
-          console.error('Error updating drawing:', result.error);
-        }
-      } catch (error) {
-        console.error('Error updating drawing:', error);
-      }
+      const svgContent = exportSVG(artboardRef.current?.canvas);
+      setDrawingData(svgContent);
+      updateDrawNodeData({ drawingData: svgContent });
       if (artboardRef.current?.canvas) {
         history.pushState(artboardRef.current.canvas);
       }
     },
-    [id, currentTool, currentColor, currentStrokeWidth, toolSettings, history]
+    [updateDrawNodeData, history]
   );
 
   return (
@@ -467,15 +455,19 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
               initialHeight={nodeHeight * 0.6}
             >
               <Artboard
-                ref={artboardRef}
                 tool={tools[currentToolIndex].tool}
-                width={nodeWidth * 0.8}
-                height={nodeHeight * 0.6}
+                ref={artboardRef}
+                style={{ border: '1px gray solid' }}
+                content={drawingData}
+                onContentChange={handleDrawingChange}
+                width={nodeWidth}
+                height={nodeHeight}
                 color={currentColor}
                 strokeWidth={currentStrokeWidth}
                 opacity={toolSettings[currentToolIndex]?.opacity ?? 100}
-                onContentChange={handleDrawingChange}
-                content={drawingData}
+                settings={toolSettings}
+                toolSettings={toolSettings}
+                currentToolIndex={currentToolIndex}
               />
             </ResizableArtboardMask>
           </div>
