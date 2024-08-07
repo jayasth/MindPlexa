@@ -10,14 +10,10 @@ import { MdCalendarMonth } from 'react-icons/md';
 import { AiOutlineTable, AiOutlineHome } from 'react-icons/ai';
 import { GiPencilBrush } from 'react-icons/gi';
 import { HiOutlineViewGridAdd } from 'react-icons/hi';
+import { FaBrain, FaRobot } from 'react-icons/fa';
 
 import Link from 'next/link';
-import {
-  useNodeStore,
-  useEdgeStore,
-  useUIStore,
-  useCanvasStore
-} from '@/app/store';
+import { useNodeStore, useUIStore, useCanvasStore } from '@/app/store';
 import { createNode } from '@/ui/canvasEditor/utils/nodeCreation';
 import { findOptimalPosition } from '@/ui/canvasEditor/utils/positioningUtils';
 import { getNodeSpecificProperties } from '@/ui/canvasEditor/utils/nodeProperties';
@@ -26,20 +22,20 @@ import { Tooltip } from '@/ui/Tooltip/Tooltip';
 
 interface ToolbarProps {
   canvasId: string;
-  onUndo: () => void;
-  onRedo: () => void;
   onDownload: () => void;
   reactFlowInstance: any;
   onGenerateMindmap: () => void;
+  onGenerateAIMapV1: () => void;
+  onGenerateAIMapV2: () => void;
 }
 
 const Toolbar: React.FC<ToolbarProps> = ({
   canvasId,
-  onUndo,
-  onRedo,
   onDownload,
   reactFlowInstance,
-  onGenerateMindmap
+  onGenerateMindmap,
+  onGenerateAIMapV1,
+  onGenerateAIMapV2
 }) => {
   const [isOpen, setIsOpen] = useState(true);
   const addNode = useNodeStore((state) => state.addNode);
@@ -130,6 +126,16 @@ const Toolbar: React.FC<ToolbarProps> = ({
                 <LuNetwork size={iconSize} />
               </button>
             </Tooltip>
+            <Tooltip content="Generate AI Map (V1)">
+              <button onClick={onGenerateAIMapV1} className={buttonClass}>
+                <FaRobot size={iconSize} /> V1
+              </button>
+            </Tooltip>
+            <Tooltip content="Generate AI Map (V2)">
+              <button onClick={onGenerateAIMapV2} className={buttonClass}>
+                <FaRobot size={iconSize} /> V2
+              </button>
+            </Tooltip>
             <Tooltip content="Selection Menu">
               <button
                 onClick={() => handleAddNode('selection_menu')}
@@ -179,14 +185,6 @@ const Toolbar: React.FC<ToolbarProps> = ({
               </button>
             </Tooltip>
 
-            {/* Undo and Redo buttons commented out
-            <button onClick={onUndo} className={buttonClass} title="Undo">
-              <IoArrowUndo size={iconSize} />
-            </button>
-            <button onClick={onRedo} className={buttonClass} title="Redo">
-              <IoArrowRedo size={iconSize} />
-            </button>
-            */}
             <Tooltip content="Download">
               <button onClick={onDownload} className={buttonClass}>
                 <IoDownload size={iconSize} />
