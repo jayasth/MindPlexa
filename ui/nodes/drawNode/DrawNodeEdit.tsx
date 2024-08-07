@@ -375,7 +375,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
 
   const handleDrawingChange = useCallback(
     async (newDrawingData: string) => {
-      const svgContent = artboardRef.current?.getImageAsSVG() || '';
+      const svgContent = exportSVG(artboardRef.current?.canvas);
       setDrawingData(svgContent);
       updateDrawNodeData({ drawingData: svgContent });
       if (artboardRef.current?.canvas) {
@@ -455,15 +455,19 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
               initialHeight={nodeHeight * 0.6}
             >
               <Artboard
-                ref={artboardRef}
                 tool={tools[currentToolIndex].tool}
-                width={nodeWidth * 0.8}
-                height={nodeHeight * 0.6}
+                ref={artboardRef}
+                style={{ border: '1px gray solid' }}
+                content={drawingData}
+                onContentChange={handleDrawingChange}
+                width={nodeWidth}
+                height={nodeHeight}
                 color={currentColor}
                 strokeWidth={currentStrokeWidth}
                 opacity={toolSettings[currentToolIndex]?.opacity ?? 100}
-                onContentChange={handleDrawingChange}
-                content={drawingData}
+                settings={toolSettings}
+                toolSettings={toolSettings}
+                currentToolIndex={currentToolIndex}
               />
             </ResizableArtboardMask>
           </div>
