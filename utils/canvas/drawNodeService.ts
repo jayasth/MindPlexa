@@ -1,13 +1,9 @@
 import { createClient } from '@/utils/supabase/supabaseClient';
-import { toCamelCase, toSnakeCase } from '@/utils/caseConversion';
 
 const supabase = createClient();
 
 export const saveDrawing = async (nodeId: string, drawingData: string) => {
-  if (
-    typeof drawingData === 'string' &&
-    drawingData.startsWith('data:image/svg+xml')
-  ) {
+  if (drawingData.startsWith('data:image/svg+xml')) {
     const base64Data = drawingData.split(',')[1];
     const svgContent = atob(base64Data);
 
@@ -27,19 +23,7 @@ export const saveDrawing = async (nodeId: string, drawingData: string) => {
       .from('drawings')
       .getPublicUrl(`${nodeId}.svg`);
 
-    const drawingFileUrl = publicUrlData.publicUrl;
-
-    const { data: updateData, error: updateError } = await supabase
-      .from('draw_nodes')
-      .update({ drawing_file_url: drawingFileUrl })
-      .eq('node_id', nodeId);
-
-    if (updateError) {
-      console.error('Error updating draw node data:', updateError);
-      return null;
-    }
-
-    return { drawingFileUrl };
+    return { drawingFileUrl: publicUrlData.publicUrl };
   } else {
     console.error('Invalid drawing data format');
     return null;

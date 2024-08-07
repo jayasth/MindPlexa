@@ -3,15 +3,13 @@ import React, {
   useImperativeHandle,
   useRef,
   useState,
-  useCallback,
-  useEffect
+  useCallback
 } from 'react';
 import FixedSizeDrawingLayer, {
   FixedSizeDrawingLayerRef
 } from './FixedSizeDrawingLayer';
 import { ToolHandlers } from '../DrawNodeTools';
 import { exportSVG } from '../utils/svgExport';
-import styles from './DrawNodeArtboard.module.css';
 
 interface ArtboardProps {
   tool: ToolHandlers;
@@ -32,9 +30,6 @@ export interface ArtboardRef {
   canvas: HTMLCanvasElement | null;
 }
 
-const FIXED_WIDTH = 2000;
-const FIXED_HEIGHT = 2000;
-
 const Artboard = forwardRef<ArtboardRef, ArtboardProps>(
   (
     {
@@ -50,12 +45,11 @@ const Artboard = forwardRef<ArtboardRef, ArtboardProps>(
     ref
   ) => {
     const [scale, setScale] = useState(1);
+    const [pan, setPan] = useState({ x: 0, y: 0 });
     const drawingLayerRef = useRef<FixedSizeDrawingLayerRef>(null);
 
-    useEffect(() => {
-      const newScale = Math.min(width / FIXED_WIDTH, height / FIXED_HEIGHT);
-      setScale(newScale);
-    }, [width, height]);
+    const originalWidth = 1000; // Set a fixed original width
+    const originalHeight = 1000; // Set a fixed original height
 
     const handleContentChange = useCallback(
       (newContent: string) => {
@@ -84,19 +78,24 @@ const Artboard = forwardRef<ArtboardRef, ArtboardProps>(
     }));
 
     return (
-      <div className={styles.artboardWrapper} style={{ width, height }}>
+      <div
+        style={{
+          width: `${width}px`,
+          height: `${height}px`,
+          overflow: 'hidden',
+          position: 'relative'
+        }}
+      >
         <div
-          className={styles.scaleWrapper}
           style={{
-            transform: `scale(${scale})`,
-            width: FIXED_WIDTH,
-            height: FIXED_HEIGHT
+            transform: `scale(${scale}) translate(${pan.x}px, ${pan.y}px)`,
+            transformOrigin: '0 0'
           }}
         >
           <FixedSizeDrawingLayer
             ref={drawingLayerRef}
-            width={FIXED_WIDTH}
-            height={FIXED_HEIGHT}
+            width={originalWidth}
+            height={originalHeight}
             tool={tool}
             color={color}
             strokeWidth={strokeWidth}
