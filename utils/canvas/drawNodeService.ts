@@ -1,9 +1,13 @@
 import { createClient } from '@/utils/supabase/supabaseClient';
+import { toCamelCase, toSnakeCase } from '@/utils/caseConversion';
 
 const supabase = createClient();
 
 export const saveDrawing = async (nodeId: string, drawingData: string) => {
-  if (drawingData.startsWith('data:image/svg+xml')) {
+  if (
+    typeof drawingData === 'string' &&
+    drawingData.startsWith('data:image/svg+xml')
+  ) {
     const base64Data = drawingData.split(',')[1];
     const svgContent = atob(base64Data);
 
@@ -23,7 +27,19 @@ export const saveDrawing = async (nodeId: string, drawingData: string) => {
       .from('drawings')
       .getPublicUrl(`${nodeId}.svg`);
 
-    return { drawingFileUrl: publicUrlData.publicUrl };
+    const drawingFileUrl = publicUrlData.publicUrl;
+
+    const { data: updateData, error: updateError } = await supabase
+      .from('draw_nodes')
+      .update({ drawing_file_url: drawingFileUrl })
+      .eq('node_id', nodeId);
+
+    if (updateError) {
+      console.error('Error updating draw node data:', updateError);
+      return null;
+    }
+
+    return { drawingFileUrl };
   } else {
     console.error('Invalid drawing data format');
     return null;
@@ -42,7 +58,9 @@ export const getDrawing = async (nodeId: string): Promise<string | null> => {
 
   if (data) {
     const text = await data.text();
-    return `data:image/svg+xml;base64,${btoa(text)}`;
+    const encodedText = new TextEncoder().encode(text);
+    const base64String = btoa(String.fromCharCode(...encodedText));
+    return `data:image/svg+xml;base64,${base64String}`;
   }
 
   return null;
