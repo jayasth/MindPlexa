@@ -56,7 +56,7 @@ const FixedSizeDrawingLayer = forwardRef<
     const [context, setContext] = useState<CanvasRenderingContext2D | null>(
       null
     );
-    const [drawing, setDrawing] = useState(false);
+    const [drawing, setDrawing] = useState<boolean>(false);
     const { history } = useHistory();
 
     useEffect(() => {
@@ -73,6 +73,7 @@ const FixedSizeDrawingLayer = forwardRef<
       if (content && context && canvasRef.current) {
         const image = new Image();
         image.onload = () => {
+          context.clearRect(0, 0, width, height);
           context.drawImage(image, 0, 0, width, height);
         };
         image.src = content;
@@ -122,8 +123,8 @@ const FixedSizeDrawingLayer = forwardRef<
       setDrawing(false);
       tool.endStroke?.(context);
       context.globalAlpha = 1;
-      const newContent = canvasRef.current.toDataURL();
-      onContentChange(newContent);
+      const svgContent = exportSVG(canvasRef.current);
+      onContentChange(svgContent);
       history.pushState(canvasRef.current);
     }, [context, tool, onContentChange, history]);
 
@@ -169,16 +170,11 @@ const FixedSizeDrawingLayer = forwardRef<
 
     const clear = useCallback(() => {
       if (context && canvasRef.current) {
-        context.clearRect(
-          0,
-          0,
-          canvasRef.current.width,
-          canvasRef.current.height
-        );
+        context.clearRect(0, 0, width, height);
         onContentChange(canvasRef.current.toDataURL());
         history.clear();
       }
-    }, [context, onContentChange, history]);
+    }, [context, width, height, onContentChange, history]);
 
     useImperativeHandle(ref, () => ({
       clear,
