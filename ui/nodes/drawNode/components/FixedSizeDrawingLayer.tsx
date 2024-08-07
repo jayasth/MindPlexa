@@ -73,6 +73,7 @@ const FixedSizeDrawingLayer = forwardRef<
       if (content && context && canvasRef.current) {
         const image = new Image();
         image.onload = () => {
+          context.clearRect(0, 0, width, height);
           context.drawImage(image, 0, 0, width, height);
         };
         image.src = content;
@@ -169,16 +170,11 @@ const FixedSizeDrawingLayer = forwardRef<
 
     const clear = useCallback(() => {
       if (context && canvasRef.current) {
-        context.clearRect(
-          0,
-          0,
-          canvasRef.current.width,
-          canvasRef.current.height
-        );
+        context.clearRect(0, 0, width, height);
         onContentChange(canvasRef.current.toDataURL());
         history.clear();
       }
-    }, [context, onContentChange, history]);
+    }, [context, width, height, onContentChange, history]);
 
     useImperativeHandle(ref, () => ({
       clear,

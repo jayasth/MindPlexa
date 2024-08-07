@@ -9,7 +9,7 @@ import React, {
 import { NodeProps, Handle, Position, NodeResizer } from 'reactflow';
 import styles from './DrawNodeEdit.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
-import { Artboard, ArtboardRef } from '@/ui/nodes/drawNode/DrawNodeTools';
+import Artboard, { ArtboardRef } from './components/DrawNodeArtboard';
 import DrawNodeSidebar from './components/DrawNodeSidebar';
 import DrawNodeTopbar from './components/DrawNodeTopbar';
 import {
@@ -375,9 +375,8 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
 
   const handleDrawingChange = useCallback(
     async (newDrawingData: string) => {
-      const svgContent = exportSVG(artboardRef.current?.canvas);
-      setDrawingData(svgContent);
-      updateDrawNodeData({ drawingData: svgContent });
+      setDrawingData(newDrawingData);
+      updateDrawNodeData({ drawingData: newDrawingData });
       if (artboardRef.current?.canvas) {
         history.pushState(artboardRef.current.canvas);
       }
@@ -455,19 +454,15 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
               initialHeight={nodeHeight * 0.6}
             >
               <Artboard
-                tool={tools[currentToolIndex].tool}
                 ref={artboardRef}
-                style={{ border: '1px gray solid' }}
-                content={drawingData}
-                onContentChange={handleDrawingChange}
-                width={nodeWidth}
-                height={nodeHeight}
+                tool={tools[currentToolIndex].tool}
+                width={nodeWidth * 0.8}
+                height={nodeHeight * 0.6}
                 color={currentColor}
                 strokeWidth={currentStrokeWidth}
                 opacity={toolSettings[currentToolIndex]?.opacity ?? 100}
-                settings={toolSettings}
-                toolSettings={toolSettings}
-                currentToolIndex={currentToolIndex}
+                onContentChange={handleDrawingChange}
+                content={drawingData}
               />
             </ResizableArtboardMask>
           </div>
