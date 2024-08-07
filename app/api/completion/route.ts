@@ -10,6 +10,7 @@ const openai = new OpenAI({
 export async function POST(req: Request) {
   const { prompt, version } = await req.json();
   console.log('Prompt sent to OpenAI:', prompt);
+  console.log('Version:', version);
 
   const selectedPromptTemplate =
     version === 'v2'

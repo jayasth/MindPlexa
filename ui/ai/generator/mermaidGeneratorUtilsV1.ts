@@ -51,23 +51,23 @@ const applyDagreLayout = (
 export async function parseMermaidCode(
   mermaidCode: string
 ): Promise<{ nodes: Node[]; edges: Edge[] }> {
-  // Render the Mermaid code and invoke the callback
   const filteredCode = removeDoubleQuoteInsideParentheses(
     removeDoubleQuoteInsideBrackets(removeMarkdowncode(mermaidCode))
   );
   console.log('mermaidGeneratorUtils Filtered Mermaid Code:', filteredCode);
+
+  // Ensure the Mermaid code starts with 'graph TD'
+  const processedCode = filteredCode.startsWith('graph TD')
+    ? filteredCode
+    : `graph TD\n${filteredCode}`;
+
   let svgCode: any;
 
   try {
     mermaid.initialize({ startOnLoad: false });
-    svgCode = await mermaid.render('mermaid-chart', filteredCode);
+    svgCode = await mermaid.render('mermaid-chart', processedCode);
   } catch (error: any) {
     console.error('mermaidGeneratorUtils Mermaid parsing error:', error);
-    if (error.message.includes('No diagram type detected')) {
-      console.error(
-        'mermaidGeneratorUtils Mermaid parsing error: UnknownDiagramError - No diagram type detected. Please check the configuration or syntax of your Mermaid code.'
-      );
-    }
     return {
       nodes: [],
       edges: []
