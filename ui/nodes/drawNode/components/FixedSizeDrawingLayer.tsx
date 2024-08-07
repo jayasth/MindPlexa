@@ -123,8 +123,8 @@ const FixedSizeDrawingLayer = forwardRef<
       setDrawing(false);
       tool.endStroke?.(context);
       context.globalAlpha = 1;
-      const newContent = canvasRef.current.toDataURL();
-      onContentChange(newContent);
+      const svgDataUrl = exportSVG(canvasRef.current);
+      onContentChange(svgDataUrl);
       history.pushState(canvasRef.current);
     }, [context, tool, onContentChange, history]);
 

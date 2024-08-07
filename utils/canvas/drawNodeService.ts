@@ -8,7 +8,7 @@ export const saveDrawing = async (nodeId: string, drawingData: string) => {
     drawingData.startsWith('data:image/svg+xml;base64,')
   ) {
     const base64Data = drawingData.split(',')[1];
-    const svgContent = decodeURIComponent(escape(atob(base64Data)));
+    const svgContent = atob(base64Data);
 
     const blob = new Blob([svgContent], { type: 'image/svg+xml' });
 

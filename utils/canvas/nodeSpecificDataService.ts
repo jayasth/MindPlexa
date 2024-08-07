@@ -105,11 +105,11 @@ export const updateNodeSpecificData = async (
   if (nodeType === 'draw') {
     let svgPath = updates.drawingFileUrl;
     if (
-      updates.drawingFileUrl &&
-      typeof updates.drawingFileUrl === 'string' &&
-      updates.drawingFileUrl.startsWith('data:image/svg+xml')
+      updates.drawingData &&
+      typeof updates.drawingData === 'string' &&
+      updates.drawingData.startsWith('data:image/svg+xml;base64,')
     ) {
-      svgPath = await uploadSVGToBucket(nodeId, updates.drawingFileUrl);
+      svgPath = await uploadSVGToBucket(nodeId, updates.drawingData);
     }
 
     const updateData = {
