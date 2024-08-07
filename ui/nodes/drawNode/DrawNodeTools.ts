@@ -14,7 +14,6 @@ export { useRectangle } from './tools/rectangle/useRectangle';
 export { usePen } from './tools/pen/usePen';
 
 // Export components
-export { Artboard } from './components/DrawNodeArtboard';
 export type { ArtboardRef } from './components/DrawNodeArtboard';
 
 // Export interfaces
@@ -31,7 +30,7 @@ export interface ToolHandlers {
     settings: ToolSetting
   ) => void;
   endStroke?: (context: CanvasRenderingContext2D) => void;
-  cursor?: string;
+  cursor?: string | ((strokeWidth: number) => string);
 }
 
 // Export utilities

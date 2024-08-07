@@ -16,6 +16,7 @@ import {
 import { ToolSetting } from '../types';
 import { useHistory } from '../drawNodeHistory';
 import { exportSVG } from '../utils/svgExport';
+import { circleCursor } from '../utils/cursors';
 
 interface FixedSizeDrawingLayerProps {
   width: number;
@@ -184,12 +185,21 @@ const FixedSizeDrawingLayer = forwardRef<
       canvas: canvasRef.current
     }));
 
+    const getCursor = useCallback(() => {
+      if (tool.cursor) {
+        return typeof tool.cursor === 'function'
+          ? tool.cursor(strokeWidth)
+          : tool.cursor;
+      }
+      return circleCursor(strokeWidth);
+    }, [tool, strokeWidth]);
+
     return (
       <canvas
         ref={canvasRef}
         width={width}
         height={height}
-        style={{ touchAction: 'none' }}
+        style={{ touchAction: 'none', cursor: getCursor() }}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
