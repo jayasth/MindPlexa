@@ -4,13 +4,7 @@ import {
   MdOutlineKeyboardDoubleArrowRight
 } from 'react-icons/md';
 import { LuNetwork } from 'react-icons/lu';
-import {
-  IoList,
-  IoArrowUndo,
-  IoArrowRedo,
-  IoShare,
-  IoDownload
-} from 'react-icons/io5';
+import { IoList, IoDownload } from 'react-icons/io5';
 import { PiNotepad } from 'react-icons/pi';
 import { MdCalendarMonth } from 'react-icons/md';
 import { AiOutlineTable, AiOutlineHome } from 'react-icons/ai';
@@ -28,12 +22,12 @@ import { createNode } from '@/ui/canvasEditor/utils/nodeCreation';
 import { findOptimalPosition } from '@/ui/canvasEditor/utils/positioningUtils';
 import { getNodeSpecificProperties } from '@/ui/canvasEditor/utils/nodeProperties';
 import styles from './Toolbar.module.css';
+import { Tooltip } from '@/ui/Tooltip/Tooltip';
 
 interface ToolbarProps {
   canvasId: string;
   onUndo: () => void;
   onRedo: () => void;
-  onShare: () => void;
   onDownload: () => void;
   reactFlowInstance: any;
   onGenerateMindmap: () => void;
@@ -43,7 +37,6 @@ const Toolbar: React.FC<ToolbarProps> = ({
   canvasId,
   onUndo,
   onRedo,
-  onShare,
   onDownload,
   reactFlowInstance,
   onGenerateMindmap
@@ -107,99 +100,98 @@ const Toolbar: React.FC<ToolbarProps> = ({
   return (
     <>
       {!isOpen && (
-        <button
-          className={styles.showButton}
-          onClick={toggleToolbar}
-          title="Show Toolbar"
-        >
-          <MdOutlineKeyboardDoubleArrowRight size={iconSize} />
-        </button>
+        <Tooltip content="Show Toolbar">
+          <button className={styles.showButton} onClick={toggleToolbar}>
+            <MdOutlineKeyboardDoubleArrowRight size={iconSize} />
+          </button>
+        </Tooltip>
       )}
       <div className={`${styles.toolbar} ${isOpen ? styles.open : ''}`}>
-        <button
-          className={styles.toggleButton}
-          onClick={toggleToolbar}
-          title={isOpen ? 'Hide Toolbar' : 'Show Toolbar'}
-        >
-          {isOpen ? (
-            <MdOutlineKeyboardDoubleArrowLeft size={iconSize} />
-          ) : (
-            <MdOutlineKeyboardDoubleArrowRight size={iconSize} />
-          )}
-        </button>
+        <Tooltip content={isOpen ? 'Hide Toolbar' : 'Show Toolbar'}>
+          <button className={styles.toggleButton} onClick={toggleToolbar}>
+            {isOpen ? (
+              <MdOutlineKeyboardDoubleArrowLeft size={iconSize} />
+            ) : (
+              <MdOutlineKeyboardDoubleArrowRight size={iconSize} />
+            )}
+          </button>
+        </Tooltip>
         {isOpen && (
           <>
             <Link href="/workspace/canvases" passHref>
-              <button className={buttonClass} title="Open Editor">
-                <AiOutlineHome size={iconSize} />
-              </button>
+              <Tooltip content="Open Editor">
+                <button className={buttonClass}>
+                  <AiOutlineHome size={iconSize} />
+                </button>
+              </Tooltip>
             </Link>
-            <button
-              onClick={onGenerateMindmap}
-              className={buttonClass}
-              title="Generate Mindmap"
-            >
-              <LuNetwork size={iconSize} />
-            </button>
-            <button
-              onClick={() => handleAddNode('selection_menu')}
-              className={buttonClass}
-              title="Selection Menu"
-            >
-              <HiOutlineViewGridAdd size={iconSize} />
-            </button>
-            <button
-              onClick={() => handleAddNode('note')}
-              className={buttonClass}
-              title="Note"
-            >
-              <PiNotepad size={iconSize} />
-            </button>
-            <button
-              onClick={() => handleAddNode('task')}
-              className={buttonClass}
-              title="Task"
-            >
-              <IoList size={iconSize} />
-            </button>
-            <button
-              onClick={() => handleAddNode('table')}
-              className={buttonClass}
-              title="Table"
-            >
-              <AiOutlineTable size={iconSize} />
-            </button>
-            <button
-              onClick={() => handleAddNode('calendar')}
-              className={buttonClass}
-              title="Calendar"
-            >
-              <MdCalendarMonth size={iconSize} />
-            </button>
-            <button
-              onClick={() => handleAddNode('draw')}
-              className={buttonClass}
-              title="Draw"
-            >
-              <GiPencilBrush size={iconSize} />
-            </button>
+            <Tooltip content="Generate Mindmap">
+              <button onClick={onGenerateMindmap} className={buttonClass}>
+                <LuNetwork size={iconSize} />
+              </button>
+            </Tooltip>
+            <Tooltip content="Selection Menu">
+              <button
+                onClick={() => handleAddNode('selection_menu')}
+                className={buttonClass}
+              >
+                <HiOutlineViewGridAdd size={iconSize} />
+              </button>
+            </Tooltip>
+            <Tooltip content="Note">
+              <button
+                onClick={() => handleAddNode('note')}
+                className={buttonClass}
+              >
+                <PiNotepad size={iconSize} />
+              </button>
+            </Tooltip>
+            <Tooltip content="Task">
+              <button
+                onClick={() => handleAddNode('task')}
+                className={buttonClass}
+              >
+                <IoList size={iconSize} />
+              </button>
+            </Tooltip>
+            <Tooltip content="Table">
+              <button
+                onClick={() => handleAddNode('table')}
+                className={buttonClass}
+              >
+                <AiOutlineTable size={iconSize} />
+              </button>
+            </Tooltip>
+            <Tooltip content="Calendar">
+              <button
+                onClick={() => handleAddNode('calendar')}
+                className={buttonClass}
+              >
+                <MdCalendarMonth size={iconSize} />
+              </button>
+            </Tooltip>
+            <Tooltip content="Draw">
+              <button
+                onClick={() => handleAddNode('draw')}
+                className={buttonClass}
+              >
+                <GiPencilBrush size={iconSize} />
+              </button>
+            </Tooltip>
 
+            {/* Undo and Redo buttons commented out
             <button onClick={onUndo} className={buttonClass} title="Undo">
               <IoArrowUndo size={iconSize} />
             </button>
             <button onClick={onRedo} className={buttonClass} title="Redo">
               <IoArrowRedo size={iconSize} />
             </button>
-            <button onClick={onShare} className={buttonClass} title="Share">
-              <IoShare size={iconSize} />
-            </button>
-            <button
-              onClick={onDownload}
-              className={buttonClass}
-              title="Download"
-            >
-              <IoDownload size={iconSize} />
-            </button>
+            */}
+            <Tooltip content="Download">
+              <button onClick={onDownload} className={buttonClass}>
+                <IoDownload size={iconSize} />
+              </button>
+            </Tooltip>
           </>
         )}
       </div>
