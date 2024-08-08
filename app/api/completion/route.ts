@@ -19,11 +19,11 @@ export async function POST(req: Request) {
   console.log('Version:', version);
 
   const selectedPromptTemplate =
-    version === 'v2'
-      ? promptTemplateV2
-      : version === 'v1'
-        ? promptTemplateV1
-        : promptTemplate;
+    {
+      v2: promptTemplateV2,
+      v1: promptTemplateV1,
+      default: promptTemplate
+    }[version] || promptTemplate;
 
   const selectedModel = modelConfig[version] || modelConfig.default;
 
@@ -31,7 +31,12 @@ export async function POST(req: Request) {
     const response = await openai.chat.completions.create({
       model: selectedModel,
       temperature: 0.1,
-      messages: [{ role: 'user', content: selectedPromptTemplate(prompt) }]
+      messages: [
+        {
+          role: 'user',
+          content: selectedPromptTemplate(prompt, version, selectedModel)
+        }
+      ]
     });
 
     console.log(

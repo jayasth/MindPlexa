@@ -1,4 +1,8 @@
-export const promptTemplateV1 = (userInput: string) => {
+export const promptTemplateV1 = (
+  userInput: string,
+  projectType: string,
+  projectSize: string
+) => {
   return `Generate a Mermaid JS flowchart for a project management platform based on the following topic: "${userInput}"
 The flowchart should:
 - Start with the main topic as the root node
@@ -7,6 +11,8 @@ The flowchart should:
 - Ensure coherent connections between nodes
 - Avoid special characters or double quotes in node text
 - Only include Mermaid syntax, no additional text
+
+The project type is "${projectType}" and the project size is "${projectSize}".
 
 Example format:
 graph TD

@@ -20,11 +20,16 @@ interface AIGeneratorModalV1Props {
 
 const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({ onClose }) => {
   const [topic, setTopic] = useState('');
+  const [projectType, setProjectType] = useState('');
+  const [projectSize, setProjectSize] = useState('');
+  const [showFollowUp, setShowFollowUp] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [generatedNodes, setGeneratedNodes] = useState<Node[]>([]);
   const [generatedEdges, setGeneratedEdges] = useState<Edge[]>([]);
   const { completion, input, handleInputChange, handleSubmit, isLoading } =
     useCompletion();
+
+  const [selectedModel, setSelectedModel] = useState('gpt-3.5-turbo'); // Default model
 
   const { setNodes } = useNodeStore();
   const { setEdges } = useEdgeStore();
@@ -41,13 +46,13 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({ onClose }) => {
     setIsLoading(true);
 
     try {
-      const prompt = promptTemplateV1(topic);
+      const prompt = promptTemplateV1(topic, projectType, projectSize);
       const response = await fetch('/api/completion', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ prompt })
+        body: JSON.stringify({ prompt, version: selectedModel }) // Pass selected model
       });
 
       if (!response.ok) {
@@ -57,7 +62,9 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({ onClose }) => {
       const data = await response.json();
       console.log('AIGeneratorModalV1 Response data:', data);
       const { nodes: newNodes, edges: newEdges } = await parseMermaidCode(
-        data.mermaidCode
+        data.mermaidCode,
+        projectType,
+        projectSize
       );
 
       // Ensure nodes have the correct data properties
@@ -143,6 +150,15 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({ onClose }) => {
               value={topic}
               onChange={handleTopicChange}
             />
+            <select
+              className={styles.select}
+              value={selectedModel}
+              onChange={(e) => setSelectedModel(e.target.value)}
+            >
+              <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+              <option value="gpt-4">GPT-4</option>
+              {/* Add more options as needed */}
+            </select>
             <div className={styles.buttonContainer}>
               <Button
                 className={styles.iconButton}

@@ -77,8 +77,105 @@ const applyRadialLayout = (
   return { nodes, edges };
 };
 
+const applyHierarchicalLayout = (
+  nodes: Node[],
+  edges: Edge[]
+): { nodes: Node[]; edges: Edge[] } => {
+  const g = new dagre.graphlib.Graph();
+  g.setGraph({ rankdir: 'TB' }); // Top-to-bottom layout
+
+  nodes.forEach((node) => {
+    g.setNode(node.id, { width: node.width, height: node.height });
+  });
+
+  edges.forEach((edge) => {
+    g.setEdge(edge.source, edge.target);
+  });
+
+  dagre.layout(g);
+
+  const updatedNodes = nodes.map((node) => {
+    const position = g.node(node.id);
+    return {
+      ...node,
+      position: { x: position.x, y: position.y }
+    };
+  });
+
+  return { nodes: updatedNodes, edges };
+};
+
+const applyMindmapLayout = (
+  nodes: Node[],
+  edges: Edge[]
+): { nodes: Node[]; edges: Edge[] } => {
+  const centerX = 0;
+  const centerY = 0;
+  const minRadius = 150;
+  const radiusIncrement = 100;
+
+  const rootNode = nodes[0];
+  rootNode.position = { x: centerX, y: centerY };
+
+  const nodeMap = new Map(nodes.map((node) => [node.id, node]));
+
+  const getChildNodes = (nodeId: string) => {
+    return edges
+      .filter((edge) => edge.source === nodeId)
+      .map((edge) => nodeMap.get(edge.target)!)
+      .filter(Boolean);
+  };
+
+  const calculateRadius = (level: number, childCount: number) => {
+    const { width, height } = getNodeDimensions('note', false, false);
+    const maxChildWidth = childCount * (width + 10);
+    const radius = Math.max(
+      minRadius + radiusIncrement * level,
+      maxChildWidth / (2 * Math.PI)
+    );
+    return radius;
+  };
+
+  const positionNodesCircular = (
+    parentNode: Node,
+    childNodes: Node[],
+    startAngle: number,
+    endAngle: number,
+    level: number
+  ) => {
+    const radius = calculateRadius(level, childNodes.length);
+    const angleStep = (endAngle - startAngle) / childNodes.length;
+
+    childNodes.forEach((node, index) => {
+      const angle = startAngle + angleStep * (index + 0.5);
+      node.position = {
+        x: parentNode.position.x + Math.cos(angle) * radius,
+        y: parentNode.position.y + Math.sin(angle) * radius
+      };
+
+      const grandChildren = getChildNodes(node.id);
+      if (grandChildren.length > 0) {
+        positionNodesCircular(
+          node,
+          grandChildren,
+          angle - angleStep / 2,
+          angle + angleStep / 2,
+          level + 1
+        );
+      }
+    });
+  };
+
+  const childNodes = getChildNodes(rootNode.id);
+  positionNodesCircular(rootNode, childNodes, 0, 2 * Math.PI, 1);
+
+  return { nodes, edges };
+};
+
 export async function parseMermaidCode(
-  mermaidCode: string
+  mermaidCode: string,
+  projectType: string,
+  projectSize: string
 ): Promise<{ nodes: Node[]; edges: Edge[] }> {
   const filteredCode = removeDoubleQuoteInsideParentheses(
     removeDoubleQuoteInsideBrackets(removeMarkdowncode(mermaidCode))
@@ -125,9 +222,15 @@ export async function parseMermaidCode(
 
   let layoutedElements: { nodes: Node[]; edges: Edge[] };
   try {
-    layoutedElements = applyRadialLayout(filteredNodes, edges);
+    if (projectType === 'writing') {
+      layoutedElements = applyHierarchicalLayout(filteredNodes, edges);
+    } else if (projectType === 'filmmaking') {
+      layoutedElements = applyMindmapLayout(filteredNodes, edges);
+    } else {
+      layoutedElements = applyRadialLayout(filteredNodes, edges);
+    }
   } catch (error: any) {
-    console.error('mermaidGeneratorUtils Error applying Radial layout:', error);
+    console.error('mermaidGeneratorUtils Error applying layout:', error);
     return {
       nodes: filteredNodes,
       edges
