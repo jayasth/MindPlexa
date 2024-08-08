@@ -129,18 +129,12 @@ const Toolbar: React.FC<ToolbarProps> = ({
               </button>
             </Tooltip>
             <Tooltip content="Generate AI Map (V1)">
-              <button
-                onClick={() => setAIVersion('v1')}
-                className={buttonClass}
-              >
+              <button onClick={onGenerateAIMapV1} className={buttonClass}>
                 <FaRobot size={iconSize} /> V1
               </button>
             </Tooltip>
             <Tooltip content="Generate AI Map (V2)">
-              <button
-                onClick={() => setAIVersion('v2')}
-                className={buttonClass}
-              >
+              <button onClick={onGenerateAIMapV2} className={buttonClass}>
                 <FaRobot size={iconSize} /> V2
               </button>
             </Tooltip>

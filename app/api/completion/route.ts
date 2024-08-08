@@ -7,6 +7,12 @@ const openai = new OpenAI({
   apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY
 });
 
+const modelConfig = {
+  default: 'gpt-3.5-turbo',
+  v1: 'gpt-4',
+  v2: 'gpt-4'
+};
+
 export async function POST(req: Request) {
   const { prompt, version } = await req.json();
   console.log('Prompt sent to OpenAI:', prompt);
@@ -19,9 +25,11 @@ export async function POST(req: Request) {
         ? promptTemplateV1
         : promptTemplate;
 
+  const selectedModel = modelConfig[version] || modelConfig.default;
+
   try {
     const response = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
+      model: selectedModel,
       temperature: 0.1,
       messages: [{ role: 'user', content: selectedPromptTemplate(prompt) }]
     });
