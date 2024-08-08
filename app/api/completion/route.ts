@@ -9,62 +9,42 @@ const openai = new OpenAI({
 
 const modelConfig = {
   default: 'gpt-3.5-turbo',
-  v1: 'gpt-4',
-  v2: 'gpt-4'
+  v1: 'gpt-4o',
+  v2: 'gpt-4o'
 };
 
 export async function POST(req: Request) {
-  const { topic, version } = await req.json();
-  console.log('Topic sent to OpenAI:', topic);
+  const { prompt, version } = await req.json();
+  console.log('Prompt sent to OpenAI:', prompt);
   console.log('Version:', version);
+
+  const selectedPromptTemplate =
+    {
+      v2: promptTemplateV2,
+      v1: promptTemplateV1,
+      default: promptTemplate
+    }[version] || promptTemplate;
+
+  const selectedModel = modelConfig[version] || modelConfig.default;
 
   try {
     const response = await openai.chat.completions.create({
-      model: 'gpt-4',
-      temperature: 0.7,
+      model: selectedModel,
+      temperature: 0.1,
       messages: [
         {
           role: 'user',
-          content: promptTemplateV1(topic)
+          content: selectedPromptTemplate(prompt, version, selectedModel)
         }
       ]
     });
 
-    const content: string | null = response.choices[0].message.content;
-    if (!content) {
-      throw new Error('Content is null');
-    }
-    const lines = content.split('\n');
-    const projectType =
-      lines
-        .find((line) => line.startsWith('Project Type:'))
-        ?.split(':')[1]
-        .trim() || '';
-    const projectSize =
-      lines
-        .find((line) => line.startsWith('Project Size:'))
-        ?.split(':')[1]
-        .trim() || '';
-    const diagramStructure =
-      lines
-        .find((line) => line.startsWith('Diagram Structure:'))
-        ?.split(':')[1]
-        .trim() || '';
-    const explanation =
-      lines
-        .find((line) => line.startsWith('Explanation:'))
-        ?.split(':')[1]
-        .trim() || '';
-    const mermaidCode = content.split('Mermaid Flowchart:')[1].trim();
-
+    console.log(
+      'Complete response from OpenAI:',
+      response.choices[0].message.content
+    );
     return new Response(
-      JSON.stringify({
-        mermaidCode,
-        projectType,
-        projectSize,
-        diagramStructure,
-        explanation
-      }),
+      JSON.stringify({ mermaidCode: response.choices[0].message.content }),
       {
         headers: { 'Content-Type': 'application/json' }
       }
