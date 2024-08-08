@@ -14,37 +14,57 @@ const modelConfig = {
 };
 
 export async function POST(req: Request) {
-  const { prompt, version } = await req.json();
-  console.log('Prompt sent to OpenAI:', prompt);
+  const { topic, version } = await req.json();
+  console.log('Topic sent to OpenAI:', topic);
   console.log('Version:', version);
-
-  const selectedPromptTemplate =
-    {
-      v2: promptTemplateV2,
-      v1: promptTemplateV1,
-      default: promptTemplate
-    }[version] || promptTemplate;
-
-  const selectedModel = modelConfig[version] || modelConfig.default;
 
   try {
     const response = await openai.chat.completions.create({
-      model: selectedModel,
-      temperature: 0.1,
+      model: 'gpt-4',
+      temperature: 0.7,
       messages: [
         {
           role: 'user',
-          content: selectedPromptTemplate(prompt, version, selectedModel)
+          content: promptTemplateV1(topic)
         }
       ]
     });
 
-    console.log(
-      'Complete response from OpenAI:',
-      response.choices[0].message.content
-    );
+    const content: string | null = response.choices[0].message.content;
+    if (!content) {
+      throw new Error('Content is null');
+    }
+    const lines = content.split('\n');
+    const projectType =
+      lines
+        .find((line) => line.startsWith('Project Type:'))
+        ?.split(':')[1]
+        .trim() || '';
+    const projectSize =
+      lines
+        .find((line) => line.startsWith('Project Size:'))
+        ?.split(':')[1]
+        .trim() || '';
+    const diagramStructure =
+      lines
+        .find((line) => line.startsWith('Diagram Structure:'))
+        ?.split(':')[1]
+        .trim() || '';
+    const explanation =
+      lines
+        .find((line) => line.startsWith('Explanation:'))
+        ?.split(':')[1]
+        .trim() || '';
+    const mermaidCode = content.split('Mermaid Flowchart:')[1].trim();
+
     return new Response(
-      JSON.stringify({ mermaidCode: response.choices[0].message.content }),
+      JSON.stringify({
+        mermaidCode,
+        projectType,
+        projectSize,
+        diagramStructure,
+        explanation
+      }),
       {
         headers: { 'Content-Type': 'application/json' }
       }
