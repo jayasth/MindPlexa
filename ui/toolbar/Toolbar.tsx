@@ -19,27 +19,27 @@ import { findOptimalPosition } from '@/ui/canvasEditor/utils/positioningUtils';
 import { getNodeSpecificProperties } from '@/ui/canvasEditor/utils/nodeProperties';
 import styles from './Toolbar.module.css';
 import { Tooltip } from '@/ui/Tooltip/Tooltip';
-import AIGeneratorController from '@/ui/ai/generator/AIGeneratorController';
+import AIGeneratorModal from '@/ui/ai/generator/AIGeneratorModal';
+import AIGeneratorModalV1 from '@/ui/ai/generator/AIGeneratorModalV1';
+import AIGeneratorModalV2 from '@/ui/ai/generator/AIGeneratorModalV2';
 
 interface ToolbarProps {
   canvasId: string;
   onDownload: () => void;
   reactFlowInstance: any;
   onGenerateMindmap: () => void;
-  onGenerateAIMapV1: () => void;
-  onGenerateAIMapV2: () => void;
 }
 
 const Toolbar: React.FC<ToolbarProps> = ({
   canvasId,
   onDownload,
   reactFlowInstance,
-  onGenerateMindmap,
-  onGenerateAIMapV1,
-  onGenerateAIMapV2
+  onGenerateMindmap
 }) => {
   const [isOpen, setIsOpen] = useState(true);
-  const [aiVersion, setAIVersion] = useState<'v1' | 'v2' | null>(null);
+  const [showAIGenerator, setShowAIGenerator] = useState(false);
+  const [showAIGeneratorV1, setShowAIGeneratorV1] = useState(false);
+  const [showAIGeneratorV2, setShowAIGeneratorV2] = useState(false);
   const addNode = useNodeStore((state) => state.addNode);
   const nodes = useNodeStore((state) => state.nodes);
   const setCanvasId = useCanvasStore((state) => state.setCanvasId);
@@ -92,6 +92,18 @@ const Toolbar: React.FC<ToolbarProps> = ({
     setIsOpen(!isOpen);
   };
 
+  const handleGenerateAIMap = () => {
+    setShowAIGenerator(true);
+  };
+
+  const handleGenerateAIMapV1 = () => {
+    setShowAIGeneratorV1(true);
+  };
+
+  const handleGenerateAIMapV2 = () => {
+    setShowAIGeneratorV2(true);
+  };
+
   const buttonClass = `${styles.button} ${isOpen ? styles.open : ''}`;
   const iconSize = 20;
 
@@ -128,13 +140,18 @@ const Toolbar: React.FC<ToolbarProps> = ({
                 <LuNetwork size={iconSize} />
               </button>
             </Tooltip>
+            <Tooltip content="Generate AI Map">
+              <button onClick={handleGenerateAIMap} className={buttonClass}>
+                <FaRobot size={iconSize} />
+              </button>
+            </Tooltip>
             <Tooltip content="Generate AI Map (V1)">
-              <button onClick={onGenerateAIMapV1} className={buttonClass}>
+              <button onClick={handleGenerateAIMapV1} className={buttonClass}>
                 <FaRobot size={iconSize} /> V1
               </button>
             </Tooltip>
             <Tooltip content="Generate AI Map (V2)">
-              <button onClick={onGenerateAIMapV2} className={buttonClass}>
+              <button onClick={handleGenerateAIMapV2} className={buttonClass}>
                 <FaRobot size={iconSize} /> V2
               </button>
             </Tooltip>
@@ -195,10 +212,22 @@ const Toolbar: React.FC<ToolbarProps> = ({
           </>
         )}
       </div>
-      {aiVersion && (
-        <AIGeneratorController
-          version={aiVersion}
-          onClose={() => setAIVersion(null)}
+      {showAIGenerator && (
+        <AIGeneratorModal
+          isOpen={showAIGenerator}
+          onClose={() => setShowAIGenerator(false)}
+        />
+      )}
+      {showAIGeneratorV1 && (
+        <AIGeneratorModalV1
+          isOpen={showAIGeneratorV1}
+          onClose={() => setShowAIGeneratorV1(false)}
+        />
+      )}
+      {showAIGeneratorV2 && (
+        <AIGeneratorModalV2
+          isOpen={showAIGeneratorV2}
+          onClose={() => setShowAIGeneratorV2(false)}
         />
       )}
     </>

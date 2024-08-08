@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { Modal } from 'react-responsive-modal';
+import 'react-responsive-modal/styles.css';
 import { Edge, Node } from 'reactflow';
 import { useCompletion } from 'ai/react';
 import { parseMermaidCode } from './mermaidGeneratorUtilsV2';
@@ -11,20 +13,27 @@ import {
 } from '@/app/store';
 import Button from '@/ui/Button/Button';
 import ConfirmIntegrationModal from './ConfirmIntegrationModal';
+import Dropdown from '@/ui/dropdown/Dropdown';
 import { findOptimalPosition } from '@/ui/canvasEditor/utils/positioningUtils';
 import styles from './AIGeneratorModal.module.css';
 
 interface AIGeneratorModalV2Props {
+  isOpen: boolean;
   onClose: () => void;
 }
 
-const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({ onClose }) => {
+const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
+  isOpen,
+  onClose
+}) => {
   const [topic, setTopic] = useState('');
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [generatedNodes, setGeneratedNodes] = useState<Node[]>([]);
   const [generatedEdges, setGeneratedEdges] = useState<Edge[]>([]);
   const { completion, input, handleInputChange, handleSubmit, isLoading } =
     useCompletion();
+
+  const [selectedModel, setSelectedModel] = useState('gpt-3.5-turbo');
 
   const { setNodes } = useNodeStore();
   const { setEdges } = useEdgeStore();
@@ -47,7 +56,7 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({ onClose }) => {
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ prompt })
+        body: JSON.stringify({ prompt, version: selectedModel })
       });
 
       if (!response.ok) {
@@ -60,7 +69,6 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({ onClose }) => {
         data.mermaidCode
       );
 
-      // Ensure nodes have the correct data properties
       const updatedNodes = newNodes.map((node) => {
         const title = node.data?.title || 'Untitled';
         const content = node.data?.content || 'No description available';
@@ -76,7 +84,6 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({ onClose }) => {
         };
       });
 
-      // Check if there are existing nodes on the canvas before setting new nodes
       const existingNodes = useNodeStore.getState().nodes;
 
       if (existingNodes.length > 0) {
@@ -84,12 +91,10 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({ onClose }) => {
         setGeneratedEdges(newEdges);
         setShowConfirmModal(true);
       } else {
-        // Directly integrate the generated nodes and edges if the canvas is empty
         handleConfirmIntegration(updatedNodes, newEdges);
       }
     } catch (error) {
       console.error('AIGeneratorModalV2: Error generating mindmap:', error);
-      // Handle error state
     } finally {
       setIsLoading(false);
     }
@@ -132,47 +137,60 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({ onClose }) => {
   };
 
   return (
-    <div className={styles.modalOverlay}>
-      {!showConfirmModal && (
-        <div className={styles.modalContent}>
-          <h2 className={styles.modalHeader}>Generate Mindmap</h2>
-          <form onSubmit={handleGenerateMindmap}>
-            <textarea
-              className={styles.textarea}
-              placeholder="Enter a topic or idea"
-              value={topic}
-              onChange={handleTopicChange}
-            />
-            <div className={styles.buttonContainer}>
-              <Button
-                className={styles.iconButton}
-                type="submit"
-                disabled={uiIsLoading}
-                variant="slim"
-              >
-                {uiIsLoading ? 'Generating' : 'Generate'}
-              </Button>
-              <Button
-                className={styles.iconButton}
-                type="button"
-                onClick={onClose}
-                variant="slim"
-              >
-                Cancel
-              </Button>
-            </div>
-          </form>
-        </div>
-      )}
-      {showConfirmModal && (
-        <ConfirmIntegrationModal
-          onConfirm={() =>
-            handleConfirmIntegration(generatedNodes, generatedEdges)
-          }
-          onCancel={handleCancelIntegration}
-        />
-      )}
-    </div>
+    <Modal
+      open={isOpen}
+      onClose={onClose}
+      center
+      classNames={{
+        modal: styles.modalContent,
+        overlay: styles.modalOverlay,
+        closeButton: styles.closeButton
+      }}
+    >
+      <div className={styles.modalInner}>
+        {!showConfirmModal && (
+          <div>
+            <h2 className={styles.modalHeader}>Generate Mindmap (V2)</h2>
+            <form onSubmit={handleGenerateMindmap}>
+              <textarea
+                className={styles.textarea}
+                placeholder="Enter a topic or idea"
+                value={topic}
+                onChange={handleTopicChange}
+              />
+              <div className={styles.actionContainer}>
+                <Dropdown
+                  value={selectedModel}
+                  onChange={(value) => setSelectedModel(value)}
+                  variant="custom"
+                  className={styles.dropdown}
+                >
+                  <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                  <option value="gpt-4">GPT-4</option>
+                </Dropdown>
+                <Button
+                  type="submit"
+                  disabled={uiIsLoading}
+                  loading={uiIsLoading}
+                  variant="submit"
+                  className={styles.generateButton}
+                >
+                  {uiIsLoading ? 'Generating...' : 'Generate'}
+                </Button>
+              </div>
+            </form>
+          </div>
+        )}
+        {showConfirmModal && (
+          <ConfirmIntegrationModal
+            onConfirm={() =>
+              handleConfirmIntegration(generatedNodes, generatedEdges)
+            }
+            onCancel={handleCancelIntegration}
+          />
+        )}
+      </div>
+    </Modal>
   );
 };
 

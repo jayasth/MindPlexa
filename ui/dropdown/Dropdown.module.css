@@ -57,6 +57,19 @@
   @apply bg-light-background;
 }
 
+/* Custom variant styles */
+.custom {
+  @apply bg-transparent text-myGray-800 border border-light-primary rounded-md;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  height: 28px;
+  line-height: 1;
+}
+
+.custom:focus {
+  @apply outline-none ring-2 ring-lavender-500 ring-opacity-50;
+}
+
 .label {
   @apply inline-block;
 }

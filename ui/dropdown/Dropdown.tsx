@@ -5,7 +5,7 @@ import s from './Dropdown.module.css';
 
 interface Props extends Omit<SelectHTMLAttributes<any>, 'onChange'> {
   className?: string;
-  variant?: 'slim' | 'outline' | 'sleek' | 'gradient' | 'datepicker';
+  variant?: 'slim' | 'outline' | 'sleek' | 'gradient' | 'datepicker' | 'custom';
   onChange: (value: string) => void;
   style?: React.CSSProperties;
 }
@@ -27,7 +27,8 @@ const Dropdown = (props: Props) => {
       [s.outline]: variant === 'outline',
       [s.sleek]: variant === 'sleek',
       [s.gradient]: variant === 'gradient',
-      [s.datepicker]: variant === 'datepicker'
+      [s.datepicker]: variant === 'datepicker',
+      [s.custom]: variant === 'custom'
     },
     className
   );
@@ -40,16 +41,14 @@ const Dropdown = (props: Props) => {
   };
 
   return (
-    <label className={s.label}>
-      <select
-        className={rootClassName}
-        onChange={handleOnChange}
-        style={style}
-        {...rest}
-      >
-        {children}
-      </select>
-    </label>
+    <select
+      className={rootClassName}
+      onChange={handleOnChange}
+      style={style}
+      {...rest}
+    >
+      {children}
+    </select>
   );
 };
 
