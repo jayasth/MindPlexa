@@ -14,6 +14,7 @@ const applyRadialLayout = (
   nodes: Node[],
   edges: Edge[]
 ): { nodes: Node[]; edges: Edge[] } => {
+  // Implement a radial layout algorithm
   const centerX = 0;
   const centerY = 0;
   const minRadius = 150;
@@ -81,6 +82,7 @@ const applyHierarchicalLayout = (
   nodes: Node[],
   edges: Edge[]
 ): { nodes: Node[]; edges: Edge[] } => {
+  // Implement a hierarchical layout algorithm using a library like dagre
   const g = new dagre.graphlib.Graph();
   g.setGraph({ rankdir: 'TB' }); // Top-to-bottom layout
 
@@ -109,6 +111,7 @@ const applyMindmapLayout = (
   nodes: Node[],
   edges: Edge[]
 ): { nodes: Node[]; edges: Edge[] } => {
+  // Implement a mindmap layout algorithm
   const centerX = 0;
   const centerY = 0;
   const minRadius = 150;
@@ -185,6 +188,7 @@ const applyGridLayout = (
   nodes: Node[],
   edges: Edge[]
 ): { nodes: Node[]; edges: Edge[] } => {
+  // Implement a grid layout algorithm
   const gridSize = 200;
   nodes.forEach((node, index) => {
     node.position = {
