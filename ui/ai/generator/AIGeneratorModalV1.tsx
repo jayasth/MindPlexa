@@ -26,9 +26,9 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
   isOpen,
   onClose
 }) => {
-  const [topic, setTopic] = useState('');
+  const [step, setStep] = useState(1);
+  const [projectConcept, setProjectConcept] = useState('');
   const [projectDetails, setProjectDetails] = useState('');
-  const [showFollowUp, setShowFollowUp] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [generatedNodes, setGeneratedNodes] = useState<Node[]>([]);
   const [generatedEdges, setGeneratedEdges] = useState<Edge[]>([]);
@@ -42,9 +42,10 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
   const { isLoading: uiIsLoading, setIsLoading } = useUIStore();
   const { canvasId } = useCanvasStore();
 
-  const handleTopicChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setTopic(e.target.value);
-    handleInputChange(e);
+  const handleProjectConceptChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement>
+  ) => {
+    setProjectConcept(e.target.value);
   };
 
   const handleProjectDetailsChange = (
@@ -53,13 +54,19 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
     setProjectDetails(e.target.value);
   };
 
-  const handleGenerateMindmap = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleNext = () => {
+    if (projectConcept.trim()) {
+      setStep(2);
+    }
+  };
+
+  const handleGenerateCanvas = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
       const prompt = promptTemplateV1(
-        `Topic: ${topic}\nProject Details: ${projectDetails}`
+        `Project Concept: ${projectConcept}\nProject Details: ${projectDetails}`
       );
       const response = await fetch('/api/completion', {
         method: 'POST',
@@ -70,7 +77,7 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
       });
 
       if (!response.ok) {
-        throw new Error('Failed to generate mindmap');
+        throw new Error('Failed to generate canvas');
       }
 
       const data = await response.json();
@@ -80,20 +87,14 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
         projectDetails
       );
 
-      const updatedNodes = newNodes.map((node) => {
-        const title = node.data?.title || 'Untitled';
-        const content = node.data?.content || 'No description available';
-        console.log(`AIGeneratorModalV1 Node title: ${title}`);
-        console.log(`AIGeneratorModalV1 Node content: ${content}`);
-        return {
-          ...node,
-          data: {
-            ...node.data,
-            title,
-            content
-          }
-        };
-      });
+      const updatedNodes = newNodes.map((node) => ({
+        ...node,
+        data: {
+          ...node.data,
+          title: node.data?.title || 'Untitled',
+          content: node.data?.content || 'No description available'
+        }
+      }));
 
       const existingNodes = useNodeStore.getState().nodes;
 
@@ -105,7 +106,7 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
         handleConfirmIntegration(updatedNodes, newEdges);
       }
     } catch (error) {
-      console.error('AIGeneratorModalV1: Error generating mindmap:', error);
+      console.error('AIGeneratorModalV1: Error generating canvas:', error);
     } finally {
       setIsLoading(false);
     }
@@ -118,24 +119,13 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
       canvasSize
     );
 
-    const offsetNodes = newNodes.map((node) => {
-      const title = node.data?.title || 'Untitled';
-      const content = node.data?.content || 'No description available';
-      console.log(`AIGeneratorModalV1 Node title: ${title}`);
-      console.log(`AIGeneratorModalV1 Node content: ${content}`);
-      return {
-        ...node,
-        position: {
-          x: node.position.x + optimalPosition.x,
-          y: node.position.y + optimalPosition.y
-        },
-        data: {
-          ...node.data,
-          title,
-          content
-        }
-      };
-    });
+    const offsetNodes = newNodes.map((node) => ({
+      ...node,
+      position: {
+        x: node.position.x + optimalPosition.x,
+        y: node.position.y + optimalPosition.y
+      }
+    }));
 
     setNodes((currentNodes) => [...currentNodes, ...offsetNodes]);
     setEdges((currentEdges) => [...currentEdges, ...newEdges]);
@@ -161,52 +151,56 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
       <div className={styles.modalInner}>
         {!showConfirmModal && (
           <div>
-            <h2 className={styles.modalHeader}>Generate Mindmap (V1)</h2>
-            <form onSubmit={handleGenerateMindmap}>
-              <textarea
-                className={styles.textarea}
-                placeholder="Enter a topic or idea"
-                value={topic}
-                onChange={handleTopicChange}
-              />
-              {showFollowUp && (
-                <textarea
-                  className={styles.textarea}
-                  placeholder="Provide more details about your project (e.g., type, size, goals)"
-                  value={projectDetails}
-                  onChange={handleProjectDetailsChange}
-                />
-              )}
-              <div className={styles.actionContainer}>
-                <Dropdown
-                  value={selectedModel}
-                  onChange={(value) => setSelectedModel(value)}
-                  variant="custom"
-                  className={styles.dropdown}
-                >
-                  <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-                  <option value="gpt-4o">GPT-4o</option>
-                </Dropdown>
-                {!showFollowUp ? (
+            <h2 className={styles.modalHeader}>AI Node Network Generator</h2>
+            <form onSubmit={step === 1 ? handleNext : handleGenerateCanvas}>
+              {step === 1 && (
+                <>
+                  <textarea
+                    className={styles.textarea}
+                    placeholder="Enter your project topic or main idea"
+                    value={projectConcept}
+                    onChange={handleProjectConceptChange}
+                  />
                   <Button
-                    onClick={() => setShowFollowUp(true)}
+                    onClick={handleNext}
                     variant="sleek"
                     className={styles.nextButton}
+                    disabled={!projectConcept.trim()}
                   >
                     Next
                   </Button>
-                ) : (
-                  <Button
-                    type="submit"
-                    disabled={uiIsLoading}
-                    loading={uiIsLoading}
-                    variant="submit"
-                    className={styles.generateButton}
-                  >
-                    {uiIsLoading ? 'Generating...' : 'Generate'}
-                  </Button>
-                )}
-              </div>
+                </>
+              )}
+              {step === 2 && (
+                <>
+                  <textarea
+                    className={styles.textarea}
+                    placeholder="Provide additional context or details about your project"
+                    value={projectDetails}
+                    onChange={handleProjectDetailsChange}
+                  />
+                  <div className={styles.actionContainer}>
+                    <Dropdown
+                      value={selectedModel}
+                      onChange={(value) => setSelectedModel(value)}
+                      variant="custom"
+                      className={styles.dropdown}
+                    >
+                      <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                      <option value="gpt-4o">GPT-4o</option>
+                    </Dropdown>
+                    <Button
+                      type="submit"
+                      disabled={uiIsLoading}
+                      loading={uiIsLoading}
+                      variant="submit"
+                      className={styles.generateButton}
+                    >
+                      {uiIsLoading ? 'Generating...' : 'Generate Network'}
+                    </Button>
+                  </div>
+                </>
+              )}
             </form>
           </div>
         )}

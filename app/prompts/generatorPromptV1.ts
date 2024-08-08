@@ -1,32 +1,37 @@
 export const promptTemplateV1 = (userInput: string) => {
   const [topic, projectDetails] = userInput.split('\nProject Details: ');
 
-  return `Analyze the following project topic and details to generate an appropriate Mermaid JS flowchart:
+  return `Generate a comprehensive Mermaid JS flowchart for a project management platform based on the following input:
 
-Topic: ${topic}
-Project Details: ${projectDetails}
+Main Topic: ${topic}
+Additional Context: ${projectDetails}
 
-Based on this information:
-1. Determine the most suitable chart type (e.g., flowchart, mindmap, gantt, class diagram, etc.).
-2. Identify the project type (e.g., writing, filmmaking, research, business planning, etc.).
-3. Estimate the project size and complexity.
-4. Generate a Mermaid JS diagram that best represents the project structure and workflow.
+Instructions:
+1. Create a flowchart that starts with the main topic as the root node.
+2. Develop a logical structure with subtopics and details branching out from the main topic.
+3. Each node should follow the format: "NodeID[NodeTitle::NodeDescription]"
+   - NodeTitle should be a concise key point
+   - NodeDescription should provide more details or elaboration
+4. Ensure all nodes, including the root node, have meaningful titles and descriptions.
+5. Create coherent connections between nodes that make sense for the topic.
+6. Avoid using any special characters or double quotes in the node text.
+7. If a node doesn't require additional details, use "No description available" as the description.
+8. Only include Mermaid JS syntax in your response, no additional text.
 
-The flowchart should:
-- Start with the main topic as the root node
-- Branch out into subtopics and details
-- Use the format "NodeID[NodeTitle::NodeDescription]" for each node
-- Ensure coherent connections between nodes
-- Avoid special characters or double quotes in node text
-- Only include Mermaid syntax, no additional text
-
-Example format:
+Example structure (do not use this content, it's just for format reference):
 graph TD
-  A[Main Topic::Description]
-  B[Subtopic 1::Details]
-  C[Subtopic 2::More info]
+  A[Main Topic::Brief description of the main topic]
+  B[Subtopic 1::Details about subtopic 1]
+  C[Subtopic 2::Details about subtopic 2]
+  D[Subtopic 3::Details about subtopic 3]
   A --> B
   A --> C
+  A --> D
+  B --> E[Sub-subtopic 1.1::More specific information]
+  B --> F[Sub-subtopic 1.2::Additional details]
+  C --> G[Sub-subtopic 2.1::Relevant information]
+  D --> H[Sub-subtopic 3.1::Specific aspects]
+  D --> I[Sub-subtopic 3.2::Further details]
 
-Please generate the appropriate Mermaid diagram now:`;
+Generate a detailed and well-structured Mermaid JS flowchart now:`;
 };
