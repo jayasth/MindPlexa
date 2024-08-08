@@ -14,7 +14,7 @@ const AIGeneratorController: React.FC<AIGeneratorControllerProps> = ({
   const ModalComponent =
     version === 'v1' ? AIGeneratorModalV1 : AIGeneratorModalV2;
 
-  return <ModalComponent onClose={onClose} />;
+  return <ModalComponent onClose={onClose} isOpen={true} />;
 };
 
 export default AIGeneratorController;

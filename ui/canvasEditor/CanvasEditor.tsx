@@ -336,8 +336,6 @@ export default function CanvasEditor({ canvasId: initialCanvasId }) {
             canvasId={initialCanvasId}
             onDownload={() => handleDownload({ nodes, edges })}
             onGenerateMindmap={handleOpenAIAssistanceModal}
-            onGenerateAIMapV1={handleGenerateAIMapV1}
-            onGenerateAIMapV2={handleGenerateAIMapV2}
             reactFlowInstance={reactFlowInstance.current}
           />
         </div>
@@ -377,7 +375,10 @@ export default function CanvasEditor({ canvasId: initialCanvasId }) {
           </ReactFlow>
         </div>
         {showAIAssistanceModal && (
-          <AIAssistanceModal onClose={handleCloseAIAssistanceModal} />
+          <AIAssistanceModal
+            isOpen={showAIAssistanceModal}
+            onClose={handleCloseAIAssistanceModal}
+          />
         )}
         {aiVersion && (
           <AIGeneratorController
