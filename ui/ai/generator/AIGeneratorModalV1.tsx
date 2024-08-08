@@ -27,8 +27,7 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
   onClose
 }) => {
   const [topic, setTopic] = useState('');
-  const [projectType, setProjectType] = useState('');
-  const [projectSize, setProjectSize] = useState('');
+  const [projectDetails, setProjectDetails] = useState('');
   const [showFollowUp, setShowFollowUp] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [generatedNodes, setGeneratedNodes] = useState<Node[]>([]);
@@ -48,12 +47,20 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
     handleInputChange(e);
   };
 
+  const handleProjectDetailsChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement>
+  ) => {
+    setProjectDetails(e.target.value);
+  };
+
   const handleGenerateMindmap = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      const prompt = promptTemplateV1(topic, projectType, projectSize);
+      const prompt = promptTemplateV1(
+        `Topic: ${topic}\nProject Details: ${projectDetails}`
+      );
       const response = await fetch('/api/completion', {
         method: 'POST',
         headers: {
@@ -70,8 +77,7 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
       console.log('AIGeneratorModalV1 Response data:', data);
       const { nodes: newNodes, edges: newEdges } = await parseMermaidCode(
         data.mermaidCode,
-        projectType,
-        projectSize
+        projectDetails
       );
 
       const updatedNodes = newNodes.map((node) => {
@@ -163,6 +169,14 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
                 value={topic}
                 onChange={handleTopicChange}
               />
+              {showFollowUp && (
+                <textarea
+                  className={styles.textarea}
+                  placeholder="Provide more details about your project (e.g., type, size, goals)"
+                  value={projectDetails}
+                  onChange={handleProjectDetailsChange}
+                />
+              )}
               <div className={styles.actionContainer}>
                 <Dropdown
                   value={selectedModel}
@@ -173,15 +187,25 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
                   <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
                   <option value="gpt-4o">GPT-4o</option>
                 </Dropdown>
-                <Button
-                  type="submit"
-                  disabled={uiIsLoading}
-                  loading={uiIsLoading}
-                  variant="submit"
-                  className={styles.generateButton}
-                >
-                  {uiIsLoading ? 'Generating...' : 'Generate'}
-                </Button>
+                {!showFollowUp ? (
+                  <Button
+                    onClick={() => setShowFollowUp(true)}
+                    variant="sleek"
+                    className={styles.nextButton}
+                  >
+                    Next
+                  </Button>
+                ) : (
+                  <Button
+                    type="submit"
+                    disabled={uiIsLoading}
+                    loading={uiIsLoading}
+                    variant="submit"
+                    className={styles.generateButton}
+                  >
+                    {uiIsLoading ? 'Generating...' : 'Generate'}
+                  </Button>
+                )}
               </div>
             </form>
           </div>

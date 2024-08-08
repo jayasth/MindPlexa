@@ -172,10 +172,66 @@ const applyMindmapLayout = (
   return { nodes, edges };
 };
 
+const determineOptimalLayout = (
+  nodes: Node[],
+  edges: Edge[],
+  projectDetails: string
+): { nodes: Node[]; edges: Edge[] } => {
+  // Analyze project details to determine the best layout
+  const complexity = estimateComplexity(nodes, edges);
+  const hierarchyLevel = estimateHierarchyLevel(nodes, edges);
+  const interconnectedness = estimateInterconnectedness(edges, nodes.length);
+
+  if (complexity > 0.7 && hierarchyLevel > 0.6) {
+    return applyHierarchicalLayout(nodes, edges);
+  } else if (interconnectedness > 0.5 && complexity < 0.5) {
+    return applyMindmapLayout(nodes, edges);
+  } else if (complexity > 0.5 && interconnectedness > 0.7) {
+    return applyRadialLayout(nodes, edges);
+  } else {
+    // Default to a force-directed layout for balanced cases
+    return applyForceDirectedLayout(nodes, edges);
+  }
+};
+
+const estimateComplexity = (nodes: Node[], edges: Edge[]): number => {
+  // Implement logic to estimate project complexity
+  return edges.length / ((nodes.length * (nodes.length - 1)) / 2);
+};
+
+const estimateHierarchyLevel = (nodes: Node[], edges: Edge[]): number => {
+  // Implement logic to estimate hierarchy level
+  // This is a simplified example; you may need a more sophisticated algorithm
+  const maxDepth = findMaxDepth(nodes, edges);
+  return maxDepth / nodes.length;
+};
+
+const estimateInterconnectedness = (
+  edges: Edge[],
+  nodeCount: number
+): number => {
+  // Implement logic to estimate interconnectedness
+  return edges.length / ((nodeCount * (nodeCount - 1)) / 2);
+};
+
+const findMaxDepth = (nodes: Node[], edges: Edge[]): number => {
+  // Implement a depth-first search to find the maximum depth of the graph
+  // This is a placeholder implementation
+  return Math.log2(nodes.length);
+};
+
+const applyForceDirectedLayout = (
+  nodes: Node[],
+  edges: Edge[]
+): { nodes: Node[]; edges: Edge[] } => {
+  // Implement a force-directed layout algorithm
+  // This is a placeholder; you'd need to implement or use a library for this
+  return { nodes, edges };
+};
+
 export async function parseMermaidCode(
   mermaidCode: string,
-  projectType: string,
-  projectSize: string
+  projectDetails: string
 ): Promise<{ nodes: Node[]; edges: Edge[] }> {
   const filteredCode = removeDoubleQuoteInsideParentheses(
     removeDoubleQuoteInsideBrackets(removeMarkdowncode(mermaidCode))
@@ -222,13 +278,11 @@ export async function parseMermaidCode(
 
   let layoutedElements: { nodes: Node[]; edges: Edge[] };
   try {
-    if (projectType === 'writing') {
-      layoutedElements = applyHierarchicalLayout(filteredNodes, edges);
-    } else if (projectType === 'filmmaking') {
-      layoutedElements = applyMindmapLayout(filteredNodes, edges);
-    } else {
-      layoutedElements = applyRadialLayout(filteredNodes, edges);
-    }
+    layoutedElements = determineOptimalLayout(
+      filteredNodes,
+      edges,
+      projectDetails
+    );
   } catch (error: any) {
     console.error('mermaidGeneratorUtils Error applying layout:', error);
     return {
