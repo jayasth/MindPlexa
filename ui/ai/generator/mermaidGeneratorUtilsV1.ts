@@ -8,44 +8,73 @@ import {
   removeDoubleQuoteInsideParentheses,
   removeMarkdowncode
 } from '@/ui/ai/generator/aiGeneratorCanvasUtils';
-import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
+import { getNodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 
-const applyDagreLayout = (
+const applyRadialLayout = (
   nodes: Node[],
   edges: Edge[]
 ): { nodes: Node[]; edges: Edge[] } => {
-  console.log('Nodes before layout:', nodes);
-  console.log('Edges before layout:', edges);
+  const centerX = 0;
+  const centerY = 0;
+  const minRadius = 150;
+  const radiusIncrement = 100;
 
-  const g = new dagre.graphlib.Graph();
-  g.setGraph({
-    rankdir: 'TB', // Top to Bottom layout
-    align: 'UL', // Upper Left alignment
-    nodesep: 50, // Separation between nodes
-    ranksep: 100 // Separation between ranks
-  });
-  g.setDefaultEdgeLabel(() => ({}));
+  const rootNode = nodes[0];
+  rootNode.position = { x: centerX, y: centerY };
 
-  nodes.forEach((node) => {
-    g.setNode(node.id, { width: node.width || 100, height: node.height || 50 });
-  });
+  const nodeMap = new Map(nodes.map((node) => [node.id, node]));
 
-  edges.forEach((edge) => {
-    g.setEdge(edge.source, edge.target);
-  });
+  const getChildNodes = (nodeId: string) => {
+    return edges
+      .filter((edge) => edge.source === nodeId)
+      .map((edge) => nodeMap.get(edge.target)!)
+      .filter(Boolean);
+  };
 
-  dagre.layout(g);
+  const calculateRadius = (level: number, childCount: number) => {
+    const { width, height } = getNodeDimensions('note', false, false);
+    const maxChildWidth = childCount * (width + 10);
+    const radius = Math.max(
+      minRadius + radiusIncrement * level,
+      maxChildWidth / (2 * Math.PI)
+    );
+    return radius;
+  };
 
-  const newNodes = nodes.map((node) => {
-    const dagreNode = g.node(node.id);
-    return {
-      ...node,
-      position: { x: dagreNode.x, y: dagreNode.y }
-    };
-  });
+  const positionNodesCircular = (
+    parentNode: Node,
+    childNodes: Node[],
+    startAngle: number,
+    endAngle: number,
+    level: number
+  ) => {
+    const radius = calculateRadius(level, childNodes.length);
+    const angleStep = (endAngle - startAngle) / childNodes.length;
 
-  console.log('Nodes after layout:', newNodes);
-  return { nodes: newNodes, edges };
+    childNodes.forEach((node, index) => {
+      const angle = startAngle + angleStep * (index + 0.5);
+      node.position = {
+        x: parentNode.position.x + Math.cos(angle) * radius,
+        y: parentNode.position.y + Math.sin(angle) * radius
+      };
+
+      const grandChildren = getChildNodes(node.id);
+      if (grandChildren.length > 0) {
+        positionNodesCircular(
+          node,
+          grandChildren,
+          angle - angleStep / 2,
+          angle + angleStep / 2,
+          level + 1
+        );
+      }
+    });
+  };
+
+  const childNodes = getChildNodes(rootNode.id);
+  positionNodesCircular(rootNode, childNodes, 0, 2 * Math.PI, 1);
+
+  return { nodes, edges };
 };
 
 export async function parseMermaidCode(
@@ -56,7 +85,6 @@ export async function parseMermaidCode(
   );
   console.log('mermaidGeneratorUtils Filtered Mermaid Code:', filteredCode);
 
-  // Ensure the Mermaid code starts with 'graph TD'
   const processedCode = filteredCode.startsWith('graph TD')
     ? filteredCode
     : `graph TD\n${filteredCode}`;
@@ -89,19 +117,17 @@ export async function parseMermaidCode(
     };
   }
 
-  // Filter out nodes without meaningful content or incorrectly formatted entries
   const filteredNodes = nodes.filter(
     (node) =>
       node.data.title !== 'Untitled' &&
       node.data.content !== 'No description available'
   );
 
-  // Apply layout
   let layoutedElements: { nodes: Node[]; edges: Edge[] };
   try {
-    layoutedElements = applyDagreLayout(filteredNodes, edges);
+    layoutedElements = applyRadialLayout(filteredNodes, edges);
   } catch (error: any) {
-    console.error('mermaidGeneratorUtils Error applying Dagre layout:', error);
+    console.error('mermaidGeneratorUtils Error applying Radial layout:', error);
     return {
       nodes: filteredNodes,
       edges
@@ -147,7 +173,7 @@ const convertToReactFlowElements = (
     };
 
     const nodeId = `${type}-${uuidv4()}`;
-    const { viewWidth: width, viewHeight: height } = nodeDimensions.note;
+    const { width, height } = getNodeDimensions('note', false, false);
     nodes.push({
       id: nodeId,
       type: 'note',
