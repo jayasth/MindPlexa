@@ -7,7 +7,7 @@
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   padding: 1rem;
-  max-width: 300px;
+  max-width: 400px; /* Increased max-width for a wider modal */
   width: 90%;
 }
 
