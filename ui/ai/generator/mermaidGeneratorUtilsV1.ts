@@ -1,7 +1,7 @@
 import mermaid from 'mermaid';
 import { v4 as uuidv4 } from 'uuid';
 import { Node, Edge, MarkerType } from 'reactflow';
-import dagre from 'dagre';
+import { findOptimalPosition } from '@/ui/canvasEditor/utils/positioningUtils';
 import {
   extractTitleAndType,
   removeDoubleQuoteInsideBrackets,
@@ -9,244 +9,24 @@ import {
   removeMarkdowncode
 } from '@/ui/ai/generator/aiGeneratorCanvasUtils';
 import { getNodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
+import { useNodeStore } from '@/app/store';
 
-const applyRadialLayout = (
+const applyLayout = (
   nodes: Node[],
-  edges: Edge[]
+  edges: Edge[],
+  canvasSize: { width: number; height: number }
 ): { nodes: Node[]; edges: Edge[] } => {
-  // Implement a radial layout algorithm
-  const centerX = 0;
-  const centerY = 0;
-  const minRadius = 150;
-  const radiusIncrement = 100;
+  const existingNodes = useNodeStore.getState().nodes;
 
-  const rootNode = nodes[0];
-  rootNode.position = { x: centerX, y: centerY };
-
-  const nodeMap = new Map(nodes.map((node) => [node.id, node]));
-
-  const getChildNodes = (nodeId: string) => {
-    return edges
-      .filter((edge) => edge.source === nodeId)
-      .map((edge) => nodeMap.get(edge.target)!)
-      .filter(Boolean);
-  };
-
-  const calculateRadius = (level: number, childCount: number) => {
-    const { width, height } = getNodeDimensions('note', false, false);
-    const maxChildWidth = childCount * (width + 10);
-    const radius = Math.max(
-      minRadius + radiusIncrement * level,
-      maxChildWidth / (2 * Math.PI)
-    );
-    return radius;
-  };
-
-  const positionNodesCircular = (
-    parentNode: Node,
-    childNodes: Node[],
-    startAngle: number,
-    endAngle: number,
-    level: number
-  ) => {
-    const radius = calculateRadius(level, childNodes.length);
-    const angleStep = (endAngle - startAngle) / childNodes.length;
-
-    childNodes.forEach((node, index) => {
-      const angle = startAngle + angleStep * (index + 0.5);
-      node.position = {
-        x: parentNode.position.x + Math.cos(angle) * radius,
-        y: parentNode.position.y + Math.sin(angle) * radius
-      };
-
-      const grandChildren = getChildNodes(node.id);
-      if (grandChildren.length > 0) {
-        positionNodesCircular(
-          node,
-          grandChildren,
-          angle - angleStep / 2,
-          angle + angleStep / 2,
-          level + 1
-        );
-      }
-    });
-  };
-
-  const childNodes = getChildNodes(rootNode.id);
-  positionNodesCircular(rootNode, childNodes, 0, 2 * Math.PI, 1);
-
-  return { nodes, edges };
-};
-
-const applyHierarchicalLayout = (
-  nodes: Node[],
-  edges: Edge[]
-): { nodes: Node[]; edges: Edge[] } => {
-  // Implement a hierarchical layout algorithm using a library like dagre
-  const g = new dagre.graphlib.Graph();
-  g.setGraph({ rankdir: 'TB' }); // Top-to-bottom layout
-
-  nodes.forEach((node) => {
-    g.setNode(node.id, { width: node.width, height: node.height });
-  });
-
-  edges.forEach((edge) => {
-    g.setEdge(edge.source, edge.target);
-  });
-
-  dagre.layout(g);
-
-  const updatedNodes = nodes.map((node) => {
-    const position = g.node(node.id);
-    return {
-      ...node,
-      position: { x: position.x, y: position.y }
-    };
-  });
-
-  return { nodes: updatedNodes, edges };
-};
-
-const applyMindmapLayout = (
-  nodes: Node[],
-  edges: Edge[]
-): { nodes: Node[]; edges: Edge[] } => {
-  // Implement a mindmap layout algorithm
-  const centerX = 0;
-  const centerY = 0;
-  const minRadius = 150;
-  const radiusIncrement = 100;
-
-  const rootNode = nodes[0];
-  rootNode.position = { x: centerX, y: centerY };
-
-  const nodeMap = new Map(nodes.map((node) => [node.id, node]));
-
-  const getChildNodes = (nodeId: string) => {
-    return edges
-      .filter((edge) => edge.source === nodeId)
-      .map((edge) => nodeMap.get(edge.target)!)
-      .filter(Boolean);
-  };
-
-  const calculateRadius = (level: number, childCount: number) => {
-    const { width, height } = getNodeDimensions('note', false, false);
-    const maxChildWidth = childCount * (width + 10);
-    const radius = Math.max(
-      minRadius + radiusIncrement * level,
-      maxChildWidth / (2 * Math.PI)
-    );
-    return radius;
-  };
-
-  const positionNodesCircular = (
-    parentNode: Node,
-    childNodes: Node[],
-    startAngle: number,
-    endAngle: number,
-    level: number
-  ) => {
-    const radius = calculateRadius(level, childNodes.length);
-    const angleStep = (endAngle - startAngle) / childNodes.length;
-
-    childNodes.forEach((node, index) => {
-      const angle = startAngle + angleStep * (index + 0.5);
-      node.position = {
-        x: parentNode.position.x + Math.cos(angle) * radius,
-        y: parentNode.position.y + Math.sin(angle) * radius
-      };
-
-      const grandChildren = getChildNodes(node.id);
-      if (grandChildren.length > 0) {
-        positionNodesCircular(
-          node,
-          grandChildren,
-          angle - angleStep / 2,
-          angle + angleStep / 2,
-          level + 1
-        );
-      }
-    });
-  };
-
-  const childNodes = getChildNodes(rootNode.id);
-  positionNodesCircular(rootNode, childNodes, 0, 2 * Math.PI, 1);
-
-  return { nodes, edges };
-};
-
-const applyForceDirectedLayout = (
-  nodes: Node[],
-  edges: Edge[]
-): { nodes: Node[]; edges: Edge[] } => {
-  // Implement a force-directed layout algorithm
-  // This is a placeholder; you'd need to implement or use a library for this
-  return { nodes, edges };
-};
-
-const applyGridLayout = (
-  nodes: Node[],
-  edges: Edge[]
-): { nodes: Node[]; edges: Edge[] } => {
-  // Implement a grid layout algorithm
-  const gridSize = 200;
   nodes.forEach((node, index) => {
-    node.position = {
-      x: (index % 5) * gridSize,
-      y: Math.floor(index / 5) * gridSize
-    };
+    const position = findOptimalPosition(
+      existingNodes.concat(nodes.slice(0, index)),
+      canvasSize
+    );
+    node.position = position;
   });
+
   return { nodes, edges };
-};
-
-const determineOptimalLayout = (
-  nodes: Node[],
-  edges: Edge[],
-  projectDetails: string
-): { nodes: Node[]; edges: Edge[] } => {
-  // Analyze project details to determine the best layout
-  const complexity = estimateComplexity(nodes, edges);
-  const hierarchyLevel = estimateHierarchyLevel(nodes, edges);
-  const interconnectedness = estimateInterconnectedness(edges, nodes.length);
-
-  if (complexity > 0.7 && hierarchyLevel > 0.6) {
-    return applyHierarchicalLayout(nodes, edges);
-  } else if (interconnectedness > 0.5 && complexity < 0.5) {
-    return applyMindmapLayout(nodes, edges);
-  } else if (complexity > 0.5 && interconnectedness > 0.7) {
-    return applyRadialLayout(nodes, edges);
-  } else if (nodes.length > 20) {
-    return applyGridLayout(nodes, edges);
-  } else {
-    // Default to a force-directed layout for balanced cases
-    return applyForceDirectedLayout(nodes, edges);
-  }
-};
-
-const estimateComplexity = (nodes: Node[], edges: Edge[]): number => {
-  // Implement logic to estimate project complexity
-  return edges.length / ((nodes.length * (nodes.length - 1)) / 2);
-};
-
-const estimateHierarchyLevel = (nodes: Node[], edges: Edge[]): number => {
-  // Implement logic to estimate hierarchy level
-  // This is a simplified example; you may need a more sophisticated algorithm
-  const maxDepth = findMaxDepth(nodes, edges);
-  return maxDepth / nodes.length;
-};
-
-const estimateInterconnectedness = (
-  edges: Edge[],
-  nodeCount: number
-): number => {
-  // Implement logic to estimate interconnectedness
-  return edges.length / ((nodeCount * (nodeCount - 1)) / 2);
-};
-
-const findMaxDepth = (nodes: Node[], edges: Edge[]): number => {
-  // Implement a depth-first search to find the maximum depth of the graph
-  // This is a placeholder implementation
-  return Math.log2(nodes.length);
 };
 
 export async function parseMermaidCode(
@@ -256,7 +36,7 @@ export async function parseMermaidCode(
   const filteredCode = removeDoubleQuoteInsideParentheses(
     removeDoubleQuoteInsideBrackets(removeMarkdowncode(mermaidCode))
   );
-  console.log('mermaidGeneratorUtils Filtered Mermaid Code:', filteredCode);
+  console.log('mermaidGeneratorUtilsV1 Filtered Mermaid Code:', filteredCode);
 
   const processedCode = filteredCode.startsWith('graph TD')
     ? filteredCode
@@ -268,7 +48,7 @@ export async function parseMermaidCode(
     mermaid.initialize({ startOnLoad: false });
     svgCode = await mermaid.render('mermaid-chart', processedCode);
   } catch (error: any) {
-    console.error('mermaidGeneratorUtils Mermaid parsing error:', error);
+    console.error('mermaidGeneratorUtilsV1 Mermaid parsing error:', error);
     return {
       nodes: [],
       edges: []
@@ -281,7 +61,7 @@ export async function parseMermaidCode(
     ({ nodes, edges } = convertToReactFlowElements(svgCode.svg));
   } catch (error: any) {
     console.error(
-      'mermaidGeneratorUtils Error converting to React Flow elements:',
+      'mermaidGeneratorUtilsV1 Error converting to React Flow elements:',
       error
     );
     return {
@@ -296,15 +76,16 @@ export async function parseMermaidCode(
       node.data.content !== 'No description available'
   );
 
+  const canvasSize = {
+    width: window.innerWidth,
+    height: window.innerHeight
+  };
+
   let layoutedElements: { nodes: Node[]; edges: Edge[] };
   try {
-    layoutedElements = determineOptimalLayout(
-      filteredNodes,
-      edges,
-      projectDetails
-    );
+    layoutedElements = applyLayout(filteredNodes, edges, canvasSize);
   } catch (error: any) {
-    console.error('mermaidGeneratorUtils Error applying layout:', error);
+    console.error('mermaidGeneratorUtilsV1 Error applying layout:', error);
     return {
       nodes: filteredNodes,
       edges

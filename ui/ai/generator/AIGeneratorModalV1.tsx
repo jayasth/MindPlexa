@@ -82,6 +82,12 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
 
       const data = await response.json();
       console.log('AIGeneratorModalV1 Response data:', data);
+
+      const canvasSize = {
+        width: window.innerWidth,
+        height: window.innerHeight
+      };
+
       const { nodes: newNodes, edges: newEdges } = await parseMermaidCode(
         data.mermaidCode,
         projectDetails
