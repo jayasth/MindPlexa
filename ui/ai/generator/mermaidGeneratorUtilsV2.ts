@@ -1,7 +1,7 @@
 import mermaid from 'mermaid';
 import { v4 as uuidv4 } from 'uuid';
 import { Node, Edge, MarkerType } from 'reactflow';
-import dagre from 'dagre';
+import * as d3 from 'd3-hierarchy';
 import {
   extractTitleAndType,
   removeDoubleQuoteInsideBrackets,
@@ -10,37 +10,52 @@ import {
 } from '@/ui/ai/generator/aiGeneratorCanvasUtils';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 
-const applyDagreLayout = (
+interface HierarchyData {
+  id: string;
+  children: HierarchyData[];
+}
+
+const applyD3Layout = (
   nodes: Node[],
   edges: Edge[]
 ): { nodes: Node[]; edges: Edge[] } => {
   console.log('Nodes before layout:', nodes);
   console.log('Edges before layout:', edges);
 
-  const g = new dagre.graphlib.Graph();
-  g.setGraph({
-    rankdir: 'TB', // Top to Bottom layout
-    align: 'UL', // Upper Left alignment
-    nodesep: 50, // Separation between nodes
-    ranksep: 100 // Separation between ranks
-  });
-  g.setDefaultEdgeLabel(() => ({}));
+  const nodeMap = new Map(nodes.map((node) => [node.id, node]));
 
-  nodes.forEach((node) => {
-    g.setNode(node.id, { width: node.width || 100, height: node.height || 50 });
-  });
-
+  // Create a hierarchical structure
+  const hierarchy: { [key: string]: string[] } = {};
   edges.forEach((edge) => {
-    g.setEdge(edge.source, edge.target);
+    if (!hierarchy[edge.source]) {
+      hierarchy[edge.source] = [];
+    }
+    hierarchy[edge.source].push(edge.target);
   });
 
-  dagre.layout(g);
+  // Find the root node (node with no incoming edges)
+  const rootId = nodes.find(
+    (node) => !edges.some((edge) => edge.target === node.id)
+  )?.id;
+  if (!rootId) return { nodes, edges };
 
-  const newNodes = nodes.map((node) => {
-    const dagreNode = g.node(node.id);
+  const createHierarchy = (nodeId: string): HierarchyData => {
     return {
-      ...node,
-      position: { x: dagreNode.x, y: dagreNode.y }
+      id: nodeId,
+      children: (hierarchy[nodeId] || []).map(createHierarchy)
+    };
+  };
+
+  const root = d3.hierarchy<HierarchyData>(createHierarchy(rootId));
+
+  const treeLayout = d3.tree<HierarchyData>().size([800, 600]);
+  const treeData = treeLayout(root);
+
+  const newNodes = treeData.descendants().map((d) => {
+    const originalNode = nodeMap.get(d.data.id)!;
+    return {
+      ...originalNode,
+      position: { x: d.x + 400, y: d.y + 100 } // Add offsets to center the layout
     };
   });
 
@@ -51,27 +66,23 @@ const applyDagreLayout = (
 export async function parseMermaidCode(
   mermaidCode: string
 ): Promise<{ nodes: Node[]; edges: Edge[] }> {
-  const filteredCode = removeDoubleQuoteInsideParentheses(
-    removeDoubleQuoteInsideBrackets(removeMarkdowncode(mermaidCode))
-  );
-  console.log('mermaidGeneratorUtils Filtered Mermaid Code:', filteredCode);
+  // Remove any text before 'graph TD' and ensure it starts with 'graph TD'
+  const graphIndex = mermaidCode.indexOf('graph TD');
+  const filteredCode =
+    graphIndex !== -1
+      ? mermaidCode.slice(graphIndex)
+      : `graph TD\n${mermaidCode}`;
 
-  // Ensure the Mermaid code starts with 'graph TD'
-  const processedCode = filteredCode.startsWith('graph TD')
-    ? filteredCode
-    : `graph TD\n${filteredCode}`;
+  console.log('mermaidGeneratorUtilsV2 Filtered Mermaid Code:', filteredCode);
 
   let svgCode: any;
 
   try {
-    mermaid.initialize({ startOnLoad: false });
-    svgCode = await mermaid.render('mermaid-chart', processedCode);
-  } catch (error: any) {
-    console.error('mermaidGeneratorUtils Mermaid parsing error:', error);
-    return {
-      nodes: [],
-      edges: []
-    };
+    mermaid.initialize({ startOnLoad: false, securityLevel: 'loose' });
+    svgCode = await mermaid.render('mermaid-svg', filteredCode);
+  } catch (error) {
+    console.error('mermaidGeneratorUtilsV2 Mermaid parsing error:', error);
+    throw new Error('Failed to parse Mermaid code');
   }
 
   let nodes: Node[] = [];
@@ -83,10 +94,7 @@ export async function parseMermaidCode(
       'mermaidGeneratorUtils Error converting to React Flow elements:',
       error
     );
-    return {
-      nodes: [],
-      edges: []
-    };
+    return { nodes: [], edges: [] };
   }
 
   // Filter out nodes without meaningful content or incorrectly formatted entries
@@ -99,13 +107,10 @@ export async function parseMermaidCode(
   // Apply layout
   let layoutedElements: { nodes: Node[]; edges: Edge[] };
   try {
-    layoutedElements = applyDagreLayout(filteredNodes, edges);
+    layoutedElements = applyD3Layout(filteredNodes, edges);
   } catch (error: any) {
-    console.error('mermaidGeneratorUtils Error applying Dagre layout:', error);
-    return {
-      nodes: filteredNodes,
-      edges
-    };
+    console.error('mermaidGeneratorUtilsV2 Error applying D3 layout:', error);
+    return { nodes: filteredNodes, edges };
   }
 
   return layoutedElements;
@@ -146,12 +151,11 @@ const convertToReactFlowElements = (
       y: parseFloat(node.getAttribute('transform')!.split(',')[1]) * 1.2
     };
 
-    const nodeId = `${type}-${uuidv4()}`;
-    const { viewWidth: width, viewHeight: height } =
-      nodeDimensions[type] || nodeDimensions.note;
+    const nodeId = `note-${uuidv4()}`; // Always create NoteNodes
+    const { viewWidth: width, viewHeight: height } = nodeDimensions.note;
     nodes.push({
       id: nodeId,
-      type,
+      type: 'note', // Set type to 'note'
       position,
       data: {
         id: nodeId,
