@@ -2,76 +2,22 @@ import mermaid from 'mermaid';
 import { v4 as uuidv4 } from 'uuid';
 import { Node, Edge, MarkerType } from 'reactflow';
 import * as d3 from 'd3-hierarchy';
-import {
-  extractTitleAndType,
-  removeDoubleQuoteInsideBrackets,
-  removeDoubleQuoteInsideParentheses,
-  removeMarkdowncode
-} from '@/ui/ai/generator/aiGeneratorCanvasUtils';
+import { extractTitleAndType } from '@/ui/ai/generator/aiGeneratorCanvasUtils';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
-
-interface HierarchyData {
-  id: string;
-  children: HierarchyData[];
-}
-
-const applyD3Layout = (
-  nodes: Node[],
-  edges: Edge[]
-): { nodes: Node[]; edges: Edge[] } => {
-  console.log('Nodes before layout:', nodes);
-  console.log('Edges before layout:', edges);
-
-  const nodeMap = new Map(nodes.map((node) => [node.id, node]));
-
-  // Create a hierarchical structure
-  const hierarchy: { [key: string]: string[] } = {};
-  edges.forEach((edge) => {
-    if (!hierarchy[edge.source]) {
-      hierarchy[edge.source] = [];
-    }
-    hierarchy[edge.source].push(edge.target);
-  });
-
-  // Find the root node (node with no incoming edges)
-  const rootId = nodes.find(
-    (node) => !edges.some((edge) => edge.target === node.id)
-  )?.id;
-  if (!rootId) return { nodes, edges };
-
-  const createHierarchy = (nodeId: string): HierarchyData => {
-    return {
-      id: nodeId,
-      children: (hierarchy[nodeId] || []).map(createHierarchy)
-    };
-  };
-
-  const root = d3.hierarchy<HierarchyData>(createHierarchy(rootId));
-
-  const treeLayout = d3.tree<HierarchyData>().size([800, 600]);
-  const treeData = treeLayout(root);
-
-  const newNodes = treeData.descendants().map((d) => {
-    const originalNode = nodeMap.get(d.data.id)!;
-    return {
-      ...originalNode,
-      position: { x: d.x + 400, y: d.y + 100 } // Add offsets to center the layout
-    };
-  });
-
-  console.log('Nodes after layout:', newNodes);
-  return { nodes: newNodes, edges };
-};
 
 export async function parseMermaidCode(
   mermaidCode: string
 ): Promise<{ nodes: Node[]; edges: Edge[] }> {
-  // Remove any text before 'graph TD' and ensure it starts with 'graph TD'
   const graphIndex = mermaidCode.indexOf('graph TD');
-  const filteredCode =
+  let filteredCode =
     graphIndex !== -1
       ? mermaidCode.slice(graphIndex)
       : `graph TD\n${mermaidCode}`;
+
+  // Replace double quotes with single quotes in node labels
+  filteredCode = filteredCode.replace(/\[([^\]]*)\]/g, (match) => {
+    return match.replace(/"/g, "'");
+  });
 
   console.log('mermaidGeneratorUtilsV2 Filtered Mermaid Code:', filteredCode);
 
@@ -85,33 +31,17 @@ export async function parseMermaidCode(
     throw new Error('Failed to parse Mermaid code');
   }
 
-  let nodes: Node[] = [];
-  let edges: Edge[] = [];
-  try {
-    ({ nodes, edges } = convertToReactFlowElements(svgCode.svg));
-  } catch (error: any) {
-    console.error(
-      'mermaidGeneratorUtils Error converting to React Flow elements:',
-      error
-    );
-    return { nodes: [], edges: [] };
-  }
+  let { nodes, edges } = convertToReactFlowElements(svgCode.svg);
 
-  // Filter out nodes without meaningful content or incorrectly formatted entries
-  const filteredNodes = nodes.filter(
+  // Filter out nodes without meaningful content
+  nodes = nodes.filter(
     (node) =>
       node.data.title !== 'Untitled' &&
       node.data.content !== 'No description available'
   );
 
   // Apply layout
-  let layoutedElements: { nodes: Node[]; edges: Edge[] };
-  try {
-    layoutedElements = applyD3Layout(filteredNodes, edges);
-  } catch (error: any) {
-    console.error('mermaidGeneratorUtilsV2 Error applying D3 layout:', error);
-    return { nodes: filteredNodes, edges };
-  }
+  const layoutedElements = applyD3Layout(nodes, edges);
 
   return layoutedElements;
 }
@@ -126,37 +56,23 @@ const convertToReactFlowElements = (
   dummyDiv.innerHTML = svgCode;
 
   const mermaidNodes = Array.from(dummyDiv.querySelectorAll('.node'));
-  const mermaidEdges = Array.from(dummyDiv.querySelectorAll('.edgePaths path'));
+  const mermaidEdges = Array.from(dummyDiv.querySelectorAll('.edgePath'));
 
   const nodes: Node[] = [];
   const edges: Edge[] = [];
   const idMap = new Map<string, string>();
 
   mermaidNodes.forEach((node, index) => {
-    const elId = node.getAttribute('id') || `n${index}`;
-    let id = elId;
+    const elId = node.id;
+    const nodeLabel = node.querySelector('.label')?.textContent;
+    const { title, content } = extractTitleAndType(nodeLabel || '');
 
-    const classPattern = /^flowchart-([^-\d]+)-\d+$/;
-    const matches = elId.match(classPattern);
-
-    if (matches) {
-      id = matches[1];
-    }
-
-    const nodeLabel = node.querySelector('.nodeLabel')?.textContent;
-    const { type, title, content } = extractTitleAndType(nodeLabel || '');
-
-    const position = {
-      x: parseFloat(node.getAttribute('transform')!.split('(')[1]) * 1.2,
-      y: parseFloat(node.getAttribute('transform')!.split(',')[1]) * 1.2
-    };
-
-    const nodeId = `note-${uuidv4()}`; // Always create NoteNodes
+    const nodeId = `note-${uuidv4()}`;
     const { viewWidth: width, viewHeight: height } = nodeDimensions.note;
     nodes.push({
       id: nodeId,
-      type: 'note', // Set type to 'note'
-      position,
+      type: 'note',
+      position: { x: 0, y: 0 }, // We'll set the position later
       data: {
         id: nodeId,
         title: title.trim(),
@@ -172,37 +88,108 @@ const convertToReactFlowElements = (
       height
     });
 
-    idMap.set(id, nodeId);
+    idMap.set(elId, nodeId);
   });
+
   mermaidEdges.forEach((edge, index) => {
-    const id = edge.getAttribute('id') || `e${index}`;
-    const originalSource = edge
-      ?.getAttribute('class')
-      ?.split(' ')[3]
-      .replace('LS-', '');
-    const originalTarget = edge
-      ?.getAttribute('class')
-      ?.split(' ')[4]
-      .replace('LE-', '');
+    const sourceId = edge
+      .querySelector('.path')
+      ?.getAttribute('marker-start')
+      ?.split('-')[1];
+    const targetId = edge
+      .querySelector('.path')
+      ?.getAttribute('marker-end')
+      ?.split('-')[1];
 
-    if (!originalSource || !originalTarget) {
-      return;
+    if (sourceId && targetId) {
+      const source = idMap.get(sourceId);
+      const target = idMap.get(targetId);
+
+      if (source && target) {
+        edges.push({
+          id: `e${index}`,
+          source,
+          target,
+          type: 'customEdge',
+          markerEnd: { type: MarkerType.ArrowClosed }
+        });
+      }
     }
-
-    const source = idMap.get(originalSource) || '';
-    const target = idMap.get(originalTarget) || '';
-
-    edges.push({
-      id,
-      source,
-      target,
-      type: 'customEdge',
-      markerEnd: { type: MarkerType.ArrowClosed }
-    });
   });
 
-  return {
-    nodes,
-    edges
+  return { nodes, edges };
+};
+
+const applyD3Layout = (
+  nodes: Node[],
+  edges: Edge[]
+): { nodes: Node[]; edges: Edge[] } => {
+  // Find all root nodes (nodes with no incoming edges)
+  const rootNodes = nodes.filter(
+    (node) => !edges.some((edge) => edge.target === node.id)
+  );
+
+  if (rootNodes.length === 0) {
+    return { nodes, edges };
+  }
+
+  // If there's only one root, use the existing approach
+  if (rootNodes.length === 1) {
+    const hierarchy = d3
+      .stratify()
+      .id((d: any) => d.id)
+      .parentId((d: any) => edges.find((e) => e.target === d.id)?.source)(
+      nodes
+    );
+
+    const treeLayout = d3.tree().size([800, 600]);
+    const treeData = treeLayout(hierarchy);
+
+    const newNodes = treeData.descendants().map((d: any) => ({
+      ...nodes.find((n) => n.id === d.id)!,
+      position: { x: d.x, y: d.y }
+    }));
+
+    return { nodes: newNodes, edges };
+  }
+
+  // If there are multiple roots, create a virtual root
+  const virtualRootId = 'virtual-root';
+  const virtualRoot: Node = {
+    id: virtualRootId,
+    type: 'note',
+    position: { x: 0, y: 0 },
+    data: { id: virtualRootId, title: 'Virtual Root', content: '' }
   };
+
+  const nodesWithVirtualRoot = [virtualRoot, ...nodes];
+  const edgesWithVirtualRoot = [
+    ...edges,
+    ...rootNodes.map((root) => ({
+      id: `${virtualRootId}-${root.id}`,
+      source: virtualRootId,
+      target: root.id,
+      type: 'customEdge'
+    }))
+  ];
+
+  const hierarchy = d3
+    .stratify()
+    .id((d: any) => d.id)
+    .parentId(
+      (d: any) => edgesWithVirtualRoot.find((e) => e.target === d.id)?.source
+    )(nodesWithVirtualRoot);
+
+  const treeLayout = d3.tree().size([1200, 800]);
+  const treeData = treeLayout(hierarchy);
+
+  const newNodes = treeData
+    .descendants()
+    .filter((d) => d.id !== virtualRootId)
+    .map((d: any) => ({
+      ...nodes.find((n) => n.id === d.id)!,
+      position: { x: d.x, y: d.y - 100 } // Adjust Y position to account for virtual root
+    }));
+
+  return { nodes: newNodes, edges };
 };

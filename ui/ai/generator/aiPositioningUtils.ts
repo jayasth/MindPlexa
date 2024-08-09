@@ -5,51 +5,61 @@ export const optimizeAINodePositions = (
   edges: Edge[],
   canvasSize: { width: number; height: number }
 ): Node[] => {
-  const nodeMap = new Map(nodes.map((node) => [node.id, node]));
-  const edgeMap = new Map<string, string[]>();
+  const centerX = canvasSize.width / 2;
+  const centerY = canvasSize.height / 2;
 
+  // Find the root node (node with no incoming edges)
+  const rootNodeId = nodes.find(
+    (node) => !edges.some((edge) => edge.target === node.id)
+  )?.id;
+
+  if (!rootNodeId) return nodes;
+
+  // Create a map of nodes for quick access
+  const nodeMap = new Map(nodes.map((node) => [node.id, node]));
+
+  // Create a map of child nodes for each parent
+  const childrenMap = new Map<string, string[]>();
   edges.forEach((edge) => {
-    if (!edgeMap.has(edge.source)) {
-      edgeMap.set(edge.source, []);
+    if (!childrenMap.has(edge.source)) {
+      childrenMap.set(edge.source, []);
     }
-    edgeMap.get(edge.source)!.push(edge.target);
+    childrenMap.get(edge.source)!.push(edge.target);
   });
 
-  const rootNode = nodes.find(
-    (node) => !edges.some((edge) => edge.target === node.id)
-  );
-  if (!rootNode) return nodes;
-
-  const layoutNodes = (
-    node: Node,
+  // Recursive function to position nodes
+  const positionNode = (
+    nodeId: string,
     x: number,
     y: number,
-    level: number
-  ): void => {
-    const children = edgeMap.get(node.id) || [];
-    const childCount = children.length;
-
+    level: number,
+    index: number,
+    siblings: number
+  ) => {
+    const node = nodeMap.get(nodeId)!;
     node.position = { x, y };
 
-    if (childCount > 0) {
-      const childSpacing = Math.min(200, canvasSize.width / (childCount + 1));
-      const startX = x - (childSpacing * (childCount - 1)) / 2;
+    const children = childrenMap.get(nodeId) || [];
+    const childSpacing = Math.min(
+      200,
+      canvasSize.width / (children.length + 1)
+    );
+    const startX = x - (childSpacing * (children.length - 1)) / 2;
 
-      children.forEach((childId, index) => {
-        const childNode = nodeMap.get(childId);
-        if (childNode) {
-          layoutNodes(
-            childNode,
-            startX + index * childSpacing,
-            y + 150,
-            level + 1
-          );
-        }
-      });
-    }
+    children.forEach((childId, childIndex) => {
+      positionNode(
+        childId,
+        startX + childIndex * childSpacing,
+        y + 150,
+        level + 1,
+        childIndex,
+        children.length
+      );
+    });
   };
 
-  layoutNodes(rootNode, canvasSize.width / 2, 100, 0);
+  // Start positioning from the root node
+  positionNode(rootNodeId, centerX, 100, 0, 0, 1);
 
   return Array.from(nodeMap.values());
 };

@@ -109,23 +109,13 @@ const AIAssistanceModalV2: React.FC<AIAssistanceModalProps> = ({
   const handleConfirmIntegration = (newNodes: Node[], newEdges: Edge[]) => {
     const canvasSize = { width: window.innerWidth, height: window.innerHeight };
 
-    const offsetNodes = newNodes.map((node) => {
-      const title = node.data?.title || 'Untitled';
-      const content = node.data?.content || 'No description available';
-      console.log(`AIGeneratorModalV2 Node title: ${title}`);
-      console.log(`AIGeneratorModalV2 Node content: ${content}`);
-      return {
-        ...node,
-        type: 'note',
-        data: {
-          ...node.data,
-          title,
-          content
-        }
-      };
-    });
+    const optimizedNodes = optimizeAINodePositions(
+      newNodes,
+      newEdges,
+      canvasSize
+    );
 
-    setNodes((currentNodes) => [...currentNodes, ...offsetNodes]);
+    setNodes((currentNodes) => [...currentNodes, ...optimizedNodes]);
     setEdges((currentEdges) => [...currentEdges, ...newEdges]);
     setShowConfirmModal(false);
     onClose();
