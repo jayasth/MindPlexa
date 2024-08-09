@@ -13,6 +13,7 @@ import {
 } from '@/app/store';
 import Button from '@/ui/Button/Button';
 import ConfirmIntegrationModal from '@/ui/ai/generator/ConfirmIntegrationModal';
+import Dropdown from '@/ui/dropdown/Dropdown'; // Added Dropdown import
 import styles from '@/ui/ai/generator/AIGeneratorModal.module.css';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -75,29 +76,16 @@ const AIAssistanceModalV2: React.FC<AIAssistanceModalProps> = ({
       const { nodes: newNodes, edges: newEdges } =
         await parseMermaidCode(extractedMermaidCode);
 
-      const updatedNodes = newNodes.map((node) => {
-        const title = node.data?.title || 'Untitled';
-        const content = node.data?.content || 'No description available';
-        console.log(`AIGeneratorModalV2 Node title: ${title}`);
-        console.log(`AIGeneratorModalV2 Node content: ${content}`);
-        return {
-          ...node,
-          data: {
-            ...node.data,
-            title,
-            content
-          }
-        };
-      });
+      // Ensure edges are set correctly
+      setGeneratedNodes(newNodes);
+      setGeneratedEdges(newEdges);
 
       const existingNodes = useNodeStore.getState().nodes;
 
       if (existingNodes.length > 0) {
-        setGeneratedNodes(updatedNodes);
-        setGeneratedEdges(newEdges);
         setShowConfirmModal(true);
       } else {
-        handleConfirmIntegration(updatedNodes, newEdges);
+        handleConfirmIntegration(newNodes, newEdges);
       }
     } catch (error) {
       console.error('AIGeneratorModalV2: Error generating mindmap:', error);
@@ -155,6 +143,15 @@ const AIAssistanceModalV2: React.FC<AIAssistanceModalProps> = ({
                   onChange={handleTopicChange}
                 />
                 <div className={styles.actionContainer}>
+                  <Dropdown
+                    value={selectedModel}
+                    onChange={(value) => setSelectedModel(value)}
+                    variant="custom"
+                    className={styles.dropdown}
+                  >
+                    <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                    <option value="gpt-4o">GPT-4o</option>
+                  </Dropdown>
                   <Button
                     type="submit"
                     disabled={uiIsLoading}
