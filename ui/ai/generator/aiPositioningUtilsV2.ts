@@ -187,5 +187,10 @@ export const optimizeAINodePositions = (
       hierarchicalLayout();
   }
 
-  return Array.from(nodeMap.values());
+  const result = Array.from(nodeMap.values());
+  console.log(
+    'Optimized node positions:',
+    result.map((node) => ({ id: node.id, position: node.position }))
+  );
+  return result;
 };

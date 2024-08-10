@@ -19,6 +19,7 @@ import ConfirmIntegrationModal from '@/ui/ai/generator/ConfirmIntegrationModal';
 import Dropdown from '@/ui/dropdown/Dropdown';
 import styles from '@/ui/ai/generator/AIGeneratorModal.module.css';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useToast } from '@/ui/Toasts/use-toast';
 
 interface AIAssistanceModalProps {
   isOpen: boolean;
@@ -29,9 +30,8 @@ const AIAssistanceModalV2: React.FC<AIAssistanceModalProps> = ({
   isOpen,
   onClose
 }) => {
-  const [step, setStep] = useState(1);
+  const { toast } = useToast();
   const [topic, setTopic] = useState('');
-  const [followUpQuestion, setFollowUpQuestion] = useState('');
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [generatedNodes, setGeneratedNodes] = useState<Node[]>([]);
   const [generatedEdges, setGeneratedEdges] = useState<Edge[]>([]);
@@ -41,6 +41,9 @@ const AIAssistanceModalV2: React.FC<AIAssistanceModalProps> = ({
 
   const [selectedModel, setSelectedModel] = useState('gpt-4o');
   const [layoutType, setLayoutType] = useState<LayoutType>('hierarchical');
+  const [aiFollowUpQuestion, setAiFollowUpQuestion] = useState('');
+  const [userResponse, setUserResponse] = useState('');
+  const [step, setStep] = useState<'input' | 'followUp' | 'generate'>('input');
 
   const { setNodes } = useNodeStore();
   const { setEdges } = useEdgeStore();
@@ -52,20 +55,50 @@ const AIAssistanceModalV2: React.FC<AIAssistanceModalProps> = ({
     handleInputChange(e);
   };
 
-  const handleFollowUpChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setFollowUpQuestion(e.target.value);
-  };
-
-  const handleNext = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleAnalyzeInput = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (topic.trim()) {
-      setStep(2);
+    setIsLoading(true);
+
+    try {
+      const response = await fetch('/api/analyze-input', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          prompt: topic,
+          version: 'v2'
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (data.needsFollowUp) {
+        setAiFollowUpQuestion(data.followUpQuestion);
+        setStep('followUp');
+      } else {
+        await handleGenerateMindmap();
+      }
+    } catch (error) {
+      console.error('AIGeneratorModalV2: Error analyzing input:', error);
+      toast({
+        title: 'Error',
+        description: `Failed to analyze input. ${error instanceof Error ? error.message : 'Unknown error'}`,
+        variant: 'destructive'
+      });
+      setStep('input');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleGenerateMindmap = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleGenerateMindmap = async () => {
     setIsLoading(true);
+    setStep('generate');
 
     try {
       const response = await fetch('/api/completion', {
@@ -77,20 +110,28 @@ const AIAssistanceModalV2: React.FC<AIAssistanceModalProps> = ({
           prompt: topic,
           version: 'v2',
           existingMermaidCode,
-          followUpQuestion
+          userResponse
         })
       });
 
       if (!response.ok) {
-        throw new Error('Failed to generate mindmap');
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
       console.log('AIGeneratorModalV2 Response data:', data);
 
+      if (!data.mermaidCode) {
+        throw new Error('No Mermaid code generated');
+      }
+
       const extractedMermaidCode = data.mermaidCode.match(
         /```mermaid\n([\s\S]*?)```/
-      )[1];
+      )?.[1];
+
+      if (!extractedMermaidCode) {
+        throw new Error('Failed to extract Mermaid code');
+      }
 
       setExistingMermaidCode(extractedMermaidCode);
 
@@ -100,7 +141,14 @@ const AIAssistanceModalV2: React.FC<AIAssistanceModalProps> = ({
       console.log('Generated nodes:', newNodes);
       console.log('Generated edges:', newEdges);
 
-      setGeneratedNodes(newNodes);
+      const optimizedNodes = optimizeAINodePositions(
+        newNodes,
+        newEdges,
+        { width: window.innerWidth, height: window.innerHeight },
+        layoutType
+      );
+
+      setGeneratedNodes(optimizedNodes);
       setGeneratedEdges(newEdges);
 
       const existingNodes = useNodeStore.getState().nodes;
@@ -108,26 +156,29 @@ const AIAssistanceModalV2: React.FC<AIAssistanceModalProps> = ({
       if (existingNodes.length > 0) {
         setShowConfirmModal(true);
       } else {
-        handleConfirmIntegration(newNodes, newEdges);
+        handleConfirmIntegration(optimizedNodes, newEdges);
       }
     } catch (error) {
       console.error('AIGeneratorModalV2: Error generating mindmap:', error);
+      toast({
+        title: 'Error',
+        description: `Failed to generate mindmap. ${error instanceof Error ? error.message : String(error)}`,
+        variant: 'destructive'
+      });
+      setStep('input');
     } finally {
       setIsLoading(false);
     }
   };
 
+  const handleUserResponseChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement>
+  ) => {
+    setUserResponse(e.target.value);
+  };
+
   const handleConfirmIntegration = (newNodes: Node[], newEdges: Edge[]) => {
-    const canvasSize = { width: window.innerWidth, height: window.innerHeight };
-
-    const optimizedNodes = optimizeAINodePositions(
-      newNodes,
-      newEdges,
-      canvasSize,
-      layoutType
-    );
-
-    setNodes((currentNodes) => [...currentNodes, ...optimizedNodes]);
+    setNodes((currentNodes) => [...currentNodes, ...newNodes]);
     setEdges((currentEdges) => [...currentEdges, ...newEdges]);
     setShowConfirmModal(false);
     onClose();
@@ -135,6 +186,11 @@ const AIAssistanceModalV2: React.FC<AIAssistanceModalProps> = ({
 
   const handleCancelIntegration = () => {
     setShowConfirmModal(false);
+  };
+
+  const handleUserResponseSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    handleGenerateMindmap();
   };
 
   return (
@@ -159,11 +215,11 @@ const AIAssistanceModalV2: React.FC<AIAssistanceModalProps> = ({
           {!showConfirmModal && (
             <div>
               <h2 className={styles.modalHeader}>Generate Mindmap (V2)</h2>
-              {step === 1 && (
-                <form onSubmit={handleNext}>
+              {step === 'input' && (
+                <form onSubmit={handleAnalyzeInput}>
                   <textarea
                     className={styles.textarea}
-                    placeholder="Enter a topic or idea"
+                    placeholder="Enter a topic or idea for your project"
                     value={topic}
                     onChange={handleTopicChange}
                   />
@@ -190,34 +246,42 @@ const AIAssistanceModalV2: React.FC<AIAssistanceModalProps> = ({
                     </Dropdown>
                     <Button
                       type="submit"
-                      variant="submit"
-                      className={styles.nextButton}
-                    >
-                      Next
-                    </Button>
-                  </div>
-                </form>
-              )}
-              {step === 2 && (
-                <form onSubmit={handleGenerateMindmap}>
-                  <textarea
-                    className={styles.textarea}
-                    placeholder="Ask a follow-up question or request changes"
-                    value={followUpQuestion}
-                    onChange={handleFollowUpChange}
-                  />
-                  <div className={styles.actionContainer}>
-                    <Button
-                      type="submit"
-                      disabled={uiIsLoading}
+                      disabled={uiIsLoading || !topic.trim()}
                       loading={uiIsLoading}
                       variant="submit"
                       className={styles.generateButton}
                     >
-                      {uiIsLoading ? 'Generating...' : 'Generate'}
+                      {uiIsLoading ? 'Analyzing...' : 'Next'}
                     </Button>
                   </div>
                 </form>
+              )}
+              {step === 'followUp' && (
+                <form onSubmit={handleUserResponseSubmit}>
+                  <h3>Follow-up Question</h3>
+                  <p>{aiFollowUpQuestion}</p>
+                  <textarea
+                    className={styles.textarea}
+                    placeholder="Provide your response to the follow-up question"
+                    value={userResponse}
+                    onChange={handleUserResponseChange}
+                  />
+                  <Button
+                    type="submit"
+                    disabled={uiIsLoading || !userResponse.trim()}
+                    loading={uiIsLoading}
+                    variant="submit"
+                    className={styles.generateButton}
+                  >
+                    {uiIsLoading ? 'Generating...' : 'Generate Mindmap'}
+                  </Button>
+                </form>
+              )}
+              {step === 'generate' && (
+                <div>
+                  <p>Generating mindmap...</p>
+                  {/* You can add a loading indicator or progress bar here */}
+                </div>
               )}
             </div>
           )}
