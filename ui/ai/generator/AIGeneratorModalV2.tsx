@@ -76,6 +76,9 @@ const AIAssistanceModalV2: React.FC<AIAssistanceModalProps> = ({
       const { nodes: newNodes, edges: newEdges } =
         await parseMermaidCode(extractedMermaidCode);
 
+      console.log('Generated nodes:', newNodes);
+      console.log('Generated edges:', newEdges);
+
       // Ensure edges are set correctly
       setGeneratedNodes(newNodes);
       setGeneratedEdges(newEdges);

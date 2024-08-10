@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Node, Edge, MarkerType } from 'reactflow';
 import * as d3 from 'd3-hierarchy';
 import { extractTitleAndType } from '@/ui/ai/generator/aiGeneratorCanvasUtilsV2';
-import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
+import { getNodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 
 export async function parseMermaidCode(
   mermaidCode: string
@@ -68,7 +68,7 @@ const convertToReactFlowElements = (
     const { title, content } = extractTitleAndType(nodeLabel || '');
 
     const nodeId = `note-${uuidv4()}`;
-    const { viewWidth: width, viewHeight: height } = nodeDimensions.note;
+    const { width, height } = getNodeDimensions('note', false, false);
     nodes.push({
       id: nodeId,
       type: 'note',

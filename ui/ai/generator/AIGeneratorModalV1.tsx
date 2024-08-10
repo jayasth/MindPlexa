@@ -14,7 +14,7 @@ import {
 import Button from '@/ui/Button/Button';
 import ConfirmIntegrationModal from './ConfirmIntegrationModal';
 import Dropdown from '@/ui/dropdown/Dropdown';
-import { findOptimalPosition } from '@/ui/canvasEditor/utils/positioningUtils';
+import { optimizeAINodePositions } from '@/ui/ai/generator/aiPositioningUtilsV1';
 import styles from './AIGeneratorModal.module.css';
 
 interface AIGeneratorModalV1Props {
@@ -120,20 +120,13 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
 
   const handleConfirmIntegration = (newNodes, newEdges) => {
     const canvasSize = { width: window.innerWidth, height: window.innerHeight };
-    const optimalPosition = findOptimalPosition(
-      useNodeStore.getState().nodes,
+    const optimizedNodes = optimizeAINodePositions(
+      newNodes,
+      newEdges,
       canvasSize
     );
 
-    const offsetNodes = newNodes.map((node) => ({
-      ...node,
-      position: {
-        x: node.position.x + optimalPosition.x,
-        y: node.position.y + optimalPosition.y
-      }
-    }));
-
-    setNodes((currentNodes) => [...currentNodes, ...offsetNodes]);
+    setNodes((currentNodes) => [...currentNodes, ...optimizedNodes]);
     setEdges((currentEdges) => [...currentEdges, ...newEdges]);
     setShowConfirmModal(false);
     onClose();

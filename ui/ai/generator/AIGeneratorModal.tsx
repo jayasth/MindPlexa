@@ -15,6 +15,7 @@ import ConfirmIntegrationModal from '@/ui/ai/generator/ConfirmIntegrationModal';
 import Dropdown from '@/ui/dropdown/Dropdown';
 import { optimizeAINodePositions } from '@/ui/ai/generator/aiPositioningUtils';
 import styles from '@/ui/ai/generator/AIGeneratorModal.module.css';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface AIAssistanceModalProps {
   isOpen: boolean;
@@ -127,49 +128,57 @@ const AIAssistanceModal: React.FC<AIAssistanceModalProps> = ({
         closeButton: styles.closeButton
       }}
     >
-      <div className={styles.modalInner}>
-        {!showConfirmModal && (
-          <div>
-            <h2 className={styles.modalHeader}>Generate Mindmap</h2>
-            <form onSubmit={handleGenerateMindmap}>
-              <textarea
-                className={styles.textarea}
-                placeholder="Enter a topic or idea"
-                value={topic}
-                onChange={handleTopicChange}
-              />
-              <div className={styles.actionContainer}>
-                <Dropdown
-                  value={selectedModel}
-                  onChange={(value) => setSelectedModel(value)}
-                  variant="custom"
-                  className={styles.dropdown}
-                >
-                  <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-                  <option value="gpt-4o">GPT-4o</option>
-                </Dropdown>
-                <Button
-                  type="submit"
-                  disabled={uiIsLoading}
-                  loading={uiIsLoading}
-                  variant="submit"
-                  className={styles.generateButton}
-                >
-                  {uiIsLoading ? 'Generating...' : 'Generate'}
-                </Button>
-              </div>
-            </form>
-          </div>
-        )}
-        {showConfirmModal && (
-          <ConfirmIntegrationModal
-            onConfirm={() =>
-              handleConfirmIntegration(generatedNodes, generatedEdges)
-            }
-            onCancel={handleCancelIntegration}
-          />
-        )}
-      </div>
+      <AnimatePresence>
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.3 }}
+          className={styles.modalInner}
+        >
+          {!showConfirmModal && (
+            <div>
+              <h2 className={styles.modalHeader}>Generate Mindmap</h2>
+              <form onSubmit={handleGenerateMindmap}>
+                <textarea
+                  className={styles.textarea}
+                  placeholder="Enter a topic or idea"
+                  value={topic}
+                  onChange={handleTopicChange}
+                />
+                <div className={styles.actionContainer}>
+                  <Dropdown
+                    value={selectedModel}
+                    onChange={(value) => setSelectedModel(value)}
+                    variant="custom"
+                    className={styles.dropdown}
+                  >
+                    <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                    <option value="gpt-4o">GPT-4o</option>
+                  </Dropdown>
+                  <Button
+                    type="submit"
+                    disabled={uiIsLoading}
+                    loading={uiIsLoading}
+                    variant="submit"
+                    className={styles.generateButton}
+                  >
+                    {uiIsLoading ? 'Generating...' : 'Generate'}
+                  </Button>
+                </div>
+              </form>
+            </div>
+          )}
+          {showConfirmModal && (
+            <ConfirmIntegrationModal
+              onConfirm={() =>
+                handleConfirmIntegration(generatedNodes, generatedEdges)
+              }
+              onCancel={handleCancelIntegration}
+            />
+          )}
+        </motion.div>
+      </AnimatePresence>
     </Modal>
   );
 };
