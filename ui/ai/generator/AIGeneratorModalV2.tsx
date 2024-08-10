@@ -4,7 +4,10 @@ import 'react-responsive-modal/styles.css';
 import { Edge, Node } from 'reactflow';
 import { useCompletion } from 'ai/react';
 import { parseMermaidCode } from '@/ui/ai/generator/mermaidGeneratorUtilsV2';
-import { optimizeAINodePositions } from '@/ui/ai/generator/aiPositioningUtils';
+import {
+  optimizeAINodePositions,
+  LayoutType
+} from '@/ui/ai/generator/aiPositioningUtilsV2';
 import {
   useNodeStore,
   useEdgeStore,
@@ -13,7 +16,7 @@ import {
 } from '@/app/store';
 import Button from '@/ui/Button/Button';
 import ConfirmIntegrationModal from '@/ui/ai/generator/ConfirmIntegrationModal';
-import Dropdown from '@/ui/dropdown/Dropdown'; // Added Dropdown import
+import Dropdown from '@/ui/dropdown/Dropdown';
 import styles from '@/ui/ai/generator/AIGeneratorModal.module.css';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -26,14 +29,18 @@ const AIAssistanceModalV2: React.FC<AIAssistanceModalProps> = ({
   isOpen,
   onClose
 }) => {
+  const [step, setStep] = useState(1);
   const [topic, setTopic] = useState('');
+  const [followUpQuestion, setFollowUpQuestion] = useState('');
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [generatedNodes, setGeneratedNodes] = useState<Node[]>([]);
   const [generatedEdges, setGeneratedEdges] = useState<Edge[]>([]);
+  const [existingMermaidCode, setExistingMermaidCode] = useState('');
   const { completion, input, handleInputChange, handleSubmit, isLoading } =
     useCompletion();
 
   const [selectedModel, setSelectedModel] = useState('gpt-4o');
+  const [layoutType, setLayoutType] = useState<LayoutType>('hierarchical');
 
   const { setNodes } = useNodeStore();
   const { setEdges } = useEdgeStore();
@@ -43,6 +50,17 @@ const AIAssistanceModalV2: React.FC<AIAssistanceModalProps> = ({
   const handleTopicChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setTopic(e.target.value);
     handleInputChange(e);
+  };
+
+  const handleFollowUpChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setFollowUpQuestion(e.target.value);
+  };
+
+  const handleNext = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (topic.trim()) {
+      setStep(2);
+    }
   };
 
   const handleGenerateMindmap = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -55,7 +73,12 @@ const AIAssistanceModalV2: React.FC<AIAssistanceModalProps> = ({
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ prompt: topic, version: 'v2' })
+        body: JSON.stringify({
+          prompt: topic,
+          version: 'v2',
+          existingMermaidCode,
+          followUpQuestion
+        })
       });
 
       if (!response.ok) {
@@ -65,13 +88,11 @@ const AIAssistanceModalV2: React.FC<AIAssistanceModalProps> = ({
       const data = await response.json();
       console.log('AIGeneratorModalV2 Response data:', data);
 
-      // Extract the Mermaid code from the response
-      const mermaidCodeMatch = data.mermaidCode.match(
+      const extractedMermaidCode = data.mermaidCode.match(
         /```mermaid\n([\s\S]*?)```/
-      );
-      const extractedMermaidCode = mermaidCodeMatch
-        ? mermaidCodeMatch[1]
-        : data.mermaidCode;
+      )[1];
+
+      setExistingMermaidCode(extractedMermaidCode);
 
       const { nodes: newNodes, edges: newEdges } =
         await parseMermaidCode(extractedMermaidCode);
@@ -79,7 +100,6 @@ const AIAssistanceModalV2: React.FC<AIAssistanceModalProps> = ({
       console.log('Generated nodes:', newNodes);
       console.log('Generated edges:', newEdges);
 
-      // Ensure edges are set correctly
       setGeneratedNodes(newNodes);
       setGeneratedEdges(newEdges);
 
@@ -103,7 +123,8 @@ const AIAssistanceModalV2: React.FC<AIAssistanceModalProps> = ({
     const optimizedNodes = optimizeAINodePositions(
       newNodes,
       newEdges,
-      canvasSize
+      canvasSize,
+      layoutType
     );
 
     setNodes((currentNodes) => [...currentNodes, ...optimizedNodes]);
@@ -138,34 +159,66 @@ const AIAssistanceModalV2: React.FC<AIAssistanceModalProps> = ({
           {!showConfirmModal && (
             <div>
               <h2 className={styles.modalHeader}>Generate Mindmap (V2)</h2>
-              <form onSubmit={handleGenerateMindmap}>
-                <textarea
-                  className={styles.textarea}
-                  placeholder="Enter a topic or idea"
-                  value={topic}
-                  onChange={handleTopicChange}
-                />
-                <div className={styles.actionContainer}>
-                  <Dropdown
-                    value={selectedModel}
-                    onChange={(value) => setSelectedModel(value)}
-                    variant="custom"
-                    className={styles.dropdown}
-                  >
-                    <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-                    <option value="gpt-4o">GPT-4o</option>
-                  </Dropdown>
-                  <Button
-                    type="submit"
-                    disabled={uiIsLoading}
-                    loading={uiIsLoading}
-                    variant="submit"
-                    className={styles.generateButton}
-                  >
-                    {uiIsLoading ? 'Generating...' : 'Generate'}
-                  </Button>
-                </div>
-              </form>
+              {step === 1 && (
+                <form onSubmit={handleNext}>
+                  <textarea
+                    className={styles.textarea}
+                    placeholder="Enter a topic or idea"
+                    value={topic}
+                    onChange={handleTopicChange}
+                  />
+                  <div className={styles.actionContainer}>
+                    <Dropdown
+                      value={selectedModel}
+                      onChange={(value) => setSelectedModel(value)}
+                      variant="custom"
+                      className={styles.dropdown}
+                    >
+                      <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                      <option value="gpt-4o">GPT-4o</option>
+                    </Dropdown>
+                    <Dropdown
+                      value={layoutType}
+                      onChange={(value) => setLayoutType(value as LayoutType)}
+                      variant="custom"
+                      className={styles.dropdown}
+                    >
+                      <option value="hierarchical">Hierarchical</option>
+                      <option value="circular">Circular</option>
+                      <option value="forceDirected">Force-Directed</option>
+                      <option value="spiral">Spiral</option>
+                    </Dropdown>
+                    <Button
+                      type="submit"
+                      variant="submit"
+                      className={styles.nextButton}
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </form>
+              )}
+              {step === 2 && (
+                <form onSubmit={handleGenerateMindmap}>
+                  <textarea
+                    className={styles.textarea}
+                    placeholder="Ask a follow-up question or request changes"
+                    value={followUpQuestion}
+                    onChange={handleFollowUpChange}
+                  />
+                  <div className={styles.actionContainer}>
+                    <Button
+                      type="submit"
+                      disabled={uiIsLoading}
+                      loading={uiIsLoading}
+                      variant="submit"
+                      className={styles.generateButton}
+                    >
+                      {uiIsLoading ? 'Generating...' : 'Generate'}
+                    </Button>
+                  </div>
+                </form>
+              )}
             </div>
           )}
           {showConfirmModal && (

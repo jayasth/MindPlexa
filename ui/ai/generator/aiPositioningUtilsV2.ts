@@ -1,14 +1,16 @@
 import { Node, Edge } from 'reactflow';
 
+export type LayoutType =
+  | 'hierarchical'
+  | 'circular'
+  | 'forceDirected'
+  | 'spiral';
+
 export const optimizeAINodePositions = (
   nodes: Node[],
   edges: Edge[],
   canvasSize: { width: number; height: number },
-  layoutType:
-    | 'hierarchical'
-    | 'circular'
-    | 'forceDirected'
-    | 'spiral' = 'hierarchical'
+  layoutType: LayoutType = 'hierarchical'
 ): Node[] => {
   const centerX = canvasSize.width / 2;
   const centerY = canvasSize.height / 2;

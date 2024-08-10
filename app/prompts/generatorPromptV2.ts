@@ -1,4 +1,4 @@
-export const promptTemplateV2 = (userInput: string) => {
+export const promptTemplateV2 = (userInput: string, context: string = '') => {
   return `You are an AI assistant helping users generate a Mermaid JS flowchart for a project management platform. 
   The diagram should:
 - Have a logical structure with the central theme or user's input as the parent node, branching out into 3-5 main subtopics, each with 2-4 child nodes
@@ -12,6 +12,24 @@ export const promptTemplateV2 = (userInput: string) => {
 - Produce a well-formed, logical diagram to give the user a strong starting point for their project, encouraging further exploration and detailing
 
 The user has entered the following topic or idea: "${userInput}"
+
+Additional context or follow-up information: ${context}
+
+Important: Start your response with "\`\`\`mermaid" on a new line and end it with "\`\`\`" on a new line. Do not include any text before or after the Mermaid code.
+`;
+};
+
+export const followUpPromptTemplateV2 = (
+  userInput: string,
+  existingMermaidCode: string
+) => {
+  return `Based on the existing Mermaid flowchart and the user's follow-up question or request, modify or expand the flowchart accordingly. Here's the current flowchart:
+
+${existingMermaidCode}
+
+The user's follow-up request is: "${userInput}"
+
+Please provide an updated Mermaid flowchart that incorporates the user's request while maintaining the overall structure and coherence of the diagram. Add new nodes, modify existing ones, or create new relationships as necessary.
 
 Important: Start your response with "\`\`\`mermaid" on a new line and end it with "\`\`\`" on a new line. Do not include any text before or after the Mermaid code.
 `;

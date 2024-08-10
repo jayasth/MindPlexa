@@ -1,7 +1,10 @@
 import OpenAI from 'openai';
 import { promptTemplate } from '@/app/prompts/generatorPrompt';
 import { promptTemplateV1 } from '@/app/prompts/generatorPromptV1';
-import { promptTemplateV2 } from '@/app/prompts/generatorPromptV2';
+import {
+  promptTemplateV2,
+  followUpPromptTemplateV2
+} from '@/app/prompts/generatorPromptV2';
 
 const openai = new OpenAI({
   apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY
@@ -14,13 +17,14 @@ const modelConfig = {
 };
 
 export async function POST(req: Request) {
-  const { prompt, version } = await req.json();
+  const { prompt, version, existingMermaidCode, followUpQuestion } =
+    await req.json();
   console.log('Prompt sent to OpenAI:', prompt);
   console.log('Version:', version);
 
   const selectedPromptTemplate =
     {
-      v2: promptTemplateV2,
+      v2: followUpQuestion ? followUpPromptTemplateV2 : promptTemplateV2,
       v1: promptTemplateV1,
       default: promptTemplate
     }[version] || promptTemplate;
@@ -34,7 +38,11 @@ export async function POST(req: Request) {
       messages: [
         {
           role: 'user',
-          content: selectedPromptTemplate(prompt, version, selectedModel)
+          content: selectedPromptTemplate(
+            prompt,
+            followUpQuestion ? existingMermaidCode : '',
+            followUpQuestion
+          )
         }
       ]
     });
