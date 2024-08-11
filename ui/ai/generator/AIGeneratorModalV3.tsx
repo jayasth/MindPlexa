@@ -96,6 +96,9 @@ const AIGeneratorModalV3: React.FC<AIGeneratorModalV3Props> = ({
         projectDetails
       );
 
+      console.log('Generated nodes:', newNodes);
+      console.log('Generated edges:', newEdges);
+
       const updatedNodes = newNodes.map((node) => ({
         ...node,
         data: {

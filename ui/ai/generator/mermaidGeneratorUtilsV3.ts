@@ -56,7 +56,13 @@ export async function parseMermaidCode(
       node.data.content !== 'No description available'
   );
 
-  return { nodes: filteredNodes, edges };
+  // Ensure all nodes have initial positions
+  const nodesWithPositions = filteredNodes.map((node, index) => ({
+    ...node,
+    position: { x: index * 150, y: index * 100 } // Initial positions
+  }));
+
+  return { nodes: nodesWithPositions, edges };
 }
 
 const convertToReactFlowElements = (
@@ -118,26 +124,31 @@ const convertToReactFlowElements = (
     const originalSource = edge
       ?.getAttribute('class')
       ?.split(' ')[3]
-      .replace('LS-', '');
+      ?.replace('LS-', '');
     const originalTarget = edge
       ?.getAttribute('class')
       ?.split(' ')[4]
-      .replace('LE-', '');
+      ?.replace('LE-', '');
 
     if (!originalSource || !originalTarget) {
+      console.warn(`Edge ${id} has missing source or target`);
       return;
     }
 
-    const source = idMap.get(originalSource) || '';
-    const target = idMap.get(originalTarget) || '';
+    const source = idMap.get(originalSource);
+    const target = idMap.get(originalTarget);
 
-    edges.push({
-      id,
-      source,
-      target,
-      type: 'customEdge',
-      markerEnd: { type: MarkerType.ArrowClosed }
-    });
+    if (source && target) {
+      edges.push({
+        id,
+        source,
+        target,
+        type: 'customEdge',
+        markerEnd: { type: MarkerType.ArrowClosed }
+      });
+    } else {
+      console.warn(`Edge ${id} has invalid source or target`);
+    }
   });
 
   return {

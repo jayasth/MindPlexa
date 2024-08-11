@@ -11,16 +11,15 @@ export const applyD3Layout = (
 ): Node[] => {
   const simulation = d3.forceSimulation(nodes as d3.SimulationNodeDatum[]);
 
+  const linkForce = d3
+    .forceLink(edges)
+    .id((d: any) => d.id)
+    .distance(100);
+
   switch (layoutType) {
     case 'force':
       simulation
-        .force(
-          'link',
-          d3
-            .forceLink(edges)
-            .id((d: any) => d.id)
-            .distance(100)
-        )
+        .force('link', linkForce)
         .force('charge', d3.forceManyBody().strength(-500))
         .force(
           'center',
@@ -29,13 +28,7 @@ export const applyD3Layout = (
       break;
     case 'radial':
       simulation
-        .force(
-          'link',
-          d3
-            .forceLink(edges)
-            .id((d: any) => d.id)
-            .distance(100)
-        )
+        .force('link', linkForce)
         .force(
           'r',
           d3.forceRadial(200, canvasSize.width / 2, canvasSize.height / 2)
@@ -50,13 +43,15 @@ export const applyD3Layout = (
         nodes
       );
 
-      const treeLayout = d3.tree().size([canvasSize.width, canvasSize.height]);
+      const treeLayout = d3
+        .tree()
+        .size([canvasSize.width - 100, canvasSize.height - 100]);
       const treeData = treeLayout(root);
 
       treeData.each((d: any) => {
         const node = nodes.find((n) => n.id === d.id);
         if (node) {
-          node.position = { x: d.x, y: d.y };
+          node.position = { x: d.x + 50, y: d.y + 50 };
         }
       });
 
@@ -67,6 +62,9 @@ export const applyD3Layout = (
 
   return nodes.map((node) => ({
     ...node,
-    position: { x: (node as any).x, y: (node as any).y }
+    position: {
+      x: (node as any).x || 0,
+      y: (node as any).y || 0
+    }
   }));
 };
