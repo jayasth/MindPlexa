@@ -13,17 +13,18 @@ When generating the flowchart:
 - Start with the main topic as the root node.
 - Create 3-7 main subtopics branching out from the root, ensuring logical connections based on the input context.
 - For each subtopic, add 2-5 child nodes with relevant details.
-- Use the format: "NodeID[NodeTitle::NodeDescription]" for each node, ensuring all titles and descriptions are concise and informative.
+- Use the format: "NodeID[NodeTitle: NodeDescription]" for each node, ensuring all titles and descriptions are concise and informative.
 - Avoid using special characters in the node text; replace them with suitable alternatives.
+- Use only alphanumeric characters and underscores for NodeIDs.
 - Consider the project's complexity when creating the hierarchy and suggest a layout type ('force', 'radial', 'tree') based on the best fit for the input structure.
-- Ensure the generated Mermaid code is tested for syntax correctness and renders properly.
+- Ensure the generated Mermaid code is valid and starts with "graph TD;".
 
 Example:
 If the user input is 'Develop a marketing plan', a suitable Mermaid code might start with:
 graph TD;
-A[Marketing Plan::Overview of the project]
-A --> B[Research::Detailed market analysis]
-A --> C[Strategy::Outline potential strategies]
+A[Marketing_Plan: Overview of the project]
+A --> B[Market_Research: Detailed market analysis]
+A --> C[Strategy: Outline potential strategies]
 ...
 
 Output format:
