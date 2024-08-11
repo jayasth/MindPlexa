@@ -1,49 +1,31 @@
-export const promptTemplateV2 = (userInput: string, context: string = '') => {
-  return `You are an AI assistant helping users generate a comprehensive mindmap for their project or idea. Your task is to create a well-structured Mermaid JS flowchart based on the user's input. If the input is vague or too broad, ask for clarification before generating the mindmap.
+export const promptTemplateV2 = (userInput: string) => {
+  return `You are an AI assistant tasked with helping users create project layouts for the MindePlexa project management platform. The user has provided the following input:
 
-User Input: "${userInput}"
-Additional Context: ${context}
+"${userInput}"
 
-Instructions:
-1. If the input is clear and specific enough to generate a mindmap:
-   - Create a flowchart with the main topic as the root node.
-   - Develop 3-5 main subtopics branching from the root.
-   - For each subtopic, create 2-4 related concepts or details.
-   - Use the format "NodeID[NodeTitle::NodeDescription]" for each node.
-   - Ensure all nodes have meaningful titles (2-5 words) and descriptions (10-20 words).
-   - Create logical connections between nodes, including at least one cross-link between branches.
-   - Use only Mermaid JS syntax in your response.
+Your task is to:
 
-2. If the input is too vague or broad:
-   - Instead of generating a mindmap, provide 2-3 follow-up questions to help clarify the user's intent.
-   - Format these questions as a JSON array of strings.
+1. Analyze the user's input and determine if it's clear enough to generate a project layout.
+2. If the input is clear, generate a comprehensive Mermaid JS flowchart that represents the project structure.
+3. If the input is unclear or lacks sufficient detail, formulate a follow-up question to gather more information.
 
-Example Mermaid syntax:
-graph TD
-  A[Main Topic::Brief description of the main topic]
-  B[Subtopic 1::Details about subtopic 1]
-  A --> B
+When generating the flowchart:
+- Start with the main topic as the root node.
+- Create 3-7 main subtopics branching out from the root.
+- For each subtopic, add 2-5 child nodes with relevant details.
+- Use the format: "NodeID[NodeTitle::NodeDescription]" for each node.
+- Ensure all nodes have meaningful titles (max 5 words) and descriptions (15-25 words).
+- Create logical connections between nodes.
+- Avoid using special characters or double quotes in the node text.
+- Consider the project's complexity when creating the hierarchy.
 
-Respond with either a Mermaid JS flowchart or follow-up questions in JSON format.`;
-};
+Output format:
+{
+  "needsFollowUp": boolean,
+  "followUpQuestion": string (if needsFollowUp is true),
+  "mermaidCode": string (if needsFollowUp is false),
+  "suggestedLayout": "force" | "radial" | "tree" (if needsFollowUp is false)
+}
 
-export const followUpPromptTemplateV2 = (
-  userInput: string,
-  existingMermaidCode: string
-) => {
-  return `Based on the existing Mermaid flowchart and the user's follow-up input, modify or expand the flowchart. Here's the current flowchart:
-
-${existingMermaidCode}
-
-User's follow-up input: "${userInput}"
-
-Instructions:
-1. Analyze the user's input and the existing flowchart.
-2. If the input provides clear direction:
-   - Update the Mermaid flowchart by adding new nodes, modifying existing ones, or creating new relationships.
-   - Maintain the overall structure and coherence of the diagram.
-3. If the input is unclear or requires more information:
-   - Provide 1-2 follow-up questions as a JSON array of strings.
-
-Respond with either an updated Mermaid JS flowchart or follow-up questions in JSON format.`;
+Analyze the input and provide the appropriate response:`;
 };

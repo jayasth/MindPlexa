@@ -1,49 +1,68 @@
 import mermaid from 'mermaid';
 import { v4 as uuidv4 } from 'uuid';
 import { Node, Edge, MarkerType } from 'reactflow';
-import * as d3 from 'd3-hierarchy';
-import { extractTitleAndType } from '@/ui/ai/generator/aiGeneratorCanvasUtilsV2';
+import {
+  extractTitleAndType,
+  removeDoubleQuoteInsideBrackets,
+  removeDoubleQuoteInsideParentheses,
+  removeMarkdowncode
+} from '@/ui/ai/generator/aiGeneratorCanvasUtils';
 import { getNodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 
 export async function parseMermaidCode(
-  mermaidCode: string
+  mermaidCode: string,
+  projectDetails: string
 ): Promise<{ nodes: Node[]; edges: Edge[] }> {
-  const graphIndex = mermaidCode.indexOf('graph TD');
-  let filteredCode =
-    graphIndex !== -1
-      ? mermaidCode.slice(graphIndex)
-      : `graph TD\n${mermaidCode}`;
-
-  // Replace double quotes with single quotes in node labels
-  filteredCode = filteredCode.replace(/\[([^\]]*)\]/g, (match) => {
-    return match.replace(/"/g, "'");
-  });
-
+  const filteredCode = removeDoubleQuoteInsideParentheses(
+    removeDoubleQuoteInsideBrackets(removeMarkdowncode(mermaidCode))
+  );
   console.log('mermaidGeneratorUtilsV2 Filtered Mermaid Code:', filteredCode);
+
+  const processedCode = filteredCode.startsWith('graph TD')
+    ? filteredCode
+    : `graph TD\n${filteredCode}`;
 
   let svgCode: any;
 
   try {
-    mermaid.initialize({ startOnLoad: false, securityLevel: 'loose' });
-    svgCode = await mermaid.render('mermaid-svg', filteredCode);
-  } catch (error) {
+    mermaid.initialize({ startOnLoad: false });
+    svgCode = await mermaid.render('mermaid-chart', processedCode);
+  } catch (error: any) {
     console.error('mermaidGeneratorUtilsV2 Mermaid parsing error:', error);
-    throw new Error('Failed to parse Mermaid code');
+    return {
+      nodes: [],
+      edges: []
+    };
   }
 
-  let { nodes, edges } = convertToReactFlowElements(svgCode.svg);
+  let nodes: Node[] = [];
+  let edges: Edge[] = [];
+  try {
+    ({ nodes, edges } = convertToReactFlowElements(svgCode.svg));
+  } catch (error: any) {
+    console.error(
+      'mermaidGeneratorUtilsV2 Error converting to React Flow elements:',
+      error
+    );
+    return {
+      nodes: [],
+      edges: []
+    };
+  }
 
-  // Filter out nodes without meaningful content
-  nodes = nodes.filter(
+  const filteredNodes = nodes.filter(
     (node) =>
       node.data.title !== 'Untitled' &&
       node.data.content !== 'No description available'
   );
 
-  // Apply layout
-  const layoutedElements = applyD3Layout(nodes, edges);
+  // Ensure all nodes have initial positions
+  const nodesWithPositions = filteredNodes.map((node, index) => ({
+    ...node,
+    position: { x: index * 150, y: index * 100 } // Initial positions
+  }));
 
-  return layoutedElements;
+  return { nodes: nodesWithPositions, edges };
 }
 
 const convertToReactFlowElements = (
@@ -56,23 +75,32 @@ const convertToReactFlowElements = (
   dummyDiv.innerHTML = svgCode;
 
   const mermaidNodes = Array.from(dummyDiv.querySelectorAll('.node'));
-  const mermaidEdges = Array.from(dummyDiv.querySelectorAll('.edgePath'));
+  const mermaidEdges = Array.from(dummyDiv.querySelectorAll('.edgePaths path'));
 
   const nodes: Node[] = [];
   const edges: Edge[] = [];
   const idMap = new Map<string, string>();
 
   mermaidNodes.forEach((node, index) => {
-    const elId = node.id;
-    const nodeLabel = node.querySelector('.label')?.textContent;
-    const { title, content } = extractTitleAndType(nodeLabel || '');
+    const elId = node.getAttribute('id') || `n${index}`;
+    let id = elId;
 
-    const nodeId = `note-${uuidv4()}`;
+    const classPattern = /^flowchart-([^-\d]+)-\d+$/;
+    const matches = elId.match(classPattern);
+
+    if (matches) {
+      id = matches[1];
+    }
+
+    const nodeLabel = node.querySelector('.nodeLabel')?.textContent;
+    const { title, type, content } = extractTitleAndType(nodeLabel || '');
+
+    const nodeId = `${type}-${uuidv4()}`;
     const { width, height } = getNodeDimensions('note', false, false);
     nodes.push({
       id: nodeId,
       type: 'note',
-      position: { x: 0, y: 0 }, // We'll set the position later
+      position: { x: 0, y: 0 }, // Initial position, will be updated by D3
       data: {
         id: nodeId,
         title: title.trim(),
@@ -88,108 +116,43 @@ const convertToReactFlowElements = (
       height
     });
 
-    idMap.set(elId, nodeId);
+    idMap.set(id, nodeId);
   });
 
   mermaidEdges.forEach((edge, index) => {
-    const sourceId = edge
-      .querySelector('.path')
-      ?.getAttribute('marker-start')
-      ?.split('-')[1];
-    const targetId = edge
-      .querySelector('.path')
-      ?.getAttribute('marker-end')
-      ?.split('-')[1];
+    const id = edge.getAttribute('id') || `e${index}`;
+    const originalSource = edge
+      ?.getAttribute('class')
+      ?.split(' ')[3]
+      ?.replace('LS-', '');
+    const originalTarget = edge
+      ?.getAttribute('class')
+      ?.split(' ')[4]
+      ?.replace('LE-', '');
 
-    if (sourceId && targetId) {
-      const source = idMap.get(sourceId);
-      const target = idMap.get(targetId);
+    if (!originalSource || !originalTarget) {
+      console.warn(`Edge ${id} has missing source or target`);
+      return;
+    }
 
-      if (source && target) {
-        edges.push({
-          id: `e${index}`,
-          source,
-          target,
-          type: 'customEdge',
-          markerEnd: { type: MarkerType.ArrowClosed }
-        });
-      }
+    const source = idMap.get(originalSource);
+    const target = idMap.get(originalTarget);
+
+    if (source && target) {
+      edges.push({
+        id,
+        source,
+        target,
+        type: 'customEdge',
+        markerEnd: { type: MarkerType.ArrowClosed }
+      });
+    } else {
+      console.warn(`Edge ${id} has invalid source or target`);
     }
   });
 
-  return { nodes, edges };
-};
-
-const applyD3Layout = (
-  nodes: Node[],
-  edges: Edge[]
-): { nodes: Node[]; edges: Edge[] } => {
-  // Find all root nodes (nodes with no incoming edges)
-  const rootNodes = nodes.filter(
-    (node) => !edges.some((edge) => edge.target === node.id)
-  );
-
-  if (rootNodes.length === 0) {
-    return { nodes, edges };
-  }
-
-  // If there's only one root, use the existing approach
-  if (rootNodes.length === 1) {
-    const hierarchy = d3
-      .stratify()
-      .id((d: any) => d.id)
-      .parentId((d: any) => edges.find((e) => e.target === d.id)?.source)(
-      nodes
-    );
-
-    const treeLayout = d3.tree().size([800, 600]);
-    const treeData = treeLayout(hierarchy);
-
-    const newNodes = treeData.descendants().map((d: any) => ({
-      ...nodes.find((n) => n.id === d.id)!,
-      position: { x: d.x, y: d.y }
-    }));
-
-    return { nodes: newNodes, edges };
-  }
-
-  // If there are multiple roots, create a virtual root
-  const virtualRootId = 'virtual-root';
-  const virtualRoot: Node = {
-    id: virtualRootId,
-    type: 'note',
-    position: { x: 0, y: 0 },
-    data: { id: virtualRootId, title: 'Virtual Root', content: '' }
+  return {
+    nodes,
+    edges
   };
-
-  const nodesWithVirtualRoot = [virtualRoot, ...nodes];
-  const edgesWithVirtualRoot = [
-    ...edges,
-    ...rootNodes.map((root) => ({
-      id: `${virtualRootId}-${root.id}`,
-      source: virtualRootId,
-      target: root.id,
-      type: 'customEdge'
-    }))
-  ];
-
-  const hierarchy = d3
-    .stratify()
-    .id((d: any) => d.id)
-    .parentId(
-      (d: any) => edgesWithVirtualRoot.find((e) => e.target === d.id)?.source
-    )(nodesWithVirtualRoot);
-
-  const treeLayout = d3.tree().size([1200, 800]);
-  const treeData = treeLayout(hierarchy);
-
-  const newNodes = treeData
-    .descendants()
-    .filter((d) => d.id !== virtualRootId)
-    .map((d: any) => ({
-      ...nodes.find((n) => n.id === d.id)!,
-      position: { x: d.x, y: d.y - 100 } // Adjust Y position to account for virtual root
-    }));
-
-  return { nodes: newNodes, edges };
 };

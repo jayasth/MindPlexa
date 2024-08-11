@@ -3,11 +3,8 @@ import { Modal } from 'react-responsive-modal';
 import 'react-responsive-modal/styles.css';
 import { Edge, Node } from 'reactflow';
 import { useCompletion } from 'ai/react';
-import { parseMermaidCode } from '@/ui/ai/generator/mermaidGeneratorUtilsV2';
-import {
-  optimizeAINodePositions,
-  LayoutType
-} from '@/ui/ai/generator/aiPositioningUtilsV2';
+import { parseMermaidCode } from './mermaidGeneratorUtilsV2';
+import { promptTemplateV2 } from '@/app/prompts/generatorPromptV2';
 import {
   useNodeStore,
   useEdgeStore,
@@ -15,135 +12,120 @@ import {
   useCanvasStore
 } from '@/app/store';
 import Button from '@/ui/Button/Button';
-import ConfirmIntegrationModal from '@/ui/ai/generator/ConfirmIntegrationModal';
-import Dropdown from '@/ui/dropdown/Dropdown';
-import styles from '@/ui/ai/generator/AIGeneratorModal.module.css';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-  promptTemplateV2,
-  followUpPromptTemplateV2
-} from '@/app/prompts/generatorPromptV2';
+import ConfirmIntegrationModal from './ConfirmIntegrationModal';
+import styles from './AIGeneratorModal.module.css';
+import { applyD3Layout } from '@/ui/ai/generator/aiPositioningUtilsV2';
 
-interface AIAssistanceModalProps {
+interface AIGeneratorModalV2Props {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const AIAssistanceModalV2: React.FC<AIAssistanceModalProps> = ({
+const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
   isOpen,
   onClose
 }) => {
-  const [step, setStep] = useState(1);
-  const [topic, setTopic] = useState('');
+  const [projectConcept, setProjectConcept] = useState('');
   const [followUpQuestion, setFollowUpQuestion] = useState('');
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [generatedNodes, setGeneratedNodes] = useState<Node[]>([]);
   const [generatedEdges, setGeneratedEdges] = useState<Edge[]>([]);
-  const [existingMermaidCode, setExistingMermaidCode] = useState('');
-  const { completion, input, handleInputChange, handleSubmit, isLoading } =
-    useCompletion();
-
-  const [selectedModel, setSelectedModel] = useState('gpt-4o');
-  const [layoutType, setLayoutType] = useState<LayoutType>('hierarchical');
-  const [followUpQuestions, setFollowUpQuestions] = useState<string[]>([]);
-
   const { setNodes } = useNodeStore();
   const { setEdges } = useEdgeStore();
   const { isLoading: uiIsLoading, setIsLoading } = useUIStore();
   const { canvasId } = useCanvasStore();
 
-  const handleTopicChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setTopic(e.target.value);
-    handleInputChange(e);
+  const handleProjectConceptChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement>
+  ) => {
+    setProjectConcept(e.target.value);
   };
 
-  const handleFollowUpChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setFollowUpQuestion(e.target.value);
-  };
-
-  const handleNext = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleGenerateCanvas = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (topic.trim()) {
-      setStep(2);
-    }
-  };
-
-  const handleGenerateMindmap = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    await generateMindmap();
-  };
-
-  const generateMindmap = async () => {
     setIsLoading(true);
 
     try {
+      const prompt = promptTemplateV2(projectConcept);
       const response = await fetch('/api/completion', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          prompt: existingMermaidCode
-            ? followUpPromptTemplateV2(followUpQuestion, existingMermaidCode)
-            : promptTemplateV2(topic),
-          version: 'v2'
-        })
+        body: JSON.stringify({ prompt, version: 'v2' })
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to generate mindmap: ${response.statusText}`);
+        throw new Error('Failed to generate canvas');
       }
 
       const data = await response.json();
       console.log('AIGeneratorModalV2 Response data:', data);
 
-      if (data.followUpQuestions) {
-        setFollowUpQuestions(data.followUpQuestions);
-        setStep(2);
-      } else if (data.mermaidCode) {
-        const extractedMermaidCode = data.mermaidCode.match(
-          /```mermaid\n([\s\S]*?)```/
-        );
+      if (data.needsFollowUp) {
+        setFollowUpQuestion(data.followUpQuestion);
+      } else {
+        const canvasSize = {
+          width: window.innerWidth,
+          height: window.innerHeight
+        };
 
-        if (!extractedMermaidCode) {
-          throw new Error('Failed to extract mermaid code');
-        }
-
-        setExistingMermaidCode(extractedMermaidCode[1]);
         const { nodes: newNodes, edges: newEdges } = await parseMermaidCode(
-          extractedMermaidCode[1]
+          data.mermaidCode,
+          projectConcept
         );
 
-        setGeneratedNodes(newNodes);
-        setGeneratedEdges(newEdges);
+        console.log('Generated nodes:', newNodes);
+        console.log('Generated edges:', newEdges);
+
+        const updatedNodes = newNodes.map((node) => ({
+          ...node,
+          data: {
+            ...node.data,
+            title: node.data?.title || 'Untitled',
+            content: node.data?.content || 'No description available'
+          }
+        }));
 
         const existingNodes = useNodeStore.getState().nodes;
 
         if (existingNodes.length > 0) {
+          setGeneratedNodes(updatedNodes);
+          setGeneratedEdges(newEdges);
           setShowConfirmModal(true);
         } else {
-          handleConfirmIntegration(newNodes, newEdges);
+          handleConfirmIntegration(
+            updatedNodes,
+            newEdges,
+            data.suggestedLayout
+          );
         }
       }
     } catch (error) {
-      console.error('AIGeneratorModalV2: Error generating mindmap:', error);
+      console.error('AIGeneratorModalV2: Error generating canvas:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleConfirmIntegration = (newNodes: Node[], newEdges: Edge[]) => {
+  const handleConfirmIntegration = (newNodes, newEdges, layout) => {
     const canvasSize = { width: window.innerWidth, height: window.innerHeight };
+    try {
+      const optimizedNodes = applyD3Layout(
+        newNodes,
+        newEdges,
+        canvasSize,
+        layout
+      );
 
-    const optimizedNodes = optimizeAINodePositions(
-      newNodes,
-      newEdges,
-      canvasSize,
-      layoutType
-    );
-
-    setNodes((currentNodes) => [...currentNodes, ...optimizedNodes]);
-    setEdges((currentEdges) => [...currentEdges, ...newEdges]);
+      setNodes((currentNodes) => [...currentNodes, ...optimizedNodes]);
+      setEdges((currentEdges) => [...currentEdges, ...newEdges]);
+    } catch (error) {
+      console.error('Error applying layout:', error);
+      // Fallback to setting nodes without layout
+      setNodes((currentNodes) => [...currentNodes, ...newNodes]);
+      setEdges((currentEdges) => [...currentEdges, ...newEdges]);
+    }
     setShowConfirmModal(false);
     onClose();
   };
@@ -163,116 +145,45 @@ const AIAssistanceModalV2: React.FC<AIAssistanceModalProps> = ({
         closeButton: styles.closeButton
       }}
     >
-      <AnimatePresence>
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.3 }}
-          className={styles.modalInner}
-        >
-          {!showConfirmModal && (
-            <div>
-              <h2 className={styles.modalHeader}>Generate Mindmap (V2)</h2>
-              {step === 1 && (
-                <form onSubmit={handleNext}>
-                  <textarea
-                    className={styles.textarea}
-                    placeholder="Enter a topic or idea"
-                    value={topic}
-                    onChange={handleTopicChange}
-                  />
-                  <div className={styles.actionContainer}>
-                    <Dropdown
-                      value={selectedModel}
-                      onChange={(value) => setSelectedModel(value)}
-                      variant="custom"
-                      className={styles.dropdown}
-                    >
-                      <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-                      <option value="gpt-4o">GPT-4o</option>
-                    </Dropdown>
-                    <Dropdown
-                      value={layoutType}
-                      onChange={(value) => setLayoutType(value as LayoutType)}
-                      variant="custom"
-                      className={styles.dropdown}
-                    >
-                      <option value="hierarchical">Hierarchical</option>
-                      <option value="circular">Circular</option>
-                      <option value="forceDirected">Force-Directed</option>
-                      <option value="spiral">Spiral</option>
-                    </Dropdown>
-                    <Button
-                      type="submit"
-                      variant="submit"
-                      className={styles.nextButton}
-                    >
-                      Next
-                    </Button>
-                  </div>
-                </form>
+      <div className={styles.modalInner}>
+        {!showConfirmModal && (
+          <div>
+            <h2 className={styles.modalHeader}>AI Node Network Generator V2</h2>
+            <form onSubmit={handleGenerateCanvas}>
+              <textarea
+                className={styles.textarea}
+                placeholder="Enter your project topic or main idea"
+                value={projectConcept}
+                onChange={handleProjectConceptChange}
+              />
+              {followUpQuestion && (
+                <p className={styles.followUpQuestion}>{followUpQuestion}</p>
               )}
-              {step === 2 && followUpQuestions.length > 0 && (
-                <div>
-                  <h3>Please provide more information:</h3>
-                  <ul>
-                    {followUpQuestions.map((question, index) => (
-                      <li key={index}>{question}</li>
-                    ))}
-                  </ul>
-                  <textarea
-                    className={styles.textarea}
-                    placeholder="Your response"
-                    value={followUpQuestion}
-                    onChange={handleFollowUpChange}
-                  />
-                  <Button
-                    onClick={() => generateMindmap()}
-                    disabled={uiIsLoading}
-                    loading={uiIsLoading}
-                    variant="submit"
-                    className={styles.generateButton}
-                  >
-                    {uiIsLoading ? 'Generating...' : 'Generate'}
-                  </Button>
-                </div>
-              )}
-              {step === 2 && followUpQuestions.length === 0 && (
-                <form onSubmit={handleGenerateMindmap}>
-                  <textarea
-                    className={styles.textarea}
-                    placeholder="Ask a follow-up question or request changes"
-                    value={followUpQuestion}
-                    onChange={handleFollowUpChange}
-                  />
-                  <div className={styles.actionContainer}>
-                    <Button
-                      type="submit"
-                      disabled={uiIsLoading}
-                      loading={uiIsLoading}
-                      variant="submit"
-                      className={styles.generateButton}
-                    >
-                      {uiIsLoading ? 'Generating...' : 'Generate'}
-                    </Button>
-                  </div>
-                </form>
-              )}
-            </div>
-          )}
-          {showConfirmModal && (
-            <ConfirmIntegrationModal
-              onConfirm={() =>
-                handleConfirmIntegration(generatedNodes, generatedEdges)
-              }
-              onCancel={handleCancelIntegration}
-            />
-          )}
-        </motion.div>
-      </AnimatePresence>
+              <div className={styles.actionContainer}>
+                <Button
+                  type="submit"
+                  disabled={uiIsLoading || !projectConcept.trim()}
+                  loading={uiIsLoading}
+                  variant="submit"
+                  className={styles.generateButton}
+                >
+                  {uiIsLoading ? 'Generating...' : 'Generate Network'}
+                </Button>
+              </div>
+            </form>
+          </div>
+        )}
+        {showConfirmModal && (
+          <ConfirmIntegrationModal
+            onConfirm={() =>
+              handleConfirmIntegration(generatedNodes, generatedEdges, onClose)
+            }
+            onCancel={handleCancelIntegration}
+          />
+        )}
+      </div>
     </Modal>
   );
 };
 
-export default AIAssistanceModalV2;
+export default AIGeneratorModalV2;
