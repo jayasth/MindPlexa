@@ -11,6 +11,8 @@ export const applyD3Layout = (
   canvasSize: { width: number; height: number },
   layoutType: 'tree' | 'radial' | 'force' | 'mindmap' | 'timeline'
 ): Node[] => {
+  console.log('Applying layout:', layoutType); // Add this line
+
   // Create a deep copy of nodes and edges
   const nodesCopy = nodes.map((node) => ({
     ...node,
@@ -37,9 +39,11 @@ export const applyD3Layout = (
 
   switch (layoutType) {
     case 'force':
+      console.log('Applying force-directed layout');
       // Force-directed layout is already set up
       break;
     case 'radial':
+      console.log('Applying radial layout');
       simulation
         .force(
           'r',
@@ -52,6 +56,7 @@ export const applyD3Layout = (
         .force('charge', d3.forceManyBody().strength(FORCE_STRENGTH * 2));
       break;
     case 'tree':
+      console.log('Applying tree layout');
       // Find the root node (node with no incoming edges)
       const rootId = nodes.find(
         (node) => !edges.some((edge) => edge.target === node.id)
@@ -93,6 +98,7 @@ export const applyD3Layout = (
         position: { x: node.x || 0, y: node.y || 0 }
       }));
     case 'mindmap':
+      console.log('Applying mindmap layout');
       // Implement mind map layout (radial with more spacing and centered)
       const radius = Math.min(canvasSize.width, canvasSize.height) / 3;
       simulation
@@ -112,6 +118,7 @@ export const applyD3Layout = (
         );
       break;
     case 'timeline':
+      console.log('Applying timeline layout');
       // Implement timeline layout (horizontal arrangement)
       const timelineForce = d3.forceY(canvasSize.height / 2).strength(1);
       simulation
@@ -138,8 +145,8 @@ export const applyD3Layout = (
   return nodesCopy.map((node) => ({
     ...node,
     position: {
-      x: Math.max(0, Math.min(node.x || 0, canvasSize.width - 200)),
-      y: Math.max(0, Math.min(node.y || 0, canvasSize.height - 200))
+      x: Math.max(100, Math.min(node.x || 0, canvasSize.width - 300)),
+      y: Math.max(100, Math.min(node.y || 0, canvasSize.height - 300))
     }
   }));
 };

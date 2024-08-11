@@ -77,6 +77,7 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
 
       const data = await response.json();
       console.log('AIGeneratorModalV2 Response data:', data);
+      console.log('Selected layout:', data.suggestedLayout); // Add this line
 
       if (data.needsFollowUp) {
         setFollowUpQuestion(data.followUpQuestion);
@@ -115,6 +116,7 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
           setGeneratedEdges(newEdges);
           setShowConfirmModal(true);
           setCurrentLayout(data.suggestedLayout);
+          console.log('Setting current layout:', data.suggestedLayout); // Add this line
         } else {
           handleConfirmIntegration(
             updatedNodes,
@@ -134,6 +136,7 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
   };
 
   const handleConfirmIntegration = (newNodes, newEdges, layout) => {
+    console.log('Applying layout:', layout); // Add this line
     const canvasSize = { width: window.innerWidth, height: window.innerHeight };
     try {
       const optimizedNodes = applyD3Layout(
