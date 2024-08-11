@@ -126,15 +126,22 @@ const AIGeneratorModalV3: React.FC<AIGeneratorModalV3Props> = ({
 
   const handleConfirmIntegration = (newNodes, newEdges) => {
     const canvasSize = { width: window.innerWidth, height: window.innerHeight };
-    const optimizedNodes = applyD3Layout(
-      newNodes,
-      newEdges,
-      selectedLayout,
-      canvasSize
-    );
+    try {
+      const optimizedNodes = applyD3Layout(
+        newNodes,
+        newEdges,
+        selectedLayout,
+        canvasSize
+      );
 
-    setNodes((currentNodes) => [...currentNodes, ...optimizedNodes]);
-    setEdges((currentEdges) => [...currentEdges, ...newEdges]);
+      setNodes((currentNodes) => [...currentNodes, ...optimizedNodes]);
+      setEdges((currentEdges) => [...currentEdges, ...newEdges]);
+    } catch (error) {
+      console.error('Error applying layout:', error);
+      // Fallback to setting nodes without layout
+      setNodes((currentNodes) => [...currentNodes, ...newNodes]);
+      setEdges((currentEdges) => [...currentEdges, ...newEdges]);
+    }
     setShowConfirmModal(false);
     onClose();
   };

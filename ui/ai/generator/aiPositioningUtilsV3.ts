@@ -54,12 +54,26 @@ export const applyD3Layout = (
         .force('charge', d3.forceManyBody().strength(FORCE_STRENGTH * 2));
       break;
     case 'tree':
+      // Find the root node (node with no incoming edges)
+      const rootId = nodes.find(
+        (node) => !edges.some((edge) => edge.target === node.id)
+      )?.id;
+
+      if (!rootId) {
+        console.warn(
+          'No root node found, falling back to force-directed layout'
+        );
+        // Fall back to force-directed layout
+        break;
+      }
+
       const hierarchy = d3
         .stratify<Node>()
         .id((d: any) => d.id)
-        .parentId((d: any) => edgesCopy.find((e) => e.target === d.id)?.source)(
-        nodesCopy
-      );
+        .parentId((d: any) => {
+          const parentEdge = edges.find((e) => e.target === d.id);
+          return parentEdge ? parentEdge.source : null;
+        })(nodes);
 
       const treeLayout = d3
         .tree<Node>()
