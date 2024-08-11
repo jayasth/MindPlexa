@@ -93,18 +93,23 @@ export const applyD3Layout = (
         position: { x: node.x || 0, y: node.y || 0 }
       }));
     case 'mindmap':
-      // Implement mind map layout (similar to radial but with more spacing)
+      // Implement mind map layout (radial with more spacing and centered)
+      const radius = Math.min(canvasSize.width, canvasSize.height) / 3;
       simulation
         .force(
           'r',
           d3.forceRadial(
-            Math.min(canvasSize.width, canvasSize.height) / 2.5,
+            (d: any, i) => radius * (1 + i * 0.1), // Increase radius for each node
             canvasSize.width / 2,
             canvasSize.height / 2
           )
         )
-        .force('charge', d3.forceManyBody().strength(FORCE_STRENGTH * 3))
-        .force('collision', d3.forceCollide().radius(COLLISION_RADIUS * 1.5));
+        .force('charge', d3.forceManyBody().strength(FORCE_STRENGTH * 2))
+        .force('collision', d3.forceCollide().radius(COLLISION_RADIUS * 1.5))
+        .force(
+          'center',
+          d3.forceCenter(canvasSize.width / 2, canvasSize.height / 2)
+        );
       break;
     case 'timeline':
       // Implement timeline layout (horizontal arrangement)
@@ -132,6 +137,9 @@ export const applyD3Layout = (
 
   return nodesCopy.map((node) => ({
     ...node,
-    position: { x: node.x || 0, y: node.y || 0 }
+    position: {
+      x: Math.max(0, Math.min(node.x || 0, canvasSize.width - 200)),
+      y: Math.max(0, Math.min(node.y || 0, canvasSize.height - 200))
+    }
   }));
 };
