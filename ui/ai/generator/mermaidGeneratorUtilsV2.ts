@@ -61,6 +61,20 @@ export async function parseMermaidCode(
   let edges: Edge[] = [];
   try {
     ({ nodes, edges } = convertToReactFlowElements(svgCode.svg));
+    console.log('Converted Nodes:', nodes);
+    console.log('Converted Edges:', edges);
+
+    // Check for any nodes referenced in edges that do not exist
+    edges.forEach((edge) => {
+      if (
+        !nodes.find((node) => node.id === edge.source) ||
+        !nodes.find((node) => node.id === edge.target)
+      ) {
+        console.warn(
+          `Missing node reference in edge: ${edge.id} from ${edge.source} to ${edge.target}`
+        );
+      }
+    });
   } catch (error: any) {
     console.error(
       'mermaidGeneratorUtilsV2 Error converting to React Flow elements:',
