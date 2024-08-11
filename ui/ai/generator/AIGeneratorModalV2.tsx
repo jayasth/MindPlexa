@@ -12,6 +12,7 @@ import {
 } from '@/app/store';
 import Button from '@/ui/Button/Button';
 import ConfirmIntegrationModal from './ConfirmIntegrationModal';
+import Dropdown from '@/ui/dropdown/Dropdown';
 import styles from './AIGeneratorModal.module.css';
 import { applyD3Layout } from '@/ui/ai/generator/aiPositioningUtilsV2';
 
@@ -29,6 +30,7 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [generatedNodes, setGeneratedNodes] = useState<Node[]>([]);
   const [generatedEdges, setGeneratedEdges] = useState<Edge[]>([]);
+  const [selectedModel, setSelectedModel] = useState('gpt-4o');
   const { setNodes } = useNodeStore();
   const { setEdges } = useEdgeStore();
   const { isLoading: uiIsLoading, setIsLoading } = useUIStore();
@@ -51,7 +53,7 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ prompt, version: 'v2' })
+        body: JSON.stringify({ prompt, version: 'v2', model: selectedModel })
       });
 
       if (!response.ok) {
@@ -159,6 +161,15 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
                 <p className={styles.followUpQuestion}>{followUpQuestion}</p>
               )}
               <div className={styles.actionContainer}>
+                <Dropdown
+                  value={selectedModel}
+                  onChange={(value) => setSelectedModel(value)}
+                  variant="custom"
+                  className={styles.dropdown}
+                >
+                  <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                  <option value="gpt-4o">GPT-4o</option>
+                </Dropdown>
                 <Button
                   type="submit"
                   disabled={uiIsLoading || !projectConcept.trim()}

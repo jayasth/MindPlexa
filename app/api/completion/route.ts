@@ -2,6 +2,7 @@ import OpenAI from 'openai';
 import { promptTemplate } from '@/app/prompts/generatorPrompt';
 import { promptTemplateV1 } from '@/app/prompts/generatorPromptV1';
 import { promptTemplateV2 } from '@/app/prompts/generatorPromptV2';
+import { promptTemplateV3 } from '@/app/prompts/generatorPromptV3';
 
 const openai = new OpenAI({
   apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY
@@ -9,23 +10,26 @@ const openai = new OpenAI({
 
 const modelConfig = {
   default: 'gpt-3.5-turbo',
-  v1: 'gpt-4',
-  v2: 'gpt-4'
+  v1: 'gpt-4o',
+  v2: 'gpt-4o',
+  v3: 'gpt-4o'
 };
 
 export async function POST(req: Request) {
-  const { prompt, version } = await req.json();
+  const { prompt, version, existingMermaidCode, followUpQuestion, model } =
+    await req.json();
   console.log('Prompt sent to OpenAI:', prompt);
   console.log('Version:', version);
 
   const selectedPromptTemplate =
     {
+      v3: promptTemplateV3,
       v2: promptTemplateV2,
       v1: promptTemplateV1,
       default: promptTemplate
     }[version] || promptTemplate;
 
-  const selectedModel = modelConfig[version] || modelConfig.default;
+  const selectedModel = model || modelConfig[version] || modelConfig.default;
 
   try {
     const response = await openai.chat.completions.create({
@@ -42,25 +46,21 @@ export async function POST(req: Request) {
     const content = response.choices[0].message.content;
     console.log('Complete response from OpenAI:', content);
 
-    if (version === 'v2') {
+    let parsedResponse;
+    if (version === 'v2' && content) {
       try {
-        const parsedContent = JSON.parse(content || '{}');
-        return new Response(JSON.stringify(parsedContent), {
-          headers: { 'Content-Type': 'application/json' }
-        });
-      } catch (parseError) {
-        console.error('Error parsing V2 response:', parseError);
-        return new Response(
-          JSON.stringify({ error: 'Error processing AI response' }),
-          { status: 500 }
-        );
+        parsedResponse = JSON.parse(content);
+      } catch (error) {
+        console.error('Error parsing V2 response:', error);
+        parsedResponse = { mermaidCode: content };
       }
     } else {
-      // For other versions, return the content as mermaidCode
-      return new Response(JSON.stringify({ mermaidCode: content }), {
-        headers: { 'Content-Type': 'application/json' }
-      });
+      parsedResponse = { mermaidCode: content };
     }
+
+    return new Response(JSON.stringify(parsedResponse), {
+      headers: { 'Content-Type': 'application/json' }
+    });
   } catch (error) {
     console.error('Error from OpenAI:', error);
     return new Response(
