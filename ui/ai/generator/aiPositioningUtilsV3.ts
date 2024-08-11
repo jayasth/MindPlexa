@@ -3,68 +3,90 @@ import { Node, Edge } from 'reactflow';
 
 export type LayoutType = 'force' | 'radial' | 'tree';
 
+const FORCE_STRENGTH = -1000;
+const LINK_DISTANCE = 200;
+const COLLISION_RADIUS = 100;
+
 export const applyD3Layout = (
   nodes: Node[],
   edges: Edge[],
   layoutType: LayoutType,
   canvasSize: { width: number; height: number }
 ): Node[] => {
-  const simulation = d3.forceSimulation(nodes as d3.SimulationNodeDatum[]);
+  // Create a deep copy of nodes and edges
+  const nodesCopy = nodes.map((node) => ({
+    ...node,
+    x: undefined,
+    y: undefined
+  }));
+  const edgesCopy = edges.map((edge) => ({ ...edge }));
+
+  const simulation = d3.forceSimulation(nodesCopy);
 
   const linkForce = d3
-    .forceLink(edges)
+    .forceLink(edgesCopy)
     .id((d: any) => d.id)
-    .distance(100);
+    .distance(LINK_DISTANCE);
+
+  simulation
+    .force('link', linkForce)
+    .force('charge', d3.forceManyBody().strength(FORCE_STRENGTH))
+    .force('collision', d3.forceCollide().radius(COLLISION_RADIUS))
+    .force(
+      'center',
+      d3.forceCenter(canvasSize.width / 2, canvasSize.height / 2)
+    );
 
   switch (layoutType) {
     case 'force':
-      simulation
-        .force('link', linkForce)
-        .force('charge', d3.forceManyBody().strength(-500))
-        .force(
-          'center',
-          d3.forceCenter(canvasSize.width / 2, canvasSize.height / 2)
-        );
+      // Force-directed layout is already set up
       break;
     case 'radial':
       simulation
-        .force('link', linkForce)
         .force(
           'r',
-          d3.forceRadial(200, canvasSize.width / 2, canvasSize.height / 2)
+          d3.forceRadial(
+            Math.min(canvasSize.width, canvasSize.height) / 3,
+            canvasSize.width / 2,
+            canvasSize.height / 2
+          )
         )
-        .force('charge', d3.forceManyBody().strength(-1000));
+        .force('charge', d3.forceManyBody().strength(FORCE_STRENGTH * 2));
       break;
     case 'tree':
-      const root = d3
-        .stratify()
+      const hierarchy = d3
+        .stratify<Node>()
         .id((d: any) => d.id)
-        .parentId((d: any) => edges.find((e) => e.target === d.id)?.source)(
-        nodes
+        .parentId((d: any) => edgesCopy.find((e) => e.target === d.id)?.source)(
+        nodesCopy
       );
 
       const treeLayout = d3
-        .tree()
-        .size([canvasSize.width - 100, canvasSize.height - 100]);
-      const treeData = treeLayout(root);
+        .tree<Node>()
+        .size([canvasSize.width - 200, canvasSize.height - 200])
+        .separation((a, b) => (a.parent === b.parent ? 1 : 2));
 
-      treeData.each((d: any) => {
-        const node = nodes.find((n) => n.id === d.id);
+      const root = treeLayout(hierarchy);
+
+      root.each((d: any) => {
+        const node = nodesCopy.find((n) => n.id === d.id);
         if (node) {
-          node.position = { x: d.x + 50, y: d.y + 50 };
+          node.x = d.x + 100;
+          node.y = d.y + 100;
         }
       });
 
-      return nodes;
+      return nodesCopy.map((node) => ({
+        ...node,
+        position: { x: node.x || 0, y: node.y || 0 }
+      }));
   }
 
+  simulation.stop();
   simulation.tick(300);
 
-  return nodes.map((node) => ({
+  return nodesCopy.map((node) => ({
     ...node,
-    position: {
-      x: (node as any).x || 0,
-      y: (node as any).y || 0
-    }
+    position: { x: node.x || 0, y: node.y || 0 }
   }));
 };

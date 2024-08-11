@@ -129,7 +129,7 @@ const AIGeneratorModalV3: React.FC<AIGeneratorModalV3Props> = ({
     const optimizedNodes = applyD3Layout(
       newNodes,
       newEdges,
-      selectedLayout as LayoutType,
+      selectedLayout,
       canvasSize
     );
 
