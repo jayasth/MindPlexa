@@ -113,14 +113,7 @@ const convertToReactFlowElements = (
 
   mermaidNodes.forEach((node, index) => {
     const elId = node.getAttribute('id') || `n${index}`;
-    let id = elId;
-
-    const classPattern = /^flowchart-([^-\d]+)-\d+$/;
-    const matches = elId.match(classPattern);
-
-    if (matches) {
-      id = matches[1];
-    }
+    const id = elId.split('-')[1] || elId; // Extract the actual node ID
 
     const nodeLabel = node.querySelector('.nodeLabel')?.textContent;
     const { title, type, content } = extractTitleAndType(nodeLabel || '');
@@ -130,7 +123,7 @@ const convertToReactFlowElements = (
     nodes.push({
       id: nodeId,
       type: 'note',
-      position: { x: 0, y: 0 }, // Initial position, will be updated by D3
+      position: { x: 0, y: 0 },
       data: {
         id: nodeId,
         title: title.trim(),
@@ -176,7 +169,9 @@ const convertToReactFlowElements = (
         markerEnd: { type: MarkerType.ArrowClosed }
       });
     } else {
-      console.warn(`Edge ${id} has invalid source or target`);
+      console.warn(
+        `Edge ${id} has invalid source or target: ${originalSource} -> ${originalTarget}`
+      );
     }
   });
 

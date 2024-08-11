@@ -15,11 +15,11 @@ When generating the flowchart:
 - For each subtopic, add 2-5 child nodes with relevant details.
 - Use the format: "NodeID[NodeTitle::NodeDescription]" for each node.
 - Ensure all nodes have meaningful titles (max 5 words) and descriptions (15-25 words).
-- Create logical connections between nodes.
+- Create logical connections between nodes using the format: "NodeID1 --> NodeID2".
 - Avoid using special characters or double quotes in the node text.
 - Consider the project's complexity when creating the hierarchy.
 - Ensure the generated Mermaid code follows the correct syntax and formatting.
-- Test the generated Mermaid code to make sure it renders correctly without any parsing errors.
+- Start the Mermaid code with "graph TD" to ensure proper rendering.
 
 Output format:
 {
