@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal } from 'react-responsive-modal';
 import 'react-responsive-modal/styles.css';
 import { Edge, Node } from 'reactflow';
@@ -31,6 +31,7 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
   const [generatedNodes, setGeneratedNodes] = useState<Node[]>([]);
   const [generatedEdges, setGeneratedEdges] = useState<Edge[]>([]);
   const [selectedModel, setSelectedModel] = useState('gpt-4o');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { setNodes } = useNodeStore();
   const { setEdges } = useEdgeStore();
   const { isLoading: uiIsLoading, setIsLoading } = useUIStore();
@@ -54,6 +55,7 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
   const handleGenerateCanvas = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
+    setErrorMessage(null);
 
     // Sanitize user input before sending to AI
     const sanitizedInput = projectConcept.replace(/[\[\]\(\)\{\}\,]/g, '');
@@ -83,10 +85,15 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
           height: window.innerHeight
         };
 
-        const { nodes: newNodes, edges: newEdges } = await parseMermaidCode(
-          data.mermaidCode,
-          sanitizedInput
-        );
+        const {
+          nodes: newNodes,
+          edges: newEdges,
+          warning
+        } = await parseMermaidCode(data.mermaidCode, sanitizedInput);
+
+        if (warning) {
+          setErrorMessage(warning);
+        }
 
         console.log('Generated nodes:', newNodes);
         console.log('Generated edges:', newEdges);
@@ -116,7 +123,9 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
       }
     } catch (error) {
       console.error('AIGeneratorModalV2: Error generating canvas:', error);
-      alert('An error occurred while generating the canvas. Please try again.');
+      setErrorMessage(
+        'An error occurred while generating the canvas. Please try again.'
+      );
     } finally {
       setIsLoading(false);
     }
@@ -172,6 +181,9 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
               />
               {followUpQuestion && (
                 <p className={styles.followUpQuestion}>{followUpQuestion}</p>
+              )}
+              {errorMessage && (
+                <p className={styles.errorMessage}>{errorMessage}</p>
               )}
               <div className={styles.actionContainer}>
                 <Dropdown

@@ -60,6 +60,12 @@
   right: 0.5rem;
 }
 
+.errorMessage {
+  color: #ff0000;
+  margin-top: 10px;
+  font-weight: bold;
+}
+
 @media (max-width: 768px) {
   .modalContent {
     width: 95%;

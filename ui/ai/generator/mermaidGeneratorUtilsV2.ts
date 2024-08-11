@@ -17,7 +17,7 @@ function sanitizeLabel(label: string): string {
 export async function parseMermaidCode(
   mermaidCode: string,
   projectDetails: string
-): Promise<{ nodes: Node[]; edges: Edge[] }> {
+): Promise<{ nodes: Node[]; edges: Edge[]; warning: string | null }> {
   // Sanitize labels within the Mermaid code
   const sanitizedCode = mermaidCode
     .split('\n')
@@ -52,7 +52,8 @@ export async function parseMermaidCode(
     console.error('mermaidGeneratorUtilsV2 Mermaid parsing error:', error);
     return {
       nodes: [],
-      edges: []
+      edges: [],
+      warning: 'Error parsing Mermaid code'
     };
   }
 
@@ -67,7 +68,8 @@ export async function parseMermaidCode(
     );
     return {
       nodes: [],
-      edges: []
+      edges: [],
+      warning: 'Error converting to React Flow elements'
     };
   }
 
@@ -83,15 +85,14 @@ export async function parseMermaidCode(
     position: { x: index * 150, y: index * 100 } // Initial positions
   }));
 
+  let warning: string | null = null;
   if (nodesWithPositions.length === 0 || edges.length === 0) {
     console.warn('No nodes or edges generated from Mermaid code');
-    // Display a message to the user indicating that the generated layout is empty
-    alert(
-      'The generated layout is empty. Please try again with a different project idea.'
-    );
+    warning =
+      'The generated layout is empty. Please try again with a different project idea.';
   }
 
-  return { nodes: nodesWithPositions, edges };
+  return { nodes: nodesWithPositions, edges, warning };
 }
 
 const convertToReactFlowElements = (
@@ -150,13 +151,12 @@ const convertToReactFlowElements = (
 
   mermaidEdges.forEach((edge, index) => {
     const id = edge.getAttribute('id') || `e${index}`;
-    const originalSource = edge
-      ?.getAttribute('class')
-      ?.split(' ')[3]
+    const classes = edge.getAttribute('class')?.split(' ') || [];
+    const originalSource = classes
+      .find((cls) => cls.startsWith('LS-'))
       ?.replace('LS-', '');
-    const originalTarget = edge
-      ?.getAttribute('class')
-      ?.split(' ')[4]
+    const originalTarget = classes
+      .find((cls) => cls.startsWith('LE-'))
       ?.replace('LE-', '');
 
     if (!originalSource || !originalTarget) {
