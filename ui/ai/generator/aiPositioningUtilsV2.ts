@@ -11,7 +11,7 @@ export const applyD3Layout = (
   canvasSize: { width: number; height: number },
   layoutType: 'tree' | 'radial' | 'force' | 'mindmap' | 'timeline'
 ): Node[] => {
-  console.log('Applying layout:', layoutType); // Add this line
+  console.log('Applying layout:', layoutType);
 
   // Create a deep copy of nodes and edges
   const nodesCopy = nodes.map((node) => ({
@@ -40,7 +40,6 @@ export const applyD3Layout = (
   switch (layoutType) {
     case 'force':
       console.log('Applying force-directed layout');
-      // Force-directed layout is already set up
       break;
     case 'radial':
       console.log('Applying radial layout');
@@ -56,8 +55,7 @@ export const applyD3Layout = (
         .force('charge', d3.forceManyBody().strength(FORCE_STRENGTH * 2));
       break;
     case 'tree':
-      console.log('Applying tree layout');
-      // Find the root node (node with no incoming edges)
+      console.log('Applying enhanced tree layout');
       const rootId = nodes.find(
         (node) => !edges.some((edge) => edge.target === node.id)
       )?.id;
@@ -66,7 +64,6 @@ export const applyD3Layout = (
         console.warn(
           'No root node found, falling back to force-directed layout'
         );
-        // Fall back to force-directed layout
         break;
       }
 
@@ -80,16 +77,17 @@ export const applyD3Layout = (
 
       const treeLayout = d3
         .tree<Node>()
-        .size([canvasSize.width - 200, canvasSize.height - 200])
-        .separation((a, b) => (a.parent === b.parent ? 1 : 2));
+        .size([canvasSize.width, canvasSize.height])
+        .nodeSize([100, 200])
+        .separation((a, b) => (a.parent === b.parent ? 1.5 : 2.5));
 
       const root = treeLayout(hierarchy);
 
       root.each((d: any) => {
         const node = nodesCopy.find((n) => n.id === d.id);
         if (node) {
-          node.x = d.x + 100;
-          node.y = d.y + 100;
+          node.x = d.x;
+          node.y = d.y;
         }
       });
 
@@ -99,27 +97,19 @@ export const applyD3Layout = (
       }));
     case 'mindmap':
       console.log('Applying mindmap layout');
-      // Implement mind map layout (radial with more spacing and centered)
-      const radius = Math.min(canvasSize.width, canvasSize.height) / 3;
+      const radialSpacing = Math.min(canvasSize.width, canvasSize.height) / 2;
+      const radialStrength = d3
+        .forceRadial(radialSpacing, canvasSize.width / 2, canvasSize.height / 2)
+        .strength(0.75);
+
       simulation
-        .force(
-          'r',
-          d3.forceRadial(
-            (d: any, i) => radius * (1 + i * 0.1), // Increase radius for each node
-            canvasSize.width / 2,
-            canvasSize.height / 2
-          )
-        )
-        .force('charge', d3.forceManyBody().strength(FORCE_STRENGTH * 2))
-        .force('collision', d3.forceCollide().radius(COLLISION_RADIUS * 1.5))
-        .force(
-          'center',
-          d3.forceCenter(canvasSize.width / 2, canvasSize.height / 2)
-        );
+        .force('radial', radialStrength)
+        .force('charge', d3.forceManyBody().strength(FORCE_STRENGTH * 1.5))
+        .force('collision', d3.forceCollide().radius(COLLISION_RADIUS * 1.2));
+
       break;
     case 'timeline':
       console.log('Applying timeline layout');
-      // Implement timeline layout (horizontal arrangement)
       const timelineForce = d3.forceY(canvasSize.height / 2).strength(1);
       simulation
         .force('timeline', timelineForce)
