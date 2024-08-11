@@ -32,6 +32,7 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
   const [generatedEdges, setGeneratedEdges] = useState<Edge[]>([]);
   const [selectedModel, setSelectedModel] = useState('gpt-4o');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [currentLayout, setCurrentLayout] = useState('');
   const { setNodes } = useNodeStore();
   const { setEdges } = useEdgeStore();
   const { isLoading: uiIsLoading, setIsLoading } = useUIStore();
@@ -113,6 +114,7 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
           setGeneratedNodes(updatedNodes);
           setGeneratedEdges(newEdges);
           setShowConfirmModal(true);
+          setCurrentLayout(data.suggestedLayout);
         } else {
           handleConfirmIntegration(
             updatedNodes,
@@ -156,6 +158,26 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
   const handleCancelIntegration = () => {
     setShowConfirmModal(false);
   };
+
+  const handleLayoutChange = (newLayout) => {
+    const canvasSize = { width: window.innerWidth, height: window.innerHeight };
+    const optimizedNodes = applyD3Layout(
+      generatedNodes,
+      generatedEdges,
+      canvasSize,
+      newLayout
+    );
+    setNodes(optimizedNodes);
+    setCurrentLayout(newLayout);
+  };
+
+  const layoutOptions = [
+    { value: 'tree', label: 'Tree' },
+    { value: 'radial', label: 'Radial' },
+    { value: 'force', label: 'Force' },
+    { value: 'mindmap', label: 'Mindmap' },
+    { value: 'timeline', label: 'Timeline' }
+  ];
 
   return (
     <Modal
@@ -209,12 +231,25 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
           </div>
         )}
         {showConfirmModal && (
-          <ConfirmIntegrationModal
-            onConfirm={() =>
-              handleConfirmIntegration(generatedNodes, generatedEdges, onClose)
-            }
-            onCancel={handleCancelIntegration}
-          />
+          <div>
+            <ConfirmIntegrationModal
+              onConfirm={() =>
+                handleConfirmIntegration(
+                  generatedNodes,
+                  generatedEdges,
+                  currentLayout
+                )
+              }
+              onCancel={handleCancelIntegration}
+            />
+            <Dropdown value={currentLayout} onChange={handleLayoutChange}>
+              {layoutOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </Dropdown>
+          </div>
         )}
       </div>
     </Modal>

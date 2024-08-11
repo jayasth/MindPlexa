@@ -20,13 +20,14 @@ When generating the flowchart:
 - Consider the project's complexity when creating the hierarchy.
 - Ensure the generated Mermaid code follows the correct syntax and formatting.
 - Start the Mermaid code with "graph TD" to ensure proper rendering.
+5. Suggest the most appropriate layout from the following options: tree, radial, force, mindmap, timeline.
 
 Output format:
 {
   "needsFollowUp": boolean,
   "followUpQuestion": string (if needsFollowUp is true),
   "mermaidCode": string (if needsFollowUp is false),
-  "suggestedLayout": "force" | "radial" | "tree" (if needsFollowUp is false)
+  "suggestedLayout": "tree" | "radial" | "force" | "mindmap" | "timeline" (if needsFollowUp is false)
 }
 
 Analyze the input and provide the appropriate response:`;

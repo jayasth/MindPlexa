@@ -9,7 +9,7 @@ export const applyD3Layout = (
   nodes: Node[],
   edges: Edge[],
   canvasSize: { width: number; height: number },
-  layoutType: 'force' | 'radial' | 'tree'
+  layoutType: 'tree' | 'radial' | 'force' | 'mindmap' | 'timeline'
 ): Node[] => {
   // Create a deep copy of nodes and edges
   const nodesCopy = nodes.map((node) => ({
@@ -34,15 +34,6 @@ export const applyD3Layout = (
       'center',
       d3.forceCenter(canvasSize.width / 2, canvasSize.height / 2)
     );
-
-  if (
-    layoutType !== 'force' &&
-    layoutType !== 'radial' &&
-    layoutType !== 'tree'
-  ) {
-    console.warn('Invalid layout type, falling back to force-directed layout');
-    layoutType = 'force';
-  }
 
   switch (layoutType) {
     case 'force':
@@ -101,6 +92,39 @@ export const applyD3Layout = (
         ...node,
         position: { x: node.x || 0, y: node.y || 0 }
       }));
+    case 'mindmap':
+      // Implement mind map layout (similar to radial but with more spacing)
+      simulation
+        .force(
+          'r',
+          d3.forceRadial(
+            Math.min(canvasSize.width, canvasSize.height) / 2.5,
+            canvasSize.width / 2,
+            canvasSize.height / 2
+          )
+        )
+        .force('charge', d3.forceManyBody().strength(FORCE_STRENGTH * 3))
+        .force('collision', d3.forceCollide().radius(COLLISION_RADIUS * 1.5));
+      break;
+    case 'timeline':
+      // Implement timeline layout (horizontal arrangement)
+      const timelineForce = d3.forceY(canvasSize.height / 2).strength(1);
+      simulation
+        .force('timeline', timelineForce)
+        .force(
+          'x',
+          d3
+            .forceX()
+            .x((d: any, i) => i * (canvasSize.width / (nodes.length - 1)))
+        )
+        .force('charge', null)
+        .force('collision', d3.forceCollide().radius(COLLISION_RADIUS / 2));
+      break;
+    default:
+      console.warn(
+        'Invalid layout type, falling back to force-directed layout'
+      );
+      layoutType = 'force';
   }
 
   simulation.stop();

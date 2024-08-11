@@ -82,7 +82,10 @@ export async function parseMermaidCode(
   // Ensure all nodes have initial positions
   const nodesWithPositions = filteredNodes.map((node, index) => ({
     ...node,
-    position: { x: index * 150, y: index * 100 } // Initial positions
+    position: {
+      x: (index % 5) * 250,
+      y: Math.floor(index / 5) * 200
+    }
   }));
 
   let warning: string | null = null;
