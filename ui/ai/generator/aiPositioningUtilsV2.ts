@@ -35,6 +35,15 @@ export const applyD3Layout = (
       d3.forceCenter(canvasSize.width / 2, canvasSize.height / 2)
     );
 
+  if (
+    layoutType !== 'force' &&
+    layoutType !== 'radial' &&
+    layoutType !== 'tree'
+  ) {
+    console.warn('Invalid layout type, falling back to force-directed layout');
+    layoutType = 'force';
+  }
+
   switch (layoutType) {
     case 'force':
       // Force-directed layout is already set up

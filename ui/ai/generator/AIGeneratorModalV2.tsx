@@ -40,6 +40,15 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
     e: React.ChangeEvent<HTMLTextAreaElement>
   ) => {
     setProjectConcept(e.target.value);
+
+    // Validate input and provide feedback
+    if (e.target.value.trim().length < 10) {
+      setFollowUpQuestion(
+        'Please provide more details about your project idea.'
+      );
+    } else {
+      setFollowUpQuestion('');
+    }
   };
 
   const handleGenerateCanvas = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -104,6 +113,8 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
       }
     } catch (error) {
       console.error('AIGeneratorModalV2: Error generating canvas:', error);
+      // Display an error message to the user
+      alert('An error occurred while generating the canvas. Please try again.');
     } finally {
       setIsLoading(false);
     }

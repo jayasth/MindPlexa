@@ -62,6 +62,14 @@ export async function parseMermaidCode(
     position: { x: index * 150, y: index * 100 } // Initial positions
   }));
 
+  if (nodesWithPositions.length === 0 || edges.length === 0) {
+    console.warn('No nodes or edges generated from Mermaid code');
+    // Display a message to the user indicating that the generated layout is empty
+    alert(
+      'The generated layout is empty. Please try again with a different project idea.'
+    );
+  }
+
   return { nodes: nodesWithPositions, edges };
 }
 
