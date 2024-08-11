@@ -18,6 +18,7 @@ When generating the flowchart:
 - Create logical connections between nodes.
 - Avoid using special characters or double quotes in the node text.
 - Consider the project's complexity when creating the hierarchy.
+- Determine the most suitable layout ('force', 'radial', or 'tree') based on the project structure.
 
 Output format:
 {

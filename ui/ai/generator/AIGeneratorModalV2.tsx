@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Modal } from 'react-responsive-modal';
 import 'react-responsive-modal/styles.css';
 import { Edge, Node } from 'reactflow';
-import { useCompletion } from 'ai/react';
 import { parseMermaidCode } from './mermaidGeneratorUtilsV2';
 import { promptTemplateV2 } from '@/app/prompts/generatorPromptV2';
 import {
