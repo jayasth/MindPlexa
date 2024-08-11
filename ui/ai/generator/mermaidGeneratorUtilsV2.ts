@@ -9,12 +9,33 @@ import {
 } from '@/ui/ai/generator/aiGeneratorCanvasUtils';
 import { getNodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 
+// Function to sanitize node labels to ensure valid Mermaid syntax
+function sanitizeLabel(label: string): string {
+  return label.replace(/[\[\]\(\)\{\}\,]/g, ''); // Remove problematic characters
+}
+
 export async function parseMermaidCode(
   mermaidCode: string,
   projectDetails: string
 ): Promise<{ nodes: Node[]; edges: Edge[] }> {
+  // Sanitize labels within the Mermaid code
+  const sanitizedCode = mermaidCode
+    .split('\n')
+    .map((line) => {
+      const parts = line.split('[');
+      if (parts.length > 1) {
+        const [id, label] = parts;
+        const sanitizedLabel = sanitizeLabel(label);
+        return `${id}[${sanitizedLabel}]`;
+      }
+      return line;
+    })
+    .join('\n');
+
+  console.log('Sanitized Mermaid Code:', sanitizedCode);
+
   const filteredCode = removeDoubleQuoteInsideParentheses(
-    removeDoubleQuoteInsideBrackets(removeMarkdowncode(mermaidCode))
+    removeDoubleQuoteInsideBrackets(removeMarkdowncode(sanitizedCode))
   );
   console.log('mermaidGeneratorUtilsV2 Filtered Mermaid Code:', filteredCode);
 

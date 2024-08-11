@@ -55,8 +55,11 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
     e.preventDefault();
     setIsLoading(true);
 
+    // Sanitize user input before sending to AI
+    const sanitizedInput = projectConcept.replace(/[\[\]\(\)\{\}\,]/g, '');
+
     try {
-      const prompt = promptTemplateV2(projectConcept);
+      const prompt = promptTemplateV2(sanitizedInput);
       const response = await fetch('/api/completion', {
         method: 'POST',
         headers: {
@@ -82,7 +85,7 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
 
         const { nodes: newNodes, edges: newEdges } = await parseMermaidCode(
           data.mermaidCode,
-          projectConcept
+          sanitizedInput
         );
 
         console.log('Generated nodes:', newNodes);
@@ -113,7 +116,6 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
       }
     } catch (error) {
       console.error('AIGeneratorModalV2: Error generating canvas:', error);
-      // Display an error message to the user
       alert('An error occurred while generating the canvas. Please try again.');
     } finally {
       setIsLoading(false);
