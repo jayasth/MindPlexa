@@ -23,6 +23,7 @@ import AIGeneratorModal from '@/ui/ai/generator/AIGeneratorModal';
 import AIGeneratorModalV1 from '@/ui/ai/generator/AIGeneratorModalV1';
 import AIGeneratorModalV2 from '@/ui/ai/generator/AIGeneratorModalV2';
 import AIGeneratorModalV3 from '@/ui/ai/generator/AIGeneratorModalV3';
+import AIGeneratorModalV4 from '@/ui/ai/generator/AIGeneratorModalV4';
 
 interface ToolbarProps {
   canvasId: string;
@@ -42,6 +43,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
   const [showAIGeneratorV1, setShowAIGeneratorV1] = useState(false);
   const [showAIGeneratorV2, setShowAIGeneratorV2] = useState(false);
   const [showAIGeneratorV3, setShowAIGeneratorV3] = useState(false);
+  const [showAIGeneratorV4, setShowAIGeneratorV4] = useState(false);
   const addNode = useNodeStore((state) => state.addNode);
   const nodes = useNodeStore((state) => state.nodes);
   const setCanvasId = useCanvasStore((state) => state.setCanvasId);
@@ -110,6 +112,10 @@ const Toolbar: React.FC<ToolbarProps> = ({
     setShowAIGeneratorV3(true);
   };
 
+  const handleGenerateAIMapV4 = () => {
+    setShowAIGeneratorV4(true);
+  };
+
   const buttonClass = `${styles.button} ${isOpen ? styles.open : ''}`;
   const iconSize = 20;
 
@@ -164,6 +170,11 @@ const Toolbar: React.FC<ToolbarProps> = ({
             <Tooltip content="Generate AI Map (V3)">
               <button onClick={handleGenerateAIMapV3} className={buttonClass}>
                 <FaRobot size={iconSize} /> V3
+              </button>
+            </Tooltip>
+            <Tooltip content="Generate AI Map (V4)">
+              <button onClick={handleGenerateAIMapV4} className={buttonClass}>
+                <FaRobot size={iconSize} /> V4
               </button>
             </Tooltip>
             <Tooltip content="Selection Menu">
@@ -245,6 +256,12 @@ const Toolbar: React.FC<ToolbarProps> = ({
         <AIGeneratorModalV3
           isOpen={showAIGeneratorV3}
           onClose={() => setShowAIGeneratorV3(false)}
+        />
+      )}
+      {showAIGeneratorV4 && (
+        <AIGeneratorModalV4
+          isOpen={showAIGeneratorV4}
+          onClose={() => setShowAIGeneratorV4(false)}
         />
       )}
     </>
