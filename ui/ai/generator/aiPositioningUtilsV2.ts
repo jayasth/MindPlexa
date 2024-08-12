@@ -96,18 +96,21 @@ export const applyD3Layout = (
         position: { x: node.x || 0, y: node.y || 0 }
       }));
     case 'mindmap':
-      console.log('Applying mindmap layout');
-      const radialSpacing = Math.min(canvasSize.width, canvasSize.height) / 2;
-      const radialStrength = d3
-        .forceRadial(radialSpacing, canvasSize.width / 2, canvasSize.height / 2)
-        .strength(0.75);
+      console.log('Applying simplified mindmap layout');
+      const centerX = canvasSize.width / 2;
+      const centerY = canvasSize.height / 2;
+      const radius = Math.min(canvasSize.width, canvasSize.height) / 3;
 
-      simulation
-        .force('radial', radialStrength)
-        .force('charge', d3.forceManyBody().strength(FORCE_STRENGTH * 1.5))
-        .force('collision', d3.forceCollide().radius(COLLISION_RADIUS * 1.2));
+      return nodes.map((node, index) => {
+        const angle = (index / nodes.length) * 2 * Math.PI;
+        const x = centerX + radius * Math.cos(angle);
+        const y = centerY + radius * Math.sin(angle);
 
-      break;
+        return {
+          ...node,
+          position: { x, y }
+        };
+      });
     case 'timeline':
       console.log('Applying timeline layout');
       const timelineForce = d3.forceY(canvasSize.height / 2).strength(1);
