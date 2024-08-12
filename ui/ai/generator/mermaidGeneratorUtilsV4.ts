@@ -17,6 +17,8 @@ export async function parseMermaidCode(
   mermaidCode: string,
   projectDetails: string
 ): Promise<{ nodes: Node[]; edges: Edge[]; warning: string | null }> {
+  console.log('Original Mermaid Code:', mermaidCode);
+
   const sanitizedCode = mermaidCode
     .split('\n')
     .map((line) => {
@@ -35,19 +37,21 @@ export async function parseMermaidCode(
   const filteredCode = removeDoubleQuoteInsideParentheses(
     removeDoubleQuoteInsideBrackets(removeMarkdowncode(sanitizedCode))
   );
-  console.log('mermaidGeneratorUtilsV4 Filtered Mermaid Code:', filteredCode);
+  console.log('Filtered Mermaid Code:', filteredCode);
 
   const processedCode = filteredCode.startsWith('graph TD')
     ? filteredCode
     : `graph TD\n${filteredCode}`;
 
+  console.log('Processed Mermaid Code:', processedCode);
+
   let svgCode: any;
 
   try {
-    mermaid.initialize({ startOnLoad: false });
+    mermaid.initialize({ startOnLoad: false, securityLevel: 'loose' });
     svgCode = await mermaid.render('mermaid-chart', processedCode);
   } catch (error: any) {
-    console.error('mermaidGeneratorUtilsV4 Mermaid parsing error:', error);
+    console.error('Mermaid parsing error:', error);
     return {
       nodes: [],
       edges: [],
@@ -56,7 +60,7 @@ export async function parseMermaidCode(
   }
 
   if (!svgCode || !svgCode.svg) {
-    console.error('mermaidGeneratorUtilsV4: SVG code is undefined or empty');
+    console.error('SVG code is undefined or empty');
     return {
       nodes: [],
       edges: [],
