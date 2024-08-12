@@ -100,6 +100,14 @@ const AIGeneratorModalV4: React.FC<AIGeneratorModalV4Props> = ({
         console.log('Generated nodes:', newNodes);
         console.log('Generated edges:', newEdges);
 
+        if (newNodes.length === 0 || newEdges.length === 0) {
+          setErrorMessage(
+            'Failed to generate a valid diagram. Please try again with a different input.'
+          );
+          setIsLoading(false);
+          return;
+        }
+
         const existingNodes = useNodeStore.getState().nodes;
 
         if (existingNodes.length > 0) {

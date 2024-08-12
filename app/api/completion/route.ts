@@ -47,18 +47,22 @@ export async function POST(req: Request) {
     });
 
     const content = response.choices[0].message.content;
+    if (content === null) {
+      throw new Error('OpenAI returned null content');
+    }
+
     console.log('Complete response from OpenAI:', content);
 
     let parsedResponse;
-    if (version === 'v2' && content) {
+    if (version === 'v4' || version === 'v2') {
       try {
         parsedResponse = JSON.parse(content);
       } catch (error) {
-        console.error('Error parsing V2 response:', error);
-        parsedResponse = { mermaidCode: content };
+        console.error(`Error parsing ${version} response:`, error);
+        parsedResponse = { needsFollowUp: false, mermaidCode: content };
       }
     } else {
-      parsedResponse = { mermaidCode: content };
+      parsedResponse = { needsFollowUp: false, mermaidCode: content };
     }
 
     return new Response(JSON.stringify(parsedResponse), {

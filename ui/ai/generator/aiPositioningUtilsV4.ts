@@ -83,9 +83,9 @@ const applyRadialLayout = (
     })(nodes);
 
   const radialLayout = d3
-    .radial<Node>()
-    .radius((d) => d.depth * 200)
-    .size([2 * Math.PI, Math.min(canvasSize.width, canvasSize.height) / 2]);
+    .tree<Node>()
+    .size([2 * Math.PI, Math.min(canvasSize.width, canvasSize.height) / 2])
+    .separation((a, b) => (a.parent === b.parent ? 1 : 2) / a.depth);
 
   const root = radialLayout(hierarchy);
 
@@ -105,11 +105,11 @@ const applyForceLayout = (
   canvasSize: { width: number; height: number }
 ): Node[] => {
   const simulation = d3
-    .forceSimulation(nodes)
+    .forceSimulation(nodes as d3.SimulationNodeDatum[])
     .force(
       'link',
       d3
-        .forceLink(edges)
+        .forceLink(edges as d3.SimulationLinkDatum<d3.SimulationNodeDatum>[])
         .id((d: any) => d.id)
         .distance(LINK_DISTANCE)
     )
@@ -125,8 +125,8 @@ const applyForceLayout = (
   return nodes.map((node) => ({
     ...node,
     position: {
-      x: Math.max(50, Math.min(node.x || 0, canvasSize.width - 50)),
-      y: Math.max(50, Math.min(node.y || 0, canvasSize.height - 50))
+      x: Math.max(50, Math.min((node as any).x || 0, canvasSize.width - 50)),
+      y: Math.max(50, Math.min((node as any).y || 0, canvasSize.height - 50))
     }
   }));
 };

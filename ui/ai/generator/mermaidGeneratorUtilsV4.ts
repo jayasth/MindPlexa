@@ -19,7 +19,14 @@ export async function parseMermaidCode(
 ): Promise<{ nodes: Node[]; edges: Edge[]; warning: string | null }> {
   console.log('Original Mermaid Code:', mermaidCode);
 
-  const sanitizedCode = mermaidCode
+  // Remove any JSON-like structure and extract only the Mermaid code
+  const extractedMermaidCode = mermaidCode
+    .replace(/^.*"mermaidCode"\s*:\s*"/, '')
+    .replace(/"}\s*$/, '');
+
+  console.log('Extracted Mermaid Code:', extractedMermaidCode);
+
+  const sanitizedCode = extractedMermaidCode
     .split('\n')
     .map((line) => {
       const parts = line.split('[');
@@ -39,9 +46,9 @@ export async function parseMermaidCode(
   );
   console.log('Filtered Mermaid Code:', filteredCode);
 
-  const processedCode = filteredCode.startsWith('graph TD')
-    ? filteredCode
-    : `graph TD\n${filteredCode}`;
+  const processedCode = filteredCode.trim().startsWith('graph TD')
+    ? filteredCode.trim()
+    : `graph TD\n${filteredCode.trim()}`;
 
   console.log('Processed Mermaid Code:', processedCode);
 
