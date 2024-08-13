@@ -14,10 +14,10 @@ import {
 import Button from '@/ui/Button/Button';
 import ConfirmIntegrationModal from './ConfirmIntegrationModal';
 import Dropdown from '@/ui/dropdown/Dropdown';
-import { applyD3Layout } from '@/ui/ai/generator/aiPositioningUtilsV3';
+import { applyLayout } from '@/ui/ai/generator/aiPositioningUtilsV3';
 import styles from './AIGeneratorModal.module.css';
 
-type LayoutType = 'force' | 'radial' | 'tree';
+type LayoutType = 'mindmap' | 'tree' | 'flowchart';
 
 interface AIGeneratorModalV3Props {
   isOpen: boolean;
@@ -38,7 +38,7 @@ const AIGeneratorModalV3: React.FC<AIGeneratorModalV3Props> = ({
     useCompletion();
 
   const [selectedModel, setSelectedModel] = useState('gpt-3.5-turbo');
-  const [selectedLayout, setSelectedLayout] = useState<LayoutType>('force');
+  const [selectedLayout, setSelectedLayout] = useState<LayoutType>('mindmap');
 
   const { setNodes } = useNodeStore();
   const { setEdges } = useEdgeStore();
@@ -76,7 +76,7 @@ const AIGeneratorModalV3: React.FC<AIGeneratorModalV3Props> = ({
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ prompt, version: selectedModel })
+        body: JSON.stringify({ prompt, version: 'v3', model: selectedModel })
       });
 
       if (!response.ok) {
@@ -96,17 +96,15 @@ const AIGeneratorModalV3: React.FC<AIGeneratorModalV3Props> = ({
         projectDetails
       );
 
+      const updatedNodes = applyLayout(
+        newNodes,
+        newEdges,
+        selectedLayout,
+        canvasSize
+      );
+
       console.log('Generated nodes:', newNodes);
       console.log('Generated edges:', newEdges);
-
-      const updatedNodes = newNodes.map((node) => ({
-        ...node,
-        data: {
-          ...node.data,
-          title: node.data?.title || 'Untitled',
-          content: node.data?.content || 'No description available'
-        }
-      }));
 
       const existingNodes = useNodeStore.getState().nodes;
 
@@ -126,22 +124,15 @@ const AIGeneratorModalV3: React.FC<AIGeneratorModalV3Props> = ({
 
   const handleConfirmIntegration = (newNodes, newEdges) => {
     const canvasSize = { width: window.innerWidth, height: window.innerHeight };
-    try {
-      const optimizedNodes = applyD3Layout(
-        newNodes,
-        newEdges,
-        selectedLayout,
-        canvasSize
-      );
+    const optimizedNodes = applyLayout(
+      newNodes,
+      newEdges,
+      selectedLayout,
+      canvasSize
+    );
 
-      setNodes((currentNodes) => [...currentNodes, ...optimizedNodes]);
-      setEdges((currentEdges) => [...currentEdges, ...newEdges]);
-    } catch (error) {
-      console.error('Error applying layout:', error);
-      // Fallback to setting nodes without layout
-      setNodes((currentNodes) => [...currentNodes, ...newNodes]);
-      setEdges((currentEdges) => [...currentEdges, ...newEdges]);
-    }
+    setNodes((currentNodes) => [...currentNodes, ...optimizedNodes]);
+    setEdges((currentEdges) => [...currentEdges, ...newEdges]);
     setShowConfirmModal(false);
     onClose();
   };
@@ -207,9 +198,9 @@ const AIGeneratorModalV3: React.FC<AIGeneratorModalV3Props> = ({
                     variant="custom"
                     className={styles.dropdown}
                   >
-                    <option value="force">Force-Directed</option>
-                    <option value="radial">Radial</option>
+                    <option value="mindmap">Mindmap</option>
                     <option value="tree">Tree</option>
+                    <option value="flowchart">Flowchart</option>
                   </Dropdown>
                   <Button
                     type="submit"

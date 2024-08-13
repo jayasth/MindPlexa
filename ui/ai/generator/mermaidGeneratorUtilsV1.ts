@@ -1,7 +1,6 @@
 import mermaid from 'mermaid';
 import { v4 as uuidv4 } from 'uuid';
 import { Node, Edge, MarkerType } from 'reactflow';
-import { findOptimalPosition } from '@/ui/canvasEditor/utils/positioningUtils';
 import {
   extractTitleAndType,
   removeDoubleQuoteInsideBrackets,
@@ -10,23 +9,15 @@ import {
 } from '@/ui/ai/generator/aiGeneratorCanvasUtils';
 import { getNodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 import { useNodeStore } from '@/app/store';
+import { optimizeAINodePositions } from '@/ui/ai/generator/aiPositioningUtilsV1';
 
 const applyLayout = (
   nodes: Node[],
   edges: Edge[],
   canvasSize: { width: number; height: number }
 ): { nodes: Node[]; edges: Edge[] } => {
-  const existingNodes = useNodeStore.getState().nodes;
-
-  nodes.forEach((node, index) => {
-    const position = findOptimalPosition(
-      existingNodes.concat(nodes.slice(0, index)),
-      canvasSize
-    );
-    node.position = position;
-  });
-
-  return { nodes, edges };
+  const optimizedNodes = optimizeAINodePositions(nodes, edges, canvasSize);
+  return { nodes: optimizedNodes, edges };
 };
 
 export async function parseMermaidCode(
