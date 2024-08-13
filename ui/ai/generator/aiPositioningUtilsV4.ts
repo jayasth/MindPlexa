@@ -13,29 +13,45 @@ export const applyLayout = (
 ): Node[] => {
   console.log('Applying layout:', layoutType);
 
+  if (nodes.length === 0) {
+    console.warn('No nodes provided for layout');
+    return [];
+  }
+
   const nodesCopy = nodes.map((node) => ({
     ...node,
-    x: undefined,
-    y: undefined
+    position: node.position || { x: 0, y: 0 }
   }));
   const edgesCopy = edges.map((edge) => ({ ...edge }));
 
-  switch (layoutType) {
-    case 'tree':
-      return applyTreeLayout(nodesCopy, edgesCopy, canvasSize);
-    case 'radial':
-      return applyRadialLayout(nodesCopy, edgesCopy, canvasSize);
-    case 'force':
-      return applyForceLayout(nodesCopy, edgesCopy, canvasSize);
-    case 'mindmap':
-      return applyMindmapLayout(nodesCopy, canvasSize);
-    case 'timeline':
-      return applyTimelineLayout(nodesCopy, canvasSize);
-    default:
-      console.warn(
-        'Invalid layout type, falling back to force-directed layout'
-      );
-      return applyForceLayout(nodesCopy, edgesCopy, canvasSize);
+  try {
+    switch (layoutType) {
+      case 'tree':
+        return applyTreeLayout(nodesCopy, edgesCopy, canvasSize);
+      case 'radial':
+        return applyRadialLayout(nodesCopy, edgesCopy, canvasSize);
+      case 'force':
+        return applyForceLayout(nodesCopy, edgesCopy, canvasSize);
+      case 'mindmap':
+        return applyMindmapLayout(nodesCopy, canvasSize);
+      case 'timeline':
+        return applyTimelineLayout(nodesCopy, canvasSize);
+      default:
+        console.warn(
+          'Invalid layout type, falling back to force-directed layout'
+        );
+        return applyForceLayout(nodesCopy, edgesCopy, canvasSize);
+    }
+  } catch (error) {
+    console.error('Error applying layout:', error);
+    // Fallback to a simple grid layout
+    return nodesCopy.map((node, index) => ({
+      ...node,
+      position: {
+        x: (index % 5) * 200 + 100,
+        y: Math.floor(index / 5) * 200 + 100
+      }
+    }));
   }
 };
 
@@ -44,29 +60,78 @@ const applyTreeLayout = (
   edges: Edge[],
   canvasSize: { width: number; height: number }
 ): Node[] => {
-  const hierarchy = d3
-    .stratify<Node>()
-    .id((d: any) => d.id)
-    .parentId((d: any) => {
-      const parentEdge = edges.find((e) => e.target === d.id);
-      return parentEdge ? parentEdge.source : null;
-    })(nodes);
+  if (nodes.length === 0) {
+    console.warn('No nodes provided for tree layout');
+    return [];
+  }
 
-  const treeLayout = d3
-    .tree<Node>()
-    .size([canvasSize.width * 0.9, canvasSize.height * 0.9])
-    .nodeSize([100, 200])
-    .separation((a, b) => (a.parent === b.parent ? 1.5 : 2.5));
+  try {
+    const hierarchy = d3
+      .stratify<Node>()
+      .id((d: any) => d.id)
+      .parentId((d: any) => {
+        const parentEdge = edges.find((e) => e.target === d.id);
+        return parentEdge ? parentEdge.source : null;
+      })(nodes);
 
-  const root = treeLayout(hierarchy);
+    // Handle cases where the hierarchy is invalid (e.g., circular dependencies)
+    if (!hierarchy) {
+      console.error('Failed to create hierarchy from nodes');
+      return nodes.map((node) => ({
+        ...node,
+        position: {
+          x: Math.random() * canvasSize.width,
+          y: Math.random() * canvasSize.height
+        }
+      }));
+    }
 
-  return nodes.map((node) => {
-    const layoutNode = root.find((d) => d.id === node.id);
-    return {
+    const treeLayout = d3
+      .tree<Node>()
+      .size([canvasSize.width * 0.9, canvasSize.height * 0.9])
+      .nodeSize([150, 200])
+      .separation((a, b) => (a.parent === b.parent ? 1.5 : 2.5));
+
+    const root = treeLayout(hierarchy);
+
+    // Ensure all nodes have valid positions
+    const positionedNodes = nodes.map((node) => {
+      const layoutNode = root.find((d) => d.id === node.id);
+      if (
+        !layoutNode ||
+        typeof layoutNode.x !== 'number' ||
+        typeof layoutNode.y !== 'number'
+      ) {
+        console.warn(`Node ${node.id} has invalid position, using fallback`);
+        return {
+          ...node,
+          position: {
+            x: Math.random() * canvasSize.width,
+            y: Math.random() * canvasSize.height
+          }
+        };
+      }
+      return {
+        ...node,
+        position: {
+          x: Math.max(0, Math.min(layoutNode.x, canvasSize.width)),
+          y: Math.max(0, Math.min(layoutNode.y, canvasSize.height))
+        }
+      };
+    });
+
+    return positionedNodes;
+  } catch (error) {
+    console.error('Error applying tree layout:', error);
+    // Fallback to a simple grid layout
+    return nodes.map((node, index) => ({
       ...node,
-      position: { x: layoutNode?.x || 0, y: layoutNode?.y || 0 }
-    };
-  });
+      position: {
+        x: (index % 5) * 200 + 100,
+        y: Math.floor(index / 5) * 200 + 100
+      }
+    }));
+  }
 };
 
 const applyRadialLayout = (

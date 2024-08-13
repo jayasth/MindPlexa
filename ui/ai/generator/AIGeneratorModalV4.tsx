@@ -131,6 +131,7 @@ const AIGeneratorModalV4: React.FC<AIGeneratorModalV4Props> = ({
   const handleConfirmIntegration = (newNodes: Node[], newEdges: Edge[]) => {
     const canvasSize = { width: window.innerWidth, height: window.innerHeight };
     try {
+      console.log('Selected Layout Type:', selectedLayout);
       const optimizedNodes = applyLayout(
         newNodes,
         newEdges,
@@ -138,13 +139,39 @@ const AIGeneratorModalV4: React.FC<AIGeneratorModalV4Props> = ({
         selectedLayout
       );
 
+      // Adjust the layout for mindmap to make it more comprehensive
+      if (selectedLayout === 'mindmap') {
+        const centerX = canvasSize.width / 2;
+        const centerY = canvasSize.height / 2;
+        optimizedNodes.forEach((node, index) => {
+          const angle = (index / optimizedNodes.length) * 2 * Math.PI;
+          const radius = 300; // Adjust the radius as needed
+          node.position = {
+            x: centerX + radius * Math.cos(angle),
+            y: centerY + radius * Math.sin(angle)
+          };
+        });
+      }
+
       setNodes((currentNodes) => [...currentNodes, ...optimizedNodes]);
       setEdges((currentEdges) => [...currentEdges, ...newEdges]);
     } catch (error) {
       console.error('Error applying layout:', error);
       // Fallback to setting nodes without layout
-      setNodes((currentNodes) => [...currentNodes, ...newNodes]);
+      setNodes((currentNodes) => [
+        ...currentNodes,
+        ...newNodes.map((node, index) => ({
+          ...node,
+          position: {
+            x: (index % 5) * 200 + 100,
+            y: Math.floor(index / 5) * 200 + 100
+          }
+        }))
+      ]);
       setEdges((currentEdges) => [...currentEdges, ...newEdges]);
+      setErrorMessage(
+        'An error occurred while applying the layout. Nodes have been added in a grid pattern.'
+      );
     }
     setShowConfirmModal(false);
     onClose();
