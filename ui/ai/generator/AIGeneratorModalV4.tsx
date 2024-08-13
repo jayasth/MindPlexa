@@ -182,80 +182,79 @@ const AIGeneratorModalV4: React.FC<AIGeneratorModalV4Props> = ({
   };
 
   return (
-    <Modal
-      open={isOpen}
-      onClose={onClose}
-      center
-      classNames={{
-        modal: styles.modalContent,
-        overlay: styles.modalOverlay,
-        closeButton: styles.closeButton
-      }}
-    >
-      <div className={styles.modalInner}>
-        {!showConfirmModal && (
-          <div>
-            <h2 className={styles.modalHeader}>AI Node Network Generator V4</h2>
-            <form onSubmit={handleGenerateCanvas}>
-              <textarea
-                className={styles.textarea}
-                placeholder="Enter your project topic or main idea"
-                value={projectConcept}
-                onChange={handleProjectConceptChange}
-              />
-              {followUpQuestion && (
-                <p className={styles.followUpQuestion}>{followUpQuestion}</p>
-              )}
-              {errorMessage && (
-                <p className={styles.errorMessage}>{errorMessage}</p>
-              )}
-              <div className={styles.actionContainer}>
-                <Dropdown
-                  value={selectedModel}
-                  onChange={(value) => setSelectedModel(value)}
-                  variant="custom"
-                  className={styles.dropdown}
-                >
-                  <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-                  <option value="gpt-4o">GPT-4o</option>
-                </Dropdown>
-                <Dropdown
-                  value={selectedLayout}
-                  onChange={(value) => setSelectedLayout(value as LayoutType)}
-                  variant="custom"
-                  className={styles.dropdown}
-                >
-                  {layoutOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </Dropdown>
-                <Button
-                  type="submit"
-                  disabled={uiIsLoading || !projectConcept.trim()}
-                  loading={uiIsLoading}
-                  variant="submit"
-                  className={styles.generateButton}
-                >
-                  {uiIsLoading ? 'Generating...' : 'Generate Network'}
-                </Button>
-              </div>
-            </form>
-          </div>
-        )}
-        {showConfirmModal && (
-          <ConfirmIntegrationModal
-            isOpen={showConfirmModal}
-            onClose={() => setShowConfirmModal(false)}
-            onConfirm={() =>
-              handleConfirmIntegration(generatedNodes, generatedEdges)
-            }
-            onCancel={handleCancelIntegration}
-          />
-        )}
-      </div>
-    </Modal>
+    <>
+      <Modal
+        open={isOpen && !showConfirmModal}
+        onClose={onClose}
+        center
+        classNames={{
+          modal: styles.modalContent,
+          overlay: styles.modalOverlay,
+          closeButton: styles.closeButton
+        }}
+      >
+        <div className={styles.modalInner}>
+          <h2 className={styles.modalHeader}>AI Node Network Generator V4</h2>
+          <form onSubmit={handleGenerateCanvas}>
+            <textarea
+              className={styles.textarea}
+              placeholder="Enter your project topic or main idea"
+              value={projectConcept}
+              onChange={handleProjectConceptChange}
+            />
+            {followUpQuestion && (
+              <p className={styles.followUpQuestion}>{followUpQuestion}</p>
+            )}
+            {errorMessage && (
+              <p className={styles.errorMessage}>{errorMessage}</p>
+            )}
+            <div className={styles.actionContainer}>
+              <Dropdown
+                value={selectedModel}
+                onChange={(value) => setSelectedModel(value)}
+                variant="custom"
+                className={styles.dropdown}
+              >
+                <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                <option value="gpt-4o">GPT-4o</option>
+              </Dropdown>
+              <Dropdown
+                value={selectedLayout}
+                onChange={(value) => setSelectedLayout(value as LayoutType)}
+                variant="custom"
+                className={styles.dropdown}
+              >
+                {layoutOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </Dropdown>
+              <Button
+                type="submit"
+                disabled={uiIsLoading || !projectConcept.trim()}
+                loading={uiIsLoading}
+                variant="submit"
+                className={styles.generateButton}
+              >
+                {uiIsLoading ? 'Generating...' : 'Generate Network'}
+              </Button>
+            </div>
+          </form>
+        </div>
+      </Modal>
+
+      {showConfirmModal && (
+        <ConfirmIntegrationModal
+          isOpen={showConfirmModal}
+          onClose={() => setShowConfirmModal(false)}
+          onConfirm={() =>
+            handleConfirmIntegration(generatedNodes, generatedEdges)
+          }
+          onCancel={handleCancelIntegration}
+        />
+      )}
+    </>
   );
 };
 
