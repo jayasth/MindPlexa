@@ -1,12 +1,22 @@
 import * as d3 from 'd3';
 import { Node, Edge } from 'reactflow';
+import { SimulationNodeDatum } from 'd3-force';
+import {
+  forceSimulation,
+  forceLink,
+  forceManyBody,
+  forceCenter
+} from 'd3-force';
+
+type SimulationNode = Node & SimulationNodeDatum;
 
 type LayoutType =
   | 'mindmap'
   | 'timeline'
   | 'hierarchical'
   | 'workflow'
-  | 'brainstorming';
+  | 'brainstorming'
+  | 'force-directed';
 
 export const applyLayout = (
   nodes: Node[],
@@ -25,6 +35,8 @@ export const applyLayout = (
       return applyWorkflowDiagramLayout(nodes, edges, canvasSize);
     case 'brainstorming':
       return applyBrainstormingCloudLayout(nodes, canvasSize);
+    case 'force-directed':
+      return applyForceDirectedLayout(nodes, edges, canvasSize);
     default:
       console.warn('Invalid layout type, falling back to mind map layout');
       return applyMindMapLayout(nodes, edges, canvasSize);
@@ -73,16 +85,19 @@ const applyMindMapLayout = (
     .tree<Node>()
     .size([
       2 * Math.PI,
-      Math.min(canvasSize.width, canvasSize.height) / 2 - 100
-    ]);
+      Math.min(canvasSize.width, canvasSize.height) / 2 - 150
+    ])
+    .separation((a, b) => (a.parent === b.parent ? 1 : 2) / a.depth);
 
   const root = radialLayout(hierarchy);
 
   return nodes.map((node) => {
     const layoutNode = root.find((d) => d.data.id === node.id);
     if (layoutNode) {
-      const x = layoutNode.x * (180 / Math.PI) + canvasSize.width / 2;
-      const y = layoutNode.y + canvasSize.height / 2;
+      const angle = layoutNode.x - Math.PI / 2; // Rotate by 90 degrees
+      const radius = layoutNode.y;
+      const x = Math.cos(angle) * radius + canvasSize.width / 2;
+      const y = Math.sin(angle) * radius + canvasSize.height / 2;
       return { ...node, position: { x, y } };
     }
     return node;
@@ -117,14 +132,19 @@ const applyHierarchicalTreeLayout = (
   const hierarchy = createHierarchy(nodes, edges);
   const treeLayout = d3
     .tree<Node>()
-    .size([canvasSize.width * 0.9, canvasSize.height * 0.9]);
+    .size([canvasSize.width * 0.9, canvasSize.height * 0.9])
+    .separation((a, b) => (a.parent === b.parent ? 1 : 2));
 
   const root = treeLayout(hierarchy);
+
+  // Calculate the minimum x value to center the tree
+  const minX = Math.min(...root.descendants().map((d) => d.x));
+  const offsetX = (canvasSize.width - (root.x - minX)) / 2 - minX;
 
   return nodes.map((node) => {
     const layoutNode = root.find((d) => d.data.id === node.id);
     return layoutNode
-      ? { ...node, position: { x: layoutNode.x, y: layoutNode.y } }
+      ? { ...node, position: { x: layoutNode.x + offsetX, y: layoutNode.y } }
       : node;
   });
 };
@@ -172,4 +192,34 @@ const applyBrainstormingCloudLayout = (
     const y = centerY + radius * Math.sin(angle) * (0.8 + Math.random() * 0.4);
     return { ...node, position: { x, y } };
   });
+};
+
+const applyForceDirectedLayout = (
+  nodes: Node[],
+  edges: Edge[],
+  canvasSize: { width: number; height: number }
+): Node[] => {
+  const simulationNodes: SimulationNode[] = nodes.map((node) => ({
+    ...node,
+    x: node.position.x,
+    y: node.position.y
+  }));
+
+  const simulation = forceSimulation(simulationNodes)
+    .force(
+      'link',
+      forceLink(edges)
+        .id((d: any) => d.id)
+        .distance(100)
+    )
+    .force('charge', forceManyBody().strength(-1000))
+    .force('center', forceCenter(canvasSize.width / 2, canvasSize.height / 2));
+
+  // Run the simulation synchronously
+  for (let i = 0; i < 300; ++i) simulation.tick();
+
+  return simulationNodes.map((node) => ({
+    ...node,
+    position: { x: node.x || 0, y: node.y || 0 }
+  }));
 };

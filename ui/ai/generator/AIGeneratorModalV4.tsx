@@ -26,14 +26,16 @@ type LayoutType =
   | 'timeline'
   | 'hierarchical'
   | 'workflow'
-  | 'brainstorming';
+  | 'brainstorming'
+  | 'force-directed';
 
 const layoutOptions: { value: LayoutType; label: string }[] = [
   { value: 'mindmap', label: 'Mind Map' },
   { value: 'timeline', label: 'Timeline' },
   { value: 'hierarchical', label: 'Hierarchical Tree' },
   { value: 'workflow', label: 'Workflow Diagram' },
-  { value: 'brainstorming', label: 'Brainstorming Cloud' }
+  { value: 'brainstorming', label: 'Brainstorming Cloud' },
+  { value: 'force-directed', label: 'Force-Directed' }
 ];
 
 const AIGeneratorModalV4: React.FC<AIGeneratorModalV4Props> = ({
