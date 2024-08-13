@@ -180,18 +180,57 @@ const applyForceLayout = (
   edges: Edge[],
   canvasSize: { width: number; height: number }
 ): Node[] => {
-  // TODO: Implement force layout
-  console.warn('Force layout not implemented yet');
-  return applyGridLayout(nodes, canvasSize);
+  try {
+    const simulation = d3
+      .forceSimulation(nodes as d3.SimulationNodeDatum[])
+      .force(
+        'link',
+        d3
+          .forceLink(edges)
+          .id((d: any) => d.id)
+          .distance(LINK_DISTANCE)
+      )
+      .force('charge', d3.forceManyBody().strength(FORCE_STRENGTH))
+      .force('collision', d3.forceCollide().radius(COLLISION_RADIUS))
+      .force(
+        'center',
+        d3.forceCenter(canvasSize.width / 2, canvasSize.height / 2)
+      );
+
+    for (let i = 0; i < 300; ++i) simulation.tick();
+
+    return nodes.map((node) => ({
+      ...node,
+      position: {
+        x: Math.max(50, Math.min((node as any).x || 0, canvasSize.width - 50)),
+        y: Math.max(50, Math.min((node as any).y || 0, canvasSize.height - 50))
+      }
+    }));
+  } catch (error) {
+    console.error('Error in force layout:', error);
+    return applyGridLayout(nodes, canvasSize);
+  }
 };
 
 const applyMindmapLayout = (
   nodes: Node[],
   canvasSize: { width: number; height: number }
 ): Node[] => {
-  // TODO: Implement mindmap layout
-  console.warn('Mindmap layout not implemented yet');
-  return applyGridLayout(nodes, canvasSize);
+  try {
+    const centerX = canvasSize.width / 2;
+    const centerY = canvasSize.height / 2;
+    const radius = Math.min(canvasSize.width, canvasSize.height) / 3;
+
+    return nodes.map((node, index) => {
+      const angle = (index / nodes.length) * 2 * Math.PI;
+      const x = centerX + radius * Math.cos(angle);
+      const y = centerY + radius * Math.sin(angle);
+      return { ...node, position: { x, y } };
+    });
+  } catch (error) {
+    console.error('Error in mindmap layout:', error);
+    return applyGridLayout(nodes, canvasSize);
+  }
 };
 
 const applyTimelineLayout = (
