@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
 import { Node, Edge } from 'reactflow';
-import { SimulationNodeDatum } from 'd3-force';
+import { SimulationNodeDatum, SimulationLinkDatum } from 'd3-force';
 import {
   forceSimulation,
   forceLink,
@@ -9,7 +9,15 @@ import {
   forceCollide
 } from 'd3-force';
 
-type SimulationNode = Node & SimulationNodeDatum;
+interface ExtendedSimulationNode extends SimulationNodeDatum, Node {
+  // Add any additional properties needed
+}
+
+interface ExtendedSimulationLink
+  extends SimulationLinkDatum<ExtendedSimulationNode> {
+  source: string;
+  target: string;
+}
 
 type LayoutType =
   | 'mindmap'
@@ -207,23 +215,30 @@ const applyForceDirectedLayout = (
   edges: Edge[],
   canvasSize: { width: number; height: number }
 ): Node[] => {
-  const simulationNodes: SimulationNode[] = nodes.map((node) => ({
+  const simulationNodes: ExtendedSimulationNode[] = nodes.map((node) => ({
     ...node,
     x: Math.random() * canvasSize.width,
-    y: Math.random() * canvasSize.height
+    y: Math.random() * canvasSize.height,
+    vx: 0,
+    vy: 0
+  }));
+
+  const simulationLinks: ExtendedSimulationLink[] = edges.map((edge) => ({
+    source: edge.source,
+    target: edge.target
   }));
 
   const simulation = forceSimulation(simulationNodes)
     .force(
       'link',
-      forceLink(edges)
+      forceLink(simulationLinks)
         .id((d: any) => d.id)
         .distance(150)
         .strength(1)
     )
     .force('charge', forceManyBody().strength(-1000))
     .force('center', forceCenter(canvasSize.width / 2, canvasSize.height / 2))
-    .force('collision', d3.forceCollide().radius(100));
+    .force('collision', forceCollide().radius(100));
 
   // Run the simulation synchronously
   for (let i = 0; i < 300; ++i) simulation.tick();
