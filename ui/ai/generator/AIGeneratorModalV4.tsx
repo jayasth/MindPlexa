@@ -65,6 +65,8 @@ const AIGeneratorModalV4: React.FC<AIGeneratorModalV4Props> = ({
     setIsLoading(true);
     setErrorMessage(null);
 
+    console.log('Selected layout type:', selectedLayout);
+
     try {
       const prompt = promptTemplateV4(projectConcept);
       const response = await fetch('/api/completion', {
