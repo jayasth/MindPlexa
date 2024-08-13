@@ -40,6 +40,7 @@
   justify-content: space-between;
   align-items: center;
   gap: 0.5rem;
+  flex-wrap: wrap; /* Added to allow wrapping on smaller screens */
 }
 
 .dropdown {
@@ -47,15 +48,29 @@
   min-width: 0;
 }
 
+.layoutDropdown {
+  flex: 2; /* Added to make it take up more space than the model dropdown */
+  min-width: 140px; /* Added to ensure a minimum width */
+}
+
 .generateButton {
   flex: 1;
   padding: 0.25rem 0.5rem;
   font-size: 0.75rem;
   height: 28px;
-  min-width: 120px; /* Increased min-width */
-  white-space: nowrap; /* Prevent text wrapping */
+  min-width: 120px;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  position: relative;
+}
+
+.generatingText {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
 }
 
 .closeButton {

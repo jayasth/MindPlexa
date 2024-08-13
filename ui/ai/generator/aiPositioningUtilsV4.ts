@@ -5,7 +5,8 @@ import {
   forceSimulation,
   forceLink,
   forceManyBody,
-  forceCenter
+  forceCenter,
+  forceCollide
 } from 'd3-force';
 
 type SimulationNode = Node & SimulationNodeDatum;
@@ -16,7 +17,8 @@ type LayoutType =
   | 'hierarchical'
   | 'workflow'
   | 'brainstorming'
-  | 'force-directed';
+  | 'force-directed'
+  | 'kanban';
 
 export const applyLayout = (
   nodes: Node[],
@@ -37,6 +39,8 @@ export const applyLayout = (
       return applyBrainstormingCloudLayout(nodes, canvasSize);
     case 'force-directed':
       return applyForceDirectedLayout(nodes, edges, canvasSize);
+    case 'kanban':
+      return applyKanbanLayout(nodes, canvasSize);
     default:
       console.warn('Invalid layout type, falling back to mind map layout');
       return applyMindMapLayout(nodes, edges, canvasSize);
@@ -112,13 +116,17 @@ const applyTimelineLayout = (
   const nodeHeight = 100;
   const verticalSpacing = 150;
   const horizontalSpacing = nodeWidth + 50;
+  const rowHeight = nodeHeight + verticalSpacing;
+  const maxNodesPerRow = Math.floor(canvasSize.width / horizontalSpacing);
 
   return nodes.map((node, index) => {
+    const row = Math.floor(index / maxNodesPerRow);
+    const col = index % maxNodesPerRow;
     return {
       ...node,
       position: {
-        x: index * horizontalSpacing + nodeWidth / 2,
-        y: canvasSize.height / 2
+        x: col * horizontalSpacing + nodeWidth / 2,
+        y: row * rowHeight + canvasSize.height / 4
       }
     };
   });
@@ -201,8 +209,8 @@ const applyForceDirectedLayout = (
 ): Node[] => {
   const simulationNodes: SimulationNode[] = nodes.map((node) => ({
     ...node,
-    x: node.position.x,
-    y: node.position.y
+    x: Math.random() * canvasSize.width,
+    y: Math.random() * canvasSize.height
   }));
 
   const simulation = forceSimulation(simulationNodes)
@@ -210,10 +218,12 @@ const applyForceDirectedLayout = (
       'link',
       forceLink(edges)
         .id((d: any) => d.id)
-        .distance(100)
+        .distance(150)
+        .strength(1)
     )
     .force('charge', forceManyBody().strength(-1000))
-    .force('center', forceCenter(canvasSize.width / 2, canvasSize.height / 2));
+    .force('center', forceCenter(canvasSize.width / 2, canvasSize.height / 2))
+    .force('collision', d3.forceCollide().radius(100));
 
   // Run the simulation synchronously
   for (let i = 0; i < 300; ++i) simulation.tick();
@@ -222,4 +232,41 @@ const applyForceDirectedLayout = (
     ...node,
     position: { x: node.x || 0, y: node.y || 0 }
   }));
+};
+
+const applyKanbanLayout = (
+  nodes: Node[],
+  canvasSize: { width: number; height: number }
+): Node[] => {
+  const columns = ['To Do', 'In Progress', 'Done'];
+  const columnWidth = canvasSize.width / columns.length;
+  const nodeWidth = 180;
+  const nodeHeight = 100;
+  const verticalSpacing = 20;
+
+  const columnNodes: { [key: string]: Node[] } = {
+    'To Do': [],
+    'In Progress': [],
+    Done: []
+  };
+
+  nodes.forEach((node) => {
+    const column = node.data.status || 'To Do';
+    columnNodes[column].push(node);
+  });
+
+  return nodes.map((node) => {
+    const column = node.data.status || 'To Do';
+    const columnIndex = columns.indexOf(column);
+    const nodesInColumn = columnNodes[column];
+    const nodeIndex = nodesInColumn.indexOf(node);
+
+    return {
+      ...node,
+      position: {
+        x: columnIndex * columnWidth + (columnWidth - nodeWidth) / 2,
+        y: nodeIndex * (nodeHeight + verticalSpacing) + 50
+      }
+    };
+  });
 };

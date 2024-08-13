@@ -27,7 +27,8 @@ type LayoutType =
   | 'hierarchical'
   | 'workflow'
   | 'brainstorming'
-  | 'force-directed';
+  | 'force-directed'
+  | 'kanban';
 
 const layoutOptions: { value: LayoutType; label: string }[] = [
   { value: 'mindmap', label: 'Mind Map' },
@@ -35,7 +36,8 @@ const layoutOptions: { value: LayoutType; label: string }[] = [
   { value: 'hierarchical', label: 'Hierarchical Tree' },
   { value: 'workflow', label: 'Workflow Diagram' },
   { value: 'brainstorming', label: 'Brainstorming Cloud' },
-  { value: 'force-directed', label: 'Force-Directed' }
+  { value: 'force-directed', label: 'Force-Directed' },
+  { value: 'kanban', label: 'Kanban Board' }
 ];
 
 const AIGeneratorModalV4: React.FC<AIGeneratorModalV4Props> = ({
