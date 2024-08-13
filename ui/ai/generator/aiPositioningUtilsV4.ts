@@ -1,7 +1,12 @@
 import * as d3 from 'd3';
 import { Node, Edge } from 'reactflow';
 
-type LayoutType = 'tree' | 'radial' | 'force' | 'mindmap' | 'timeline';
+type LayoutType =
+  | 'mindmap'
+  | 'timeline'
+  | 'hierarchical'
+  | 'workflow'
+  | 'brainstorming';
 
 export const applyLayout = (
   nodes: Node[],
@@ -10,19 +15,19 @@ export const applyLayout = (
   layoutType: LayoutType
 ): Node[] => {
   switch (layoutType) {
-    case 'tree':
-      return applyTreeLayout(nodes, edges, canvasSize);
-    case 'radial':
-      return applyRadialLayout(nodes, edges, canvasSize);
-    case 'force':
-      return applyForceLayout(nodes, edges, canvasSize);
     case 'mindmap':
-      return applyMindmapLayout(nodes, canvasSize);
+      return applyMindMapLayout(nodes, edges, canvasSize);
     case 'timeline':
       return applyTimelineLayout(nodes, canvasSize);
+    case 'hierarchical':
+      return applyHierarchicalTreeLayout(nodes, edges, canvasSize);
+    case 'workflow':
+      return applyWorkflowDiagramLayout(nodes, edges, canvasSize);
+    case 'brainstorming':
+      return applyBrainstormingCloudLayout(nodes, canvasSize);
     default:
-      console.warn('Invalid layout type, falling back to tree layout');
-      return applyTreeLayout(nodes, edges, canvasSize);
+      console.warn('Invalid layout type, falling back to mind map layout');
+      return applyMindMapLayout(nodes, edges, canvasSize);
   }
 };
 
@@ -58,7 +63,53 @@ const createHierarchy = (
   return buildHierarchy(rootNode);
 };
 
-const applyTreeLayout = (
+const applyMindMapLayout = (
+  nodes: Node[],
+  edges: Edge[],
+  canvasSize: { width: number; height: number }
+): Node[] => {
+  const hierarchy = createHierarchy(nodes, edges);
+  const radialLayout = d3
+    .tree<Node>()
+    .size([
+      2 * Math.PI,
+      Math.min(canvasSize.width, canvasSize.height) / 2 - 100
+    ]);
+
+  const root = radialLayout(hierarchy);
+
+  return nodes.map((node) => {
+    const layoutNode = root.find((d) => d.data.id === node.id);
+    if (layoutNode) {
+      const x = layoutNode.x * (180 / Math.PI) + canvasSize.width / 2;
+      const y = layoutNode.y + canvasSize.height / 2;
+      return { ...node, position: { x, y } };
+    }
+    return node;
+  });
+};
+
+const applyTimelineLayout = (
+  nodes: Node[],
+  canvasSize: { width: number; height: number }
+): Node[] => {
+  const nodeWidth = 200;
+  const nodeHeight = 100;
+  const verticalSpacing = 150;
+  const horizontalSpacing = nodeWidth + 50;
+
+  return nodes.map((node, index) => {
+    return {
+      ...node,
+      position: {
+        x: index * horizontalSpacing + nodeWidth / 2,
+        y: canvasSize.height / 2
+      }
+    };
+  });
+};
+
+const applyHierarchicalTreeLayout = (
   nodes: Node[],
   edges: Edge[],
   canvasSize: { width: number; height: number }
@@ -78,59 +129,36 @@ const applyTreeLayout = (
   });
 };
 
-const applyRadialLayout = (
+const applyWorkflowDiagramLayout = (
   nodes: Node[],
   edges: Edge[],
   canvasSize: { width: number; height: number }
 ): Node[] => {
-  const hierarchy = createHierarchy(nodes, edges);
-  const radialLayout = d3
-    .tree<Node>()
-    .size([2 * Math.PI, Math.min(canvasSize.width, canvasSize.height) / 2]);
+  const dagre = require('dagre');
+  const g = new dagre.graphlib.Graph();
+  g.setGraph({ rankdir: 'TB', nodesep: 70, ranksep: 100 });
+  g.setDefaultEdgeLabel(() => ({}));
 
-  const root = radialLayout(hierarchy);
+  nodes.forEach((node) => {
+    g.setNode(node.id, { width: 200, height: 100 });
+  });
+
+  edges.forEach((edge) => {
+    g.setEdge(edge.source, edge.target);
+  });
+
+  dagre.layout(g);
 
   return nodes.map((node) => {
-    const layoutNode = root.find((d) => d.data.id === node.id);
-    if (layoutNode) {
-      const x = layoutNode.x * (180 / Math.PI) + canvasSize.width / 2;
-      const y = layoutNode.y + canvasSize.height / 2;
-      return { ...node, position: { x, y } };
-    }
-    return node;
+    const dagreNode = g.node(node.id);
+    return {
+      ...node,
+      position: { x: dagreNode.x - 100, y: dagreNode.y - 50 }
+    };
   });
 };
 
-const applyForceLayout = (
-  nodes: Node[],
-  edges: Edge[],
-  canvasSize: { width: number; height: number }
-): Node[] => {
-  const simulation = d3
-    .forceSimulation(nodes as d3.SimulationNodeDatum[])
-    .force(
-      'link',
-      d3
-        .forceLink(edges)
-        .id((d: any) => d.id)
-        .distance(100)
-    )
-    .force('charge', d3.forceManyBody().strength(-1000))
-    .force(
-      'center',
-      d3.forceCenter(canvasSize.width / 2, canvasSize.height / 2)
-    )
-    .stop();
-
-  for (let i = 0; i < 300; ++i) simulation.tick();
-
-  return nodes.map((node) => ({
-    ...node,
-    position: { x: (node as any).x, y: (node as any).y }
-  }));
-};
-
-const applyMindmapLayout = (
+const applyBrainstormingCloudLayout = (
   nodes: Node[],
   canvasSize: { width: number; height: number }
 ): Node[] => {
@@ -140,31 +168,8 @@ const applyMindmapLayout = (
 
   return nodes.map((node, index) => {
     const angle = (index / nodes.length) * 2 * Math.PI;
-    const x = centerX + radius * Math.cos(angle);
-    const y = centerY + radius * Math.sin(angle);
+    const x = centerX + radius * Math.cos(angle) * (0.8 + Math.random() * 0.4);
+    const y = centerY + radius * Math.sin(angle) * (0.8 + Math.random() * 0.4);
     return { ...node, position: { x, y } };
-  });
-};
-
-const applyTimelineLayout = (
-  nodes: Node[],
-  canvasSize: { width: number; height: number }
-): Node[] => {
-  const nodeWidth = 200;
-  const nodeHeight = 100;
-  const verticalSpacing = 150;
-  const horizontalSpacing = nodeWidth + 50;
-  const maxNodesPerRow = Math.floor(canvasSize.width / horizontalSpacing);
-
-  return nodes.map((node, index) => {
-    const row = Math.floor(index / maxNodesPerRow);
-    const col = index % maxNodesPerRow;
-    return {
-      ...node,
-      position: {
-        x: col * horizontalSpacing + nodeWidth / 2,
-        y: row * verticalSpacing + nodeHeight / 2
-      }
-    };
   });
 };

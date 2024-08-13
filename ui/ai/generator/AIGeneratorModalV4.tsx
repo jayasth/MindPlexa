@@ -21,14 +21,19 @@ interface AIGeneratorModalV4Props {
   onClose: () => void;
 }
 
-type LayoutType = 'tree' | 'radial' | 'force' | 'mindmap' | 'timeline';
+type LayoutType =
+  | 'mindmap'
+  | 'timeline'
+  | 'hierarchical'
+  | 'workflow'
+  | 'brainstorming';
 
 const layoutOptions: { value: LayoutType; label: string }[] = [
-  { value: 'tree', label: 'Tree' },
-  { value: 'radial', label: 'Radial' },
-  { value: 'force', label: 'Force' },
-  { value: 'mindmap', label: 'Mindmap' },
-  { value: 'timeline', label: 'Timeline' }
+  { value: 'mindmap', label: 'Mind Map' },
+  { value: 'timeline', label: 'Timeline' },
+  { value: 'hierarchical', label: 'Hierarchical Tree' },
+  { value: 'workflow', label: 'Workflow Diagram' },
+  { value: 'brainstorming', label: 'Brainstorming Cloud' }
 ];
 
 const AIGeneratorModalV4: React.FC<AIGeneratorModalV4Props> = ({
@@ -41,7 +46,7 @@ const AIGeneratorModalV4: React.FC<AIGeneratorModalV4Props> = ({
   const [generatedNodes, setGeneratedNodes] = useState<Node[]>([]);
   const [generatedEdges, setGeneratedEdges] = useState<Edge[]>([]);
   const [selectedModel, setSelectedModel] = useState('gpt-4o');
-  const [selectedLayout, setSelectedLayout] = useState<LayoutType>('tree');
+  const [selectedLayout, setSelectedLayout] = useState<LayoutType>('mindmap');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { setNodes, nodes: existingNodes } = useNodeStore();
   const { setEdges } = useEdgeStore();
