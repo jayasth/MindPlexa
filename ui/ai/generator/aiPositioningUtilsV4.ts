@@ -50,7 +50,6 @@ export const applyLayout = (
         layoutedNodes = applyForceLayout(nodesCopy, edges, canvasSize);
     }
 
-    // Validate the layout
     if (!validateLayout(layoutedNodes, canvasSize)) {
       console.warn('Layout validation failed, falling back to grid layout');
       return applyGridLayout(nodesCopy, canvasSize);
@@ -198,9 +197,10 @@ const applyForceLayout = (
       .force(
         'center',
         d3.forceCenter(canvasSize.width / 2, canvasSize.height / 2)
-      );
+      )
+      .stop();
 
-    for (let i = 0; i < 300; ++i) simulation.tick();
+    simulation.tick(300);
 
     return nodes.map((node) => ({
       ...node,
