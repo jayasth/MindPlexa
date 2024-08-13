@@ -76,14 +76,7 @@ const applyTreeLayout = (
 
     // Handle cases where the hierarchy is invalid (e.g., circular dependencies)
     if (!hierarchy) {
-      console.error('Failed to create hierarchy from nodes');
-      return nodes.map((node) => ({
-        ...node,
-        position: {
-          x: Math.random() * canvasSize.width,
-          y: Math.random() * canvasSize.height
-        }
-      }));
+      throw new Error('Failed to create hierarchy from nodes');
     }
 
     const treeLayout = d3
@@ -102,14 +95,7 @@ const applyTreeLayout = (
         typeof layoutNode.x !== 'number' ||
         typeof layoutNode.y !== 'number'
       ) {
-        console.warn(`Node ${node.id} has invalid position, using fallback`);
-        return {
-          ...node,
-          position: {
-            x: Math.random() * canvasSize.width,
-            y: Math.random() * canvasSize.height
-          }
-        };
+        throw new Error(`Node ${node.id} has invalid position`);
       }
       return {
         ...node,
@@ -139,29 +125,42 @@ const applyRadialLayout = (
   edges: Edge[],
   canvasSize: { width: number; height: number }
 ): Node[] => {
-  const hierarchy = d3
-    .stratify<Node>()
-    .id((d: any) => d.id)
-    .parentId((d: any) => {
-      const parentEdge = edges.find((e) => e.target === d.id);
-      return parentEdge ? parentEdge.source : null;
-    })(nodes);
+  try {
+    const hierarchy = d3
+      .stratify<Node>()
+      .id((d: any) => d.id)
+      .parentId((d: any) => {
+        const parentEdge = edges.find((e) => e.target === d.id);
+        return parentEdge ? parentEdge.source : null;
+      })(nodes);
 
-  const radialLayout = d3
-    .tree<Node>()
-    .size([2 * Math.PI, Math.min(canvasSize.width, canvasSize.height) / 2])
-    .separation((a, b) => (a.parent === b.parent ? 1 : 2) / a.depth);
+    const radialLayout = d3
+      .tree<Node>()
+      .size([2 * Math.PI, Math.min(canvasSize.width, canvasSize.height) / 2])
+      .separation((a, b) => (a.parent === b.parent ? 1 : 2) / a.depth);
 
-  const root = radialLayout(hierarchy);
+    const root = radialLayout(hierarchy);
 
-  return nodes.map((node) => {
-    const layoutNode = root.find((d) => d.id === node.id);
-    const x = layoutNode
-      ? (layoutNode.x * 180) / Math.PI + canvasSize.width / 2
-      : 0;
-    const y = layoutNode ? layoutNode.y + canvasSize.height / 2 : 0;
-    return { ...node, position: { x, y } };
-  });
+    return nodes.map((node) => {
+      const layoutNode = root.find((d) => d.id === node.id);
+      if (!layoutNode) {
+        throw new Error(`Node ${node.id} not found in radial layout`);
+      }
+      const x = (layoutNode.x * 180) / Math.PI + canvasSize.width / 2;
+      const y = layoutNode.y + canvasSize.height / 2;
+      return { ...node, position: { x, y } };
+    });
+  } catch (error) {
+    console.error('Error applying radial layout:', error);
+    // Fallback to a simple grid layout
+    return nodes.map((node, index) => ({
+      ...node,
+      position: {
+        x: (index % 5) * 200 + 100,
+        y: Math.floor(index / 5) * 200 + 100
+      }
+    }));
+  }
 };
 
 const applyForceLayout = (
@@ -169,31 +168,57 @@ const applyForceLayout = (
   edges: Edge[],
   canvasSize: { width: number; height: number }
 ): Node[] => {
-  const simulation = d3
-    .forceSimulation(nodes as d3.SimulationNodeDatum[])
-    .force(
-      'link',
-      d3
-        .forceLink(edges as d3.SimulationLinkDatum<d3.SimulationNodeDatum>[])
-        .id((d: any) => d.id)
-        .distance(LINK_DISTANCE)
-    )
-    .force('charge', d3.forceManyBody().strength(FORCE_STRENGTH))
-    .force('collision', d3.forceCollide().radius(COLLISION_RADIUS))
-    .force(
-      'center',
-      d3.forceCenter(canvasSize.width / 2, canvasSize.height / 2)
-    );
+  try {
+    const simulation = d3
+      .forceSimulation(nodes as d3.SimulationNodeDatum[])
+      .force(
+        'link',
+        d3
+          .forceLink(edges as d3.SimulationLinkDatum<d3.SimulationNodeDatum>[])
+          .id((d: any) => d.id)
+          .distance(LINK_DISTANCE)
+      )
+      .force('charge', d3.forceManyBody().strength(FORCE_STRENGTH))
+      .force('collision', d3.forceCollide().radius(COLLISION_RADIUS))
+      .force(
+        'center',
+        d3.forceCenter(canvasSize.width / 2, canvasSize.height / 2)
+      );
 
-  simulation.tick(300);
+    simulation.tick(300);
 
-  return nodes.map((node) => ({
-    ...node,
-    position: {
-      x: Math.max(50, Math.min((node as any).x || 0, canvasSize.width - 50)),
-      y: Math.max(50, Math.min((node as any).y || 0, canvasSize.height - 50))
-    }
-  }));
+    return nodes.map((node) => {
+      if (
+        typeof (node as any).x !== 'number' ||
+        typeof (node as any).y !== 'number'
+      ) {
+        throw new Error(`Node ${node.id} has invalid position`);
+      }
+      return {
+        ...node,
+        position: {
+          x: Math.max(
+            50,
+            Math.min((node as any).x || 0, canvasSize.width - 50)
+          ),
+          y: Math.max(
+            50,
+            Math.min((node as any).y || 0, canvasSize.height - 50)
+          )
+        }
+      };
+    });
+  } catch (error) {
+    console.error('Error applying force layout:', error);
+    // Fallback to a simple grid layout
+    return nodes.map((node, index) => ({
+      ...node,
+      position: {
+        x: (index % 5) * 200 + 100,
+        y: Math.floor(index / 5) * 200 + 100
+      }
+    }));
+  }
 };
 
 const applyMindmapLayout = (
