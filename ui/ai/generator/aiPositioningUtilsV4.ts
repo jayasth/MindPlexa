@@ -5,7 +5,7 @@ const FORCE_STRENGTH = -1000;
 const LINK_DISTANCE = 200;
 const COLLISION_RADIUS = 100;
 
-type LayoutType = 'tree' | 'radial' | 'force' | 'mindmap' | 'timeline';
+type LayoutType = 'tree' | 'radial' | 'force' | 'mindmap' | 'timeline' | 'grid';
 
 export const applyLayout = (
   nodes: Node[],
@@ -43,14 +43,12 @@ export const applyLayout = (
       case 'timeline':
         layoutedNodes = applyTimelineLayout(nodesCopy, canvasSize);
         break;
+      case 'grid':
       default:
-        console.warn(
-          'Invalid layout type, falling back to force-directed layout'
-        );
-        layoutedNodes = applyForceLayout(nodesCopy, edges, canvasSize);
+        layoutedNodes = applyGridLayout(nodesCopy, canvasSize);
+        break;
     }
 
-    // Validate the layout
     if (!validateLayout(layoutedNodes, canvasSize)) {
       console.warn('Layout validation failed, falling back to grid layout');
       return applyGridLayout(nodesCopy, canvasSize);
