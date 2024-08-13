@@ -6,7 +6,7 @@ import {
   removeDoubleQuoteInsideBrackets,
   removeDoubleQuoteInsideParentheses,
   removeMarkdowncode
-} from '@/ui/ai/generator/aiGeneratorCanvasUtils';
+} from '@/ui/ai/generator/aiGeneratorCanvasUtilsV4';
 import { getNodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 
 function sanitizeLabel(label: string): string {
@@ -139,9 +139,9 @@ const convertToReactFlowElements = (
     const id = elId.split('-')[1] || elId;
 
     const nodeLabel = node.querySelector('.nodeLabel')?.textContent;
-    const { title, type, content } = extractTitleAndType(nodeLabel || '');
+    const { title, content } = extractTitleAndType(nodeLabel || '');
 
-    const nodeId = `${type}-${uuidv4()}`;
+    const nodeId = `note-${uuidv4()}`;
     const { width, height } = getNodeDimensions('note', false, false);
     nodes.push({
       id: nodeId,
