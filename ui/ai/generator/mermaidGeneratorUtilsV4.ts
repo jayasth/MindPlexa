@@ -6,105 +6,38 @@ import {
   removeDoubleQuoteInsideBrackets,
   removeDoubleQuoteInsideParentheses,
   removeMarkdowncode
-} from '@/ui/ai/generator/aiGeneratorCanvasUtilsV4';
+} from '@/ui/ai/generator/aiGeneratorCanvasUtils';
 import { getNodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
-
-function sanitizeLabel(label: string): string {
-  return label.replace(/[\[\]\(\)\{\}\,]/g, '');
-}
 
 export async function parseMermaidCode(
   mermaidCode: string,
   projectDetails: string
-): Promise<{ nodes: Node[]; edges: Edge[]; warning: string | null }> {
-  console.log('Original Mermaid Code:', mermaidCode);
-
-  // Remove any JSON-like structure and extract only the Mermaid code
-  const extractedMermaidCode = mermaidCode
-    .replace(/^.*"mermaidCode"\s*:\s*"/, '')
-    .replace(/"}\s*$/, '');
-
-  console.log('Extracted Mermaid Code:', extractedMermaidCode);
-
-  const sanitizedCode = extractedMermaidCode
-    .split('\n')
-    .map((line) => {
-      const parts = line.split('[');
-      if (parts.length > 1) {
-        const [id, label] = parts;
-        const sanitizedLabel = sanitizeLabel(label);
-        return `${id}[${sanitizedLabel}]`;
-      }
-      return line;
-    })
-    .join('\n');
-
-  console.log('Sanitized Mermaid Code:', sanitizedCode);
-
+): Promise<{ nodes: Node[]; edges: Edge[] }> {
   const filteredCode = removeDoubleQuoteInsideParentheses(
-    removeDoubleQuoteInsideBrackets(removeMarkdowncode(sanitizedCode))
+    removeDoubleQuoteInsideBrackets(removeMarkdowncode(mermaidCode))
   );
-  console.log('Filtered Mermaid Code:', filteredCode);
+  console.log('mermaidGeneratorUtilsV4 Filtered Mermaid Code:', filteredCode);
 
-  const processedCode = filteredCode.trim().startsWith('graph TD')
-    ? filteredCode.trim()
-    : `graph TD\n${filteredCode.trim()}`;
-
-  console.log('Processed Mermaid Code:', processedCode);
+  // Remove the "Project Concept:" prefix if present
+  const processedCode = filteredCode.replace(/^.*?graph TD/, 'graph TD');
 
   let svgCode: any;
 
   try {
-    mermaid.initialize({ startOnLoad: false, securityLevel: 'loose' });
+    mermaid.initialize({ startOnLoad: false });
     svgCode = await mermaid.render('mermaid-chart', processedCode);
   } catch (error: any) {
-    console.error('Mermaid parsing error:', error);
+    console.error('mermaidGeneratorUtilsV4 Mermaid parsing error:', error);
     return {
       nodes: [],
-      edges: [],
-      warning: `Error parsing Mermaid code: ${error.message}`
+      edges: []
     };
   }
 
-  if (!svgCode || !svgCode.svg) {
-    console.error('SVG code is undefined or empty');
-    return {
-      nodes: [],
-      edges: [],
-      warning: 'Generated SVG is empty or undefined'
-    };
-  }
-
+  let nodes: Node[] = [];
+  let edges: Edge[] = [];
   try {
-    const { nodes, edges } = convertToReactFlowElements(svgCode.svg);
-    console.log('Converted Nodes:', nodes);
-    console.log('Converted Edges:', edges);
-
-    edges.forEach((edge) => {
-      if (
-        !nodes.find((node) => node.id === edge.source) ||
-        !nodes.find((node) => node.id === edge.target)
-      ) {
-        console.warn(
-          `Missing node reference in edge: ${edge.id} from ${edge.source} to ${edge.target}`
-        );
-      }
-    });
-
-    const filteredNodes = nodes.filter(
-      (node) =>
-        node.data.title !== 'Untitled' &&
-        node.data.content !== 'No description available'
-    );
-
-    let warning: string | null = null;
-    if (filteredNodes.length === 0 || edges.length === 0) {
-      console.warn('No nodes or edges generated from Mermaid code');
-      warning =
-        'The generated layout is empty. Please try again with a different project idea.';
-    }
-
-    return { nodes: filteredNodes, edges, warning };
+    ({ nodes, edges } = convertToReactFlowElements(svgCode.svg));
   } catch (error: any) {
     console.error(
       'mermaidGeneratorUtilsV4 Error converting to React Flow elements:',
@@ -112,10 +45,17 @@ export async function parseMermaidCode(
     );
     return {
       nodes: [],
-      edges: [],
-      warning: `Error converting to React Flow elements: ${error.message}`
+      edges: []
     };
   }
+
+  const filteredNodes = nodes.filter(
+    (node) =>
+      node.data.title !== 'Untitled' &&
+      node.data.content !== 'No description available'
+  );
+
+  return { nodes: filteredNodes, edges };
 }
 
 const convertToReactFlowElements = (
@@ -136,13 +76,12 @@ const convertToReactFlowElements = (
 
   mermaidNodes.forEach((node, index) => {
     const elId = node.getAttribute('id') || `n${index}`;
-    const id = elId.split('-')[1] || elId;
-
     const nodeLabel = node.querySelector('.nodeLabel')?.textContent;
-    const { title, content } = extractTitleAndType(nodeLabel || '');
+    const { title, type, content } = extractTitleAndType(nodeLabel || '');
 
-    const nodeId = `note-${uuidv4()}`;
+    const nodeId = `${type}-${uuidv4()}`;
     const { width, height } = getNodeDimensions('note', false, false);
+
     nodes.push({
       id: nodeId,
       type: 'note',
@@ -162,21 +101,30 @@ const convertToReactFlowElements = (
       height
     });
 
-    idMap.set(id, nodeId);
+    // Map both the original ID and the extracted ID (if different)
+    idMap.set(elId, nodeId);
+
+    // Add this new mapping
+    const shortId = elId.split('-')[1];
+    if (shortId) {
+      idMap.set(shortId, nodeId);
+    }
+
+    console.log(`Mapped node: ${elId} -> ${nodeId}`);
   });
 
   mermaidEdges.forEach((edge, index) => {
     const id = edge.getAttribute('id') || `e${index}`;
     const classes = edge.getAttribute('class')?.split(' ') || [];
     const originalSource = classes
-      .find((cls) => cls.startsWith('LS-'))
+      .find((c) => c.startsWith('LS-'))
       ?.replace('LS-', '');
     const originalTarget = classes
-      .find((cls) => cls.startsWith('LE-'))
+      .find((c) => c.startsWith('LE-'))
       ?.replace('LE-', '');
 
     if (!originalSource || !originalTarget) {
-      console.warn(`Edge ${id} has missing source or target`);
+      console.warn(`Edge ${id} has missing source or target`, { classes });
       return;
     }
 
@@ -192,9 +140,13 @@ const convertToReactFlowElements = (
         markerEnd: { type: MarkerType.ArrowClosed }
       });
     } else {
-      console.warn(
-        `Edge ${id} has invalid source or target: ${originalSource} -> ${originalTarget}`
-      );
+      console.warn(`Edge ${id} has invalid source or target`, {
+        originalSource,
+        originalTarget,
+        mappedSource: source,
+        mappedTarget: target,
+        idMapKeys: Array.from(idMap.keys())
+      });
     }
   });
 

@@ -8,7 +8,7 @@ Follow these guidelines:
 3. If the input lacks clarity or details, formulate a follow-up question to gather more information.
 
 When generating the flowchart:
-- Begin with the main topic as the root node.
+- Begin with the project concept as the root node.
 - Create 3-7 main subtopics branching from the root.
 - For each subtopic, add 2-5 child nodes with relevant details.
 - Use the format: "nodeID[Node Title::Node Description]" for each node.

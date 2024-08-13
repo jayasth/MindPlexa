@@ -60,10 +60,8 @@ const AIGeneratorModalV4: React.FC<AIGeneratorModalV4Props> = ({
     setIsLoading(true);
     setErrorMessage(null);
 
-    const sanitizedInput = projectConcept.replace(/[\[\]\(\)\{\}\,]/g, '');
-
     try {
-      const prompt = promptTemplateV4(sanitizedInput);
+      const prompt = promptTemplateV4(projectConcept);
       const response = await fetch('/api/completion', {
         method: 'POST',
         headers: {
@@ -81,98 +79,51 @@ const AIGeneratorModalV4: React.FC<AIGeneratorModalV4Props> = ({
 
       if (data.needsFollowUp) {
         setFollowUpQuestion(data.followUpQuestion);
-      } else {
-        const canvasSize = {
-          width: window.innerWidth,
-          height: window.innerHeight
-        };
-
-        const {
-          nodes: newNodes,
-          edges: newEdges,
-          warning
-        } = await parseMermaidCode(data.mermaidCode, sanitizedInput);
-
-        if (warning) {
-          setErrorMessage(warning);
-        }
-
-        console.log('Generated nodes:', newNodes);
-        console.log('Generated edges:', newEdges);
-
-        if (newNodes.length === 0 || newEdges.length === 0) {
-          setErrorMessage(
-            'Failed to generate a valid diagram. Please try again with a different input.'
-          );
-          setIsLoading(false);
-          return;
-        }
-
-        const existingNodes = useNodeStore.getState().nodes;
-
-        if (existingNodes.length > 0) {
-          setGeneratedNodes(newNodes);
-          setGeneratedEdges(newEdges);
-          setShowConfirmModal(true);
-        } else {
-          handleConfirmIntegration(newNodes, newEdges);
-        }
+        setIsLoading(false);
+        return;
       }
+
+      const canvasSize = {
+        width: window.innerWidth,
+        height: window.innerHeight
+      };
+
+      const { nodes, edges } = await parseMermaidCode(
+        data.mermaidCode,
+        projectConcept
+      );
+      const layoutedNodes = applyLayout(
+        nodes,
+        edges,
+        canvasSize,
+        selectedLayout
+      );
+      console.log('Layouted nodes:', layoutedNodes);
+
+      setGeneratedNodes(layoutedNodes);
+      setGeneratedEdges(edges);
+      setShowConfirmModal(true);
     } catch (error) {
-      console.error('AIGeneratorModalV4: Error generating canvas:', error);
+      console.error('Error generating canvas:', error);
       setErrorMessage(
         'An error occurred while generating the canvas. Please try again.'
       );
-    } finally {
-      setIsLoading(false);
     }
+
+    setIsLoading(false);
   };
 
   const handleConfirmIntegration = (newNodes: Node[], newEdges: Edge[]) => {
     const canvasSize = { width: window.innerWidth, height: window.innerHeight };
-    try {
-      console.log('Selected Layout Type:', selectedLayout);
-      const optimizedNodes = applyLayout(
-        newNodes,
-        newEdges,
-        canvasSize,
-        selectedLayout
-      );
+    const optimizedNodes = applyLayout(
+      newNodes,
+      newEdges,
+      canvasSize,
+      selectedLayout
+    );
 
-      // Adjust the layout for mindmap to make it more comprehensive
-      if (selectedLayout === 'mindmap') {
-        const centerX = canvasSize.width / 2;
-        const centerY = canvasSize.height / 2;
-        optimizedNodes.forEach((node, index) => {
-          const angle = (index / optimizedNodes.length) * 2 * Math.PI;
-          const radius = 300; // Adjust the radius as needed
-          node.position = {
-            x: centerX + radius * Math.cos(angle),
-            y: centerY + radius * Math.sin(angle)
-          };
-        });
-      }
-
-      setNodes((currentNodes) => [...currentNodes, ...optimizedNodes]);
-      setEdges((currentEdges) => [...currentEdges, ...newEdges]);
-    } catch (error) {
-      console.error('Error applying layout:', error);
-      // Fallback to setting nodes without layout
-      setNodes((currentNodes) => [
-        ...currentNodes,
-        ...newNodes.map((node, index) => ({
-          ...node,
-          position: {
-            x: (index % 5) * 200 + 100,
-            y: Math.floor(index / 5) * 200 + 100
-          }
-        }))
-      ]);
-      setEdges((currentEdges) => [...currentEdges, ...newEdges]);
-      setErrorMessage(
-        'An error occurred while applying the layout. Nodes have been added in a grid pattern.'
-      );
-    }
+    setNodes((currentNodes) => [...currentNodes, ...optimizedNodes]);
+    setEdges((currentEdges) => [...currentEdges, ...newEdges]);
     setShowConfirmModal(false);
     onClose();
   };

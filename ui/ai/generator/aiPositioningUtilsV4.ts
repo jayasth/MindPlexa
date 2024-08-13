@@ -1,10 +1,6 @@
 import * as d3 from 'd3';
 import { Node, Edge } from 'reactflow';
 
-const FORCE_STRENGTH = -1000;
-const LINK_DISTANCE = 200;
-const COLLISION_RADIUS = 100;
-
 type LayoutType = 'tree' | 'radial' | 'force' | 'mindmap' | 'timeline';
 
 export const applyLayout = (
@@ -13,70 +9,21 @@ export const applyLayout = (
   canvasSize: { width: number; height: number },
   layoutType: LayoutType
 ): Node[] => {
-  console.log('Applying layout:', layoutType);
-
-  if (nodes.length === 0) {
-    console.warn('No nodes provided for layout');
-    return [];
+  switch (layoutType) {
+    case 'tree':
+      return applyTreeLayout(nodes, edges, canvasSize);
+    case 'radial':
+      return applyRadialLayout(nodes, edges, canvasSize);
+    case 'force':
+      return applyForceLayout(nodes, edges, canvasSize);
+    case 'mindmap':
+      return applyMindmapLayout(nodes, canvasSize);
+    case 'timeline':
+      return applyTimelineLayout(nodes, canvasSize);
+    default:
+      console.warn('Invalid layout type, falling back to tree layout');
+      return applyTreeLayout(nodes, edges, canvasSize);
   }
-
-  const nodesCopy = nodes.map((node) => ({
-    ...node,
-    position: node.position || { x: 0, y: 0 }
-  }));
-
-  try {
-    let layoutedNodes: Node[];
-    switch (layoutType) {
-      case 'tree':
-        layoutedNodes = applyTreeLayout(nodesCopy, edges, canvasSize);
-        break;
-      case 'radial':
-        layoutedNodes = applyRadialLayout(nodesCopy, edges, canvasSize);
-        break;
-      case 'force':
-        layoutedNodes = applyForceLayout(nodesCopy, edges, canvasSize);
-        break;
-      case 'mindmap':
-        layoutedNodes = applyMindmapLayout(nodesCopy, canvasSize);
-        break;
-      case 'timeline':
-        layoutedNodes = applyTimelineLayout(nodesCopy, canvasSize);
-        break;
-      default:
-        console.warn(
-          'Invalid layout type, falling back to force-directed layout'
-        );
-        layoutedNodes = applyForceLayout(nodesCopy, edges, canvasSize);
-    }
-
-    // Validate the layout
-    if (!validateLayout(layoutedNodes, canvasSize)) {
-      console.warn('Layout validation failed, falling back to grid layout');
-      return applyGridLayout(nodesCopy, canvasSize);
-    }
-
-    return layoutedNodes;
-  } catch (error) {
-    console.error('Error applying layout:', error);
-    return applyGridLayout(nodesCopy, canvasSize);
-  }
-};
-
-const validateLayout = (
-  nodes: Node[],
-  canvasSize: { width: number; height: number }
-): boolean => {
-  return nodes.every(
-    (node) =>
-      node.position &&
-      isFinite(node.position.x) &&
-      isFinite(node.position.y) &&
-      node.position.x >= 0 &&
-      node.position.x <= canvasSize.width &&
-      node.position.y >= 0 &&
-      node.position.y <= canvasSize.height
-  );
 };
 
 const createHierarchy = (
@@ -116,33 +63,19 @@ const applyTreeLayout = (
   edges: Edge[],
   canvasSize: { width: number; height: number }
 ): Node[] => {
-  try {
-    const hierarchy = createHierarchy(nodes, edges);
+  const hierarchy = createHierarchy(nodes, edges);
+  const treeLayout = d3
+    .tree<Node>()
+    .size([canvasSize.width * 0.9, canvasSize.height * 0.9]);
 
-    const treeLayout = d3
-      .tree<Node>()
-      .size([canvasSize.width * 0.9, canvasSize.height * 0.9])
-      .nodeSize([150, 200])
-      .separation((a, b) => (a.parent === b.parent ? 1.5 : 2.5));
+  const root = treeLayout(hierarchy);
 
-    const root = treeLayout(hierarchy);
-
-    return nodes.map((node) => {
-      const layoutNode = root.find((d) => d.data.id === node.id);
-      return {
-        ...node,
-        position: layoutNode
-          ? {
-              x: Math.max(0, Math.min(layoutNode.x, canvasSize.width)),
-              y: Math.max(0, Math.min(layoutNode.y, canvasSize.height))
-            }
-          : node.position
-      };
-    });
-  } catch (error) {
-    console.error('Error in tree layout:', error);
-    return applyGridLayout(nodes, canvasSize);
-  }
+  return nodes.map((node) => {
+    const layoutNode = root.find((d) => d.data.id === node.id);
+    return layoutNode
+      ? { ...node, position: { x: layoutNode.x, y: layoutNode.y } }
+      : node;
+  });
 };
 
 const applyRadialLayout = (
@@ -150,29 +83,22 @@ const applyRadialLayout = (
   edges: Edge[],
   canvasSize: { width: number; height: number }
 ): Node[] => {
-  try {
-    const hierarchy = createHierarchy(nodes, edges);
+  const hierarchy = createHierarchy(nodes, edges);
+  const radialLayout = d3
+    .tree<Node>()
+    .size([2 * Math.PI, Math.min(canvasSize.width, canvasSize.height) / 2]);
 
-    const radialLayout = d3
-      .tree<Node>()
-      .size([2 * Math.PI, Math.min(canvasSize.width, canvasSize.height) / 2])
-      .separation((a, b) => (a.parent === b.parent ? 1 : 2) / a.depth);
+  const root = radialLayout(hierarchy);
 
-    const root = radialLayout(hierarchy);
-
-    return nodes.map((node) => {
-      const layoutNode = root.find((d) => d.data.id === node.id);
-      if (layoutNode) {
-        const x = layoutNode.x * (180 / Math.PI) + canvasSize.width / 2;
-        const y = layoutNode.y + canvasSize.height / 2;
-        return { ...node, position: { x, y } };
-      }
-      return node;
-    });
-  } catch (error) {
-    console.error('Error in radial layout:', error);
-    return applyGridLayout(nodes, canvasSize);
-  }
+  return nodes.map((node) => {
+    const layoutNode = root.find((d) => d.data.id === node.id);
+    if (layoutNode) {
+      const x = layoutNode.x * (180 / Math.PI) + canvasSize.width / 2;
+      const y = layoutNode.y + canvasSize.height / 2;
+      return { ...node, position: { x, y } };
+    }
+    return node;
+  });
 };
 
 const applyForceLayout = (
@@ -180,100 +106,65 @@ const applyForceLayout = (
   edges: Edge[],
   canvasSize: { width: number; height: number }
 ): Node[] => {
-  try {
-    const simulation = d3
-      .forceSimulation(nodes as d3.SimulationNodeDatum[])
-      .force(
-        'link',
-        d3
-          .forceLink(edges)
-          .id((d: any) => d.id)
-          .distance(LINK_DISTANCE)
-      )
-      .force('charge', d3.forceManyBody().strength(FORCE_STRENGTH))
-      .force('collision', d3.forceCollide().radius(COLLISION_RADIUS))
-      .force(
-        'center',
-        d3.forceCenter(canvasSize.width / 2, canvasSize.height / 2)
-      );
+  const simulation = d3
+    .forceSimulation(nodes as d3.SimulationNodeDatum[])
+    .force(
+      'link',
+      d3
+        .forceLink(edges)
+        .id((d: any) => d.id)
+        .distance(100)
+    )
+    .force('charge', d3.forceManyBody().strength(-1000))
+    .force(
+      'center',
+      d3.forceCenter(canvasSize.width / 2, canvasSize.height / 2)
+    )
+    .stop();
 
-    for (let i = 0; i < 300; ++i) simulation.tick();
+  for (let i = 0; i < 300; ++i) simulation.tick();
 
-    return nodes.map((node) => ({
-      ...node,
-      position: {
-        x: Math.max(50, Math.min((node as any).x || 0, canvasSize.width - 50)),
-        y: Math.max(50, Math.min((node as any).y || 0, canvasSize.height - 50))
-      }
-    }));
-  } catch (error) {
-    console.error('Error in force layout:', error);
-    return applyGridLayout(nodes, canvasSize);
-  }
+  return nodes.map((node) => ({
+    ...node,
+    position: { x: (node as any).x, y: (node as any).y }
+  }));
 };
 
 const applyMindmapLayout = (
   nodes: Node[],
   canvasSize: { width: number; height: number }
 ): Node[] => {
-  try {
-    const centerX = canvasSize.width / 2;
-    const centerY = canvasSize.height / 2;
-    const radius = Math.min(canvasSize.width, canvasSize.height) / 3;
+  const centerX = canvasSize.width / 2;
+  const centerY = canvasSize.height / 2;
+  const radius = Math.min(canvasSize.width, canvasSize.height) / 3;
 
-    return nodes.map((node, index) => {
-      const angle = (index / nodes.length) * 2 * Math.PI;
-      const x = centerX + radius * Math.cos(angle);
-      const y = centerY + radius * Math.sin(angle);
-      return { ...node, position: { x, y } };
-    });
-  } catch (error) {
-    console.error('Error in mindmap layout:', error);
-    return applyGridLayout(nodes, canvasSize);
-  }
+  return nodes.map((node, index) => {
+    const angle = (index / nodes.length) * 2 * Math.PI;
+    const x = centerX + radius * Math.cos(angle);
+    const y = centerY + radius * Math.sin(angle);
+    return { ...node, position: { x, y } };
+  });
 };
 
 const applyTimelineLayout = (
   nodes: Node[],
   canvasSize: { width: number; height: number }
 ): Node[] => {
-  try {
-    const nodeWidth = 200;
-    const nodeHeight = 100;
-    const verticalSpacing = 150;
-    const horizontalSpacing = nodeWidth + 50;
-    const maxNodesPerRow = Math.floor(canvasSize.width / horizontalSpacing);
+  const nodeWidth = 200;
+  const nodeHeight = 100;
+  const verticalSpacing = 150;
+  const horizontalSpacing = nodeWidth + 50;
+  const maxNodesPerRow = Math.floor(canvasSize.width / horizontalSpacing);
 
-    return nodes.map((node, index) => {
-      const row = Math.floor(index / maxNodesPerRow);
-      const col = index % maxNodesPerRow;
-      return {
-        ...node,
-        position: {
-          x: col * horizontalSpacing + nodeWidth / 2,
-          y: row * verticalSpacing + nodeHeight / 2
-        }
-      };
-    });
-  } catch (error) {
-    console.error('Error in timeline layout:', error);
-    return applyGridLayout(nodes, canvasSize);
-  }
-};
-
-const applyGridLayout = (
-  nodes: Node[],
-  canvasSize: { width: number; height: number }
-): Node[] => {
-  const cols = Math.ceil(Math.sqrt(nodes.length));
-  const cellWidth = canvasSize.width / cols;
-  const cellHeight = canvasSize.height / Math.ceil(nodes.length / cols);
-
-  return nodes.map((node, index) => ({
-    ...node,
-    position: {
-      x: (index % cols) * cellWidth + cellWidth / 2,
-      y: Math.floor(index / cols) * cellHeight + cellHeight / 2
-    }
-  }));
+  return nodes.map((node, index) => {
+    const row = Math.floor(index / maxNodesPerRow);
+    const col = index % maxNodesPerRow;
+    return {
+      ...node,
+      position: {
+        x: col * horizontalSpacing + nodeWidth / 2,
+        y: row * verticalSpacing + nodeHeight / 2
+      }
+    };
+  });
 };
