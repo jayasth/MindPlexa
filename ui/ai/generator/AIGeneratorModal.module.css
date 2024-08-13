@@ -52,7 +52,10 @@
   padding: 0.25rem 0.5rem;
   font-size: 0.75rem;
   height: 28px;
-  min-width: 80px;
+  min-width: 120px; /* Increased min-width */
+  white-space: nowrap; /* Prevent text wrapping */
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .closeButton {

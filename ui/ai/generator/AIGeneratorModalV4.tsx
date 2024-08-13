@@ -43,7 +43,7 @@ const AIGeneratorModalV4: React.FC<AIGeneratorModalV4Props> = ({
   const [selectedModel, setSelectedModel] = useState('gpt-4o');
   const [selectedLayout, setSelectedLayout] = useState<LayoutType>('tree');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const { setNodes } = useNodeStore();
+  const { setNodes, nodes: existingNodes } = useNodeStore();
   const { setEdges } = useEdgeStore();
   const { isLoading: uiIsLoading, setIsLoading } = useUIStore();
   const { canvasId } = useCanvasStore();
@@ -100,9 +100,13 @@ const AIGeneratorModalV4: React.FC<AIGeneratorModalV4Props> = ({
       );
       console.log('Layouted nodes:', layoutedNodes);
 
-      setGeneratedNodes(layoutedNodes);
-      setGeneratedEdges(edges);
-      setShowConfirmModal(true);
+      if (existingNodes.length > 0) {
+        setGeneratedNodes(layoutedNodes);
+        setGeneratedEdges(edges);
+        setShowConfirmModal(true);
+      } else {
+        handleConfirmIntegration(layoutedNodes, edges);
+      }
     } catch (error) {
       console.error('Error generating canvas:', error);
       setErrorMessage(
@@ -188,7 +192,11 @@ const AIGeneratorModalV4: React.FC<AIGeneratorModalV4Props> = ({
                 variant="submit"
                 className={styles.generateButton}
               >
-                {uiIsLoading ? 'Generating...' : 'Generate Network'}
+                {uiIsLoading ? (
+                  <span className={styles.generatingText}>Generating...</span>
+                ) : (
+                  'Generate'
+                )}
               </Button>
             </div>
           </form>
