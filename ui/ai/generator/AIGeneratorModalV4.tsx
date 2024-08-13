@@ -26,18 +26,20 @@ type LayoutType =
   | 'timeline'
   | 'hierarchical'
   | 'workflow'
-  | 'brainstorming'
+  | 'radial-cluster'
   | 'force-directed'
-  | 'kanban';
+  | 'grid'
+  | 'concept-map';
 
 const layoutOptions: { value: LayoutType; label: string }[] = [
   { value: 'mindmap', label: 'Mind Map' },
   { value: 'timeline', label: 'Timeline' },
   { value: 'hierarchical', label: 'Hierarchical Tree' },
   { value: 'workflow', label: 'Workflow Diagram' },
-  { value: 'brainstorming', label: 'Brainstorming Cloud' },
-  { value: 'force-directed', label: 'Force-Directed' },
-  { value: 'kanban', label: 'Kanban Board' }
+  { value: 'radial-cluster', label: 'Radial Cluster' },
+  { value: 'force-directed', label: 'Force-Directed Network' },
+  { value: 'grid', label: 'Grid Layout' },
+  { value: 'concept-map', label: 'Concept Map' }
 ];
 
 const AIGeneratorModalV4: React.FC<AIGeneratorModalV4Props> = ({

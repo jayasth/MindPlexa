@@ -6,15 +6,18 @@ import {
   forceLink,
   forceManyBody,
   forceCenter,
-  forceCollide
+  forceCollide,
+  forceX,
+  forceY
 } from 'd3-force';
 
-interface ExtendedSimulationNode extends SimulationNodeDatum, Node {
-  // Add any additional properties needed
+// Define a custom type that extends both Node and SimulationNodeDatum
+interface ExtendedNode extends Node, SimulationNodeDatum {
+  x?: number;
+  y?: number;
 }
 
-interface ExtendedSimulationLink
-  extends SimulationLinkDatum<ExtendedSimulationNode> {
+interface ExtendedSimulationLink extends SimulationLinkDatum<ExtendedNode> {
   source: string;
   target: string;
 }
@@ -24,9 +27,10 @@ type LayoutType =
   | 'timeline'
   | 'hierarchical'
   | 'workflow'
-  | 'brainstorming'
+  | 'radial-cluster'
   | 'force-directed'
-  | 'kanban';
+  | 'grid'
+  | 'concept-map';
 
 export const applyLayout = (
   nodes: Node[],
@@ -43,12 +47,14 @@ export const applyLayout = (
       return applyHierarchicalTreeLayout(nodes, edges, canvasSize);
     case 'workflow':
       return applyWorkflowDiagramLayout(nodes, edges, canvasSize);
-    case 'brainstorming':
-      return applyBrainstormingCloudLayout(nodes, canvasSize);
+    case 'radial-cluster':
+      return applyRadialClusterLayout(nodes, edges, canvasSize);
     case 'force-directed':
       return applyForceDirectedLayout(nodes, edges, canvasSize);
-    case 'kanban':
-      return applyKanbanLayout(nodes, canvasSize);
+    case 'grid':
+      return applyGridLayout(nodes, canvasSize);
+    case 'concept-map':
+      return applyConceptMapLayout(nodes, edges, canvasSize);
     default:
       console.warn('Invalid layout type, falling back to mind map layout');
       return applyMindMapLayout(nodes, edges, canvasSize);
@@ -194,19 +200,28 @@ const applyWorkflowDiagramLayout = (
   });
 };
 
-const applyBrainstormingCloudLayout = (
+const applyRadialClusterLayout = (
   nodes: Node[],
+  edges: Edge[],
   canvasSize: { width: number; height: number }
 ): Node[] => {
+  const hierarchy = createHierarchy(nodes, edges);
+  const radius = Math.min(canvasSize.width, canvasSize.height) * 0.4;
+  const cluster = d3.cluster<Node>().size([2 * Math.PI, radius]);
+
+  const root = cluster(hierarchy);
   const centerX = canvasSize.width / 2;
   const centerY = canvasSize.height / 2;
-  const radius = Math.min(canvasSize.width, canvasSize.height) / 3;
 
-  return nodes.map((node, index) => {
-    const angle = (index / nodes.length) * 2 * Math.PI;
-    const x = centerX + radius * Math.cos(angle) * (0.8 + Math.random() * 0.4);
-    const y = centerY + radius * Math.sin(angle) * (0.8 + Math.random() * 0.4);
-    return { ...node, position: { x, y } };
+  return nodes.map((node) => {
+    const layoutNode = root.find((d) => d.data.id === node.id);
+    if (layoutNode) {
+      const angle = layoutNode.x - Math.PI / 2;
+      const x = Math.cos(angle) * layoutNode.y + centerX;
+      const y = Math.sin(angle) * layoutNode.y + centerY;
+      return { ...node, position: { x, y } };
+    }
+    return node;
   });
 };
 
@@ -215,7 +230,7 @@ const applyForceDirectedLayout = (
   edges: Edge[],
   canvasSize: { width: number; height: number }
 ): Node[] => {
-  const simulationNodes: ExtendedSimulationNode[] = nodes.map((node) => ({
+  const simulationNodes: ExtendedNode[] = nodes.map((node) => ({
     ...node,
     x: Math.random() * canvasSize.width,
     y: Math.random() * canvasSize.height,
@@ -249,39 +264,80 @@ const applyForceDirectedLayout = (
   }));
 };
 
-const applyKanbanLayout = (
+const applyGridLayout = (
   nodes: Node[],
   canvasSize: { width: number; height: number }
 ): Node[] => {
-  const columns = ['To Do', 'In Progress', 'Done'];
-  const columnWidth = canvasSize.width / columns.length;
-  const nodeWidth = 180;
+  const nodeWidth = 200;
   const nodeHeight = 100;
-  const verticalSpacing = 20;
+  const horizontalGap = 50;
+  const verticalGap = 50;
 
-  const columnNodes: { [key: string]: Node[] } = {
-    'To Do': [],
-    'In Progress': [],
-    Done: []
-  };
+  const cols = Math.floor(
+    (canvasSize.width + horizontalGap) / (nodeWidth + horizontalGap)
+  );
+  const rows = Math.ceil(nodes.length / cols);
 
-  nodes.forEach((node) => {
-    const column = node.data.status || 'To Do';
-    columnNodes[column].push(node);
+  return nodes.map((node, index) => {
+    const col = index % cols;
+    const row = Math.floor(index / cols);
+    const x = col * (nodeWidth + horizontalGap) + nodeWidth / 2;
+    const y = row * (nodeHeight + verticalGap) + nodeHeight / 2;
+    return { ...node, position: { x, y } };
   });
+};
 
-  return nodes.map((node) => {
-    const column = node.data.status || 'To Do';
-    const columnIndex = columns.indexOf(column);
-    const nodesInColumn = columnNodes[column];
-    const nodeIndex = nodesInColumn.indexOf(node);
+const applyConceptMapLayout = (
+  nodes: Node[],
+  edges: Edge[],
+  canvasSize: { width: number; height: number }
+): Node[] => {
+  // Create a map of node IDs to ensure we're using consistent IDs
+  const nodeMap = new Map(nodes.map((node) => [node.id, node]));
 
-    return {
+  // Create ExtendedNode objects
+  const extendedNodes: ExtendedNode[] = Array.from(nodeMap.values()).map(
+    (node) => ({
       ...node,
-      position: {
-        x: columnIndex * columnWidth + (columnWidth - nodeWidth) / 2,
-        y: nodeIndex * (nodeHeight + verticalSpacing) + 50
-      }
-    };
-  });
+      x: Math.random() * canvasSize.width,
+      y: Math.random() * canvasSize.height,
+      vx: 0,
+      vy: 0
+    })
+  );
+
+  // Create ExtendedSimulationLink objects
+  const simulationLinks: ExtendedSimulationLink[] = edges.map((edge) => ({
+    source: edge.source,
+    target: edge.target,
+    id: edge.id
+  }));
+
+  const simulation = d3
+    .forceSimulation<ExtendedNode>(extendedNodes)
+    .force(
+      'link',
+      d3
+        .forceLink<ExtendedNode, ExtendedSimulationLink>(simulationLinks)
+        .id((d) => d.id)
+        .distance(200)
+        .strength(1)
+    )
+    .force('charge', d3.forceManyBody().strength(-1000))
+    .force(
+      'center',
+      d3.forceCenter(canvasSize.width / 2, canvasSize.height / 2)
+    )
+    .force('collision', d3.forceCollide().radius(100))
+    .force('x', d3.forceX(canvasSize.width / 2).strength(0.1))
+    .force('y', d3.forceY(canvasSize.height / 2).strength(0.1));
+
+  // Run the simulation synchronously
+  for (let i = 0; i < 300; ++i) simulation.tick();
+
+  // Update node positions
+  return extendedNodes.map((node) => ({
+    ...node,
+    position: { x: node.x || 0, y: node.y || 0 }
+  }));
 };
