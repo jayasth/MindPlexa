@@ -16,7 +16,7 @@ When generating the flowchart:
 - Create logical connections between nodes using "nodeID1 --> nodeID2".
 - Avoid special characters or quotes in node text.
 - Start the Mermaid code with "graph TD".
-- Ensure that all node IDs are unique and follow a consistent format (e.g., "node1", "node2", etc.).
+- Ensure each node has a unique ID, preferably in the format 'n1', 'n2', etc.
 - Make sure all edges reference existing node IDs.
 
 Your response should be a JSON object with these fields:
@@ -31,7 +31,6 @@ Ensure that:
 2. Node IDs are unique and consistent throughout the diagram.
 3. All edges reference existing node IDs.
 4. There are no extraneous characters or text outside of the JSON structure.
-5. The structure is a single connected graph (no isolated nodes or subgraphs).
 
 Now, please analyze the input and provide the appropriate response.`;
 };

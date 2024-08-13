@@ -50,6 +50,7 @@ export const applyLayout = (
         layoutedNodes = applyForceLayout(nodesCopy, edges, canvasSize);
     }
 
+    // Validate the layout
     if (!validateLayout(layoutedNodes, canvasSize)) {
       console.warn('Layout validation failed, falling back to grid layout');
       return applyGridLayout(nodesCopy, canvasSize);
@@ -82,28 +83,32 @@ const createHierarchy = (
   nodes: Node[],
   edges: Edge[]
 ): d3.HierarchyNode<Node> => {
-  const rootNode = nodes.find(
-    (node) => !edges.some((edge) => edge.target === node.id)
-  );
-  if (!rootNode) throw new Error('No root node found');
-
-  const hierarchy: { [key: string]: d3.HierarchyNode<Node> } = {};
-  nodes.forEach((node) => {
-    hierarchy[node.id] = d3.hierarchy(node);
-  });
+  const idToNodeMap = new Map(nodes.map((node) => [node.id, node]));
+  const childrenMap = new Map<string, Node[]>();
 
   edges.forEach((edge) => {
-    const parent = hierarchy[edge.source];
-    const child = hierarchy[edge.target];
-    if (parent && child) {
-      if (!parent.children) {
-        parent.children = [];
-      }
-      parent.children.push(child);
+    if (!childrenMap.has(edge.source)) {
+      childrenMap.set(edge.source, []);
+    }
+    const targetNode = idToNodeMap.get(edge.target);
+    if (targetNode) {
+      childrenMap.get(edge.source)!.push(targetNode);
     }
   });
 
-  return hierarchy[rootNode.id];
+  const rootNode = nodes.find(
+    (node) => !edges.some((edge) => edge.target === node.id)
+  );
+  if (!rootNode) {
+    throw new Error('No root node found');
+  }
+
+  const buildHierarchy = (node: Node): d3.HierarchyNode<Node> => {
+    const children = childrenMap.get(node.id) || [];
+    return d3.hierarchy(node, (n) => childrenMap.get(n.id) || []);
+  };
+
+  return buildHierarchy(rootNode);
 };
 
 const applyTreeLayout = (
@@ -112,23 +117,24 @@ const applyTreeLayout = (
   canvasSize: { width: number; height: number }
 ): Node[] => {
   try {
-    const root = createHierarchy(nodes, edges);
+    const hierarchy = createHierarchy(nodes, edges);
+
     const treeLayout = d3
       .tree<Node>()
       .size([canvasSize.width * 0.9, canvasSize.height * 0.9])
       .nodeSize([150, 200])
       .separation((a, b) => (a.parent === b.parent ? 1.5 : 2.5));
 
-    const treeData = treeLayout(root);
+    const root = treeLayout(hierarchy);
 
     return nodes.map((node) => {
-      const treeNode = treeData.find((d) => d.data.id === node.id);
+      const layoutNode = root.find((d) => d.data.id === node.id);
       return {
         ...node,
-        position: treeNode
+        position: layoutNode
           ? {
-              x: Math.max(0, Math.min(treeNode.x, canvasSize.width)),
-              y: Math.max(0, Math.min(treeNode.y, canvasSize.height))
+              x: Math.max(0, Math.min(layoutNode.x, canvasSize.width)),
+              y: Math.max(0, Math.min(layoutNode.y, canvasSize.height))
             }
           : node.position
       };
@@ -145,29 +151,21 @@ const applyRadialLayout = (
   canvasSize: { width: number; height: number }
 ): Node[] => {
   try {
-    const root = createHierarchy(nodes, edges);
+    const hierarchy = createHierarchy(nodes, edges);
+
     const radialLayout = d3
       .tree<Node>()
-      .size([
-        2 * Math.PI,
-        Math.min(canvasSize.width, canvasSize.height) / 2 - 100
-      ])
+      .size([2 * Math.PI, Math.min(canvasSize.width, canvasSize.height) / 2])
       .separation((a, b) => (a.parent === b.parent ? 1 : 2) / a.depth);
 
-    const radialData = radialLayout(root);
+    const root = radialLayout(hierarchy);
 
     return nodes.map((node) => {
-      const radialNode = radialData.find((d) => d.data.id === node.id);
-      if (radialNode) {
-        const x = (radialNode.x * 180) / Math.PI;
-        const y = radialNode.y;
-        return {
-          ...node,
-          position: {
-            x: Math.cos(x) * y + canvasSize.width / 2,
-            y: Math.sin(x) * y + canvasSize.height / 2
-          }
-        };
+      const layoutNode = root.find((d) => d.data.id === node.id);
+      if (layoutNode) {
+        const x = layoutNode.x * (180 / Math.PI) + canvasSize.width / 2;
+        const y = layoutNode.y + canvasSize.height / 2;
+        return { ...node, position: { x, y } };
       }
       return node;
     });
@@ -197,10 +195,9 @@ const applyForceLayout = (
       .force(
         'center',
         d3.forceCenter(canvasSize.width / 2, canvasSize.height / 2)
-      )
-      .stop();
+      );
 
-    simulation.tick(300);
+    for (let i = 0; i < 300; ++i) simulation.tick();
 
     return nodes.map((node) => ({
       ...node,
@@ -245,12 +242,11 @@ const applyTimelineLayout = (
     const nodeHeight = 100;
     const verticalSpacing = 150;
     const horizontalSpacing = nodeWidth + 50;
+    const maxNodesPerRow = Math.floor(canvasSize.width / horizontalSpacing);
 
     return nodes.map((node, index) => {
-      const row = Math.floor(
-        index / Math.floor(canvasSize.width / horizontalSpacing)
-      );
-      const col = index % Math.floor(canvasSize.width / horizontalSpacing);
+      const row = Math.floor(index / maxNodesPerRow);
+      const col = index % maxNodesPerRow;
       return {
         ...node,
         position: {
