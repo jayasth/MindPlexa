@@ -236,6 +236,8 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
         {showConfirmModal && (
           <div>
             <ConfirmIntegrationModal
+              isOpen={showConfirmModal}
+              onClose={() => setShowConfirmModal(false)}
               onConfirm={() =>
                 handleConfirmIntegration(
                   generatedNodes,

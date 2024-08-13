@@ -171,6 +171,8 @@ const AIAssistanceModal: React.FC<AIAssistanceModalProps> = ({
           )}
           {showConfirmModal && (
             <ConfirmIntegrationModal
+              isOpen={showConfirmModal}
+              onClose={() => setShowConfirmModal(false)}
               onConfirm={() =>
                 handleConfirmIntegration(generatedNodes, generatedEdges)
               }
