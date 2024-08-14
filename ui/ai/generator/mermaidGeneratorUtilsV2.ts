@@ -1,5 +1,5 @@
 import mermaid from 'mermaid';
-import { v4 as uuidv4 } from 'uuid';
+import { v1 as uuidv1 } from 'uuid';
 import { Node, Edge, MarkerType } from 'reactflow';
 import {
   extractTitleAndType,
@@ -12,44 +12,32 @@ import { getNodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 export async function parseMermaidCode(
   mermaidCode: string,
   projectDetails: string
-): Promise<{ nodes: Node[]; edges: Edge[]; warning: string | null }> {
+): Promise<{ nodes: Node[]; edges: Edge[]; warning?: string }> {
   const filteredCode = removeDoubleQuoteInsideParentheses(
     removeDoubleQuoteInsideBrackets(removeMarkdowncode(mermaidCode))
   );
   console.log('mermaidGeneratorUtilsV2 Filtered Mermaid Code:', filteredCode);
 
+  // Remove the "Project Concept:" prefix if present
   const processedCode = filteredCode.replace(/^.*?graph TD/, 'graph TD');
 
   let svgCode: any;
+  let warning: string | undefined;
 
   try {
     mermaid.initialize({ startOnLoad: false });
     svgCode = await mermaid.render('mermaid-chart', processedCode);
   } catch (error: any) {
     console.error('mermaidGeneratorUtilsV2 Mermaid parsing error:', error);
-    console.error('Processed Mermaid code:', processedCode);
-    return {
-      nodes: [],
-      edges: [],
-      warning: `Error parsing Mermaid code: ${error.message}`
-    };
+    warning = 'Error parsing Mermaid code. Using fallback layout.';
+    // Generate a simple fallback layout
+    svgCode = await mermaid.render(
+      'mermaid-chart',
+      'graph TD\nA[Project::Main concept] --> B[Subtopic 1]\nA --> C[Subtopic 2]'
+    );
   }
 
-  let nodes: Node[] = [];
-  let edges: Edge[] = [];
-  try {
-    ({ nodes, edges } = convertToReactFlowElements(svgCode.svg));
-  } catch (error: any) {
-    console.error(
-      'mermaidGeneratorUtilsV2 Error converting to React Flow elements:',
-      error
-    );
-    return {
-      nodes: [],
-      edges: [],
-      warning: 'Error converting to React Flow elements'
-    };
-  }
+  const { nodes, edges } = convertToReactFlowElements(svgCode.svg);
 
   const filteredNodes = nodes.filter(
     (node) =>
@@ -57,7 +45,7 @@ export async function parseMermaidCode(
       node.data.content !== 'No description available'
   );
 
-  return { nodes: filteredNodes, edges, warning: null };
+  return { nodes: filteredNodes, edges, warning };
 }
 
 const convertToReactFlowElements = (
@@ -66,21 +54,22 @@ const convertToReactFlowElements = (
   nodes: Node[];
   edges: Edge[];
 } => {
-  const parser = new DOMParser();
-  const svgDoc = parser.parseFromString(svgCode, 'image/svg+xml');
+  const dummyDiv = document.createElement('div');
+  dummyDiv.innerHTML = svgCode;
+
+  const mermaidNodes = Array.from(dummyDiv.querySelectorAll('.node'));
+  const mermaidEdges = Array.from(dummyDiv.querySelectorAll('.edgePaths path'));
 
   const nodes: Node[] = [];
   const edges: Edge[] = [];
   const idMap = new Map<string, string>();
 
-  // Process nodes
-  svgDoc.querySelectorAll('.node').forEach((node, index) => {
-    const elId = node.id || `n${index}`;
-    const labelEl = node.querySelector('.label');
-    const nodeLabel = labelEl ? labelEl.textContent : '';
+  mermaidNodes.forEach((node, index) => {
+    const elId = node.getAttribute('id') || `n${index}`;
+    const nodeLabel = node.querySelector('.nodeLabel')?.textContent;
     const { title, type, content } = extractTitleAndType(nodeLabel || '');
 
-    const nodeId = `${type}-${uuidv4()}`;
+    const nodeId = `${type}-${uuidv1()}`;
     const { width, height } = getNodeDimensions('note', false, false);
 
     nodes.push({
@@ -107,12 +96,13 @@ const convertToReactFlowElements = (
     if (shortId) {
       idMap.set(shortId, nodeId);
     }
+
+    console.log(`Mapped node: ${elId} -> ${nodeId}`);
   });
 
-  // Process edges
-  svgDoc.querySelectorAll('.edgePath').forEach((edgePath, index) => {
-    const id = edgePath.id || `e${index}`;
-    const classes = edgePath.getAttribute('class')?.split(' ') || [];
+  mermaidEdges.forEach((edge, index) => {
+    const id = edge.getAttribute('id') || `e${index}`;
+    const classes = edge.getAttribute('class')?.split(' ') || [];
     const originalSource = classes
       .find((c) => c.startsWith('LS-'))
       ?.replace('LS-', '');
@@ -125,8 +115,8 @@ const convertToReactFlowElements = (
       return;
     }
 
-    const source = idMap.get(originalSource) || originalSource;
-    const target = idMap.get(originalTarget) || originalTarget;
+    const source = idMap.get(originalSource);
+    const target = idMap.get(originalTarget);
 
     if (source && target) {
       edges.push({
@@ -147,5 +137,8 @@ const convertToReactFlowElements = (
     }
   });
 
-  return { nodes, edges };
+  return {
+    nodes,
+    edges
+  };
 };
