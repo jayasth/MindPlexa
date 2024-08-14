@@ -1,39 +1,36 @@
 export const promptTemplateV1 = (userInput: string) => {
-  const [topic, projectDetails] = userInput.split('\nProject Details: ');
+  return `As an AI assistant, create a comprehensive project layout for the MindePlexa project management platform based on this user input: "${userInput}"
 
-  return `Generate a comprehensive Mermaid JS flowchart for the MindePlexa project management platform based on the following input:
+Follow these guidelines:
 
-Main Topic: ${topic}
-Additional Context: ${projectDetails}
+1. Analyze the input thoroughly to determine if it provides sufficient information for generating a project layout.
+2. If the input is clear and detailed enough, create a Mermaid JS flowchart representing the project structure.
+3. If the input lacks clarity or details, formulate a follow-up question to gather more information.
 
-Instructions:
-1. Create a flowchart that starts with the main topic as the root node.
-2. Develop a logical structure with 3-7 main subtopics branching out from the root.
-3. For each main subtopic, create 2-5 child nodes with relevant details.
-4. Each node should follow the format: "NodeID[NodeTitle::NodeDescription]"
-   - NodeTitle should be a concise key point (max 5 words)
-   - NodeDescription should provide more details or elaboration (15-25 words)
-5. Ensure all nodes, including the root node, have meaningful titles and descriptions.
-6. Create coherent connections between nodes that make sense for the topic.
-7. Avoid using any special characters or double quotes in the node text.
-8. Use varied relationships: some nodes may have multiple children, while others may have none.
-9. Consider the project's complexity and structure when creating the hierarchy.
-10. Only include Mermaid JS syntax in your response, no additional text.
+When generating the flowchart:
+- Begin with the project concept as the root node.
+- Create 3-7 main subtopics branching from the root.
+- For each subtopic, add 2-5 child nodes with relevant details.
+- Use the format: "nodeID[Node Title::Node Description]" for each node.
+- Ensure all nodes have meaningful titles (max 5 words) and descriptions (15-25 words).
+- Create logical connections between nodes using "nodeID1 --> nodeID2".
+- Avoid special characters or quotes in node text.
+- Start the Mermaid code with "graph TD".
+- Ensure each node has a unique ID, preferably in the format 'n1', 'n2', etc.
+- Make sure all edges reference existing node IDs.
 
-Example structure (do not use this content, it's just for format reference):
-graph TD
-  A[Main Topic::Brief description of the main topic]
-  B[Subtopic 1::Details about subtopic 1]
-  C[Subtopic 2::Details about subtopic 2]
-  D[Subtopic 3::Details about subtopic 3]
-  A --> B
-  A --> C
-  A --> D
-  B --> E[Sub-subtopic 1.1::More specific information]
-  B --> F[Sub-subtopic 1.2::Additional details]
-  C --> G[Sub-subtopic 2.1::Relevant information]
-  D --> H[Sub-subtopic 3.1::Specific aspects]
-  D --> I[Sub-subtopic 3.2::Further details]
+Your response should be a JSON object with these fields:
+{
+  "needsFollowUp": boolean,
+  "followUpQuestion": string (if needsFollowUp is true),
+  "mermaidCode": string (if needsFollowUp is false)
+}
 
-Generate a detailed and well-structured Mermaid JS flowchart now:`;
+Ensure that:
+1. The Mermaid code is valid and can be parsed without errors.
+2. Node IDs are unique and consistent throughout the diagram.
+3. All edges reference existing node IDs.
+4. There are no extraneous characters or text outside of the JSON structure.
+
+Now, please analyze the input and provide the appropriate response.`;
 };

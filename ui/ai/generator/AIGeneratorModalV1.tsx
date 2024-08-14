@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal } from 'react-responsive-modal';
 import 'react-responsive-modal/styles.css';
 import { Edge, Node } from 'reactflow';
-import { useCompletion } from 'ai/react';
-import { parseMermaidCode } from './mermaidGeneratorUtilsV1';
-import { promptTemplateV1 } from '@/app/prompts/generatorPromptV1';
+import { parseMermaidCode } from './mermaidGeneratorUtilsV4';
+import { promptTemplateV4 } from '@/app/prompts/generatorPromptV4';
 import {
   useNodeStore,
   useEdgeStore,
@@ -14,30 +13,42 @@ import {
 import Button from '@/ui/Button/Button';
 import ConfirmIntegrationModal from './ConfirmIntegrationModal';
 import Dropdown from '@/ui/dropdown/Dropdown';
-import { optimizeAINodePositions } from '@/ui/ai/generator/aiPositioningUtilsV1';
 import styles from './AIGeneratorModal.module.css';
+import { applyLayout } from '@/ui/ai/generator/aiPositioningUtilsV4';
 
-interface AIGeneratorModalV1Props {
+interface AIGeneratorModalV4Props {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
+type LayoutType =
+  | 'mindmap'
+  | 'workflow'
+  | 'concept-map'
+  | 'grid'
+  | 'hierarchical';
+
+const layoutOptions: { value: LayoutType; label: string }[] = [
+  { value: 'mindmap', label: 'Mind Map' },
+  { value: 'workflow', label: 'Workflow Diagram' },
+  { value: 'concept-map', label: 'Concept Map' },
+  { value: 'grid', label: 'Grid Layout' },
+  { value: 'hierarchical', label: 'Hierarchical Tree' }
+];
+
+const AIGeneratorModalV4: React.FC<AIGeneratorModalV4Props> = ({
   isOpen,
   onClose
 }) => {
-  const [step, setStep] = useState(1);
   const [projectConcept, setProjectConcept] = useState('');
-  const [projectDetails, setProjectDetails] = useState('');
+  const [followUpQuestion, setFollowUpQuestion] = useState('');
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [generatedNodes, setGeneratedNodes] = useState<Node[]>([]);
   const [generatedEdges, setGeneratedEdges] = useState<Edge[]>([]);
-  const { completion, input, handleInputChange, handleSubmit, isLoading } =
-    useCompletion();
-
-  const [selectedModel, setSelectedModel] = useState('gpt-3.5-turbo');
-
-  const { setNodes } = useNodeStore();
+  const [selectedModel, setSelectedModel] = useState('gpt-4o');
+  const [selectedLayout, setSelectedLayout] = useState<LayoutType>('mindmap');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const { setNodes, nodes: existingNodes } = useNodeStore();
   const { setEdges } = useEdgeStore();
   const { isLoading: uiIsLoading, setIsLoading } = useUIStore();
   const { canvasId } = useCanvasStore();
@@ -46,34 +57,24 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
     e: React.ChangeEvent<HTMLTextAreaElement>
   ) => {
     setProjectConcept(e.target.value);
-  };
-
-  const handleProjectDetailsChange = (
-    e: React.ChangeEvent<HTMLTextAreaElement>
-  ) => {
-    setProjectDetails(e.target.value);
-  };
-
-  const handleNext = () => {
-    if (projectConcept.trim()) {
-      setStep(2);
-    }
+    setFollowUpQuestion('');
   };
 
   const handleGenerateCanvas = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
+    setErrorMessage(null);
+
+    console.log('Selected layout type:', selectedLayout);
 
     try {
-      const prompt = promptTemplateV1(
-        `Project Concept: ${projectConcept}\nProject Details: ${projectDetails}`
-      );
+      const prompt = promptTemplateV4(projectConcept);
       const response = await fetch('/api/completion', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ prompt, version: selectedModel })
+        body: JSON.stringify({ prompt, version: 'v4', model: selectedModel })
       });
 
       if (!response.ok) {
@@ -81,49 +82,55 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
       }
 
       const data = await response.json();
-      console.log('AIGeneratorModalV1 Response data:', data);
+      console.log('AIGeneratorModalV4 Response data:', data);
+
+      if (data.needsFollowUp) {
+        setFollowUpQuestion(data.followUpQuestion);
+        setIsLoading(false);
+        return;
+      }
 
       const canvasSize = {
         width: window.innerWidth,
         height: window.innerHeight
       };
 
-      const { nodes: newNodes, edges: newEdges } = await parseMermaidCode(
+      const { nodes, edges } = await parseMermaidCode(
         data.mermaidCode,
-        projectDetails
+        projectConcept
       );
-
-      const updatedNodes = newNodes.map((node) => ({
-        ...node,
-        data: {
-          ...node.data,
-          title: node.data?.title || 'Untitled',
-          content: node.data?.content || 'No description available'
-        }
-      }));
-
-      const existingNodes = useNodeStore.getState().nodes;
+      const layoutedNodes = applyLayout(
+        nodes,
+        edges,
+        canvasSize,
+        selectedLayout
+      );
+      console.log('Layouted nodes:', layoutedNodes);
 
       if (existingNodes.length > 0) {
-        setGeneratedNodes(updatedNodes);
-        setGeneratedEdges(newEdges);
+        setGeneratedNodes(layoutedNodes);
+        setGeneratedEdges(edges);
         setShowConfirmModal(true);
       } else {
-        handleConfirmIntegration(updatedNodes, newEdges);
+        handleConfirmIntegration(layoutedNodes, edges);
       }
     } catch (error) {
-      console.error('AIGeneratorModalV1: Error generating canvas:', error);
-    } finally {
-      setIsLoading(false);
+      console.error('Error generating canvas:', error);
+      setErrorMessage(
+        'An error occurred while generating the canvas. Please try again.'
+      );
     }
+
+    setIsLoading(false);
   };
 
-  const handleConfirmIntegration = (newNodes, newEdges) => {
+  const handleConfirmIntegration = (newNodes: Node[], newEdges: Edge[]) => {
     const canvasSize = { width: window.innerWidth, height: window.innerHeight };
-    const optimizedNodes = optimizeAINodePositions(
+    const optimizedNodes = applyLayout(
       newNodes,
       newEdges,
-      canvasSize
+      canvasSize,
+      selectedLayout
     );
 
     setNodes((currentNodes) => [...currentNodes, ...optimizedNodes]);
@@ -149,56 +156,56 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
         }}
       >
         <div className={styles.modalInner}>
-          <h2 className={styles.modalHeader}>AI Node Network Generator</h2>
-          <form onSubmit={step === 1 ? handleNext : handleGenerateCanvas}>
-            {step === 1 && (
-              <>
-                <textarea
-                  className={styles.textarea}
-                  placeholder="Enter your project topic or main idea"
-                  value={projectConcept}
-                  onChange={handleProjectConceptChange}
-                />
-                <Button
-                  onClick={handleNext}
-                  variant="sleek"
-                  className={styles.nextButton}
-                  disabled={!projectConcept.trim()}
-                >
-                  Next
-                </Button>
-              </>
+          <h2 className={styles.modalHeader}>AI Node Network Generator V4</h2>
+          <form onSubmit={handleGenerateCanvas}>
+            <textarea
+              className={styles.textarea}
+              placeholder="Enter your project topic or main idea"
+              value={projectConcept}
+              onChange={handleProjectConceptChange}
+            />
+            {followUpQuestion && (
+              <p className={styles.followUpQuestion}>{followUpQuestion}</p>
             )}
-            {step === 2 && (
-              <>
-                <textarea
-                  className={styles.textarea}
-                  placeholder="Provide additional context or details about your project"
-                  value={projectDetails}
-                  onChange={handleProjectDetailsChange}
-                />
-                <div className={styles.actionContainer}>
-                  <Dropdown
-                    value={selectedModel}
-                    onChange={(value) => setSelectedModel(value)}
-                    variant="custom"
-                    className={styles.dropdown}
-                  >
-                    <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-                    <option value="gpt-4o">GPT-4o</option>
-                  </Dropdown>
-                  <Button
-                    type="submit"
-                    disabled={uiIsLoading}
-                    loading={uiIsLoading}
-                    variant="submit"
-                    className={styles.generateButton}
-                  >
-                    {uiIsLoading ? 'Generating...' : 'Generate Network'}
-                  </Button>
-                </div>
-              </>
+            {errorMessage && (
+              <p className={styles.errorMessage}>{errorMessage}</p>
             )}
+            <div className={styles.actionContainer}>
+              <Dropdown
+                value={selectedModel}
+                onChange={(value) => setSelectedModel(value)}
+                variant="custom"
+                className={styles.dropdown}
+              >
+                <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                <option value="gpt-4o">GPT-4o</option>
+              </Dropdown>
+              <Dropdown
+                value={selectedLayout}
+                onChange={(value) => setSelectedLayout(value as LayoutType)}
+                variant="custom"
+                className={styles.dropdown}
+              >
+                {layoutOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </Dropdown>
+              <Button
+                type="submit"
+                disabled={uiIsLoading || !projectConcept.trim()}
+                loading={uiIsLoading}
+                variant="submit"
+                className={styles.generateButton}
+              >
+                {uiIsLoading ? (
+                  <span className={styles.generatingText}>Generating...</span>
+                ) : (
+                  'Generate'
+                )}
+              </Button>
+            </div>
           </form>
         </div>
       </Modal>
@@ -217,4 +224,4 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
   );
 };
 
-export default AIGeneratorModalV1;
+export default AIGeneratorModalV4;

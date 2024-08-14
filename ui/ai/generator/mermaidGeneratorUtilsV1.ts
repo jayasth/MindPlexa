@@ -8,17 +8,6 @@ import {
   removeMarkdowncode
 } from '@/ui/ai/generator/aiGeneratorCanvasUtils';
 import { getNodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
-import { useNodeStore } from '@/app/store';
-import { optimizeAINodePositions } from '@/ui/ai/generator/aiPositioningUtilsV1';
-
-const applyLayout = (
-  nodes: Node[],
-  edges: Edge[],
-  canvasSize: { width: number; height: number }
-): { nodes: Node[]; edges: Edge[] } => {
-  const optimizedNodes = optimizeAINodePositions(nodes, edges, canvasSize);
-  return { nodes: optimizedNodes, edges };
-};
 
 export async function parseMermaidCode(
   mermaidCode: string,
@@ -29,9 +18,8 @@ export async function parseMermaidCode(
   );
   console.log('mermaidGeneratorUtilsV1 Filtered Mermaid Code:', filteredCode);
 
-  const processedCode = filteredCode.startsWith('graph TD')
-    ? filteredCode
-    : `graph TD\n${filteredCode}`;
+  // Remove the "Project Concept:" prefix if present
+  const processedCode = filteredCode.replace(/^.*?graph TD/, 'graph TD');
 
   let svgCode: any;
 
@@ -67,23 +55,7 @@ export async function parseMermaidCode(
       node.data.content !== 'No description available'
   );
 
-  const canvasSize = {
-    width: window.innerWidth,
-    height: window.innerHeight
-  };
-
-  let layoutedElements: { nodes: Node[]; edges: Edge[] };
-  try {
-    layoutedElements = applyLayout(filteredNodes, edges, canvasSize);
-  } catch (error: any) {
-    console.error('mermaidGeneratorUtilsV1 Error applying layout:', error);
-    return {
-      nodes: filteredNodes,
-      edges
-    };
-  }
-
-  return layoutedElements;
+  return { nodes: filteredNodes, edges };
 }
 
 const convertToReactFlowElements = (
@@ -104,29 +76,16 @@ const convertToReactFlowElements = (
 
   mermaidNodes.forEach((node, index) => {
     const elId = node.getAttribute('id') || `n${index}`;
-    let id = elId;
-
-    const classPattern = /^flowchart-([^-\d]+)-\d+$/;
-    const matches = elId.match(classPattern);
-
-    if (matches) {
-      id = matches[1];
-    }
-
     const nodeLabel = node.querySelector('.nodeLabel')?.textContent;
     const { title, type, content } = extractTitleAndType(nodeLabel || '');
 
-    const position = {
-      x: parseFloat(node.getAttribute('transform')!.split('(')[1]) * 1.2,
-      y: parseFloat(node.getAttribute('transform')!.split(',')[1]) * 1.2
-    };
-
     const nodeId = `${type}-${uuidv4()}`;
     const { width, height } = getNodeDimensions('note', false, false);
+
     nodes.push({
       id: nodeId,
       type: 'note',
-      position,
+      position: { x: 0, y: 0 },
       data: {
         id: nodeId,
         title: title.trim(),
@@ -142,33 +101,53 @@ const convertToReactFlowElements = (
       height
     });
 
-    idMap.set(id, nodeId);
+    // Map both the original ID and the extracted ID (if different)
+    idMap.set(elId, nodeId);
+
+    // Add this new mapping
+    const shortId = elId.split('-')[1];
+    if (shortId) {
+      idMap.set(shortId, nodeId);
+    }
+
+    console.log(`Mapped node: ${elId} -> ${nodeId}`);
   });
+
   mermaidEdges.forEach((edge, index) => {
     const id = edge.getAttribute('id') || `e${index}`;
-    const originalSource = edge
-      ?.getAttribute('class')
-      ?.split(' ')[3]
-      .replace('LS-', '');
-    const originalTarget = edge
-      ?.getAttribute('class')
-      ?.split(' ')[4]
-      .replace('LE-', '');
+    const classes = edge.getAttribute('class')?.split(' ') || [];
+    const originalSource = classes
+      .find((c) => c.startsWith('LS-'))
+      ?.replace('LS-', '');
+    const originalTarget = classes
+      .find((c) => c.startsWith('LE-'))
+      ?.replace('LE-', '');
 
     if (!originalSource || !originalTarget) {
+      console.warn(`Edge ${id} has missing source or target`, { classes });
       return;
     }
 
-    const source = idMap.get(originalSource) || '';
-    const target = idMap.get(originalTarget) || '';
+    const source = idMap.get(originalSource);
+    const target = idMap.get(originalTarget);
 
-    edges.push({
-      id,
-      source,
-      target,
-      type: 'customEdge',
-      markerEnd: { type: MarkerType.ArrowClosed }
-    });
+    if (source && target) {
+      edges.push({
+        id,
+        source,
+        target,
+        type: 'customEdge',
+        markerEnd: { type: MarkerType.ArrowClosed }
+      });
+    } else {
+      console.warn(`Edge ${id} has invalid source or target`, {
+        originalSource,
+        originalTarget,
+        mappedSource: source,
+        mappedTarget: target,
+        idMapKeys: Array.from(idMap.keys())
+      });
+    }
   });
 
   return {
