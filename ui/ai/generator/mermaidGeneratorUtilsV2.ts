@@ -27,10 +27,11 @@ export async function parseMermaidCode(
     svgCode = await mermaid.render('mermaid-chart', processedCode);
   } catch (error: any) {
     console.error('mermaidGeneratorUtilsV2 Mermaid parsing error:', error);
+    console.error('Processed Mermaid code:', processedCode);
     return {
       nodes: [],
       edges: [],
-      warning: 'Error parsing Mermaid code'
+      warning: `Error parsing Mermaid code: ${error.message}`
     };
   }
 
