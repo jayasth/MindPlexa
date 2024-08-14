@@ -41,7 +41,11 @@ export async function POST(req: Request) {
       messages: [
         {
           role: 'user',
-          content: selectedPromptTemplate(prompt)
+          content: selectedPromptTemplate(
+            prompt,
+            existingMermaidCode,
+            followUpQuestion
+          )
         }
       ]
     });
@@ -54,7 +58,7 @@ export async function POST(req: Request) {
     console.log('Complete response from OpenAI:', content);
 
     let parsedResponse;
-    if (version === 'v4' || version === 'v2') {
+    if (version === 'v4' || version === 'v2' || version === 'v1') {
       try {
         parsedResponse = JSON.parse(content);
       } catch (error) {

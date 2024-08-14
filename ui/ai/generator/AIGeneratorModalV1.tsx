@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Modal } from 'react-responsive-modal';
 import 'react-responsive-modal/styles.css';
 import { Edge, Node } from 'reactflow';
-import { parseMermaidCode } from './mermaidGeneratorUtilsV4';
-import { promptTemplateV4 } from '@/app/prompts/generatorPromptV4';
+import { parseMermaidCode } from './mermaidGeneratorUtilsV1';
+import { promptTemplateV1 } from '@/app/prompts/generatorPromptV1';
 import {
   useNodeStore,
   useEdgeStore,
@@ -14,9 +14,9 @@ import Button from '@/ui/Button/Button';
 import ConfirmIntegrationModal from './ConfirmIntegrationModal';
 import Dropdown from '@/ui/dropdown/Dropdown';
 import styles from './AIGeneratorModal.module.css';
-import { applyLayout } from '@/ui/ai/generator/aiPositioningUtilsV4';
+import { applyLayout } from '@/ui/ai/generator/aiPositioningUtilsV1';
 
-interface AIGeneratorModalV4Props {
+interface AIGeneratorModalV1Props {
   isOpen: boolean;
   onClose: () => void;
 }
@@ -36,7 +36,7 @@ const layoutOptions: { value: LayoutType; label: string }[] = [
   { value: 'hierarchical', label: 'Hierarchical Tree' }
 ];
 
-const AIGeneratorModalV4: React.FC<AIGeneratorModalV4Props> = ({
+const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
   isOpen,
   onClose
 }) => {
@@ -68,13 +68,13 @@ const AIGeneratorModalV4: React.FC<AIGeneratorModalV4Props> = ({
     console.log('Selected layout type:', selectedLayout);
 
     try {
-      const prompt = promptTemplateV4(projectConcept);
+      const prompt = promptTemplateV1(projectConcept);
       const response = await fetch('/api/completion', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ prompt, version: 'v4', model: selectedModel })
+        body: JSON.stringify({ prompt, version: 'v1', model: selectedModel })
       });
 
       if (!response.ok) {
@@ -82,13 +82,7 @@ const AIGeneratorModalV4: React.FC<AIGeneratorModalV4Props> = ({
       }
 
       const data = await response.json();
-      console.log('AIGeneratorModalV4 Response data:', data);
-
-      if (data.needsFollowUp) {
-        setFollowUpQuestion(data.followUpQuestion);
-        setIsLoading(false);
-        return;
-      }
+      console.log('AIGeneratorModalV1 Response data:', data);
 
       const canvasSize = {
         width: window.innerWidth,
@@ -156,7 +150,7 @@ const AIGeneratorModalV4: React.FC<AIGeneratorModalV4Props> = ({
         }}
       >
         <div className={styles.modalInner}>
-          <h2 className={styles.modalHeader}>AI Node Network Generator V4</h2>
+          <h2 className={styles.modalHeader}>AI Node Network Generator V1</h2>
           <form onSubmit={handleGenerateCanvas}>
             <textarea
               className={styles.textarea}
@@ -224,4 +218,4 @@ const AIGeneratorModalV4: React.FC<AIGeneratorModalV4Props> = ({
   );
 };
 
-export default AIGeneratorModalV4;
+export default AIGeneratorModalV1;

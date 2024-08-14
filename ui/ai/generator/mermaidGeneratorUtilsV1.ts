@@ -1,5 +1,5 @@
 import mermaid from 'mermaid';
-import { v4 as uuidv4 } from 'uuid';
+import { v1 as uuidv1 } from 'uuid';
 import { Node, Edge, MarkerType } from 'reactflow';
 import {
   extractTitleAndType,
@@ -79,7 +79,7 @@ const convertToReactFlowElements = (
     const nodeLabel = node.querySelector('.nodeLabel')?.textContent;
     const { title, type, content } = extractTitleAndType(nodeLabel || '');
 
-    const nodeId = `${type}-${uuidv4()}`;
+    const nodeId = `${type}-${uuidv1()}`;
     const { width, height } = getNodeDimensions('note', false, false);
 
     nodes.push({
