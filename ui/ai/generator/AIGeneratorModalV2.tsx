@@ -3,11 +3,7 @@ import { Modal } from 'react-responsive-modal';
 import 'react-responsive-modal/styles.css';
 import { Edge, Node } from 'reactflow';
 import { parseMermaidCode } from './mermaidGeneratorUtilsV2';
-import {
-  projectAnalysisPrompt,
-  layoutGenerationPrompt,
-  promptTemplateV2
-} from '@/app/prompts/generatorPromptV2';
+import { promptTemplateV2 } from '@/app/prompts/generatorPromptV2';
 import {
   useNodeStore,
   useEdgeStore,
