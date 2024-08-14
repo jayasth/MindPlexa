@@ -13,7 +13,7 @@ import {
 import Button from '@/ui/Button/Button';
 import ConfirmIntegrationModal from './ConfirmIntegrationModal';
 import Dropdown from '@/ui/dropdown/Dropdown';
-import styles from './AIGeneratorModal.module.css';
+import styles from './AIGeneratorModalV1.module.css';
 import { applyLayout } from '@/ui/ai/generator/aiPositioningUtilsV1';
 
 interface AIGeneratorModalV1Props {

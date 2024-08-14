@@ -1,34 +1,55 @@
-export const promptTemplateV2 = (userInput: string) => {
-  return `You are an AI assistant tasked with helping users create project layouts for the MindePlexa project management platform. The user has provided the following input:
+export const projectAnalysisPrompt = (userInput: string) => {
+  return `Analyze the following project concept for MindePlexa, an AI-powered project management platform:
 
 "${userInput}"
 
 Your task is to:
+1. Determine the primary industry or domain of the project.
+2. Assess the complexity and scale of the project.
+3. Identify key themes or components of the project.
+4. Suggest the most appropriate layout from the following options, considering the project's nature:
+   - tree: For hierarchical structures or processes with clear parent-child relationships.
+   - radial: For concepts with a central theme and related subtopics radiating outward.
+   - force: For complex networks with many interconnected ideas.
+   - mindmap: For brainstorming sessions or projects with a central concept and branching ideas.
+   - timeline: For projects with a clear chronological order or sequential steps.
 
-1. Analyze the user's input and determine if it's clear enough to generate a project layout.
-2. If the input is clear, generate a comprehensive Mermaid JS flowchart that represents the project structure.
-3. If the input is unclear or lacks sufficient detail, formulate a follow-up question to gather more information.
-
-When generating the flowchart:
-- Start with the main topic as the root node.
-- Create 3-7 main subtopics branching out from the root.
-- For each subtopic, add 2-5 child nodes with relevant details.
-- Use the format: "NodeID[NodeTitle::NodeDescription]" for each node.
-- Ensure all nodes have meaningful titles (max 5 words) and descriptions (15-25 words).
-- Create logical connections between nodes using the format: "NodeID1 --> NodeID2".
-- Avoid using special characters or double quotes in the node text.
-- Consider the project's complexity when creating the hierarchy.
-- Ensure the generated Mermaid code follows the correct syntax and formatting.
-- Start the Mermaid code with "graph TD" to ensure proper rendering.
-5. Suggest the most appropriate layout from the following options: tree, radial, force, mindmap, timeline.
-
-Output format:
+Provide your analysis in the following JSON format:
 {
-  "needsFollowUp": boolean,
-  "followUpQuestion": string (if needsFollowUp is true),
-  "mermaidCode": string (if needsFollowUp is false),
-  "suggestedLayout": "tree" | "radial" | "force" | "mindmap" | "timeline" (if needsFollowUp is false)
-}
+  "industry": string,
+  "complexity": "low" | "medium" | "high",
+  "keyThemes": string[],
+  "suggestedLayout": "tree" | "radial" | "force" | "mindmap" | "timeline",
+  "layoutReasoning": string
+}`;
+};
 
-Analyze the input and provide the appropriate response:`;
+export const layoutGenerationPrompt = (
+  userInput: string,
+  analysisResult: string
+) => {
+  return `Based on the following project concept and analysis for MindePlexa:
+
+Project Concept: "${userInput}"
+
+Analysis: ${analysisResult}
+
+Generate a comprehensive Mermaid JS flowchart that represents the project structure. Follow these guidelines:
+
+1. Use the suggested layout as a guide for the overall structure.
+2. Start with the main project concept as the root node.
+3. Create 3-7 main subtopics branching from the root, based on the key themes identified.
+4. For each subtopic, add 2-5 child nodes with relevant details.
+5. Use the format: "nodeID[Node Title::Node Description]" for each node.
+6. Ensure all nodes have meaningful titles (max 5 words) and descriptions (15-25 words).
+7. Create logical connections between nodes using "nodeID1 --> nodeID2".
+8. Avoid special characters or quotes in node text.
+9. Start the Mermaid code with "graph TD".
+10. Ensure each node has a unique ID, preferably in the format 'n1', 'n2', etc.
+11. Make sure all edges reference existing node IDs.
+
+Provide your response in the following JSON format:
+{
+  "mermaidCode": string
+}`;
 };

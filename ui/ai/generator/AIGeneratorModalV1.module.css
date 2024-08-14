@@ -1,0 +1,93 @@
+.modalOverlay {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modalContent {
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  padding: 1rem;
+  max-width: 400px;
+  width: 90%;
+}
+
+.modalInner {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.modalHeader {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.25rem;
+}
+
+.textarea {
+  width: 100%;
+  height: 80px;
+  padding: 0.5rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  resize: none;
+  font-size: 0.9rem;
+  transition: border-color 0.3s ease;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: #4a90e2;
+}
+
+.actionContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.dropdown {
+  flex: 1;
+  min-width: 0;
+}
+
+.generateButton {
+  width: 100%;
+  height: 32px;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+
+.closeButton {
+  top: 0.5rem;
+  right: 0.5rem;
+}
+
+.errorMessage {
+  color: #ff0000;
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+}
+
+.followUpQuestion {
+  font-size: 0.8rem;
+  color: #555;
+  margin-top: 0.25rem;
+}
+
+@media (max-width: 480px) {
+  .modalContent {
+    width: 95%;
+    padding: 0.75rem;
+  }
+
+  .actionContainer {
+    flex-direction: column;
+  }
+
+  .dropdown,
+  .generateButton {
+    width: 100%;
+  }
+}

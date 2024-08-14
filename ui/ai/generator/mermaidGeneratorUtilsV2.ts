@@ -9,16 +9,14 @@ import {
 } from '@/ui/ai/generator/aiGeneratorCanvasUtils';
 import { getNodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 
-// Function to sanitize node labels to ensure valid Mermaid syntax
 function sanitizeLabel(label: string): string {
-  return label.replace(/[\[\]\(\)\{\}\,]/g, ''); // Remove problematic characters
+  return label.replace(/[\[\]\(\)\{\}\,]/g, '');
 }
 
 export async function parseMermaidCode(
   mermaidCode: string,
   projectDetails: string
 ): Promise<{ nodes: Node[]; edges: Edge[]; warning: string | null }> {
-  // Sanitize labels within the Mermaid code
   const sanitizedCode = mermaidCode
     .split('\n')
     .map((line) => {
@@ -37,7 +35,7 @@ export async function parseMermaidCode(
   const filteredCode = removeDoubleQuoteInsideParentheses(
     removeDoubleQuoteInsideBrackets(removeMarkdowncode(sanitizedCode))
   );
-  console.log('mermaidGeneratorUtilsV2 Filtered Mermaid Code:', filteredCode);
+  console.log('Filtered Mermaid Code:', filteredCode);
 
   const processedCode = filteredCode.startsWith('graph TD')
     ? filteredCode
@@ -49,7 +47,7 @@ export async function parseMermaidCode(
     mermaid.initialize({ startOnLoad: false });
     svgCode = await mermaid.render('mermaid-chart', processedCode);
   } catch (error: any) {
-    console.error('mermaidGeneratorUtilsV2 Mermaid parsing error:', error);
+    console.error('Mermaid parsing error:', error);
     return {
       nodes: [],
       edges: [],
@@ -64,7 +62,6 @@ export async function parseMermaidCode(
     console.log('Converted Nodes:', nodes);
     console.log('Converted Edges:', edges);
 
-    // Check for any nodes referenced in edges that do not exist
     edges.forEach((edge) => {
       if (
         !nodes.find((node) => node.id === edge.source) ||
@@ -76,10 +73,7 @@ export async function parseMermaidCode(
       }
     });
   } catch (error: any) {
-    console.error(
-      'mermaidGeneratorUtilsV2 Error converting to React Flow elements:',
-      error
-    );
+    console.error('Error converting to React Flow elements:', error);
     return {
       nodes: [],
       edges: [],
@@ -93,7 +87,6 @@ export async function parseMermaidCode(
       node.data.content !== 'No description available'
   );
 
-  // Ensure all nodes have initial positions
   const nodesWithPositions = filteredNodes.map((node, index) => ({
     ...node,
     position: {
@@ -130,7 +123,7 @@ const convertToReactFlowElements = (
 
   mermaidNodes.forEach((node, index) => {
     const elId = node.getAttribute('id') || `n${index}`;
-    const id = elId.split('-')[1] || elId; // Extract the actual node ID
+    const id = elId.split('-')[1] || elId;
 
     const nodeLabel = node.querySelector('.nodeLabel')?.textContent;
     const { title, type, content } = extractTitleAndType(nodeLabel || '');

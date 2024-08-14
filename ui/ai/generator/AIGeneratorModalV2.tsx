@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Modal } from 'react-responsive-modal';
 import 'react-responsive-modal/styles.css';
 import { Edge, Node } from 'reactflow';
 import { parseMermaidCode } from './mermaidGeneratorUtilsV2';
-import { promptTemplateV2 } from '@/app/prompts/generatorPromptV2';
+import {
+  projectAnalysisPrompt,
+  layoutGenerationPrompt
+} from '@/app/prompts/generatorPromptV2';
 import {
   useNodeStore,
   useEdgeStore,
@@ -13,8 +16,8 @@ import {
 import Button from '@/ui/Button/Button';
 import ConfirmIntegrationModal from './ConfirmIntegrationModal';
 import Dropdown from '@/ui/dropdown/Dropdown';
-import styles from './AIGeneratorModal.module.css';
-import { applyD3Layout } from '@/ui/ai/generator/aiPositioningUtilsV2';
+import styles from './AIGeneratorModalV2.module.css';
+import { applyLayout } from '@/ui/ai/generator/aiPositioningUtilsV2';
 
 interface AIGeneratorModalV2Props {
   isOpen: boolean;
@@ -26,14 +29,13 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
   onClose
 }) => {
   const [projectConcept, setProjectConcept] = useState('');
-  const [followUpQuestion, setFollowUpQuestion] = useState('');
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [generatedNodes, setGeneratedNodes] = useState<Node[]>([]);
   const [generatedEdges, setGeneratedEdges] = useState<Edge[]>([]);
   const [selectedModel, setSelectedModel] = useState('gpt-4o');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [currentLayout, setCurrentLayout] = useState('');
-  const { setNodes } = useNodeStore();
+  const [analysisResult, setAnalysisResult] = useState<any>(null);
+  const { setNodes, nodes: existingNodes } = useNodeStore();
   const { setEdges } = useEdgeStore();
   const { isLoading: uiIsLoading, setIsLoading } = useUIStore();
   const { canvasId } = useCanvasStore();
@@ -42,15 +44,7 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
     e: React.ChangeEvent<HTMLTextAreaElement>
   ) => {
     setProjectConcept(e.target.value);
-
-    // Validate input and provide feedback
-    if (e.target.value.trim().length < 10) {
-      setFollowUpQuestion(
-        'Please provide more details about your project idea.'
-      );
-    } else {
-      setFollowUpQuestion('');
-    }
+    setErrorMessage(null);
   };
 
   const handleGenerateCanvas = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -58,99 +52,96 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
     setIsLoading(true);
     setErrorMessage(null);
 
-    // Sanitize user input before sending to AI
-    const sanitizedInput = projectConcept.replace(/[\[\]\(\)\{\}\,]/g, '');
-
     try {
-      const prompt = promptTemplateV2(sanitizedInput);
-      const response = await fetch('/api/completion', {
+      // Step 1: Analyze the project concept
+      const analysisPrompt = projectAnalysisPrompt(projectConcept);
+      const analysisResponse = await fetch('/api/completion', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ prompt, version: 'v2', model: selectedModel })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: analysisPrompt, model: selectedModel })
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to generate canvas');
+      if (!analysisResponse.ok) {
+        throw new Error('Failed to analyze project concept');
       }
 
-      const data = await response.json();
-      console.log('AIGeneratorModalV2 Response data:', data);
-      console.log('Selected layout:', data.suggestedLayout);
+      const analysisData = await analysisResponse.json();
+      setAnalysisResult(analysisData);
+      console.log('Project analysis:', analysisData);
 
-      if (data.needsFollowUp) {
-        setFollowUpQuestion(data.followUpQuestion);
+      // Step 2: Generate the layout based on the analysis
+      const layoutPrompt = layoutGenerationPrompt(
+        projectConcept,
+        JSON.stringify(analysisData)
+      );
+      const layoutResponse = await fetch('/api/completion', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: layoutPrompt, model: selectedModel })
+      });
+
+      if (!layoutResponse.ok) {
+        throw new Error('Failed to generate layout');
+      }
+
+      const layoutData = await layoutResponse.json();
+      console.log('Generated layout:', layoutData);
+
+      const canvasSize = {
+        width: window.innerWidth,
+        height: window.innerHeight
+      };
+
+      const { nodes, edges, warning } = await parseMermaidCode(
+        layoutData.mermaidCode,
+        projectConcept
+      );
+
+      if (warning) {
+        setErrorMessage(warning);
+      }
+
+      const layoutedNodes = applyLayout(
+        nodes,
+        edges,
+        canvasSize,
+        analysisData.suggestedLayout
+      );
+
+      if (existingNodes.length > 0) {
+        setGeneratedNodes(layoutedNodes);
+        setGeneratedEdges(edges);
+        setShowConfirmModal(true);
       } else {
-        const canvasSize = {
-          width: window.innerWidth,
-          height: window.innerHeight
-        };
-
-        const {
-          nodes: newNodes,
-          edges: newEdges,
-          warning
-        } = await parseMermaidCode(data.mermaidCode, sanitizedInput);
-
-        if (warning) {
-          setErrorMessage(warning);
-        }
-
-        console.log('Generated nodes:', newNodes);
-        console.log('Generated edges:', newEdges);
-
-        const updatedNodes = newNodes.map((node) => ({
-          ...node,
-          data: {
-            ...node.data,
-            title: node.data?.title || 'Untitled',
-            content: node.data?.content || 'No description available'
-          }
-        }));
-
-        const existingNodes = useNodeStore.getState().nodes;
-
-        if (existingNodes.length > 0) {
-          setGeneratedNodes(updatedNodes);
-          setGeneratedEdges(newEdges);
-          setShowConfirmModal(true);
-          setCurrentLayout(data.suggestedLayout);
-          console.log('Setting current layout:', data.suggestedLayout);
-        } else {
-          handleConfirmIntegration(
-            updatedNodes,
-            newEdges,
-            data.suggestedLayout
-          );
-        }
+        handleConfirmIntegration(
+          layoutedNodes,
+          edges,
+          analysisData.suggestedLayout
+        );
       }
     } catch (error) {
-      console.error('AIGeneratorModalV2: Error generating canvas:', error);
+      console.error('Error generating canvas:', error);
       setErrorMessage(
         'An error occurred while generating the canvas. Please try again.'
       );
-    } finally {
-      setIsLoading(false);
     }
+
+    setIsLoading(false);
   };
 
   const handleConfirmIntegration = (newNodes, newEdges, layout) => {
-    console.log('Applying layout:', layout);
     const canvasSize = { width: window.innerWidth, height: window.innerHeight };
     try {
-      const optimizedNodes = applyD3Layout(
+      const optimizedNodes = applyLayout(
         newNodes,
         newEdges,
         canvasSize,
         layout
       );
-
       setNodes((currentNodes) => [...currentNodes, ...optimizedNodes]);
       setEdges((currentEdges) => [...currentEdges, ...newEdges]);
     } catch (error) {
       console.error('Error applying layout:', error);
-      // Fallback to setting nodes without layout
       setNodes((currentNodes) => [...currentNodes, ...newNodes]);
       setEdges((currentEdges) => [...currentEdges, ...newEdges]);
     }
@@ -161,26 +152,6 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
   const handleCancelIntegration = () => {
     setShowConfirmModal(false);
   };
-
-  const handleLayoutChange = (newLayout) => {
-    const canvasSize = { width: window.innerWidth, height: window.innerHeight };
-    const optimizedNodes = applyD3Layout(
-      generatedNodes,
-      generatedEdges,
-      canvasSize,
-      newLayout
-    );
-    setNodes(optimizedNodes);
-    setCurrentLayout(newLayout);
-  };
-
-  const layoutOptions = [
-    { value: 'tree', label: 'Tree' },
-    { value: 'radial', label: 'Radial' },
-    { value: 'force', label: 'Force' },
-    { value: 'mindmap', label: 'Mindmap' },
-    { value: 'timeline', label: 'Timeline' }
-  ];
 
   return (
     <>
@@ -199,16 +170,10 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
           <form onSubmit={handleGenerateCanvas}>
             <textarea
               className={styles.textarea}
-              placeholder="Enter your project topic or main idea"
+              placeholder="Enter your project concept or main idea"
               value={projectConcept}
               onChange={handleProjectConceptChange}
             />
-            {followUpQuestion && (
-              <p className={styles.followUpQuestion}>{followUpQuestion}</p>
-            )}
-            {errorMessage && (
-              <p className={styles.errorMessage}>{errorMessage}</p>
-            )}
             <div className={styles.actionContainer}>
               <Dropdown
                 value={selectedModel}
@@ -230,9 +195,11 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
               </Button>
             </div>
           </form>
+          {errorMessage && (
+            <p className={styles.errorMessage}>{errorMessage}</p>
+          )}
         </div>
       </Modal>
-
       {showConfirmModal && (
         <ConfirmIntegrationModal
           isOpen={showConfirmModal}
@@ -241,7 +208,7 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
             handleConfirmIntegration(
               generatedNodes,
               generatedEdges,
-              currentLayout
+              analysisResult.suggestedLayout
             )
           }
           onCancel={handleCancelIntegration}
