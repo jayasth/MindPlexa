@@ -158,12 +158,6 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
               value={projectConcept}
               onChange={handleProjectConceptChange}
             />
-            {followUpQuestion && (
-              <p className={styles.followUpQuestion}>{followUpQuestion}</p>
-            )}
-            {errorMessage && (
-              <p className={styles.errorMessage}>{errorMessage}</p>
-            )}
             <div className={styles.actionContainer}>
               <Dropdown
                 value={selectedModel}
@@ -186,21 +180,23 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
                   </option>
                 ))}
               </Dropdown>
-              <Button
-                type="submit"
-                disabled={uiIsLoading || !projectConcept.trim()}
-                loading={uiIsLoading}
-                variant="submit"
-                className={styles.generateButton}
-              >
-                {uiIsLoading ? (
-                  <span className={styles.generatingText}>Generating...</span>
-                ) : (
-                  'Generate'
-                )}
-              </Button>
             </div>
+            <Button
+              type="submit"
+              disabled={uiIsLoading || !projectConcept.trim()}
+              loading={uiIsLoading}
+              variant="submit"
+              className={styles.generateButton}
+            >
+              {uiIsLoading ? 'Generating...' : 'Generate'}
+            </Button>
           </form>
+          {followUpQuestion && (
+            <p className={styles.followUpQuestion}>{followUpQuestion}</p>
+          )}
+          {errorMessage && (
+            <p className={styles.errorMessage}>{errorMessage}</p>
+          )}
         </div>
       </Modal>
 
