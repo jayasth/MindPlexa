@@ -13,29 +13,22 @@ export const applyLayout = (
 ): Node[] => {
   console.log('Applying layout:', layoutType);
 
-  const nodesCopy = nodes.map((node) => ({
-    ...node,
-    x: undefined,
-    y: undefined
-  }));
-  const edgesCopy = edges.map((edge) => ({ ...edge }));
-
   switch (layoutType) {
     case 'tree':
-      return applyTreeLayout(nodesCopy, edgesCopy, canvasSize);
+      return applyTreeLayout(nodes, edges, canvasSize);
     case 'radial':
-      return applyRadialLayout(nodesCopy, edgesCopy, canvasSize);
+      return applyRadialLayout(nodes, edges, canvasSize);
     case 'force':
-      return applyForceLayout(nodesCopy, edgesCopy, canvasSize);
+      return applyForceLayout(nodes, edges, canvasSize);
     case 'mindmap':
-      return applyMindmapLayout(nodesCopy, canvasSize);
+      return applyMindmapLayout(nodes, edges, canvasSize);
     case 'timeline':
-      return applyTimelineLayout(nodesCopy, canvasSize);
+      return applyTimelineLayout(nodes, canvasSize);
     default:
       console.warn(
         'Invalid layout type, falling back to force-directed layout'
       );
-      return applyForceLayout(nodesCopy, edgesCopy, canvasSize);
+      return applyForceLayout(nodes, edges, canvasSize);
   }
 };
 
@@ -146,22 +139,11 @@ const applyForceLayout = (
 
 const applyMindmapLayout = (
   nodes: Node[],
+  edges: Edge[],
   canvasSize: { width: number; height: number }
 ): Node[] => {
-  const centerX = canvasSize.width / 2;
-  const centerY = canvasSize.height / 2;
-  const radius = Math.min(canvasSize.width, canvasSize.height) / 3;
-
-  return nodes.map((node, index) => {
-    const angle = (index / nodes.length) * 2 * Math.PI;
-    const x = centerX + radius * Math.cos(angle);
-    const y = centerY + radius * Math.sin(angle);
-
-    return {
-      ...node,
-      position: { x, y }
-    };
-  });
+  // Use the same logic as applyRadialLayout for consistency
+  return applyRadialLayout(nodes, edges, canvasSize);
 };
 
 const applyTimelineLayout = (

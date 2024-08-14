@@ -9,37 +9,16 @@ import {
 } from '@/ui/ai/generator/aiGeneratorCanvasUtils';
 import { getNodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 
-function sanitizeLabel(label: string): string {
-  return label.replace(/[\[\]\(\)\{\}\,]/g, '');
-}
-
 export async function parseMermaidCode(
   mermaidCode: string,
   projectDetails: string
 ): Promise<{ nodes: Node[]; edges: Edge[]; warning: string | null }> {
-  const sanitizedCode = mermaidCode
-    .split('\n')
-    .map((line) => {
-      const parts = line.split('[');
-      if (parts.length > 1) {
-        const [id, label] = parts;
-        const sanitizedLabel = sanitizeLabel(label);
-        return `${id}[${sanitizedLabel}]`;
-      }
-      return line;
-    })
-    .join('\n');
-
-  console.log('Sanitized Mermaid Code:', sanitizedCode);
-
   const filteredCode = removeDoubleQuoteInsideParentheses(
-    removeDoubleQuoteInsideBrackets(removeMarkdowncode(sanitizedCode))
+    removeDoubleQuoteInsideBrackets(removeMarkdowncode(mermaidCode))
   );
-  console.log('Filtered Mermaid Code:', filteredCode);
+  console.log('mermaidGeneratorUtilsV2 Filtered Mermaid Code:', filteredCode);
 
-  const processedCode = filteredCode.startsWith('graph TD')
-    ? filteredCode
-    : `graph TD\n${filteredCode}`;
+  const processedCode = filteredCode.replace(/^.*?graph TD/, 'graph TD');
 
   let svgCode: any;
 
@@ -47,7 +26,7 @@ export async function parseMermaidCode(
     mermaid.initialize({ startOnLoad: false });
     svgCode = await mermaid.render('mermaid-chart', processedCode);
   } catch (error: any) {
-    console.error('Mermaid parsing error:', error);
+    console.error('mermaidGeneratorUtilsV2 Mermaid parsing error:', error);
     return {
       nodes: [],
       edges: [],
@@ -59,21 +38,11 @@ export async function parseMermaidCode(
   let edges: Edge[] = [];
   try {
     ({ nodes, edges } = convertToReactFlowElements(svgCode.svg));
-    console.log('Converted Nodes:', nodes);
-    console.log('Converted Edges:', edges);
-
-    edges.forEach((edge) => {
-      if (
-        !nodes.find((node) => node.id === edge.source) ||
-        !nodes.find((node) => node.id === edge.target)
-      ) {
-        console.warn(
-          `Missing node reference in edge: ${edge.id} from ${edge.source} to ${edge.target}`
-        );
-      }
-    });
   } catch (error: any) {
-    console.error('Error converting to React Flow elements:', error);
+    console.error(
+      'mermaidGeneratorUtilsV2 Error converting to React Flow elements:',
+      error
+    );
     return {
       nodes: [],
       edges: [],
@@ -87,22 +56,7 @@ export async function parseMermaidCode(
       node.data.content !== 'No description available'
   );
 
-  const nodesWithPositions = filteredNodes.map((node, index) => ({
-    ...node,
-    position: {
-      x: (index % 5) * 250,
-      y: Math.floor(index / 5) * 200
-    }
-  }));
-
-  let warning: string | null = null;
-  if (nodesWithPositions.length === 0 || edges.length === 0) {
-    console.warn('No nodes or edges generated from Mermaid code');
-    warning =
-      'The generated layout is empty. Please try again with a different project idea.';
-  }
-
-  return { nodes: nodesWithPositions, edges, warning };
+  return { nodes: filteredNodes, edges, warning: null };
 }
 
 const convertToReactFlowElements = (
@@ -123,13 +77,12 @@ const convertToReactFlowElements = (
 
   mermaidNodes.forEach((node, index) => {
     const elId = node.getAttribute('id') || `n${index}`;
-    const id = elId.split('-')[1] || elId;
-
     const nodeLabel = node.querySelector('.nodeLabel')?.textContent;
     const { title, type, content } = extractTitleAndType(nodeLabel || '');
 
     const nodeId = `${type}-${uuidv4()}`;
     const { width, height } = getNodeDimensions('note', false, false);
+
     nodes.push({
       id: nodeId,
       type: 'note',
@@ -149,21 +102,27 @@ const convertToReactFlowElements = (
       height
     });
 
-    idMap.set(id, nodeId);
+    idMap.set(elId, nodeId);
+    const shortId = elId.split('-')[1];
+    if (shortId) {
+      idMap.set(shortId, nodeId);
+    }
+
+    console.log(`Mapped node: ${elId} -> ${nodeId}`);
   });
 
   mermaidEdges.forEach((edge, index) => {
     const id = edge.getAttribute('id') || `e${index}`;
     const classes = edge.getAttribute('class')?.split(' ') || [];
     const originalSource = classes
-      .find((cls) => cls.startsWith('LS-'))
+      .find((c) => c.startsWith('LS-'))
       ?.replace('LS-', '');
     const originalTarget = classes
-      .find((cls) => cls.startsWith('LE-'))
+      .find((c) => c.startsWith('LE-'))
       ?.replace('LE-', '');
 
     if (!originalSource || !originalTarget) {
-      console.warn(`Edge ${id} has missing source or target`);
+      console.warn(`Edge ${id} has missing source or target`, { classes });
       return;
     }
 
@@ -179,9 +138,13 @@ const convertToReactFlowElements = (
         markerEnd: { type: MarkerType.ArrowClosed }
       });
     } else {
-      console.warn(
-        `Edge ${id} has invalid source or target: ${originalSource} -> ${originalTarget}`
-      );
+      console.warn(`Edge ${id} has invalid source or target`, {
+        originalSource,
+        originalTarget,
+        mappedSource: source,
+        mappedTarget: target,
+        idMapKeys: Array.from(idMap.keys())
+      });
     }
   });
 

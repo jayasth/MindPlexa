@@ -14,21 +14,21 @@ const modelConfig = {
 };
 
 export async function POST(req: Request) {
-  const { prompt, version, existingMermaidCode, followUpQuestion, model } =
-    await req.json();
-  console.log('Prompt sent to OpenAI:', prompt);
-  console.log('Version:', version);
-
-  const selectedPromptTemplate =
-    {
-      v2: promptTemplateV2,
-      v1: promptTemplateV1,
-      default: promptTemplate
-    }[version] || promptTemplate;
-
-  const selectedModel = model || modelConfig[version] || modelConfig.default;
-
   try {
+    const { prompt, version, existingMermaidCode, followUpQuestion, model } =
+      await req.json();
+    console.log('Prompt sent to OpenAI:', prompt);
+    console.log('Version:', version);
+
+    const selectedPromptTemplate =
+      {
+        v2: promptTemplateV2,
+        v1: promptTemplateV1,
+        default: promptTemplate
+      }[version] || promptTemplate;
+
+    const selectedModel = model || modelConfig[version] || modelConfig.default;
+
     const response = await openai.chat.completions.create({
       model: selectedModel,
       temperature: 0.1,
@@ -67,9 +67,12 @@ export async function POST(req: Request) {
       headers: { 'Content-Type': 'application/json' }
     });
   } catch (error) {
-    console.error('Error from OpenAI:', error);
+    console.error('Detailed error in API route:', error);
     return new Response(
-      JSON.stringify({ error: 'Error processing your request' }),
+      JSON.stringify({
+        error: 'Error processing your request',
+        details: error instanceof Error ? error.message : String(error)
+      }),
       { status: 500 }
     );
   }

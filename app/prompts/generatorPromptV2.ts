@@ -53,3 +53,32 @@ Provide your response in the following JSON format:
   "mermaidCode": string
 }`;
 };
+
+export const promptTemplateV2 = (userInput: string) => {
+  return `Analyze the following project concept and generate a suitable layout:
+
+"${userInput}"
+
+1. Determine the primary industry or domain of the project.
+2. Assess the complexity and scale of the project.
+3. Identify key themes or components of the project.
+4. Suggest the most appropriate layout from: tree, radial, force, mindmap, or timeline. Consider the following:
+   - tree: For hierarchical structures or processes with clear parent-child relationships.
+   - radial: For concepts with a central theme and related subtopics radiating outward.
+   - force: For complex networks with many interconnected ideas.
+   - mindmap: For brainstorming sessions or projects with a central concept and branching ideas.
+   - timeline: For projects with a clear chronological order or sequential steps.
+5. Generate a Mermaid JS flowchart representing the project structure.
+
+Provide your response in the following JSON format:
+{
+  "analysis": {
+    "industry": string,
+    "complexity": "low" | "medium" | "high",
+    "keyThemes": string[],
+    "suggestedLayout": "tree" | "radial" | "force" | "mindmap" | "timeline",
+    "layoutReasoning": string
+  },
+  "mermaidCode": string
+}`;
+};

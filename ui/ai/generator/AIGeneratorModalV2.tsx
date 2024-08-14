@@ -5,7 +5,8 @@ import { Edge, Node } from 'reactflow';
 import { parseMermaidCode } from './mermaidGeneratorUtilsV2';
 import {
   projectAnalysisPrompt,
-  layoutGenerationPrompt
+  layoutGenerationPrompt,
+  promptTemplateV2
 } from '@/app/prompts/generatorPromptV2';
 import {
   useNodeStore,
@@ -53,39 +54,22 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
     setErrorMessage(null);
 
     try {
-      // Step 1: Analyze the project concept
-      const analysisPrompt = projectAnalysisPrompt(projectConcept);
-      const analysisResponse = await fetch('/api/completion', {
+      const prompt = promptTemplateV2(projectConcept);
+      const response = await fetch('/api/completion', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: analysisPrompt, model: selectedModel })
+        body: JSON.stringify({ prompt, version: 'v2', model: selectedModel })
       });
 
-      if (!analysisResponse.ok) {
-        throw new Error('Failed to analyze project concept');
+      if (!response.ok) {
+        throw new Error('Failed to generate canvas');
       }
 
-      const analysisData = await analysisResponse.json();
-      setAnalysisResult(analysisData);
-      console.log('Project analysis:', analysisData);
+      const data = await response.json();
+      console.log('AIGeneratorModalV2 Response data:', data);
 
-      // Step 2: Generate the layout based on the analysis
-      const layoutPrompt = layoutGenerationPrompt(
-        projectConcept,
-        JSON.stringify(analysisData)
-      );
-      const layoutResponse = await fetch('/api/completion', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: layoutPrompt, model: selectedModel })
-      });
-
-      if (!layoutResponse.ok) {
-        throw new Error('Failed to generate layout');
-      }
-
-      const layoutData = await layoutResponse.json();
-      console.log('Generated layout:', layoutData);
+      const { analysis, mermaidCode } = data;
+      setAnalysisResult(analysis);
 
       const canvasSize = {
         width: window.innerWidth,
@@ -93,7 +77,7 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
       };
 
       const { nodes, edges, warning } = await parseMermaidCode(
-        layoutData.mermaidCode,
+        mermaidCode,
         projectConcept
       );
 
@@ -105,7 +89,7 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
         nodes,
         edges,
         canvasSize,
-        analysisData.suggestedLayout
+        analysis.suggestedLayout
       );
 
       if (existingNodes.length > 0) {
@@ -116,7 +100,7 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
         handleConfirmIntegration(
           layoutedNodes,
           edges,
-          analysisData.suggestedLayout
+          analysis.suggestedLayout
         );
       }
     } catch (error) {
