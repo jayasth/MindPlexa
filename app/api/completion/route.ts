@@ -2,8 +2,6 @@ import OpenAI from 'openai';
 import { promptTemplate } from '@/app/prompts/generatorPrompt';
 import { promptTemplateV1 } from '@/app/prompts/generatorPromptV1';
 import { promptTemplateV2 } from '@/app/prompts/generatorPromptV2';
-import { promptTemplateV3 } from '@/app/prompts/generatorPromptV3';
-import { promptTemplateV4 } from '@/app/prompts/generatorPromptV4';
 
 const openai = new OpenAI({
   apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY
@@ -12,9 +10,7 @@ const openai = new OpenAI({
 const modelConfig = {
   default: 'gpt-3.5-turbo',
   v1: 'gpt-4o',
-  v2: 'gpt-4o',
-  v3: 'gpt-4o',
-  v4: 'gpt-4o'
+  v2: 'gpt-4o'
 };
 
 export async function POST(req: Request) {
@@ -25,8 +21,6 @@ export async function POST(req: Request) {
 
   const selectedPromptTemplate =
     {
-      v4: promptTemplateV4,
-      v3: promptTemplateV3,
       v2: promptTemplateV2,
       v1: promptTemplateV1,
       default: promptTemplate
@@ -58,7 +52,7 @@ export async function POST(req: Request) {
     console.log('Complete response from OpenAI:', content);
 
     let parsedResponse;
-    if (version === 'v4' || version === 'v2' || version === 'v1') {
+    if (version === 'v2' || version === 'v1') {
       try {
         parsedResponse = JSON.parse(content);
       } catch (error) {
