@@ -8,25 +8,19 @@ Your task is to:
 2. Assess the complexity and scale of the project.
 3. Identify key themes or components of the project.
 4. Suggest the most appropriate layout from the following options, considering the project's nature:
-   - tree: For hierarchical structures or processes with clear parent-child relationships.
-   - radial: For concepts with a central theme and related subtopics radiating outward.
-   - force: For complex networks with many interconnected ideas.
    - mindmap: For brainstorming sessions or projects with a central concept and branching ideas.
-   - timeline: For projects with a clear chronological order or sequential steps.
-   - hybrid: Combine two layouts if the project has multiple aspects (e.g., "tree-timeline" or "radial-force").
+   - workflow: For processes with clear sequential steps or flows.
+   - concept-map: For complex networks with many interconnected ideas.
+   - grid: For organized, structured projects with equal emphasis on components.
+   - hierarchical: For projects with clear parent-child relationships or organizational structures.
 
 Provide your analysis in the following JSON format:
 {
   "industry": string,
   "complexity": "low" | "medium" | "high",
   "keyThemes": string[],
-  "suggestedLayout": "tree" | "radial" | "force" | "mindmap" | "timeline" | "hybrid",
-  "layoutReasoning": string,
-  "hybridDetails": {
-    "primaryLayout": string,
-    "secondaryLayout": string,
-    "reasoning": string
-  }
+  "suggestedLayout": "mindmap" | "workflow" | "concept-map" | "grid" | "hierarchical",
+  "layoutReasoning": string
 }`;
 };
 
@@ -70,12 +64,11 @@ Your task is to:
 2. Assess the complexity and scale of the project.
 3. Identify key themes or components of the project.
 4. Suggest the most appropriate layout from the following options, considering the project's nature:
-   - tree: For hierarchical structures or processes with clear parent-child relationships.
-   - radial: For concepts with a central theme and related subtopics radiating outward.
-   - force: For complex networks with many interconnected ideas.
    - mindmap: For brainstorming sessions or projects with a central concept and branching ideas.
-   - timeline: For projects with a clear chronological order or sequential steps.
-   - hybrid: Combine two layouts if the project has multiple aspects (e.g., "tree-timeline" or "radial-force").
+   - workflow: For processes with clear sequential steps or flows.
+   - concept-map: For complex networks with many interconnected ideas.
+   - grid: For organized, structured projects with equal emphasis on components.
+   - hierarchical: For projects with clear parent-child relationships or organizational structures.
 
 5. Generate a Mermaid JS flowchart representing the project structure, using the suggested layout as a guide.
 
@@ -98,13 +91,8 @@ Provide your response in the following JSON format:
     "industry": "string",
     "complexity": "low | medium | high",
     "keyThemes": ["string", "string", "..."],
-    "suggestedLayout": "tree | radial | force | mindmap | timeline | hybrid",
-    "layoutReasoning": "string",
-    "hybridDetails": {
-      "primaryLayout": "string",
-      "secondaryLayout": "string",
-      "reasoning": "string"
-    }
+    "suggestedLayout": "mindmap | workflow | concept-map | grid | hierarchical",
+    "layoutReasoning": "string"
   },
   "mermaidCode": "string (Mermaid JS flowchart code)"
 }

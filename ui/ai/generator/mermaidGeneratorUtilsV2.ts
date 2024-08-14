@@ -66,19 +66,18 @@ const convertToReactFlowElements = (
   nodes: Node[];
   edges: Edge[];
 } => {
-  const dummyDiv = document.createElement('div');
-  dummyDiv.innerHTML = svgCode;
-
-  const mermaidNodes = Array.from(dummyDiv.querySelectorAll('.node'));
-  const mermaidEdges = Array.from(dummyDiv.querySelectorAll('.edgePaths path'));
+  const parser = new DOMParser();
+  const svgDoc = parser.parseFromString(svgCode, 'image/svg+xml');
 
   const nodes: Node[] = [];
   const edges: Edge[] = [];
   const idMap = new Map<string, string>();
 
-  mermaidNodes.forEach((node, index) => {
-    const elId = node.getAttribute('id') || `n${index}`;
-    const nodeLabel = node.querySelector('.nodeLabel')?.textContent;
+  // Process nodes
+  svgDoc.querySelectorAll('.node').forEach((node, index) => {
+    const elId = node.id || `n${index}`;
+    const labelEl = node.querySelector('.label');
+    const nodeLabel = labelEl ? labelEl.textContent : '';
     const { title, type, content } = extractTitleAndType(nodeLabel || '');
 
     const nodeId = `${type}-${uuidv4()}`;
@@ -108,13 +107,12 @@ const convertToReactFlowElements = (
     if (shortId) {
       idMap.set(shortId, nodeId);
     }
-
-    console.log(`Mapped node: ${elId} -> ${nodeId}`);
   });
 
-  mermaidEdges.forEach((edge, index) => {
-    const id = edge.getAttribute('id') || `e${index}`;
-    const classes = edge.getAttribute('class')?.split(' ') || [];
+  // Process edges
+  svgDoc.querySelectorAll('.edgePath').forEach((edgePath, index) => {
+    const id = edgePath.id || `e${index}`;
+    const classes = edgePath.getAttribute('class')?.split(' ') || [];
     const originalSource = classes
       .find((c) => c.startsWith('LS-'))
       ?.replace('LS-', '');
@@ -127,8 +125,8 @@ const convertToReactFlowElements = (
       return;
     }
 
-    const source = idMap.get(originalSource);
-    const target = idMap.get(originalTarget);
+    const source = idMap.get(originalSource) || originalSource;
+    const target = idMap.get(originalTarget) || originalTarget;
 
     if (source && target) {
       edges.push({
@@ -149,8 +147,5 @@ const convertToReactFlowElements = (
     }
   });
 
-  return {
-    nodes,
-    edges
-  };
+  return { nodes, edges };
 };
