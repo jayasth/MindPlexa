@@ -9,10 +9,37 @@ export const applyLayout = (
   nodes: Node[],
   edges: Edge[],
   canvasSize: { width: number; height: number },
-  layoutType: 'tree' | 'radial' | 'force' | 'mindmap' | 'timeline'
+  layoutType: string
 ): Node[] => {
   console.log('Applying layout:', layoutType);
 
+  if (layoutType.includes('-')) {
+    // Handle hybrid layouts
+    const [primaryLayout, secondaryLayout] = layoutType.split('-');
+    const primaryNodes = applyLayoutByType(
+      nodes.slice(0, nodes.length / 2),
+      edges,
+      canvasSize,
+      primaryLayout
+    );
+    const secondaryNodes = applyLayoutByType(
+      nodes.slice(nodes.length / 2),
+      edges,
+      canvasSize,
+      secondaryLayout
+    );
+    return [...primaryNodes, ...secondaryNodes];
+  } else {
+    return applyLayoutByType(nodes, edges, canvasSize, layoutType);
+  }
+};
+
+const applyLayoutByType = (
+  nodes: Node[],
+  edges: Edge[],
+  canvasSize: { width: number; height: number },
+  layoutType: string
+): Node[] => {
   switch (layoutType) {
     case 'tree':
       return applyTreeLayout(nodes, edges, canvasSize);

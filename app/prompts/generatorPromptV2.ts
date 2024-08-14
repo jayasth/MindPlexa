@@ -13,14 +13,20 @@ Your task is to:
    - force: For complex networks with many interconnected ideas.
    - mindmap: For brainstorming sessions or projects with a central concept and branching ideas.
    - timeline: For projects with a clear chronological order or sequential steps.
+   - hybrid: Combine two layouts if the project has multiple aspects (e.g., "tree-timeline" or "radial-force").
 
 Provide your analysis in the following JSON format:
 {
   "industry": string,
   "complexity": "low" | "medium" | "high",
   "keyThemes": string[],
-  "suggestedLayout": "tree" | "radial" | "force" | "mindmap" | "timeline",
-  "layoutReasoning": string
+  "suggestedLayout": "tree" | "radial" | "force" | "mindmap" | "timeline" | "hybrid",
+  "layoutReasoning": string,
+  "hybridDetails": {
+    "primaryLayout": string,
+    "secondaryLayout": string,
+    "reasoning": string
+  }
 }`;
 };
 
@@ -69,6 +75,8 @@ Your task is to:
    - force: For complex networks with many interconnected ideas.
    - mindmap: For brainstorming sessions or projects with a central concept and branching ideas.
    - timeline: For projects with a clear chronological order or sequential steps.
+   - hybrid: Combine two layouts if the project has multiple aspects (e.g., "tree-timeline" or "radial-force").
+
 5. Generate a Mermaid JS flowchart representing the project structure, using the suggested layout as a guide.
 
 Follow these guidelines for the Mermaid flowchart:
@@ -90,8 +98,13 @@ Provide your response in the following JSON format:
     "industry": "string",
     "complexity": "low | medium | high",
     "keyThemes": ["string", "string", "..."],
-    "suggestedLayout": "tree | radial | force | mindmap | timeline",
-    "layoutReasoning": "string"
+    "suggestedLayout": "tree | radial | force | mindmap | timeline | hybrid",
+    "layoutReasoning": "string",
+    "hybridDetails": {
+      "primaryLayout": "string",
+      "secondaryLayout": "string",
+      "reasoning": "string"
+    }
   },
   "mermaidCode": "string (Mermaid JS flowchart code)"
 }
