@@ -86,6 +86,9 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
       const { analysis, mermaidCode } = parsedData;
       setAnalysisResult(analysis);
 
+      // Add this console log to see the selected layout
+      console.log('Selected layout:', analysis.suggestedLayout);
+
       const canvasSize = {
         width: window.innerWidth,
         height: window.innerHeight
