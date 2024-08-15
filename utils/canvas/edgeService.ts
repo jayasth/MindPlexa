@@ -119,3 +119,35 @@ export const deleteEdge = async (
   console.log('edgeService: Edge deleted successfully');
   return { success: true };
 };
+
+export const createBulkEdges = async (
+  canvasId: string,
+  edges: Array<{
+    source: string;
+    target: string;
+  }>
+): Promise<{ data?: any; error?: any }> => {
+  const createdEdges: any[] = [];
+
+  for (const edge of edges) {
+    const { data, error } = await supabase
+      .from('edges')
+      .insert({
+        id: uuidv4(),
+        canvas_id: canvasId,
+        source_node_id: edge.source,
+        target_node_id: edge.target
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating edge:', error);
+      return { error };
+    } else {
+      createdEdges.push(data);
+    }
+  }
+
+  return { data: createdEdges };
+};

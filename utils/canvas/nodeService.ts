@@ -82,7 +82,8 @@ export const createNode = async (
     data
   });
 
-  const nodeId = data.id || uuidv4();
+  const nodeId = data.id || uuidv4(); // Generate a new UUID if one isn't provided
+
   const defaultDimensions = nodeDimensions[nodeType];
 
   if (!defaultDimensions) {
@@ -380,4 +381,38 @@ export const deleteNodes = async (nodeIds: string[]) => {
   ]);
 
   await supabase.from('nodes').delete().in('id', nodeIds);
+};
+
+export const createBulkNodes = async (
+  canvasId: string,
+  nodes: Array<{
+    type: Database['public']['Enums']['node_type'];
+    position: { x: number; y: number };
+    data: Database['public']['Tables']['nodes']['Insert'] & {
+      noteData?: Database['public']['Tables']['note_nodes']['Insert'];
+      taskData?: Database['public']['Tables']['task_nodes']['Insert'];
+      calendarData?: Database['public']['Tables']['calendar_nodes']['Insert'];
+      tableData?: Database['public']['Tables']['table_nodes']['Insert'];
+      drawData?: Database['public']['Tables']['draw_nodes']['Insert'];
+    };
+  }>
+): Promise<{ data?: any[]; error?: any }> => {
+  const createdNodes: any[] = [];
+
+  for (const node of nodes) {
+    const result = await createNode(
+      canvasId,
+      node.type,
+      node.position,
+      node.data
+    );
+    if (result.error) {
+      console.error('Error creating node:', result.error);
+      return { error: result.error };
+    } else {
+      createdNodes.push(result.data);
+    }
+  }
+
+  return { data: createdNodes };
 };

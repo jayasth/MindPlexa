@@ -1,5 +1,5 @@
 import mermaid from 'mermaid';
-import { v1 as uuidv1 } from 'uuid';
+import { v4 as uuidv1 } from 'uuid';
 import { Node, Edge, MarkerType } from 'reactflow';
 import {
   extractTitleAndType,
@@ -39,13 +39,23 @@ export async function parseMermaidCode(
 
   const { nodes, edges } = convertToReactFlowElements(svgCode.svg);
 
-  const filteredNodes = nodes.filter(
-    (node) =>
-      node.data.title !== 'Untitled' &&
-      node.data.content !== 'No description available'
-  );
+  const processedNodes = nodes.map((node) => ({
+    ...node,
+    data: {
+      ...node.data,
+      isEditing: false,
+      isTemporary: false,
+      backgroundColor: '#F4F4F4',
+      textColor: '#575757',
+      tags: [],
+      attachedFiles: [],
+      noteData: {
+        content: node.data.content
+      }
+    }
+  }));
 
-  return { nodes: filteredNodes, edges, warning };
+  return { nodes: processedNodes, edges, warning };
 }
 
 const convertToReactFlowElements = (
