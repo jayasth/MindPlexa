@@ -84,9 +84,9 @@ const NodeRenderer: React.FC<NodeRendererProps> = React.memo(
         type,
         data: {
           ...data,
-          isEditing: node.data.isEditing,
-          tags: node.data.tags || [],
-          attachedFiles: node.data.attachedFiles || []
+          isEditing: node.data?.isEditing ?? false,
+          tags: node.data?.tags || [],
+          attachedFiles: node.data?.attachedFiles || []
         },
         isConnectable,
         selected,
@@ -99,7 +99,10 @@ const NodeRenderer: React.FC<NodeRendererProps> = React.memo(
       };
 
       const position = { x: xPos, y: yPos };
-      const dimensions = getNodeSpecificProperties(type, node.data.isEditing);
+      const dimensions = getNodeSpecificProperties(
+        type,
+        node.data?.isEditing ?? false
+      );
 
       if (type === 'selection_menu') {
         return (
@@ -121,7 +124,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = React.memo(
         draw: { view: DrawNodeView, edit: DrawNodeEdit }
       };
 
-      const NodeComponent = node.data.isEditing
+      const NodeComponent = node.data?.isEditing
         ? nodeComponents[type]?.edit
         : nodeComponents[type]?.view;
 
@@ -134,7 +137,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = React.memo(
         toggleEditMode(id);
         updateNode(
           id,
-          { data: { ...node.data, isEditing: !node.data.isEditing } },
+          { data: { ...node.data, isEditing: !node.data?.isEditing } },
           canvasId
         );
       };

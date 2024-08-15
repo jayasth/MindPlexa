@@ -200,6 +200,9 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
         console.error('Error creating bulk nodes:', error);
         setErrorMessage('Failed to create nodes. Please try again.');
       } else {
+        const setNodes = useNodeStore.getState().setNodes;
+        const setEdges = useEdgeStore.getState().setEdges;
+
         setNodes((currentNodes) => [...currentNodes, ...(createdNodes || [])]);
         setEdges((currentEdges) => [...currentEdges, ...updatedEdges]);
 

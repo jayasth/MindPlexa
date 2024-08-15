@@ -410,7 +410,15 @@ export const createBulkNodes = async (
       console.error('Error creating node:', result.error);
       return { error: result.error };
     } else {
-      createdNodes.push(result.data);
+      createdNodes.push({
+        ...result.data,
+        position: node.position,
+        data: {
+          ...result.data,
+          isEditing: false,
+          isTemporary: false
+        }
+      });
     }
   }
 
