@@ -15,6 +15,10 @@ import ConfirmIntegrationModal from './ConfirmIntegrationModal';
 import Dropdown from '@/ui/dropdown/Dropdown';
 import styles from './AIGeneratorModalV1.module.css';
 import { applyLayout } from '@/ui/ai/generator/aiPositioningUtilsV1';
+import { createBulkNodes } from '@/utils/canvas/nodeService';
+import { createEdgeBetweenNodes } from '@/utils/canvas/edgeService';
+import { Database } from '@/types_db';
+import { v4 as uuidv4 } from 'uuid';
 
 interface AIGeneratorModalV1Props {
   isOpen: boolean;
@@ -118,7 +122,10 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
     setIsLoading(false);
   };
 
-  const handleConfirmIntegration = (newNodes: Node[], newEdges: Edge[]) => {
+  const handleConfirmIntegration = async (
+    newNodes: Node[],
+    newEdges: Edge[]
+  ) => {
     const canvasSize = { width: window.innerWidth, height: window.innerHeight };
     const optimizedNodes = applyLayout(
       newNodes,
@@ -127,10 +134,79 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
       selectedLayout
     );
 
-    setNodes((currentNodes) => [...currentNodes, ...optimizedNodes]);
-    setEdges((currentEdges) => [...currentEdges, ...newEdges]);
-    setShowConfirmModal(false);
-    onClose();
+    try {
+      // Generate new UUIDs for each node
+      const nodesWithNewIds = optimizedNodes.map((node) => ({
+        ...node,
+        id: uuidv4()
+      }));
+
+      // Create a mapping of old IDs to new IDs
+      const idMapping = optimizedNodes.reduce((acc, node, index) => {
+        acc[node.id] = nodesWithNewIds[index].id;
+        return acc;
+      }, {});
+
+      // Update edge source and target with new IDs
+      const updatedEdges = newEdges.map((edge) => ({
+        ...edge,
+        source: idMapping[edge.source],
+        target: idMapping[edge.target]
+      }));
+
+      const { data: createdNodes, error } = await createBulkNodes(
+        canvasId,
+        nodesWithNewIds.map((node) => ({
+          id: node.id,
+          type:
+            (node.type as Database['public']['Enums']['node_type']) || 'note',
+          position: node.position,
+          data: {
+            ...node.data,
+            id: node.id,
+            noteData:
+              node.type === 'note' ? { content: node.data.content } : undefined,
+            taskData:
+              node.type === 'task' ? { tasks: node.data.tasks } : undefined,
+            calendarData:
+              node.type === 'calendar'
+                ? { events: node.data.events }
+                : undefined,
+            tableData:
+              node.type === 'table' ? { rows: node.data.rows } : undefined,
+            drawData:
+              node.type === 'draw'
+                ? { drawingData: node.data.drawingData }
+                : undefined
+          }
+        }))
+      );
+
+      if (error) {
+        console.error('Error creating bulk nodes:', error);
+        setErrorMessage('Failed to create nodes. Please try again.');
+      } else {
+        setNodes((currentNodes) => [...currentNodes, ...(createdNodes || [])]);
+        setEdges((currentEdges) => [...currentEdges, ...updatedEdges]);
+
+        // Create edges in the database
+        for (const edge of updatedEdges) {
+          await createEdgeBetweenNodes({
+            sourceNodeId: edge.source,
+            targetNodeId: edge.target,
+            canvasId
+          });
+        }
+
+        setShowConfirmModal(false);
+        onClose();
+      }
+    } catch (error) {
+      console.error('Error applying layout or creating nodes:', error);
+      setErrorMessage(
+        'An error occurred while creating the nodes. Please try again.'
+      );
+    }
   };
 
   const handleCancelIntegration = () => {
