@@ -21,7 +21,7 @@ Follow these guidelines for the Mermaid flowchart:
 - Create 3-7 main subtopics branching from the root.
 - For each subtopic, add 2-5 child nodes with relevant details.
 - Use the format: "nodeID[Node Title::Node Description]" for each node.
-- Ensure all nodes have meaningful titles (max 5 words) and descriptions (15-25 words).
+- Ensure all nodes have meaningful titles (max 5 words) and descriptions (15-50 words).
 - Create logical connections between nodes using "nodeID1 --> nodeID2".
 - Avoid special characters or quotes in node text.
 - Start the Mermaid code with "graph TD".
