@@ -2,6 +2,7 @@
 
 import Button from '@/ui/Button/Button';
 import Card from '@/ui/Card';
+import Input from '@/ui/Input/Input';
 import { updateName } from '@/utils/auth-helpers/authServer';
 import { handleRequest } from '@/utils/auth-helpers/authClient';
 import { useRouter } from 'next/navigation';
@@ -10,11 +11,12 @@ import { useState } from 'react';
 export default function NameForm({ userName }: { userName: string }) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [name, setName] = useState(userName);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     setIsSubmitting(true);
     // Check if the new name is the same as the old name
-    if (e.currentTarget.fullName.value === userName) {
+    if (name === userName) {
       e.preventDefault();
       setIsSubmitting(false);
       return;
@@ -29,9 +31,11 @@ export default function NameForm({ userName }: { userName: string }) {
       description="Please enter your full name, or a display name you are comfortable with."
       footer={
         <div className="flex flex-col items-start justify-between sm:flex-row sm:items-center">
-          <p className="pb-4 sm:pb-0">64 characters maximum</p>
+          <p className="text-xs text-light-text/70 dark:text-dark-text/70 mb-2 sm:mb-0">
+            64 characters maximum
+          </p>
           <Button
-            variant="slim"
+            variant="sleek"
             type="submit"
             form="nameForm"
             loading={isSubmitting}
@@ -41,18 +45,17 @@ export default function NameForm({ userName }: { userName: string }) {
         </div>
       }
     >
-      <div className="mt-8 mb-4 text-xl font-semibold">
-        <form id="nameForm" onSubmit={(e) => handleSubmit(e)}>
-          <input
-            type="text"
-            name="fullName"
-            className="w-1/2 p-3 rounded-md bg-myLightGray-600"
-            defaultValue={userName}
-            placeholder="Your name"
-            maxLength={64}
-          />
-        </form>
-      </div>
+      <form id="nameForm" onSubmit={(e) => handleSubmit(e)} className="mt-4">
+        <Input
+          type="text"
+          name="fullName"
+          value={name}
+          onChange={(value) => setName(value)}
+          placeholder="Your name"
+          maxLength={64}
+          className="w-full sm:w-2/3"
+        />
+      </form>
     </Card>
   );
 }

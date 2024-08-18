@@ -2,6 +2,7 @@
 
 import Button from '@/ui/Button/Button';
 import Card from '@/ui/Card';
+import Input from '@/ui/Input/Input';
 import { updateEmail } from '@/utils/auth-helpers/authServer';
 import { handleRequest } from '@/utils/auth-helpers/authClient';
 import { useRouter } from 'next/navigation';
@@ -14,11 +15,12 @@ export default function EmailForm({
 }) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [email, setEmail] = useState(userEmail ?? '');
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     setIsSubmitting(true);
     // Check if the new email is the same as the old email
-    if (e.currentTarget.newEmail.value === userEmail) {
+    if (email === userEmail) {
       e.preventDefault();
       setIsSubmitting(false);
       return;
@@ -33,11 +35,11 @@ export default function EmailForm({
       description="Please enter the email address you want to use to login."
       footer={
         <div className="flex flex-col items-start justify-between sm:flex-row sm:items-center">
-          <p className="pb-4 sm:pb-0">
+          <p className="text-xs text-light-text/70 dark:text-dark-text/70 mb-2 sm:mb-0">
             We will email you to verify the change.
           </p>
           <Button
-            variant="slim"
+            variant="sleek"
             type="submit"
             form="emailForm"
             loading={isSubmitting}
@@ -47,18 +49,17 @@ export default function EmailForm({
         </div>
       }
     >
-      <div className="mt-8 mb-4 text-xl font-semibold">
-        <form id="emailForm" onSubmit={(e) => handleSubmit(e)}>
-          <input
-            type="text"
-            name="newEmail"
-            className="w-1/2 p-3 rounded-md bg-myLightGray-600"
-            defaultValue={userEmail ?? ''}
-            placeholder="Your email"
-            maxLength={64}
-          />
-        </form>
-      </div>
+      <form id="emailForm" onSubmit={(e) => handleSubmit(e)} className="mt-4">
+        <Input
+          type="email"
+          name="newEmail"
+          value={email}
+          onChange={(value) => setEmail(value)}
+          placeholder="Your email"
+          maxLength={64}
+          className="w-full sm:w-2/3"
+        />
+      </form>
     </Card>
   );
 }

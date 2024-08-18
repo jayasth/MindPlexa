@@ -54,9 +54,11 @@ export default function CustomerPortalForm({ subscription }: Props) {
       }
       footer={
         <div className="flex flex-col items-start justify-between sm:flex-row sm:items-center">
-          <p className="pb-4 sm:pb-0">Manage your subscription on Stripe.</p>
+          <p className="text-xs text-light-text/70 dark:text-dark-text/70 mb-2 sm:mb-0">
+            Manage your subscription on Stripe.
+          </p>
           <Button
-            variant="slim"
+            variant="sleek"
             onClick={handleStripePortalRequest}
             loading={isSubmitting}
           >
@@ -65,11 +67,13 @@ export default function CustomerPortalForm({ subscription }: Props) {
         </div>
       }
     >
-      <div className="mt-8 mb-4 text-xl font-semibold">
+      <div className="mt-4 mb-2 text-lg font-semibold text-light-text dark:text-dark-text">
         {subscription ? (
           `${subscriptionPrice}/${subscription?.prices?.interval}`
         ) : (
-          <Link href="/">Choose your plan</Link>
+          <Link href="/" className="text-lavender-500 hover:underline">
+            Choose your plan
+          </Link>
         )}
       </div>
     </Card>
