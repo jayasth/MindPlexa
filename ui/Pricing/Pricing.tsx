@@ -82,15 +82,60 @@ export default function Pricing({ user, products, subscription }: Props) {
     setPriceIdLoading(undefined);
   };
 
+  if (!products.length) {
+    return (
+      <section className={styles.pricingSection}>
+        <div className={styles.pricingContainer}>
+          <p className={styles.noPlansMessage}>
+            No subscription pricing plans found. Create them in your{' '}
+            <Link
+              className={styles.stripeDashboardLink}
+              href="https://dashboard.stripe.com/products"
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              Stripe Dashboard
+            </Link>
+            .
+          </p>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className={styles.pricingSection}>
       <div className={styles.pricingContainer}>
-        <h2 className={styles.sectionTitle}>Choose Your Plan</h2>
-        <p className={styles.sectionDescription}>
-          Start with our free plan or upgrade for advanced features
-        </p>
-
-        <div className={styles.pricingGrid}>
+        <div className={styles.pricingHeader}>
+          <h2 className={styles.pricingTitle}>Pricing Plans</h2>
+          <p className={styles.pricingDescription}>
+            Start building for free, then add a site plan to go live. Account
+            plans unlock additional features.
+          </p>
+          <div className={styles.billingToggle}>
+            {intervals.includes('month') && (
+              <button
+                onClick={() => setBillingInterval('month')}
+                className={cn(styles.billingButton, {
+                  [styles.billingButtonActive]: billingInterval === 'month'
+                })}
+              >
+                Monthly billing
+              </button>
+            )}
+            {intervals.includes('year') && (
+              <button
+                onClick={() => setBillingInterval('year')}
+                className={cn(styles.billingButton, {
+                  [styles.billingButtonActive]: billingInterval === 'year'
+                })}
+              >
+                Yearly billing
+              </button>
+            )}
+          </div>
+        </div>
+        <div className={styles.pricingCards}>
           {products.map((product) => {
             const price = product?.prices?.find(
               (price) => price.interval === billingInterval
@@ -101,29 +146,30 @@ export default function Pricing({ user, products, subscription }: Props) {
               currency: price.currency!,
               minimumFractionDigits: 0
             }).format((price?.unit_amount || 0) / 100);
-
             return (
               <div
                 key={product.id}
                 className={cn(styles.pricingCard, {
-                  [styles.activePlan]: subscription
+                  [styles.pricingCardActive]: subscription
                     ? product.name === subscription?.prices?.products?.name
                     : product.name === 'Freelancer'
                 })}
               >
-                <h3 className={styles.planName}>{product.name}</h3>
-                <p className={styles.planPrice}>
-                  {priceString}
+                <h3 className={styles.productName}>{product.name}</h3>
+                <p className={styles.productDescription}>
+                  {product.description}
+                </p>
+                <p className={styles.productPrice}>
+                  <span className={styles.priceValue}>{priceString}</span>
                   <span className={styles.billingInterval}>
                     /{billingInterval}
                   </span>
                 </p>
-                <p className={styles.planDescription}>{product.description}</p>
                 <Button
                   variant="sleek"
                   loading={priceIdLoading === price.id}
                   onClick={() => handleStripeCheckout(price)}
-                  className={styles.planButton}
+                  className={styles.subscribeButton}
                 >
                   {subscription ? 'Manage' : 'Subscribe'}
                 </Button>
