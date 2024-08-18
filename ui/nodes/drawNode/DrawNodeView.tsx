@@ -35,9 +35,11 @@ const DrawNodeView: React.FC<DrawNodeViewProps> = ({ data, width, height }) => {
           <FaEdit />
         </div>
       </div>
-      <div className={styles.contentPreview} style={{ color: textColor }}>
+      <div className={styles.contentPreview}>
         {content ? (
-          <img src={content} alt="Drawing" className={styles.previewImage} />
+          <div className={styles.artboardContainer}>
+            <img src={content} alt="Drawing" className={styles.previewImage} />
+          </div>
         ) : (
           <span className={styles.noContent} style={{ color: textColor }}>
             No content available

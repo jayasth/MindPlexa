@@ -51,9 +51,19 @@
   height: calc(100% - 40px); /* Adjust based on your header height */
 }
 
-.previewImage {
+.artboardContainer {
+  background-color: white;
   width: 100%;
   height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.previewImage {
+  max-width: 100%;
+  max-height: 100%;
   object-fit: contain;
 }
 
