@@ -51,11 +51,7 @@ export const colorCombinations = [
     text: '#E2E2E2',
     name: 'Electric blue & dusty gray'
   },
-  {
-    background: '#330066',
-    text: '#7093FF',
-    name: 'Royal purple & periwinkle'
-  },
+  { background: '#330066', text: '#7093FF', name: 'Royal purple & periwinkle' },
   { background: '#6497D6', text: '#F8F2EB', name: 'Stone blue & sand' },
   { background: '#333333', text: '#AEFFDE', name: 'Neons on black' },
   { background: '#FCE77D', text: '#F96167', name: 'Yellow & red' },
@@ -68,67 +64,31 @@ export const colorCombinations = [
   { background: '#FFE67C', text: '#295F2D', name: 'Yellow & green' },
   { background: '#F4A950', text: '#161B21', name: 'Orange & black' },
   { background: '#080A52', text: '#ED2188', name: 'Blue & pink' },
-  {
-    background: '#262223',
-    text: '#DDC6B6',
-    name: 'Charcoal grey & taupe'
-  },
+  { background: '#262223', text: '#DDC6B6', name: 'Charcoal grey & taupe' },
   { background: '#AA96DA', text: '#C5FAD5', name: 'Light purple & mint' },
-  {
-    background: '#234E70',
-    text: '#FBF8BE',
-    name: 'Royal blue & pale yellow'
-  },
+  { background: '#234E70', text: '#FBF8BE', name: 'Royal blue & pale yellow' },
   { background: '#B88746', text: '#191919', name: 'Gold & black' },
   { background: '#533549', text: '#F6B042', name: 'Eggplant & yellow' },
-  {
-    background: '#99F443',
-    text: '#EC449B',
-    name: 'Neon green & fuchsia'
-  },
-  {
-    background: '#EE4E34',
-    text: '#FCEDDA',
-    name: 'Peach & burnt orange'
-  },
+  { background: '#99F443', text: '#EC449B', name: 'Neon green & fuchsia' },
+  { background: '#EE4E34', text: '#FCEDDA', name: 'Peach & burnt orange' },
   { background: '#DBB98F', text: '#96351E', name: 'Beige & rust' },
   {
     background: '#FBF7F4',
     text: '#53A57D',
     name: 'Linen white & jungle green'
   },
-  {
-    background: '#FF69B4',
-    text: '#00FFFF',
-    name: 'Cyan & bubblegum pink'
-  },
+  { background: '#FF69B4', text: '#00FFFF', name: 'Cyan & bubblegum pink' },
   { background: '#635E87', text: '#CFCAA8', name: 'Purple & sage' },
-  {
-    background: '#3A6B35',
-    text: '#E3B448',
-    name: 'Earthy green & mustard'
-  },
+  { background: '#3A6B35', text: '#E3B448', name: 'Earthy green & mustard' },
   { background: '#FFA781', text: '#FB0E2D', name: 'Peach & maroon' },
-  {
-    background: '#ADEFD1FF',
-    text: '#00203FFF',
-    name: 'Mint & sailor blue'
-  },
-  {
-    background: '#FCF6F5FF',
-    text: '#89ABE3FF',
-    name: 'Cream & sky blue'
-  },
+  { background: '#ADEFD1FF', text: '#00203FFF', name: 'Mint & sailor blue' },
+  { background: '#FCF6F5FF', text: '#89ABE3FF', name: 'Cream & sky blue' },
   {
     background: '#FAD0C9FF',
     text: '#6E6E6DFF',
     name: 'Pink salt & charcoal gray'
   },
-  {
-    background: '#D7C49EFF',
-    text: '#343148FF',
-    name: 'Soybean & eclipse'
-  },
+  { background: '#D7C49EFF', text: '#343148FF', name: 'Soybean & eclipse' },
   { background: '#3C1A5B', text: '#FFF748', name: 'Purple & yellow' },
   { background: '#0B4251', text: '#87BBD7', name: 'Teal & sky blue' },
   { background: '#050505', text: '#616161', name: 'Black & silver' }
