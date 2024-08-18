@@ -21,7 +21,7 @@ export default function ProfileFormWrapper({
           <ProfileForm user={user} profile={profile} />
           <Button
             onClick={() => setShowForm(false)}
-            variant="ghost"
+            variant="cancel"
             className="mt-4"
           >
             Cancel
