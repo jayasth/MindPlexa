@@ -3,6 +3,7 @@ import EmailForm from '@/ui/account/EmailForm';
 import NameForm from '@/ui/account/NameForm';
 import { createClient } from '@/utils/supabase/supabaseServer';
 import { redirect } from 'next/navigation';
+import styles from './Account.module.css';
 
 export default async function Account() {
   const supabase = createClient();
@@ -31,21 +32,19 @@ export default async function Account() {
   }
 
   return (
-    <section className="mb-32 bg-background">
-      <div className="max-w-6xl px-4 py-8 mx-auto sm:px-6 sm:pt-24 lg:px-8">
-        <div className="sm:align-center sm:flex sm:flex-col">
-          <h1 className="text-4xl font-extrabold text-light-text sm:text-center sm:text-6xl">
-            Account
-          </h1>
-          <p className="max-w-2xl m-auto mt-5 text-xl text-myGray-400 sm:text-center sm:text-2xl">
-            Simplified billing.
+    <section className={styles.accountContainer}>
+      <div className={styles.contentWrapper}>
+        <div className={styles.header}>
+          <h1 className={styles.title}>Account</h1>
+          <p className={styles.subtitle}>
+            Manage your account settings and subscription.
           </p>
         </div>
-      </div>
-      <div className="p-4">
-        <CustomerPortalForm subscription={subscription} />
-        <NameForm userName={userDetails?.full_name ?? ''} />
-        <EmailForm userEmail={user.email} />
+        <div className={styles.formContainer}>
+          <CustomerPortalForm subscription={subscription} />
+          <NameForm userName={userDetails?.full_name ?? ''} />
+          <EmailForm userEmail={user.email} />
+        </div>
       </div>
     </section>
   );
