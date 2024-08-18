@@ -1,6 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import WorkspaceSidebar from '@/ui/workspace/WorkspaceSidebar';
+import styles from '@/app/workspace/WorkspaceLayout.module.css';
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -10,12 +11,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="flex h-screen bg-light-background dark:bg-dark-background">
+    <div className={styles.container}>
       <WorkspaceSidebar isOpen={isSidebarOpen} onClose={toggleSidebar} />
       <div
-        className={`flex-1 overflow-y-auto transition-all duration-300 ease-in-out ${isSidebarOpen ? 'ml-64' : 'ml-16'}`}
+        className={`${styles.content} ${isSidebarOpen ? styles.contentWithSidebar : styles.contentWithoutSidebar}`}
       >
-        <div className="p-6 md:p-10">{children}</div>
+        <div className={styles.inner}>{children}</div>
       </div>
     </div>
   );

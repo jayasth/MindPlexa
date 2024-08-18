@@ -1,0 +1,19 @@
+.container {
+  @apply flex h-screen bg-gray-50 dark:bg-gray-900;
+}
+
+.content {
+  @apply flex-1 overflow-y-auto transition-all duration-300 ease-in-out;
+}
+
+.contentWithSidebar {
+  @apply ml-56;
+}
+
+.contentWithoutSidebar {
+  @apply ml-14;
+}
+
+.inner {
+  @apply p-4 md:p-6;
+}

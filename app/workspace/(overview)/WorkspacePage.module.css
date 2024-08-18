@@ -1,0 +1,54 @@
+.main {
+  @apply max-w-5xl mx-auto;
+}
+
+.title {
+  @apply text-2xl font-bold mb-6 text-gray-800 dark:text-gray-200;
+}
+
+.grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.card {
+  @apply bg-white dark:bg-gray-800 rounded-lg shadow-md p-6;
+}
+
+.cardTitle {
+  @apply text-lg font-semibold mb-4 flex items-center text-gray-800 dark:text-gray-200;
+}
+
+.cardIcon {
+  @apply mr-2 text-gray-600 dark:text-gray-400;
+}
+
+.link {
+  @apply text-lavender-600 hover:underline mt-4 inline-block;
+}
+
+.button {
+  @apply px-4 py-2 bg-lavender-500 text-white rounded hover:bg-lavender-600 transition-colors duration-200;
+}
+
+.quickActions {
+  @apply mt-8;
+}
+
+.quickActionsTitle {
+  @apply text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200;
+}
+
+.quickActionsGrid {
+  @apply grid gap-4 md:grid-cols-2;
+}
+
+.fullWidthButton {
+  @apply w-full px-4 py-2 rounded transition-colors duration-200;
+}
