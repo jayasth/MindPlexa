@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import type { Tables } from 'types_db';
+import { FaEdit } from 'react-icons/fa';
 
 type Canvas = Tables<'canvases'>;
 

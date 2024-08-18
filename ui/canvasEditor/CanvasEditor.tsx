@@ -335,7 +335,6 @@ export default function CanvasEditor({ canvasId: initialCanvasId }) {
           <Toolbar
             canvasId={initialCanvasId}
             onDownload={() => handleDownload({ nodes, edges })}
-            onGenerateMindmap={handleOpenAIAssistanceModal}
             reactFlowInstance={reactFlowInstance.current}
           />
         </div>

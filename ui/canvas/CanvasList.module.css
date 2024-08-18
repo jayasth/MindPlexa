@@ -1,0 +1,31 @@
+.canvasListCard {
+  @apply max-w-3xl mx-auto;
+}
+
+.canvasList {
+  @apply space-y-2;
+}
+
+.canvasItem {
+  @apply flex justify-between items-center p-3 bg-light-background dark:bg-dark-background rounded-md shadow-sm hover:shadow-md transition-shadow duration-200;
+}
+
+.canvasInfo {
+  @apply flex-grow;
+}
+
+.canvasName {
+  @apply text-sm font-semibold text-light-text dark:text-dark-text;
+}
+
+.canvasDate {
+  @apply text-xs text-light-text/70 dark:text-dark-text/70;
+}
+
+.editButton {
+  @apply text-xs;
+}
+
+.editIcon {
+  @apply w-3 h-3 mr-1;
+}
