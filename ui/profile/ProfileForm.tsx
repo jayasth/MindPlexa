@@ -5,6 +5,9 @@ import { User } from '@supabase/supabase-js';
 import { updateProfile } from '@/utils/supabase/profileClient';
 import { useRouter } from 'next/navigation';
 import type { Tables } from 'types_db';
+import Card from '@/ui/Card';
+import Input from '@/ui/Input/Input';
+import Button from '@/ui/Button/Button';
 
 type Profile = Tables<'profiles'>;
 
@@ -42,86 +45,72 @@ export default function ProfileForm({ user, profile }: ProfileFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="mt-8 space-y-6">
-      <div>
-        <label htmlFor="fullName" className="block mb-2 font-medium">
-          Full Name
-        </label>
-        <input
-          id="fullName"
-          type="text"
-          value={fullName}
-          onChange={(e) => setFullName(e.target.value)}
-          className="w-full p-2 border border-gray-300 rounded"
-          required
-        />
-      </div>
-      <div>
-        <label htmlFor="avatarUrl" className="block mb-2 font-medium">
-          Avatar URL
-        </label>
-        <input
-          id="avatarUrl"
-          type="text"
-          value={avatarUrl}
-          onChange={(e) => setAvatarUrl(e.target.value)}
-          className="w-full p-2 border border-gray-300 rounded"
-        />
-      </div>
-      <div>
-        <label htmlFor="bio" className="block mb-2 font-medium">
-          Bio
-        </label>
-        <textarea
+    <Card title="Update Profile" className="max-w-md mx-auto">
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <Input
+            id="fullName"
+            label="Full Name"
+            type="text"
+            value={fullName}
+            onChange={setFullName}
+            placeholder="Enter your full name"
+            required
+          />
+          <Input
+            id="avatarUrl"
+            label="Avatar URL"
+            type="text"
+            value={avatarUrl}
+            onChange={setAvatarUrl}
+            placeholder="Enter avatar URL"
+          />
+        </div>
+        <Input
           id="bio"
+          label="Bio"
+          type="textarea"
           value={bio}
-          onChange={(e) => setBio(e.target.value)}
-          className="w-full p-2 border border-gray-300 rounded"
-          rows={4}
+          onChange={setBio}
+          placeholder="Tell us about yourself"
+          rows={3}
         />
-      </div>
-      <label htmlFor="website" className="block mb-2 font-medium">
-        Website
-      </label>
-      <input
-        id="website"
-        type="text"
-        value={website}
-        onChange={(e) => setWebsite(e.target.value)}
-        className="w-full p-2 border border-gray-300 rounded"
-      />
-      <div>
-        <label htmlFor="email" className="block mb-2 font-medium">
-          Email
-        </label>
-        <input
-          id="email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full p-2 border border-gray-300 rounded"
-          required
+        <Input
+          id="website"
+          label="Website"
+          type="url"
+          value={website}
+          onChange={setWebsite}
+          placeholder="https://example.com"
         />
-      </div>
-      <div>
-        <label htmlFor="phone" className="block mb-2 font-medium">
-          Phone
-        </label>
-        <input
-          id="phone"
-          type="tel"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-          className="w-full p-2 border border-gray-300 rounded"
-        />
-      </div>
-      <button
-        type="submit"
-        className="px-4 py-2 font-bold text-dark-text bg-blue-500 rounded hover:bg-blue-700"
-        disabled={isSubmitting}
-      >
-        {isSubmitting ? 'Updating...' : 'Update Profile'}
-      </button>
-    </form>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <Input
+            id="email"
+            label="Email"
+            type="email"
+            value={email}
+            onChange={setEmail}
+            placeholder="your@email.com"
+            required
+          />
+          <Input
+            id="phone"
+            label="Phone"
+            type="tel"
+            value={phone}
+            onChange={setPhone}
+            placeholder="+1 (123) 456-7890"
+          />
+        </div>
+        <Button
+          type="submit"
+          variant="submit"
+          loading={isSubmitting}
+          className="w-full"
+        >
+          {isSubmitting ? 'Updating...' : 'Update Profile'}
+        </Button>
+      </form>
+    </Card>
   );
 }

@@ -3,13 +3,30 @@ import cn from 'classnames';
 
 import s from './Input.module.css';
 
-interface Props extends Omit<InputHTMLAttributes<any>, 'onChange'> {
+interface Props
+  extends Omit<
+    InputHTMLAttributes<HTMLInputElement | HTMLTextAreaElement>,
+    'onChange'
+  > {
   className?: string;
   variant?: 'slim' | 'outline' | 'sleek' | 'gradient' | 'ghost';
   onChange: (value: string) => void;
+  label?: string;
+  type?: string;
+  rows?: number;
 }
+
 const Input = (props: Props) => {
-  const { className, variant = 'sleek', onChange, ...rest } = props;
+  const {
+    className,
+    variant = 'sleek',
+    onChange,
+    label,
+    id,
+    type = 'text',
+    rows,
+    ...rest
+  } = props;
 
   const rootClassName = cn(
     s.root,
@@ -23,25 +40,37 @@ const Input = (props: Props) => {
     className
   );
 
-  const handleOnChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleOnChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     if (onChange) {
       onChange(e.target.value);
     }
     return null;
   };
 
+  const InputComponent = type === 'textarea' ? 'textarea' : 'input';
+
   return (
-    <label>
-      <input
+    <div className="flex flex-col">
+      {label && (
+        <label htmlFor={id} className="mb-1 text-sm font-medium">
+          {label}
+        </label>
+      )}
+      <InputComponent
         className={rootClassName}
         onChange={handleOnChange}
+        id={id}
+        type={type !== 'textarea' ? type : undefined}
+        rows={type === 'textarea' ? rows : undefined}
         autoComplete="off"
         autoCorrect="off"
         autoCapitalize="off"
         spellCheck="false"
         {...rest}
       />
-    </label>
+    </div>
   );
 };
 

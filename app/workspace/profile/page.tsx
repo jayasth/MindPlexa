@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/supabaseServer';
 import { redirect } from 'next/navigation';
 import ProfileFormWrapper from '@/ui/profile/ProfileFormWrapper';
+import Card from '@/ui/Card';
 
 export default async function Profile() {
   const supabase = createClient();
@@ -24,27 +25,32 @@ export default async function Profile() {
   }
 
   return (
-    <section className="mb-32 bg-background">
-      <div className="max-w-6xl px-4 py-8 mx-auto sm:px-6 sm:pt-24 lg:px-8">
-        <div className="sm:align-center sm:flex sm:flex-col">
-          <h1 className="text-4xl font-extrabold sm:text-center sm:text-6xl">
-            Profile
-          </h1>
-          <p className="max-w-2xl m-auto mt-5 text-xl sm:text-center sm:text-2xl">
-            Update your profile information below.
-          </p>
+    <section className="max-w-4xl mx-auto px-4 py-8">
+      <Card
+        title="Profile"
+        description="View and update your profile information"
+      >
+        <div className="space-y-6">
+          <div>
+            <h2 className="text-xl font-semibold mb-2">Current Profile</h2>
+            <div className="space-y-2 text-sm">
+              <p>
+                <span className="font-medium">Email:</span> {user.email}
+              </p>
+              <p>
+                <span className="font-medium">Full Name:</span>{' '}
+                {profile?.full_name || 'N/A'}
+              </p>
+              <p>
+                <span className="font-medium">Website:</span>{' '}
+                {profile?.website || 'N/A'}
+              </p>
+              {/* Add more profile fields as needed */}
+            </div>
+          </div>
+          <ProfileFormWrapper user={user} profile={profile ?? null} />
         </div>
-      </div>
-      <div className="p-4">
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold">Current Profile</h2>
-          <p>Email: {user.email}</p>
-          <p>Full Name: {profile?.full_name || 'N/A'}</p>
-          <p>Website: {profile?.website || 'N/A'}</p>
-          {/* Add more profile fields as needed */}
-        </div>
-        <ProfileFormWrapper user={user} profile={profile ?? null} />
-      </div>
+      </Card>
     </section>
   );
 }

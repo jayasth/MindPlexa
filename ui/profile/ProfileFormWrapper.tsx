@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { FaEdit } from 'react-icons/fa';
 import ProfileForm from '@/ui/profile/ProfileForm';
+import Button from '@/ui/Button/Button';
 
 export default function ProfileFormWrapper({
   user,
@@ -14,26 +15,28 @@ export default function ProfileFormWrapper({
   const [showForm, setShowForm] = useState(false);
 
   return (
-    <>
+    <div className="space-y-4">
       {showForm ? (
-        <ProfileForm user={user} profile={profile} />
+        <>
+          <ProfileForm user={user} profile={profile} />
+          <Button
+            onClick={() => setShowForm(false)}
+            variant="ghost"
+            className="mt-4"
+          >
+            Cancel
+          </Button>
+        </>
       ) : (
-        <button
+        <Button
           onClick={() => setShowForm(true)}
-          className="flex items-center px-4 py-2 font-bold text-dark-text bg-blue-500 rounded hover:bg-blue-600"
+          variant="sleek"
+          className="flex items-center"
         >
-          <FaEdit className="mr-2" />
+          <FaEdit className="mr-2 w-4 h-4" />
           Update Profile
-        </button>
+        </Button>
       )}
-      {showForm && (
-        <button
-          onClick={() => setShowForm(false)}
-          className="px-4 py-2 ml-4 font-bold text-dark-text bg-gray-500 rounded hover:bg-gray-600"
-        >
-          Cancel
-        </button>
-      )}
-    </>
+    </div>
   );
 }
