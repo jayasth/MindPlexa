@@ -61,13 +61,13 @@ export default async function WorkspacePage() {
             <FaPlus className="mr-2 text-xs" /> Create New Canvas
           </Link>
           <Link
-            href="/dashboard/profile"
+            href="/workspace/profile"
             className={`${styles.fullWidthButton} ${styles.secondaryButton}`}
           >
             <FaUser className="mr-2 text-xs" /> Edit Profile
           </Link>
           <Link
-            href="/dashboard/account"
+            href="/workspace/settings"
             className={`${styles.fullWidthButton} ${styles.secondaryButton}`}
           >
             <FaCog className="mr-2 text-xs" /> Account Settings
