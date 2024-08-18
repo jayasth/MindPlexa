@@ -15,42 +15,42 @@ type NodeDimensionTypes = {
 
 export const nodeDimensions: NodeDimensionTypes = {
   note: {
-    viewWidth: 150,
-    viewHeight: 80,
+    viewWidth: 120,
+    viewHeight: 90,
     editWidth: 600,
     editHeight: 450,
     mobileEditWidth: 300,
     mobileEditHeight: 450
   },
   task: {
-    viewWidth: 150,
-    viewHeight: 80,
+    viewWidth: 120,
+    viewHeight: 90,
     editWidth: 600,
     editHeight: 450,
     mobileEditWidth: 300,
     mobileEditHeight: 450
   },
   table: {
-    viewWidth: 150,
-    viewHeight: 80,
-    editWidth: 600,
-    editHeight: 450,
+    viewWidth: 160,
+    viewHeight: 120,
+    editWidth: 800,
+    editHeight: 600,
     mobileEditWidth: 300,
     mobileEditHeight: 450
   },
   calendar: {
-    viewWidth: 150,
-    viewHeight: 80,
+    viewWidth: 120,
+    viewHeight: 90,
     editWidth: 600,
     editHeight: 450,
     mobileEditWidth: 300,
     mobileEditHeight: 450
   },
   draw: {
-    viewWidth: 150,
-    viewHeight: 80,
-    editWidth: 600,
-    editHeight: 450,
+    viewWidth: 160,
+    viewHeight: 120,
+    editWidth: 800,
+    editHeight: 600,
     mobileEditWidth: 300,
     mobileEditHeight: 450
   },

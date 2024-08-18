@@ -61,7 +61,11 @@ const ResizableArtboardMask: React.FC<ResizableArtboardMaskProps> = ({
     <div className={styles.maskOuterContainer}>
       <div
         className={styles.maskContainer}
-        style={{ width: size.width, height: size.height }}
+        style={{
+          width: size.width,
+          height: size.height,
+          backgroundColor: 'white'
+        }}
       >
         {children}
       </div>
