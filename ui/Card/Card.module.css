@@ -1,23 +1,54 @@
 .card {
-  @apply border rounded-md p-4 border-lavender-700 bg-myGray-600;
+  @apply w-full max-w-3xl m-auto my-4 rounded-md p-3 bg-light-background dark:bg-dark-background shadow-card transition-all duration-200 ease-in-out;
+}
+
+.card:hover {
+  @apply shadow-card-hover;
 }
 
 .cardHeader {
-  @apply px-5 py-4;
+  @apply px-4 py-3;
 }
 
 .cardTitle {
-  @apply mb-1 text-2xl font-medium text-lavender-400;
+  @apply mb-1 text-lg font-semibold text-light-text dark:text-dark-text;
 }
 
 .cardDescription {
-  @apply text-myGray-300;
+  @apply text-xs text-light-text/70 dark:text-dark-text/70;
 }
 
 .cardBody {
-  @apply px-5 py-4;
+  @apply px-4 py-3;
 }
 
 .cardFooter {
-  @apply p-4 border-t rounded-b-md border-myGray-700 bg-myGray-600 text-myGray-400;
+  @apply p-3 border-t border-light-primary/20 dark:border-dark-primary/20 rounded-b-md bg-light-background dark:bg-dark-background text-light-text/70 dark:text-dark-text/70 text-xs;
+}
+
+/* Variants */
+.default {
+  @apply border border-light-primary/20 dark:border-dark-primary/20;
+}
+
+.outline {
+  @apply border-2 border-light-primary dark:border-dark-primary bg-transparent;
+}
+
+.elevated {
+  @apply shadow-lg border-none;
+}
+
+.gradient {
+  @apply border-none bg-gradient-to-br from-lavender-400 to-lavender-600 text-white;
+}
+
+.gradient .cardTitle,
+.gradient .cardDescription,
+.gradient .cardFooter {
+  @apply text-white/90;
+}
+
+.gradient .cardFooter {
+  @apply border-white/20 bg-transparent;
 }
