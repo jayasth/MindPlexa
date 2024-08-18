@@ -34,6 +34,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
   reactFlowInstance
 }) => {
   const [isOpen, setIsOpen] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [showAIGeneratorV1, setShowAIGeneratorV1] = useState(false);
   const [showAIGeneratorV2, setShowAIGeneratorV2] = useState(false);
   const addNode = useNodeStore((state) => state.addNode);
@@ -88,6 +89,10 @@ const Toolbar: React.FC<ToolbarProps> = ({
     setIsOpen(!isOpen);
   };
 
+  const toggleExpand = () => {
+    setIsExpanded(!isExpanded);
+  };
+
   const handleGenerateAIMapV1 = () => {
     setShowAIGeneratorV1(true);
   };
@@ -96,21 +101,19 @@ const Toolbar: React.FC<ToolbarProps> = ({
     setShowAIGeneratorV2(true);
   };
 
-  const buttonClass = `${styles.button} ${isOpen ? styles.open : ''}`;
+  const buttonClass = `${styles.button} ${isExpanded ? styles.expanded : ''}`;
   const iconSize = 20;
 
   return (
     <>
-      {!isOpen && (
-        <Tooltip content="Show Toolbar">
-          <button className={styles.showButton} onClick={toggleToolbar}>
-            <MdOutlineKeyboardDoubleArrowRight size={iconSize} />
-          </button>
-        </Tooltip>
-      )}
-      <div className={`${styles.toolbar} ${isOpen ? styles.open : ''}`}>
+      <div
+        className={`${styles.toolbar} ${isOpen ? styles.open : ''} ${isExpanded ? styles.expanded : ''}`}
+      >
         <Tooltip content={isOpen ? 'Hide Toolbar' : 'Show Toolbar'}>
-          <button className={styles.toggleButton} onClick={toggleToolbar}>
+          <button
+            className={`${styles.toggleButton} ${styles.toolbarTooltip}`}
+            onClick={toggleToolbar}
+          >
             {isOpen ? (
               <MdOutlineKeyboardDoubleArrowLeft size={iconSize} />
             ) : (
@@ -120,75 +123,113 @@ const Toolbar: React.FC<ToolbarProps> = ({
         </Tooltip>
         {isOpen && (
           <>
+            <Tooltip content={isExpanded ? 'Hide Labels' : 'Show Labels'}>
+              <button
+                className={`${styles.expandButton} ${styles.toolbarTooltip}`}
+                onClick={toggleExpand}
+              >
+                {isExpanded ? '>>' : '<<'}
+              </button>
+            </Tooltip>
             <Link href="/workspace/canvases" passHref>
               <Tooltip content="Open Editor">
-                <button className={buttonClass}>
+                <button className={`${buttonClass} ${styles.toolbarTooltip}`}>
                   <AiOutlineHome size={iconSize} />
+                  {isExpanded && (
+                    <span className={styles.buttonText}>Open Editor</span>
+                  )}
                 </button>
               </Tooltip>
             </Link>
             <Tooltip content="AI Custom Layout">
-              <button onClick={handleGenerateAIMapV1} className={buttonClass}>
+              <button
+                onClick={handleGenerateAIMapV1}
+                className={`${buttonClass} ${styles.toolbarTooltip}`}
+              >
                 <LuNetwork size={iconSize} />
+                {isExpanded && (
+                  <span className={styles.buttonText}>AI Custom Layout</span>
+                )}
               </button>
             </Tooltip>
             <Tooltip content="AI Smart Layout">
-              <button onClick={handleGenerateAIMapV2} className={buttonClass}>
+              <button
+                onClick={handleGenerateAIMapV2}
+                className={`${buttonClass} ${styles.toolbarTooltip}`}
+              >
                 <FaRobot size={iconSize} />
+                {isExpanded && (
+                  <span className={styles.buttonText}>AI Smart Layout</span>
+                )}
               </button>
             </Tooltip>
             <Tooltip content="Selection Menu">
               <button
                 onClick={() => handleAddNode('selection_menu')}
-                className={buttonClass}
+                className={`${buttonClass} ${styles.toolbarTooltip}`}
               >
                 <HiOutlineViewGridAdd size={iconSize} />
+                {isExpanded && (
+                  <span className={styles.buttonText}>Selection Menu</span>
+                )}
               </button>
             </Tooltip>
             <Tooltip content="Note">
               <button
                 onClick={() => handleAddNode('note')}
-                className={buttonClass}
+                className={`${buttonClass} ${styles.toolbarTooltip}`}
               >
                 <PiNotepad size={iconSize} />
+                {isExpanded && <span className={styles.buttonText}>Note</span>}
               </button>
             </Tooltip>
             <Tooltip content="Task">
               <button
                 onClick={() => handleAddNode('task')}
-                className={buttonClass}
+                className={`${buttonClass} ${styles.toolbarTooltip}`}
               >
                 <IoList size={iconSize} />
+                {isExpanded && <span className={styles.buttonText}>Task</span>}
               </button>
             </Tooltip>
             <Tooltip content="Table">
               <button
                 onClick={() => handleAddNode('table')}
-                className={buttonClass}
+                className={`${buttonClass} ${styles.toolbarTooltip}`}
               >
                 <AiOutlineTable size={iconSize} />
+                {isExpanded && <span className={styles.buttonText}>Table</span>}
               </button>
             </Tooltip>
             <Tooltip content="Calendar">
               <button
                 onClick={() => handleAddNode('calendar')}
-                className={buttonClass}
+                className={`${buttonClass} ${styles.toolbarTooltip}`}
               >
                 <MdCalendarMonth size={iconSize} />
+                {isExpanded && (
+                  <span className={styles.buttonText}>Calendar</span>
+                )}
               </button>
             </Tooltip>
             <Tooltip content="Draw">
               <button
                 onClick={() => handleAddNode('draw')}
-                className={buttonClass}
+                className={`${buttonClass} ${styles.toolbarTooltip}`}
               >
                 <GiPencilBrush size={iconSize} />
+                {isExpanded && <span className={styles.buttonText}>Draw</span>}
               </button>
             </Tooltip>
-
             <Tooltip content="Download">
-              <button onClick={onDownload} className={buttonClass}>
+              <button
+                onClick={onDownload}
+                className={`${buttonClass} ${styles.toolbarTooltip}`}
+              >
                 <IoDownload size={iconSize} />
+                {isExpanded && (
+                  <span className={styles.buttonText}>Download</span>
+                )}
               </button>
             </Tooltip>
           </>

@@ -1,53 +1,53 @@
 .main {
-  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8;
 }
 
 .title {
-  @apply text-3xl font-bold mb-8 text-gray-800 dark:text-gray-200;
+  @apply text-2xl font-bold mb-6 text-gray-800 dark:text-gray-200;
 }
 
 .gridContainer {
-  @apply grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-12;
+  @apply grid gap-6 md:grid-cols-2 mb-8;
 }
 
 .card {
-  @apply bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 transition-shadow duration-300 hover:shadow-md;
+  @apply bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 transition-all duration-300 hover:shadow-md;
 }
 
 .cardTitle {
-  @apply text-xl font-semibold mb-4 flex items-center text-gray-800 dark:text-gray-200;
+  @apply text-lg font-semibold mb-3 flex items-center text-gray-800 dark:text-gray-200;
 }
 
 .cardIcon {
-  @apply mr-3 text-lavender-500 dark:text-lavender-400;
+  @apply mr-2 text-lavender-500 dark:text-lavender-400;
 }
 
 .cardDescription {
-  @apply text-gray-600 dark:text-gray-400 mb-4;
+  @apply text-sm text-gray-600 dark:text-gray-400 mb-4;
 }
 
 .link {
-  @apply text-sm text-lavender-600 hover:text-lavender-700 dark:text-lavender-400 dark:hover:text-lavender-300 hover:underline mt-4 inline-block transition-colors duration-200;
+  @apply text-xs text-lavender-600 hover:text-lavender-700 dark:text-lavender-400 dark:hover:text-lavender-300 hover:underline transition-colors duration-200;
 }
 
 .button {
-  @apply px-4 py-2 text-sm bg-lavender-500 text-white rounded hover:bg-lavender-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-lavender-500 focus:ring-opacity-50;
+  @apply px-3 py-1.5 text-xs bg-lavender-500 text-white rounded hover:bg-lavender-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-lavender-500 focus:ring-opacity-50;
 }
 
 .quickActions {
-  @apply mt-12;
+  @apply mt-8;
 }
 
 .quickActionsTitle {
-  @apply text-2xl font-semibold mb-6 text-gray-800 dark:text-gray-200;
+  @apply text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200;
 }
 
 .quickActionsGrid {
-  @apply grid gap-4 sm:grid-cols-2 lg:grid-cols-4;
+  @apply grid gap-4 sm:grid-cols-3;
 }
 
 .fullWidthButton {
-  @apply w-full px-4 py-3 rounded transition-colors duration-200 text-center text-sm font-medium focus:outline-none focus:ring-2 focus:ring-opacity-50 flex items-center justify-center;
+  @apply w-full px-3 py-2 rounded transition-colors duration-200 text-center text-xs font-medium focus:outline-none focus:ring-2 focus:ring-opacity-50 flex items-center justify-center;
 }
 
 .primaryButton {
