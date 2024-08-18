@@ -88,36 +88,47 @@ export default function CanvasesPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Canvases</h1>
-        <Link href="/canvasEditor/new" className="relative group">
-          <MdAddCircleOutline size={24} className="text-myGray-500" />
-          <span className="sr-only">Create New Canvas</span>
-          <div className="absolute right-4 bg-myGray-300 text-white px-2 py-1 text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
-            Create New Canvas
-          </div>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold text-myGray-800">Canvases</h1>
+        <Link
+          href="/canvasEditor/new"
+          className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-lavender-600 hover:bg-lavender-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-lavender-500 transition-colors duration-200"
+        >
+          <MdAddCircleOutline className="mr-2" size={18} />
+          Create New Canvas
         </Link>
       </div>
-      <ul>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {canvases.map((canvas) => (
-          <li key={canvas.id} className="mb-4">
-            <div className="border border-gray-300 rounded p-4">
-              <div className="flex justify-between items-center">
-                <Link href={`/canvasEditor/${canvas.id}`}>
-                  <h2 className="text-xl font-bold">{canvas.name}</h2>
-                </Link>
-                <button
-                  onClick={() => openDeleteModal(canvas.id)}
-                  className="text-lavender-500 hover:text-red-500"
-                >
-                  <FaTrash />
-                </button>
-              </div>
-              <p className="text-gray-500">{canvas.description}</p>
+          <div
+            key={canvas.id}
+            className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden"
+          >
+            <Link href={`/canvasEditor/${canvas.id}`} className="block p-4">
+              <h2 className="text-lg font-semibold text-myGray-800 mb-2">
+                {canvas.name}
+              </h2>
+              <p className="text-sm text-myGray-600 mb-4">
+                {canvas.description}
+              </p>
+            </Link>
+            <div className="px-4 py-3 bg-myLightGray-100 flex justify-between items-center">
+              <span className="text-xs text-myGray-500">
+                Updated:{' '}
+                {canvas.updated_at
+                  ? new Date(canvas.updated_at).toLocaleDateString()
+                  : 'N/A'}
+              </span>
+              <button
+                onClick={() => openDeleteModal(canvas.id)}
+                className="text-myGray-500 hover:text-red-500 transition-colors duration-200"
+              >
+                <FaTrash size={14} />
+              </button>
             </div>
-          </li>
+          </div>
         ))}
-      </ul>
+      </div>
       <DeleteCanvasModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
