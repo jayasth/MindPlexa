@@ -5,7 +5,9 @@ import {
   FaLayerGroup,
   FaChartBar,
   FaPlus,
-  FaCog
+  FaCog,
+  FaUser,
+  FaBell
 } from 'react-icons/fa';
 import styles from './WorkspaceSidebar.module.css';
 import { Tooltip } from '@/ui/Tooltip/Tooltip';
@@ -31,9 +33,9 @@ const WorkspaceSidebar: React.FC<WorkspaceSidebarProps> = ({
       </div>
       <nav className={styles.nav}>
         <SidebarLink
-          href="/dashboard"
+          href="/workspace"
           icon={<FaTachometerAlt />}
-          text="Dashboard"
+          text="Overview"
           isOpen={isOpen}
         />
         <SidebarLink
@@ -52,6 +54,18 @@ const WorkspaceSidebar: React.FC<WorkspaceSidebarProps> = ({
           href="/canvasEditor/new"
           icon={<FaPlus />}
           text="New Canvas"
+          isOpen={isOpen}
+        />
+        <SidebarLink
+          href="/workspace/profile"
+          icon={<FaUser />}
+          text="Profile"
+          isOpen={isOpen}
+        />
+        <SidebarLink
+          href="/workspace/notifications"
+          icon={<FaBell />}
+          text="Notifications"
           isOpen={isOpen}
         />
         <SidebarLink

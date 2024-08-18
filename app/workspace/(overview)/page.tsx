@@ -1,6 +1,13 @@
 import React from 'react';
 import Link from 'next/link';
-import { FaLayerGroup, FaChartBar, FaPlus, FaCog } from 'react-icons/fa';
+import {
+  FaLayerGroup,
+  FaChartBar,
+  FaPlus,
+  FaCog,
+  FaUser,
+  FaBell
+} from 'react-icons/fa';
 import { createClient } from '@/utils/supabase/supabaseServer';
 import CanvasList from '@/ui/canvas/CanvasList';
 import styles from './WorkspacePage.module.css';
@@ -49,13 +56,25 @@ export default async function WorkspacePage() {
         <div className={styles.quickActionsGrid}>
           <Link
             href="/canvasEditor/new"
-            className={`${styles.fullWidthButton} bg-lavender-500 text-white hover:bg-lavender-600`}
+            className={`${styles.fullWidthButton} ${styles.primaryButton}`}
           >
             <FaPlus className="inline-block mr-2" /> Create New Canvas
           </Link>
           <Link
+            href="/workspace/profile"
+            className={`${styles.fullWidthButton} ${styles.secondaryButton}`}
+          >
+            <FaUser className="inline-block mr-2" /> Edit Profile
+          </Link>
+          <Link
+            href="/workspace/notifications"
+            className={`${styles.fullWidthButton} ${styles.secondaryButton}`}
+          >
+            <FaBell className="inline-block mr-2" /> Notifications
+          </Link>
+          <Link
             href="/workspace/settings"
-            className={`${styles.fullWidthButton} bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600`}
+            className={`${styles.fullWidthButton} ${styles.secondaryButton}`}
           >
             <FaCog className="inline-block mr-2" /> Workspace Settings
           </Link>
