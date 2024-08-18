@@ -1,79 +1,30 @@
 .actionButton {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  margin-left: 4px;
-  position: relative;
-  z-index: 500;
+  @apply bg-transparent border-none cursor-pointer p-0 ml-1 relative z-10;
 }
 
 .fileInput {
-  display: none;
+  @apply hidden;
 }
 
 .input {
-  margin-bottom: 10px;
+  @apply mb-2;
 }
 
 .button {
-  margin-bottom: 10px;
+  @apply mb-2;
 }
 
-.tagList {
-  display: flex;
-  flex-wrap: wrap;
-  margin-top: 8px;
-  max-width: 400px;
-  max-height: 200px;
-  overflow: auto;
-}
-
-.tag {
-  background-color: #e0e0e0;
-  border-radius: 4px;
-  padding: 2px 6px;
-  margin-right: 8px;
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  font-size: 12px;
-}
-
-.removeTagButton {
-  background: none;
-  border: none;
-  cursor: pointer;
-  margin-left: 4px;
-  color: #888;
-  font-size: 12px;
-}
-
+.tagList,
 .fileList {
-  display: flex;
-  flex-wrap: wrap;
-  margin-top: 8px;
-  max-width: 400px;
-  max-height: 200px;
-  overflow: auto;
+  @apply flex flex-wrap mt-2 max-w-md max-h-48 overflow-auto;
 }
 
+.tag,
 .file {
-  background-color: #e0e0e0;
-  border-radius: 4px;
-  padding: 2px 6px;
-  margin-right: 8px;
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  font-size: 12px;
+  @apply bg-myLightGray-500 dark:bg-myGray-800 rounded py-0.5 px-1.5 mr-2 mb-2 flex items-center text-xs;
 }
 
+.removeTagButton,
 .removeFileButton {
-  background: none;
-  border: none;
-  cursor: pointer;
-  margin-left: 4px;
-  color: #888;
-  font-size: 12px;
+  @apply bg-transparent border-none cursor-pointer ml-1 text-myGray-600 dark:text-myGray-400 text-xs;
 }

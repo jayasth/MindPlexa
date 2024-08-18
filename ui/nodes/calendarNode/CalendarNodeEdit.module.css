@@ -1,82 +1,46 @@
 .calendarNode {
-  display: flex;
-  flex-direction: column;
-  border-radius: 8px;
-  padding: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  height: 100%;
-  cursor: move;
-  background-color: var(--background-color, #f4f4f4);
-  color: var(--text-color, #575757);
+  @apply flex flex-col rounded-lg p-2 shadow-md overflow-hidden h-full cursor-move bg-light-background text-light-text dark:bg-dark-background dark:text-dark-text;
 }
 
 .calendarContent {
-  flex-grow: 1;
-  overflow: auto;
-  background-color: transparent;
-  outline: none;
-  resize: none;
-  padding: 0;
-  z-index: 0;
-  cursor: text;
-  font-size: 12px;
+  @apply flex-grow overflow-auto bg-transparent outline-none resize-none p-0 z-0 cursor-text text-xs;
 }
 
 .customCalendar {
-  font-size: 0.8rem;
+  @apply text-xs;
 }
 
 .customCalendar .rbc-header {
-  padding: 4px 3px;
-  font-weight: bold;
-  font-size: 0.75rem;
-  border-bottom: 1px solid currentColor !important;
+  @apply p-1 font-semibold text-xs border-b border-current;
 }
 
 .customCalendar .rbc-date-cell {
-  padding: 2px;
-  font-size: 0.7rem;
+  @apply p-1 text-xs;
 }
 
 .customCalendar .rbc-event {
-  padding: 2px 3px;
-  font-size: 0.7rem;
+  @apply p-1 text-xs;
 }
 
 .todayCell {
-  font-weight: bold !important;
-  background-color: rgba(0, 0, 0, 0.1) !important;
-  border: 2px solid currentColor !important;
-  border-radius: 4px !important;
+  @apply font-bold bg-lavender-100 dark:bg-lavender-900 border-2 border-current rounded;
 }
 
 .customCalendar .rbc-today {
-  background-color: transparent !important;
+  @apply bg-transparent;
 }
 
 .customCalendar .rbc-off-range-bg {
-  background-color: rgba(0, 0, 0, 0.05) !important;
+  @apply bg-myLightGray-500 dark:bg-myGray-800;
 }
 
-.customCalendar .rbc-month-row + .rbc-month-row {
-  border-top: 1px solid currentColor !important;
-}
-
+.customCalendar .rbc-month-row + .rbc-month-row,
 .customCalendar .rbc-day-bg + .rbc-day-bg {
-  border-left: 1px solid currentColor !important;
+  @apply border-t border-l border-current;
 }
-
-/* common on all nodes */
 
 .header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 12px;
-  background-color: transparent;
-  z-index: 0;
-  cursor: move;
+  @apply flex items-center justify-between p-2 bg-transparent z-0 cursor-move;
 }
 
 .titleInput {
@@ -98,79 +62,38 @@
 }
 
 .footer {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 8px;
-  background-color: transparent;
-  padding: 4px;
+  @apply flex justify-between mt-2 bg-transparent p-1;
 }
 
 .tagFileContainer {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 8px;
-  border: 1px solid #ccc;
-  padding: 8px;
+  @apply flex justify-between mt-2 border border-myGray-300 dark:border-myGray-600 p-2;
 }
 
-.tagContainer {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
+.tagContainer,
 .fileContainer {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
+  @apply flex flex-wrap gap-1;
 }
 
 .file {
-  background-color: transparent;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 12px;
-  cursor: pointer;
+  @apply bg-transparent py-0.5 px-1.5 rounded text-xs cursor-pointer;
 }
 
 .attachedFile {
-  margin-top: 8px;
-  font-size: 12px;
-  color: #666;
+  @apply mt-2 text-xs text-myGray-600 dark:text-myGray-400;
 }
 
 .colorPicker {
-  position: absolute;
-  left: 0;
-  bottom: 40px;
-  z-index: 1000;
+  @apply absolute left-0 bottom-10 z-10;
 }
 
 .colorPicker .compact-picker__swatch:hover::after {
-  content: attr(data-name);
-  position: absolute;
-  top: -20px;
-  left: 0;
-  background: #fff;
-  padding: 2px 4px;
-  border: 1px solid #ccc;
-  border-radius: 3px;
-  font-size: 12px;
-  white-space: nowrap;
-  z-index: 10;
+  @apply content-[attr(data-name)] absolute top-[-20px] left-0 bg-white dark:bg-dark-background p-1 border border-myGray-300 dark:border-myGray-600 rounded text-xs whitespace-nowrap z-10;
 }
 
 .nodrag {
-  -webkit-user-drag: none;
-  user-select: none;
+  @apply select-none;
 }
 
 .nowheel {
-  overflow: auto;
-  -ms-overflow-style: none; /* Internet Explorer 10+ */
-  scrollbar-width: none; /* Firefox */
-}
-
-.nowheel::-webkit-scrollbar {
-  display: none; /* Safari and Chrome */
+  @apply overflow-auto;
 }

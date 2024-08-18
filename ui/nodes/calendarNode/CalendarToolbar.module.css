@@ -1,84 +1,51 @@
 .toolbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 4px 8px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-  font-size: 0.8rem;
+  @apply flex justify-between items-center p-1 border-b border-myGray-300 dark:border-myGray-600 text-xs;
 }
 
 .navButtons {
-  display: flex;
-  gap: 4px;
+  @apply flex gap-1;
 }
 
 .navButton {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 0.8rem;
-  padding: 2px 4px;
-  border-radius: 4px;
-  color: inherit;
+  @apply bg-transparent border-none cursor-pointer text-xs p-1 rounded text-current;
 }
 
 .navButton:hover {
-  background-color: rgba(0, 0, 0, 0.1);
+  @apply bg-lavender-100 dark:bg-lavender-900;
 }
 
 .currentDate {
-  font-weight: bold;
+  @apply font-semibold;
 }
 
 .rightControls {
-  display: flex;
-  align-items: center;
+  @apply flex items-center;
 }
 
 .viewButtons {
-  display: flex;
-  gap: 4px;
-  border-radius: 4px;
-  overflow: hidden;
-  background-color: rgba(0, 0, 0, 0.05);
+  @apply flex gap-1 rounded overflow-hidden bg-myLightGray-500 dark:bg-myGray-800;
 }
 
 .viewButton {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 0.8rem;
-  padding: 4px 8px;
-  color: inherit;
-  transition: background-color 0.2s;
+  @apply bg-transparent border-none cursor-pointer text-xs p-1 text-current transition-colors duration-200;
 }
 
 .viewButton:hover {
-  background-color: rgba(0, 0, 0, 0.1);
+  @apply bg-lavender-200 dark:bg-lavender-800;
 }
 
 .viewButton.active {
-  background-color: rgba(0, 0, 0, 0.2);
+  @apply bg-lavender-300 dark:bg-lavender-700;
 }
 
 .separator {
-  width: 1px;
-  height: 20px;
-  background-color: rgba(0, 0, 0, 0.2);
-  margin: 0 8px;
+  @apply w-px h-5 bg-myGray-300 dark:bg-myGray-600 mx-2;
 }
 
 .exportButton {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 0.8rem;
-  padding: 4px 8px;
-  border-radius: 4px;
-  color: inherit;
-  transition: background-color 0.2s;
+  @apply bg-transparent border-none cursor-pointer text-xs p-1 rounded text-current transition-colors duration-200;
 }
 
 .exportButton:hover {
-  background-color: rgba(0, 0, 0, 0.1);
+  @apply bg-lavender-100 dark:bg-lavender-900;
 }

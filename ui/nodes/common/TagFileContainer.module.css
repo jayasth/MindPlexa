@@ -1,54 +1,22 @@
 .tagFileContainer {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 8px;
-  padding: 8px;
+  @apply flex justify-between mt-2 p-2;
 }
 
 .withBorder {
-  border: 1px solid #ccc;
+  @apply border border-myGray-300 dark:border-myGray-600;
 }
 
-.tagContainer {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
-.tag {
-  background-color: transparent;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 12px;
-  cursor: pointer;
-}
-
-.removeTagButton {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: inherit;
-  margin-left: 4px;
-}
-
+.tagContainer,
 .fileContainer {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
+  @apply flex flex-wrap gap-1;
 }
 
+.tag,
 .file {
-  background-color: transparent;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 12px;
-  cursor: pointer;
+  @apply bg-myLightGray-500 dark:bg-myGray-800 py-0.5 px-1.5 rounded text-xs cursor-pointer;
 }
 
+.removeTagButton,
 .removeFileButton {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: inherit;
-  margin-left: 4px;
+  @apply bg-transparent border-none cursor-pointer text-current ml-1;
 }
