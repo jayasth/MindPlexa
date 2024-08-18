@@ -1,12 +1,12 @@
 @import 'reactflow/dist/style.css';
-@import url('https://fonts.googleapis.com/css2?family=Open+Sans&family=Poppins:wght@600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   body {
-    @apply bg-light-background text-light-text font-body;
+    @apply bg-light-background text-light-text font-body text-sm;
   }
 
   h1,
@@ -15,7 +15,7 @@
   h4,
   h5,
   h6 {
-    @apply font-heading;
+    @apply font-heading font-semibold;
   }
 }
 
@@ -36,6 +36,35 @@
   .minimap {
     display: none;
   }
+}
+
+/* Compact design adjustments */
+.compact-ui {
+  @apply text-xs;
+}
+
+.compact-ui button,
+.compact-ui input,
+.compact-ui select {
+  @apply py-1 px-2;
+}
+
+.compact-ui .icon {
+  @apply w-4 h-4;
+}
+
+/* Modern scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-light-background dark:bg-dark-background;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-light-primary dark:bg-dark-primary rounded-full;
 }
 
 *,
