@@ -11,6 +11,7 @@ import {
 import { createClient } from '@/utils/supabase/supabaseServer';
 import CanvasList from '@/ui/canvas/CanvasList';
 import styles from './WorkspacePage.module.css';
+import Button from '@/ui/Button/Button';
 
 export default async function WorkspacePage() {
   const supabase = createClient();
@@ -46,31 +47,37 @@ export default async function WorkspacePage() {
           <p className={styles.cardDescription}>
             Track your progress and productivity across canvases.
           </p>
-          <Link href="/workspace/analytics" className={styles.button}>
-            View Analytics
+          <Link href="/workspace/analytics">
+            <Button variant="sleek">View Analytics</Button>
           </Link>
         </div>
       </div>
       <div className={styles.quickActions}>
         <h2 className={styles.quickActionsTitle}>Quick Actions</h2>
         <div className={styles.quickActionsGrid}>
-          <Link
-            href="/canvasEditor/new"
-            className={`${styles.fullWidthButton} ${styles.primaryButton}`}
-          >
-            <FaPlus className="mr-2 text-xs" /> Create New Canvas
+          <Link href="/canvasEditor/new">
+            <Button
+              variant="slim"
+              className={`${styles.fullWidthButton} ${styles.primaryButton}`}
+            >
+              <FaPlus className="mr-2 text-xs" /> Create New Canvas
+            </Button>
           </Link>
-          <Link
-            href="/workspace/profile"
-            className={`${styles.fullWidthButton} ${styles.secondaryButton}`}
-          >
-            <FaUser className="mr-2 text-xs" /> Edit Profile
+          <Link href="/workspace/profile">
+            <Button
+              variant="slim"
+              className={`${styles.fullWidthButton} ${styles.secondaryButton}`}
+            >
+              <FaUser className="mr-2 text-xs" /> Edit Profile
+            </Button>
           </Link>
-          <Link
-            href="/workspace/settings"
-            className={`${styles.fullWidthButton} ${styles.secondaryButton}`}
-          >
-            <FaCog className="mr-2 text-xs" /> Account Settings
+          <Link href="/workspace/settings">
+            <Button
+              variant="slim"
+              className={`${styles.fullWidthButton} ${styles.secondaryButton}`}
+            >
+              <FaCog className="mr-2 text-xs" /> Account Settings
+            </Button>
           </Link>
         </div>
       </div>

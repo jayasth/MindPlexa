@@ -5,7 +5,7 @@ import s from './Input.module.css';
 
 interface Props extends Omit<InputHTMLAttributes<any>, 'onChange'> {
   className?: string;
-  variant?: 'slim' | 'outline' | 'sleek' | 'gradient';
+  variant?: 'slim' | 'outline' | 'sleek' | 'gradient' | 'ghost';
   onChange: (value: string) => void;
 }
 const Input = (props: Props) => {
@@ -17,7 +17,8 @@ const Input = (props: Props) => {
       [s.slim]: variant === 'slim',
       [s.outline]: variant === 'outline',
       [s.sleek]: variant === 'sleek',
-      [s.gradient]: variant === 'gradient'
+      [s.gradient]: variant === 'gradient',
+      [s.ghost]: variant === 'ghost'
     },
     className
   );

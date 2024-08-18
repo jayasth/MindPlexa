@@ -1,75 +1,28 @@
 .root {
-  @apply bg-light-background text-myGray-800 py-2 px-3 w-full appearance-none transition duration-150 ease-in-out border border-myGray-500 rounded-md;
+  @apply bg-light-background text-myGray-800 py-1.5 px-3 w-full appearance-none transition-all duration-200 ease-in-out border border-myGray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-lavender-500 focus:ring-opacity-50;
 }
 
-.root:focus {
-  @apply outline-none ring-2 ring-lavender-500 ring-opacity-50;
-}
-
-/* Slim Modifier for a thinner appearance */
+/* Slim Modifier */
 .slim {
-  @apply py-1 px-2 text-xs bg-light-background text-myGray-800 border border-light-primary rounded-md shadow-sm transition duration-300 ease-in-out;
+  @apply py-1 px-2 text-xs;
 }
 
-.slim:focus {
-  @apply ring-2 ring-lavender-500 ring-opacity-50;
-}
-
-/* Outline variant styles */
+/* Outline variant */
 .outline {
-  @apply bg-transparent text-myGray-800 border border-light-primary rounded-md;
+  @apply bg-transparent border border-light-primary;
 }
 
-.outline:focus {
-  @apply ring-2 ring-lavender-500 ring-opacity-50;
-}
-
-/* Sleek variant styles */
+/* Sleek variant */
 .sleek {
-  @apply bg-light-background text-myGray-800 border border-light-primary rounded-md shadow-sm transition duration-300 ease-in-out;
+  @apply bg-light-primary text-light-background;
 }
 
-.sleek:focus {
-  @apply ring-2 ring-lavender-500 ring-opacity-50;
-}
-
-/* Gradient variant styles */
+/* Gradient variant */
 .gradient {
-  @apply bg-gradient-to-r from-blue-300 to-purple-300 text-white border border-transparent rounded-md shadow-sm transition duration-300 ease-in-out;
+  @apply bg-gradient-to-r from-blue-400 to-purple-500 text-white border-transparent;
 }
 
-.gradient:focus {
-  @apply ring-2 ring-lavender-500 ring-opacity-50;
-}
-
-/* New datepicker variant styles */
-.datepicker {
-  @apply py-0 px-1 text-xs bg-transparent text-myGray-800 border border-transparent rounded-sm transition duration-150 ease-in-out;
-  min-width: 50px;
-  max-width: 70px;
-}
-
-.datepicker:focus {
-  @apply outline-none border-light-primary;
-}
-
-.datepicker:hover {
-  @apply bg-light-background;
-}
-
-/* Custom variant styles */
-.custom {
-  @apply bg-transparent text-myGray-800 border border-light-primary rounded-md;
-  padding: 0.25rem 0.5rem;
-  font-size: 0.75rem;
-  height: 28px;
-  line-height: 1;
-}
-
-.custom:focus {
-  @apply outline-none ring-2 ring-lavender-500 ring-opacity-50;
-}
-
-.label {
-  @apply inline-block;
+/* Ghost variant */
+.ghost {
+  @apply bg-transparent text-light-primary border-transparent hover:bg-light-primary/10;
 }

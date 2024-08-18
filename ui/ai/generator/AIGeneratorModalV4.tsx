@@ -180,7 +180,7 @@ const AIGeneratorModalV4: React.FC<AIGeneratorModalV4Props> = ({
               <Dropdown
                 value={selectedModel}
                 onChange={(value) => setSelectedModel(value)}
-                variant="custom"
+                variant="slim"
                 className={styles.dropdown}
               >
                 <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
@@ -189,7 +189,7 @@ const AIGeneratorModalV4: React.FC<AIGeneratorModalV4Props> = ({
               <Dropdown
                 value={selectedLayout}
                 onChange={(value) => setSelectedLayout(value as LayoutType)}
-                variant="custom"
+                variant="slim"
                 className={styles.dropdown}
               >
                 {layoutOptions.map((option) => (

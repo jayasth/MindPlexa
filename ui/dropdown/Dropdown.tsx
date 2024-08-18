@@ -3,9 +3,10 @@ import cn from 'classnames';
 
 import s from './Dropdown.module.css';
 
-interface Props extends Omit<SelectHTMLAttributes<any>, 'onChange'> {
+interface Props
+  extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'onChange'> {
   className?: string;
-  variant?: 'slim' | 'outline' | 'sleek' | 'gradient' | 'datepicker' | 'custom';
+  variant?: 'slim' | 'outline' | 'sleek' | 'gradient' | 'ghost';
   onChange: (value: string) => void;
   style?: React.CSSProperties;
 }
@@ -27,8 +28,7 @@ const Dropdown = (props: Props) => {
       [s.outline]: variant === 'outline',
       [s.sleek]: variant === 'sleek',
       [s.gradient]: variant === 'gradient',
-      [s.datepicker]: variant === 'datepicker',
-      [s.custom]: variant === 'custom'
+      [s.ghost]: variant === 'ghost'
     },
     className
   );

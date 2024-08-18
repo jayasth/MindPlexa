@@ -255,7 +255,7 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
               <Dropdown
                 value={selectedModel}
                 onChange={(value) => setSelectedModel(value)}
-                variant="custom"
+                variant="slim"
                 className={styles.dropdown}
               >
                 <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>

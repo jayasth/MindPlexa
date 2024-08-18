@@ -1,16 +1,11 @@
 /* Button Base Style */
 .root {
-  @apply bg-myGray-100 text-myGray-800 cursor-pointer inline-flex px-2 py-1 rounded-md leading-4 transition ease-in-out duration-150 shadow-sm font-semibold text-center justify-center uppercase border border-transparent items-center text-xs;
+  @apply inline-flex items-center justify-center px-3 py-1.5 text-xs font-semibold uppercase rounded-md transition-all duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-lavender-500 focus:ring-opacity-50;
 }
 
 /* Hover State */
 .root:hover {
-  @apply bg-light-secondary border-light-background;
-}
-
-/* Focus State */
-.root:focus {
-  @apply outline-none ring-2 ring-lavender-500 ring-opacity-50;
+  @apply shadow-sm;
 }
 
 /* Active State */
@@ -20,68 +15,46 @@
 
 /* Loading State */
 .loading {
-  @apply bg-light-background text-light-text border-light-text cursor-not-allowed;
+  @apply cursor-not-allowed opacity-70;
 }
 
-/* Slim Modifier for a thinner appearance */
+/* Slim Modifier */
 .slim {
-  @apply py-0.5 px-1 text-xs bg-myGray-300 text-light-background border border-light-primary rounded-md shadow-sm transition duration-300 ease-in-out;
+  @apply py-1 px-2 text-xs;
 }
 
-.slim:hover {
-  @apply shadow-lg shadow-light-primary/50;
-}
-
+/* Outline variant */
 .outline {
-  @apply bg-transparent text-light-primary border border-light-primary;
+  @apply bg-transparent border border-light-primary text-light-primary hover:bg-light-primary hover:text-light-background;
 }
 
-.outline:hover {
-  @apply bg-light-primary text-light-background; /* Swaps the text and background colors on hover */
-}
-
-/* Sleek variant styles */
+/* Sleek variant */
 .sleek {
-  @apply bg-light-primary text-light-background border border-light-primary rounded-md shadow-sm transition duration-300 ease-in-out;
+  @apply bg-light-primary text-light-background hover:bg-light-primary/90;
 }
 
-.sleek:hover {
-  @apply shadow-lg shadow-light-primary/50;
-}
-
-/* Submit variant styles */
+/* Submit variant */
 .submit {
-  @apply bg-gradient-to-r from-blue-300 to-purple-300 text-white border border-transparent rounded-md shadow-sm transition duration-300 ease-in-out;
+  @apply bg-gradient-to-r from-blue-400 to-purple-500 text-white hover:from-blue-500 hover:to-purple-600;
 }
 
-.submit:hover {
-  @apply shadow-lg shadow-blue-300/50;
-}
-
-/* Cancel variant styles */
+/* Cancel variant */
 .cancel {
-  @apply bg-gradient-to-r from-red-300 to-pink-300 text-white border border-transparent rounded-md shadow-sm transition duration-300 ease-in-out;
+  @apply bg-gradient-to-r from-red-400 to-pink-500 text-white hover:from-red-500 hover:to-pink-600;
 }
 
-.cancel:hover {
-  @apply shadow-lg shadow-red-300/50;
-}
-
-/* Danger variant styles */
+/* Danger variant */
 .danger {
-  @apply bg-red-500 text-white border border-transparent rounded-md shadow-sm transition duration-300 ease-in-out;
+  @apply bg-red-500 text-white hover:bg-red-600;
 }
 
-.danger:hover {
-  @apply bg-red-600 shadow-lg shadow-red-500/50;
+/* Ghost variant */
+.ghost {
+  @apply bg-transparent text-light-primary hover:bg-light-primary/10;
 }
 
 /* Disabled State */
 .disabled,
 .disabled:hover {
-  @apply text-light-text border-light-text bg-light-background cursor-not-allowed;
-  filter: grayscale(1);
-  -webkit-transform: translateZ(0);
-  -webkit-perspective: 1000;
-  -webkit-backface-visibility: hidden;
+  @apply bg-light-background text-light-text cursor-not-allowed opacity-50;
 }
