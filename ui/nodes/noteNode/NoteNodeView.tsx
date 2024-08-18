@@ -21,29 +21,22 @@ const NoteNodeView: React.FC<NoteNodeViewProps> = ({ data, width, height }) => {
   const { title, content, id, backgroundColor, textColor } = data;
   const toggleEditMode = useNodeStore((state) => state.toggleEditMode);
 
-  console.log('NoteNodeView: Node ID:', data.id);
-
   return (
-    <div className={styles.noteNode} style={{ width, height, backgroundColor }}>
+    <div
+      className={styles.noteNode}
+      style={{ width, height, backgroundColor, color: textColor }}
+    >
       <div className={styles.header}>
-        <div className={styles.title} style={{ color: textColor }}>
-          {title || 'Untitled Note'}
-        </div>
-        <div
-          className={styles.editButton}
-          style={{ color: textColor }}
-          onClick={() => toggleEditMode(id)}
-        >
-          <FaEdit />
+        <div className={styles.title}>{title || 'Untitled Note'}</div>
+        <div className={styles.editButton} onClick={() => toggleEditMode(id)}>
+          <FaEdit size={12} />
         </div>
       </div>
-      <div className={styles.contentPreview} style={{ color: textColor }}>
+      <div className={styles.content}>
         {content ? (
           <div dangerouslySetInnerHTML={{ __html: content }} />
         ) : (
-          <span className={styles.noContent} style={{ color: textColor }}>
-            No content available
-          </span>
+          <span className={styles.noContent}>No content available</span>
         )}
       </div>
       <Handle

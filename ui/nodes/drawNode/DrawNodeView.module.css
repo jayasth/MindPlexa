@@ -1,49 +1,54 @@
 .drawNode {
   display: flex;
   flex-direction: column;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  border-radius: 4px;
-  padding: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
   overflow: hidden;
+  font-family: 'Inter', sans-serif;
+  transition: all 0.2s ease-in-out;
+  min-width: 150px;
+  min-height: 80px;
+}
+
+.drawNode:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 4px;
-  background-color: transparent;
+  padding: 8px 12px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .title {
-  font-weight: bold;
-  font-size: 14px;
+  font-weight: 600;
+  font-size: 12px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: inherit;
+  max-width: 80%;
 }
 
 .editButton {
   cursor: pointer;
-  color: inherit;
+  opacity: 0.7;
+  transition: opacity 0.2s ease-in-out;
 }
 
 .editButton:hover {
-  color: #333;
+  opacity: 1;
 }
 
 .contentPreview {
   flex-grow: 1;
   overflow: auto;
-  padding: 4px;
-  font-size: 12px;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  max-height: 100px;
-  background-color: transparent;
-  border: 1px solid #ccc;
-  color: inherit;
+  padding: 8px 12px;
+  font-size: 11px;
+  line-height: 1.4;
+  max-height: 60px;
 }
 
 .previewImage {
@@ -52,6 +57,6 @@
 }
 
 .noContent {
-  color: #888;
+  color: rgba(0, 0, 0, 0.4);
   font-style: italic;
 }
