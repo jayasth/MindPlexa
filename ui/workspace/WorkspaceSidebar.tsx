@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import {
   FaFolder,
-  FaThList,
+  FaThLarge,
   FaTimes,
   FaSignOutAlt,
-  FaPlus
+  FaPlus,
+  FaChartBar
 } from 'react-icons/fa';
 import { MdDashboard, MdWorkspaces } from 'react-icons/md';
 import { SignOut } from '@/utils/auth-helpers/authServer';
@@ -22,7 +23,6 @@ const WorkspaceSidebar: React.FC<WorkspaceSidebarProps> = ({
   onClose
 }) => {
   const router = useRouter();
-
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   const handleSignOut = async (e: React.MouseEvent) => {
@@ -35,10 +35,11 @@ const WorkspaceSidebar: React.FC<WorkspaceSidebarProps> = ({
   };
 
   const menuItems = [
-    { icon: <MdWorkspaces />, label: 'Workspace', link: '/workspace' },
+    { icon: <MdWorkspaces />, label: 'Overview', link: '/workspace' },
     { icon: <FaFolder />, label: 'Projects', link: '/workspace/projects' },
-    { icon: <FaThList />, label: 'Canvases', link: '/workspace/canvases' },
+    { icon: <FaThLarge />, label: 'Canvases', link: '/workspace/canvases' },
     { icon: <FaPlus />, label: 'New Canvas', link: '/canvasEditor/new' },
+    { icon: <FaChartBar />, label: 'Analytics', link: '/workspace/analytics' },
     { icon: <MdDashboard />, label: 'Dashboard', link: '/dashboard' },
     { icon: <FaSignOutAlt />, label: 'Sign Out', action: handleSignOut }
   ];
