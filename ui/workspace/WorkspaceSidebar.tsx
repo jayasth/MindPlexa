@@ -8,6 +8,8 @@ import {
   FaCog
 } from 'react-icons/fa';
 import styles from './WorkspaceSidebar.module.css';
+import { Tooltip } from '@/ui/Tooltip/Tooltip';
+import { useState } from 'react';
 
 interface WorkspaceSidebarProps {
   isOpen: boolean;
@@ -63,6 +65,24 @@ const WorkspaceSidebar: React.FC<WorkspaceSidebarProps> = ({
   );
 };
 
+const SidebarTooltip: React.FC<{
+  content: string;
+  children: React.ReactNode;
+}> = ({ content, children }) => {
+  const [isVisible, setIsVisible] = useState(false);
+
+  return (
+    <div
+      className={styles.tooltipWrapper}
+      onMouseEnter={() => setIsVisible(true)}
+      onMouseLeave={() => setIsVisible(false)}
+    >
+      {children}
+      {isVisible && <div className={styles.tooltipContent}>{content}</div>}
+    </div>
+  );
+};
+
 const SidebarLink: React.FC<{
   href: string;
   icon: React.ReactNode;
@@ -70,8 +90,16 @@ const SidebarLink: React.FC<{
   isOpen: boolean;
 }> = ({ href, icon, text, isOpen }) => (
   <Link href={href} className={styles.link}>
-    <span className={styles.icon}>{icon}</span>
-    {isOpen && <span className={styles.linkText}>{text}</span>}
+    {isOpen ? (
+      <>
+        <span className={styles.icon}>{icon}</span>
+        <span className={styles.linkText}>{text}</span>
+      </>
+    ) : (
+      <SidebarTooltip content={text}>
+        <span className={styles.icon}>{icon}</span>
+      </SidebarTooltip>
+    )}
   </Link>
 );
 
