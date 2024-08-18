@@ -1,6 +1,8 @@
 import React from 'react';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import Card from '@/ui/Card/Card';
+import styles from './NodeTypeDistribution.module.css';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -34,12 +36,23 @@ const NodeTypeDistribution = () => {
     responsive: true,
     plugins: {
       legend: {
-        position: 'right' as const
+        position: 'right' as const,
+        labels: {
+          font: {
+            size: 12
+          }
+        }
       }
     }
   };
 
-  return <Pie data={data} options={options} />;
+  return (
+    <Card title="Node Type Distribution" className={styles.distributionCard}>
+      <div className={styles.chartContainer}>
+        <Pie data={data} options={options} />
+      </div>
+    </Card>
+  );
 };
 
 export default NodeTypeDistribution;

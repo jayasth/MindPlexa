@@ -1,19 +1,23 @@
-.container {
+.overviewCard {
+  @apply mb-6;
+}
+
+.statsGrid {
   @apply grid grid-cols-2 gap-4;
 }
 
 .stat {
-  @apply flex items-center p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm;
+  @apply flex items-center p-3 bg-light-background dark:bg-dark-background rounded-md shadow-sm transition-all duration-200 ease-in-out hover:shadow-md;
 }
 
 .icon {
-  @apply text-2xl text-lavender-500 mr-4;
+  @apply text-xl text-lavender-500 mr-3;
 }
 
 .label {
-  @apply text-sm font-medium text-gray-600 dark:text-gray-300;
+  @apply text-xs font-medium text-myGray-600 dark:text-myGray-300;
 }
 
 .value {
-  @apply text-xl font-semibold text-gray-800 dark:text-gray-100;
+  @apply text-lg font-semibold text-myGray-800 dark:text-myGray-100;
 }

@@ -5,6 +5,7 @@ import {
   FaCalendar,
   FaStickyNote
 } from 'react-icons/fa';
+import Card from '@/ui/Card/Card';
 import styles from './AnalyticsOverview.module.css';
 
 const AnalyticsOverview = () => {
@@ -16,37 +17,31 @@ const AnalyticsOverview = () => {
     totalNotes: 100
   };
 
+  const statItems = [
+    {
+      icon: FaProjectDiagram,
+      label: 'Total Projects',
+      value: stats.totalProjects
+    },
+    { icon: FaClipboardList, label: 'Total Tasks', value: stats.totalTasks },
+    { icon: FaCalendar, label: 'Upcoming Events', value: stats.upcomingEvents },
+    { icon: FaStickyNote, label: 'Total Notes', value: stats.totalNotes }
+  ];
+
   return (
-    <div className={styles.container}>
-      <div className={styles.stat}>
-        <FaProjectDiagram className={styles.icon} />
-        <div>
-          <h3 className={styles.label}>Total Projects</h3>
-          <p className={styles.value}>{stats.totalProjects}</p>
-        </div>
+    <Card title="Overview" className={styles.overviewCard}>
+      <div className={styles.statsGrid}>
+        {statItems.map((item, index) => (
+          <div key={index} className={styles.stat}>
+            <item.icon className={styles.icon} />
+            <div>
+              <h3 className={styles.label}>{item.label}</h3>
+              <p className={styles.value}>{item.value}</p>
+            </div>
+          </div>
+        ))}
       </div>
-      <div className={styles.stat}>
-        <FaClipboardList className={styles.icon} />
-        <div>
-          <h3 className={styles.label}>Total Tasks</h3>
-          <p className={styles.value}>{stats.totalTasks}</p>
-        </div>
-      </div>
-      <div className={styles.stat}>
-        <FaCalendar className={styles.icon} />
-        <div>
-          <h3 className={styles.label}>Upcoming Events</h3>
-          <p className={styles.value}>{stats.upcomingEvents}</p>
-        </div>
-      </div>
-      <div className={styles.stat}>
-        <FaStickyNote className={styles.icon} />
-        <div>
-          <h3 className={styles.label}>Total Notes</h3>
-          <p className={styles.value}>{stats.totalNotes}</p>
-        </div>
-      </div>
-    </div>
+    </Card>
   );
 };
 

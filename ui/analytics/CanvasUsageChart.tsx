@@ -9,6 +9,8 @@ import {
   Tooltip,
   Legend
 } from 'chart.js';
+import Card from '@/ui/Card/Card';
+import styles from './CanvasUsageChart.module.css';
 
 ChartJS.register(
   CategoryScale,
@@ -38,15 +40,43 @@ const CanvasUsageChart = () => {
     responsive: true,
     plugins: {
       legend: {
-        position: 'top' as const
+        position: 'top' as const,
+        labels: {
+          font: {
+            size: 12
+          }
+        }
       },
       title: {
         display: false
       }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          font: {
+            size: 10
+          }
+        }
+      },
+      x: {
+        ticks: {
+          font: {
+            size: 10
+          }
+        }
+      }
     }
   };
 
-  return <Bar data={data} options={options} />;
+  return (
+    <Card title="Canvas Usage" className={styles.usageCard}>
+      <div className={styles.chartContainer}>
+        <Bar data={data} options={options} />
+      </div>
+    </Card>
+  );
 };
 
 export default CanvasUsageChart;

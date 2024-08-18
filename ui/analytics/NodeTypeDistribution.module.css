@@ -1,0 +1,7 @@
+.distributionCard {
+  @apply mb-6;
+}
+
+.chartContainer {
+  @apply h-64 flex items-center justify-center;
+}

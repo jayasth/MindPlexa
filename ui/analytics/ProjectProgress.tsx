@@ -10,6 +10,8 @@ import {
   Tooltip,
   Legend
 } from 'chart.js';
+import Card from '@/ui/Card/Card';
+import styles from './ProjectProgress.module.css';
 
 ChartJS.register(
   CategoryScale,
@@ -39,15 +41,43 @@ const ProjectProgress = () => {
     responsive: true,
     plugins: {
       legend: {
-        position: 'top' as const
+        position: 'top' as const,
+        labels: {
+          font: {
+            size: 12
+          }
+        }
       },
       title: {
         display: false
       }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          font: {
+            size: 10
+          }
+        }
+      },
+      x: {
+        ticks: {
+          font: {
+            size: 10
+          }
+        }
+      }
     }
   };
 
-  return <Line data={data} options={options} />;
+  return (
+    <Card title="Project Progress" className={styles.progressCard}>
+      <div className={styles.chartContainer}>
+        <Line data={data} options={options} />
+      </div>
+    </Card>
+  );
 };
 
 export default ProjectProgress;

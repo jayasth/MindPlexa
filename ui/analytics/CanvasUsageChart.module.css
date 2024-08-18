@@ -1,0 +1,7 @@
+.usageCard {
+  @apply mb-6;
+}
+
+.chartContainer {
+  @apply h-64;
+}
