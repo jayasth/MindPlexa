@@ -1,35 +1,15 @@
 /* General Node Styles */
 .taskNode {
-  display: flex;
-  flex-direction: column;
-  border-radius: 4px;
-  padding: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  height: 100%;
-  cursor: move;
-  min-width: 300px; /* Add a min-width to prevent the node from becoming too narrow */
+  @apply flex flex-col rounded-md p-2 shadow-card overflow-hidden h-full cursor-move;
+  min-width: 300px;
 }
 
 .header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 12px;
-  background-color: transparent;
-  z-index: 0;
-  cursor: move;
+  @apply flex items-center justify-between p-2 bg-transparent z-0 cursor-move;
 }
 
 .titleInput {
-  font-size: 16px;
-  font-weight: bold;
-  border: none;
-  background-color: transparent;
-  outline: none;
-  flex-grow: 1;
-  cursor: text;
-  color: inherit;
+  @apply text-sm font-semibold border-none bg-transparent outline-none flex-grow cursor-text text-inherit;
   box-shadow: none !important;
 }
 
@@ -40,70 +20,34 @@
 }
 
 .footer {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 8px;
-  background-color: transparent;
-  padding: 4px;
+  @apply flex justify-between mt-2 bg-transparent p-1;
 }
 
 /* Task Content Styles */
 .taskContent {
-  flex-grow: 1;
-  overflow: auto;
-  background-color: transparent;
-  outline: none;
-  resize: none;
-  padding: 8px;
-  z-index: 0;
-  cursor: text;
-  border: 1px solid #ccc; /* Adjust border to remove top border */
+  @apply flex-grow overflow-auto bg-transparent outline-none resize-none p-2 z-0 cursor-text border border-myGray-300;
 }
 
 .taskItem {
-  display: grid;
-  grid-template-columns: auto 1fr auto auto auto auto;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
+  @apply grid grid-cols-[auto,1fr,auto,auto,auto,auto] items-center gap-2 mb-2;
 }
 
 .taskCheckbox {
-  flex: 0 0 auto;
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  width: 18px;
-  height: 18px;
-  border: 2px solid #989ff0;
-  border-radius: 3px;
-  position: relative;
-  cursor: pointer;
+  @apply flex-none appearance-none w-4 h-4 border-2 border-lavender-500 rounded relative cursor-pointer;
 }
 
 .taskCheckbox:checked {
-  background-color: #989ff0;
+  @apply bg-lavender-500;
 }
 
 .taskCheckbox:checked::after {
   content: '\2714';
-  font-size: 12px;
-  color: white;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  @apply text-xs text-white absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2;
 }
 
 .taskInput {
-  flex: 1;
-  font-size: 12px;
-  border: none;
-  background-color: transparent;
-  cursor: text;
-  color: inherit;
+  @apply flex-1 text-xs border-none bg-transparent cursor-text text-inherit min-w-0;
   box-shadow: none !important;
-  min-width: 0; /* Add this to allow the input to shrink */
 }
 
 .taskInput:focus,
@@ -114,32 +58,19 @@
 
 .taskPriority,
 .taskDueDate {
-  flex: 0 0 120px;
-}
-
-.taskPriority {
-  width: 90px; /* Adjust width for the priority dropdown */
+  @apply flex-none w-24;
 }
 
 .deleteTaskButton {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: inherit;
-  transition: color 0.3s ease;
-  padding: 0;
-  display: flex;
-  align-items: center;
+  @apply bg-transparent border-none cursor-pointer text-inherit transition-colors duration-300 p-0 flex items-center;
 }
 
 .deleteTaskButton:hover {
-  color: #ff6961;
+  @apply text-red-400;
 }
 
 .dragHandle {
-  cursor: grab;
-  display: flex;
-  align-items: center;
+  @apply cursor-grab flex items-center;
 }
 
 .newTaskInput {
@@ -235,98 +166,55 @@
 
 /* Task Controls Styles */
 .taskControls {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
+  @apply flex justify-between items-center mb-2;
 }
 
 .taskStats {
-  display: flex;
-  gap: 10px;
+  @apply flex gap-2;
 }
 
 .sortDropdown {
-  width: 120px;
+  @apply w-24;
 }
 
 .taskOptions {
-  position: relative;
+  @apply relative;
 }
 
 .optionsMenu {
-  position: absolute;
-  right: 0;
-  top: 100%;
-  background-color: #fff;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  padding: 10px;
-  z-index: 1000;
-  width: 150px; /* Increase the width */
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Add some shadow for better visibility */
+  @apply absolute right-0 top-full bg-white border border-myGray-300 rounded-md p-2 z-10 w-36 shadow-card;
 }
 
 .optionsMenu label {
-  display: flex;
-  align-items: center;
-  margin-bottom: 8px;
-  color: #333;
-  font-size: 12px;
+  @apply flex items-center mb-2 text-myGray-600 text-xs;
 }
 
 .optionsMenu input[type='checkbox'] {
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  width: 18px;
-  height: 18px;
-  border: 2px solid #989ff0;
-  border-radius: 3px;
-  margin-right: 8px;
-  position: relative;
-  cursor: pointer;
+  @apply appearance-none w-4 h-4 border-2 border-lavender-500 rounded mr-2 relative cursor-pointer;
 }
 
 .optionsMenu input[type='checkbox']:checked {
-  background-color: #989ff0;
+  @apply bg-lavender-500;
 }
 
 .optionsMenu input[type='checkbox']:checked::after {
   content: '\2714';
-  font-size: 12px;
-  color: white;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  @apply text-xs text-white absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2;
 }
 
 /* Icon Button Styles */
 .iconButton {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: inherit;
+  @apply bg-transparent border-none cursor-pointer text-inherit;
 }
 
 .cleanupButton {
-  display: flex;
-  align-items: center;
-  background: none;
-  border: none;
-  color: #ff6961;
-  cursor: pointer;
-  font-size: 12px;
-  padding: 5px 0;
-  width: 100%;
-  text-align: left;
+  @apply flex items-center bg-transparent border-none text-red-400 cursor-pointer text-xs p-1 w-full text-left;
 }
 
 .cleanupButton:hover {
-  background-color: #f8f8f8;
+  @apply bg-myLightGray-100;
 }
 
 .cleanupButton svg {
-  margin-right: 5px;
+  @apply mr-1;
 }
