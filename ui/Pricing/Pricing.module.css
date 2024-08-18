@@ -1,0 +1,47 @@
+.pricingSection {
+    @apply bg-light-background dark:bg-dark-background py-20;
+  }
+  
+  .pricingContainer {
+    @apply max-w-6xl mx-auto px-4;
+  }
+  
+  .sectionTitle {
+    @apply text-3xl font-bold text-center mb-4;
+  }
+  
+  .sectionDescription {
+    @apply text-xl text-center mb-12 text-light-text/80 dark:text-dark-text/80;
+  }
+  
+  .pricingGrid {
+    @apply grid grid-cols-1 md:grid-cols-3 gap-8;
+  }
+  
+  .pricingCard {
+    @apply bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 transition-all duration-300 hover:shadow-xl;
+  }
+  
+  .activePlan {
+    @apply border-2 border-lavender-500;
+  }
+  
+  .planName {
+    @apply text-2xl font-bold mb-4;
+  }
+  
+  .planPrice {
+    @apply text-4xl font-bold mb-4 text-lavender-600 dark:text-lavender-400;
+  }
+  
+  .billingInterval {
+    @apply text-base font-normal text-light-text/60 dark:text-dark-text/60;
+  }
+  
+  .planDescription {
+    @apply mb-8 text-light-text/80 dark:text-dark-text/80;
+  }
+  
+  .planButton {
+    @apply w-full;
+  }

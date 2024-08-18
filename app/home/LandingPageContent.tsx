@@ -3,97 +3,73 @@
 import Button from '@/ui/Button/Button';
 import Link from 'next/link';
 import TypewriterEffect from '@/ui/TypewriterEffect/TypewriterEffect';
+import Card from '@/ui/Card/Card';
+import { FaBrain, FaProjectDiagram, FaRobot } from 'react-icons/fa';
+import styles from './LandingPageContent.module.css';
 
 export default function LandingPageContent() {
   return (
-    <div className="bg-background text-text">
-      <section className="hero">
-        <div className="max-w-6xl px-4 py-12 mx-auto sm:py-16 sm:px-6 lg:px-8">
-          <div className="sm:text-center">
-            <h1 className="text-4xl font-extrabold sm:text-6xl">
-              Mindeplexa: <br />
-              <TypewriterEffect
-                text="Navigating Ideas from Conception to Completion"
-                delay={500}
-              />
-            </h1>
-
-            <p className="max-w-2xl mx-auto mt-4 text-xl text-myGray-300">
-              MindPlexa is an AI-powered platform that simplifies the journey
-              from idea generation to project execution. It provides a
-              customizable workspace where users can develop, organize, and
-              collaborate on ideas using intuitive tools and visual aids.
-            </p>
-            <div className="mt-8 sm:justify-center sm:flex">
-              <Link href="/signin/signup">
-                <Button
-                  variant="sleek"
-                  type="button"
-                  className="block py-3 text-base font-medium text-center text-white rounded-md bg-lavender-600 hover:bg-lavender-700 sm:px-10"
-                >
-                  Get started
-                </Button>
-              </Link>
-            </div>
-          </div>
+    <div className={styles.container}>
+      <section className={styles.hero}>
+        <div className={styles.heroContent}>
+          <h1 className={styles.heroTitle}>
+            MindePlexa: <br />
+            <TypewriterEffect text="Transform Ideas into Reality" delay={500} />
+          </h1>
+          <p className={styles.heroDescription}>
+            MindePlexa is an AI-powered platform that revolutionizes project
+            management. Create, organize, and collaborate on ideas using
+            intuitive canvases and intelligent nodes.
+          </p>
+          <Link href="/signin/signup">
+            <Button variant="sleek" className={styles.ctaButton}>
+              Start Your Journey
+            </Button>
+          </Link>
         </div>
       </section>
 
-      <section className="features">
-        <div className="max-w-6xl px-4 py-12 mx-auto sm:py-16 sm:px-6 lg:px-8">
-          <div className="sm:text-center">
-            <h2 className="text-3xl font-extrabold sm:text-4xl">
-              Key Features
-            </h2>
-            <p className="max-w-2xl mx-auto mt-4 text-xl text-myGray-300">
-              MindPlexa combines a customizable workspace, a canvas for
-              organizing and connecting nodes, and integrated AI assistance to
-              help users streamline their creative process and boost
-              productivity.
-            </p>
-          </div>
-          <div className="grid grid-cols-1 gap-8 mt-12 sm:grid-cols-2 lg:grid-cols-3">
-            {/* Add your feature cards here */}
-          </div>
+      <section className={styles.features}>
+        <h2 className={styles.sectionTitle}>Key Features</h2>
+        <div className={styles.featureGrid}>
+          <Card
+            title="Interactive Canvases"
+            description="Create dynamic workspaces for your projects"
+            variant="gradient"
+            className={styles.featureCard}
+          >
+            <FaProjectDiagram className={styles.featureIcon} />
+          </Card>
+          <Card
+            title="Intelligent Nodes"
+            description="Organize information with interconnected, customizable nodes"
+            variant="gradient"
+            className={styles.featureCard}
+          >
+            <FaBrain className={styles.featureIcon} />
+          </Card>
+          <Card
+            title="AI-Powered Assistance"
+            description="Generate project layouts and get intelligent suggestions"
+            variant="gradient"
+            className={styles.featureCard}
+          >
+            <FaRobot className={styles.featureIcon} />
+          </Card>
         </div>
       </section>
 
-      <section className="testimonials">
-        <div className="max-w-6xl px-4 py-12 mx-auto sm:py-16 sm:px-6 lg:px-8">
-          <div className="sm:text-center">
-            <h2 className="text-3xl font-extrabold sm:text-4xl">
-              What Our Users Say
-            </h2>
-          </div>
-          <div className="grid grid-cols-1 gap-8 mt-12 sm:grid-cols-2 lg:grid-cols-3">
-            {/* Add your testimonial cards here */}
-          </div>
-        </div>
-      </section>
-
-      <section className="cta">
-        <div className="max-w-6xl px-4 py-12 mx-auto sm:py-16 sm:px-6 lg:px-8">
-          <div className="sm:text-center">
-            <h2 className="text-3xl font-extrabold sm:text-4xl">
-              Ready to Navigate Your Ideas?
-            </h2>
-            <p className="max-w-2xl mx-auto mt-4 text-xl text-myGray-300">
-              Start your journey with MindPlexa today and unlock the full
-              potential of your ideas.
-            </p>
-            <div className="mt-8 sm:justify-center sm:flex">
-              <Link href="/signin/signup">
-                <Button
-                  variant="sleek"
-                  type="button"
-                  className="block py-3 text-base font-medium text-center text-white rounded-md bg-lavender-600 hover:bg-lavender-700 sm:px-10"
-                >
-                  Get started
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
+      <section className={styles.cta}>
+        <h2 className={styles.sectionTitle}>Ready to Transform Your Ideas?</h2>
+        <p className={styles.ctaDescription}>
+          Join MindePlexa today and experience a new way of managing projects
+          and ideas.
+        </p>
+        <Link href="/signin/signup">
+          <Button variant="sleek" className={styles.ctaButton}>
+            Get Started Now
+          </Button>
+        </Link>
       </section>
     </div>
   );

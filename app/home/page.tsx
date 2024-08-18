@@ -2,10 +2,10 @@ import Pricing from '@/ui/Pricing/Pricing';
 import { createClient } from '@/utils/supabase/supabaseServer';
 import LandingLayout from '@/app/home/landingLayout';
 import LandingPageContent from '@/app/home/LandingPageContent';
+
 export default async function LandingPage() {
   const supabase = createClient();
 
-  // Get user data and subscription details
   const {
     data: { user }
   } = await supabase.auth.getUser();
@@ -36,7 +36,6 @@ export default async function LandingPage() {
         products={products ?? []}
         subscription={subscription}
       />
-      {/* Additional components can be added here */}
     </LandingLayout>
   );
 }

@@ -1,0 +1,51 @@
+.container {
+  @apply bg-light-background dark:bg-dark-background text-light-text dark:text-dark-text;
+}
+
+.hero {
+  @apply bg-gradient-to-br from-lavender-400 to-lavender-600 text-white py-20;
+}
+
+.heroContent {
+  @apply max-w-4xl mx-auto px-4 text-center;
+}
+
+.heroTitle {
+  @apply text-4xl font-extrabold sm:text-6xl mb-6;
+}
+
+.heroDescription {
+  @apply text-xl mb-8 max-w-2xl mx-auto;
+}
+
+.ctaButton {
+  @apply text-base px-8 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300;
+}
+
+.features {
+  @apply py-20 px-4;
+}
+
+.sectionTitle {
+  @apply text-3xl font-bold text-center mb-12;
+}
+
+.featureGrid {
+  @apply grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto;
+}
+
+.featureCard {
+  @apply flex flex-col items-center text-center p-6;
+}
+
+.featureIcon {
+  @apply text-5xl mb-4 text-white;
+}
+
+.cta {
+  @apply bg-light-primary dark:bg-dark-primary text-white py-20 px-4 text-center;
+}
+
+.ctaDescription {
+  @apply text-xl mb-8 max-w-2xl mx-auto;
+}
