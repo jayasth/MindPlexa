@@ -1,7 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { FaCog, FaTrash } from 'react-icons/fa';
 import Dropdown from '@/ui/dropdown/Dropdown';
 import styles from './TaskNodeEdit.module.css';
+import useClickOutside from '@/hooks/useClickOutside';
 
 interface TaskControlsProps {
   totalTasks: number;
@@ -35,21 +36,7 @@ const TaskControls: React.FC<TaskControlsProps> = ({
   const [isOptionsOpen, setIsOptionsOpen] = useState(false);
   const optionsRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        optionsRef.current &&
-        !optionsRef.current.contains(event.target as Node)
-      ) {
-        setIsOptionsOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
+  useClickOutside(optionsRef, () => setIsOptionsOpen(false));
 
   return (
     <div className={styles.taskControls}>

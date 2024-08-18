@@ -79,7 +79,7 @@ const WorkspaceSidebar: React.FC<WorkspaceSidebarProps> = ({
         <SidebarLink
           href="/workspace/settings"
           icon={<FaCog />}
-          text="Account Settings"
+          text="Settings"
           isOpen={isOpen}
         />
         <SidebarLink
