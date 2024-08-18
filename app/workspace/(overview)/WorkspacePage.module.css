@@ -3,38 +3,31 @@
 }
 
 .title {
-  @apply text-2xl font-bold mb-6 text-gray-800 dark:text-gray-200;
+  @apply text-2xl font-semibold mb-6 text-gray-800 dark:text-gray-200;
 }
 
-.grid {
-  display: grid;
-  gap: 1.5rem;
-}
-
-@media (min-width: 768px) {
-  .grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+.gridContainer {
+  @apply grid gap-4 md:grid-cols-2;
 }
 
 .card {
-  @apply bg-white dark:bg-gray-800 rounded-lg shadow-md p-6;
+  @apply bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 transition-shadow duration-300 hover:shadow-md;
 }
 
 .cardTitle {
-  @apply text-lg font-semibold mb-4 flex items-center text-gray-800 dark:text-gray-200;
+  @apply text-lg font-medium mb-3 flex items-center text-gray-800 dark:text-gray-200;
 }
 
 .cardIcon {
-  @apply mr-2 text-gray-600 dark:text-gray-400;
+  @apply mr-2 text-lavender-500 dark:text-lavender-400;
 }
 
 .link {
-  @apply text-lavender-600 hover:underline mt-4 inline-block;
+  @apply text-sm text-lavender-600 hover:text-lavender-700 dark:text-lavender-400 dark:hover:text-lavender-300 hover:underline mt-3 inline-block transition-colors duration-200;
 }
 
 .button {
-  @apply px-4 py-2 bg-lavender-500 text-white rounded hover:bg-lavender-600 transition-colors duration-200;
+  @apply px-3 py-1 text-sm bg-lavender-500 text-white rounded hover:bg-lavender-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-lavender-500 focus:ring-opacity-50;
 }
 
 .quickActions {
@@ -42,13 +35,13 @@
 }
 
 .quickActionsTitle {
-  @apply text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200;
+  @apply text-xl font-medium mb-3 text-gray-800 dark:text-gray-200;
 }
 
 .quickActionsGrid {
-  @apply grid gap-4 md:grid-cols-2;
+  @apply grid gap-3 md:grid-cols-2;
 }
 
 .fullWidthButton {
-  @apply w-full px-4 py-2 rounded transition-colors duration-200;
+  @apply w-full px-3 py-2 rounded transition-colors duration-200 text-center text-sm font-medium focus:outline-none focus:ring-2 focus:ring-opacity-50;
 }

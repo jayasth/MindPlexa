@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { FaThLarge, FaChartBar } from 'react-icons/fa';
+import { FaLayerGroup, FaChartBar, FaPlus, FaCog } from 'react-icons/fa';
 import { createClient } from '@/utils/supabase/supabaseServer';
 import CanvasList from '@/ui/canvas/CanvasList';
 import styles from './WorkspacePage.module.css';
@@ -22,10 +22,10 @@ export default async function WorkspacePage() {
   return (
     <main className={styles.main}>
       <h1 className={styles.title}>Workspace Overview</h1>
-      <div className={styles.grid}>
+      <div className={styles.gridContainer}>
         <div className={styles.card}>
           <h2 className={styles.cardTitle}>
-            <FaThLarge className={styles.cardIcon} /> Recent Canvases
+            <FaLayerGroup className={styles.cardIcon} /> Recent Canvases
           </h2>
           <CanvasList canvases={canvases ?? []} />
           <Link href="/workspace/canvases" className={styles.link}>
@@ -36,28 +36,28 @@ export default async function WorkspacePage() {
           <h2 className={styles.cardTitle}>
             <FaChartBar className={styles.cardIcon} /> Workspace Analytics
           </h2>
-          <p className="text-gray-600 dark:text-gray-300 mb-4">
+          <p className={styles.cardDescription}>
             Track your progress and productivity across canvases.
           </p>
-          <Link href="/workspace/analytics">
-            <button className={styles.button}>View Analytics</button>
+          <Link href="/workspace/analytics" className={styles.button}>
+            View Analytics
           </Link>
         </div>
       </div>
       <div className={styles.quickActions}>
         <h2 className={styles.quickActionsTitle}>Quick Actions</h2>
         <div className={styles.quickActionsGrid}>
-          <Link href="/canvasEditor/new">
-            <button className={`${styles.fullWidthButton} ${styles.button}`}>
-              Create New Canvas
-            </button>
+          <Link
+            href="/canvasEditor/new"
+            className={`${styles.fullWidthButton} bg-lavender-500 text-white hover:bg-lavender-600`}
+          >
+            <FaPlus className="inline-block mr-2" /> Create New Canvas
           </Link>
-          <Link href="/workspace/settings">
-            <button
-              className={`${styles.fullWidthButton} bg-gray-500 text-white hover:bg-gray-600`}
-            >
-              Workspace Settings
-            </button>
+          <Link
+            href="/workspace/settings"
+            className={`${styles.fullWidthButton} bg-gray-200 text-gray-800 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600`}
+          >
+            <FaCog className="inline-block mr-2" /> Workspace Settings
           </Link>
         </div>
       </div>

@@ -1,11 +1,11 @@
 import React from 'react';
 import Link from 'next/link';
 import {
-  FaThLarge,
+  FaTachometerAlt,
+  FaLayerGroup,
   FaChartBar,
   FaPlus,
-  FaCog,
-  FaTachometerAlt
+  FaCog
 } from 'react-icons/fa';
 import styles from './WorkspaceSidebar.module.css';
 
@@ -23,9 +23,6 @@ const WorkspaceSidebar: React.FC<WorkspaceSidebarProps> = ({
       className={`${styles.sidebar} ${isOpen ? styles.sidebarOpen : styles.sidebarClosed}`}
     >
       <div className={styles.header}>
-        <h2 className={`${styles.title} ${isOpen ? 'block' : 'hidden'}`}>
-          Workspace
-        </h2>
         <button onClick={onClose} className={styles.toggleButton}>
           {isOpen ? '<<' : '>>'}
         </button>
@@ -38,14 +35,8 @@ const WorkspaceSidebar: React.FC<WorkspaceSidebarProps> = ({
           isOpen={isOpen}
         />
         <SidebarLink
-          href="/workspace"
-          icon={<FaThLarge />}
-          text="Overview"
-          isOpen={isOpen}
-        />
-        <SidebarLink
           href="/workspace/canvases"
-          icon={<FaThLarge />}
+          icon={<FaLayerGroup />}
           text="Canvases"
           isOpen={isOpen}
         />
@@ -80,7 +71,7 @@ const SidebarLink: React.FC<{
 }> = ({ href, icon, text, isOpen }) => (
   <Link href={href} className={styles.link}>
     <span className={styles.icon}>{icon}</span>
-    {isOpen && <span>{text}</span>}
+    {isOpen && <span className={styles.linkText}>{text}</span>}
   </Link>
 );
 

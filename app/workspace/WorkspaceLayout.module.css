@@ -7,11 +7,11 @@
 }
 
 .contentWithSidebar {
-  @apply ml-56;
+  @apply ml-48;
 }
 
 .contentWithoutSidebar {
-  @apply ml-14;
+  @apply ml-12;
 }
 
 .inner {
