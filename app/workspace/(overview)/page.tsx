@@ -56,27 +56,21 @@ export default async function WorkspacePage() {
         <div className={styles.quickActionsGrid}>
           <Link
             href="/canvasEditor/new"
-            className={`${styles.fullWidthButton} ${styles.primaryButton}`}
+            className={`${styles.fullWidthButton} bg-lavender-500 text-white hover:bg-lavender-600`}
           >
             <FaPlus className="inline-block mr-2" /> Create New Canvas
           </Link>
           <Link
-            href="/workspace/profile"
+            href="/dashboard/profile"
             className={`${styles.fullWidthButton} ${styles.secondaryButton}`}
           >
             <FaUser className="inline-block mr-2" /> Edit Profile
           </Link>
           <Link
-            href="/workspace/notifications"
+            href="/dashboard/account"
             className={`${styles.fullWidthButton} ${styles.secondaryButton}`}
           >
-            <FaBell className="inline-block mr-2" /> Notifications
-          </Link>
-          <Link
-            href="/workspace/settings"
-            className={`${styles.fullWidthButton} ${styles.secondaryButton}`}
-          >
-            <FaCog className="inline-block mr-2" /> Workspace Settings
+            <FaCog className="inline-block mr-2" /> Account Settings
           </Link>
         </div>
       </div>

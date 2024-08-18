@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import {
   FaTachometerAlt,
@@ -7,11 +7,13 @@ import {
   FaPlus,
   FaCog,
   FaUser,
-  FaBell
+  FaBell,
+  FaSignOutAlt
 } from 'react-icons/fa';
 import styles from './WorkspaceSidebar.module.css';
-import { Tooltip } from '@/ui/Tooltip/Tooltip';
-import { useState } from 'react';
+import { SignOut } from '@/utils/auth-helpers/authServer';
+import { handleRequest } from '@/utils/auth-helpers/authClient';
+import { useRouter } from 'next/navigation';
 
 interface WorkspaceSidebarProps {
   isOpen: boolean;
@@ -22,6 +24,17 @@ const WorkspaceSidebar: React.FC<WorkspaceSidebarProps> = ({
   isOpen,
   onClose
 }) => {
+  const router = useRouter();
+
+  const handleSignOut = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    const syntheticEvent = {
+      preventDefault: () => {},
+      target: { elements: { pathName: { value: router.refresh } } }
+    };
+    await handleRequest(syntheticEvent as any, SignOut, router);
+  };
+
   return (
     <aside
       className={`${styles.sidebar} ${isOpen ? styles.sidebarOpen : styles.sidebarClosed}`}
@@ -57,22 +70,23 @@ const WorkspaceSidebar: React.FC<WorkspaceSidebarProps> = ({
           isOpen={isOpen}
         />
         <SidebarLink
-          href="/workspace/profile"
+          href="/dashboard/profile"
           icon={<FaUser />}
           text="Profile"
           isOpen={isOpen}
         />
         <SidebarLink
-          href="/workspace/notifications"
-          icon={<FaBell />}
-          text="Notifications"
+          href="/dashboard/account"
+          icon={<FaCog />}
+          text="Account Settings"
           isOpen={isOpen}
         />
         <SidebarLink
-          href="/workspace/settings"
-          icon={<FaCog />}
-          text="Settings"
+          href="#"
+          icon={<FaSignOutAlt />}
+          text="Sign Out"
           isOpen={isOpen}
+          onClick={handleSignOut}
         />
       </nav>
     </aside>
@@ -102,8 +116,9 @@ const SidebarLink: React.FC<{
   icon: React.ReactNode;
   text: string;
   isOpen: boolean;
-}> = ({ href, icon, text, isOpen }) => (
-  <Link href={href} className={styles.link}>
+  onClick?: (e: React.MouseEvent) => void;
+}> = ({ href, icon, text, isOpen, onClick }) => (
+  <Link href={href} className={styles.link} onClick={onClick}>
     {isOpen ? (
       <>
         <span className={styles.icon}>{icon}</span>
