@@ -5,6 +5,7 @@ import { signInWithOAuth } from '@/utils/auth-helpers/authClient';
 import { type Provider } from '@supabase/supabase-js';
 import { FaGithub } from 'react-icons/fa';
 import { useState } from 'react';
+import styles from '../auth.module.css';
 
 type OAuthProviders = {
   name: Provider;
@@ -30,18 +31,18 @@ export default function OauthSignIn() {
   };
 
   return (
-    <div className="mt-8">
+    <div className={styles.authContainer}>
       {oAuthProviders.map((provider) => (
         <form
           key={provider.name}
-          className="pb-2"
+          className="mb-2"
           onSubmit={(e) => handleSubmit(e)}
         >
           <input type="hidden" name="provider" value={provider.name} />
           <Button
             variant="slim"
             type="submit"
-            className="w-full"
+            className={`${styles.authButton} flex items-center justify-center`}
             loading={isSubmitting}
           >
             <span className="mr-2">{provider.icon}</span>

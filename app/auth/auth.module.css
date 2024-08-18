@@ -1,0 +1,35 @@
+.authContainer {
+  @apply max-w-sm mx-auto my-8 p-6 bg-white dark:bg-dark-background rounded-lg shadow-md;
+}
+
+.authForm {
+  @apply space-y-4;
+}
+
+.authInput {
+  @apply w-full p-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-800 focus:ring-2 focus:ring-lavender-500;
+}
+
+.authLabel {
+  @apply text-xs font-medium text-gray-700 dark:text-gray-300;
+}
+
+.authButton {
+  @apply w-full py-2 px-4 text-sm font-medium text-white bg-lavender-600 hover:bg-lavender-700 rounded-md transition-colors duration-200;
+}
+
+.authLink {
+  @apply text-xs text-lavender-600 hover:text-lavender-700 dark:text-lavender-400 dark:hover:text-lavender-300;
+}
+
+.authSeparator {
+  @apply relative my-6;
+}
+
+.authSeparatorLine {
+  @apply absolute top-1/2 w-full border-t border-gray-300 dark:border-gray-600;
+}
+
+.authSeparatorText {
+  @apply relative px-2 text-xs text-gray-500 dark:text-gray-400 bg-white dark:bg-dark-background;
+}

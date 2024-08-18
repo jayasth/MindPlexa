@@ -1,93 +1,63 @@
-/* General section styling */
 .pricingSection {
-  background-color: #f4f4f8; /* Light gray background for the section */
-  padding: 40px 0; /* Top and bottom padding */
+  @apply bg-light-background dark:bg-dark-background py-12;
 }
 
 .pricingContainer {
-  max-width: 1200px; /* Maximum width of the container */
-  margin: 0 auto; /* Center the container */
-  padding: 0 20px; /* Padding on the sides */
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
 }
 
 .heading {
-  font-size: 36px; /* Size of the main heading */
-  font-weight: bold; /* Make the heading bold */
-  text-align: center; /* Center the text */
-  color: #333; /* Dark text for better readability */
+  @apply text-2xl font-bold text-center text-light-text dark:text-dark-text mb-2;
 }
 
 .subHeading {
-  font-size: 18px; /* Size of the subheading */
-  text-align: center; /* Center the text */
-  color: #666; /* Lighter text for the subheading */
-  margin-top: 20px; /* Space above the subheading */
+  @apply text-base text-center text-light-text dark:text-dark-text mb-8 opacity-80;
 }
 
 .billingSwitch {
-  display: flex; /* Align buttons in a flex row */
-  justify-content: center; /* Center the buttons horizontally */
-  margin-top: 20px; /* Space above the switch */
+  @apply flex justify-center mb-8;
 }
 
 .cardContainer {
-  display: flex; /* Use flexbox for layout */
-  flex-wrap: wrap; /* Allow wrapping of child elements */
-  justify-content: center; /* Center children horizontally */
-  gap: 20px; /* Space between cards */
+  @apply grid grid-cols-1 md:grid-cols-3 gap-6;
 }
 
 .pricingCard {
-  flex: 1 1 300px; /* Flex basis of 300px, grow and shrink */
-  min-width: 250px; /* Minimum width */
-  max-width: 300px; /* Maximum width */
-  background-color: #fff; /* White background for cards */
-  border-radius: 8px; /* Rounded corners */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-  overflow: hidden; /* Hide overflow */
-  display: flex; /* Display flex */
-  flex-direction: column; /* Stack children vertically */
-  color: #333; /* Text color */
+  @apply bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg;
 }
 
 .cardContent {
-  padding: 20px; /* Padding around content */
+  @apply p-6;
 }
 
 .title {
-  font-size: 24px; /* Title size */
-  font-weight: bold; /* Title weight */
-  color: #f4f4f4;
+  @apply text-xl font-semibold mb-2 text-light-text dark:text-dark-text;
 }
 
 .description {
-  margin-top: 10px; /* Space above description */
-  color: #f4f4f4;
+  @apply text-sm mb-4 text-light-text dark:text-dark-text opacity-80;
 }
 
 .price {
-  margin-top: 20px; /* Space above pricing info */
-  font-size: 28px; /* Larger font size for pricing */
-  font-weight: bold; /* Bold font weight for emphasis */
-  color: #f4f4f4;
+  @apply text-2xl font-bold mb-4 text-lavender-600 dark:text-lavender-400;
 }
 
 .priceValue {
-  color: #f4f4f4;
+  @apply text-3xl;
 }
 
 .billingCycle {
-  font-size: 16px; /* Smaller font size for billing cycle */
+  @apply text-sm opacity-80;
 }
 
 /* Define any additional states or effects */
 .activeCard {
-  border: 2px solid #ffd700; /* Highlight active card with a gold border */
+  @apply border-2 border-lavender-500;
 }
 
 /* PricingCard.module.css */
 .gradientBackground {
-  background: radial-gradient(circle, #575757, #1a202c);
+  @apply bg-gradient-to-br from-gray-700 to-gray-900;
 }
 
 /* PricingCard.module.css */

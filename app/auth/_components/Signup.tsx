@@ -8,6 +8,7 @@ import { handleRequest } from '@/utils/auth-helpers/authClient';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { createClient } from '@/utils/supabase/supabaseClient';
+import styles from '../auth.module.css';
 
 interface SignUpProps {
   allowEmail: boolean;
@@ -59,54 +60,58 @@ export default function SignUp({ allowEmail, redirectMethod }: SignUpProps) {
   };
 
   return (
-    <div className="my-8">
-      <form
-        noValidate={true}
-        className="mb-4"
-        onSubmit={(e) => handleSubmit(e)}
-      >
-        <div className="grid gap-2">
-          <div className="grid gap-1">
-            <label htmlFor="email">Email</label>
-            <input
-              id="email"
-              placeholder="name@example.com"
-              type="email"
-              name="email"
-              autoCapitalize="none"
-              autoComplete="email"
-              autoCorrect="off"
-              className="w-full p-3 rounded-md bg-myGray-600"
-            />
-            <label htmlFor="password">Password</label>
-            <input
-              id="password"
-              placeholder="Password"
-              type="password"
-              name="password"
-              autoComplete="current-password"
-              className="w-full p-3 rounded-md bg-myGray-600"
-            />
-          </div>
-          <Button
-            variant="slim"
-            type="submit"
-            className="mt-1"
-            loading={isSubmitting}
-          >
-            Sign up
-          </Button>
+    <div className={styles.authContainer}>
+      <form className={styles.authForm} onSubmit={(e) => handleSubmit(e)}>
+        <div>
+          <label htmlFor="email" className={styles.authLabel}>
+            Email
+          </label>
+          <input
+            id="email"
+            className={styles.authInput}
+            placeholder="name@example.com"
+            type="email"
+            name="email"
+            autoCapitalize="none"
+            autoComplete="email"
+            autoCorrect="off"
+          />
         </div>
+        <div>
+          <label htmlFor="password" className={styles.authLabel}>
+            Password
+          </label>
+          <input
+            id="password"
+            className={styles.authInput}
+            placeholder="Password"
+            type="password"
+            name="password"
+            autoComplete="current-password"
+          />
+        </div>
+        <Button
+          variant="slim"
+          type="submit"
+          className={styles.authButton}
+          loading={isSubmitting}
+        >
+          Sign up
+        </Button>
       </form>
-      <p>Already have an account?</p>
-      <p>
-        <Link href="/signin/password_signin" className="font-light text-sm">
-          Sign in with email and password
+      <div className={styles.authSeparator}>
+        <div className={styles.authSeparatorLine} />
+        <span className={styles.authSeparatorText}>Or</span>
+      </div>
+      <p className="text-xs text-center">
+        Already have an account?{' '}
+        <Link href="/signin/password_signin" className={styles.authLink}>
+          Sign in
         </Link>
       </p>
       {allowEmail && (
-        <p>
-          <Link href="/signin/email_signin" className="font-light text-sm">
+        <p className="text-xs text-center mt-2">
+          <Link href="/signin/email_signin" className={styles.authLink}>
             Sign in via magic link
           </Link>
         </p>

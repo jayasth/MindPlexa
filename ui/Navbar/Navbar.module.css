@@ -1,19 +1,24 @@
 .root {
-  @apply sticky top-0 bg-myGray-600 z-40 transition-all duration-150 h-16 md:h-20;
+  @apply sticky top-0 bg-light-background dark:bg-dark-background z-40 transition-all duration-150 h-12 md:h-16;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .link {
-  @apply inline-flex items-center leading-6 font-medium transition ease-in-out duration-75 cursor-pointer text-myGray-200 rounded-md p-1;
+  @apply inline-flex items-center leading-6 font-medium transition-colors duration-150 cursor-pointer text-light-text dark:text-dark-text rounded-md p-1 text-sm;
 }
 
 .link:hover {
-  @apply text-myGray-100;
+  @apply text-lavender-600 dark:text-lavender-400;
 }
 
 .link:focus {
-  @apply outline-none text-myGray-100 ring-2 ring-lavender-500 ring-opacity-50;
+  @apply outline-none ring-2 ring-lavender-500 ring-opacity-50;
 }
 
 .logo {
   @apply cursor-pointer rounded-full transform duration-100 ease-in-out;
+}
+
+.logo:hover {
+  @apply scale-105;
 }
