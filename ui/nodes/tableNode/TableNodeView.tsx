@@ -85,24 +85,26 @@ const TableNodeView: React.FC<TableNodeViewProps> = ({
       </div>
       <div className={styles.contentPreview} style={{ color: textColor }}>
         {content.columns.length > 0 && content.rows.length > 0 ? (
-          <table>
-            <thead>
-              <tr>
-                {content.columns.map((col, index) => (
-                  <th key={index}>{col.headerName}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {content.rows.slice(0, 3).map((row, rowIndex) => (
-                <tr key={rowIndex}>
-                  {content.columns.map((col, colIndex) => (
-                    <td key={colIndex}>{row[col.field]}</td>
+          <div className={styles.tableWrapper}>
+            <table className={styles.previewTable}>
+              <thead>
+                <tr>
+                  {content.columns.map((col, index) => (
+                    <th key={index}>{col.headerName}</th>
                   ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {content.rows.slice(0, 3).map((row, rowIndex) => (
+                  <tr key={rowIndex}>
+                    {content.columns.map((col, colIndex) => (
+                      <td key={colIndex}>{row[col.field]}</td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         ) : (
           <span className={styles.noContent} style={{ color: textColor }}>
             No content available
