@@ -1,6 +1,4 @@
 import React, { useState } from 'react';
-import { Modal } from 'react-responsive-modal';
-import 'react-responsive-modal/styles.css';
 import { Edge, Node } from 'reactflow';
 import { useCompletion } from 'ai/react';
 import { parseMermaidCode } from '@/ui/ai/generator/mermaidGeneratorUtils';
@@ -14,8 +12,8 @@ import Button from '@/ui/Button/Button';
 import ConfirmIntegrationModal from '@/ui/ai/generator/ConfirmIntegrationModal';
 import Dropdown from '@/ui/dropdown/Dropdown';
 import { optimizeAINodePositions } from '@/ui/ai/generator/aiPositioningUtils';
-import styles from '@/ui/ai/generator/AIGeneratorModal.module.css';
-import { motion, AnimatePresence } from 'framer-motion';
+import Modal from '@/ui/Modal/Modal';
+import styles from './AIGeneratorModal.module.css';
 
 interface AIAssistanceModalProps {
   isOpen: boolean;
@@ -119,68 +117,38 @@ const AIAssistanceModal: React.FC<AIAssistanceModalProps> = ({
 
   return (
     <Modal
-      open={isOpen}
+      isOpen={isOpen && !showConfirmModal}
       onClose={onClose}
-      center
-      classNames={{
-        modal: styles.modalContent,
-        overlay: styles.modalOverlay,
-        closeButton: styles.closeButton
-      }}
+      title="Generate Mindmap"
     >
-      <AnimatePresence>
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.3 }}
-          className={styles.modalInner}
-        >
-          {!showConfirmModal && (
-            <div>
-              <h2 className={styles.modalHeader}>Generate Mindmap</h2>
-              <form onSubmit={handleGenerateMindmap}>
-                <textarea
-                  className={styles.textarea}
-                  placeholder="Enter a topic or idea"
-                  value={topic}
-                  onChange={handleTopicChange}
-                />
-                <div className={styles.actionContainer}>
-                  <Dropdown
-                    value={selectedModel}
-                    onChange={(value) => setSelectedModel(value)}
-                    variant="sleek"
-                    className={styles.dropdown}
-                  >
-                    <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-                    <option value="gpt-4o">GPT-4o</option>
-                  </Dropdown>
-                  <Button
-                    type="submit"
-                    disabled={uiIsLoading}
-                    loading={uiIsLoading}
-                    variant="submit"
-                    className={styles.generateButton}
-                  >
-                    {uiIsLoading ? 'Generating...' : 'Generate'}
-                  </Button>
-                </div>
-              </form>
-            </div>
-          )}
-          {showConfirmModal && (
-            <ConfirmIntegrationModal
-              isOpen={showConfirmModal}
-              onClose={() => setShowConfirmModal(false)}
-              onConfirm={() =>
-                handleConfirmIntegration(generatedNodes, generatedEdges)
-              }
-              onCancel={handleCancelIntegration}
-            />
-          )}
-        </motion.div>
-      </AnimatePresence>
+      <div className={styles.content}>
+        <form onSubmit={handleGenerateMindmap}>
+          <textarea
+            className={styles.textarea}
+            placeholder="Enter a topic or idea"
+            value={topic}
+            onChange={handleTopicChange}
+          />
+          <div className={styles.actionContainer}>
+            <Dropdown
+              value={selectedModel}
+              onChange={(value) => setSelectedModel(value)}
+              variant="sleek"
+            >
+              <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+              <option value="gpt-4o">GPT-4o</option>
+            </Dropdown>
+            <Button
+              type="submit"
+              disabled={uiIsLoading}
+              loading={uiIsLoading}
+              variant="submit"
+            >
+              {uiIsLoading ? 'Generating...' : 'Generate'}
+            </Button>
+          </div>
+        </form>
+      </div>
     </Modal>
   );
 };

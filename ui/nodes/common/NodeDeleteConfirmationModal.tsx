@@ -1,7 +1,7 @@
 import React from 'react';
-import { Modal } from 'react-responsive-modal';
+import Modal from '@/ui/Modal/Modal';
 import Button from '@/ui/Button/Button';
-import styles from '@/ui/nodes/common/CommonNodeStyles.module.css';
+import styles from '@/ui/Modal/Modal.module.css';
 
 interface NodeDeleteConfirmationModalProps {
   isOpen: boolean;
@@ -13,10 +13,11 @@ const NodeDeleteConfirmationModal: React.FC<
   NodeDeleteConfirmationModalProps
 > = ({ isOpen, onClose, onConfirm }) => {
   return (
-    <Modal open={isOpen} onClose={onClose} center>
-      <h2>Confirm Deletion</h2>
-      <p>Are you sure you want to delete this node?</p>
-      <div className={styles.modalButtonContainer}>
+    <Modal isOpen={isOpen} onClose={onClose} title="Confirm Deletion">
+      <p className={styles.modalText}>
+        Are you sure you want to delete this node?
+      </p>
+      <div className={styles.actions}>
         <Button variant="danger" onClick={onConfirm}>
           Delete
         </Button>

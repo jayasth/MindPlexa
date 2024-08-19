@@ -1,3 +1,11 @@
+.content {
+  @apply space-y-4;
+}
+
+.actions {
+  @apply flex justify-end space-x-2 mt-4;
+}
+
 .customModal {
   background: #ffffff;
   padding: 24px;
@@ -21,15 +29,4 @@
 
 .input {
   width: 100%;
-}
-
-.buttons {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  margin-top: 24px;
-}
-
-.buttons button {
-  flex: 1;
 }

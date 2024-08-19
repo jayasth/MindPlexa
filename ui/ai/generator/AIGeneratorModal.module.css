@@ -1,3 +1,15 @@
+.content {
+  @apply space-y-4;
+}
+
+.textarea {
+  @apply w-full h-32 p-2 text-sm border border-light-primary dark:border-dark-primary rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-lavender-500;
+}
+
+.actionContainer {
+  @apply flex justify-between items-center space-x-2;
+}
+
 .modalOverlay {
   background-color: rgba(0, 0, 0, 0.5);
 }
@@ -22,29 +34,6 @@
   font-weight: 600;
   color: #333;
   margin-bottom: 0.25rem;
-}
-
-.textarea {
-  width: 100%;
-  height: 80px;
-  padding: 0.5rem;
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
-  resize: none;
-  font-size: 0.9rem;
-  transition: border-color 0.3s ease;
-}
-
-.textarea:focus {
-  outline: none;
-  border-color: #4a90e2;
-}
-
-.actionContainer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 0.5rem;
 }
 
 .dropdown {

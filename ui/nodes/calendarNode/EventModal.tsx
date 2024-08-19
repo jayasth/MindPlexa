@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Modal } from 'react-responsive-modal';
-import 'react-responsive-modal/styles.css';
-import styles from './EventModal.module.css';
+import Modal from '@/ui/Modal/Modal';
 import Button from '@/ui/Button/Button';
 import Input from '@/ui/Input/Input';
 import Dropdown from '@/ui/dropdown/Dropdown';
 import moment from 'moment-timezone';
+import styles from './EventModal.module.css';
 
 interface EventModalProps {
   event: any;
@@ -55,50 +54,34 @@ const EventModal: React.FC<EventModalProps> = ({
 
   return (
     <Modal
-      open={isOpen}
+      isOpen={isOpen}
       onClose={onClose}
-      center
-      classNames={{
-        modal: styles.customModal
-      }}
+      title={event?.title ? 'Edit Event' : 'Add Event'}
     >
-      <h2 className={styles.modalTitle}>
-        {event?.title ? 'Edit Event' : 'Add Event'}
-      </h2>
-      <div className={styles.inputGroup}>
+      <div className={styles.content}>
         <Input
           type="text"
           value={title}
           onChange={(value) => setTitle(value)}
           placeholder="Event Title"
           variant="slim"
-          className={styles.input}
         />
-      </div>
-      <div className={styles.inputGroup}>
         <Input
           type="datetime-local"
           value={start}
           onChange={(value) => setStart(value)}
           variant="slim"
-          className={styles.input}
         />
-      </div>
-      <div className={styles.inputGroup}>
         <Input
           type="datetime-local"
           value={end}
           onChange={(value) => setEnd(value)}
           variant="slim"
-          className={styles.input}
         />
-      </div>
-      <div className={styles.inputGroup}>
         <Dropdown
           value={timezone}
           onChange={(value) => setTimezone(value)}
           variant="slim"
-          className={styles.input}
         >
           {moment.tz.names().map((tz) => (
             <option key={tz} value={tz}>
@@ -106,16 +89,16 @@ const EventModal: React.FC<EventModalProps> = ({
             </option>
           ))}
         </Dropdown>
-      </div>
-      <div className={styles.buttons}>
-        <Button variant="submit" onClick={handleSave}>
-          Save
-        </Button>
-        {event?.title && (
-          <Button variant="cancel" onClick={() => onDelete(event)}>
-            Delete
+        <div className={styles.actions}>
+          <Button variant="submit" onClick={handleSave}>
+            Save
           </Button>
-        )}
+          {event?.title && (
+            <Button variant="danger" onClick={() => onDelete(event)}>
+              Delete
+            </Button>
+          )}
+        </div>
       </div>
     </Modal>
   );
