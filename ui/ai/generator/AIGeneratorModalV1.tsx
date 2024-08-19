@@ -1,6 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { Modal } from 'react-responsive-modal';
-import 'react-responsive-modal/styles.css';
+import React, { useState } from 'react';
 import { Edge, Node } from 'reactflow';
 import { parseMermaidCode } from './mermaidGeneratorUtilsV1';
 import { promptTemplateV1 } from '@/app/prompts/generatorPromptV1';
@@ -13,7 +11,8 @@ import {
 import Button from '@/ui/Button/Button';
 import ConfirmIntegrationModal from './ConfirmIntegrationModal';
 import Dropdown from '@/ui/dropdown/Dropdown';
-import styles from './AIGeneratorModalV1.module.css';
+import Modal from '@/ui/Modal/Modal';
+import styles from './AIGeneratorModal.module.css';
 import { applyLayout } from '@/ui/ai/generator/aiPositioningUtilsV1';
 import { createBulkNodes } from '@/utils/canvas/nodeService';
 import { createEdgeBetweenNodes } from '@/utils/canvas/edgeService';
@@ -216,17 +215,11 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
   return (
     <>
       <Modal
-        open={isOpen && !showConfirmModal}
+        isOpen={isOpen && !showConfirmModal}
         onClose={onClose}
-        center
-        classNames={{
-          modal: styles.modalContent,
-          overlay: styles.modalOverlay,
-          closeButton: styles.closeButton
-        }}
+        title="AI Node Network Generator V1"
       >
-        <div className={styles.modalInner}>
-          <h2 className={styles.modalHeader}>AI Node Network Generator V1</h2>
+        <div className={styles.content}>
           <form onSubmit={handleGenerateCanvas}>
             <textarea
               className={styles.textarea}

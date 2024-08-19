@@ -3,80 +3,36 @@
 }
 
 .textarea {
-  @apply w-full h-32 p-2 text-sm border border-light-primary dark:border-dark-primary rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-lavender-500;
+  @apply w-full h-20 p-2 text-sm border border-light-primary dark:border-dark-primary rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-lavender-500;
 }
 
 .actionContainer {
   @apply flex justify-between items-center space-x-2;
 }
 
-.modalOverlay {
-  background-color: rgba(0, 0, 0, 0.5);
-}
-
-.modalContent {
-  background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  padding: 1rem;
-  max-width: 400px;
-  width: 90%;
-}
-
-.modalInner {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.modalHeader {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 0.25rem;
-}
-
 .dropdown {
-  flex: 1;
-  min-width: 0;
+  @apply flex-1 min-w-0 h-8;
 }
 
 .generateButton {
-  width: 100%;
-  height: 32px;
-  font-size: 0.9rem;
-  margin-top: 0.5rem;
-}
-
-.closeButton {
-  top: 0.5rem;
-  right: 0.5rem;
+  @apply flex-grow h-8 text-sm px-3;
 }
 
 .errorMessage {
-  color: #ff0000;
-  font-size: 0.8rem;
-  margin-top: 0.25rem;
+  @apply text-red-500 text-xs mt-1;
 }
 
 .followUpQuestion {
-  font-size: 0.8rem;
-  color: #555;
-  margin-top: 0.25rem;
+  @apply text-xs text-light-text dark:text-dark-text mt-1;
 }
 
 @media (max-width: 480px) {
-  .modalContent {
-    width: 95%;
-    padding: 0.75rem;
-  }
-
   .actionContainer {
-    flex-direction: column;
+    @apply flex-col space-x-0 space-y-2;
   }
 
   .dropdown,
   .generateButton {
-    width: 100%;
+    @apply w-full;
   }
 }

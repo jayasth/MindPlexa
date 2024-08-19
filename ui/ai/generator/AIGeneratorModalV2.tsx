@@ -1,6 +1,4 @@
 import React, { useState } from 'react';
-import { Modal } from 'react-responsive-modal';
-import 'react-responsive-modal/styles.css';
 import { Edge, Node } from 'reactflow';
 import { parseMermaidCode } from './mermaidGeneratorUtilsV2';
 import { promptTemplateV2 } from '@/app/prompts/generatorPromptV2';
@@ -13,7 +11,8 @@ import {
 import Button from '@/ui/Button/Button';
 import ConfirmIntegrationModal from './ConfirmIntegrationModal';
 import Dropdown from '@/ui/dropdown/Dropdown';
-import styles from './AIGeneratorModalV2.module.css';
+import Modal from '@/ui/Modal/Modal';
+import styles from './AIGeneratorModal.module.css';
 import { applyLayout } from '@/ui/ai/generator/aiPositioningUtilsV2';
 import { createBulkNodes } from '@/utils/canvas/nodeService';
 import { createEdgeBetweenNodes } from '@/utils/canvas/edgeService';
@@ -72,7 +71,6 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
       const data = await response.json();
       console.log('AIGeneratorModalV2 Full API Response:', data);
 
-      // Parse the mermaidCode string as JSON
       let parsedData;
       try {
         parsedData = JSON.parse(
@@ -83,7 +81,6 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
         throw new Error('Invalid response format');
       }
 
-      // Check if parsedData has the expected structure
       if (!parsedData.analysis || !parsedData.mermaidCode) {
         console.error('Unexpected API response structure:', parsedData);
         throw new Error('Unexpected API response structure');
@@ -92,7 +89,6 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
       const { analysis, mermaidCode } = parsedData;
       setAnalysisResult(analysis);
 
-      // Add this console log to see the selected layout
       console.log('Selected layout:', analysis.suggestedLayout);
 
       const canvasSize = {
@@ -150,19 +146,16 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
         layout as any
       );
 
-      // Generate new UUIDs for each node
       const nodesWithNewIds = optimizedNodes.map((node) => ({
         ...node,
         id: uuidv4()
       }));
 
-      // Create a mapping of old IDs to new IDs
       const idMapping = optimizedNodes.reduce((acc, node, index) => {
         acc[node.id] = nodesWithNewIds[index].id;
         return acc;
       }, {});
 
-      // Update edge source and target with new IDs
       const updatedEdges = newEdges.map((edge) => ({
         ...edge,
         source: idMapping[edge.source],
@@ -206,7 +199,6 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
         setNodes((currentNodes) => [...currentNodes, ...(createdNodes || [])]);
         setEdges((currentEdges) => [...currentEdges, ...updatedEdges]);
 
-        // Create edges in the database
         for (const edge of updatedEdges) {
           await createEdgeBetweenNodes({
             sourceNodeId: edge.source,
@@ -233,17 +225,11 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
   return (
     <>
       <Modal
-        open={isOpen && !showConfirmModal}
+        isOpen={isOpen && !showConfirmModal}
         onClose={onClose}
-        center
-        classNames={{
-          modal: styles.modalContent,
-          overlay: styles.modalOverlay,
-          closeButton: styles.closeButton
-        }}
+        title="AI Node Network Generator V2"
       >
-        <div className={styles.modalInner}>
-          <h2 className={styles.modalHeader}>AI Node Network Generator V2</h2>
+        <div className={styles.content}>
           <form onSubmit={handleGenerateCanvas}>
             <textarea
               className={styles.textarea}
