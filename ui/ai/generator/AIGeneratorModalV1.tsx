@@ -58,6 +58,7 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
   const { canvasId } = useCanvasStore();
   const [followUpCount, setFollowUpCount] = useState(0);
   const MAX_FOLLOW_UP = 2;
+  const [aiResponse, setAIResponse] = useState<any>(null);
 
   const handleProjectConceptChange = (
     e: React.ChangeEvent<HTMLTextAreaElement>
@@ -103,6 +104,8 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
 
       const data = await response.json();
       console.log('AIGeneratorModalV1 Response data:', data);
+
+      setAIResponse(data);
 
       // Handle follow-up question
       if (data.needsFollowUp && followUpCount < MAX_FOLLOW_UP) {
@@ -320,6 +323,12 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
           </form>
           {errorMessage && (
             <p className={styles.errorMessage}>{errorMessage}</p>
+          )}
+          {aiResponse && aiResponse.mermaidCode && (
+            <div className={styles.mermaidPreview}>
+              <h3>Generated Mermaid Code:</h3>
+              <pre>{aiResponse.mermaidCode}</pre>
+            </div>
           )}
         </div>
       </Modal>

@@ -33,7 +33,9 @@ export async function parseMermaidCode(
     // Generate a simple fallback layout
     svgCode = await mermaid.render(
       'mermaid-chart',
-      'graph TD\nA[Project::Main concept] --> B[Subtopic 1]\nA --> C[Subtopic 2]'
+      `graph TD
+      A[Project::${projectDetails}] --> B[Subtopic 1::No description available]
+      A --> C[Subtopic 2::No description available]`
     );
   }
 
