@@ -45,6 +45,7 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
 }) => {
   const [projectConcept, setProjectConcept] = useState('');
   const [followUpQuestion, setFollowUpQuestion] = useState('');
+  const [followUpAnswer, setFollowUpAnswer] = useState('');
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [generatedNodes, setGeneratedNodes] = useState<Node[]>([]);
   const [generatedEdges, setGeneratedEdges] = useState<Edge[]>([]);
@@ -55,12 +56,21 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
   const { setEdges } = useEdgeStore();
   const { isLoading: uiIsLoading, setIsLoading } = useUIStore();
   const { canvasId } = useCanvasStore();
+  const [followUpCount, setFollowUpCount] = useState(0);
+  const MAX_FOLLOW_UP = 2;
 
   const handleProjectConceptChange = (
     e: React.ChangeEvent<HTMLTextAreaElement>
   ) => {
     setProjectConcept(e.target.value);
     setFollowUpQuestion('');
+    setFollowUpAnswer('');
+  };
+
+  const handleFollowUpAnswerChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement>
+  ) => {
+    setFollowUpAnswer(e.target.value);
   };
 
   const handleGenerateCanvas = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -71,31 +81,62 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
     console.log('Selected layout type:', selectedLayout);
 
     try {
-      const prompt = promptTemplateV1(projectConcept);
+      const prompt = promptTemplateV1(projectConcept, followUpAnswer);
       const response = await fetch('/api/completion', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ prompt, version: 'v1', model: selectedModel })
+        body: JSON.stringify({
+          prompt,
+          version: 'v1',
+          model: selectedModel,
+          initialConcept: projectConcept,
+          followUpAnswer: followUpAnswer,
+          forceGenerate: followUpCount >= MAX_FOLLOW_UP
+        })
       });
 
       if (!response.ok) {
-        throw new Error('Failed to generate canvas');
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
       console.log('AIGeneratorModalV1 Response data:', data);
+
+      // Handle follow-up question
+      if (data.needsFollowUp && followUpCount < MAX_FOLLOW_UP) {
+        setFollowUpQuestion(data.followUpQuestion);
+        setFollowUpAnswer(''); // Reset the follow-up answer
+        setFollowUpCount((prevCount) => prevCount + 1);
+        setIsLoading(false);
+        return; // Exit the function here, don't proceed to Mermaid parsing
+      }
+
+      // Reset follow-up related states
+      setFollowUpQuestion('');
+      setFollowUpAnswer('');
+      setFollowUpCount(0);
+
+      // If there's no mermaidCode, show an error
+      if (!data.mermaidCode) {
+        throw new Error('No Mermaid code generated. Please try again.');
+      }
 
       const canvasSize = {
         width: window.innerWidth,
         height: window.innerHeight
       };
 
-      const { nodes, edges } = await parseMermaidCode(
+      const { nodes, edges, warning } = await parseMermaidCode(
         data.mermaidCode,
         projectConcept
       );
+
+      if (warning) {
+        setErrorMessage(warning);
+      }
+
       const scaleFactor = 0.8; // Adjust this value as needed
       const layoutedNodes = applyLayout(
         nodes,
@@ -231,6 +272,17 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
               value={projectConcept}
               onChange={handleProjectConceptChange}
             />
+            {followUpQuestion && (
+              <>
+                <p className={styles.followUpQuestion}>{followUpQuestion}</p>
+                <textarea
+                  className={styles.textarea}
+                  placeholder="Your answer to the follow-up question"
+                  value={followUpAnswer}
+                  onChange={handleFollowUpAnswerChange}
+                />
+              </>
+            )}
             <div className={styles.actionContainer}>
               <div className={styles.dropdownContainer}>
                 <Dropdown
@@ -266,9 +318,6 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
               </Button>
             </div>
           </form>
-          {followUpQuestion && (
-            <p className={styles.followUpQuestion}>{followUpQuestion}</p>
-          )}
           {errorMessage && (
             <p className={styles.errorMessage}>{errorMessage}</p>
           )}

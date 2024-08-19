@@ -1,7 +1,12 @@
-export const promptTemplateV1 = (userInput: string) => {
+export const promptTemplateV1 = (
+  userInput: string,
+  followUpAnswer: string = ''
+) => {
   return `As an AI assistant for MindePlexa, an innovative project management platform, analyze the following user input and create a comprehensive project layout:
 
 "${userInput}"
+
+${followUpAnswer ? `Additional information provided: "${followUpAnswer}"` : ''}
 
 Your task:
 1. Thoroughly analyze the input to determine if it provides sufficient information for generating a project layout.
@@ -36,6 +41,8 @@ Your response should be a JSON object with these fields:
   "followUpQuestion": string (if needsFollowUp is true),
   "mermaidCode": string (if needsFollowUp is false)
 }
+
+If you're responding to a follow-up question and have enough information to generate a layout, set needsFollowUp to false and provide the mermaidCode.
 
 Ensure that:
 1. The Mermaid code is valid and can be parsed without errors.

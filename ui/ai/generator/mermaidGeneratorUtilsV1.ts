@@ -12,7 +12,7 @@ import { getNodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 export async function parseMermaidCode(
   mermaidCode: string,
   projectDetails: string
-): Promise<{ nodes: Node[]; edges: Edge[] }> {
+): Promise<{ nodes: Node[]; edges: Edge[]; warning?: string }> {
   const filteredCode = removeDoubleQuoteInsideParentheses(
     removeDoubleQuoteInsideBrackets(removeMarkdowncode(mermaidCode))
   );
@@ -22,40 +22,41 @@ export async function parseMermaidCode(
   const processedCode = filteredCode.replace(/^.*?graph TD/, 'graph TD');
 
   let svgCode: any;
+  let warning: string | undefined;
 
   try {
     mermaid.initialize({ startOnLoad: false });
     svgCode = await mermaid.render('mermaid-chart', processedCode);
   } catch (error: any) {
     console.error('mermaidGeneratorUtilsV1 Mermaid parsing error:', error);
-    return {
-      nodes: [],
-      edges: []
-    };
+    warning = 'Error parsing Mermaid code. Using fallback layout.';
+    // Generate a simple fallback layout
+    svgCode = await mermaid.render(
+      'mermaid-chart',
+      'graph TD\nA[Project::Main concept] --> B[Subtopic 1]\nA --> C[Subtopic 2]'
+    );
   }
 
-  let nodes: Node[] = [];
-  let edges: Edge[] = [];
   try {
-    ({ nodes, edges } = convertToReactFlowElements(svgCode.svg));
+    const { nodes, edges } = convertToReactFlowElements(svgCode.svg);
+    const filteredNodes = nodes.filter(
+      (node) =>
+        node.data.title !== 'Untitled' &&
+        node.data.content !== 'No description available'
+    );
+
+    if (filteredNodes.length === 0) {
+      throw new Error('No valid nodes generated');
+    }
+
+    return { nodes: filteredNodes, edges, warning };
   } catch (error: any) {
     console.error(
       'mermaidGeneratorUtilsV1 Error converting to React Flow elements:',
       error
     );
-    return {
-      nodes: [],
-      edges: []
-    };
+    throw error;
   }
-
-  const filteredNodes = nodes.filter(
-    (node) =>
-      node.data.title !== 'Untitled' &&
-      node.data.content !== 'No description available'
-  );
-
-  return { nodes: filteredNodes, edges };
 }
 
 const convertToReactFlowElements = (
