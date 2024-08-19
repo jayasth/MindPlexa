@@ -141,28 +141,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
                 </button>
               </Tooltip>
             </Link>
-            <Tooltip content="AI Custom Layout">
-              <button
-                onClick={handleGenerateAIMapV1}
-                className={`${buttonClass} ${styles.toolbarTooltip}`}
-              >
-                <LuNetwork size={iconSize} />
-                {isExpanded && (
-                  <span className={styles.buttonText}>AI Custom Layout</span>
-                )}
-              </button>
-            </Tooltip>
-            <Tooltip content="AI Smart Layout">
-              <button
-                onClick={handleGenerateAIMapV2}
-                className={`${buttonClass} ${styles.toolbarTooltip}`}
-              >
-                <FaRobot size={iconSize} />
-                {isExpanded && (
-                  <span className={styles.buttonText}>AI Smart Layout</span>
-                )}
-              </button>
-            </Tooltip>
+            <div className={styles.separator} />
             <Tooltip content="Selection Menu">
               <button
                 onClick={() => handleAddNode('selection_menu')}
@@ -221,6 +200,30 @@ const Toolbar: React.FC<ToolbarProps> = ({
                 {isExpanded && <span className={styles.buttonText}>Draw</span>}
               </button>
             </Tooltip>
+            <div className={styles.separator} />
+            <Tooltip content="AI Custom Layout">
+              <button
+                onClick={handleGenerateAIMapV1}
+                className={`${buttonClass} ${styles.toolbarTooltip}`}
+              >
+                <LuNetwork size={iconSize} />
+                {isExpanded && (
+                  <span className={styles.buttonText}>AI Custom Layout</span>
+                )}
+              </button>
+            </Tooltip>
+            <Tooltip content="AI Smart Layout">
+              <button
+                onClick={handleGenerateAIMapV2}
+                className={`${buttonClass} ${styles.toolbarTooltip}`}
+              >
+                <FaRobot size={iconSize} />
+                {isExpanded && (
+                  <span className={styles.buttonText}>AI Smart Layout</span>
+                )}
+              </button>
+            </Tooltip>
+            <div className={styles.separator} />
             <Tooltip content="Download">
               <button
                 onClick={onDownload}

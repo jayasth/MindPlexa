@@ -403,6 +403,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
         />
         {isModalOpen && (
           <AddTableModal
+            isOpen={isModalOpen}
             onClose={() => setIsModalOpen(false)}
             onAddTable={(columns, rows) => {
               const newColumns = columns.map((col, index) => ({
