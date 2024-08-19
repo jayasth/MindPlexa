@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { NodeProps, Handle, Position } from 'reactflow';
 import { useNodeStore } from '@/app/store';
 import styles from './DrawNodeView.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 import { FaEdit } from 'react-icons/fa';
+import { getDrawing } from '@/utils/canvas/drawNodeService';
 
 interface DrawNodeViewProps extends NodeProps {
   data: {
@@ -18,8 +19,18 @@ interface DrawNodeViewProps extends NodeProps {
 }
 
 const DrawNodeView: React.FC<DrawNodeViewProps> = ({ data, width, height }) => {
-  const { title, content, id, backgroundColor, textColor } = data;
+  const { title, id, backgroundColor, textColor } = data;
+  const [drawingContent, setDrawingContent] = useState<string | null>(null);
   const toggleEditMode = useNodeStore((state) => state.toggleEditMode);
+
+  useEffect(() => {
+    const fetchDrawing = async () => {
+      const drawing = await getDrawing(id);
+      setDrawingContent(drawing);
+    };
+
+    fetchDrawing();
+  }, [id]);
 
   return (
     <div className={styles.drawNode} style={{ width, height, backgroundColor }}>
@@ -36,9 +47,13 @@ const DrawNodeView: React.FC<DrawNodeViewProps> = ({ data, width, height }) => {
         </div>
       </div>
       <div className={styles.contentPreview}>
-        {content ? (
+        {drawingContent ? (
           <div className={styles.artboardContainer}>
-            <img src={content} alt="Drawing" className={styles.previewImage} />
+            <img
+              src={drawingContent}
+              alt="Drawing"
+              className={styles.previewImage}
+            />
           </div>
         ) : (
           <span className={styles.noContent} style={{ color: textColor }}>
