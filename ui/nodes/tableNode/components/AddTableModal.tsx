@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
-import { Modal } from 'react-responsive-modal';
-import 'react-responsive-modal/styles.css';
+import Modal from '@/ui/Modal/Modal';
+import Button from '@/ui/Button/Button';
+import Input from '@/ui/Input/Input';
+import Dropdown from '@/ui/dropdown/Dropdown';
+import styles from '../styles/AddTableModal.module.css';
 import {
   DndContext,
   closestCenter,
@@ -19,11 +22,6 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { FaTimes } from 'react-icons/fa';
 import { MdDragIndicator } from 'react-icons/md';
-import Button from '@/ui/Button/Button';
-import Input from '@/ui/Input/Input';
-import Dropdown from '@/ui/dropdown/Dropdown';
-import modalStyles from '@/ui/Modal/Modal.module.css';
-import addTableModalStyles from '@/ui/nodes/tableNode/styles/AddTableModal.module.css';
 import { v4 as uuidv4 } from 'uuid';
 
 interface Column {
@@ -61,7 +59,7 @@ const SortableItem = ({
       ref={setNodeRef}
       style={style}
       {...attributes}
-      className={addTableModalStyles.columnConfig}
+      className={styles.columnConfig}
     >
       <Input
         type="text"
@@ -69,13 +67,13 @@ const SortableItem = ({
         value={column.name}
         onChange={(value) => handleColumnChange(index, 'name', value)}
         variant="slim"
-        className={addTableModalStyles.inputWide}
+        className={styles.inputWide}
       />
       <Dropdown
         value={column.type}
         onChange={(value) => handleColumnChange(index, 'type', value)}
         variant="slim"
-        className={addTableModalStyles.dropdownWide}
+        className={styles.dropdownWide}
       >
         {validTypes.map((type) => (
           <option key={type.value} value={type.value}>
@@ -85,23 +83,19 @@ const SortableItem = ({
       </Dropdown>
       <button
         onClick={() => handleDeleteColumn(index)}
-        className={addTableModalStyles.deleteButton}
+        className={styles.deleteButton}
         title="Delete Column"
       >
         <FaTimes />
       </button>
-      <div
-        {...listeners}
-        className={addTableModalStyles.dragHandle}
-        title="Drag Column"
-      >
+      <div {...listeners} className={styles.dragHandle} title="Drag Column">
         <MdDragIndicator />
       </div>
     </div>
   );
 };
 
-const AddTableModal = ({ onClose, onAddTable, hasExistingData }) => {
+const AddTableModal = ({ isOpen, onClose, onAddTable, hasExistingData }) => {
   const [columns, setColumns] = useState<Column[]>([
     { id: uuidv4(), name: '', type: 'text' }
   ]);
@@ -164,72 +158,56 @@ const AddTableModal = ({ onClose, onAddTable, hasExistingData }) => {
   };
 
   return (
-    <Modal
-      open
-      onClose={onClose}
-      center
-      classNames={{ modal: modalStyles.customModal }}
-    >
-      <div className={`${modalStyles.modal} nodrag nowheel`}>
-        <div className={modalStyles.modalContent}>
-          <h2 className={modalStyles.modalHeader}>Add Table</h2>
-          <div className={modalStyles.formGroup}>
-            <label className={modalStyles.label}>Columns:</label>
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleDragEnd}
-            >
-              <SortableContext
-                items={columns}
-                strategy={verticalListSortingStrategy}
-              >
-                {columns.map((col, index) => (
-                  <SortableItem
-                    key={col.id}
-                    id={col.id}
-                    column={col}
-                    index={index}
-                    handleColumnChange={handleColumnChange}
-                    handleDeleteColumn={handleDeleteColumn}
-                  />
-                ))}
-              </SortableContext>
-            </DndContext>
-            <Button variant="slim" onClick={handleAddColumn}>
-              Add Column
-            </Button>
-          </div>
-          <div className={modalStyles.formGroup}>
-            <label className={modalStyles.label}>Rows:</label>
-            <div className={addTableModalStyles.rowInputGroup}>
-              <Input
-                type="number"
-                value={rows}
-                onChange={handleRowsChange}
-                min="1"
-                max="1000"
-                variant="slim"
-                className={addTableModalStyles.inputNarrow}
-              />
-              <Button
-                variant="submit"
-                onClick={handleAddTable}
-                className={addTableModalStyles.addButton}
-              >
-                Add Table
-              </Button>
-            </div>
-          </div>
-        </div>
-        <Modal
-          open={isWarningOpen}
-          onClose={() => setIsWarningOpen(false)}
-          center
+    <Modal isOpen={isOpen} onClose={onClose} title="Add Table">
+      <div className={styles.columnList}>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
         >
-          <h2>Warning</h2>
+          <SortableContext
+            items={columns}
+            strategy={verticalListSortingStrategy}
+          >
+            {columns.map((col, index) => (
+              <SortableItem
+                key={col.id}
+                id={col.id}
+                column={col}
+                index={index}
+                handleColumnChange={handleColumnChange}
+                handleDeleteColumn={handleDeleteColumn}
+              />
+            ))}
+          </SortableContext>
+        </DndContext>
+      </div>
+      <Button variant="slim" onClick={handleAddColumn}>
+        Add Column
+      </Button>
+      <div className={styles.rowInput}>
+        <label htmlFor="rows">Rows:</label>
+        <Input
+          id="rows"
+          type="number"
+          value={rows}
+          onChange={handleRowsChange}
+          min="1"
+          max="1000"
+          variant="slim"
+        />
+      </div>
+      <Button variant="submit" onClick={handleAddTable}>
+        Add Table
+      </Button>
+      {isWarningOpen && (
+        <Modal
+          isOpen={isWarningOpen}
+          onClose={() => setIsWarningOpen(false)}
+          title="Warning"
+        >
           <p>This will override existing data. Continue?</p>
-          <div className={modalStyles.actions}>
+          <div className={styles.actions}>
             <Button variant="submit" onClick={handleConfirmAddTable}>
               Yes
             </Button>
@@ -238,7 +216,7 @@ const AddTableModal = ({ onClose, onAddTable, hasExistingData }) => {
             </Button>
           </div>
         </Modal>
-      </div>
+      )}
     </Modal>
   );
 };

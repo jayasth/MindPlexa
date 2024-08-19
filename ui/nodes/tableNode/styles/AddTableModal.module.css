@@ -1,7 +1,13 @@
+.columnList {
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
 .columnConfig {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 
 .inputWide {
@@ -13,21 +19,17 @@
   min-width: 90px;
 }
 
-.inputNarrow {
-  width: 60px;
-}
-
-.rowInputGroup {
+.rowInput {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 0.5rem;
 }
 
 .deleteButton {
   background: none;
   border: none;
   cursor: pointer;
-  color: inherit;
+  color: var(--foreground);
   transition: color 0.3s ease;
 }
 
@@ -37,9 +39,11 @@
 
 .dragHandle {
   cursor: grab;
-  margin-left: 10px;
 }
 
-.addButton {
-  flex-grow: 1;
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
 }

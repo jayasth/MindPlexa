@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
-import { Modal } from 'react-responsive-modal';
-import 'react-responsive-modal/styles.css';
+import Modal from '@/ui/Modal/Modal';
 import Input from '@/ui/Input/Input';
 import Dropdown from '@/ui/dropdown/Dropdown';
 import Button from '@/ui/Button/Button';
-import styles from '@/ui/nodes/tableNode/styles/AddColumnModal.module.css';
 
 const validTypes = [
   { value: 'text', label: 'Text' },
@@ -49,31 +47,28 @@ const AddColumnModal = ({ isOpen, onClose, onSave, existingColumns }) => {
   };
 
   return (
-    <Modal open={isOpen} onClose={onClose} center>
-      <div className={styles.modalContent}>
-        <h2>Add Column</h2>
-        <Input
-          type="text"
-          placeholder="Column Name"
-          value={columnName}
-          onChange={handleColumnNameChange}
-          variant="slim"
-        />
-        <Dropdown
-          value={columnType}
-          onChange={handleColumnTypeChange}
-          variant="slim"
-        >
-          {validTypes.map((type) => (
-            <option key={type.value} value={type.value}>
-              {type.label}
-            </option>
-          ))}
-        </Dropdown>
-        <Button variant="submit" onClick={handleSave}>
-          Save
-        </Button>
-      </div>
+    <Modal isOpen={isOpen} onClose={onClose} title="Add Column">
+      <Input
+        type="text"
+        placeholder="Column Name"
+        value={columnName}
+        onChange={handleColumnNameChange}
+        variant="slim"
+      />
+      <Dropdown
+        value={columnType}
+        onChange={handleColumnTypeChange}
+        variant="slim"
+      >
+        {validTypes.map((type) => (
+          <option key={type.value} value={type.value}>
+            {type.label}
+          </option>
+        ))}
+      </Dropdown>
+      <Button variant="submit" onClick={handleSave}>
+        Save
+      </Button>
     </Modal>
   );
 };

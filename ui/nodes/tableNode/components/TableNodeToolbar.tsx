@@ -12,15 +12,37 @@ import {
 } from 'react-icons/ci';
 import { RiImportFill, RiExportFill } from 'react-icons/ri';
 import styles from '@/ui/nodes/tableNode/styles/TableNodeToolbar.module.css';
-import ConfirmationModal from '@/ui/nodes/tableNode/components/ConfirmationModal'; // Import the new ConfirmationModal component
+import ConfirmationModal from '@/ui/nodes/tableNode/components/ConfirmationModal';
+import AddTableModal from '@/ui/nodes/tableNode/components/AddTableModal';
 
 const iconSize = 16;
 
-export const AddTableButton = ({ onClick }) => (
-  <button className={styles.actionButton} onClick={onClick} title="Add Table">
-    <CiViewTable size={iconSize} />
-  </button>
-);
+export const AddTableButton = ({ onClick }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleAddTable = (columns, rows) => {
+    onClick(columns, rows);
+    setIsModalOpen(false);
+  };
+
+  return (
+    <>
+      <button
+        className={styles.actionButton}
+        onClick={() => setIsModalOpen(true)}
+        title="Add Table"
+      >
+        <CiViewTable size={iconSize} />
+      </button>
+      <AddTableModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onAddTable={handleAddTable}
+        hasExistingData={false}
+      />
+    </>
+  );
+};
 
 export const AddColumnButton = ({ onClick }) => {
   const columnType = 'text';

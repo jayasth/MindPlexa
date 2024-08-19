@@ -1,11 +1,10 @@
 import React from 'react';
-import { Modal } from 'react-responsive-modal';
+import Modal from '@/ui/Modal/Modal';
 import Button from '@/ui/Button/Button';
-import styles from '@/ui/Modal/Modal.module.css';
+import styles from '../styles/DeleteTableModal.module.css';
 
 const DeleteTableModal = ({ isOpen, onClose, onConfirm }) => (
-  <Modal open={isOpen} onClose={onClose} center>
-    <h2>Confirm Deletion</h2>
+  <Modal isOpen={isOpen} onClose={onClose} title="Confirm Deletion">
     <p>
       Are you sure you want to delete the entire table? This action cannot be
       undone.

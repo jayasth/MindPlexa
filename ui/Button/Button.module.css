@@ -20,7 +20,7 @@
 
 /* Slim Modifier */
 .slim {
-  @apply py-1 px-2 text-xs;
+  @apply py-1 px-2 text-xs bg-lavender-100 text-lavender-700 border border-lavender-300 hover:bg-lavender-200 hover:border-lavender-400;
 }
 
 /* Outline variant */
