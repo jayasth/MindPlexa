@@ -90,6 +90,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [isNodeDeleteModalOpen, setIsNodeDeleteModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [dateFormat, setDateFormat] = useState(data.dateFormat || 'yyyy-MM-dd');
 
@@ -243,16 +244,16 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   );
 
   const handleDelete = () => {
-    setIsDeleteModalOpen(true);
+    setIsNodeDeleteModalOpen(true);
   };
 
   const handleDeleteConfirm = () => {
-    setIsDeleteModalOpen(false);
+    setIsNodeDeleteModalOpen(false);
     handleDeleteNode(data.id, canvasId);
   };
 
   const handleDeleteCancel = () => {
-    setIsDeleteModalOpen(false);
+    setIsNodeDeleteModalOpen(false);
   };
 
   const memoizedTagFileContainer = useMemo(
@@ -357,7 +358,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
         {(tags.length > 0 || attachedFiles.length > 0) &&
           memoizedTagFileContainer}
         <div className={styles.footer}>
-          <DeleteButton onClick={() => handleDeleteNode(data.id, canvasId)} />
+          <DeleteButton onClick={handleDelete} />
           <ChangeColorButton onClick={toggleColorPicker} />
           <AddTagButton onClick={() => setIsTagModalOpen(true)} />
           <AttachFileButton onClick={() => setIsFileModalOpen(true)} />
@@ -396,7 +397,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           nodeId={data.id}
         />
         <NodeDeleteConfirmationModal
-          isOpen={isDeleteModalOpen}
+          isOpen={isNodeDeleteModalOpen}
           onClose={handleDeleteCancel}
           onConfirm={handleDeleteConfirm}
         />
