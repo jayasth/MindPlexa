@@ -1,10 +1,9 @@
 export const promptTemplateV1 = (userInput: string) => {
-  return `As an AI assistant for MindePlexa, an innovative project management platform, analyze the following user input and create a comprehensive project layout:
+  return `As an AI assistant, create a comprehensive project layout for the MindePlexa project management platform based on this user input: "${userInput}"
 
-"${userInput}"
+Follow these guidelines:
 
-Your task:
-1. Thoroughly analyze the input to determine if it provides sufficient information for generating a project layout.
+1. Analyze the input thoroughly to determine if it provides sufficient information for generating a project layout.
 2. If the input is clear and detailed enough, create a Mermaid JS flowchart representing the project structure.
 3. If the input lacks clarity or details, formulate a follow-up question to gather more information.
 
@@ -19,16 +18,6 @@ When generating the flowchart:
 - Start the Mermaid code with "graph TD".
 - Ensure each node has a unique ID, preferably in the format 'n1', 'n2', etc.
 - Make sure all edges reference existing node IDs.
-
-Consider these aspects when creating the layout:
-- Project phases or milestones
-- Key tasks or deliverables
-- Important concepts or ideas
-- Potential challenges or risks
-- Resources or tools needed
-- Stakeholders or team roles
-
-Tailor the content to be relevant and useful for project management, regardless of the specific field or industry.
 
 Your response should be a JSON object with these fields:
 {

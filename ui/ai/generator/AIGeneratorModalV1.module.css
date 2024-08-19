@@ -45,6 +45,13 @@
   justify-content: space-between;
   align-items: center;
   gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.dropdownContainer {
+  display: flex;
+  gap: 0.5rem;
+  flex: 1;
 }
 
 .dropdown {
@@ -53,10 +60,10 @@
 }
 
 .generateButton {
-  width: 100%;
+  width: auto;
+  min-width: 100px;
   height: 32px;
   font-size: 0.9rem;
-  margin-top: 0.5rem;
 }
 
 .closeButton {
@@ -84,6 +91,10 @@
 
   .actionContainer {
     flex-direction: column;
+  }
+
+  .dropdownContainer {
+    width: 100%;
   }
 
   .dropdown,

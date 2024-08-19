@@ -96,11 +96,13 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
         data.mermaidCode,
         projectConcept
       );
+      const scaleFactor = 0.8; // Adjust this value as needed
       const layoutedNodes = applyLayout(
         nodes,
         edges,
         canvasSize,
-        selectedLayout
+        selectedLayout,
+        scaleFactor
       );
       console.log('Layouted nodes:', layoutedNodes);
 
@@ -126,11 +128,13 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
     newEdges: Edge[]
   ) => {
     const canvasSize = { width: window.innerWidth, height: window.innerHeight };
+    const scaleFactor = 0.8; // Adjust this value as needed
     const optimizedNodes = applyLayout(
       newNodes,
       newEdges,
       canvasSize,
-      selectedLayout
+      selectedLayout,
+      scaleFactor
     );
 
     try {
@@ -223,42 +227,44 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
           <form onSubmit={handleGenerateCanvas}>
             <textarea
               className={styles.textarea}
-              placeholder="Describe your project idea or goal and let AI create a structured plan)"
+              placeholder="Describe your project idea or goal and let AI create a structured plan"
               value={projectConcept}
               onChange={handleProjectConceptChange}
             />
             <div className={styles.actionContainer}>
-              <Dropdown
-                value={selectedModel}
-                onChange={(value) => setSelectedModel(value)}
-                variant="slim"
-                className={styles.dropdown}
+              <div className={styles.dropdownContainer}>
+                <Dropdown
+                  value={selectedModel}
+                  onChange={(value) => setSelectedModel(value)}
+                  variant="slim"
+                  className={styles.dropdown}
+                >
+                  <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                  <option value="gpt-4o">GPT-4o</option>
+                </Dropdown>
+                <Dropdown
+                  value={selectedLayout}
+                  onChange={(value) => setSelectedLayout(value as LayoutType)}
+                  variant="slim"
+                  className={styles.dropdown}
+                >
+                  {layoutOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </Dropdown>
+              </div>
+              <Button
+                type="submit"
+                disabled={uiIsLoading || !projectConcept.trim()}
+                loading={uiIsLoading}
+                variant="submit"
+                className={styles.generateButton}
               >
-                <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-                <option value="gpt-4o">GPT-4o</option>
-              </Dropdown>
-              <Dropdown
-                value={selectedLayout}
-                onChange={(value) => setSelectedLayout(value as LayoutType)}
-                variant="slim"
-                className={styles.dropdown}
-              >
-                {layoutOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </Dropdown>
+                {uiIsLoading ? 'Generating...' : 'Generate'}
+              </Button>
             </div>
-            <Button
-              type="submit"
-              disabled={uiIsLoading || !projectConcept.trim()}
-              loading={uiIsLoading}
-              variant="submit"
-              className={styles.generateButton}
-            >
-              {uiIsLoading ? 'Generating...' : 'Generate'}
-            </Button>
           </form>
           {followUpQuestion && (
             <p className={styles.followUpQuestion}>{followUpQuestion}</p>

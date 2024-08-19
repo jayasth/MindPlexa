@@ -13,7 +13,7 @@ import ConfirmIntegrationModal from './ConfirmIntegrationModal';
 import Dropdown from '@/ui/dropdown/Dropdown';
 import Modal from '@/ui/Modal/Modal';
 import styles from './AIGeneratorModal.module.css';
-import { applyLayout } from '@/ui/ai/generator/aiPositioningUtilsV2';
+import { applyLayout } from './aiPositioningUtilsV2';
 import { createBulkNodes } from '@/utils/canvas/nodeService';
 import { createEdgeBetweenNodes } from '@/utils/canvas/edgeService';
 import { Database } from '@/types_db';
@@ -25,6 +25,12 @@ interface AIGeneratorModalV2Props {
 }
 
 type NodeType = Database['public']['Enums']['node_type'];
+type LayoutType =
+  | 'mindmap'
+  | 'workflow'
+  | 'concept-map'
+  | 'grid'
+  | 'hierarchical';
 
 const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
   isOpen,
@@ -91,11 +97,6 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
 
       console.log('Selected layout:', analysis.suggestedLayout);
 
-      const canvasSize = {
-        width: window.innerWidth,
-        height: window.innerHeight
-      };
-
       const { nodes, edges, warning } = await parseMermaidCode(
         mermaidCode,
         projectConcept
@@ -107,14 +108,12 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
 
       const layout = analysis.suggestedLayout || 'force';
 
-      const layoutedNodes = applyLayout(nodes, edges, canvasSize, layout);
-
       if (existingNodes.length > 0) {
-        setGeneratedNodes(layoutedNodes);
+        setGeneratedNodes(nodes);
         setGeneratedEdges(edges);
         setShowConfirmModal(true);
       } else {
-        handleConfirmIntegration(layoutedNodes, edges, layout);
+        handleConfirmIntegration(nodes, edges, layout as LayoutType);
       }
     } catch (error) {
       console.error('Error generating canvas:', error);
@@ -133,30 +132,37 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
   };
 
   const handleConfirmIntegration = async (
-    newNodes: Node[],
-    newEdges: Edge[],
-    layout: string
+    generatedNodes: Node[],
+    generatedEdges: Edge[],
+    layoutType: LayoutType
   ) => {
-    const canvasSize = { width: window.innerWidth, height: window.innerHeight };
+    const canvasSize = {
+      width: window.innerWidth,
+      height: window.innerHeight
+    };
+
+    const scaleFactor = 0.8; // Adjust this value as needed
+
     try {
-      const optimizedNodes = applyLayout(
-        newNodes,
-        newEdges,
+      const positionedNodes = applyLayout(
+        generatedNodes,
+        generatedEdges,
         canvasSize,
-        layout as any
+        layoutType,
+        scaleFactor
       );
 
-      const nodesWithNewIds = optimizedNodes.map((node) => ({
+      const nodesWithNewIds = positionedNodes.map((node) => ({
         ...node,
         id: uuidv4()
       }));
 
-      const idMapping = optimizedNodes.reduce((acc, node, index) => {
+      const idMapping = positionedNodes.reduce((acc, node, index) => {
         acc[node.id] = nodesWithNewIds[index].id;
         return acc;
       }, {});
 
-      const updatedEdges = newEdges.map((edge) => ({
+      const updatedEdges = generatedEdges.map((edge) => ({
         ...edge,
         source: idMapping[edge.source],
         target: idMapping[edge.target]
@@ -193,9 +199,6 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
         console.error('Error creating bulk nodes:', error);
         setErrorMessage('Failed to create nodes. Please try again.');
       } else {
-        const setNodes = useNodeStore.getState().setNodes;
-        const setEdges = useEdgeStore.getState().setEdges;
-
         setNodes((currentNodes) => [...currentNodes, ...(createdNodes || [])]);
         setEdges((currentEdges) => [...currentEdges, ...updatedEdges]);
 

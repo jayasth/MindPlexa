@@ -1,32 +1,39 @@
 export const promptTemplateV2 = (userInput: string) => {
-  return `Analyze the following project concept for MindePlexa, an AI-powered project management platform:
+  return `As an advanced AI assistant for MindePlexa, a cutting-edge project management platform, analyze the following project concept and create an optimized project network:
 
 "${userInput}"
 
 Your task is to:
-1. Determine the primary industry or domain of the project.
-2. Assess the complexity and scale of the project.
-3. Identify key themes or components of the project.
-4. Suggest the most appropriate layout from the following options, considering the project's nature:
-   - mindmap: For brainstorming sessions or projects with a central concept and branching ideas.
-   - workflow: For processes with clear sequential steps or flows.
-   - concept-map: For complex networks with many interconnected ideas.
-   - grid: For organized, structured projects with equal emphasis on components.
-   - hierarchical: For projects with clear parent-child relationships or organizational structures.
+1. Thoroughly analyze the project concept, identifying its core elements, scope, and potential challenges.
+2. Determine the primary industry or domain of the project.
+3. Assess the complexity and scale of the project.
+4. Identify key themes, components, or phases of the project.
+5. Generate a comprehensive Mermaid JS flowchart representing the project structure.
+6. Suggest the most appropriate layout based on the project's nature and complexity.
 
-5. Generate a Mermaid JS flowchart representing the project structure, using the suggested layout as a guide.
-
-Follow these guidelines for the Mermaid flowchart:
-- Start with the main project concept as the root node.
-- Create 3-7 main subtopics branching from the root.
-- For each subtopic, add 2-5 child nodes with relevant details.
+When creating the Mermaid flowchart:
+- Begin with the main project concept as the root node.
+- Create 3-7 main subtopics or phases branching from the root.
+- For each subtopic, add 2-5 child nodes with relevant details, tasks, or concepts.
 - Use the format: "nodeID[Node Title::Node Description]" for each node.
-- Ensure all nodes have meaningful titles (max 5 words) and descriptions (15-50 words).
+- Ensure all nodes have concise, meaningful titles (max 5 words) and descriptions (15-50 words).
 - Create logical connections between nodes using "nodeID1 --> nodeID2".
 - Avoid special characters or quotes in node text.
 - Start the Mermaid code with "graph TD".
-- Ensure each node has a unique ID, preferably in the format 'n1', 'n2', etc.
-- Make sure all edges reference existing node IDs.
+- Assign unique IDs to each node, preferably in the format 'n1', 'n2', etc.
+- Ensure all edges reference existing node IDs.
+
+Consider these elements when structuring the project:
+- Project lifecycle stages
+- Key deliverables and milestones
+- Critical tasks and subtasks
+- Important concepts or methodologies
+- Potential risks and mitigation strategies
+- Required resources and tools
+- Stakeholders and team roles
+- Dependencies between tasks or components
+
+Tailor the content to be highly relevant and actionable for project management, regardless of the specific field or industry.
 
 Provide your response in the following JSON format:
 
@@ -41,5 +48,13 @@ Provide your response in the following JSON format:
   "mermaidCode": "string (Mermaid JS flowchart code)"
 }
 
-Ensure that the entire response is a valid JSON object, with the mermaidCode as a string value within the JSON structure.`;
+Ensure that:
+1. The analysis is insightful and accurately reflects the project's nature.
+2. The suggested layout is the most suitable for the project structure.
+3. The Mermaid code is valid, comprehensive, and can be parsed without errors.
+4. Node IDs are unique and consistent throughout the diagram.
+5. All edges reference existing node IDs.
+6. The entire response is a valid JSON object, with the mermaidCode as a string value within the JSON structure.
+
+Now, please analyze the project concept and provide a detailed, optimized project network.`;
 };
