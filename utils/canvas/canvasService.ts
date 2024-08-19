@@ -14,6 +14,7 @@ import {
   processNodeSpecificData
 } from '@/utils/canvas/nodeSpecificDataService';
 import { handleTags } from '@/utils/canvas/tagService';
+import { removeDrawing } from './drawNodeService';
 
 const supabase = createClient();
 
@@ -141,11 +142,22 @@ export const deleteCanvasWithNodes = async (
   // Delete associated edges
   await supabase.from('edges').delete().eq('canvas_id', canvasId);
 
-  // Delete attachments and files for each node
+  // Delete attachments, files, and drawings for each node
   for (const nodeId of nodeIds) {
     const attachments = await getAttachments(nodeId);
     for (const attachment of attachments) {
       await removeAttachment(attachment.id);
+    }
+
+    // Delete drawing for draw nodes
+    const { data: nodeData } = await supabase
+      .from('nodes')
+      .select('type')
+      .eq('id', nodeId)
+      .single();
+
+    if (nodeData && nodeData.type === 'draw') {
+      await removeDrawing(nodeId);
     }
   }
 
