@@ -217,13 +217,13 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
       <Modal
         isOpen={isOpen && !showConfirmModal}
         onClose={onClose}
-        title="AI Node Network Generator V1"
+        title="Custom AI Project Planner"
       >
         <div className={styles.content}>
           <form onSubmit={handleGenerateCanvas}>
             <textarea
               className={styles.textarea}
-              placeholder="Enter your project topic or main idea"
+              placeholder="Describe your project idea or goal and let AI create a structured plan)"
               value={projectConcept}
               onChange={handleProjectConceptChange}
             />

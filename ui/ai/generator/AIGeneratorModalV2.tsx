@@ -227,13 +227,13 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
       <Modal
         isOpen={isOpen && !showConfirmModal}
         onClose={onClose}
-        title="AI Node Network Generator V2"
+        title="Smart AI Project Architect"
       >
         <div className={styles.content}>
           <form onSubmit={handleGenerateCanvas}>
             <textarea
               className={styles.textarea}
-              placeholder="Enter your project concept or main idea"
+              placeholder="Describe your project and let AI design an optimized project network"
               value={projectConcept}
               onChange={handleProjectConceptChange}
             />

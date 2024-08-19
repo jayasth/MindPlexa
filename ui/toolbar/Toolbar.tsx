@@ -201,25 +201,29 @@ const Toolbar: React.FC<ToolbarProps> = ({
               </button>
             </Tooltip>
             <div className={styles.separator} />
-            <Tooltip content="AI Custom Layout">
+            <Tooltip content="Custom AI Project Planner">
               <button
                 onClick={handleGenerateAIMapV1}
                 className={`${buttonClass} ${styles.toolbarTooltip}`}
               >
                 <LuNetwork size={iconSize} />
                 {isExpanded && (
-                  <span className={styles.buttonText}>AI Custom Layout</span>
+                  <span className={styles.buttonText}>
+                    Custom AI Project Planner
+                  </span>
                 )}
               </button>
             </Tooltip>
-            <Tooltip content="AI Smart Layout">
+            <Tooltip content="Smart AI Project Architect">
               <button
                 onClick={handleGenerateAIMapV2}
                 className={`${buttonClass} ${styles.toolbarTooltip}`}
               >
                 <FaRobot size={iconSize} />
                 {isExpanded && (
-                  <span className={styles.buttonText}>AI Smart Layout</span>
+                  <span className={styles.buttonText}>
+                    Smart AI Project Architect
+                  </span>
                 )}
               </button>
             </Tooltip>
