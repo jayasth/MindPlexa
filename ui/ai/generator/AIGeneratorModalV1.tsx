@@ -18,6 +18,8 @@ import { createBulkNodes } from '@/utils/canvas/nodeService';
 import { createEdgeBetweenNodes } from '@/utils/canvas/edgeService';
 import { Database } from '@/types_db';
 import { v4 as uuidv4 } from 'uuid';
+import { FaQuestionCircle } from 'react-icons/fa';
+import { BsLightbulb } from 'react-icons/bs';
 
 interface AIGeneratorModalV1Props {
   isOpen: boolean;
@@ -58,7 +60,12 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
   const { canvasId } = useCanvasStore();
   const [followUpCount, setFollowUpCount] = useState(0);
   const MAX_FOLLOW_UP = 1;
-  const [aiResponse, setAIResponse] = useState<any>(null);
+  const [responseType, setResponseType] = useState<
+    'flowchart' | 'followUp' | 'advice' | null
+  >(null);
+  const [responseContent, setResponseContent] = useState<string>('');
+  const [responseExplanation, setResponseExplanation] = useState<string>('');
+  const [isResponseReady, setIsResponseReady] = useState(false);
 
   const handleProjectConceptChange = (
     e: React.ChangeEvent<HTMLTextAreaElement>
@@ -78,23 +85,19 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
     e.preventDefault();
     setIsLoading(true);
     setErrorMessage(null);
-
-    console.log('Selected layout type:', selectedLayout);
+    setIsResponseReady(false);
 
     try {
       const prompt = promptTemplateV1(projectConcept, followUpAnswer);
       const response = await fetch('/api/completion', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           prompt,
           version: 'v1',
           model: selectedModel,
           initialConcept: projectConcept,
-          followUpAnswer: followUpAnswer,
-          forceGenerate: followUpCount >= MAX_FOLLOW_UP
+          followUpAnswer: followUpAnswer
         })
       });
 
@@ -105,64 +108,37 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
       const data = await response.json();
       console.log('AIGeneratorModalV1 Response data:', data);
 
-      setAIResponse(data);
+      setResponseType(data.responseType);
+      setResponseContent(data.content);
+      setResponseExplanation(data.explanation);
 
-      // Handle follow-up question
-      if (data.needsFollowUp && followUpCount < MAX_FOLLOW_UP) {
-        setFollowUpQuestion(
-          data.followUpQuestion || 'Could you provide more details?'
+      if (data.responseType === 'flowchart') {
+        const { nodes, edges, warning } = await parseMermaidCode(
+          data.content,
+          projectConcept
         );
-        setFollowUpAnswer(''); // Reset the follow-up answer
-        setFollowUpCount((prevCount) => prevCount + 1);
-        setIsLoading(false);
-        return; // Exit the function here, don't proceed to Mermaid parsing
+        if (warning) {
+          setErrorMessage(warning);
+        }
+        if (existingNodes.length > 0) {
+          setGeneratedNodes(nodes);
+          setGeneratedEdges(edges);
+          setShowConfirmModal(true);
+        } else {
+          handleConfirmIntegration(nodes, edges);
+        }
+      } else if (data.responseType === 'advice') {
+        // Display the advice to the user
+        setErrorMessage(null);
+      } else if (data.responseType === 'followUp') {
+        // Reset follow-up answer for the new question
+        setFollowUpAnswer('');
       }
-
-      // Reset follow-up related states
-      setFollowUpQuestion('');
-      setFollowUpAnswer('');
-      setFollowUpCount(0);
-
-      // If there's no mermaidCode, show an error
-      if (!data.mermaidCode) {
-        throw new Error('No Mermaid code generated. Please try again.');
-      }
-
-      const canvasSize = {
-        width: window.innerWidth,
-        height: window.innerHeight
-      };
-
-      const { nodes, edges, warning } = await parseMermaidCode(
-        data.mermaidCode,
-        projectConcept
-      );
-
-      if (warning) {
-        setErrorMessage(warning);
-      }
-
-      const scaleFactor = 0.8; // Adjust this value as needed
-      const layoutedNodes = applyLayout(
-        nodes,
-        edges,
-        canvasSize,
-        selectedLayout,
-        scaleFactor
-      );
-      console.log('Layouted nodes:', layoutedNodes);
-
-      if (existingNodes.length > 0) {
-        setGeneratedNodes(layoutedNodes);
-        setGeneratedEdges(edges);
-        setShowConfirmModal(true);
-      } else {
-        handleConfirmIntegration(layoutedNodes, edges);
-      }
+      setIsResponseReady(true);
     } catch (error) {
       console.error('Error generating layout:', error);
       setErrorMessage(
-        `An error occurred while generating the layout: ${error instanceof Error ? error.message : 'Please try again.'}`
+        `An error occurred while processing your request: ${error instanceof Error ? error.message : 'Please try again.'}`
       );
     }
 
@@ -262,6 +238,42 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
     setShowConfirmModal(false);
   };
 
+  const renderResponse = () => {
+    if (!isResponseReady) return null;
+
+    switch (responseType) {
+      case 'followUp':
+        return (
+          <div className={styles.followUpContainer}>
+            <FaQuestionCircle className={styles.icon} />
+            <p className={styles.followUpQuestion}>{responseContent}</p>
+            <textarea
+              className={styles.textarea}
+              placeholder="Your answer to the follow-up question"
+              value={followUpAnswer}
+              onChange={(e) => setFollowUpAnswer(e.target.value)}
+            />
+          </div>
+        );
+      case 'advice':
+        return (
+          <div className={styles.adviceContainer}>
+            <BsLightbulb className={styles.icon} />
+            <p className={styles.advice}>{responseContent}</p>
+          </div>
+        );
+      case 'flowchart':
+        return (
+          <div className={styles.mermaidPreview}>
+            <h3>Generated Mermaid Code:</h3>
+            <pre>{responseContent}</pre>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <>
       <Modal
@@ -277,17 +289,7 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
               value={projectConcept}
               onChange={handleProjectConceptChange}
             />
-            {followUpQuestion && (
-              <div className={styles.followUpContainer}>
-                <p className={styles.followUpQuestion}>{followUpQuestion}</p>
-                <textarea
-                  className={styles.textarea}
-                  placeholder="Your answer to the follow-up question"
-                  value={followUpAnswer}
-                  onChange={handleFollowUpAnswerChange}
-                />
-              </div>
-            )}
+            {renderResponse()}
             <div className={styles.actionContainer}>
               <div className={styles.dropdownContainer}>
                 <Dropdown
@@ -295,6 +297,7 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
                   onChange={(value) => setSelectedModel(value)}
                   variant="slim"
                   className={styles.dropdown}
+                  disabled={responseType === 'followUp'}
                 >
                   <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
                   <option value="gpt-4o">GPT-4o</option>
@@ -304,6 +307,7 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
                   onChange={(value) => setSelectedLayout(value as LayoutType)}
                   variant="slim"
                   className={styles.dropdown}
+                  disabled={responseType === 'followUp'}
                 >
                   {layoutOptions.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -314,23 +318,24 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
               </div>
               <Button
                 type="submit"
-                disabled={uiIsLoading || !projectConcept.trim()}
+                disabled={
+                  uiIsLoading ||
+                  (!projectConcept.trim() && !followUpAnswer.trim())
+                }
                 loading={uiIsLoading}
                 variant="submit"
                 className={styles.generateButton}
               >
-                {uiIsLoading ? 'Generating...' : 'Generate'}
+                {uiIsLoading
+                  ? 'Generating...'
+                  : responseType === 'followUp'
+                    ? 'Submit Answer'
+                    : 'Generate'}
               </Button>
             </div>
           </form>
           {errorMessage && (
             <p className={styles.errorMessage}>{errorMessage}</p>
-          )}
-          {aiResponse && aiResponse.mermaidCode && (
-            <div className={styles.mermaidPreview}>
-              <h3>Generated Mermaid Code:</h3>
-              <pre>{aiResponse.mermaidCode}</pre>
-            </div>
           )}
         </div>
       </Modal>

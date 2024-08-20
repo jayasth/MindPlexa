@@ -79,6 +79,7 @@
 
 .followUpContainer {
   margin-top: 1rem;
+  margin-bottom: 1rem;
   padding: 1rem;
   background-color: #f0f0f0;
   border-radius: 4px;
@@ -89,6 +90,24 @@
   font-weight: bold;
   color: #333;
   margin-bottom: 0.5rem;
+}
+
+.adviceContainer {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background-color: #e6f7ff;
+  border-radius: 4px;
+}
+
+.advice {
+  font-size: 1rem;
+  color: #333;
+}
+
+.icon {
+  margin-right: 0.5rem;
+  vertical-align: middle;
 }
 
 @media (max-width: 480px) {
