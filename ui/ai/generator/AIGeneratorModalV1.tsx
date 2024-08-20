@@ -59,7 +59,7 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
   const { isLoading: uiIsLoading, setIsLoading } = useUIStore();
   const { canvasId } = useCanvasStore();
   const [followUpCount, setFollowUpCount] = useState(0);
-  const MAX_FOLLOW_UP = 1;
+  const MAX_FOLLOW_UP = 2;
   const [responseType, setResponseType] = useState<
     'flowchart' | 'followUp' | 'advice' | null
   >(null);
@@ -88,7 +88,11 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
     setIsResponseReady(false);
 
     try {
-      const prompt = promptTemplateV1(projectConcept, followUpAnswer);
+      const prompt = promptTemplateV1(
+        projectConcept,
+        followUpAnswer,
+        followUpCount
+      );
       const response = await fetch('/api/completion', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -97,7 +101,8 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
           version: 'v1',
           model: selectedModel,
           initialConcept: projectConcept,
-          followUpAnswer: followUpAnswer
+          followUpAnswer: followUpAnswer,
+          followUpCount: followUpCount
         })
       });
 
@@ -128,12 +133,20 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
           handleConfirmIntegration(nodes, edges);
         }
       } else if (data.responseType === 'advice') {
-        // Display the advice to the user
         setErrorMessage(null);
       } else if (data.responseType === 'followUp') {
-        // Reset follow-up answer for the new question
+        setFollowUpCount((prevCount) => prevCount + 1);
         setFollowUpAnswer('');
       }
+
+      if (followUpCount >= MAX_FOLLOW_UP) {
+        setResponseType('advice');
+        setResponseContent(
+          "I'm sorry, but I couldn't gather enough information to create a detailed project plan. Here's some general advice for project planning: " +
+            data.content
+        );
+      }
+
       setIsResponseReady(true);
     } catch (error) {
       console.error('Error generating layout:', error);
