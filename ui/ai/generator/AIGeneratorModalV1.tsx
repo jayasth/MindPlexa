@@ -365,64 +365,83 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Custom AI Project Planner">
-      <div className={styles.content}>
-        <form onSubmit={handleGenerateCanvas}>
-          <textarea
-            className={styles.textarea}
-            placeholder="Describe your project idea or goal and let AI create a structured plan"
-            value={projectConcept}
-            onChange={handleProjectConceptChange}
-          />
-          {renderResponse()}
-          {renderGeneratedContent()}
-          <div className={styles.actionContainer}>
-            <div className={styles.dropdownContainer}>
-              <Dropdown
-                value={selectedModel}
-                onChange={(value) => setSelectedModel(value)}
-                variant="slim"
-                className={styles.dropdown}
-                disabled={responseType === 'followUp'}
+    <>
+      <Modal
+        isOpen={isOpen && !showConfirmModal}
+        onClose={onClose}
+        title="Custom AI Project Planner"
+      >
+        <div className={styles.content}>
+          <form onSubmit={handleGenerateCanvas}>
+            <textarea
+              className={styles.textarea}
+              placeholder="Describe your project idea or goal and let AI create a structured plan"
+              value={projectConcept}
+              onChange={handleProjectConceptChange}
+            />
+            {renderResponse()}
+            {renderGeneratedContent()}
+            <div className={styles.actionContainer}>
+              <div className={styles.dropdownContainer}>
+                <Dropdown
+                  value={selectedModel}
+                  onChange={(value) => setSelectedModel(value)}
+                  variant="slim"
+                  className={styles.dropdown}
+                  disabled={responseType === 'followUp'}
+                >
+                  <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                  <option value="gpt-4o">GPT-4o</option>
+                </Dropdown>
+                <Dropdown
+                  value={selectedLayout}
+                  onChange={(value) => setSelectedLayout(value as LayoutType)}
+                  variant="slim"
+                  className={styles.dropdown}
+                  disabled={responseType === 'followUp'}
+                >
+                  {layoutOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </Dropdown>
+              </div>
+              <Button
+                type="submit"
+                disabled={
+                  uiIsLoading ||
+                  (!projectConcept.trim() && !followUpAnswer.trim())
+                }
+                loading={uiIsLoading}
+                variant="submit"
+                className={styles.generateButton}
               >
-                <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-                <option value="gpt-4o">GPT-4o</option>
-              </Dropdown>
-              <Dropdown
-                value={selectedLayout}
-                onChange={(value) => setSelectedLayout(value as LayoutType)}
-                variant="slim"
-                className={styles.dropdown}
-                disabled={responseType === 'followUp'}
-              >
-                {layoutOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </Dropdown>
+                {uiIsLoading
+                  ? 'Generating...'
+                  : responseType === 'followUp'
+                    ? 'Submit Answer'
+                    : 'Generate'}
+              </Button>
             </div>
-            <Button
-              type="submit"
-              disabled={
-                uiIsLoading ||
-                (!projectConcept.trim() && !followUpAnswer.trim())
-              }
-              loading={uiIsLoading}
-              variant="submit"
-              className={styles.generateButton}
-            >
-              {uiIsLoading
-                ? 'Generating...'
-                : responseType === 'followUp'
-                  ? 'Submit Answer'
-                  : 'Generate'}
-            </Button>
-          </div>
-        </form>
-        {errorMessage && <p className={styles.errorMessage}>{errorMessage}</p>}
-      </div>
-    </Modal>
+          </form>
+          {errorMessage && (
+            <p className={styles.errorMessage}>{errorMessage}</p>
+          )}
+        </div>
+      </Modal>
+
+      {showConfirmModal && (
+        <ConfirmIntegrationModal
+          isOpen={showConfirmModal}
+          onClose={() => setShowConfirmModal(false)}
+          onConfirm={() =>
+            handleConfirmIntegration(generatedNodes, generatedEdges)
+          }
+          onCancel={handleCancelIntegration}
+        />
+      )}
+    </>
   );
 };
 
