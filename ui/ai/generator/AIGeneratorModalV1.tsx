@@ -109,7 +109,9 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
 
       // Handle follow-up question
       if (data.needsFollowUp && followUpCount < MAX_FOLLOW_UP) {
-        setFollowUpQuestion(data.followUpQuestion);
+        setFollowUpQuestion(
+          data.followUpQuestion || 'Could you provide more details?'
+        );
         setFollowUpAnswer(''); // Reset the follow-up answer
         setFollowUpCount((prevCount) => prevCount + 1);
         setIsLoading(false);
@@ -158,9 +160,9 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
         handleConfirmIntegration(layoutedNodes, edges);
       }
     } catch (error) {
-      console.error('Error generating canvas:', error);
+      console.error('Error generating layout:', error);
       setErrorMessage(
-        'An error occurred while generating the canvas. Please try again.'
+        `An error occurred while generating the layout: ${error instanceof Error ? error.message : 'Please try again.'}`
       );
     }
 
@@ -276,7 +278,7 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
               onChange={handleProjectConceptChange}
             />
             {followUpQuestion && (
-              <>
+              <div className={styles.followUpContainer}>
                 <p className={styles.followUpQuestion}>{followUpQuestion}</p>
                 <textarea
                   className={styles.textarea}
@@ -284,7 +286,7 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
                   value={followUpAnswer}
                   onChange={handleFollowUpAnswerChange}
                 />
-              </>
+              </div>
             )}
             <div className={styles.actionContainer}>
               <div className={styles.dropdownContainer}>
