@@ -57,7 +57,7 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
   const { isLoading: uiIsLoading, setIsLoading } = useUIStore();
   const { canvasId } = useCanvasStore();
   const [followUpCount, setFollowUpCount] = useState(0);
-  const MAX_FOLLOW_UP = 2;
+  const MAX_FOLLOW_UP = 1;
   const [aiResponse, setAIResponse] = useState<any>(null);
 
   const handleProjectConceptChange = (

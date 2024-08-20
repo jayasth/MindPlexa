@@ -11,7 +11,7 @@ ${followUpAnswer ? `Additional information provided: "${followUpAnswer}"` : ''}
 Your task:
 1. Thoroughly analyze the input to determine if it provides sufficient information for generating a project layout.
 2. If the input is clear and detailed enough, create a Mermaid JS flowchart representing the project structure.
-3. If the input lacks clarity or details, formulate a follow-up question to gather more information.
+3. If the input lacks clarity or details, formulate a single follow-up question to gather more information.
 
 When generating the flowchart:
 - Begin with the project concept as the root node.
