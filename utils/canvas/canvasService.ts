@@ -15,8 +15,6 @@ import {
 } from '@/utils/canvas/nodeSpecificDataService';
 import { handleTags } from '@/utils/canvas/tagService';
 import { removeDrawing } from './drawNodeService';
-import { Node, Edge } from 'reactflow';
-import { Database } from '@/types_db';
 
 const supabase = createClient();
 
@@ -361,66 +359,4 @@ export const saveCanvasState = async (canvasId: string, canvasState: any) => {
       await supabase.from('node_attachments').insert(attachmentsData);
     }
   }
-};
-
-export const addGeneratedNodesToCanvas = async (
-  canvasId: string,
-  nodes: Node[],
-  edges: Edge[]
-) => {
-  const supabase = createClient();
-
-  // Add nodes
-  for (const node of nodes) {
-    const { id, type, position, data } = node;
-    const nodeData: Database['public']['Tables']['nodes']['Insert'] = {
-      id,
-      type: type as Database['public']['Enums']['node_type'],
-      position: JSON.stringify(position),
-      title: data.title,
-
-      background_color: '#F4F4F4',
-      text_color: '#575757',
-      view_width: 200,
-      view_height: 200,
-      is_editing: false,
-      z_index: 0
-    };
-
-    const { error: nodeError } = await supabase.from('nodes').insert(nodeData);
-    if (nodeError) {
-      console.error('Error adding node:', nodeError);
-    }
-
-    // Add node-canvas link
-    await supabase
-      .from('node_canvas_link')
-      .insert({ node_id: id, canvas_id: canvasId });
-
-    // Add node-specific data
-    if (type && type !== 'selection_menu') {
-      await updateNodeSpecificData(
-        id,
-        type as Database['public']['Enums']['node_type'],
-        data
-      );
-    }
-  }
-
-  // Add edges
-  for (const edge of edges) {
-    const edgeData = {
-      id: edge.id,
-      source_node_id: edge.source,
-      target_node_id: edge.target,
-      canvas_id: canvasId
-    };
-
-    const { error: edgeError } = await supabase.from('edges').insert(edgeData);
-    if (edgeError) {
-      console.error('Error adding edge:', edgeError);
-    }
-  }
-
-  return { data: { success: true } };
 };

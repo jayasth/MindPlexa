@@ -21,10 +21,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { FaQuestionCircle } from 'react-icons/fa';
 import { BsLightbulb } from 'react-icons/bs';
 import { SimplifiedMermaidPreview } from '@/ui/ai/generator/SimplifiedMermaidPreview';
-import {
-  createCanvas,
-  addGeneratedNodesToCanvas
-} from '@/utils/canvas/canvasService';
 import { useRouter } from 'next/navigation';
 
 interface AIGeneratorModalV1Props {
@@ -286,7 +282,6 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
         <SimplifiedMermaidPreview code={responseContent} />
         <div className={styles.noIntegrationActions}>
           <Button onClick={copyGeneratedOutput}>Copy Mermaid Code</Button>
-          <Button onClick={saveAsNewCanvas}>Save as New Canvas</Button>
         </div>
       </div>
     );
@@ -295,36 +290,6 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
   const copyGeneratedOutput = () => {
     navigator.clipboard.writeText(responseContent);
     // You can add a toast notification here to inform the user that the code has been copied
-  };
-
-  const saveAsNewCanvas = async () => {
-    const router = useRouter();
-    const canvasTitle =
-      'Generated Canvas: ' + projectConcept.substring(0, 30) + '...';
-
-    const newCanvas: any = await createCanvas(
-      canvasTitle,
-      setIsModalOpen,
-      router
-    );
-
-    if (newCanvas && newCanvas.id) {
-      const result = await addGeneratedNodesToCanvas(
-        newCanvas,
-        generatedNodes,
-        generatedEdges
-      );
-      if (result && result.data) {
-        // Handle successful addition
-        setIsModalOpen(false);
-      } else {
-        // Handle error
-        console.error('Failed to add generated nodes to canvas');
-      }
-      router.push(`/canvasEditor/${newCanvas.id}`);
-    } else {
-      console.error('Failed to create new canvas');
-    }
   };
 
   const renderResponse = () => {
