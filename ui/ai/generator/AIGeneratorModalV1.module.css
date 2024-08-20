@@ -110,6 +110,24 @@
   vertical-align: middle;
 }
 
+.noIntegrationMessage {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.noIntegrationContainer {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.noIntegrationActions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1rem;
+}
+
 @media (max-width: 480px) {
   .modalContent {
     width: 95%;

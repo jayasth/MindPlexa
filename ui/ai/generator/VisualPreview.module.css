@@ -1,0 +1,33 @@
+.visualPreview {
+  background-color: var(--light-background, #f4f4f4);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.previewTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--light-text, #575757);
+}
+
+.flowContainer {
+  height: 300px;
+  border: 1px solid #e0e0e0;
+  border-radius: 0.25rem;
+  overflow: hidden;
+}
+
+/* Dark mode styles */
+:global(.dark) .visualPreview {
+  background-color: var(--dark-background, #1a202c);
+}
+
+:global(.dark) .previewTitle {
+  color: var(--dark-text, #cbd5e0);
+}
+
+:global(.dark) .flowContainer {
+  border-color: #4a5568;
+}

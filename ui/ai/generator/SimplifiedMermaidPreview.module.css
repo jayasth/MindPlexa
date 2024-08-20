@@ -1,0 +1,39 @@
+.simplifiedPreview {
+  background-color: var(--light-background, #f4f4f4);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.previewTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--light-text, #575757);
+}
+
+.codePreview {
+  background-color: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 0.25rem;
+  padding: 0.5rem;
+  font-size: 0.875rem;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* Dark mode styles */
+:global(.dark) .simplifiedPreview {
+  background-color: var(--dark-background, #1a202c);
+}
+
+:global(.dark) .previewTitle {
+  color: var(--dark-text, #cbd5e0);
+}
+
+:global(.dark) .codePreview {
+  background-color: #2d3748;
+  border-color: #4a5568;
+  color: #e2e8f0;
+}
