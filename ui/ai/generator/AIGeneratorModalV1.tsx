@@ -352,13 +352,6 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
             <p className={styles.advice}>{responseContent}</p>
           </div>
         );
-      case 'flowchart':
-        return (
-          <div className={styles.mermaidPreview}>
-            <h3>Generated Mermaid Code:</h3>
-            <pre>{responseContent}</pre>
-          </div>
-        );
       default:
         return null;
     }
