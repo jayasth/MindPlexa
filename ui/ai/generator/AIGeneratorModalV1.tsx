@@ -20,8 +20,8 @@ import { Database } from '@/types_db';
 import { v4 as uuidv4 } from 'uuid';
 import { FaQuestionCircle } from 'react-icons/fa';
 import { BsLightbulb } from 'react-icons/bs';
-import { SimplifiedMermaidPreview } from '@/ui/ai/generator/SimplifiedMermaidPreview';
 import { useRouter } from 'next/navigation';
+import { useToast } from '@/ui/Toasts/use-toast';
 
 interface AIGeneratorModalV1Props {
   isOpen: boolean;
@@ -70,6 +70,7 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
   const [isResponseReady, setIsResponseReady] = useState(false);
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { toast } = useToast();
 
   const resetState = () => {
     setFollowUpQuestion('');
@@ -275,21 +276,53 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
     setIsResponseReady(true);
   };
 
-  const renderNoIntegrationOptions = () => {
+  const renderGeneratedContent = () => {
+    if (!isResponseReady || responseType !== 'noIntegration') return null;
+
     return (
-      <div className={styles.noIntegrationContainer}>
-        <h3>Generated Project Structure</h3>
-        <SimplifiedMermaidPreview code={responseContent} />
-        <div className={styles.noIntegrationActions}>
-          <Button onClick={copyGeneratedOutput}>Copy Mermaid Code</Button>
+      <div className={styles.generatedContentContainer}>
+        <h3 className={styles.sectionTitle}>Generated Project Structure</h3>
+        <div className={styles.generatedContent}>
+          {responseContent.split('\n').map((line, index) => {
+            if (line.includes('::')) {
+              const [title, description] = line.split('::');
+              return (
+                <div key={index} className={styles.nodeContent}>
+                  <h4 className={styles.nodeTitle}>{title.trim()}</h4>
+                  <p className={styles.nodeDescription}>{description.trim()}</p>
+                </div>
+              );
+            }
+            return null;
+          })}
         </div>
+        <Button
+          onClick={copyGeneratedOutput}
+          className={styles.copyButton}
+          variant="slim"
+        >
+          Copy Content
+        </Button>
       </div>
     );
   };
 
   const copyGeneratedOutput = () => {
-    navigator.clipboard.writeText(responseContent);
-    // You can add a toast notification here to inform the user that the code has been copied
+    const content = responseContent
+      .split('\n')
+      .filter((line) => line.includes('::'))
+      .map((line) => {
+        const [title, description] = line.split('::');
+        return `${title.trim()}\n${description.trim()}\n\n`;
+      })
+      .join('');
+
+    navigator.clipboard.writeText(content);
+    toast({
+      title: 'Content Copied',
+      description: 'The generated content has been copied to your clipboard.'
+    });
+    onClose();
   };
 
   const renderResponse = () => {
@@ -323,93 +356,70 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
             <pre>{responseContent}</pre>
           </div>
         );
-      case 'noIntegration':
-        return renderNoIntegrationOptions();
       default:
         return null;
     }
   };
 
   return (
-    <>
-      <Modal
-        isOpen={isOpen && !showConfirmModal}
-        onClose={() => {
-          resetState();
-          onClose();
-        }}
-        title="Custom AI Project Planner"
-      >
-        <div className={styles.content}>
-          <form onSubmit={handleGenerateCanvas}>
-            <textarea
-              className={styles.textarea}
-              placeholder="Describe your project idea or goal and let AI create a structured plan"
-              value={projectConcept}
-              onChange={handleProjectConceptChange}
-            />
-            {renderResponse()}
-            <div className={styles.actionContainer}>
-              <div className={styles.dropdownContainer}>
-                <Dropdown
-                  value={selectedModel}
-                  onChange={(value) => setSelectedModel(value)}
-                  variant="slim"
-                  className={styles.dropdown}
-                  disabled={responseType === 'followUp'}
-                >
-                  <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-                  <option value="gpt-4o">GPT-4o</option>
-                </Dropdown>
-                <Dropdown
-                  value={selectedLayout}
-                  onChange={(value) => setSelectedLayout(value as LayoutType)}
-                  variant="slim"
-                  className={styles.dropdown}
-                  disabled={responseType === 'followUp'}
-                >
-                  {layoutOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </Dropdown>
-              </div>
-              <Button
-                type="submit"
-                disabled={
-                  uiIsLoading ||
-                  (!projectConcept.trim() && !followUpAnswer.trim())
-                }
-                loading={uiIsLoading}
-                variant="submit"
-                className={styles.generateButton}
+    <Modal isOpen={isOpen} onClose={onClose} title="Custom AI Project Planner">
+      <div className={styles.content}>
+        <form onSubmit={handleGenerateCanvas}>
+          <textarea
+            className={styles.textarea}
+            placeholder="Describe your project idea or goal and let AI create a structured plan"
+            value={projectConcept}
+            onChange={handleProjectConceptChange}
+          />
+          {renderResponse()}
+          {renderGeneratedContent()}
+          <div className={styles.actionContainer}>
+            <div className={styles.dropdownContainer}>
+              <Dropdown
+                value={selectedModel}
+                onChange={(value) => setSelectedModel(value)}
+                variant="slim"
+                className={styles.dropdown}
+                disabled={responseType === 'followUp'}
               >
-                {uiIsLoading
-                  ? 'Generating...'
-                  : responseType === 'followUp'
-                    ? 'Submit Answer'
-                    : 'Generate'}
-              </Button>
+                <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                <option value="gpt-4o">GPT-4o</option>
+              </Dropdown>
+              <Dropdown
+                value={selectedLayout}
+                onChange={(value) => setSelectedLayout(value as LayoutType)}
+                variant="slim"
+                className={styles.dropdown}
+                disabled={responseType === 'followUp'}
+              >
+                {layoutOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </Dropdown>
             </div>
-          </form>
-          {errorMessage && (
-            <p className={styles.errorMessage}>{errorMessage}</p>
-          )}
-        </div>
-      </Modal>
-
-      {showConfirmModal && (
-        <ConfirmIntegrationModal
-          isOpen={showConfirmModal}
-          onClose={() => setShowConfirmModal(false)}
-          onConfirm={() =>
-            handleConfirmIntegration(generatedNodes, generatedEdges)
-          }
-          onCancel={handleCancelIntegration}
-        />
-      )}
-    </>
+            <Button
+              type="submit"
+              disabled={
+                uiIsLoading ||
+                (!projectConcept.trim() && !followUpAnswer.trim())
+              }
+              loading={uiIsLoading}
+              variant="submit"
+              className={styles.generateButton}
+            >
+              {uiIsLoading
+                ? 'Generating...'
+                : responseType === 'followUp'
+                  ? 'Submit Answer'
+                  : 'Generate'}
+            </Button>
+          </div>
+        </form>
+        {errorMessage && <p className={styles.errorMessage}>{errorMessage}</p>}
+      </div>
+    </Modal>
   );
 };
 
