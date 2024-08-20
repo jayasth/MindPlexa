@@ -67,12 +67,25 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
   const [responseExplanation, setResponseExplanation] = useState<string>('');
   const [isResponseReady, setIsResponseReady] = useState(false);
 
+  const resetState = () => {
+    setFollowUpQuestion('');
+    setFollowUpAnswer('');
+    setFollowUpCount(0);
+    setResponseType(null);
+    setResponseContent('');
+    setResponseExplanation('');
+    setIsResponseReady(false);
+    setErrorMessage(null);
+  };
+
   const handleProjectConceptChange = (
     e: React.ChangeEvent<HTMLTextAreaElement>
   ) => {
-    setProjectConcept(e.target.value);
-    setFollowUpQuestion('');
-    setFollowUpAnswer('');
+    const newProjectConcept = e.target.value;
+    if (newProjectConcept !== projectConcept) {
+      setProjectConcept(newProjectConcept);
+      resetState();
+    }
   };
 
   const handleFollowUpAnswerChange = (
@@ -86,6 +99,11 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
     setIsLoading(true);
     setErrorMessage(null);
     setIsResponseReady(false);
+
+    // Reset follow-up count if it's a new project concept
+    if (followUpCount >= MAX_FOLLOW_UP && projectConcept.trim() !== '') {
+      setFollowUpCount(0);
+    }
 
     try {
       const prompt = promptTemplateV1(
@@ -291,7 +309,10 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
     <>
       <Modal
         isOpen={isOpen && !showConfirmModal}
-        onClose={onClose}
+        onClose={() => {
+          resetState();
+          onClose();
+        }}
         title="Custom AI Project Planner"
       >
         <div className={styles.content}>
