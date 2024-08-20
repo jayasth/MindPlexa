@@ -267,6 +267,9 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
 
   const handleCancelIntegration = () => {
     setShowConfirmModal(false);
+    // Reset the state to show the generated content
+    setResponseType('flowchart');
+    setIsResponseReady(true);
   };
 
   const renderResponse = () => {
