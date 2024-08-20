@@ -71,6 +71,9 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { toast } = useToast();
+  const [parsedMermaidCode, setParsedMermaidCode] = useState<string | null>(
+    null
+  );
 
   const resetState = () => {
     setFollowUpQuestion('');
