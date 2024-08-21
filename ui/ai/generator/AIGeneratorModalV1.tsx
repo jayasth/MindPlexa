@@ -388,7 +388,7 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
                   <option value="claude-3-5-sonnet-20240620">
                     Claude 3.5 Sonnet
                   </option>
-                  <option value="gpt-4o-2024-08-06">GPT-4o</option>
+                  <option value="gpt-4o">GPT-4o</option>
                 </Dropdown>
                 <Dropdown
                   value={selectedLayout}

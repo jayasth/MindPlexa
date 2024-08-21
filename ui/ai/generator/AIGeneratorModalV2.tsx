@@ -40,7 +40,9 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [generatedNodes, setGeneratedNodes] = useState<Node[]>([]);
   const [generatedEdges, setGeneratedEdges] = useState<Edge[]>([]);
-  const [selectedModel, setSelectedModel] = useState('claude-3-5-sonnet-20240620');
+  const [selectedModel, setSelectedModel] = useState(
+    'claude-3-5-sonnet-20240620'
+  );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [analysisResult, setAnalysisResult] = useState<any>(null);
   const { setNodes, nodes: existingNodes } = useNodeStore();
@@ -247,8 +249,10 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
                 variant="slim"
                 className={styles.dropdown}
               >
-                <option value="claude-3-5-sonnet-20240620">Claude 3.5 Sonnet</option>
-                <option value="gpt-4o-2024-08-06">GPT-4o</option>
+                <option value="claude-3-5-sonnet-20240620">
+                  Claude 3.5 Sonnet
+                </option>
+                <option value="gpt-4o">GPT-4o</option>
               </Dropdown>
               <Button
                 type="submit"

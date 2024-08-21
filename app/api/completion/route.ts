@@ -4,13 +4,14 @@ import { generateText } from 'ai';
 import { promptTemplate } from '@/app/prompts/generatorPrompt';
 import { promptTemplateV1 } from '@/app/prompts/generatorPromptV1';
 import { promptTemplateV2 } from '@/app/prompts/generatorPromptV2';
+import { NextResponse } from 'next/server';
 
 const openai = new OpenAI({
   apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY
 });
 
 const DEFAULT_MODEL = 'claude-3-5-sonnet-20240620';
-const GPT_MODEL = 'gpt-4o-2024-08-06';
+const GPT_MODEL = 'gpt-4o';
 
 export async function POST(req: Request) {
   try {
@@ -71,28 +72,30 @@ export async function POST(req: Request) {
 
     console.log('Complete response from AI:', content);
 
-    let parsedResponse;
-    if (version === 'v2' || version === 'v1') {
-      try {
-        parsedResponse = JSON.parse(content);
-      } catch (error) {
-        console.error(`Error parsing ${version} response:`, error);
-        parsedResponse = { needsFollowUp: false, mermaidCode: content };
+    let parsedData;
+
+    try {
+      // First, try to parse the response as-is
+      parsedData = JSON.parse(content);
+    } catch (error) {
+      // If parsing fails, try to extract JSON from a code block
+      const match = content.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
+      if (match) {
+        parsedData = JSON.parse(match[1]);
+      } else {
+        throw new Error('Unable to parse response');
       }
-    } else {
-      parsedResponse = { needsFollowUp: false, mermaidCode: content };
     }
 
-    return new Response(JSON.stringify(parsedResponse), {
-      headers: { 'Content-Type': 'application/json' }
-    });
+    // Use parsedData instead of content for the rest of the function
+    return NextResponse.json(parsedData);
   } catch (error) {
     console.error('Detailed error in API route:', error);
-    return new Response(
-      JSON.stringify({
+    return NextResponse.json(
+      {
         error: 'Error processing your request',
         details: error instanceof Error ? error.message : String(error)
-      }),
+      },
       { status: 500 }
     );
   }
