@@ -31,7 +31,7 @@ const AIAssistanceModal: React.FC<AIAssistanceModalProps> = ({
   const { completion, input, handleInputChange, handleSubmit, isLoading } =
     useCompletion();
 
-  const [selectedModel, setSelectedModel] = useState('gpt-3.5-turbo');
+  const [selectedModel, setSelectedModel] = useState('gpt-4o-mini');
 
   const { setNodes } = useNodeStore();
   const { setEdges } = useEdgeStore();
@@ -135,7 +135,7 @@ const AIAssistanceModal: React.FC<AIAssistanceModalProps> = ({
               onChange={(value) => setSelectedModel(value)}
               variant="sleek"
             >
-              <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+              <option value="gpt-4o-mini">GPT-4o Mini</option>
               <option value="gpt-4o">GPT-4o</option>
             </Dropdown>
             <Button

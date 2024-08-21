@@ -29,13 +29,6 @@ type LayoutType =
   | 'grid'
   | 'hierarchical';
 
-const getNodeSize = (node: Node) => {
-  // Provide a default type if node.type is undefined
-  const nodeType = node.type || 'note';
-  const { width, height } = getNodeDimensions(nodeType, false, false);
-  return { width, height };
-};
-
 export const applyLayout = (
   nodes: Node[],
   edges: Edge[],
@@ -62,16 +55,22 @@ export const applyLayout = (
       layoutedNodes = applyHierarchicalTreeLayout(nodes, edges, canvasSize);
       break;
     default:
-      console.warn('Invalid layout type, falling back to mind map layout');
-      layoutedNodes = applyMindMapLayout(nodes, edges, canvasSize);
+      console.warn('Invalid layout type, falling back to concept map layout');
+      layoutedNodes = applyConceptMapLayout(nodes, edges, canvasSize);
   }
 
-  // Apply scale factor to node positions
+  // Apply scale factor and center the layout
+  const boundingBox = getBoundingBox(layoutedNodes);
+  const centerX = canvasSize.width / 2;
+  const centerY = canvasSize.height / 2;
+  const offsetX = centerX - (boundingBox.minX + boundingBox.maxX) / 2;
+  const offsetY = centerY - (boundingBox.minY + boundingBox.maxY) / 2;
+
   return layoutedNodes.map((node) => ({
     ...node,
     position: {
-      x: (node.position?.x || 0) * scaleFactor,
-      y: (node.position?.y || 0) * scaleFactor
+      x: (node.position.x + offsetX) * scaleFactor,
+      y: (node.position.y + offsetY) * scaleFactor
     }
   }));
 };
@@ -108,24 +107,26 @@ const createHierarchy = (
   return buildHierarchy(rootNode);
 };
 
+const getNodeSize = (node: Node) => {
+  // Provide a default type if node.type is undefined
+  const nodeType = node.type || 'note';
+  const { width, height } = getNodeDimensions(nodeType, false, false);
+  return { width, height };
+};
+
 const applyMindMapLayout = (
   nodes: Node[],
   edges: Edge[],
   canvasSize: { width: number; height: number }
 ): Node[] => {
   const hierarchy = createHierarchy(nodes, edges);
-  const maxNodeSize = Math.max(
-    ...nodes.map((node) => {
-      const { width, height } = getNodeSize(node);
-      return Math.max(width, height);
-    })
-  );
+  const maxNodeSize = getMaxNodeSize(nodes);
 
   const radialLayout = d3
     .tree<Node>()
     .size([
       2 * Math.PI,
-      Math.min(canvasSize.width, canvasSize.height) / 2 - maxNodeSize
+      Math.min(canvasSize.width, canvasSize.height) / 2 - maxNodeSize * 2
     ])
     .separation((a, b) => (a.parent === b.parent ? 1 : 2) / a.depth);
 
@@ -134,10 +135,10 @@ const applyMindMapLayout = (
   return nodes.map((node) => {
     const layoutNode = root.find((d) => d.data.id === node.id);
     if (layoutNode) {
-      const angle = layoutNode.x - Math.PI / 2; // Rotate by 90 degrees
+      const angle = layoutNode.x;
       const radius = layoutNode.y;
-      const x = Math.cos(angle) * radius + canvasSize.width / 2;
-      const y = Math.sin(angle) * radius + canvasSize.height / 2;
+      const x = Math.cos(angle - Math.PI / 2) * radius;
+      const y = Math.sin(angle - Math.PI / 2) * radius;
       return { ...node, position: { x, y } };
     }
     return node;
@@ -151,7 +152,13 @@ const applyWorkflowDiagramLayout = (
 ): Node[] => {
   const dagre = require('dagre');
   const g = new dagre.graphlib.Graph();
-  g.setGraph({ rankdir: 'TB', nodesep: 70, ranksep: 100 });
+  g.setGraph({
+    rankdir: 'TB',
+    nodesep: 100,
+    ranksep: 150,
+    marginx: 50,
+    marginy: 50
+  });
   g.setDefaultEdgeLabel(() => ({}));
 
   nodes.forEach((node) => {
@@ -167,12 +174,10 @@ const applyWorkflowDiagramLayout = (
 
   return nodes.map((node) => {
     const dagreNode = g.node(node.id);
+    const { width, height } = getNodeSize(node);
     return {
       ...node,
-      position: {
-        x: dagreNode.x - dagreNode.width / 2,
-        y: dagreNode.y - dagreNode.height / 2
-      }
+      position: { x: dagreNode.x - width / 2, y: dagreNode.y - height / 2 }
     };
   });
 };
@@ -191,32 +196,26 @@ const applyConceptMapLayout = (
   }));
 
   const simulationLinks: ExtendedSimulationLink[] = edges.map((edge) => ({
-    source: edge.source || '',
-    target: edge.target || ''
+    source: edge.source,
+    target: edge.target
   }));
 
-  const maxNodeSize = Math.max(
-    ...nodes.map((node) => {
-      const { width, height } = getNodeSize(node);
-      return Math.max(width, height);
-    })
-  );
+  const maxNodeSize = getMaxNodeSize(nodes);
 
   const simulation = forceSimulation(simulationNodes)
     .force(
       'link',
       forceLink(simulationLinks)
         .id((d: any) => d.id)
-        .distance(maxNodeSize * 2)
-        .strength(0.5)
+        .distance(maxNodeSize * 3)
+        .strength(0.7)
     )
-    .force('charge', forceManyBody().strength(-maxNodeSize * 10))
+    .force('charge', forceManyBody().strength(-maxNodeSize * 15))
     .force('center', forceCenter(canvasSize.width / 2, canvasSize.height / 2))
-    .force('collision', forceCollide().radius(maxNodeSize))
+    .force('collision', forceCollide().radius(maxNodeSize * 1.5))
     .force('x', forceX().strength(0.1))
     .force('y', forceY().strength(0.1));
 
-  // Run the simulation synchronously
   for (let i = 0; i < 300; ++i) simulation.tick();
 
   return simulationNodes.map((node) => ({
@@ -229,18 +228,11 @@ const applyGridLayout = (
   nodes: Node[],
   canvasSize: { width: number; height: number }
 ): Node[] => {
-  const maxNodeSize = Math.max(
-    ...nodes.map((node) => {
-      const { width, height } = getNodeSize(node);
-      return Math.max(width, height);
-    })
-  );
-  const horizontalGap = 50;
-  const verticalGap = 50;
+  const maxNodeSize = getMaxNodeSize(nodes);
+  const horizontalGap = maxNodeSize;
+  const verticalGap = maxNodeSize;
 
-  const cols = Math.floor(
-    (canvasSize.width + horizontalGap) / (maxNodeSize + horizontalGap)
-  );
+  const cols = Math.floor(Math.sqrt(nodes.length));
   const rows = Math.ceil(nodes.length / cols);
 
   return nodes.map((node, index) => {
@@ -259,19 +251,12 @@ const applyHierarchicalTreeLayout = (
   canvasSize: { width: number; height: number }
 ): Node[] => {
   const hierarchy = createHierarchy(nodes, edges);
-  const maxNodeSize = Math.max(
-    ...nodes.map((node) => {
-      const { width, height } = getNodeSize(node);
-      return Math.max(width, height);
-    })
-  );
+  const maxNodeSize = getMaxNodeSize(nodes);
 
   const treeLayout = d3
     .tree<Node>()
     .size([canvasSize.width * 0.9, canvasSize.height * 0.9])
-    .separation(
-      (a, b) => ((a.parent === b.parent ? 1 : 2) * maxNodeSize) / 100
-    );
+    .separation((a, b) => ((a.parent === b.parent ? 1 : 2) * maxNodeSize) / 50);
 
   const root = treeLayout(hierarchy);
 
@@ -291,4 +276,27 @@ const applyHierarchicalTreeLayout = (
         }
       : node;
   });
+};
+
+const getMaxNodeSize = (nodes: Node[]): number => {
+  return Math.max(
+    ...nodes.map((node) => {
+      const { width, height } = getNodeSize(node);
+      return Math.max(width, height);
+    })
+  );
+};
+
+const getBoundingBox = (
+  nodes: Node[]
+): { minX: number; minY: number; maxX: number; maxY: number } => {
+  return nodes.reduce(
+    (bbox, node) => ({
+      minX: Math.min(bbox.minX, node.position.x),
+      minY: Math.min(bbox.minY, node.position.y),
+      maxX: Math.max(bbox.maxX, node.position.x + (node.width || 0)),
+      maxY: Math.max(bbox.maxY, node.position.y + (node.height || 0))
+    }),
+    { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity }
+  );
 };

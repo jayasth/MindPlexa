@@ -8,9 +8,9 @@ const openai = new OpenAI({
 });
 
 const modelConfig = {
-  default: 'gpt-3.5-turbo',
-  v1: 'gpt-4o',
-  v2: 'gpt-4o'
+  default: 'gpt-4o-mini',
+  v1: 'gpt-4o-mini',
+  v2: 'gpt-4o-mini'
 };
 
 export async function POST(req: Request) {

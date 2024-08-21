@@ -53,7 +53,7 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [generatedNodes, setGeneratedNodes] = useState<Node[]>([]);
   const [generatedEdges, setGeneratedEdges] = useState<Edge[]>([]);
-  const [selectedModel, setSelectedModel] = useState('gpt-4o');
+  const [selectedModel, setSelectedModel] = useState('gpt-4o-mini');
   const [selectedLayout, setSelectedLayout] = useState<LayoutType>('mindmap');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const { setNodes, nodes: existingNodes } = useNodeStore();
@@ -383,7 +383,7 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
                   className={styles.dropdown}
                   disabled={responseType === 'followUp'}
                 >
-                  <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                  <option value="gpt-4o-mini">GPT-4o-Mini</option>
                   <option value="gpt-4o">GPT-4o</option>
                 </Dropdown>
                 <Dropdown

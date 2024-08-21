@@ -40,7 +40,7 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [generatedNodes, setGeneratedNodes] = useState<Node[]>([]);
   const [generatedEdges, setGeneratedEdges] = useState<Edge[]>([]);
-  const [selectedModel, setSelectedModel] = useState('gpt-4o');
+  const [selectedModel, setSelectedModel] = useState('gpt-4o-mini');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [analysisResult, setAnalysisResult] = useState<any>(null);
   const { setNodes, nodes: existingNodes } = useNodeStore();
@@ -247,7 +247,7 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
                 variant="slim"
                 className={styles.dropdown}
               >
-                <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                <option value="gpt-4o-mini">GPT-4o Mini</option>
                 <option value="gpt-4o">GPT-4o</option>
               </Dropdown>
               <Button

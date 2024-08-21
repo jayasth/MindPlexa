@@ -37,7 +37,7 @@ const AIGeneratorModalV3: React.FC<AIGeneratorModalV3Props> = ({
   const { completion, input, handleInputChange, handleSubmit, isLoading } =
     useCompletion();
 
-  const [selectedModel, setSelectedModel] = useState('gpt-3.5-turbo');
+  const [selectedModel, setSelectedModel] = useState('gpt-4o-mini');
   const [selectedLayout, setSelectedLayout] = useState<LayoutType>('mindmap');
 
   const { setNodes } = useNodeStore();
@@ -189,7 +189,7 @@ const AIGeneratorModalV3: React.FC<AIGeneratorModalV3Props> = ({
                     variant="slim"
                     className={styles.dropdown}
                   >
-                    <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                    <option value="gpt-4o-mini">GPT-4o Mini</option>
                     <option value="gpt-4o">GPT-4o</option>
                   </Dropdown>
                   <Dropdown
