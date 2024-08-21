@@ -128,15 +128,21 @@ const applyMindMapLayout = (
       2 * Math.PI,
       Math.min(canvasSize.width, canvasSize.height) / 2 - maxNodeSize * 2
     ])
-    .separation((a, b) => (a.parent === b.parent ? 1 : 2) / a.depth);
+    .separation((a, b) => (a.parent === b.parent ? 3 : 4) / a.depth);
 
   const root = radialLayout(hierarchy);
+
+  // Calculate the maximum radius used
+  const maxRadius = Math.max(...root.descendants().map((d) => d.y));
+
+  // Scale factor to spread nodes further apart
+  const scaleFactor = 1.5;
 
   return nodes.map((node) => {
     const layoutNode = root.find((d) => d.data.id === node.id);
     if (layoutNode) {
       const angle = layoutNode.x;
-      const radius = layoutNode.y;
+      const radius = layoutNode.y * scaleFactor; // Apply scale factor here
       const x = Math.cos(angle - Math.PI / 2) * radius;
       const y = Math.sin(angle - Math.PI / 2) * radius;
       return { ...node, position: { x, y } };
@@ -154,8 +160,8 @@ const applyWorkflowDiagramLayout = (
   const g = new dagre.graphlib.Graph();
   g.setGraph({
     rankdir: 'TB',
-    nodesep: 100,
-    ranksep: 150,
+    nodesep: 150,
+    ranksep: 200,
     marginx: 50,
     marginy: 50
   });
@@ -207,12 +213,12 @@ const applyConceptMapLayout = (
       'link',
       forceLink(simulationLinks)
         .id((d: any) => d.id)
-        .distance(maxNodeSize * 3)
+        .distance(maxNodeSize * 4)
         .strength(0.7)
     )
-    .force('charge', forceManyBody().strength(-maxNodeSize * 15))
+    .force('charge', forceManyBody().strength(-maxNodeSize * 20))
     .force('center', forceCenter(canvasSize.width / 2, canvasSize.height / 2))
-    .force('collision', forceCollide().radius(maxNodeSize * 1.5))
+    .force('collision', forceCollide().radius(maxNodeSize * 2))
     .force('x', forceX().strength(0.1))
     .force('y', forceY().strength(0.1));
 
@@ -229,8 +235,8 @@ const applyGridLayout = (
   canvasSize: { width: number; height: number }
 ): Node[] => {
   const maxNodeSize = getMaxNodeSize(nodes);
-  const horizontalGap = maxNodeSize;
-  const verticalGap = maxNodeSize;
+  const horizontalGap = maxNodeSize * 1.5;
+  const verticalGap = maxNodeSize * 1.5;
 
   const cols = Math.floor(Math.sqrt(nodes.length));
   const rows = Math.ceil(nodes.length / cols);
@@ -256,7 +262,9 @@ const applyHierarchicalTreeLayout = (
   const treeLayout = d3
     .tree<Node>()
     .size([canvasSize.width * 0.9, canvasSize.height * 0.9])
-    .separation((a, b) => ((a.parent === b.parent ? 1 : 2) * maxNodeSize) / 50);
+    .separation(
+      (a, b) => ((a.parent === b.parent ? 1.5 : 2.5) * maxNodeSize) / 50
+    );
 
   const root = treeLayout(hierarchy);
 
