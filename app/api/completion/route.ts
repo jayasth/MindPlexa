@@ -4,17 +4,13 @@ import { promptTemplate } from '@/app/prompts/generatorPrompt';
 import { promptTemplateV1 } from '@/app/prompts/generatorPromptV1';
 import { promptTemplateV2 } from '@/app/prompts/generatorPromptV2';
 
-const modelConfig = {
-  default: 'claude-3-5-sonnet-20240620',
-  v1: 'claude-3-5-sonnet-20240620',
-  v2: 'claude-3-5-sonnet-20240620'
-};
+const DEFAULT_MODEL = 'claude-3-5-sonnet-20240620';
 
 export async function POST(req: Request) {
   try {
     const { prompt, version, existingMermaidCode, followUpQuestion, model } =
       await req.json();
-    console.log('Prompt sent to Claude:', prompt);
+    console.log('Prompt sent to AI:', prompt);
     console.log('Version:', version);
 
     const selectedPromptTemplate =
@@ -24,7 +20,8 @@ export async function POST(req: Request) {
         default: promptTemplate
       }[version] || promptTemplate;
 
-    const selectedModel = model || modelConfig[version] || modelConfig.default;
+    const selectedModel = model || DEFAULT_MODEL;
+    console.log('Selected Model:', selectedModel);
 
     const response = await generateText({
       model: anthropic(selectedModel),
@@ -43,10 +40,10 @@ export async function POST(req: Request) {
 
     const content = response.text;
     if (!content) {
-      throw new Error('Claude returned empty content');
+      throw new Error('AI returned empty content');
     }
 
-    console.log('Complete response from Claude:', content);
+    console.log('Complete response from AI:', content);
 
     let parsedResponse;
     if (version === 'v2' || version === 'v1') {
