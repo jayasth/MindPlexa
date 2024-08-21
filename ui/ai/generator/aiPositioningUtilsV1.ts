@@ -126,9 +126,9 @@ const applyMindMapLayout = (
     .tree<Node>()
     .size([
       2 * Math.PI,
-      Math.min(canvasSize.width, canvasSize.height) / 2 - maxNodeSize * 2
+      Math.min(canvasSize.width, canvasSize.height) / 2 - maxNodeSize * 3
     ])
-    .separation((a, b) => (a.parent === b.parent ? 1 : 2) / a.depth);
+    .separation((a, b) => (a.parent === b.parent ? 1.5 : 2.5) / a.depth);
 
   const root = radialLayout(hierarchy);
 
@@ -154,8 +154,8 @@ const applyWorkflowDiagramLayout = (
   const g = new dagre.graphlib.Graph();
   g.setGraph({
     rankdir: 'TB',
-    nodesep: 100,
-    ranksep: 150,
+    nodesep: 150,
+    ranksep: 200,
     marginx: 50,
     marginy: 50
   });
@@ -207,12 +207,12 @@ const applyConceptMapLayout = (
       'link',
       forceLink(simulationLinks)
         .id((d: any) => d.id)
-        .distance(maxNodeSize * 3)
+        .distance(maxNodeSize * 4)
         .strength(0.7)
     )
-    .force('charge', forceManyBody().strength(-maxNodeSize * 15))
+    .force('charge', forceManyBody().strength(-maxNodeSize * 20))
     .force('center', forceCenter(canvasSize.width / 2, canvasSize.height / 2))
-    .force('collision', forceCollide().radius(maxNodeSize * 1.5))
+    .force('collision', forceCollide().radius(maxNodeSize * 2))
     .force('x', forceX().strength(0.1))
     .force('y', forceY().strength(0.1));
 
@@ -229,8 +229,8 @@ const applyGridLayout = (
   canvasSize: { width: number; height: number }
 ): Node[] => {
   const maxNodeSize = getMaxNodeSize(nodes);
-  const horizontalGap = maxNodeSize;
-  const verticalGap = maxNodeSize;
+  const horizontalGap = maxNodeSize * 1.5;
+  const verticalGap = maxNodeSize * 1.5;
 
   const cols = Math.floor(Math.sqrt(nodes.length));
   const rows = Math.ceil(nodes.length / cols);
@@ -256,7 +256,9 @@ const applyHierarchicalTreeLayout = (
   const treeLayout = d3
     .tree<Node>()
     .size([canvasSize.width * 0.9, canvasSize.height * 0.9])
-    .separation((a, b) => ((a.parent === b.parent ? 1 : 2) * maxNodeSize) / 50);
+    .separation(
+      (a, b) => ((a.parent === b.parent ? 1.5 : 2.5) * maxNodeSize) / 50
+    );
 
   const root = treeLayout(hierarchy);
 
