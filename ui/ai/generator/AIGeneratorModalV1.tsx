@@ -119,7 +119,8 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
       const prompt = promptTemplateV1(
         projectConcept,
         followUpAnswer,
-        followUpCount
+        followUpCount,
+        selectedLayout // Pass the selected layout type
       );
       const response = await fetch('/api/completion', {
         method: 'POST',

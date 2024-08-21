@@ -130,29 +130,43 @@ const applyMindMapLayout = (
   const hierarchy = createMindMapHierarchy(nodes, edges);
   const maxNodeSize = getMaxNodeSizeForMindMap(nodes);
 
-  const radialLayout = d3
+  const treeLayout = d3
     .tree<Node>()
-    .size([
-      2 * Math.PI,
-      Math.min(canvasSize.width, canvasSize.height) / 2 - maxNodeSize * 2
-    ])
-    .separation((a, b) => (a.parent === b.parent ? 1 : 2) / a.depth);
+    .size([canvasSize.height * 0.9, canvasSize.width * 0.9])
+    .separation((a, b) => (a.parent === b.parent ? 1.5 : 2.5) * maxNodeSize);
 
-  const root = radialLayout(hierarchy);
+  const root = treeLayout(hierarchy);
 
-  const centerX = canvasSize.width / 2;
-  const centerY = canvasSize.height / 2;
+  // Adjust node positions to create a horizontal layout
+  root.each((node) => {
+    const temp = node.x;
+    node.x = node.y;
+    node.y = temp;
+  });
+
+  const minX = Math.min(...root.descendants().map((d) => d.x));
+  const maxX = Math.max(...root.descendants().map((d) => d.x));
+  const minY = Math.min(...root.descendants().map((d) => d.y));
+  const maxY = Math.max(...root.descendants().map((d) => d.y));
+
+  const scaleX = (canvasSize.width * 0.9) / (maxX - minX);
+  const scaleY = (canvasSize.height * 0.9) / (maxY - minY);
 
   return nodes.map((node) => {
     const layoutNode = root.find((d) => d.data.id === node.id);
-    if (layoutNode) {
-      const angle = layoutNode.x - Math.PI / 2; // Rotate by 90 degrees
-      const radius = layoutNode.y;
-      const x = centerX + radius * Math.cos(angle);
-      const y = centerY + radius * Math.sin(angle);
-      return { ...node, position: { x, y } };
-    }
-    return node;
+    const { width, height } = getNodeSize(node);
+    return layoutNode
+      ? {
+          ...node,
+          position: {
+            x: (layoutNode.x - minX) * scaleX + canvasSize.width * 0.05,
+            y:
+              (layoutNode.y - minY) * scaleY +
+              canvasSize.height * 0.05 -
+              height / 2
+          }
+        }
+      : node;
   });
 };
 
@@ -165,8 +179,8 @@ const applyWorkflowDiagramLayout = (
   const g = new dagre.graphlib.Graph();
   g.setGraph({
     rankdir: 'TB',
-    nodesep: 150,
-    ranksep: 200,
+    nodesep: 100,
+    ranksep: 150,
     marginx: 50,
     marginy: 50
   });
@@ -227,14 +241,14 @@ const applyConceptMapLayout = (
       'link',
       forceLink(simulationLinks)
         .id((d: any) => d.id)
-        .distance(maxNodeSize * 4)
-        .strength(0.7)
+        .distance(maxNodeSize * 3)
+        .strength(0.5)
     )
-    .force('charge', forceManyBody().strength(-maxNodeSize * 20))
+    .force('charge', forceManyBody().strength(-maxNodeSize * 15))
     .force('center', forceCenter(canvasSize.width / 2, canvasSize.height / 2))
-    .force('collision', forceCollide().radius(maxNodeSize * 2))
-    .force('x', forceX().strength(0.1))
-    .force('y', forceY().strength(0.1));
+    .force('collision', forceCollide().radius(maxNodeSize * 1.5))
+    .force('x', forceX().strength(0.05))
+    .force('y', forceY().strength(0.05));
 
   for (let i = 0; i < 300; ++i) simulation.tick();
 
@@ -258,8 +272,8 @@ const applyGridLayout = (
   };
 
   const maxNodeSize = getMaxNodeSizeForGrid(nodes);
-  const horizontalGap = maxNodeSize * 1.5;
-  const verticalGap = maxNodeSize * 1.5;
+  const horizontalGap = maxNodeSize * 1.2;
+  const verticalGap = maxNodeSize * 1.2;
 
   const cols = Math.floor(Math.sqrt(nodes.length));
   const rows = Math.ceil(nodes.length / cols);
@@ -325,7 +339,7 @@ const applyHierarchicalTreeLayout = (
 
   const treeLayout = d3
     .tree<Node>()
-    .size([canvasSize.width * 0.9, canvasSize.height * 0.8])
+    .size([canvasSize.width * 0.9, canvasSize.height * 0.9])
     .separation((a, b) => (a.parent === b.parent ? 1.5 : 2) * maxNodeSize);
 
   const root = treeLayout(hierarchy);

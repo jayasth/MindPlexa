@@ -1,7 +1,8 @@
 export const promptTemplateV1 = (
   userInput: string,
   followUpAnswer: string = '',
-  followUpCount: number = 0
+  followUpCount: number = 0,
+  layoutType: string = 'mindmap'
 ) => {
   return `As an AI assistant for MindePlexa, a sophisticated productivity and project management platform, your task is to analyze user input and provide comprehensive guidance for project planning. The user's input is:
 
@@ -37,8 +38,13 @@ Your objectives:
    - Use the format: "nodeID[Node Title::Node Description]" for each node.
    - Ensure all nodes have concise yet meaningful titles (max 5 words) and detailed descriptions (25-50 words).
    - Create logical connections between nodes using "nodeID1 --> nodeID2".
+   ${
+     layoutType === 'mindmap'
+       ? '- Use a hierarchical structure with a single root node and branching child nodes.'
+       : '- Organize nodes in a logical flow or hierarchy as appropriate for the project.'
+   }
    - Avoid special characters or quotes in node text.
-   - Start the Mermaid code with "graph TD".
+   - Start the Mermaid code with "${layoutType === 'mindmap' ? 'graph LR' : 'graph TD'}" for a ${layoutType === 'mindmap' ? 'left-to-right' : 'top-down'} layout.
    - Ensure each node has a unique ID, preferably in the format 'n1', 'n2', etc.
    - Make sure all edges reference existing node IDs.
 

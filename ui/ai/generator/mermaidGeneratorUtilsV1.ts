@@ -93,11 +93,11 @@ const convertToReactFlowElements = (
         id: nodeId,
         title: title.trim(),
         content: content.trim() || 'No description available',
-        backgroundColor: '#F4F4F4',
+        backgroundColor: index === 0 ? '#FFF9C4' : '#F4F4F4', // Highlight root node
         textColor: '#575757'
       },
       style: {
-        backgroundColor: '#F4F4F4',
+        backgroundColor: index === 0 ? '#FFF9C4' : '#F4F4F4', // Highlight root node
         color: '#575757'
       },
       width,
