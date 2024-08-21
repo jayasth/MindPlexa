@@ -29,6 +29,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^0.0.44",
     "@ai-sdk/openai": "^0.0.38",
     "@atlaskit/pragmatic-drag-and-drop": "^1.2.1",
     "@dnd-kit/core": "^6.1.0",

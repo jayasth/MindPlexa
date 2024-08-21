@@ -1,23 +1,20 @@
-import OpenAI from 'openai';
+import { anthropic } from '@ai-sdk/anthropic';
+import { generateText } from 'ai';
 import { promptTemplate } from '@/app/prompts/generatorPrompt';
 import { promptTemplateV1 } from '@/app/prompts/generatorPromptV1';
 import { promptTemplateV2 } from '@/app/prompts/generatorPromptV2';
 
-const openai = new OpenAI({
-  apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY
-});
-
 const modelConfig = {
-  default: 'gpt-4o-mini',
-  v1: 'gpt-4o-mini',
-  v2: 'gpt-4o-mini'
+  default: 'claude-3-5-sonnet-20240620',
+  v1: 'claude-3-5-sonnet-20240620',
+  v2: 'claude-3-5-sonnet-20240620'
 };
 
 export async function POST(req: Request) {
   try {
     const { prompt, version, existingMermaidCode, followUpQuestion, model } =
       await req.json();
-    console.log('Prompt sent to OpenAI:', prompt);
+    console.log('Prompt sent to Claude:', prompt);
     console.log('Version:', version);
 
     const selectedPromptTemplate =
@@ -29,9 +26,8 @@ export async function POST(req: Request) {
 
     const selectedModel = model || modelConfig[version] || modelConfig.default;
 
-    const response = await openai.chat.completions.create({
-      model: selectedModel,
-      temperature: 0.1,
+    const response = await generateText({
+      model: anthropic(selectedModel),
       messages: [
         {
           role: 'user',
@@ -41,15 +37,16 @@ export async function POST(req: Request) {
             followUpQuestion
           )
         }
-      ]
+      ],
+      temperature: 0.1
     });
 
-    const content = response.choices[0].message.content;
-    if (content === null) {
-      throw new Error('OpenAI returned null content');
+    const content = response.text;
+    if (!content) {
+      throw new Error('Claude returned empty content');
     }
 
-    console.log('Complete response from OpenAI:', content);
+    console.log('Complete response from Claude:', content);
 
     let parsedResponse;
     if (version === 'v2' || version === 'v1') {
