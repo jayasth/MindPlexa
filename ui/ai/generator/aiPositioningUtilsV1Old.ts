@@ -128,7 +128,7 @@ const applyMindMapLayout = (
       2 * Math.PI,
       Math.min(canvasSize.width, canvasSize.height) / 2 - maxNodeSize * 2
     ])
-    .separation((a, b) => (a.parent === b.parent ? 4 : 6) / a.depth);
+    .separation((a, b) => (a.parent === b.parent ? 3 : 4) / a.depth);
 
   const root = radialLayout(hierarchy);
 
@@ -136,7 +136,7 @@ const applyMindMapLayout = (
   const maxRadius = Math.max(...root.descendants().map((d) => d.y));
 
   // Scale factor to spread nodes further apart
-  const scaleFactor = 2.5;
+  const scaleFactor = 1.5;
 
   return nodes.map((node) => {
     const layoutNode = root.find((d) => d.data.id === node.id);
@@ -262,15 +262,14 @@ const applyHierarchicalTreeLayout = (
   const treeLayout = d3
     .tree<Node>()
     .size([canvasSize.width * 0.9, canvasSize.height * 0.9])
-    .separation((a, b) => ((a.parent === b.parent ? 2 : 3) * maxNodeSize) / 30);
+    .separation(
+      (a, b) => ((a.parent === b.parent ? 1.5 : 2.5) * maxNodeSize) / 50
+    );
 
   const root = treeLayout(hierarchy);
 
   const minX = Math.min(...root.descendants().map((d) => d.x));
   const offsetX = (canvasSize.width - (root.x - minX)) / 2 - minX;
-
-  // Scale factor to spread nodes further apart
-  const scaleFactor = 1.5;
 
   return nodes.map((node) => {
     const layoutNode = root.find((d) => d.data.id === node.id);
@@ -279,8 +278,8 @@ const applyHierarchicalTreeLayout = (
       ? {
           ...node,
           position: {
-            x: (layoutNode.x + offsetX - width / 2) * scaleFactor,
-            y: layoutNode.y * scaleFactor - height / 2
+            x: layoutNode.x + offsetX - width / 2,
+            y: layoutNode.y - height / 2
           }
         }
       : node;
