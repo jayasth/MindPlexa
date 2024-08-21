@@ -75,40 +75,7 @@ export const applyLayout = (
   }));
 };
 
-const createHierarchy = (
-  nodes: Node[],
-  edges: Edge[]
-): d3.HierarchyNode<Node> => {
-  const idToNodeMap = new Map(nodes.map((node) => [node.id, node]));
-  const childrenMap = new Map<string, Node[]>();
-
-  edges.forEach((edge) => {
-    if (!childrenMap.has(edge.source)) {
-      childrenMap.set(edge.source, []);
-    }
-    const targetNode = idToNodeMap.get(edge.target);
-    if (targetNode) {
-      childrenMap.get(edge.source)!.push(targetNode);
-    }
-  });
-
-  const rootNode = nodes.find(
-    (node) => !edges.some((edge) => edge.target === node.id)
-  );
-  if (!rootNode) {
-    throw new Error('No root node found');
-  }
-
-  const buildHierarchy = (node: Node): d3.HierarchyNode<Node> => {
-    const children = childrenMap.get(node.id) || [];
-    return d3.hierarchy(node, (n) => childrenMap.get(n.id) || []);
-  };
-
-  return buildHierarchy(rootNode);
-};
-
 const getNodeSize = (node: Node) => {
-  // Provide a default type if node.type is undefined
   const nodeType = node.type || 'note';
   const { width, height } = getNodeDimensions(nodeType, false, false);
   return { width, height };
@@ -119,8 +86,49 @@ const applyMindMapLayout = (
   edges: Edge[],
   canvasSize: { width: number; height: number }
 ): Node[] => {
-  const hierarchy = createHierarchy(nodes, edges);
-  const maxNodeSize = getMaxNodeSize(nodes);
+  const createMindMapHierarchy = (
+    nodes: Node[],
+    edges: Edge[]
+  ): d3.HierarchyNode<Node> => {
+    const idToNodeMap = new Map(nodes.map((node) => [node.id, node]));
+    const childrenMap = new Map<string, Node[]>();
+
+    edges.forEach((edge) => {
+      if (!childrenMap.has(edge.source)) {
+        childrenMap.set(edge.source, []);
+      }
+      const targetNode = idToNodeMap.get(edge.target);
+      if (targetNode) {
+        childrenMap.get(edge.source)!.push(targetNode);
+      }
+    });
+
+    const rootNode = nodes.find(
+      (node) => !edges.some((edge) => edge.target === node.id)
+    );
+    if (!rootNode) {
+      throw new Error('No root node found');
+    }
+
+    const buildHierarchy = (node: Node): d3.HierarchyNode<Node> => {
+      const children = childrenMap.get(node.id) || [];
+      return d3.hierarchy(node, (n) => childrenMap.get(n.id) || []);
+    };
+
+    return buildHierarchy(rootNode);
+  };
+
+  const getMaxNodeSizeForMindMap = (nodes: Node[]): number => {
+    return Math.max(
+      ...nodes.map((node) => {
+        const { width, height } = getNodeSize(node);
+        return Math.max(width, height);
+      })
+    );
+  };
+
+  const hierarchy = createMindMapHierarchy(nodes, edges);
+  const maxNodeSize = getMaxNodeSizeForMindMap(nodes);
 
   const radialLayout = d3
     .tree<Node>()
@@ -132,18 +140,16 @@ const applyMindMapLayout = (
 
   const root = radialLayout(hierarchy);
 
-  const minAngle = Math.min(...root.descendants().map((d) => d.x));
-  const maxAngle = Math.max(...root.descendants().map((d) => d.x));
-  const angleRange = maxAngle - minAngle;
-  const scaleFactor = 1.2;
+  const centerX = canvasSize.width / 2;
+  const centerY = canvasSize.height / 2;
 
   return nodes.map((node) => {
     const layoutNode = root.find((d) => d.data.id === node.id);
     if (layoutNode) {
-      const angle = ((layoutNode.x - minAngle) / angleRange) * 2 * Math.PI;
-      const radius = layoutNode.y * scaleFactor;
-      const x = Math.cos(angle - Math.PI / 2) * radius;
-      const y = Math.sin(angle - Math.PI / 2) * radius;
+      const angle = layoutNode.x - Math.PI / 2; // Rotate by 90 degrees
+      const radius = layoutNode.y;
+      const x = centerX + radius * Math.cos(angle);
+      const y = centerY + radius * Math.sin(angle);
       return { ...node, position: { x, y } };
     }
     return node;
@@ -205,7 +211,16 @@ const applyConceptMapLayout = (
     target: edge.target
   }));
 
-  const maxNodeSize = getMaxNodeSize(nodes);
+  const getMaxNodeSizeForConceptMap = (nodes: Node[]): number => {
+    return Math.max(
+      ...nodes.map((node) => {
+        const { width, height } = getNodeSize(node);
+        return Math.max(width, height);
+      })
+    );
+  };
+
+  const maxNodeSize = getMaxNodeSizeForConceptMap(nodes);
 
   const simulation = forceSimulation(simulationNodes)
     .force(
@@ -233,7 +248,16 @@ const applyGridLayout = (
   nodes: Node[],
   canvasSize: { width: number; height: number }
 ): Node[] => {
-  const maxNodeSize = getMaxNodeSize(nodes);
+  const getMaxNodeSizeForGrid = (nodes: Node[]): number => {
+    return Math.max(
+      ...nodes.map((node) => {
+        const { width, height } = getNodeSize(node);
+        return Math.max(width, height);
+      })
+    );
+  };
+
+  const maxNodeSize = getMaxNodeSizeForGrid(nodes);
   const horizontalGap = maxNodeSize * 1.5;
   const verticalGap = maxNodeSize * 1.5;
 
@@ -255,8 +279,49 @@ const applyHierarchicalTreeLayout = (
   edges: Edge[],
   canvasSize: { width: number; height: number }
 ): Node[] => {
-  const hierarchy = createHierarchy(nodes, edges);
-  const maxNodeSize = getMaxNodeSize(nodes);
+  const createHierarchicalTreeHierarchy = (
+    nodes: Node[],
+    edges: Edge[]
+  ): d3.HierarchyNode<Node> => {
+    const idToNodeMap = new Map(nodes.map((node) => [node.id, node]));
+    const childrenMap = new Map<string, Node[]>();
+
+    edges.forEach((edge) => {
+      if (!childrenMap.has(edge.source)) {
+        childrenMap.set(edge.source, []);
+      }
+      const targetNode = idToNodeMap.get(edge.target);
+      if (targetNode) {
+        childrenMap.get(edge.source)!.push(targetNode);
+      }
+    });
+
+    const rootNode = nodes.find(
+      (node) => !edges.some((edge) => edge.target === node.id)
+    );
+    if (!rootNode) {
+      throw new Error('No root node found');
+    }
+
+    const buildHierarchy = (node: Node): d3.HierarchyNode<Node> => {
+      const children = childrenMap.get(node.id) || [];
+      return d3.hierarchy(node, (n) => childrenMap.get(n.id) || []);
+    };
+
+    return buildHierarchy(rootNode);
+  };
+
+  const getMaxNodeSizeForHierarchicalTree = (nodes: Node[]): number => {
+    return Math.max(
+      ...nodes.map((node) => {
+        const { width, height } = getNodeSize(node);
+        return Math.max(width, height);
+      })
+    );
+  };
+
+  const hierarchy = createHierarchicalTreeHierarchy(nodes, edges);
+  const maxNodeSize = getMaxNodeSizeForHierarchicalTree(nodes);
 
   const treeLayout = d3
     .tree<Node>()
@@ -290,15 +355,6 @@ const applyHierarchicalTreeLayout = (
         }
       : node;
   });
-};
-
-const getMaxNodeSize = (nodes: Node[]): number => {
-  return Math.max(
-    ...nodes.map((node) => {
-      const { width, height } = getNodeSize(node);
-      return Math.max(width, height);
-    })
-  );
 };
 
 const getBoundingBox = (
