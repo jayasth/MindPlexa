@@ -126,7 +126,7 @@ const applyWorkflowDiagramLayout = (
 ): Node[] => {
   const dagre = require('dagre');
   const g = new dagre.graphlib.Graph();
-  g.setGraph({ rankdir: 'TB', nodesep: 70, ranksep: 100 });
+  g.setGraph({ rankdir: 'LR', nodesep: 70, ranksep: 100 });
   g.setDefaultEdgeLabel(() => ({}));
 
   nodes.forEach((node) => {
@@ -140,12 +140,28 @@ const applyWorkflowDiagramLayout = (
 
   dagre.layout(g);
 
+  // Adjust the layout to fit the canvas
+  const minX = Math.min(...nodes.map((node) => g.node(node.id).x));
+  const maxX = Math.max(...nodes.map((node) => g.node(node.id).x));
+  const minY = Math.min(...nodes.map((node) => g.node(node.id).y));
+  const maxY = Math.max(...nodes.map((node) => g.node(node.id).y));
+  const scaleX = canvasSize.width / (maxX - minX);
+  const scaleY = canvasSize.height / (maxY - minY);
+  const scale = Math.min(scaleX, scaleY) * 0.9;
+
   return nodes.map((node) => {
     const dagreNode = g.node(node.id);
     const { width, height } = getNodeSize(node);
     return {
       ...node,
-      position: { x: dagreNode.x - width / 2, y: dagreNode.y - height / 2 }
+      position: {
+        x:
+          (dagreNode.x - minX) * scale +
+          (canvasSize.width - (maxX - minX) * scale) / 2,
+        y:
+          (dagreNode.y - minY) * scale +
+          (canvasSize.height - (maxY - minY) * scale) / 2
+      }
     };
   });
 };
@@ -191,9 +207,25 @@ const applyConceptMapLayout = (
 
   for (let i = 0; i < 300; ++i) simulation.tick();
 
+  // Adjust the layout to fit the canvas
+  const minX = Math.min(...simulationNodes.map((node) => node.x || 0));
+  const maxX = Math.max(...simulationNodes.map((node) => node.x || 0));
+  const minY = Math.min(...simulationNodes.map((node) => node.y || 0));
+  const maxY = Math.max(...simulationNodes.map((node) => node.y || 0));
+  const scaleX = canvasSize.width / (maxX - minX);
+  const scaleY = canvasSize.height / (maxY - minY);
+  const scale = Math.min(scaleX, scaleY) * 0.9;
+
   return simulationNodes.map((node) => ({
     ...node,
-    position: { x: node.x || 0, y: node.y || 0 }
+    position: {
+      x:
+        (node.x! - minX) * scale +
+        (canvasSize.width - (maxX - minX) * scale) / 2,
+      y:
+        (node.y! - minY) * scale +
+        (canvasSize.height - (maxY - minY) * scale) / 2
+    }
   }));
 };
 
@@ -216,12 +248,18 @@ const applyGridLayout = (
   );
   const rows = Math.ceil(nodes.length / cols);
 
+  // Adjust the layout to fit the canvas
+  const totalWidth = cols * (maxNodeSize + horizontalGap) - horizontalGap;
+  const totalHeight = rows * (maxNodeSize + verticalGap) - verticalGap;
+  const offsetX = (canvasSize.width - totalWidth) / 2;
+  const offsetY = (canvasSize.height - totalHeight) / 2;
+
   return nodes.map((node, index) => {
     const { width, height } = getNodeSize(node);
     const col = index % cols;
     const row = Math.floor(index / cols);
-    const x = col * (maxNodeSize + horizontalGap) + width / 2;
-    const y = row * (maxNodeSize + verticalGap) + height / 2;
+    const x = col * (maxNodeSize + horizontalGap) + width / 2 + offsetX;
+    const y = row * (maxNodeSize + verticalGap) + height / 2 + offsetY;
     return { ...node, position: { x, y } };
   });
 };
@@ -248,8 +286,14 @@ const applyHierarchicalTreeLayout = (
 
   const root = treeLayout(hierarchy);
 
+  // Adjust the layout to fit the canvas
   const minX = Math.min(...root.descendants().map((d) => d.x));
-  const offsetX = (canvasSize.width - (root.x - minX)) / 2 - minX;
+  const maxX = Math.max(...root.descendants().map((d) => d.x));
+  const minY = Math.min(...root.descendants().map((d) => d.y));
+  const maxY = Math.max(...root.descendants().map((d) => d.y));
+  const scaleX = canvasSize.width / (maxX - minX);
+  const scaleY = canvasSize.height / (maxY - minY);
+  const scale = Math.min(scaleX, scaleY) * 0.9;
 
   return nodes.map((node) => {
     const layoutNode = root.find((d) => d.data.id === node.id);
@@ -258,8 +302,14 @@ const applyHierarchicalTreeLayout = (
       ? {
           ...node,
           position: {
-            x: layoutNode.x + offsetX - width / 2,
-            y: layoutNode.y - height / 2
+            x:
+              (layoutNode.x - minX) * scale +
+              (canvasSize.width - (maxX - minX) * scale) / 2 -
+              width / 2,
+            y:
+              (layoutNode.y - minY) * scale +
+              (canvasSize.height - (maxY - minY) * scale) / 2 -
+              height / 2
           }
         }
       : node;
