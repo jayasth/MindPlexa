@@ -307,20 +307,29 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   const handleAddTable = useCallback(
     (columns, rows) => {
       console.log('Adding table with columns:', columns, 'and rows:', rows);
-      const newColumns = columns.map((col, index) => ({
-        headerName: col.name || `Column ${index + 1}`,
-        field: `col${index + 1}`,
-        editable: true,
-        type: col.type,
-        defaultValue: ''
-      }));
+      const newColumns = columns.map((col, index) => {
+        console.log(`Processing column ${index + 1}:`, col);
+        return {
+          headerName: col.name || `Column ${index + 1}`,
+          field: `col${index + 1}`,
+          editable: true,
+          type: col.type,
+          defaultValue: ''
+        };
+      });
 
-      const newRows = Array.from({ length: rows }, () =>
-        newColumns.reduce((acc, col) => {
+      console.log('New columns:', newColumns);
+
+      const newRows = Array.from({ length: rows }, (_, rowIndex) => {
+        const row = newColumns.reduce((acc, col) => {
           acc[col.field] = '';
           return acc;
-        }, {})
-      );
+        }, {});
+        console.log(`Processing row ${rowIndex + 1}:`, row);
+        return row;
+      });
+
+      console.log('New rows:', newRows);
 
       setContent({ columns: newColumns, rows: newRows });
 
@@ -337,9 +346,14 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
         canvasId
       );
 
+      console.log('Table added successfully with updated content:', {
+        columns: newColumns,
+        rows: newRows
+      });
+
       setIsModalOpen(false); // Close the modal after adding the table
     },
-    [data.id, updateNode, canvasId, dateFormat]
+    [data.id, updateNode, canvasId, dateFormat, setContent]
   );
 
   return (

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Modal from '@/ui/Modal/Modal';
 import Button from '@/ui/Button/Button';
 import Input from '@/ui/Input/Input';
@@ -132,13 +132,8 @@ const AddTableModal = ({ isOpen, onClose, onAddTable, hasExistingData }) => {
     setColumns(newColumns);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleAddTable = () => {
     console.log('Submitting table:', columns, rows);
-    if (columns.length === 0) {
-      console.log('Error: At least one column is required');
-      return;
-    }
     if (hasExistingData) {
       setIsWarningOpen(true);
     } else {
@@ -178,70 +173,66 @@ const AddTableModal = ({ isOpen, onClose, onAddTable, hasExistingData }) => {
   };
 
   return (
-    isOpen && (
-      <Modal isOpen={isOpen} onClose={onClose} title="Add Table">
-        <form onSubmit={handleSubmit}>
-          <div className={styles.columnList}>
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleDragEnd}
-            >
-              <SortableContext
-                items={columns}
-                strategy={verticalListSortingStrategy}
-              >
-                {columns.map((col, index) => (
-                  <SortableItem
-                    key={col.id}
-                    id={col.id}
-                    column={col}
-                    index={index}
-                    handleColumnChange={handleColumnChange}
-                    handleDeleteColumn={handleDeleteColumn}
-                  />
-                ))}
-              </SortableContext>
-            </DndContext>
-          </div>
-          <Button variant="slim" type="button" onClick={handleAddColumn}>
-            Add Column
-          </Button>
-          <div className={styles.rowInput}>
-            <label htmlFor="rows">Rows:</label>
-            <Input
-              id="rows"
-              type="number"
-              value={rows}
-              onChange={handleRowsChange}
-              min="1"
-              max="1000"
-              variant="slim"
-            />
-          </div>
-          <Button variant="submit" type="submit">
-            Add Table
-          </Button>
-        </form>
-        {isWarningOpen && (
-          <Modal
-            isOpen={isWarningOpen}
-            onClose={() => setIsWarningOpen(false)}
-            title="Warning"
+    <Modal isOpen={isOpen} onClose={onClose} title="Add Table">
+      <div className={styles.columnList}>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={columns}
+            strategy={verticalListSortingStrategy}
           >
-            <p>This will override existing data. Continue?</p>
-            <div className={styles.actions}>
-              <Button variant="submit" onClick={handleConfirmAddTable}>
-                Yes
-              </Button>
-              <Button variant="cancel" onClick={() => setIsWarningOpen(false)}>
-                No
-              </Button>
-            </div>
-          </Modal>
-        )}
-      </Modal>
-    )
+            {columns.map((col, index) => (
+              <SortableItem
+                key={col.id}
+                id={col.id}
+                column={col}
+                index={index}
+                handleColumnChange={handleColumnChange}
+                handleDeleteColumn={handleDeleteColumn}
+              />
+            ))}
+          </SortableContext>
+        </DndContext>
+      </div>
+      <Button variant="slim" onClick={handleAddColumn}>
+        Add Column
+      </Button>
+      <div className={styles.rowInput}>
+        <label htmlFor="rows">Rows:</label>
+        <Input
+          id="rows"
+          type="number"
+          value={rows}
+          onChange={handleRowsChange}
+          min="1"
+          max="1000"
+          variant="slim"
+        />
+      </div>
+      <Button variant="submit" onClick={handleAddTable}>
+        Add Table
+      </Button>
+      {isWarningOpen && (
+        <Modal
+          isOpen={isWarningOpen}
+          onClose={() => setIsWarningOpen(false)}
+          title="Warning"
+        >
+          <p>This will override existing data. Continue?</p>
+          <div className={styles.actions}>
+            <Button variant="submit" onClick={handleConfirmAddTable}>
+              Yes
+            </Button>
+            <Button variant="cancel" onClick={() => setIsWarningOpen(false)}>
+              No
+            </Button>
+          </div>
+        </Modal>
+      )}
+    </Modal>
   );
 };
 
