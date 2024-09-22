@@ -172,6 +172,12 @@ const AddTableModal = ({ isOpen, onClose, onAddTable, hasExistingData }) => {
     }
   };
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log('AddTableModal: Submitting form', { columns, rows });
+    onAddTable(columns, rows);
+  };
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Add Table">
       <div className={styles.columnList}>
@@ -212,7 +218,7 @@ const AddTableModal = ({ isOpen, onClose, onAddTable, hasExistingData }) => {
           variant="slim"
         />
       </div>
-      <Button variant="submit" onClick={handleAddTable}>
+      <Button variant="submit" onClick={handleSubmit}>
         Add Table
       </Button>
       {isWarningOpen && (

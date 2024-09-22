@@ -306,7 +306,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
 
   const handleAddTable = useCallback(
     (columns, rows) => {
-      console.log('Adding table with columns:', columns, 'and rows:', rows);
+      console.log('TableNodeEdit: handleAddTable called', { columns, rows });
       const newColumns = columns.map((col, index) => {
         console.log(`Processing column ${index + 1}:`, col);
         return {
@@ -331,9 +331,9 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
 
       console.log('New rows:', newRows);
 
+      console.log('TableNodeEdit: Before setContent');
       setContent({ columns: newColumns, rows: newRows });
-
-      // Update the node data
+      console.log('TableNodeEdit: After setContent, before updateNode');
       updateNode(
         data.id,
         {
@@ -345,13 +345,9 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
         },
         canvasId
       );
-
-      console.log('Table added successfully with updated content:', {
-        columns: newColumns,
-        rows: newRows
-      });
-
-      setIsModalOpen(false); // Close the modal after adding the table
+      console.log('TableNodeEdit: After updateNode, before setIsModalOpen');
+      setIsModalOpen(false);
+      console.log('TableNodeEdit: After setIsModalOpen');
     },
     [data.id, updateNode, canvasId, dateFormat, setContent]
   );
@@ -456,8 +452,17 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
         {isModalOpen && (
           <AddTableModal
             isOpen={isModalOpen}
-            onClose={() => setIsModalOpen(false)}
-            onAddTable={handleAddTable}
+            onClose={() => {
+              console.log('TableNodeEdit: Closing AddTableModal');
+              setIsModalOpen(false);
+            }}
+            onAddTable={(columns, rows) => {
+              console.log(
+                'TableNodeEdit: onAddTable called from AddTableModal',
+                { columns, rows }
+              );
+              handleAddTable(columns, rows);
+            }}
             hasExistingData={
               content.columns.length > 0 || content.rows.length > 0
             }
