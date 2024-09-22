@@ -304,6 +304,43 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     [content, setContent, updateNode, data.id, canvasId]
   );
 
+  const handleAddTable = useCallback(
+    (columns, rows) => {
+      const newColumns = columns.map((col, index) => ({
+        headerName: col.name || `Column ${index + 1}`,
+        field: `col${index + 1}`,
+        editable: true,
+        type: col.type,
+        defaultValue: ''
+      }));
+
+      const newRows = Array.from({ length: rows }, () =>
+        newColumns.reduce((acc, col) => {
+          acc[col.field] = '';
+          return acc;
+        }, {})
+      );
+
+      setContent({ columns: newColumns, rows: newRows });
+
+      // Update the node data
+      updateNode(
+        data.id,
+        {
+          data: {
+            columns: newColumns,
+            rows: newRows,
+            dateFormat
+          }
+        },
+        canvasId
+      );
+
+      setIsModalOpen(false); // Close the modal after adding the table
+    },
+    [data.id, updateNode, canvasId, dateFormat]
+  );
+
   return (
     <div>
       {errorMessage && (
@@ -405,24 +442,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           <AddTableModal
             isOpen={isModalOpen}
             onClose={() => setIsModalOpen(false)}
-            onAddTable={(columns, rows) => {
-              const newColumns = columns.map((col, index) => ({
-                headerName: col.name || `Column ${index + 1}`,
-                field: `col${index + 1}`,
-                editable: true,
-                type: col.type,
-                defaultValue: col.defaultValue
-              }));
-
-              const newRows = Array.from({ length: rows }, () =>
-                newColumns.reduce((acc, col) => {
-                  acc[col.field] = col.defaultValue || '';
-                  return acc;
-                }, {})
-              );
-
-              setContent({ columns: newColumns, rows: newRows });
-            }}
+            onAddTable={handleAddTable}
             hasExistingData={
               content.columns.length > 0 || content.rows.length > 0
             }

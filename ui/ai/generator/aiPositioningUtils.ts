@@ -290,3 +290,12 @@ const createHierarchy = (
 
   return buildHierarchy(rootNode);
 };
+
+export const optimizeAINodePositions = (
+  nodes: Node[],
+  edges: Edge[],
+  canvasSize: { width: number; height: number }
+): Node[] => {
+  // Example optimization logic, can be replaced with actual implementation
+  return applyLayout(nodes, edges, canvasSize, 'concept-map');
+};

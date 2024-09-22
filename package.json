@@ -62,7 +62,7 @@
     "lodash.debounce": "^4.0.8",
     "mermaid": "^10.9.1",
     "module-alias": "^2.2.3",
-    "next": "14.2.5",
+    "next": "^14.2.13",
     "openai": "^4.53.0",
     "papaparse": "^5.4.1",
     "quill": "^2.0.2",
