@@ -306,6 +306,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
 
   const handleAddTable = useCallback(
     (columns, rows) => {
+      console.log('Adding table with columns:', columns, 'and rows:', rows);
       const newColumns = columns.map((col, index) => ({
         headerName: col.name || `Column ${index + 1}`,
         field: `col${index + 1}`,

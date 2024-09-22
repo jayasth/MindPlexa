@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Modal from '@/ui/Modal/Modal';
 import Button from '@/ui/Button/Button';
 import Input from '@/ui/Input/Input';
@@ -102,11 +102,21 @@ const AddTableModal = ({ isOpen, onClose, onAddTable, hasExistingData }) => {
   const [rows, setRows] = useState(1);
   const [isWarningOpen, setIsWarningOpen] = useState(false);
 
+  useEffect(() => {
+    console.log('Modal opened, initializing state');
+    setColumns([{ id: uuidv4(), name: '', type: 'text' }]);
+    setRows(1);
+  }, [isOpen]);
+
   const handleAddColumn = () => {
+    console.log('Adding a new column');
     setColumns([...columns, { id: uuidv4(), name: '', type: 'text' }]);
   };
 
   const handleColumnChange = (index, field, value) => {
+    console.log(
+      `Changing column at index ${index}, field: ${field}, value: ${value}`
+    );
     const newColumns = [...columns];
     if (field === 'type' && !validTypes.some((type) => type.value === value)) {
       alert('Invalid type selected.');
@@ -117,11 +127,18 @@ const AddTableModal = ({ isOpen, onClose, onAddTable, hasExistingData }) => {
   };
 
   const handleDeleteColumn = (index) => {
+    console.log(`Deleting column at index ${index}`);
     const newColumns = columns.filter((_, colIndex) => colIndex !== index);
     setColumns(newColumns);
   };
 
-  const handleAddTable = () => {
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log('Submitting table:', columns, rows);
+    if (columns.length === 0) {
+      console.log('Error: At least one column is required');
+      return;
+    }
     if (hasExistingData) {
       setIsWarningOpen(true);
     } else {
@@ -130,12 +147,14 @@ const AddTableModal = ({ isOpen, onClose, onAddTable, hasExistingData }) => {
   };
 
   const handleConfirmAddTable = () => {
+    console.log('Confirming add table');
     onAddTable(columns, rows);
     onClose();
     setIsWarningOpen(false);
   };
 
   const handleRowsChange = (value) => {
+    console.log(`Changing rows to ${value}`);
     setRows(parseInt(value, 10));
   };
 
@@ -149,6 +168,7 @@ const AddTableModal = ({ isOpen, onClose, onAddTable, hasExistingData }) => {
   const handleDragEnd = (event) => {
     const { active, over } = event;
     if (active.id !== over.id) {
+      console.log(`Dragging column from ${active.id} to ${over.id}`);
       setColumns((items) => {
         const oldIndex = items.findIndex((item) => item.id === active.id);
         const newIndex = items.findIndex((item) => item.id === over.id);
@@ -158,66 +178,70 @@ const AddTableModal = ({ isOpen, onClose, onAddTable, hasExistingData }) => {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Add Table">
-      <div className={styles.columnList}>
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-        >
-          <SortableContext
-            items={columns}
-            strategy={verticalListSortingStrategy}
-          >
-            {columns.map((col, index) => (
-              <SortableItem
-                key={col.id}
-                id={col.id}
-                column={col}
-                index={index}
-                handleColumnChange={handleColumnChange}
-                handleDeleteColumn={handleDeleteColumn}
-              />
-            ))}
-          </SortableContext>
-        </DndContext>
-      </div>
-      <Button variant="slim" onClick={handleAddColumn}>
-        Add Column
-      </Button>
-      <div className={styles.rowInput}>
-        <label htmlFor="rows">Rows:</label>
-        <Input
-          id="rows"
-          type="number"
-          value={rows}
-          onChange={handleRowsChange}
-          min="1"
-          max="1000"
-          variant="slim"
-        />
-      </div>
-      <Button variant="submit" onClick={handleAddTable}>
-        Add Table
-      </Button>
-      {isWarningOpen && (
-        <Modal
-          isOpen={isWarningOpen}
-          onClose={() => setIsWarningOpen(false)}
-          title="Warning"
-        >
-          <p>This will override existing data. Continue?</p>
-          <div className={styles.actions}>
-            <Button variant="submit" onClick={handleConfirmAddTable}>
-              Yes
-            </Button>
-            <Button variant="cancel" onClick={() => setIsWarningOpen(false)}>
-              No
-            </Button>
+    isOpen && (
+      <Modal isOpen={isOpen} onClose={onClose} title="Add Table">
+        <form onSubmit={handleSubmit}>
+          <div className={styles.columnList}>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={columns}
+                strategy={verticalListSortingStrategy}
+              >
+                {columns.map((col, index) => (
+                  <SortableItem
+                    key={col.id}
+                    id={col.id}
+                    column={col}
+                    index={index}
+                    handleColumnChange={handleColumnChange}
+                    handleDeleteColumn={handleDeleteColumn}
+                  />
+                ))}
+              </SortableContext>
+            </DndContext>
           </div>
-        </Modal>
-      )}
-    </Modal>
+          <Button variant="slim" type="button" onClick={handleAddColumn}>
+            Add Column
+          </Button>
+          <div className={styles.rowInput}>
+            <label htmlFor="rows">Rows:</label>
+            <Input
+              id="rows"
+              type="number"
+              value={rows}
+              onChange={handleRowsChange}
+              min="1"
+              max="1000"
+              variant="slim"
+            />
+          </div>
+          <Button variant="submit" type="submit">
+            Add Table
+          </Button>
+        </form>
+        {isWarningOpen && (
+          <Modal
+            isOpen={isWarningOpen}
+            onClose={() => setIsWarningOpen(false)}
+            title="Warning"
+          >
+            <p>This will override existing data. Continue?</p>
+            <div className={styles.actions}>
+              <Button variant="submit" onClick={handleConfirmAddTable}>
+                Yes
+              </Button>
+              <Button variant="cancel" onClick={() => setIsWarningOpen(false)}>
+                No
+              </Button>
+            </div>
+          </Modal>
+        )}
+      </Modal>
+    )
   );
 };
 
