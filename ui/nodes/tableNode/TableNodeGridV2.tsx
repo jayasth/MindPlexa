@@ -1,4 +1,4 @@
-import React, { useRef, useCallback, useMemo } from 'react';
+import React, { useRef, useCallback, useMemo, useState } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import styles from '@/ui/nodes/tableNode/styles/TableNodeEdit.module.css';
 import 'ag-grid-community/styles/ag-grid.css';
@@ -18,6 +18,7 @@ import CustomHeader from '@/ui/nodes/tableNode/components/CustomHeader';
 import HeaderContextMenu from '@/ui/nodes/tableNode/components/HeaderContextMenu';
 import CellContextMenu from '@/ui/nodes/tableNode/components/CellContextMenu';
 import { DateEditor } from '@/ui/nodes/tableNode/components/DateEditor';
+import AddTableModal from '@/ui/nodes/tableNode/components/AddTableModal';
 
 import {
   useKeyPressHandler,
@@ -25,7 +26,6 @@ import {
 } from '@/ui/nodes/tableNode/utils/KeyboardMouseHandlers';
 
 import {
-  AddTableButton,
   AddColumnButton,
   AddRowButton,
   ExportButton,
@@ -33,6 +33,14 @@ import {
   DeleteTableButton,
   SettingsButton
 } from '@/ui/nodes/tableNode/components/TableNodeToolbar';
+
+// Add this interface
+interface Column {
+  id: string;
+  name: string;
+  type: string;
+  cellEditorParams?: { options: string[] };
+}
 
 interface TableNodeGridProps {
   content: { columns: any[]; rows: any[] };
@@ -46,11 +54,14 @@ interface TableNodeGridProps {
   ) => void;
   nodeId: string;
   canvasId: string;
-  setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setIsDeleteModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setIsSettingsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   handleDeleteTable: () => void;
   dateFormat: string;
+  onAddTable: (
+    newColumns: Array<{ name: string; type: string }>,
+    newRows: Array<any>
+  ) => void;
 }
 
 const TableNodeGrid: React.FC<TableNodeGridProps> = ({
@@ -59,13 +70,14 @@ const TableNodeGrid: React.FC<TableNodeGridProps> = ({
   updateNode,
   nodeId,
   canvasId,
-  setIsModalOpen,
   setIsDeleteModalOpen,
   setIsSettingsModalOpen,
   handleDeleteTable,
-  dateFormat
+  dateFormat,
+  onAddTable
 }) => {
   const gridRef = useRef<any>(null);
+  const [isAddTableModalOpen, setIsAddTableModalOpen] = useState(false);
 
   useKeyPressHandler(content, setContent, updateNode, gridRef);
 
@@ -131,6 +143,15 @@ const TableNodeGrid: React.FC<TableNodeGridProps> = ({
     setCellContextMenuParams(null);
   };
 
+  const handleAddTable = (newColumns: Column[], newRows: number) => {
+    const newRowsData = Array.from({ length: newRows }, () =>
+      newColumns.reduce((acc, col) => ({ ...acc, [col.name]: '' }), {})
+    );
+    setContent({ columns: newColumns, rows: newRowsData });
+    updateNode(nodeId, canvasId, { columns: newColumns, rows: newRowsData });
+    setIsAddTableModalOpen(false);
+  };
+
   const memoizedGrid = useMemo(
     () => (
       <div
@@ -138,10 +159,9 @@ const TableNodeGrid: React.FC<TableNodeGridProps> = ({
         onContextMenu={(event) => handleCellContextMenu(event, event)}
       >
         <div className={styles.toolbar}>
-          <AddTableButton
-            onClick={() => setIsModalOpen(true)}
-            aria-label="Add Table"
-          />
+          <button onClick={() => setIsAddTableModalOpen(true)}>
+            Add Table
+          </button>
           <AddColumnButton
             onClick={(columnType) => {
               addColumn(content, setContent, updateNode, columnType);
@@ -245,6 +265,14 @@ const TableNodeGrid: React.FC<TableNodeGridProps> = ({
             gridRef={gridRef}
           />
         )}
+        <AddTableModal
+          isOpen={isAddTableModalOpen}
+          onClose={() => setIsAddTableModalOpen(false)}
+          onAddTable={handleAddTable}
+          hasExistingData={
+            content.columns.length > 0 || content.rows.length > 0
+          }
+        />
       </div>
     ),
     [
@@ -254,7 +282,9 @@ const TableNodeGrid: React.FC<TableNodeGridProps> = ({
       handleCellContextMenu,
       cellContextMenuPosition,
       cellContextMenuParams,
-      dateFormat
+      dateFormat,
+      isAddTableModalOpen,
+      onAddTable
     ]
   );
 

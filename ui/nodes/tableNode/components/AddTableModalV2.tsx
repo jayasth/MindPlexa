@@ -95,22 +95,38 @@ const SortableItem = ({
   );
 };
 
-const AddTableModal = ({ isOpen, onClose, onAddTable, hasExistingData }) => {
+interface AddTableModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onAddTable: (columns: Column[], rows: number) => void;
+  hasExistingData: boolean;
+}
+
+const AddTableModal: React.FC<AddTableModalProps> = ({
+  isOpen,
+  onClose,
+  onAddTable,
+  hasExistingData
+}) => {
   const [columns, setColumns] = useState<Column[]>([
-    { id: uuidv4(), name: '', type: 'text' }
+    { id: uuidv4(), name: 'Column 1', type: 'text' }
   ]);
   const [rows, setRows] = useState(1);
   const [isWarningOpen, setIsWarningOpen] = useState(false);
 
   useEffect(() => {
     console.log('Modal opened, initializing state');
-    setColumns([{ id: uuidv4(), name: '', type: 'text' }]);
+    setColumns([{ id: uuidv4(), name: 'Column 1', type: 'text' }]);
     setRows(1);
   }, [isOpen]);
 
   const handleAddColumn = () => {
     console.log('Adding a new column');
-    setColumns([...columns, { id: uuidv4(), name: '', type: 'text' }]);
+    const newColumnIndex = columns.length + 1;
+    setColumns([
+      ...columns,
+      { id: uuidv4(), name: `Column ${newColumnIndex}`, type: 'text' }
+    ]);
   };
 
   const handleColumnChange = (index, field, value) => {
@@ -134,16 +150,23 @@ const AddTableModal = ({ isOpen, onClose, onAddTable, hasExistingData }) => {
 
   const handleAddTable = () => {
     console.log('Submitting table:', columns, rows);
+    const nonEmptyColumns = columns.filter((col) => col.name.trim() !== '');
+    if (nonEmptyColumns.length === 0) {
+      alert('Please add at least one column name.');
+      return;
+    }
     if (hasExistingData) {
       setIsWarningOpen(true);
     } else {
-      onAddTable(columns, rows);
+      onAddTable(nonEmptyColumns, rows);
+      onClose();
     }
   };
 
   const handleConfirmAddTable = () => {
     console.log('Confirming add table');
-    onAddTable(columns, rows);
+    const nonEmptyColumns = columns.filter((col) => col.name.trim() !== '');
+    onAddTable(nonEmptyColumns, rows);
     onClose();
     setIsWarningOpen(false);
   };
@@ -175,52 +198,54 @@ const AddTableModal = ({ isOpen, onClose, onAddTable, hasExistingData }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log('AddTableModal: Submitting form', { columns, rows });
-    onAddTable(columns, rows);
+    handleAddTable();
   };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Add Table">
-      <div className={styles.columnList}>
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-        >
-          <SortableContext
-            items={columns}
-            strategy={verticalListSortingStrategy}
+      <form onSubmit={handleSubmit}>
+        <div className={styles.columnList}>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
           >
-            {columns.map((col, index) => (
-              <SortableItem
-                key={col.id}
-                id={col.id}
-                column={col}
-                index={index}
-                handleColumnChange={handleColumnChange}
-                handleDeleteColumn={handleDeleteColumn}
-              />
-            ))}
-          </SortableContext>
-        </DndContext>
-      </div>
-      <Button variant="slim" onClick={handleAddColumn}>
-        Add Column
-      </Button>
-      <div className={styles.rowInput}>
-        <label htmlFor="rows">Rows:</label>
-        <Input
-          id="rows"
-          type="number"
-          value={rows}
-          onChange={handleRowsChange}
-          min="1"
-          max="1000"
-          variant="slim"
-        />
-      </div>
-      <Button variant="submit" onClick={handleSubmit}>
-        Add Table
-      </Button>
+            <SortableContext
+              items={columns}
+              strategy={verticalListSortingStrategy}
+            >
+              {columns.map((col, index) => (
+                <SortableItem
+                  key={col.id}
+                  id={col.id}
+                  column={col}
+                  index={index}
+                  handleColumnChange={handleColumnChange}
+                  handleDeleteColumn={handleDeleteColumn}
+                />
+              ))}
+            </SortableContext>
+          </DndContext>
+        </div>
+        <Button variant="slim" onClick={handleAddColumn}>
+          Add Column
+        </Button>
+        <div className={styles.rowInput}>
+          <label htmlFor="rows">Rows:</label>
+          <Input
+            id="rows"
+            type="number"
+            value={rows}
+            onChange={handleRowsChange}
+            min="1"
+            max="1000"
+            variant="slim"
+          />
+        </div>
+        <Button variant="submit" type="submit">
+          Add Table
+        </Button>
+      </form>
       {isWarningOpen && (
         <Modal
           isOpen={isWarningOpen}
