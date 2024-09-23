@@ -91,6 +91,8 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   const [isNodeDeleteModalOpen, setIsNodeDeleteModalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [dateFormat, setDateFormat] = useState(data.dateFormat || 'yyyy-MM-dd');
+  const [isAddTableModalOpen, setIsAddTableModalOpen] = useState(false);
+  const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
 
   const updateNode = useNodeStore((state) => state.updateNode);
   const tableRef = useRef<HTMLDivElement>(null);
@@ -307,13 +309,24 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
       newColumns: Array<{ name: string; type: string }>,
       newRows: Array<any>
     ) => {
-      setContent((prevContent) => ({
-        columns: [...prevContent.columns, ...newColumns],
-        rows: [...prevContent.rows, ...newRows]
-      }));
+      if (content.columns.length > 0 || content.rows.length > 0) {
+        setIsConfirmationModalOpen(true);
+      } else {
+        setContent((prevContent) => ({
+          columns: [...prevContent.columns, ...newColumns],
+          rows: [...prevContent.rows, ...newRows]
+        }));
+        setIsAddTableModalOpen(false);
+      }
     },
-    []
+    [content]
   );
+
+  const handleConfirmAddTable = () => {
+    setContent({ columns: [], rows: [] });
+    setIsConfirmationModalOpen(false);
+    setIsAddTableModalOpen(true);
+  };
 
   return (
     <div>
@@ -364,6 +377,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           handleDeleteTable={handleDeleteTable}
           dateFormat={dateFormat}
           onAddTable={handleAddTable}
+          setIsModalOpen={setIsAddTableModalOpen}
         />
 
         {(tags.length > 0 || attachedFiles.length > 0) &&
