@@ -302,6 +302,19 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     [content, setContent, updateNode, data.id, canvasId]
   );
 
+  const handleAddTable = useCallback(
+    (
+      newColumns: Array<{ name: string; type: string }>,
+      newRows: Array<any>
+    ) => {
+      setContent((prevContent) => ({
+        columns: [...prevContent.columns, ...newColumns],
+        rows: [...prevContent.rows, ...newRows]
+      }));
+    },
+    []
+  );
+
   return (
     <div>
       {errorMessage && (
@@ -350,6 +363,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           setIsSettingsModalOpen={setIsSettingsModalOpen}
           handleDeleteTable={handleDeleteTable}
           dateFormat={dateFormat}
+          onAddTable={handleAddTable}
         />
 
         {(tags.length > 0 || attachedFiles.length > 0) &&

@@ -58,6 +58,10 @@ interface TableNodeGridProps {
   setIsSettingsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   handleDeleteTable: () => void;
   dateFormat: string;
+  onAddTable: (
+    newColumns: Array<{ name: string; type: string }>,
+    newRows: Array<any>
+  ) => void;
 }
 
 const TableNodeGrid: React.FC<TableNodeGridProps> = ({
@@ -69,7 +73,8 @@ const TableNodeGrid: React.FC<TableNodeGridProps> = ({
   setIsDeleteModalOpen,
   setIsSettingsModalOpen,
   handleDeleteTable,
-  dateFormat
+  dateFormat,
+  onAddTable
 }) => {
   const gridRef = useRef<any>(null);
   const [isAddTableModalOpen, setIsAddTableModalOpen] = useState(false);
@@ -278,7 +283,8 @@ const TableNodeGrid: React.FC<TableNodeGridProps> = ({
       cellContextMenuPosition,
       cellContextMenuParams,
       dateFormat,
-      isAddTableModalOpen
+      isAddTableModalOpen,
+      onAddTable
     ]
   );
 
