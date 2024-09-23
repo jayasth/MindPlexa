@@ -95,7 +95,19 @@ const SortableItem = ({
   );
 };
 
-const AddTableModal = ({ isOpen, onClose, onAddTable, hasExistingData }) => {
+interface AddTableModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onAddTable: (columns: Column[], rows: number) => void;
+  hasExistingData: boolean;
+}
+
+const AddTableModal: React.FC<AddTableModalProps> = ({
+  isOpen,
+  onClose,
+  onAddTable,
+  hasExistingData
+}) => {
   const [columns, setColumns] = useState<Column[]>([
     { id: uuidv4(), name: '', type: 'text' }
   ]);
