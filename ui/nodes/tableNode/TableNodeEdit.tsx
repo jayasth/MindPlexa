@@ -22,7 +22,6 @@ import {
   FileModal,
   ColorPickerModal
 } from '@/ui/nodes/common/CommonNodeComponents';
-import AddTableModal from '@/ui/nodes/tableNode/components/AddTableModal';
 import SettingsModal from '@/ui/nodes/tableNode/components/SettingsModal';
 import DeleteTableModal from '@/ui/nodes/tableNode/components/DeleteTableModal';
 import NodeDeleteConfirmationModal from '@/ui/nodes/common/NodeDeleteConfirmationModal';
@@ -87,7 +86,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   const [isColorPickerVisible, setIsColorPickerVisible] = useState(false);
   const [isTagModalOpen, setIsTagModalOpen] = useState(false);
   const [isFileModalOpen, setIsFileModalOpen] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isNodeDeleteModalOpen, setIsNodeDeleteModalOpen] = useState(false);
@@ -305,51 +303,16 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   );
 
   const handleAddTable = useCallback(
-    (columns, rows) => {
-      console.log('TableNodeEdit: handleAddTable called', { columns, rows });
-      const newColumns = columns.map((col, index) => {
-        console.log(`Processing column ${index + 1}:`, col);
-        return {
-          headerName: col.name || `Column ${index + 1}`,
-          field: `col${index + 1}`,
-          editable: true,
-          type: col.type,
-          defaultValue: ''
-        };
-      });
-
-      console.log('New columns:', newColumns);
-
-      const newRows = Array.from({ length: rows }, (_, rowIndex) => {
-        const row = newColumns.reduce((acc, col) => {
-          acc[col.field] = '';
-          return acc;
-        }, {});
-        console.log(`Processing row ${rowIndex + 1}:`, row);
-        return row;
-      });
-
-      console.log('New rows:', newRows);
-
-      console.log('TableNodeEdit: Before setContent');
-      setContent({ columns: newColumns, rows: newRows });
-      console.log('TableNodeEdit: After setContent, before updateNode');
-      updateNode(
-        data.id,
-        {
-          data: {
-            columns: newColumns,
-            rows: newRows,
-            dateFormat
-          }
-        },
-        canvasId
-      );
-      console.log('TableNodeEdit: After updateNode, before setIsModalOpen');
-      setIsModalOpen(false);
-      console.log('TableNodeEdit: After setIsModalOpen');
+    (
+      newColumns: Array<{ name: string; type: string }>,
+      newRows: Array<any>
+    ) => {
+      setContent((prevContent) => ({
+        columns: [...prevContent.columns, ...newColumns],
+        rows: [...prevContent.rows, ...newRows]
+      }));
     },
-    [data.id, updateNode, canvasId, dateFormat, setContent]
+    []
   );
 
   return (
@@ -396,11 +359,11 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           updateNode={handleUpdateNode}
           nodeId={data.id}
           canvasId={canvasId}
-          setIsModalOpen={setIsModalOpen}
           setIsDeleteModalOpen={setIsDeleteModalOpen}
           setIsSettingsModalOpen={setIsSettingsModalOpen}
           handleDeleteTable={handleDeleteTable}
           dateFormat={dateFormat}
+          onAddTable={handleAddTable}
         />
 
         {(tags.length > 0 || attachedFiles.length > 0) &&
@@ -449,25 +412,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           onClose={handleDeleteCancel}
           onConfirm={handleDeleteConfirm}
         />
-        {isModalOpen && (
-          <AddTableModal
-            isOpen={isModalOpen}
-            onClose={() => {
-              console.log('TableNodeEdit: Closing AddTableModal');
-              setIsModalOpen(false);
-            }}
-            onAddTable={(columns, rows) => {
-              console.log(
-                'TableNodeEdit: onAddTable called from AddTableModal',
-                { columns, rows }
-              );
-              handleAddTable(columns, rows);
-            }}
-            hasExistingData={
-              content.columns.length > 0 || content.rows.length > 0
-            }
-          />
-        )}
         <DeleteTableModal
           isOpen={isDeleteModalOpen}
           onClose={() => setIsDeleteModalOpen(false)}

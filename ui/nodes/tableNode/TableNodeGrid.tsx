@@ -1,4 +1,10 @@
-import React, { useRef, useCallback, useMemo } from 'react';
+import React, {
+  useRef,
+  useCallback,
+  useMemo,
+  useState,
+  useEffect
+} from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import styles from '@/ui/nodes/tableNode/styles/TableNodeEdit.module.css';
 import 'ag-grid-community/styles/ag-grid.css';
@@ -34,6 +40,8 @@ import {
   SettingsButton
 } from '@/ui/nodes/tableNode/components/TableNodeToolbar';
 
+import AddTableModal from '@/ui/nodes/tableNode/components/AddTableModal';
+
 interface TableNodeGridProps {
   content: { columns: any[]; rows: any[] };
   setContent: React.Dispatch<
@@ -42,7 +50,7 @@ interface TableNodeGridProps {
   updateNode: (
     nodeId: string,
     canvasId: string,
-    updates: { columns: any[]; rows: any[] }
+    updates: { columns: any[]; rows: any[]; dateFormat?: string }
   ) => void;
   nodeId: string;
   canvasId: string;
@@ -131,6 +139,53 @@ const TableNodeGrid: React.FC<TableNodeGridProps> = ({
     setCellContextMenuParams(null);
   };
 
+  const [isModalOpen, setIsModalOpenState] = useState(false);
+  const [isWarningOpen, setIsWarningOpen] = useState(false);
+
+  const handleAddTable = useCallback(
+    (columns, rows) => {
+      console.log('TableNodeGrid: handleAddTable called', { columns, rows });
+      const newColumns = columns.map((col, index) => {
+        console.log(`Processing column ${index + 1}:`, col);
+        return {
+          headerName: col.name || `Column ${index + 1}`,
+          field: `col${index + 1}`,
+          editable: true,
+          type: col.type,
+          defaultValue: ''
+        };
+      });
+
+      console.log('New columns:', newColumns);
+
+      const newRows = Array.from({ length: rows }, (_, rowIndex) => {
+        const row = newColumns.reduce((acc, col) => {
+          acc[col.field] = '';
+          return acc;
+        }, {});
+        console.log(`Processing row ${rowIndex + 1}:`, row);
+        return row;
+      });
+
+      console.log('New rows:', newRows);
+
+      console.log('TableNodeGrid: Before setContent');
+      setContent({ columns: newColumns, rows: newRows });
+      console.log('TableNodeGrid: After setContent, before updateNode');
+      updateNode(nodeId, canvasId, {
+        columns: newColumns,
+        rows: newRows,
+        dateFormat
+      });
+      console.log(
+        'TableNodeGrid: After updateNode, before setIsModalOpenState'
+      );
+      setIsModalOpenState(false);
+      console.log('TableNodeGrid: After setIsModalOpenState');
+    },
+    [nodeId, updateNode, canvasId, dateFormat, setContent]
+  );
+
   const memoizedGrid = useMemo(
     () => (
       <div
@@ -139,7 +194,7 @@ const TableNodeGrid: React.FC<TableNodeGridProps> = ({
       >
         <div className={styles.toolbar}>
           <AddTableButton
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => setIsModalOpenState(true)}
             aria-label="Add Table"
           />
           <AddColumnButton
@@ -258,7 +313,30 @@ const TableNodeGrid: React.FC<TableNodeGridProps> = ({
     ]
   );
 
-  return memoizedGrid;
+  return (
+    <>
+      {memoizedGrid}
+      {isModalOpen && (
+        <AddTableModal
+          isOpen={isModalOpen}
+          onClose={() => {
+            console.log('TableNodeGrid: Closing AddTableModal');
+            setIsModalOpenState(false);
+          }}
+          onAddTable={(columns, rows) => {
+            console.log('TableNodeGrid: onAddTable called from AddTableModal', {
+              columns,
+              rows
+            });
+            handleAddTable(columns, rows);
+          }}
+          hasExistingData={
+            content.columns.length > 0 || content.rows.length > 0
+          }
+        />
+      )}
+    </>
+  );
 };
 
 export default React.memo(TableNodeGrid);
