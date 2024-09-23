@@ -138,6 +138,7 @@ const AddTableModal = ({ isOpen, onClose, onAddTable, hasExistingData }) => {
       setIsWarningOpen(true);
     } else {
       onAddTable(columns, rows);
+      onClose();
     }
   };
 
@@ -175,7 +176,7 @@ const AddTableModal = ({ isOpen, onClose, onAddTable, hasExistingData }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log('AddTableModal: Submitting form', { columns, rows });
-    onAddTable(columns, rows);
+    handleAddTable();
   };
 
   return (
