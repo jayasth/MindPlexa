@@ -146,16 +146,23 @@ const AddTableModal: React.FC<AddTableModalProps> = ({
 
   const handleAddTable = () => {
     console.log('Submitting table:', columns, rows);
+    const nonEmptyColumns = columns.filter((col) => col.name.trim() !== '');
+    if (nonEmptyColumns.length === 0) {
+      alert('Please add at least one column name.');
+      return;
+    }
     if (hasExistingData) {
       setIsWarningOpen(true);
     } else {
-      onAddTable(columns, rows);
+      onAddTable(nonEmptyColumns, rows);
+      onClose();
     }
   };
 
   const handleConfirmAddTable = () => {
     console.log('Confirming add table');
-    onAddTable(columns, rows);
+    const nonEmptyColumns = columns.filter((col) => col.name.trim() !== '');
+    onAddTable(nonEmptyColumns, rows);
     onClose();
     setIsWarningOpen(false);
   };
@@ -187,7 +194,7 @@ const AddTableModal: React.FC<AddTableModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log('AddTableModal: Submitting form', { columns, rows });
-    onAddTable(columns, rows);
+    handleAddTable();
   };
 
   return (
