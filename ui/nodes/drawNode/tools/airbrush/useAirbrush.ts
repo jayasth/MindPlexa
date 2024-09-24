@@ -29,6 +29,7 @@ export function useAirbrush({
         strokeWidth: settingsStrokeWidth,
         opacity: settingsOpacity
       } = settings;
+      context.save(); // Save the current state of the context
       context.lineWidth = settingsStrokeWidth || strokeWidth;
       context.lineJoin = context.lineCap = 'round';
       context.strokeStyle = settingsColor || color;
@@ -43,8 +44,9 @@ export function useAirbrush({
     [color, strokeWidth, opacity]
   );
 
-  const endStroke = useCallback(() => {
+  const endStroke = useCallback((context: CanvasRenderingContext2D) => {
     isDrawing.current = false;
+    context.restore(); // Restore the context to its original state
   }, []);
 
   const continueStroke = useCallback(
