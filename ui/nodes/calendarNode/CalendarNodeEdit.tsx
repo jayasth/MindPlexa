@@ -398,6 +398,12 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
     });
   }, []);
 
+  const { bringNodeToFront } = useNodeStore();
+
+  useEffect(() => {
+    bringNodeToFront(data.id);
+  }, [data.id, bringNodeToFront]);
+
   return (
     <div
       className={styles.calendarNode}

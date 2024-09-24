@@ -126,6 +126,11 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   );
 
   const updateNode = useNodeStore((state) => state.updateNode);
+  const { bringNodeToFront } = useNodeStore();
+
+  useEffect(() => {
+    bringNodeToFront(data.id);
+  }, [data.id, bringNodeToFront]);
 
   const updateDrawNodeData = useCallback(
     debounce(async (newData: Partial<any>) => {

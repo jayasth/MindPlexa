@@ -91,7 +91,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = React.memo(
         isConnectable,
         selected,
         dragging,
-        zIndex,
+        zIndex: node.zIndex || 0,
         xPos,
         yPos,
         selectNodesOnDrag,
@@ -149,6 +149,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = React.memo(
           position={position}
           onNodeResizeStop={onNodeResizeStop || (() => {})}
           onEdit={handleEdit}
+          style={{ zIndex: node.zIndex || 0 }}
         />
       );
     }, [
@@ -167,7 +168,8 @@ const NodeRenderer: React.FC<NodeRendererProps> = React.memo(
       props,
       toggleEditMode,
       updateNode,
-      canvasId
+      canvasId,
+      node?.zIndex
     ]);
 
     return nodeContent;

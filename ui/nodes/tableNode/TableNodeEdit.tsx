@@ -328,6 +328,12 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     setIsAddTableModalOpen(true);
   };
 
+  const { bringNodeToFront } = useNodeStore();
+
+  useEffect(() => {
+    bringNodeToFront(data.id);
+  }, [data.id, bringNodeToFront]);
+
   return (
     <div>
       {errorMessage && (

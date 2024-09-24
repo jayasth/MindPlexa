@@ -44,6 +44,8 @@ export interface NodeState {
     drawingData: string,
     canvasId: string
   ) => Promise<void>;
+  updateNodeZIndex: (nodeId: string, newZIndex: number) => void;
+  bringNodeToFront: (nodeId: string) => void;
 }
 
 const useNodeStore = create<NodeState>()(
@@ -95,6 +97,18 @@ const useNodeStore = create<NodeState>()(
           canvasId
         );
       }
+    },
+    updateNodeZIndex: (nodeId: string, newZIndex: number) => {
+      set((state) => ({
+        nodes: state.nodes.map((node) =>
+          node.id === nodeId ? { ...node, zIndex: newZIndex } : node
+        )
+      }));
+    },
+    bringNodeToFront: (nodeId: string) => {
+      const { nodes, updateNodeZIndex } = get();
+      const maxZIndex = Math.max(...nodes.map((node) => node.zIndex || 0));
+      updateNodeZIndex(nodeId, maxZIndex + 1);
     }
   }))
 );

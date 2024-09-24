@@ -325,6 +325,12 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     [tags, attachedFiles, onRemoveTag, onRemoveFile, textColor]
   );
 
+  const { bringNodeToFront } = useNodeStore();
+
+  useEffect(() => {
+    bringNodeToFront(data.id);
+  }, [data.id, bringNodeToFront]);
+
   return (
     <div
       className={styles.noteNode}

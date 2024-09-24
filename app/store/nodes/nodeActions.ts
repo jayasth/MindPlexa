@@ -1,7 +1,8 @@
 import { produce } from 'immer';
 import {
   updateNode as updateNodeInDB,
-  deleteNode as deleteNodeInDB
+  deleteNode as deleteNodeInDB,
+  updateNodeZIndex
 } from '@/utils/canvas/nodeService';
 import {
   addAttachment,
@@ -206,4 +207,28 @@ export const removeNode = async (set, get, id, canvasId) => {
   } catch (error) {
     console.error('useNodeStore: Error removing node', error);
   }
+};
+
+export const updateNodeZIndexAction = (
+  set,
+  get,
+  nodeId: string,
+  newZIndex: number
+) => {
+  set(
+    produce((state: NodeState) => {
+      const nodeToUpdate = state.nodes.find((node) => node.id === nodeId);
+      if (nodeToUpdate) {
+        nodeToUpdate.data.zIndex = newZIndex;
+        state.nodeInternals.set(nodeId, nodeToUpdate);
+      }
+    })
+  );
+  updateNodeZIndex(nodeId, newZIndex);
+};
+
+export const bringNodeToFront = (set, get, nodeId: string) => {
+  const nodes = get().nodes;
+  const maxZIndex = Math.max(...nodes.map((node) => node.data.zIndex || 0));
+  updateNodeZIndexAction(set, get, nodeId, maxZIndex + 1);
 };

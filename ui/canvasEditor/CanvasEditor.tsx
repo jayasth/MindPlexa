@@ -57,7 +57,8 @@ export default function CanvasEditor({ canvasId: initialCanvasId }) {
     addNode,
     removeNode,
     updateNode: updateNodeInStore,
-    setSelectedNodes
+    setSelectedNodes,
+    bringNodeToFront
   } = useNodeStore();
 
   const { edges, setEdges, addEdge, removeEdge } = useEdgeStore();
@@ -328,6 +329,13 @@ export default function CanvasEditor({ canvasId: initialCanvasId }) {
     }
   }, [nodes]);
 
+  const onNodeClick = useCallback(
+    (event: React.MouseEvent, node: Node) => {
+      bringNodeToFront(node.id);
+    },
+    [bringNodeToFront]
+  );
+
   return (
     <div className="flex h-screen">
       <ReactFlowProvider>
@@ -368,6 +376,7 @@ export default function CanvasEditor({ canvasId: initialCanvasId }) {
                 setDomNode(reactFlowWrapper.current);
               }
             }}
+            onNodeClick={onNodeClick}
           >
             <Background color="#aaa" gap={16} />
             <Controls />

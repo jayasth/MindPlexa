@@ -63,6 +63,20 @@ const deleteNodeLink = async (nodeId: string) => {
   return await supabase.from('node_canvas_link').delete().eq('node_id', nodeId);
 };
 
+export const updateNodeZIndex = async (nodeId: string, newZIndex: number) => {
+  const { data, error } = await supabase
+    .from('nodes')
+    .update({ z_index: newZIndex })
+    .eq('id', nodeId);
+
+  if (error) {
+    console.error('Error updating node z-index:', error);
+    return { data: null, error };
+  }
+
+  return { data, error: null };
+};
+
 export const createNode = async (
   canvasId: string,
   nodeType: Database['public']['Enums']['node_type'],
