@@ -8,6 +8,7 @@ import { SketchPicker } from 'react-color';
 import Slider from './DrawNodeSlider';
 import styles from './DrawNodeTopbar.module.css';
 import DrawNodeSettings from './DrawNodeSettings';
+import { saveDrawing } from '@/utils/canvas/drawNodeService';
 
 interface DrawNodeTopbarProps {
   undo: () => void;
@@ -28,6 +29,7 @@ interface DrawNodeTopbarProps {
   onToolChange: (index: number) => void;
   onColorChange: (color: string) => void;
   onStrokeWidthChange: (width: number) => void;
+  nodeId: string; // Add this prop
 }
 
 const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
@@ -48,7 +50,8 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
   currentStrokeWidth,
   onToolChange,
   onColorChange,
-  onStrokeWidthChange
+  onStrokeWidthChange,
+  nodeId
 }) => {
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   const [isStrokeWidthOpen, setIsStrokeWidthOpen] = useState(false);
@@ -75,8 +78,13 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
     redo();
   };
 
-  const handleClear = () => {
+  const handleClear = async () => {
     clear();
+    // After clearing, save an empty drawing
+    await saveDrawing(
+      nodeId,
+      'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjwvc3ZnPg=='
+    );
   };
 
   const handleColorChange = (color: { hex: string }) => {

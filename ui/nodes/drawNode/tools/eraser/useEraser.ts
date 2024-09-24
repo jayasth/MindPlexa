@@ -21,7 +21,8 @@ export function useEraser({
     ) => {
       const { strokeWidth: settingsStrokeWidth, opacity: settingsOpacity } =
         settings;
-      context.globalCompositeOperation = 'destination-out';
+      context.globalCompositeOperation = 'source-over';
+      context.strokeStyle = '#FFFFFF'; // Use white color for erasing
       context.lineWidth = settingsStrokeWidth || strokeWidth;
       context.globalAlpha = settingsOpacity ?? opacity;
       context.lineJoin = context.lineCap = 'round';
@@ -43,8 +44,8 @@ export function useEraser({
     []
   );
 
-  const endStroke = useCallback(() => {
-    // Add any necessary cleanup logic here
+  const endStroke = useCallback((context: CanvasRenderingContext2D) => {
+    context.globalCompositeOperation = 'source-over'; // Reset to default
   }, []);
 
   const cursor = circleCursor(strokeWidth);

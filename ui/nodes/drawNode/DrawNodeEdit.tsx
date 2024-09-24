@@ -438,6 +438,11 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
           if (artboardRef.current) {
             artboardRef.current.clear();
           }
+          // After clearing, save an empty drawing
+          saveDrawing(
+            id,
+            'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjwvc3ZnPg=='
+          );
         }}
         backgroundColor={backgroundColor}
         textColor={textColor}
@@ -451,6 +456,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         onToolChange={handleToolChange}
         onColorChange={handleColorChange}
         onStrokeWidthChange={handleStrokeWidthChange}
+        nodeId={id} // Add this prop
       />
       <div className={styles.drawContent}>
         <DrawNodeSidebar
@@ -472,7 +478,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
                 tool={tools[currentToolIndex].tool}
                 width={nodeWidth * 0.8}
                 height={nodeHeight * 0.6}
-                color={currentColor}
+                color={currentTool === 'Eraser' ? '#FFFFFF' : currentColor} // Set color to white for eraser
                 strokeWidth={currentStrokeWidth}
                 opacity={toolSettings[currentToolIndex]?.opacity ?? 100}
                 onContentChange={handleDrawingChange}

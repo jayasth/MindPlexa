@@ -5,10 +5,16 @@ const supabase = createClient();
 export const saveDrawing = async (nodeId: string, drawingData: string) => {
   if (
     typeof drawingData === 'string' &&
-    drawingData.startsWith('data:image/svg+xml;base64,')
+    (drawingData.startsWith('data:image/svg+xml;base64,') || drawingData === '')
   ) {
-    const base64Data = drawingData.split(',')[1];
-    const svgContent = atob(base64Data);
+    let svgContent;
+    if (drawingData === '') {
+      // If drawingData is empty, create an empty SVG
+      svgContent = '<svg xmlns="http://www.w3.org/2000/svg"></svg>';
+    } else {
+      const base64Data = drawingData.split(',')[1];
+      svgContent = atob(base64Data);
+    }
 
     const blob = new Blob([svgContent], { type: 'image/svg+xml' });
 
