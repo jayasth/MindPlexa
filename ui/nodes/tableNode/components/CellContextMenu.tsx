@@ -1,22 +1,9 @@
 import React, { useEffect, useCallback, useState } from 'react';
-import {
-  Menu,
-  Item,
-  Separator,
-  Submenu,
-  useContextMenu
-} from 'react-contexify';
+import { Menu, Item, Separator, useContextMenu } from 'react-contexify';
 import 'react-contexify/ReactContexify.css';
 import styles from '@/ui/nodes/tableNode/styles/CellContextMenu.module.css';
 import Portal from '@/ui/nodes/tableNode/Portal';
 import { MdContentCopy, MdContentPaste, MdDelete, MdAdd } from 'react-icons/md';
-import {
-  FaSort,
-  FaSortAlphaDown,
-  FaSortAlphaUp,
-  FaSortNumericDown,
-  FaSortNumericUp
-} from 'react-icons/fa';
 
 interface CellContextMenuProps {
   id: string;
@@ -146,20 +133,6 @@ const CellContextMenu: React.FC<CellContextMenuProps> = ({
     }
   };
 
-  const handleSort = (sort: 'asc' | 'desc' | 'none') => {
-    const api = gridRef.current.api;
-    const focusedCell = api.getFocusedCell();
-    if (focusedCell) {
-      const colId = focusedCell.column.colId;
-      if (sort === 'none') {
-        api.setSortModel([]);
-      } else {
-        api.setSortModel([{ colId, sort }]);
-      }
-      api.refreshCells({ force: true });
-    }
-  };
-
   return (
     <Portal>
       <Menu id={id} className={styles.contextMenu}>
@@ -169,18 +142,6 @@ const CellContextMenu: React.FC<CellContextMenuProps> = ({
         <Item onClick={handlePaste}>
           <MdContentPaste /> Paste
         </Item>
-        <Separator />
-        <Submenu label="Sort">
-          <Item onClick={() => handleSort('asc')}>
-            <FaSortAlphaUp /> Sort Ascending
-          </Item>
-          <Item onClick={() => handleSort('desc')}>
-            <FaSortAlphaDown /> Sort Descending
-          </Item>
-          <Item onClick={() => handleSort('none')}>
-            <FaSort /> Clear Sort
-          </Item>
-        </Submenu>
         <Separator />
         <Item onClick={handleAddRowAbove}>
           <MdAdd /> Add Row Above
