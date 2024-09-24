@@ -87,7 +87,7 @@ export async function POST(req: Request) {
       }
     }
 
-    // Use parsedData instead of content for the rest of the function
+    // Ensure the response is properly formatted
     return NextResponse.json(parsedData);
   } catch (error) {
     console.error('Detailed error in API route:', error);

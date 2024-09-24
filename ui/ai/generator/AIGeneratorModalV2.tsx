@@ -81,12 +81,22 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
 
       let parsedData;
       try {
-        parsedData = JSON.parse(
-          data.mermaidCode.replace(/```json\n|\n```/g, '')
-        );
+        // First, try to parse the entire response as JSON
+        parsedData = typeof data === 'string' ? JSON.parse(data) : data;
       } catch (parseError) {
-        console.error('Error parsing mermaidCode as JSON:', parseError);
-        throw new Error('Invalid response format');
+        console.error('Error parsing entire response as JSON:', parseError);
+        // If that fails, try to extract JSON from the response
+        const jsonMatch = data.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          try {
+            parsedData = JSON.parse(jsonMatch[0]);
+          } catch (extractError) {
+            console.error('Error parsing extracted JSON:', extractError);
+            throw new Error('Invalid response format');
+          }
+        } else {
+          throw new Error('Invalid response format');
+        }
       }
 
       if (!parsedData.analysis || !parsedData.mermaidCode) {
