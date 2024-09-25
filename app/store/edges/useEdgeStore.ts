@@ -22,6 +22,7 @@ const useEdgeStore = create<EdgeState>()(
     addEdge: (edge) => {
       set(
         produce((state: EdgeState) => {
+          console.log('Adding edge to state:', edge.id);
           state.edges.push(edge);
         })
       );
@@ -33,6 +34,7 @@ const useEdgeStore = create<EdgeState>()(
         produce((state: EdgeState) => {
           const index = state.edges.findIndex((edge) => edge.id === id);
           if (index !== -1) {
+            console.log('Updating edge in state:', id);
             state.edges[index] = { ...state.edges[index], ...data };
           }
         })

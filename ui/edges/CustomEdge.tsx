@@ -32,7 +32,7 @@ const CustomEdge = ({
   const removeEdge = useEdgeStore((state) => state.removeEdge);
 
   const onEdgeClick = () => {
-    console.log('onEdgeClick called with id:', id);
+    console.log('Edge deletion triggered for id:', id);
     onDelete?.(id);
     removeEdge(id);
   };
