@@ -27,14 +27,6 @@ const createEdge = async (
   newNodeId: string,
   canvasId: string
 ) => {
-  const edgeId = uuidv4();
-  const newEdge = {
-    id: edgeId,
-    source: parentNodeId,
-    target: newNodeId,
-    type: 'customEdge'
-  };
-  console.log('nodeCreation: Creating edge with data:', newEdge);
   const { data: createdEdge, error: edgeError } = await createEdgeBetweenNodes({
     sourceNodeId: parentNodeId,
     targetNodeId: newNodeId,
@@ -44,6 +36,12 @@ const createEdge = async (
   if (edgeError) {
     console.error('nodeCreation: Error creating edge:', edgeError);
   } else if (createdEdge) {
+    const newEdge = {
+      id: createdEdge.id,
+      source: parentNodeId,
+      target: newNodeId,
+      type: 'customEdge'
+    };
     useEdgeStore.getState().addEdge(newEdge);
     console.log('nodeCreation: Edge created with ID:', createdEdge.id);
   }
@@ -226,13 +224,6 @@ export const handleTemporaryNodeCreation = async (
       console.log('TemporaryNodeHandler: Node added:', newNode);
 
       if (parentNode) {
-        const newEdge = {
-          id: uuidv4(),
-          source: parentNode.id,
-          target: newNode.id,
-          type: 'customEdge'
-        };
-        useEdgeStore.getState().addEdge(newEdge);
         const { data: createdEdge, error } = await createEdgeBetweenNodes({
           sourceNodeId: parentNode.id,
           targetNodeId: newNode.id,
@@ -240,7 +231,14 @@ export const handleTemporaryNodeCreation = async (
         });
         if (error) {
           console.error('Failed to create edge in database:', error);
-        } else {
+        } else if (createdEdge) {
+          const newEdge = {
+            id: createdEdge.id,
+            source: parentNode.id,
+            target: newNode.id,
+            type: 'customEdge'
+          };
+          useEdgeStore.getState().addEdge(newEdge);
           console.log('Edge created successfully in database:', createdEdge);
         }
       }
