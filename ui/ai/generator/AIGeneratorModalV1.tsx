@@ -217,6 +217,7 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
       // Update edge source and target with new IDs
       const updatedEdges = newEdges.map((edge) => ({
         ...edge,
+        id: uuidv4(), // Generate a new UUID for each edge
         source: idMapping[edge.source],
         target: idMapping[edge.target]
       }));
@@ -254,15 +255,27 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
         setErrorMessage('Failed to create nodes. Please try again.');
       } else {
         setNodes((currentNodes) => [...currentNodes, ...(createdNodes || [])]);
-        setEdges((currentEdges) => [...currentEdges, ...updatedEdges]);
 
-        // Create edges in the database
+        // Create edges in the database and update the state
         for (const edge of updatedEdges) {
-          await createEdgeBetweenNodes({
-            sourceNodeId: edge.source,
-            targetNodeId: edge.target,
-            canvasId
-          });
+          const { data: createdEdge, error: edgeError } =
+            await createEdgeBetweenNodes({
+              sourceNodeId: edge.source,
+              targetNodeId: edge.target,
+              canvasId
+            });
+
+          if (edgeError) {
+            console.error('Error creating edge:', edgeError);
+          } else if (createdEdge) {
+            setEdges((currentEdges) => [
+              ...currentEdges,
+              {
+                ...edge,
+                id: createdEdge.id // Use the ID returned from the database
+              }
+            ]);
+          }
         }
 
         setShowConfirmModal(false);

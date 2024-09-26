@@ -212,14 +212,26 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
         setErrorMessage('Failed to create nodes. Please try again.');
       } else {
         setNodes((currentNodes) => [...currentNodes, ...(createdNodes || [])]);
-        setEdges((currentEdges) => [...currentEdges, ...updatedEdges]);
 
         for (const edge of updatedEdges) {
-          await createEdgeBetweenNodes({
-            sourceNodeId: edge.source,
-            targetNodeId: edge.target,
-            canvasId
-          });
+          const { data: createdEdge, error: edgeError } =
+            await createEdgeBetweenNodes({
+              sourceNodeId: edge.source,
+              targetNodeId: edge.target,
+              canvasId
+            });
+
+          if (edgeError) {
+            console.error('Error creating edge:', edgeError);
+          } else if (createdEdge) {
+            setEdges((currentEdges) => [
+              ...currentEdges,
+              {
+                ...edge,
+                id: createdEdge.id
+              }
+            ]);
+          }
         }
 
         setShowConfirmModal(false);
