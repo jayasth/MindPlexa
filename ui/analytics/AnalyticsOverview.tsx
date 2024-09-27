@@ -1,31 +1,55 @@
 import React from 'react';
+import { useEffect, useState } from 'react';
 import {
   FaProjectDiagram,
   FaClipboardList,
-  FaCalendar,
-  FaStickyNote
+  FaNetworkWired
 } from 'react-icons/fa';
 import Card from '@/ui/Card/Card';
 import styles from './AnalyticsOverview.module.css';
+import { createClient } from '@/utils/supabase/supabaseClient';
 
 const AnalyticsOverview = () => {
-  // Replace with actual data fetching logic
-  const stats = {
-    totalProjects: 10,
-    totalTasks: 50,
-    upcomingEvents: 5,
-    totalNotes: 100
-  };
+  const [totalCanvases, setTotalCanvases] = useState(0);
+  const [totalNodes, setTotalNodes] = useState(0);
+  const [activeProjects, setActiveProjects] = useState(0);
+
+  useEffect(() => {
+    const fetchOverviewData = async () => {
+      const supabase = createClient();
+
+      const { count: canvasCount } = await supabase
+        .from('canvases')
+        .select('*', { count: 'exact', head: true });
+
+      const { count: nodeCount } = await supabase
+        .from('nodes')
+        .select('*', { count: 'exact', head: true });
+
+      // Assuming 'active' projects are canvases updated in the last 30 days
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const { count: activeProjectCount } = await supabase
+        .from('canvases')
+        .select('*', { count: 'exact', head: true })
+        .gte('updated_at', thirtyDaysAgo.toISOString());
+
+      setTotalCanvases(canvasCount || 0);
+      setTotalNodes(nodeCount || 0);
+      setActiveProjects(activeProjectCount || 0);
+    };
+
+    fetchOverviewData();
+  }, []);
 
   const statItems = [
     {
       icon: FaProjectDiagram,
-      label: 'Total Projects',
-      value: stats.totalProjects
+      label: 'Total Canvases',
+      value: totalCanvases
     },
-    { icon: FaClipboardList, label: 'Total Tasks', value: stats.totalTasks },
-    { icon: FaCalendar, label: 'Upcoming Events', value: stats.upcomingEvents },
-    { icon: FaStickyNote, label: 'Total Notes', value: stats.totalNotes }
+    { icon: FaClipboardList, label: 'Total Nodes', value: totalNodes },
+    { icon: FaNetworkWired, label: 'Active Projects', value: activeProjects }
   ];
 
   return (

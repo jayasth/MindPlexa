@@ -1,38 +1,85 @@
-import React from 'react';
-import { Line } from 'react-chartjs-2';
+import React, { useEffect, useState } from 'react';
+import { Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
-  PointElement,
-  LineElement,
+  BarElement,
   Title,
   Tooltip,
   Legend
 } from 'chart.js';
 import Card from '@/ui/Card/Card';
 import styles from './ProjectProgress.module.css';
+import { createClient } from '@/utils/supabase/supabaseClient';
 
 ChartJS.register(
   CategoryScale,
   LinearScale,
-  PointElement,
-  LineElement,
+  BarElement,
   Title,
   Tooltip,
   Legend
 );
 
+interface ProjectDataPoint {
+  name: string;
+  progress: number;
+}
+
 const ProjectProgress = () => {
-  // Replace with actual data fetching logic
+  const [projectData, setProjectData] = useState<ProjectDataPoint[]>([]);
+
+  useEffect(() => {
+    const fetchProjectData = async () => {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from('canvases')
+        .select('id, name')
+        .order('updated_at', { ascending: false })
+        .limit(5);
+
+      if (error) {
+        console.error('Error fetching project data:', error);
+        return;
+      }
+
+      // Fetch node counts for each canvas
+      const canvasesWithNodeCounts = await Promise.all(
+        data.map(async (canvas) => {
+          const { count } = await supabase
+            .from('nodes')
+            .select('*', { count: 'exact', head: true })
+            .eq('canvas_id', canvas.id);
+
+          return {
+            ...canvas,
+            nodeCount: count || 0
+          };
+        })
+      );
+
+      // Calculate progress (this is a simplistic approach)
+      const processedData = canvasesWithNodeCounts.map((canvas) => ({
+        name: canvas.name,
+        progress: Math.min(100, canvas.nodeCount * 5) // 5% progress per node, max 100%
+      }));
+
+      setProjectData(processedData);
+    };
+
+    fetchProjectData();
+  }, []);
+
   const data = {
-    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+    labels: projectData.map((project) => project.name),
     datasets: [
       {
-        label: 'Tasks Completed',
-        data: [5, 12, 18, 25],
+        label: 'Project Progress',
+        data: projectData.map((project) => project.progress),
+        backgroundColor: 'rgba(152, 159, 240, 0.5)',
         borderColor: 'rgb(152, 159, 240)',
-        backgroundColor: 'rgba(152, 159, 240, 0.5)'
+        borderWidth: 1
       }
     ]
   };
@@ -55,9 +102,13 @@ const ProjectProgress = () => {
     scales: {
       y: {
         beginAtZero: true,
+        max: 100,
         ticks: {
           font: {
             size: 10
+          },
+          callback: function (value) {
+            return value + '%';
           }
         }
       },
@@ -74,7 +125,7 @@ const ProjectProgress = () => {
   return (
     <Card title="Project Progress" className={styles.progressCard}>
       <div className={styles.chartContainer}>
-        <Line data={data} options={options} />
+        <Bar data={data} options={options} />
       </div>
     </Card>
   );

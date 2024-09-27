@@ -1,4 +1,5 @@
 import React from 'react';
+import { useEffect, useState } from 'react';
 import { Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -11,6 +12,7 @@ import {
 } from 'chart.js';
 import Card from '@/ui/Card/Card';
 import styles from './CanvasUsageChart.module.css';
+import { createClient } from '@/utils/supabase/supabaseClient';
 
 ChartJS.register(
   CategoryScale,
@@ -21,14 +23,59 @@ ChartJS.register(
   Legend
 );
 
+interface CanvasDataPoint {
+  date: string;
+  count: number;
+}
+
 const CanvasUsageChart = () => {
-  // Replace with actual data fetching logic
+  const [canvasData, setCanvasData] = useState<CanvasDataPoint[]>([]);
+
+  useEffect(() => {
+    const fetchCanvasData = async () => {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from('canvases')
+        .select('created_at')
+        .order('created_at');
+
+      if (error) {
+        console.error('Error fetching canvas data:', error);
+        return;
+      }
+
+      const processedData = processCanvasData(data);
+      setCanvasData(processedData);
+    };
+
+    fetchCanvasData();
+  }, []);
+
+  const processCanvasData = (data: any[]): CanvasDataPoint[] => {
+    // Group by month
+    const groupedByMonth = data.reduce<Record<string, number>>(
+      (acc, canvas) => {
+        const date = new Date(canvas.created_at);
+        const monthYear = `${date.getFullYear()}-${date.getMonth() + 1}`;
+        acc[monthYear] = (acc[monthYear] || 0) + 1;
+        return acc;
+      },
+      {}
+    );
+
+    // Convert to array format for chart
+    return Object.entries(groupedByMonth).map(([date, count]) => ({
+      date,
+      count
+    }));
+  };
+
   const data = {
-    labels: ['Canvas 1', 'Canvas 2', 'Canvas 3', 'Canvas 4', 'Canvas 5'],
+    labels: canvasData.map((item) => item.date),
     datasets: [
       {
-        label: 'Number of Nodes',
-        data: [12, 19, 3, 5, 2],
+        label: 'Canvases Created',
+        data: canvasData.map((item) => item.count),
         backgroundColor: 'rgba(152, 159, 240, 0.6)',
         borderColor: 'rgba(152, 159, 240, 1)',
         borderWidth: 1
@@ -71,7 +118,7 @@ const CanvasUsageChart = () => {
   };
 
   return (
-    <Card title="Canvas Usage" className={styles.usageCard}>
+    <Card title="Canvas Usage Over Time" className={styles.usageCard}>
       <div className={styles.chartContainer}>
         <Bar data={data} options={options} />
       </div>
