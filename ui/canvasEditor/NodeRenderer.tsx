@@ -108,10 +108,13 @@ const NodeRenderer: React.FC<NodeRendererProps> = React.memo(
         return (
           <NodeSelectionMenu
             {...commonProps}
-            position={position}
-            parentNode={data.parentNode}
-            width={dimensions.width}
-            height={dimensions.height}
+            data={{
+              ...commonProps.data,
+              position,
+              parentNode: data.parentNode,
+              width: dimensions.width,
+              height: dimensions.height
+            }}
           />
         );
       }

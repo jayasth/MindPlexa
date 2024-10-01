@@ -1,4 +1,4 @@
-import { useStore } from '@/app/store/canvas/useCanvasStore';
+import useCanvasStore from '@/app/store/canvas/useCanvasStore';
 import {
   getContrastYIQ,
   colorCombinations,
@@ -10,6 +10,8 @@ export const useBackgroundColorChange = (
   setBackgroundColor: (color: string) => void,
   setTextColor: (color: string) => void
 ) => {
+  const { canvasId } = useCanvasStore();
+
   const handleBackgroundColorChange = (color: { hex: string }) => {
     const selectedCombination = colorCombinations.find(
       (combination) =>
@@ -21,7 +23,8 @@ export const useBackgroundColorChange = (
         nodeId,
         selectedCombination.background,
         selectedCombination.text,
-        setBackgroundColor
+        setBackgroundColor,
+        canvasId
       );
     } else {
       const calculatedTextColor = getContrastYIQ(color.hex);
@@ -30,7 +33,8 @@ export const useBackgroundColorChange = (
         nodeId,
         color.hex,
         calculatedTextColor,
-        setBackgroundColor
+        setBackgroundColor,
+        canvasId
       );
     }
   };
