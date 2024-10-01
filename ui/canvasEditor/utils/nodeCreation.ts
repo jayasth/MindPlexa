@@ -12,6 +12,7 @@ import { createEdgeBetweenNodes } from '@/utils/canvas/edgeService';
 import { v4 as uuidv4 } from 'uuid';
 import useEdgeStore from '@/app/store/edges/useEdgeStore';
 import * as nodeSpecificDataService from '@/utils/canvas/nodeSpecificDataService';
+import { useNodeStore } from '@/app/store';
 
 const setPosition = (x: number, y: number): XYPosition => ({ x, y });
 
@@ -329,5 +330,17 @@ export const replaceNodeWithType = async (
 
     console.log('nodeCreation: Node replaced with new type:', nodeType);
     setNode(newNode);
+
+    // Force re-render by updating the state
+    setTimeout(() => {
+      setNode({ ...newNode, data: { ...newNode.data, isEditing: true } });
+      setTimeout(() => {
+        setNode({ ...newNode, data: { ...newNode.data, isEditing: false } });
+      }, 0);
+    }, 0);
+
+    // Update the node store to ensure state consistency
+    const updateNodeInStore = useNodeStore.getState().updateNode;
+    updateNodeInStore(newNode.id, newNode, canvasId);
   }
 };

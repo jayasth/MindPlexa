@@ -9,7 +9,7 @@ import useEdgeStore from '@/app/store/edges/useEdgeStore';
 import useCanvasStore from '@/app/store/canvas/useCanvasStore';
 import styles from './NodeSelectionMenu.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
-import { deleteNode } from '@/utils/canvas/nodeService';
+import { deleteNode, updateNode } from '@/utils/canvas/nodeService';
 
 interface NodeSelectionMenuProps extends NodeProps {
   data: {
@@ -20,7 +20,7 @@ interface NodeSelectionMenuProps extends NodeProps {
 }
 
 const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({ data, id }) => {
-  const { removeNode, updateNode } = useNodeStore();
+  const { removeNode, updateNode: updateNodeInStore } = useNodeStore();
   const { edges, removeEdge } = useEdgeStore();
   const { canvasId } = useCanvasStore();
 
@@ -32,9 +32,8 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({ data, id }) => {
     calendar: <IoCalendar />,
     draw: <IoBrush />
   };
-
   const replaceNodeWithType = useCallback(
-    async (nodeType: string) => {
+    async (nodeType: 'note' | 'task' | 'table' | 'calendar' | 'draw') => {
       try {
         const updatedNode = {
           type: nodeType,
@@ -47,13 +46,25 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({ data, id }) => {
           }
         };
 
-        await updateNode(id, updatedNode, canvasId);
+        // Update the node in the database
+        await updateNode(
+          id,
+          {
+            type: nodeType
+          },
+          updatedNode.data,
+          nodeType
+        );
+
+        // Update the node in the store
+        await updateNodeInStore(id, updatedNode, canvasId);
+
         console.log(`Node replaced with ${nodeType} type`);
       } catch (error) {
         console.error('Error replacing node:', error);
       }
     },
-    [id, data, updateNode, canvasId]
+    [id, data, updateNodeInStore, canvasId]
   );
 
   const handleDelete = useCallback(async () => {
@@ -79,7 +90,11 @@ const NodeSelectionMenu: React.FC<NodeSelectionMenuProps> = ({ data, id }) => {
             <button
               key={type}
               className={`${styles.nodeButton} node-type-button`}
-              onClick={() => replaceNodeWithType(type)}
+              onClick={() =>
+                replaceNodeWithType(
+                  type as 'note' | 'task' | 'table' | 'calendar' | 'draw'
+                )
+              }
               title={type.charAt(0).toUpperCase() + type.slice(1)}
             >
               {icons[type]}
