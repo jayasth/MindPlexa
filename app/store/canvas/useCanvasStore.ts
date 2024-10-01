@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { v4 as uuidv4 } from 'uuid';
 import { fetchCanvas, saveCanvasState } from '@/utils/canvas/canvasService';
-import type { Node, Edge } from 'reactflow';
+import type { Node } from 'reactflow';
 import useNodeStore from '../nodes/useNodeStore';
 import useEdgeStore from '../edges/useEdgeStore';
 import { enableMapSet } from 'immer';
@@ -20,56 +20,17 @@ interface CanvasState {
   saveCanvasTimeout?: NodeJS.Timeout;
 }
 
-interface FileData {
-  id: string;
-  type: string;
-  name: string;
-  size: number;
-  storagePath: string;
-  mimeType: string;
-  url: string;
-  isFile: boolean;
-}
+const processNode = async (node: any) => {
+  if (!node) return null;
 
-interface NodeData {
-  [key: string]: unknown;
-  backgroundColor?: string;
-  textColor?: string;
-  isTemporary?: boolean;
-  isEditing?: boolean;
-  attachedFiles?: FileData[];
-  tasks?: unknown[];
-  events?: unknown[];
-  completedTasks?: number;
-  totalTasks?: number;
-  showCompletedTasks?: boolean;
-  showDueDate?: boolean;
-  showPriority?: boolean;
-  sortBy?: string;
-  drawingFileUrl?: string;
-  currentTool?: string;
-  settings?: Record<string, unknown>;
-  currentColor?: string;
-  currentStrokeWidth?: number;
-  columns?: unknown[];
-  rows?: unknown[];
-  defaultColumnType?: string;
-  dateFormat?: string;
-  tableSettings?: Record<string, unknown>;
-}
+  console.log('useCanvasStore: Processing node:', node);
 
-const processNode = async (node: unknown): Promise<Node | null> => {
-  if (!node || typeof node !== 'object') return null;
-
-  const typedNode = node as Record<string, unknown>;
-  console.log('useCanvasStore: Processing node:', typedNode);
-
-  let position: { x: number; y: number };
+  let position;
   try {
     position =
-      typeof typedNode.position === 'string'
-        ? JSON.parse(typedNode.position)
-        : (typedNode.position as { x: number; y: number });
+      typeof node.position === 'string'
+        ? JSON.parse(node.position)
+        : node.position;
   } catch (error) {
     console.error('Error parsing position JSON:', error);
     position = { x: 200, y: 200 };
@@ -78,167 +39,106 @@ const processNode = async (node: unknown): Promise<Node | null> => {
   const isDesktop = window.innerWidth >= 768;
 
   // Parse tasks JSON string if it exists
-  let tasks: unknown[] = [];
-  if (
-    typedNode.type === 'task' &&
-    typedNode.data &&
-    (typedNode.data as Record<string, unknown>).tasks
-  ) {
+  let tasks = [];
+  if (node.type === 'task' && node.data && node.data.tasks) {
     try {
       tasks =
-        typeof (typedNode.data as Record<string, unknown>).tasks === 'string'
-          ? JSON.parse(
-              (typedNode.data as Record<string, unknown>).tasks as string
-            )
-          : ((typedNode.data as Record<string, unknown>).tasks as unknown[]);
+        typeof node.data.tasks === 'string'
+          ? JSON.parse(node.data.tasks)
+          : node.data.tasks;
     } catch (error) {
       console.error('Error parsing tasks JSON:', error);
     }
   }
 
   // Parse events JSON string if it exists
-  let events: unknown[] = [];
-  if (
-    typedNode.type === 'calendar' &&
-    typedNode.data &&
-    (typedNode.data as Record<string, unknown>).events
-  ) {
+  let events = [];
+  if (node.type === 'calendar' && node.data && node.data.events) {
     try {
       events =
-        typeof (typedNode.data as Record<string, unknown>).events === 'string'
-          ? JSON.parse(
-              (typedNode.data as Record<string, unknown>).events as string
-            )
-          : ((typedNode.data as Record<string, unknown>).events as unknown[]);
+        typeof node.data.events === 'string'
+          ? JSON.parse(node.data.events)
+          : node.data.events;
     } catch (error) {
       console.error('Error parsing events JSON:', error);
     }
   }
 
   // Parse columns and rows JSON strings if they exist
-  let columns: unknown[] = [],
-    rows: unknown[] = [],
-    tableSettings: Record<string, unknown> = {};
-  if (typedNode.type === 'table' && typedNode.data) {
+  let columns = [],
+    rows = [],
+    tableSettings = {};
+  if (node.type === 'table' && node.data) {
     try {
-      columns = (typedNode.data as Record<string, unknown>).columns
-        ? JSON.parse(
-            (typedNode.data as Record<string, unknown>).columns as string
-          )
-        : [];
-      rows = (typedNode.data as Record<string, unknown>).rows
-        ? JSON.parse((typedNode.data as Record<string, unknown>).rows as string)
-        : [];
-      tableSettings = (typedNode.data as Record<string, unknown>).settings
-        ? JSON.parse(
-            (typedNode.data as Record<string, unknown>).settings as string
-          )
-        : {};
+      columns = node.data.columns ? JSON.parse(node.data.columns) : [];
+      rows = node.data.rows ? JSON.parse(node.data.rows) : [];
+      tableSettings = node.data.settings ? JSON.parse(node.data.settings) : {};
     } catch (error) {
       console.error('Error parsing table data JSON:', error);
     }
   }
 
-  const nodeData: NodeData = {
-    ...typedNode,
-    ...(typedNode.data as Record<string, unknown>),
-    backgroundColor: typedNode.backgroundColor as string | undefined,
-    textColor: typedNode.textColor as string | undefined,
-    isTemporary: typedNode.isTemporary as boolean | undefined,
-    isEditing: typedNode.isEditing as boolean | undefined,
-    attachedFiles: Array.isArray(
-      (typedNode.data as Record<string, unknown>)?.attachedFiles
-    )
-      ? (
-          (typedNode.data as Record<string, unknown>)
-            .attachedFiles as Array<unknown>
-        )?.map((file: unknown) => ({
-          id: (file as FileData).id,
-          type: (file as FileData).type,
-          name: (file as FileData).name,
-          size: (file as FileData).size,
-          storagePath: (file as FileData).storagePath,
-          mimeType: (file as FileData).mimeType,
-          url: (file as FileData).url,
-          isFile: (file as FileData).isFile
-        }))
-      : [],
-    tasks: tasks,
-    events: events,
-    completedTasks:
-      ((typedNode.data as Record<string, unknown>)?.completedTasks as number) ||
-      0,
-    totalTasks:
-      ((typedNode.data as Record<string, unknown>)?.totalTasks as number) || 0,
-    showCompletedTasks:
-      ((typedNode.data as Record<string, unknown>)
-        ?.showCompletedTasks as boolean) ?? true,
-    showDueDate:
-      ((typedNode.data as Record<string, unknown>)?.showDueDate as boolean) ??
-      true,
-    showPriority:
-      ((typedNode.data as Record<string, unknown>)?.showPriority as boolean) ??
-      true,
-    sortBy:
-      ((typedNode.data as Record<string, unknown>)?.sortBy as string) || '',
-    drawingFileUrl:
-      ((typedNode.data as Record<string, unknown>)?.drawingFileUrl as string) ||
-      (typedNode.drawingFileUrl as string) ||
-      '',
-    currentTool:
-      ((typedNode.data as Record<string, unknown>)?.currentTool as string) ||
-      '',
-    settings:
-      ((typedNode.data as Record<string, unknown>)?.settings as Record<
-        string,
-        unknown
-      >) || {},
-    currentColor:
-      ((typedNode.data as Record<string, unknown>)?.currentColor as string) ||
-      '',
-    currentStrokeWidth:
-      ((typedNode.data as Record<string, unknown>)
-        ?.currentStrokeWidth as number) || 0,
-    columns: columns,
-    rows: rows,
-    defaultColumnType:
-      ((typedNode.data as Record<string, unknown>)
-        ?.defaultColumnType as string) || 'text',
-    dateFormat:
-      ((typedNode.data as Record<string, unknown>)?.dateFormat as string) ||
-      'yyyy-MM-dd',
-    tableSettings: tableSettings
-  };
-
   return {
-    id: typedNode.id as string,
-    type: typedNode.type as string,
+    id: node.id,
+    type: node.type,
     position,
-    data: nodeData,
-    width: typedNode.isEditing
-      ? ((isDesktop ? typedNode.editWidth : typedNode.mobileEditWidth) as
-          | number
-          | undefined) || (typedNode.viewWidth as number)
-      : (typedNode.viewWidth as number),
-    height: typedNode.isEditing
-      ? ((isDesktop ? typedNode.editHeight : typedNode.mobileEditHeight) as
-          | number
-          | undefined) || (typedNode.viewHeight as number)
-      : (typedNode.viewHeight as number)
+    data: {
+      ...node,
+      ...node.data,
+      backgroundColor: node.backgroundColor,
+      textColor: node.textColor,
+      isTemporary: node.isTemporary,
+      isEditing: node.isEditing,
+      attachedFiles:
+        node.data?.attachedFiles?.map((file: any) => ({
+          id: file.id,
+          type: file.type,
+          name: file.name,
+          size: file.size,
+          storagePath: file.storagePath,
+          mimeType: file.mimeType,
+          url: file.url,
+          isFile: file.isFile
+        })) || [],
+      tasks: tasks,
+      events: events,
+      completedTasks: node.data?.completedTasks || 0,
+      totalTasks: node.data?.totalTasks || 0,
+      showCompletedTasks: node.data?.showCompletedTasks ?? true,
+      showDueDate: node.data?.showDueDate ?? true,
+      showPriority: node.data?.showPriority ?? true,
+      sortBy: node.data?.sortBy || '',
+      drawingFileUrl: node.data?.drawingFileUrl || node.drawingFileUrl || '',
+      currentTool: node.data?.currentTool || '',
+      settings: node.data?.settings || {},
+      currentColor: node.data?.currentColor || '',
+      currentStrokeWidth: node.data?.currentStrokeWidth || 0,
+      columns: columns,
+      rows: rows,
+      defaultColumnType: node.data?.defaultColumnType || 'text',
+      dateFormat: node.data?.dateFormat || 'yyyy-MM-dd',
+      tableSettings: tableSettings
+    },
+    width: node.isEditing
+      ? (isDesktop ? node.editWidth : node.mobileEditWidth) || node.viewWidth
+      : node.viewWidth,
+    height: node.isEditing
+      ? (isDesktop ? node.editHeight : node.mobileEditHeight) || node.viewHeight
+      : node.viewHeight
   };
 };
 
-const processEdge = (edge: unknown): Edge => ({
-  id: (edge as Record<string, unknown>).id as string,
-  source: ((edge as Record<string, unknown>).sourceNodeId as string) || '',
-  target: ((edge as Record<string, unknown>).targetNodeId as string) || '',
+const processEdge = (edge: any) => ({
+  id: edge.id,
+  source: edge.sourceNodeId || '',
+  target: edge.targetNodeId || '',
   type: 'customEdge'
 });
 
 const useCanvasStore = create<CanvasState>()(
   devtools((set, get) => {
     let previousNodes: Node[] = [];
-    let previousEdges: Edge[] = [];
+    let previousEdges: any[] = [];
 
     return {
       canvasId: uuidv4(),
@@ -282,9 +182,7 @@ const useCanvasStore = create<CanvasState>()(
           const nodes = await Promise.all(canvasData.nodes.map(processNode));
           const edges = canvasData.edges.map(processEdge);
 
-          useNodeStore
-            .getState()
-            .setNodes(nodes.filter((node): node is Node => node !== null));
+          useNodeStore.getState().setNodes(nodes);
           useEdgeStore.getState().setEdges(edges);
 
           set({
