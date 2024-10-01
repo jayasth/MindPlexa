@@ -1,29 +1,23 @@
 module.exports = {
   env: {
     browser: true,
-    es2021: true
+    es2021: true,
+    node: true
   },
   extends: [
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
     'plugin:react/recommended',
-    'next',
     'next/core-web-vitals'
   ],
   overrides: [
     {
+      files: ['.eslintrc.{js,cjs}', 'server/**/*.js'],
       env: {
         node: true
       },
-      files: ['.eslintrc.{js,cjs}'],
       parserOptions: {
         sourceType: 'script'
-      }
-    },
-    {
-      files: ['server/**/*.js'],
-      env: {
-        node: true
       },
       rules: {
         '@typescript-eslint/no-var-requires': 'off'
@@ -38,9 +32,15 @@ module.exports = {
     ecmaVersion: 2022,
     sourceType: 'module'
   },
-  plugins: ['@typescript-eslint', 'react', '@next/next'],
+  plugins: ['@typescript-eslint', 'react', 'react-hooks'],
   rules: {
-    'no-case-declarations': 'off' // Added line
+    'no-case-declarations': 'off',
+    '@typescript-eslint/no-explicit-any': 'error',
+    'react-hooks/rules-of-hooks': 'error',
+    'react/no-unescaped-entities': ['error', { forbid: ['>', '}'] }],
+    '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+    'prefer-const': 'error',
+    'react-hooks/exhaustive-deps': 'warn'
   },
   globals: {
     process: 'readonly'
