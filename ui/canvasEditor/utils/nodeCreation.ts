@@ -275,7 +275,11 @@ export const replaceNodeWithType = async (
     editWidth: nodeDimension.editWidth,
     editHeight: nodeDimension.editHeight,
     mobileEditWidth: nodeDimension.mobileEditWidth,
-    mobileEditHeight: nodeDimension.mobileEditHeight
+    mobileEditHeight: nodeDimension.mobileEditHeight,
+    backgroundColor: '#F4F4F4',
+    textColor: '#575757',
+    zIndex: 0,
+    title: `Untitled ${nodeType.charAt(0).toUpperCase() + nodeType.slice(1)}`
   };
 
   console.log('nodeCreation: Replacing node with data:', newNodeData);
