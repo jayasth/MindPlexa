@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { createClient } from '@/utils/supabase/supabaseClient';
 import type { Tables } from 'types_db';
 import CanvasEditor from '@/ui/canvasEditor/CanvasEditor';
+import React from 'react';
 
 type Canvas = Tables<'canvases'>;
 
@@ -31,22 +32,9 @@ export default function CanvasEditorPage() {
     fetchCanvas();
   }, [canvasId]);
 
-  const handleCanvasUpdate = async (updatedCanvas: Canvas) => {
-    const supabase = createClient();
-    const { error } = await supabase
-      .from('canvases')
-      .update(updatedCanvas)
-      .eq('id', canvasId);
-
-    if (error) {
-      console.log('Error updating canvas:', error);
-    }
-  };
-
   if (!canvas) {
     return <div>Loading...</div>;
   }
 
   return <CanvasEditor canvasId={canvasId} />;
-  // End of the Selection
 }
