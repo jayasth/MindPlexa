@@ -4,13 +4,15 @@ import { useState } from 'react';
 import { FaEdit } from 'react-icons/fa';
 import ProfileForm from '@/ui/profile/ProfileForm';
 import Button from '@/ui/Button/Button';
+import { User } from '@supabase/supabase-js';
+import { Tables } from 'types_db';
 
 export default function ProfileFormWrapper({
   user,
   profile
 }: {
-  user: any;
-  profile: any;
+  user: User;
+  profile: Tables<'profiles'>;
 }) {
   const [showForm, setShowForm] = useState(false);
 

@@ -39,7 +39,8 @@ import {
   KeyboardSensor,
   PointerSensor,
   useSensor,
-  useSensors
+  useSensors,
+  DragEndEvent
 } from '@dnd-kit/core';
 import {
   arrayMove,
@@ -51,10 +52,29 @@ import { SortableItem } from './SortableItem';
 import TaskControls from './TaskControls';
 
 interface TaskNodeEditProps extends NodeProps {
-  data: any;
+  data: {
+    id: string;
+    title: string;
+    tasks: Array<{
+      id: string;
+      text: string;
+      completed: boolean;
+      priority: string;
+      status: string;
+      due_date: string | null;
+    }>;
+    backgroundColor: string;
+    textColor: string;
+    tags: string[];
+    showCompletedTasks: boolean;
+    totalTasks: number;
+    completedTasks: number;
+    sortBy: string;
+    showPriority: boolean;
+    showDueDate: boolean;
+  };
   width: number;
   height: number;
-  selected: boolean;
   onNodeResizeStop: (
     nodeId: string,
     newSize: { width: number; height: number },
@@ -67,7 +87,6 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
   data,
   width,
   height,
-  selected,
   onNodeResizeStop,
   position
 }) => {
@@ -84,7 +103,9 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
 
   const { canvasId } = useCanvasStore();
   const [title, setTitle] = useState(data.title || 'Untitled Task');
-  const [tasks, setTasks] = useState(data.tasks || []);
+  const [tasks, setTasks] = useState<TaskNodeEditProps['data']['tasks']>(
+    data.tasks || []
+  );
   const [backgroundColor, setBackgroundColor] = useState(
     data.backgroundColor || '#F4F4F4'
   );
@@ -282,10 +303,6 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
     [nodeWidth, nodeHeight, backgroundColor, textColor]
   );
 
-  const handleDelete = () => {
-    setIsDeleteModalOpen(true);
-  };
-
   const handleDeleteConfirm = () => {
     setIsDeleteModalOpen(false);
     handleDeleteNode(data.id, canvasId);
@@ -302,12 +319,12 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
     })
   );
 
-  const handleDragEnd = (event: any) => {
+  const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
-    if (active.id !== over.id) {
+    if (active.id !== over?.id) {
       setTasks((items) => {
         const oldIndex = items.findIndex((item) => item.id === active.id);
-        const newIndex = items.findIndex((item) => item.id === over.id);
+        const newIndex = items.findIndex((item) => item.id === over?.id);
         return arrayMove(items, oldIndex, newIndex);
       });
     }
@@ -328,7 +345,10 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
     }
   };
 
-  const updateTask = (taskId: string, updates: Partial<(typeof tasks)[0]>) => {
+  const updateTask = (
+    taskId: string,
+    updates: Partial<TaskNodeEditProps['data']['tasks'][0]>
+  ) => {
     setTasks((prevTasks) =>
       prevTasks.map((task) =>
         task.id === taskId ? { ...task, ...updates } : task
@@ -349,12 +369,15 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
   };
 
   const sortTasks = useCallback(
-    (tasksToSort: typeof data.tasks) => {
+    (tasksToSort: TaskNodeEditProps['data']['tasks']) => {
       return [...tasksToSort].sort((a, b) => {
-        switch (sortBy) {
+        switch (data.sortBy) {
           case 'priority':
             const priorityOrder = { high: 0, medium: 1, low: 2 };
-            return priorityOrder[a.priority] - priorityOrder[b.priority];
+            return (
+              priorityOrder[a.priority as keyof typeof priorityOrder] -
+              priorityOrder[b.priority as keyof typeof priorityOrder]
+            );
           case 'dueDate':
             return (a.due_date || '').localeCompare(b.due_date || '');
           case 'alphabetical':
@@ -364,7 +387,7 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
         }
       });
     },
-    [sortBy]
+    [data.sortBy]
   );
 
   const displayedTasks = useMemo(() => {
@@ -373,7 +396,7 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
       filteredTasks = filteredTasks.filter((task) => !task.completed);
     }
     return sortTasks(filteredTasks);
-  }, [tasks, sortBy, showCompletedTasks, sortTasks]);
+  }, [tasks, showCompletedTasks, sortTasks]);
 
   const handleNewTaskKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -430,7 +453,15 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
           style={{ color: textColor }}
         />
         <CloseButton
-          onClick={() => handleClose(data.id, () => {}, title, tasks, canvasId)}
+          onClick={() =>
+            handleClose(
+              data.id,
+              () => {},
+              title,
+              tasks as unknown as Record<string, unknown>,
+              canvasId
+            )
+          }
         />
       </div>
       <TaskControls
@@ -520,7 +551,6 @@ const TaskNodeEdit: React.FC<TaskNodeEditProps> = ({
         isOpen={isFileModalOpen}
         onClose={() => setIsFileModalOpen(false)}
         onAttachFiles={onAttachFiles}
-        onRemoveFile={onRemoveFile}
         existingFiles={attachedFiles}
         nodeId={data.id}
       />

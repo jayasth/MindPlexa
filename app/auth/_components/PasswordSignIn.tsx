@@ -18,12 +18,16 @@ export default function PasswordSignIn({
   allowEmail,
   redirectMethod
 }: PasswordSignInProps) {
-  const router = redirectMethod === 'client' ? useRouter() : null;
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     setIsSubmitting(true);
-    await handleRequest(e, signInWithPassword, router);
+    await handleRequest(
+      e,
+      signInWithPassword,
+      redirectMethod === 'client' ? router : null
+    );
     setIsSubmitting(false);
   };
 

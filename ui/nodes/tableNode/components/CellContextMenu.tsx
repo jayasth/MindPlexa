@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, useState } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { Menu, Item, Separator, useContextMenu } from 'react-contexify';
 import 'react-contexify/ReactContexify.css';
 import styles from '@/ui/nodes/tableNode/styles/CellContextMenu.module.css';
@@ -8,18 +8,35 @@ import { MdContentCopy, MdContentPaste, MdDelete, MdAdd } from 'react-icons/md';
 interface CellContextMenuProps {
   id: string;
   position: { x: number; y: number } | null;
-  params: any;
-  onClose: () => void;
-  setContent: React.Dispatch<React.SetStateAction<any>>;
-  content: any;
-  gridRef: React.MutableRefObject<any>;
+  setContent: React.Dispatch<
+    React.SetStateAction<{
+      columns: Array<{ field: string }>;
+      rows: Array<Record<string, string>>;
+    }>
+  >;
+  content: {
+    columns: Array<{ field: string }>;
+    rows: Array<Record<string, string>>;
+  };
+  gridRef: React.MutableRefObject<{
+    api: {
+      getFocusedCell: () => {
+        rowIndex: number;
+        column: { colId: string };
+      } | null;
+      getRowNode: (index: number) => {
+        data: Record<string, string>;
+        setDataValue: (field: string, value: string) => void;
+      };
+      refreshCells: (params: { force: boolean }) => void;
+      getSelectedRows: () => Array<Record<string, string>>;
+    };
+  }>;
 }
 
 const CellContextMenu: React.FC<CellContextMenuProps> = ({
   id,
   position,
-  params,
-  onClose,
   setContent,
   content,
   gridRef
@@ -27,8 +44,6 @@ const CellContextMenu: React.FC<CellContextMenuProps> = ({
   const { show } = useContextMenu({
     id
   });
-
-  const [isCopying, setIsCopying] = useState(false);
 
   const showContextMenu = useCallback(
     (event: MouseEvent) => {
@@ -76,9 +91,7 @@ const CellContextMenu: React.FC<CellContextMenuProps> = ({
         const clipboardText = await navigator.clipboard.readText();
         const rowNode = api.getRowNode(focusedCell.rowIndex);
         const colId = focusedCell.column.colId;
-        const currentValue = rowNode.data[colId];
-        const newValue = clipboardText; // Replace the current value with clipboard text
-        rowNode.setDataValue(colId, newValue);
+        rowNode.setDataValue(colId, clipboardText);
         api.refreshCells({ force: true });
       } catch (error) {
         console.error('Failed to paste data from clipboard:', error);
@@ -109,10 +122,13 @@ const CellContextMenu: React.FC<CellContextMenuProps> = ({
     const api = gridRef.current.api;
     const focusedCell = api.getFocusedCell();
     if (focusedCell) {
-      const newRow = content.columns.reduce((row: any, col: any) => {
-        row[col.field] = '';
-        return row;
-      }, {});
+      const newRow = content.columns.reduce(
+        (row: Record<string, string>, col: { field: string }) => {
+          row[col.field] = '';
+          return row;
+        },
+        {}
+      );
       const updatedRows = [...content.rows];
       updatedRows.splice(focusedCell.rowIndex, 0, newRow);
       setContent({ ...content, rows: updatedRows });
@@ -123,10 +139,13 @@ const CellContextMenu: React.FC<CellContextMenuProps> = ({
     const api = gridRef.current.api;
     const focusedCell = api.getFocusedCell();
     if (focusedCell) {
-      const newRow = content.columns.reduce((row: any, col: any) => {
-        row[col.field] = '';
-        return row;
-      }, {});
+      const newRow = content.columns.reduce(
+        (row: Record<string, string>, col: { field: string }) => {
+          row[col.field] = '';
+          return row;
+        },
+        {}
+      );
       const updatedRows = [...content.rows];
       updatedRows.splice(focusedCell.rowIndex + 1, 0, newRow);
       setContent({ ...content, rows: updatedRows });

@@ -1,27 +1,27 @@
 // Convert snake_case to camelCase
-export const toCamelCase = (obj: any): any => {
+export const toCamelCase = (obj: unknown): unknown => {
   if (Array.isArray(obj)) {
     return obj.map((v) => toCamelCase(v));
   } else if (obj !== null && typeof obj === 'object') {
-    return Object.keys(obj).reduce((result, key) => {
+    return Object.keys(obj).reduce((result: Record<string, unknown>, key) => {
       const camelKey = key.replace(/_([a-z])/g, (g) => g[1].toUpperCase());
-      result[camelKey] = toCamelCase(obj[key]);
+      result[camelKey] = toCamelCase((obj as Record<string, unknown>)[key]);
       return result;
-    }, {} as any);
+    }, {});
   }
   return obj;
 };
 
 // Convert camelCase to snake_case
-export const toSnakeCase = (obj: any): any => {
+export const toSnakeCase = (obj: unknown): unknown => {
   if (Array.isArray(obj)) {
     return obj.map((v) => toSnakeCase(v));
   } else if (obj !== null && typeof obj === 'object') {
-    return Object.keys(obj).reduce((result, key) => {
+    return Object.keys(obj).reduce((result: Record<string, unknown>, key) => {
       const snakeKey = key.replace(/([A-Z])/g, (g) => `_${g.toLowerCase()}`);
-      result[snakeKey] = toSnakeCase(obj[key]);
+      result[snakeKey] = toSnakeCase((obj as Record<string, unknown>)[key]);
       return result;
-    }, {} as any);
+    }, {});
   }
   return obj;
 };

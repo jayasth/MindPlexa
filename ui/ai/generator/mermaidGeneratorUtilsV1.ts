@@ -21,13 +21,13 @@ export async function parseMermaidCode(
   // Remove the "Project Concept:" prefix if present
   const processedCode = filteredCode.replace(/^.*?graph TD/, 'graph TD');
 
-  let svgCode: any;
+  let svgCode: { svg: string };
   let warning: string | undefined;
 
   try {
     mermaid.initialize({ startOnLoad: false });
     svgCode = await mermaid.render('mermaid-chart', processedCode);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('mermaidGeneratorUtilsV1 Mermaid parsing error:', error);
     warning = 'Error parsing Mermaid code. Using fallback layout.';
     // Generate a simple fallback layout
@@ -52,7 +52,7 @@ export async function parseMermaidCode(
     }
 
     return { nodes: filteredNodes, edges, warning };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(
       'mermaidGeneratorUtilsV1 Error converting to React Flow elements:',
       error

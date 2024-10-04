@@ -1,10 +1,9 @@
 import { createClient } from '@/utils/supabase/supabaseClient';
-import { Database } from '@/types_db';
 
 export const handleTags = async (
   nodeId: string,
   tags: string[]
-): Promise<{ error?: any }> => {
+): Promise<{ error?: unknown }> => {
   const supabase = createClient();
 
   // Make a copy of the tags array

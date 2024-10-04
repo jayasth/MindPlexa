@@ -10,8 +10,7 @@ import { ToolHandlers } from '../DrawNodeTools';
 import {
   Point,
   getMousePoint,
-  getTouchPoint,
-  mouseButtonIsDown
+  getTouchPoint
 } from '@/ui/nodes/drawNode/utils/pointUtils';
 import { ToolSetting } from '../types';
 import { useHistory } from '../drawNodeHistory';
@@ -211,5 +210,7 @@ const FixedSizeDrawingLayer = forwardRef<
     );
   }
 );
+
+FixedSizeDrawingLayer.displayName = 'FixedSizeDrawingLayer';
 
 export default FixedSizeDrawingLayer;

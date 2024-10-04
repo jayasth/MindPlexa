@@ -5,7 +5,7 @@ import {
   updateEdge as updateEdgeInDB,
   deleteEdge as deleteEdgeInDB
 } from '@/utils/canvas/edgeService';
-import type { Edge } from 'reactflow';
+import type { Edge, EdgeChange } from 'reactflow';
 
 interface EdgeState {
   edges: Edge[];
@@ -13,7 +13,7 @@ interface EdgeState {
   updateEdge: (id: string, data: Partial<Edge>) => void;
   removeEdge: (id: string) => void;
   setEdges: (updater: Edge[] | ((edges: Edge[]) => Edge[])) => void;
-  onEdgesChange: (changes: any) => void;
+  onEdgesChange: (changes: EdgeChange[]) => void;
 }
 
 const useEdgeStore = create<EdgeState>()(
@@ -104,7 +104,12 @@ const useEdgeStore = create<EdgeState>()(
         produce((state: EdgeState) => {
           const updatedEdges = state.edges
             .map((edge) => {
-              const change = changes.find((change) => change.id === edge.id);
+              const change = changes.find((change) => {
+                if ('id' in change) {
+                  return change.id === edge.id;
+                }
+                return false;
+              });
               if (change) {
                 switch (change.type) {
                   case 'remove':
@@ -115,7 +120,7 @@ const useEdgeStore = create<EdgeState>()(
               }
               return edge;
             })
-            .filter(Boolean);
+            .filter(Boolean) as Edge[];
           state.edges = updatedEdges;
         })
       );

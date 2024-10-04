@@ -9,32 +9,25 @@ import {
   FaList,
   FaFileExport
 } from 'react-icons/fa';
-import Dropdown from '@/ui/dropdown/Dropdown';
 
 interface CalendarToolbarProps {
   view: string;
-  defaultView?: string;
   onViewChange: (view: string) => void;
-  onDefaultViewChange: (view: string) => void;
   textColor: string;
   backgroundColor: string;
   onNavigate: (action: 'PREV' | 'NEXT' | 'TODAY') => void;
   currentDate: Date;
   onExport: () => void;
-  messages?: { [key: string]: string };
 }
 
 const CalendarToolbar: React.FC<CalendarToolbarProps> = ({
   view,
-  defaultView = 'month', // Default view is month
   onViewChange,
-  onDefaultViewChange,
   textColor,
   backgroundColor,
   onNavigate,
   currentDate,
-  onExport,
-  messages = { agenda: 'List' }
+  onExport
 }) => {
   const handleViewClick = (newView: string) => {
     onViewChange(newView);

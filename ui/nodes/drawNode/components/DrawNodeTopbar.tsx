@@ -10,6 +10,16 @@ import styles from './DrawNodeTopbar.module.css';
 import DrawNodeSettings from './DrawNodeSettings';
 import { saveDrawing } from '@/utils/canvas/drawNodeService';
 
+interface Tool {
+  name: string;
+  icon: React.ComponentType<{ size: number }>;
+}
+
+interface ToolSetting {
+  color: string;
+  strokeWidth: number;
+}
+
 interface DrawNodeTopbarProps {
   undo: () => void;
   redo: () => void;
@@ -19,17 +29,19 @@ interface DrawNodeTopbarProps {
   clear: () => void;
   backgroundColor: string;
   textColor: string;
-  tools: any[];
-  toolSettings: any[];
-  onToolSettingChange: (toolIndex: number, key: string, value: any) => void;
+  tools: Tool[];
+  toolSettings: ToolSetting[];
+  onToolSettingChange: (
+    toolIndex: number,
+    key: keyof ToolSetting,
+    value: ToolSetting[keyof ToolSetting]
+  ) => void;
   currentToolIndex: number;
-  currentTool: string;
   currentColor: string;
   currentStrokeWidth: number;
-  onToolChange: (index: number) => void;
   onColorChange: (color: string) => void;
   onStrokeWidthChange: (width: number) => void;
-  nodeId: string; // Add this prop
+  nodeId: string;
 }
 
 const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
@@ -45,10 +57,8 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
   toolSettings,
   onToolSettingChange,
   currentToolIndex,
-  currentTool,
   currentColor,
   currentStrokeWidth,
-  onToolChange,
   onColorChange,
   onStrokeWidthChange,
   nodeId
@@ -208,9 +218,19 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
       >
         <h2>Tool Settings</h2>
         <DrawNodeSettings
-          tools={tools}
-          toolSettings={toolSettings}
-          onToolSettingChange={onToolSettingChange}
+          tools={tools.map((tool) => ({ tool }))}
+          toolSettings={toolSettings.map((setting) => ({
+            ...setting,
+            opacity: 100 // Default opacity to 100 if not present
+          }))}
+          onToolSettingChange={(toolIndex, key, value) => {
+            if (key === 'opacity') {
+              // Handle opacity separately if needed
+              console.log(`Opacity changed for tool ${toolIndex}: ${value}`);
+            } else {
+              onToolSettingChange(toolIndex, key, value);
+            }
+          }}
         />
       </Modal>
     </div>

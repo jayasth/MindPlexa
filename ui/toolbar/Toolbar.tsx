@@ -13,19 +13,19 @@ import { HiOutlineViewGridAdd } from 'react-icons/hi';
 import { FaRobot } from 'react-icons/fa';
 
 import Link from 'next/link';
-import { useNodeStore, useUIStore, useCanvasStore } from '@/app/store';
+import { useNodeStore, useUIStore } from '@/app/store';
 import { createNode } from '@/ui/canvasEditor/utils/nodeCreation';
 import { findOptimalPosition } from '@/ui/canvasEditor/utils/positioningUtils';
-import { getNodeSpecificProperties } from '@/ui/canvasEditor/utils/nodeProperties';
 import styles from './Toolbar.module.css';
 import { Tooltip } from '@/ui/Tooltip/Tooltip';
 import AIGeneratorModalV1 from '@/ui/ai/generator/AIGeneratorModalV1';
 import AIGeneratorModalV2 from '@/ui/ai/generator/AIGeneratorModalV2';
+import { ReactFlowInstance } from 'reactflow';
 
 interface ToolbarProps {
   canvasId: string;
   onDownload: () => void;
-  reactFlowInstance: any;
+  reactFlowInstance: ReactFlowInstance | null;
 }
 
 const Toolbar: React.FC<ToolbarProps> = ({
@@ -39,7 +39,6 @@ const Toolbar: React.FC<ToolbarProps> = ({
   const [showAIGeneratorV2, setShowAIGeneratorV2] = useState(false);
   const addNode = useNodeStore((state) => state.addNode);
   const nodes = useNodeStore((state) => state.nodes);
-  const setCanvasId = useCanvasStore((state) => state.setCanvasId);
   const screenToFlowPosition = useUIStore(
     (state) => state.screenToFlowPosition
   );
@@ -55,7 +54,6 @@ const Toolbar: React.FC<ToolbarProps> = ({
         };
 
         const position = findOptimalPosition(nodes, canvasSize);
-        const nodeProps = getNodeSpecificProperties(type, false);
 
         await createNode(
           type,

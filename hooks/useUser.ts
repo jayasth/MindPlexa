@@ -36,7 +36,7 @@ export const useUser = () => {
     return () => {
       authListener?.subscription.unsubscribe();
     };
-  }, []);
+  }, [supabase.auth]);
 
   return { user, isLoading };
 };

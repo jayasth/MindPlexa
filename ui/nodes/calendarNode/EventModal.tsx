@@ -6,12 +6,20 @@ import Dropdown from '@/ui/dropdown/Dropdown';
 import moment from 'moment-timezone';
 import styles from './EventModal.module.css';
 
+interface CalendarEvent {
+  id?: string;
+  title: string;
+  start: Date;
+  end: Date;
+  timezone: string;
+}
+
 interface EventModalProps {
-  event: any;
+  event: CalendarEvent | null;
   isOpen: boolean;
   onClose: () => void;
-  onSave: (updatedEvent: any) => void;
-  onDelete: (eventToDelete: any) => void;
+  onSave: (updatedEvent: CalendarEvent) => void;
+  onDelete: (eventToDelete: CalendarEvent) => void;
   defaultTimezone: string;
 }
 
@@ -42,14 +50,16 @@ const EventModal: React.FC<EventModalProps> = ({
   };
 
   const handleSave = () => {
-    const updatedEvent = {
-      ...event,
-      title,
-      start: moment.tz(start, timezone).toDate(),
-      end: moment.tz(end, timezone).toDate(),
-      timezone
-    };
-    onSave(updatedEvent);
+    if (event) {
+      const updatedEvent: CalendarEvent = {
+        ...event,
+        title,
+        start: moment.tz(start, timezone).toDate(),
+        end: moment.tz(end, timezone).toDate(),
+        timezone
+      };
+      onSave(updatedEvent);
+    }
   };
 
   return (
@@ -93,7 +103,7 @@ const EventModal: React.FC<EventModalProps> = ({
           <Button variant="submit" onClick={handleSave}>
             Save
           </Button>
-          {event?.title && (
+          {event && (
             <Button variant="danger" onClick={() => onDelete(event)}>
               Delete
             </Button>

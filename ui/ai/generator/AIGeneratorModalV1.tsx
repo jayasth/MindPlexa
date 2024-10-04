@@ -20,7 +20,6 @@ import { Database } from '@/types_db';
 import { v4 as uuidv4 } from 'uuid';
 import { FaQuestionCircle } from 'react-icons/fa';
 import { BsLightbulb } from 'react-icons/bs';
-import { useRouter } from 'next/navigation';
 import { useToast } from '@/ui/Toasts/use-toast';
 
 interface AIGeneratorModalV1Props {
@@ -48,7 +47,6 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
   onClose
 }) => {
   const [projectConcept, setProjectConcept] = useState('');
-  const [followUpQuestion, setFollowUpQuestion] = useState('');
   const [followUpAnswer, setFollowUpAnswer] = useState('');
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [generatedNodes, setGeneratedNodes] = useState<Node[]>([]);
@@ -68,22 +66,14 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
     'flowchart' | 'followUp' | 'advice' | 'noIntegration' | null
   >(null);
   const [responseContent, setResponseContent] = useState<string>('');
-  const [responseExplanation, setResponseExplanation] = useState<string>('');
   const [isResponseReady, setIsResponseReady] = useState(false);
-  const router = useRouter();
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const { toast } = useToast();
-  const [parsedMermaidCode, setParsedMermaidCode] = useState<string | null>(
-    null
-  );
 
   const resetState = () => {
-    setFollowUpQuestion('');
     setFollowUpAnswer('');
     setFollowUpCount(0);
     setResponseType(null);
     setResponseContent('');
-    setResponseExplanation('');
     setIsResponseReady(false);
     setErrorMessage(null);
   };
@@ -96,12 +86,6 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
       setProjectConcept(newProjectConcept);
       resetState();
     }
-  };
-
-  const handleFollowUpAnswerChange = (
-    e: React.ChangeEvent<HTMLTextAreaElement>
-  ) => {
-    setFollowUpAnswer(e.target.value);
   };
 
   const handleGenerateCanvas = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -144,7 +128,6 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
 
       setResponseType(data.responseType);
       setResponseContent(data.content);
-      setResponseExplanation(data.explanation);
 
       if (data.responseType === 'flowchart') {
         const { nodes, edges, warning } = await parseMermaidCode(
@@ -254,7 +237,10 @@ const AIGeneratorModalV1: React.FC<AIGeneratorModalV1Props> = ({
         console.error('Error creating bulk nodes:', error);
         setErrorMessage('Failed to create nodes. Please try again.');
       } else {
-        setNodes((currentNodes) => [...currentNodes, ...(createdNodes || [])]);
+        setNodes((currentNodes) => [
+          ...currentNodes,
+          ...(createdNodes as Node[])
+        ]);
 
         // Create edges in the database and update the state
         for (const edge of updatedEdges) {

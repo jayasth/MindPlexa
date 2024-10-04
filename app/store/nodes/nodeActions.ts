@@ -19,7 +19,7 @@ type NodeType = Exclude<
   'selection_menu'
 >;
 
-export const addNode = async (set, node, canvasId) => {
+export const addNode = async (set, node, _canvasId) => {
   try {
     set(
       produce((state: NodeState) => {
@@ -33,7 +33,7 @@ export const addNode = async (set, node, canvasId) => {
   }
 };
 
-export const updateNode = async (set, get, id, data, canvasId) => {
+export const updateNode = async (set, get, id, data, _canvasId) => {
   try {
     set(
       produce((state: NodeState) => {
@@ -178,7 +178,7 @@ export const updateNode = async (set, get, id, data, canvasId) => {
   }
 };
 
-export const removeNode = async (set, get, id, canvasId) => {
+export const removeNode = async (set, get, id, _canvasId) => {
   try {
     const attachments = await getAttachments(id);
     for (const attachment of attachments) {

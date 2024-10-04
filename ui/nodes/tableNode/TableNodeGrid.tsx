@@ -26,7 +26,6 @@ import {
 } from '@/ui/nodes/tableNode/utils/KeyboardMouseHandlers';
 
 import {
-  AddTableButton,
   AddColumnButton,
   AddRowButton,
   ExportButton,
@@ -35,13 +34,13 @@ import {
   SettingsButton
 } from '@/ui/nodes/tableNode/components/TableNodeToolbar';
 
-// Add this interface
-interface Column {
-  id: string;
-  name: string;
-  type: string;
-  cellEditorParams?: { options: string[] };
-}
+// Remove this unused interface
+// interface Column {
+//   id: string;
+//   name: string;
+//   type: string;
+//   cellEditorParams?: { options: string[] };
+// }
 
 interface TableNodeGridProps {
   content: { columns: any[]; rows: any[] };
@@ -144,9 +143,6 @@ const TableNodeGrid: React.FC<TableNodeGridProps> = ({
     setCellContextMenuPosition(null);
     setCellContextMenuParams(null);
   };
-
-  const [isModalOpen, setIsModalOpenState] = useState(false);
-  const [isWarningOpen, setIsWarningOpen] = useState(false);
 
   const handleAddTable = useCallback(
     (columns, rows) => {

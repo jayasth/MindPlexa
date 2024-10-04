@@ -1,7 +1,6 @@
 import { createClient } from '@/utils/supabase/supabaseClient';
 import { Database } from '@/types_db';
 import { v4 as uuidv4 } from 'uuid';
-import { toCamelCase, toSnakeCase } from '@/utils/caseConversion';
 import {
   getNodeSpecificData,
   createNodeSpecificData,
@@ -122,7 +121,7 @@ export const duplicateNode = async (
           };
           if (attachment.is_file && attachment.storage_path) {
             const newStoragePath = `node-attachments/${newNodeId}/${attachment.file_name}`;
-            const { data, error } = await supabase.storage
+            const { error } = await supabase.storage
               .from('node-attachments')
               .copy(attachment.storage_path, newStoragePath);
             if (error) throw error;
@@ -142,8 +141,8 @@ export const duplicateNode = async (
     return {
       success: true,
       newNode: {
-        ...newNode,
-        ...newNodeSpecific,
+        ...(newNode as object),
+        ...(newNodeSpecific as object),
         id: newNodeId,
         canvasId,
         parent_node_id: null,

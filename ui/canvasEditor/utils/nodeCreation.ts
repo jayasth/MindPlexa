@@ -1,4 +1,4 @@
-import { Node, XYPosition } from 'reactflow';
+import { Node, XYPosition, Edge } from 'reactflow';
 import {
   getNodeSpecificProperties,
   nodeDimensions
@@ -14,10 +14,8 @@ import useEdgeStore from '@/app/store/edges/useEdgeStore';
 import * as nodeSpecificDataService from '@/utils/canvas/nodeSpecificDataService';
 import { useNodeStore } from '@/app/store';
 
-const setPosition = (x: number, y: number): XYPosition => ({ x, y });
-
 function findNewPosition(
-  nodes: Node<any>[],
+  nodes: Node[],
   canvasSize: { width: number; height: number }
 ): XYPosition {
   return findOptimalPosition(nodes, canvasSize);
@@ -51,13 +49,13 @@ const createEdge = async (
 export const createNode = async (
   nodeType: 'note' | 'task' | 'table' | 'calendar' | 'draw' | 'selection_menu',
   position: XYPosition,
-  nodes: Node<any>[],
-  callback: (newNode: Node<any>) => void,
+  nodes: Node[],
+  callback: (newNode: Node) => void,
   canvasSize: { width: number; height: number },
   isTemporary = nodeType === 'selection_menu',
   isEditing = false,
   canvasId: string,
-  parentNode?: Node<any> | null,
+  parentNode?: Node | null,
   temporaryNodeId?: string
 ): Promise<void> => {
   const nodeId = temporaryNodeId || uuidv4();
@@ -125,7 +123,7 @@ export const createNode = async (
 
     if (createdNode) {
       console.log('nodeCreation: Node created with data:', createdNode);
-      const newNode: Node<any> = {
+      const newNode: Node = {
         id: nodeId,
         type: nodeType,
         position: positionAsXYPosition,
@@ -162,60 +160,6 @@ export const handleTemporaryNodeCreation = async (
 
   const temporaryNodeId = uuidv4();
 
-  const temporaryNode: Node = {
-    id: temporaryNodeId,
-    type: nodeType,
-    position,
-    data: {
-      onSelect: async (
-        selectedNodeType:
-          | 'selection_menu'
-          | 'note'
-          | 'task'
-          | 'table'
-          | 'calendar'
-          | 'draw',
-        selectedPosition
-      ) => {
-        removeNode(temporaryNodeId);
-        setTimeout(async () => {
-          await createNode(
-            selectedNodeType,
-            selectedPosition,
-            nodes.filter((n) => n.id !== temporaryNodeId),
-            async (newNode) => {
-              addNode(newNode, canvasId);
-              console.log('TemporaryNodeHandler: Node added:', newNode);
-              if (parentNode) {
-                await createEdge(parentNode.id, newNode.id, canvasId);
-              }
-            },
-            {
-              width: nodeDimensions['selection_menu'].width,
-              height: nodeDimensions['selection_menu'].height
-            },
-            false,
-            false,
-            canvasId,
-            parentNode
-          );
-        }, 0);
-      },
-      onClose: () => {
-        removeNode(temporaryNodeId);
-      },
-      parentNode: parentNode,
-      isTemporary: true
-    },
-    width: nodeDimensions['selection_menu'].width,
-    height: nodeDimensions['selection_menu'].height
-  };
-
-  console.log(
-    'TemporaryNodeHandler: Node dimensions: ',
-    nodeDimensions['selection_menu']
-  );
-
   await createNode(
     'selection_menu',
     position,
@@ -251,7 +195,8 @@ export const handleTemporaryNodeCreation = async (
     true,
     false,
     canvasId,
-    parentNode
+    parentNode,
+    temporaryNodeId
   );
 
   console.log('Finished handleTemporaryNodeCreation');
@@ -261,7 +206,7 @@ export const replaceNodeWithType = async (
   nodeType: 'note' | 'task' | 'table' | 'calendar' | 'draw',
   id: string,
   position: XYPosition,
-  edges: any[],
+  edges: Edge[],
   setNode: (node: Node) => void,
   canvasId: string
 ) => {
@@ -324,7 +269,7 @@ export const replaceNodeWithType = async (
         textColor: updatedNode.textColor,
         isTemporary: updatedNode.isTemporary,
         ...getNodeSpecificProperties(nodeType, false),
-        ...specificData
+        ...(specificData as Record<string, unknown>)
       }
     };
 

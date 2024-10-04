@@ -50,10 +50,20 @@ import { CalendarEvent } from './eventTypes';
 const localizer = momentLocalizer(moment);
 
 interface CalendarNodeEditProps extends NodeProps {
-  data: any;
+  data: {
+    id: string;
+    title?: string;
+    events?: CalendarEvent[];
+    backgroundColor?: string;
+    textColor?: string;
+    tags?: string[];
+    view?: string;
+    defaultView?: string;
+    timeZone?: string;
+    exportSettings?: Record<string, unknown>;
+  };
   width: number;
   height: number;
-  selected: boolean;
   onNodeResizeStop: (
     nodeId: string,
     newSize: { width: number; height: number },
@@ -66,7 +76,6 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
   data,
   width,
   height,
-  selected,
   onNodeResizeStop,
   position
 }) => {
@@ -82,7 +91,6 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
   });
 
   const { canvasId } = useCanvasStore();
-  const [isSelected, setIsSelected] = useState(selected);
   const [title, setTitle] = useState(data.title || 'Untitled Calendar');
   const [events, setEvents] = useState<CalendarEvent[]>(() => {
     if (data.events && Array.isArray(data.events)) {
@@ -90,7 +98,7 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
         ...event,
         start: new Date(event.start),
         end: new Date(event.end),
-        timezone: event.timezone || timeZone // Use the event's timezone or the default
+        timezone: event.timezone || data.timeZone || moment.tz.guess()
       }));
     }
     return [];
@@ -109,7 +117,9 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
   const [isFileModalOpen, setIsFileModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState<any>(null);
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(
+    null
+  );
   const [view, setView] = useState(data.view || 'month');
   const [currentDate, setCurrentDate] = useState(() => {
     if (data.events && Array.isArray(data.events) && data.events.length > 0) {
@@ -120,11 +130,7 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
     }
     return moment().toDate();
   });
-  const [defaultView, setDefaultView] = useState(data.defaultView || 'month');
   const [timeZone, setTimeZone] = useState(data.timeZone || moment.tz.guess());
-  const [exportSettings, setExportSettings] = useState(
-    data.exportSettings || {}
-  );
 
   const handleBackgroundColorChange = useBackgroundColorChange(
     data.id,
@@ -176,9 +182,8 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
       events,
       tags,
       attachedFiles,
-      defaultView,
       timeZone,
-      exportSettings
+      exportSettings: data.exportSettings
     };
 
     debouncedUpdateNodeData(commonData, specificData);
@@ -191,9 +196,8 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
     nodeHeight,
     tags,
     attachedFiles,
-    defaultView,
     timeZone,
-    exportSettings,
+    data.exportSettings,
     debouncedUpdateNodeData
   ]);
 
@@ -279,10 +283,6 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
     [nodeWidth, nodeHeight, backgroundColor, textColor]
   );
 
-  const handleDelete = () => {
-    setIsDeleteModalOpen(true);
-  };
-
   const handleDeleteConfirm = () => {
     setIsDeleteModalOpen(false);
     handleDeleteNode(data.id, canvasId);
@@ -292,18 +292,17 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
     setIsDeleteModalOpen(false);
   };
 
-  const handleSelectEvent = (event) => {
+  const handleSelectEvent = (event: CalendarEvent) => {
     setSelectedEvent(event);
     setIsModalOpen(true);
   };
-
-  const handleAddEvent = ({ start, end }) => {
-    const newEvent = {
-      id: Date.now(),
+  const handleAddEvent = ({ start, end }: { start: Date; end: Date }) => {
+    const newEvent: CalendarEvent = {
+      id: Date.now().toString(),
       title: '',
       start: new Date(start),
       end: new Date(end),
-      category: ''
+      timezone: timeZone
     };
     setSelectedEvent(newEvent);
     setIsModalOpen(true);
@@ -327,7 +326,7 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
     setIsModalOpen(false);
   };
 
-  const handleEventDelete = (eventToDelete) => {
+  const handleEventDelete = (eventToDelete: CalendarEvent) => {
     setEvents(events.filter((event) => event.id !== eventToDelete.id));
     setIsModalOpen(false);
   };
@@ -336,13 +335,21 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
     setView(newView);
   };
 
-  const handleEventResize = (data) => {
+  const handleEventResize = (data: {
+    start: Date;
+    end: Date;
+    event: CalendarEvent;
+  }) => {
     const { start, end, event } = data;
     const updatedEvent = { ...event, start, end };
     setEvents(events.map((ev) => (ev === event ? updatedEvent : ev)));
   };
 
-  const handleEventDrop = (data) => {
+  const handleEventDrop = (data: {
+    start: Date;
+    end: Date;
+    event: CalendarEvent;
+  }) => {
     const { start, end, event } = data;
     const updatedEvent = { ...event, start, end };
     setEvents(events.map((ev) => (ev === event ? updatedEvent : ev)));
@@ -429,7 +436,13 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
         />
         <CloseButton
           onClick={() =>
-            handleClose(data.id, () => {}, title, events, canvasId)
+            handleClose(
+              data.id,
+              () => {},
+              title,
+              { events } as Record<string, unknown>,
+              canvasId
+            )
           }
         />
       </div>
@@ -438,8 +451,6 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
           view={view}
           onViewChange={handleViewChange}
           textColor={textColor}
-          defaultView={defaultView}
-          onDefaultViewChange={setDefaultView}
           backgroundColor={backgroundColor}
           onNavigate={handleNavigate}
           currentDate={currentDate}
@@ -518,7 +529,6 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
         isOpen={isFileModalOpen}
         onClose={() => setIsFileModalOpen(false)}
         onAttachFiles={onAttachFiles}
-        onRemoveFile={onRemoveFile}
         existingFiles={attachedFiles}
         nodeId={data.id}
       />
@@ -529,14 +539,28 @@ const CalendarNodeEdit: React.FC<CalendarNodeEditProps> = ({
       />
       {isModalOpen && (
         <EventModal
-          event={selectedEvent}
+          event={
+            selectedEvent
+              ? { ...selectedEvent, id: selectedEvent.id?.toString() }
+              : null
+          }
           isOpen={isModalOpen}
           onClose={() => {
             setIsModalOpen(false);
             setSelectedEvent(null);
           }}
-          onSave={handleEventSave}
-          onDelete={handleEventDelete}
+          onSave={(updatedEvent) =>
+            handleEventSave({
+              ...updatedEvent,
+              id: parseInt(updatedEvent.id as string)
+            })
+          }
+          onDelete={(eventToDelete) =>
+            handleEventDelete({
+              ...eventToDelete,
+              id: parseInt(eventToDelete.id as string)
+            })
+          }
           defaultTimezone={timeZone}
         />
       )}

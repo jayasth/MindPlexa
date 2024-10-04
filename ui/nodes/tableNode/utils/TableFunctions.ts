@@ -29,7 +29,7 @@ const parseDate = (value: string | null): Date | null => {
   return null;
 };
 
-export const validateCellValue = (value: any, type: string): boolean => {
+export const validateCellValue = (value: unknown, type: string): boolean => {
   if (value === '' || value == null) {
     return true;
   }
@@ -37,10 +37,10 @@ export const validateCellValue = (value: any, type: string): boolean => {
     case 'text':
       return typeof value === 'string';
     case 'number':
-      return !isNaN(Number(value)) && isFinite(value);
+      return !isNaN(Number(value)) && isFinite(Number(value));
     case 'email':
       const emailRegex = /^[^\s@]+@[^\s@]+.[^\s@]+$/;
-      return emailRegex.test(value);
+      return typeof value === 'string' && emailRegex.test(value);
     case 'date':
       if (typeof value === 'string') {
         return parseDate(value) !== null;
@@ -48,13 +48,15 @@ export const validateCellValue = (value: any, type: string): boolean => {
       return false;
     case 'currency':
       return (
+        typeof value === 'string' &&
         !isNaN(parseFloat(value.replace(/[^0-9.-]+/g, ''))) &&
         isFinite(parseFloat(value.replace(/[^0-9.-]+/g, '')))
       );
     case 'percentage':
       return (
+        typeof value === 'string' &&
         !isNaN(parseFloat(value)) &&
-        isFinite(value) &&
+        isFinite(Number(value)) &&
         Number(value) >= 0 &&
         Number(value) <= 100
       );
@@ -63,40 +65,29 @@ export const validateCellValue = (value: any, type: string): boolean => {
   }
 };
 
-const validateDate = (value: string): boolean => {
-  const possibleFormats = [
-    'yyyy-MM-dd',
-    'dd/MM/yyyy',
-    'MM/dd/yyyy',
-    'dd.MM.yyyy',
-    'yyyy/MM/dd'
-  ];
-  return possibleFormats.some((fmt) => isValid(parse(value, fmt, new Date())));
-};
-
 export const formatCellValue = (
-  value: any,
+  value: unknown,
   type: string,
   dateFormat: string = 'yyyy-MM-dd'
-): any => {
+): string => {
   switch (type) {
     case 'currency':
-      return value
+      return typeof value === 'string'
         ? new Intl.NumberFormat('en-US', {
             style: 'currency',
             currency: 'USD'
           }).format(parseFloat(value.replace(/[^0-9.-]+/g, '')))
         : '';
     case 'date':
-      if (value) {
+      if (typeof value === 'string') {
         const parsedDate = parseDate(value);
         return parsedDate ? format(parsedDate, dateFormat) : '';
       }
       return '';
     case 'percentage':
-      return value ? `${Number(value).toFixed(2)}%` : '';
+      return typeof value === 'string' ? `${Number(value).toFixed(2)}%` : '';
     default:
-      return value ?? '';
+      return value !== null && value !== undefined ? String(value) : '';
   }
 };
 
@@ -434,23 +425,39 @@ function getValueFormatter(type: string, dateFormat: string) {
   }
 }
 
+export interface Column {
+  headerName: string;
+  field: string;
+  editable: boolean;
+  type: string;
+}
+
+export interface Row {
+  [key: string]: string | number | boolean | Date | null; // More specific types based on possible column types
+}
+
+export interface Content {
+  columns: Column[];
+  rows: Row[];
+}
+
 export const addColumn = (
-  content: any,
-  setContent: (content: any) => void,
-  api,
-  columnType: string = 'text'
+  content: Content,
+  setContent: (content: Content) => void,
+  api: { refreshCells?: (params: { force: boolean }) => void }, // Specify a more precise type if possible
+  columnType: 'text' | 'date' | 'currency' = 'text'
 ) => {
   console.log('TableFunctions: Adding column');
-  const newColumn = {
+  const newColumn: Column = {
     headerName: 'New Column',
     field: `col${content.columns.length + 1}`,
     editable: true,
     type: columnType
   };
 
-  let newRows = content.rows;
+  let newRows: Row[] = content.rows;
   if (newRows.length === 0) {
-    const newRow = { [newColumn.field]: '' };
+    const newRow: Row = { [newColumn.field]: '' };
     newRows = [newRow];
   } else {
     newRows = newRows.map((row) => ({ ...row, [newColumn.field]: '' }));
@@ -465,12 +472,12 @@ export const addColumn = (
 };
 
 export const addRow = (
-  content: any,
-  setContent: (content: any) => void,
-  api
+  content: Content,
+  setContent: (content: Content) => void,
+  api: { refreshCells?: (params: { force: boolean }) => void } // Specify a more precise type if possible
 ) => {
   console.log('TableFunctions: Adding row');
-  const newRow = content.columns.reduce((row: any, col: any) => {
+  const newRow: Row = content.columns.reduce((row: Row, col: Column) => {
     row[col.field] = '';
     return row;
   }, {});
@@ -485,7 +492,7 @@ export const addRow = (
 
 export const importTableData = (
   event: React.ChangeEvent<HTMLInputElement>,
-  setContent: (content: any) => void
+  setContent: (content: Content) => void
 ) => {
   const fileReader = new FileReader();
   fileReader.onload = (e: ProgressEvent<FileReader>) => {
@@ -495,7 +502,7 @@ export const importTableData = (
         dynamicTyping: true,
         skipEmptyLines: true
       }).data;
-      const columns = Object.keys(importedData[0]).map((key) => ({
+      const columns: Column[] = Object.keys(importedData[0]).map((key) => ({
         headerName: key,
         field: key,
         editable: true,
@@ -509,7 +516,7 @@ export const importTableData = (
   }
 };
 
-export const exportTableData = (content: any) => {
+export const exportTableData = (content: Content) => {
   const dataStr = Papa.unparse(content.rows);
   const dataUri = 'data:text/csv;charset=utf-8,' + encodeURIComponent(dataStr);
   const exportFileDefaultName = 'tableData.csv';

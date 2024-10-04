@@ -7,7 +7,6 @@ type NodeType = 'note' | 'task' | 'calendar' | 'table' | 'draw';
 type SpecialNodeType = 'selection_menu';
 
 export const uploadSVGToBucket = async (nodeId: string, svgContent: string) => {
-  // Remove the data URL prefix if present
   const svgData = svgContent.replace(/^data:image\/svg\+xml;base64,/, '');
 
   const { data, error } = await supabase.storage
@@ -28,7 +27,7 @@ export const uploadSVGToBucket = async (nodeId: string, svgContent: string) => {
 export const getNodeSpecificData = async (
   nodeId: string,
   nodeType: NodeType | SpecialNodeType
-): Promise<any | null> => {
+): Promise<Record<string, unknown> | null> => {
   if (nodeType === 'selection_menu') {
     return {};
   }
@@ -95,11 +94,10 @@ export const getDrawNodeData = async (nodeId: string) => {
 export const updateNodeSpecificData = async (
   nodeId: string,
   nodeType: NodeType | SpecialNodeType,
-  updates: any
+  updates: Record<string, unknown>
 ) => {
   if (nodeType === 'selection_menu') {
-    // For selection_menu, we don't need to update any specific data
-    return { data: updates };
+    return { data: updates as Record<string, unknown> };
   }
 
   if (nodeType === 'draw') {
@@ -113,15 +111,18 @@ export const updateNodeSpecificData = async (
     }
 
     const updateData = {
-      ...toSnakeCase(updates),
-      current_tool: updates.currentTool,
-      current_color: updates.currentColor,
-      current_stroke_width: updates.currentStrokeWidth,
+      ...(toSnakeCase(updates) as Record<string, unknown>),
+      current_tool: updates.currentTool as string | null | undefined,
+      current_color: updates.currentColor as string | null | undefined,
+      current_stroke_width: updates.currentStrokeWidth as
+        | number
+        | null
+        | undefined,
       settings:
         typeof updates.settings === 'string'
           ? updates.settings
           : JSON.stringify(updates.settings),
-      drawing_file_url: svgPath
+      drawing_file_url: svgPath as string | null | undefined
     };
 
     const { data, error } = await supabase
@@ -141,7 +142,7 @@ export const updateNodeSpecificData = async (
 
   const { data, error } = await supabase
     .from(`${nodeType}_nodes`)
-    .update(toSnakeCase(updates))
+    .update(toSnakeCase(updates) as Record<string, unknown>)
     .eq('node_id', nodeId)
     .select()
     .single();
@@ -157,14 +158,12 @@ export const updateNodeSpecificData = async (
 export const createNodeSpecificData = async (
   nodeId: string,
   nodeType: NodeType | SpecialNodeType,
-  initialData: any
+  initialData: Record<string, unknown>
 ) => {
   if (nodeType === 'selection_menu') {
-    // Skip insertion for selection_menu nodes
-    return { data: initialData };
+    return { data: initialData as Record<string, unknown> };
   }
 
-  // Check if a record already exists for the given nodeId
   const { data: existingData, error: fetchError } = await supabase
     .from(`${nodeType}_nodes`)
     .select('*')
@@ -172,7 +171,6 @@ export const createNodeSpecificData = async (
     .single();
 
   if (fetchError && fetchError.code !== 'PGRST116') {
-    // PGRST116 is the code for "No rows found"
     console.error(`Error fetching ${nodeType} data:`, fetchError);
     return { error: fetchError };
   }
@@ -184,27 +182,38 @@ export const createNodeSpecificData = async (
     return { data: toCamelCase(existingData) };
   }
 
-  // Proceed with insertion if no existing record is found
   if (nodeType === 'draw') {
     if (initialData.drawingFileUrl) {
-      const svgPath = await uploadSVGToBucket(
-        nodeId,
-        initialData.drawingFileUrl
-      );
-      if (svgPath) {
-        initialData.drawingFileUrl = svgPath;
+      if (typeof initialData.drawingFileUrl === 'string') {
+        const svgPath = await uploadSVGToBucket(
+          nodeId,
+          initialData.drawingFileUrl
+        );
+        if (svgPath) {
+          initialData.drawingFileUrl = svgPath;
+        }
       }
     }
 
+    const drawNodeData = {
+      ...(toSnakeCase(initialData) as Record<string, unknown>),
+      node_id: nodeId,
+      current_color: initialData.currentColor,
+      current_stroke_width: initialData.currentStrokeWidth,
+      current_tool: initialData.currentTool
+    };
+
     const { data, error } = await supabase
       .from('draw_nodes')
-      .insert({
-        ...toSnakeCase(initialData),
-        node_id: nodeId,
-        current_color: initialData.currentColor,
-        current_stroke_width: initialData.currentStrokeWidth,
-        current_tool: initialData.currentTool
-      })
+      .insert(
+        drawNodeData as {
+          node_id: string;
+          current_color: string | null;
+          current_stroke_width: number | null;
+          current_tool: string | null;
+          drawing_file_url?: string | null;
+        }
+      )
       .select()
       .single();
 
@@ -216,6 +225,11 @@ export const createNodeSpecificData = async (
     return { data: toCamelCase(data) };
   }
 
+  const nodeData = {
+    ...(toSnakeCase(initialData) as Record<string, unknown>),
+    node_id: nodeId
+  };
+
   const { data, error } = await supabase
     .from(
       `${nodeType}_nodes` as
@@ -225,7 +239,7 @@ export const createNodeSpecificData = async (
         | 'table_nodes'
         | 'draw_nodes'
     )
-    .insert({ ...toSnakeCase(initialData), node_id: nodeId })
+    .insert(nodeData)
     .select()
     .single();
 
@@ -242,7 +256,6 @@ export const deleteNodeSpecificData = async (
   nodeType: NodeType | SpecialNodeType
 ) => {
   if (nodeType === 'selection_menu') {
-    // No specific data to delete for selection_menu
     return { success: true };
   }
 
@@ -257,7 +270,6 @@ export const deleteNodeSpecificData = async (
       return { error };
     }
 
-    // Delete the SVG file from the bucket
     const { error: deleteError } = await supabase.storage
       .from('drawings')
       .remove([`${nodeId}.svg`]);
@@ -284,14 +296,14 @@ export const deleteNodeSpecificData = async (
 
 export const processNodeSpecificData = (
   nodeType: NodeType | SpecialNodeType,
-  data: any
+  data: Record<string, unknown>
 ) => {
   switch (nodeType) {
     case 'note':
       return { content: data.content || '' };
     case 'task':
       return {
-        tasks: data.tasks ? JSON.parse(data.tasks) : [],
+        tasks: data.tasks ? JSON.parse(data.tasks as string) : [],
         completedTasks: data.completed_tasks || 0,
         totalTasks: data.total_tasks || 0,
         showCompletedTasks: data.show_completed_tasks ?? true,

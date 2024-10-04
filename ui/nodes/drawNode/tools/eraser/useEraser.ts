@@ -36,7 +36,7 @@ export function useEraser({
     (
       point: Point,
       context: CanvasRenderingContext2D,
-      settings: ToolSetting
+      _settings: ToolSetting
     ) => {
       context.lineTo(point[0], point[1]);
       context.stroke();

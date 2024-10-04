@@ -4,12 +4,13 @@ import { useNodeStore, useUIStore } from '@/app/store';
 import styles from './CalendarNodeView.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 import { FaEdit } from 'react-icons/fa';
+import { CalendarEvent } from './eventTypes';
 
 interface CalendarNodeViewProps extends NodeProps {
   data: {
     id: string;
     title?: string;
-    events?: any[];
+    events?: CalendarEvent[];
     backgroundColor?: string;
     textColor?: string;
   };
@@ -22,7 +23,7 @@ const CalendarNodeView: React.FC<CalendarNodeViewProps> = ({
   width,
   height
 }) => {
-  const { title, events, id, backgroundColor, textColor } = data;
+  const { title, events, backgroundColor, textColor } = data;
   const toggleEditMode = useNodeStore((state) => state.toggleEditMode);
   const isLoading = useUIStore((state) => state.isLoading);
 

@@ -11,9 +11,8 @@ import {
 } from 'react-icons/md';
 import { AiOutlineFieldNumber } from 'react-icons/ai';
 import {
-  getContextMenuItems,
   changeColumnType,
-  updateColumnAlignment // Importing updateColumnAlignment
+  updateColumnAlignment
 } from '@/ui/nodes/tableNode/utils/headerContextMenuItems';
 import RenameColumnModal from '@/ui/nodes/tableNode/components/RenameColumnModal';
 import AddColumnModal from '@/ui/nodes/tableNode/components/AddColumnModal';
@@ -32,14 +31,7 @@ interface Column {
   type: string;
 }
 
-const HeaderContextMenu = ({
-  id,
-  params,
-  content,
-  setContent,
-  updateNode,
-  gridRef
-}) => {
+const HeaderContextMenu = ({ id, params, content, setContent, gridRef }) => {
   const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
   const [isAddColumnModalOpen, setIsAddColumnModalOpen] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState<Column | null>(null);
@@ -58,16 +50,6 @@ const HeaderContextMenu = ({
   if (!params || !params.column || !params.api) {
     return null;
   }
-
-  const items = getContextMenuItems(
-    params,
-    content,
-    setContent,
-    updateNode,
-    gridRef,
-    setIsRenameModalOpen,
-    setSelectedColumn
-  );
 
   const handleRenameSave = (newName: string, newType: string) => {
     if (selectedColumn) {

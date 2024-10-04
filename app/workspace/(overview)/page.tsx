@@ -5,8 +5,7 @@ import {
   FaChartBar,
   FaPlus,
   FaCog,
-  FaUser,
-  FaBell
+  FaUser
 } from 'react-icons/fa';
 import { createClient } from '@/utils/supabase/supabaseServer';
 import CanvasList from '@/ui/canvas/CanvasList';

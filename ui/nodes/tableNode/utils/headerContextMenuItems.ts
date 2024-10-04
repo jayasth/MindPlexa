@@ -6,12 +6,17 @@ interface ContextMenuItem {
   subMenu?: ContextMenuItem[];
 }
 
+interface TableContent {
+  columns: ColDef[];
+  rows: Record<string, unknown>[];
+}
+
 export const changeColumnType = (
   params: { column: ColumnState; api: GridApi },
-  content: { columns: ColDef[]; rows: any[] },
-  setContent: (content: { columns: ColDef[]; rows: any[] }) => void,
+  content: TableContent,
+  setContent: (content: TableContent) => void,
   newType: string,
-  gridRef: React.RefObject<any>
+  gridRef: React.RefObject<{ api: GridApi }>
 ) => {
   const updatedColumns = content.columns.map((col) => {
     if (col.field === params.column.colId) {
@@ -20,22 +25,23 @@ export const changeColumnType = (
     return col;
   });
   setContent({ ...content, columns: updatedColumns });
-  gridRef.current.api.refreshHeader();
+  gridRef.current?.api.refreshHeader();
 };
 
-export const updateColumnAlignment = (api, colId, alignment) => {
+export const updateColumnAlignment = (
+  api: GridApi,
+  colId: string,
+  alignment: string
+) => {
   const columnDefs = api.getColumnDefs();
-  const updatedColumnDefs = columnDefs.map((colDef) => {
-    if (colDef.field === colId) {
-      return {
-        ...colDef,
-        cellStyle: { textAlign: alignment }
-      };
-    }
-    return colDef;
-  });
-  api.setColumnDefs(updatedColumnDefs);
-  api.refreshCells({ force: true });
+  if (columnDefs) {
+    columnDefs.forEach((colDef) => {
+      if ('field' in colDef && colDef.field === colId) {
+        colDef.cellStyle = { textAlign: alignment };
+      }
+    });
+    api.refreshCells({ force: true });
+  }
 };
 
 export const getContextMenuItems = (
@@ -43,15 +49,12 @@ export const getContextMenuItems = (
     column: ColumnState;
     api: GridApi;
   },
-  content: {
-    columns: ColDef[];
-    rows: any[];
-  },
-  setContent: (content: { columns: ColDef[]; rows: any[] }) => void,
-  updateNode: (id: string, data: Partial<any>) => void,
-  gridRef: React.RefObject<any>,
-  setIsRenameModalOpen: (isOpen: boolean) => void,
-  setSelectedColumn: (column: {
+  _content: TableContent,
+  _setContent: (content: TableContent) => void,
+  _updateNode: (id: string, data: Partial<Record<string, unknown>>) => void,
+  _gridRef: React.RefObject<{ api: GridApi }>,
+  _setIsRenameModalOpen: (isOpen: boolean) => void,
+  _setSelectedColumn: (column: {
     field: string;
     headerName: string;
     type: string;

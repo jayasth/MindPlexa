@@ -50,7 +50,6 @@ export const onCellKeyDown = (params) => {
   const currentRow = currentCell?.rowIndex;
   const currentCol = currentCell?.column;
   const maxRow = api.getDisplayedRowCount() - 1;
-  const maxCol = api.getAllDisplayedColumns().length - 1;
   const isEditing = api
     .getEditingCells()
     .some(

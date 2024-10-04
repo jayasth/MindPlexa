@@ -34,61 +34,61 @@ interface ToolConfig {
 export const initializeTools = (): Array<ToolConfig> => {
   return [
     {
-      tool: usePen({}),
+      tool: usePen,
       icon: FaPen,
       defaultStrokeWidth: 2,
       defaultColor: '#635E87'
     },
     {
-      tool: useLine({}),
+      tool: useLine,
       icon: BsSlashLg,
       defaultStrokeWidth: 2,
       defaultColor: '#FF6347'
     },
     {
-      tool: useRectangle({}),
+      tool: useRectangle,
       icon: FaSquare,
       defaultStrokeWidth: 2,
       defaultColor: '#4682B4'
     },
     {
-      tool: useCircle({}),
+      tool: useCircle,
       icon: FaCircle,
       defaultStrokeWidth: 2,
       defaultColor: '#32CD32'
     },
     {
-      tool: useMarker({}),
+      tool: useMarker,
       icon: FaMarker,
       defaultStrokeWidth: 20,
       defaultColor: '#A78BFA'
     },
     {
-      tool: useBrush({}),
+      tool: useBrush,
       icon: FaPaintBrush,
       defaultStrokeWidth: 20,
       defaultColor: '#F472B6'
     },
     {
-      tool: useWatercolor({}),
+      tool: useWatercolor,
       icon: IoMdWater,
       defaultStrokeWidth: 20,
       defaultColor: '#8BD8BD'
     },
     {
-      tool: useAirbrush({}),
+      tool: useAirbrush,
       icon: FaSprayCan,
       defaultStrokeWidth: 20,
       defaultColor: '#F9D342'
     },
     {
-      tool: useShadingBrush({}),
+      tool: useShadingBrush,
       icon: FaPen,
       defaultStrokeWidth: 20,
       defaultColor: '#A1A1A1'
     },
     {
-      tool: useEraser({}),
+      tool: useEraser,
       icon: FaEraser,
       defaultStrokeWidth: 40,
       defaultColor: '#FFFFFF'

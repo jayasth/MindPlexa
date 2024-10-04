@@ -117,7 +117,6 @@ export const FileModal = ({
   isOpen,
   onClose,
   onAttachFiles,
-  onRemoveFile,
   existingFiles,
   nodeId
 }) => {

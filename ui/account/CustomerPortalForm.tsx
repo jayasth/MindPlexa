@@ -31,11 +31,12 @@ export default function CustomerPortalForm({ subscription }: Props) {
 
   const subscriptionPrice =
     subscription &&
+    subscription.prices?.currency &&
     new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: subscription?.prices?.currency!,
+      currency: subscription.prices.currency,
       minimumFractionDigits: 0
-    }).format((subscription?.prices?.unit_amount || 0) / 100);
+    }).format((subscription.prices.unit_amount || 0) / 100);
 
   const handleStripePortalRequest = async () => {
     setIsSubmitting(true);
@@ -49,7 +50,7 @@ export default function CustomerPortalForm({ subscription }: Props) {
       title="Your Plan"
       description={
         subscription
-          ? `You are currently on the ${subscription?.prices?.products?.name} plan.`
+          ? `You are currently on the ${subscription.prices?.products?.name || 'Unknown'} plan.`
           : 'You are not currently subscribed to any plan.'
       }
       footer={
@@ -68,8 +69,8 @@ export default function CustomerPortalForm({ subscription }: Props) {
       }
     >
       <div className="mt-4 mb-2 text-lg font-semibold text-light-text dark:text-dark-text">
-        {subscription ? (
-          `${subscriptionPrice}/${subscription?.prices?.interval}`
+        {subscription && subscriptionPrice ? (
+          `${subscriptionPrice}/${subscription.prices?.interval || 'Unknown'}`
         ) : (
           <Link href="/" className="text-lavender-500 hover:underline">
             Choose your plan

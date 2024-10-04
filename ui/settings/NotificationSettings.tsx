@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import Dropdown from '@/ui/dropdown/Dropdown';
 import Button from '@/ui/Button/Button';
-import Input from '@/ui/Input/Input';
 
 const NotificationSettings: React.FC = () => {
   const [emailFrequency, setEmailFrequency] = useState('daily');

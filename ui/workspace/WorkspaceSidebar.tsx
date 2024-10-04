@@ -7,7 +7,6 @@ import {
   FaPlus,
   FaCog,
   FaUser,
-  FaBell,
   FaSignOutAlt,
   FaUserCircle
 } from 'react-icons/fa';
@@ -33,7 +32,11 @@ const WorkspaceSidebar: React.FC<WorkspaceSidebarProps> = ({
       preventDefault: () => {},
       target: { elements: { pathName: { value: router.refresh } } }
     };
-    await handleRequest(syntheticEvent as any, SignOut, router);
+    await handleRequest(
+      syntheticEvent as unknown as React.FormEvent<HTMLFormElement>,
+      SignOut,
+      router
+    );
   };
 
   return (

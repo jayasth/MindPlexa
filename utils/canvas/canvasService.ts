@@ -2,7 +2,7 @@ import { createClient } from '@/utils/supabase/supabaseClient';
 import { useRouter } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
 import { toCamelCase, toSnakeCase } from '@/utils/caseConversion';
-import { deleteNode, deleteNodes } from '@/utils/canvas/nodeService';
+import { deleteNode, deleteNodes, NodeType } from '@/utils/canvas/nodeService';
 import { deleteEdge } from '@/utils/canvas/edgeService';
 import {
   getAttachments,
@@ -41,7 +41,7 @@ export const createCanvas = async (
   router: ReturnType<typeof useRouter>
 ) => {
   if (canvasTitle.trim() !== '') {
-    const insertResponse = await supabase
+    await supabase
       .from('canvases')
       .insert(toSnakeCase({ id: uuidv4(), name: canvasTitle }));
 
@@ -64,7 +64,7 @@ export const createCanvas = async (
 // Function to handle deleting a canvas and its associated nodes
 export const deleteCanvas = async (
   canvasId: string,
-  setCanvases: (canvases: any) => void
+  setCanvases: React.Dispatch<React.SetStateAction<{ id: string }[]>>
 ) => {
   const { data: nodes, error: nodesError } = await supabase
     .from('node_canvas_link')
@@ -99,7 +99,7 @@ export const deleteCanvas = async (
       continue;
     }
 
-    const nodeType = nodeData.type;
+    const nodeType = nodeData.type as NodeType;
     if (nodeType) {
       await deleteNode(nodeId, nodeType);
     } else {
@@ -125,7 +125,7 @@ export const deleteCanvas = async (
 // Function to delete a canvas and its associated nodes (except shared ones)
 export const deleteCanvasWithNodes = async (
   canvasId: string,
-  setCanvases: (canvases: any) => void
+  setCanvases: React.Dispatch<React.SetStateAction<{ id: string }[]>>
 ) => {
   const { data: nodes, error: nodesError } = await supabase
     .from('node_canvas_link')
@@ -206,9 +206,12 @@ export const fetchCanvas = async (canvasId: string) => {
 
   const organizedNodes = await Promise.all(
     canvas.nodes.map(async (node) => {
-      const nodeType = node.type.toLowerCase();
+      const nodeType = node.type.toLowerCase() as NodeType;
       const specificNodeData = await getNodeSpecificData(node.id, nodeType);
-      const processedData = processNodeSpecificData(nodeType, specificNodeData);
+      const processedData = processNodeSpecificData(
+        nodeType,
+        specificNodeData || {}
+      ); // Ensure specificNodeData is not null
 
       const tags = node.nodeTags ? node.nodeTags.map((tag) => tag.tag) : [];
       const attachments = node.nodeAttachments
@@ -258,7 +261,47 @@ export const fetchCanvas = async (canvasId: string) => {
   };
 };
 
-export const saveCanvasState = async (canvasId: string, canvasState: any) => {
+export interface CanvasState {
+  nodes: Node[];
+  [key: string]: unknown;
+}
+
+export interface Node {
+  id: string;
+  type: string;
+  data: NodeData;
+  [key: string]: unknown;
+}
+
+export interface NodeData {
+  drawingFileUrl?: string;
+  currentTool?: string;
+  settings?: unknown;
+  currentColor?: string;
+  currentStrokeWidth?: number;
+  columns?: unknown[];
+  rows?: unknown[];
+  defaultColumnType?: string;
+  dateFormat?: string;
+  tags?: string[];
+  attachedFiles?: AttachedFile[];
+  [key: string]: unknown;
+}
+
+export interface AttachedFile {
+  type: string;
+  name: string;
+  size: number;
+  storagePath: string;
+  mimeType: string;
+  url: string;
+  isFile: boolean;
+}
+
+export const saveCanvasState = async (
+  canvasId: string,
+  canvasState: CanvasState
+) => {
   const { nodes, ...canvasData } = canvasState;
 
   // Update canvas data
@@ -289,7 +332,7 @@ export const saveCanvasState = async (canvasId: string, canvasState: any) => {
 
     // Update node-specific data
     if (nodeType !== 'selection_menu') {
-      let specificUpdates = {};
+      let specificUpdates: Record<string, unknown> = {};
 
       if (nodeType === 'draw') {
         if (data.drawingFileUrl) {
@@ -320,7 +363,7 @@ export const saveCanvasState = async (canvasId: string, canvasState: any) => {
 
       const { error: specificNodeUpdateError } = await updateNodeSpecificData(
         nodeId,
-        nodeType,
+        nodeType as NodeType,
         specificUpdates
       );
 

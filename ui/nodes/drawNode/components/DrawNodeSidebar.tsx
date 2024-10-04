@@ -2,21 +2,26 @@ import React from 'react';
 import { Tooltip } from '@/ui/Tooltip/Tooltip';
 import styles from './DrawNodeSidebar.module.css';
 
+interface Tool {
+  tool: {
+    name: string;
+  };
+  icon: React.ComponentType<{ size: number }>;
+}
+
 interface DrawNodeSidebarProps {
-  tools: any[];
+  tools: Tool[];
   currentToolIndex: number;
   currentTool: string;
   onToolChange: (index: number) => void;
   textColor: string;
-  backgroundColor: string;
 }
 
 const DrawNodeSidebar: React.FC<DrawNodeSidebarProps> = ({
   tools,
   currentTool,
   onToolChange,
-  textColor,
-  backgroundColor
+  textColor
 }) => {
   const iconSize = 16;
 

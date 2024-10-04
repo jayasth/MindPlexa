@@ -18,7 +18,7 @@ export const saveDrawing = async (nodeId: string, drawingData: string) => {
 
     const blob = new Blob([svgContent], { type: 'image/svg+xml' });
 
-    const { data, error } = await supabase.storage
+    const { error } = await supabase.storage
       .from('drawings')
       .upload(`${nodeId}.svg`, blob, {
         contentType: 'image/svg+xml',
@@ -36,10 +36,15 @@ export const saveDrawing = async (nodeId: string, drawingData: string) => {
 
     const drawingFileUrl = publicUrlData.publicUrl;
 
-    const { data: updateData, error: updateError } = await supabase
+    const { error: updateError } = await supabase
       .from('draw_nodes')
       .update({ drawing_file_url: drawingFileUrl })
       .eq('node_id', nodeId);
+
+    if (updateError) {
+      console.error('Error updating draw node data:', updateError);
+      return null;
+    }
 
     if (updateError) {
       console.error('Error updating draw node data:', updateError);

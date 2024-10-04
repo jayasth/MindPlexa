@@ -18,7 +18,7 @@ interface TaskNodeViewProps extends NodeProps {
 }
 
 const TaskNodeView: React.FC<TaskNodeViewProps> = ({ data, width, height }) => {
-  const { title, tasks, id, backgroundColor, textColor } = data;
+  const { title, tasks, backgroundColor, textColor } = data;
   const toggleEditMode = useNodeStore((state) => state.toggleEditMode);
   const isLoading = useUIStore((state) => state.isLoading);
 

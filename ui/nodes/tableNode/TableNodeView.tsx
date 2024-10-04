@@ -5,16 +5,20 @@ import styles from '@/ui/nodes/tableNode/styles/TableNodeView.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
 import { FaEdit } from 'react-icons/fa';
 import { getNodeSpecificData } from '@/utils/canvas/nodeSpecificDataService';
+import { Column, Row } from '@/ui/nodes/tableNode/utils/TableFunctions';
 
 interface TableNodeViewProps extends NodeProps {
   data: {
     id: string;
     title?: string;
-    content?: any;
+    content?: {
+      columns: Column[];
+      rows: Row[];
+    };
     backgroundColor?: string;
     textColor?: string;
-    columns?: any[];
-    rows?: any[];
+    columns?: Column[];
+    rows?: Row[];
   };
   width: number;
   height: number;
@@ -26,8 +30,8 @@ const TableNodeView: React.FC<TableNodeViewProps> = ({
   height
 }) => {
   const { id, backgroundColor, textColor } = data;
-  const [title, setTitle] = useState(data.title || 'Untitled Table');
-  const [content, setContent] = useState<{ columns: any[]; rows: any[] }>({
+  const [title, setTitle] = useState<string>(data.title || 'Untitled Table');
+  const [content, setContent] = useState<{ columns: Column[]; rows: Row[] }>({
     columns: data.columns || [],
     rows: data.rows || []
   });
@@ -38,10 +42,12 @@ const TableNodeView: React.FC<TableNodeViewProps> = ({
     const fetchNodeData = async () => {
       const nodeData = await getNodeSpecificData(id, 'table');
       if (nodeData) {
-        setTitle(nodeData.title || 'Untitled Table');
+        setTitle((nodeData.title as string) || 'Untitled Table');
         setContent({
-          columns: Array.isArray(nodeData.columns) ? nodeData.columns : [],
-          rows: Array.isArray(nodeData.rows) ? nodeData.rows : []
+          columns: Array.isArray(nodeData.columns)
+            ? (nodeData.columns as Column[])
+            : [],
+          rows: Array.isArray(nodeData.rows) ? (nodeData.rows as Row[]) : []
         });
       }
     };
@@ -98,7 +104,12 @@ const TableNodeView: React.FC<TableNodeViewProps> = ({
                 {content.rows.slice(0, 3).map((row, rowIndex) => (
                   <tr key={rowIndex}>
                     {content.columns.map((col, colIndex) => (
-                      <td key={colIndex}>{row[col.field]}</td>
+                      <td key={colIndex}>
+                        {typeof row[col.field] === 'object' &&
+                        row[col.field] instanceof Date
+                          ? row[col.field]?.toString()
+                          : row[col.field]?.toString()}
+                      </td>
                     ))}
                   </tr>
                 ))}

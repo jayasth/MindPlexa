@@ -53,7 +53,7 @@ export function useLine({
     (
       point: Point,
       context: CanvasRenderingContext2D,
-      settings: ToolSetting
+      _settings: ToolSetting
     ) => {
       if (!isDrawing.current || !startPoint.current || !tempCanvas.current)
         return;
@@ -71,7 +71,7 @@ export function useLine({
     []
   );
 
-  const endStroke = useCallback((context: CanvasRenderingContext2D) => {
+  const endStroke = useCallback(() => {
     isDrawing.current = false;
     startPoint.current = null;
     tempCanvas.current = null;

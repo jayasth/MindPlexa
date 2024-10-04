@@ -28,6 +28,10 @@ interface CanvasDataPoint {
   count: number;
 }
 
+interface CanvasData {
+  created_at: string;
+}
+
 const CanvasUsageChart = () => {
   const [canvasData, setCanvasData] = useState<CanvasDataPoint[]>([]);
 
@@ -44,14 +48,14 @@ const CanvasUsageChart = () => {
         return;
       }
 
-      const processedData = processCanvasData(data);
+      const processedData = processCanvasData(data as CanvasData[]);
       setCanvasData(processedData);
     };
 
     fetchCanvasData();
   }, []);
 
-  const processCanvasData = (data: any[]): CanvasDataPoint[] => {
+  const processCanvasData = (data: CanvasData[]): CanvasDataPoint[] => {
     // Group by month
     const groupedByMonth = data.reduce<Record<string, number>>(
       (acc, canvas) => {

@@ -2,10 +2,26 @@ import React from 'react';
 import styles from './DrawNodeSettings.module.css';
 import Input from '@/ui/Input/Input';
 
+interface Tool {
+  tool: {
+    name: string;
+  };
+}
+
+interface ToolSetting {
+  color: string;
+  strokeWidth: number;
+  opacity: number;
+}
+
 interface DrawNodeSettingsProps {
-  tools: any[];
-  toolSettings: any[];
-  onToolSettingChange: (toolIndex: number, key: string, value: any) => void;
+  tools: Tool[];
+  toolSettings: ToolSetting[];
+  onToolSettingChange: (
+    toolIndex: number,
+    key: keyof ToolSetting,
+    value: string | number
+  ) => void;
 }
 
 const DrawNodeSettings: React.FC<DrawNodeSettingsProps> = ({
@@ -37,7 +53,7 @@ const DrawNodeSettings: React.FC<DrawNodeSettingsProps> = ({
             />
             <Input
               type="number"
-              value={(setting.strokeWidth || 1).toString()}
+              value={setting.strokeWidth.toString()}
               onChange={(value) =>
                 onToolSettingChange(index, 'strokeWidth', parseInt(value, 10))
               }
@@ -48,7 +64,7 @@ const DrawNodeSettings: React.FC<DrawNodeSettingsProps> = ({
             />
             <Input
               type="number"
-              value={(setting.opacity || 100).toString()}
+              value={setting.opacity.toString()}
               onChange={(value) =>
                 onToolSettingChange(index, 'opacity', parseInt(value, 10))
               }

@@ -26,8 +26,8 @@ export function Toaster() {
     if (error || status) {
       toast({
         title: error
-          ? error ?? 'Hmm... Something went wrong.'
-          : status ?? 'Alright!',
+          ? (error ?? 'Hmm... Something went wrong.')
+          : (status ?? 'Alright!'),
         description: error ? error_description : status_description,
         variant: error ? 'destructive' : undefined
       });
@@ -45,7 +45,7 @@ export function Toaster() {
       const redirectPath = `${pathname}?${newSearchParams.toString()}`;
       router.replace(redirectPath, { scroll: false });
     }
-  }, [searchParams]);
+  }, [searchParams, pathname, router, toast]);
 
   return (
     <ToastProvider>

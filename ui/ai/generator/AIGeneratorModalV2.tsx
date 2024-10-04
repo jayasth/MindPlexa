@@ -32,6 +32,11 @@ type LayoutType =
   | 'grid'
   | 'hierarchical';
 
+interface AnalysisResult {
+  suggestedLayout: LayoutType;
+  // Add other properties as needed
+}
+
 const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
   isOpen,
   onClose
@@ -44,7 +49,9 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
     'claude-3-5-sonnet-20240620'
   );
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [analysisResult, setAnalysisResult] = useState<any>(null);
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(
+    null
+  );
   const { setNodes, nodes: existingNodes } = useNodeStore();
   const { setEdges } = useEdgeStore();
   const { isLoading: uiIsLoading, setIsLoading } = useUIStore();
@@ -211,7 +218,10 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
         console.error('Error creating bulk nodes:', error);
         setErrorMessage('Failed to create nodes. Please try again.');
       } else {
-        setNodes((currentNodes) => [...currentNodes, ...(createdNodes || [])]);
+        setNodes((currentNodes) => [
+          ...currentNodes,
+          ...(createdNodes as Node[])
+        ]);
 
         for (const edge of updatedEdges) {
           const { data: createdEdge, error: edgeError } =
@@ -300,7 +310,7 @@ const AIGeneratorModalV2: React.FC<AIGeneratorModalV2Props> = ({
             handleConfirmIntegration(
               generatedNodes,
               generatedEdges,
-              analysisResult.suggestedLayout || 'force'
+              analysisResult?.suggestedLayout || ('force' as LayoutType)
             )
           }
           onCancel={handleCancelIntegration}

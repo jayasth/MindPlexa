@@ -201,7 +201,7 @@ const copyBillingDetailsToCustomer = async (
   const customer = payment_method.customer as string;
   const { name, phone, address } = payment_method.billing_details;
   if (!name || !phone || !address) return;
-  //@ts-ignore
+  // @ts-expect-error - Stripe types are incorrect, customer can be a string
   await stripe.customers.update(customer, { name, phone, address });
   const { error: updateError } = await supabaseAdmin
     .from('users')
@@ -242,7 +242,7 @@ const manageSubscriptionStatusChange = async (
     status: subscription.status,
     price_id: subscription.items.data[0].price.id,
     //TODO check quantity on subscription
-    // @ts-ignore
+    // @ts-expect-error - Stripe types are incorrect, quantity can be undefined
     quantity: subscription.quantity,
     cancel_at_period_end: subscription.cancel_at_period_end,
     cancel_at: subscription.cancel_at
@@ -282,12 +282,11 @@ const manageSubscriptionStatusChange = async (
 
   // For a new subscription copy the billing details to the customer object.
   // NOTE: This is a costly operation and should happen at the very end.
-  if (createAction && subscription.default_payment_method && uuid)
-    //@ts-ignore
-    await copyBillingDetailsToCustomer(
-      uuid,
-      subscription.default_payment_method as Stripe.PaymentMethod
-    );
+  if (createAction && subscription.default_payment_method && uuid) {
+    const paymentMethod =
+      subscription.default_payment_method as Stripe.PaymentMethod;
+    await copyBillingDetailsToCustomer(uuid, paymentMethod);
+  }
 };
 
 export {

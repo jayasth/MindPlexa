@@ -11,7 +11,7 @@ import { getNodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 
 export async function parseMermaidCode(
   mermaidCode: string,
-  projectDetails: string
+  _projectDetails: string
 ): Promise<{ nodes: Node[]; edges: Edge[]; warning?: string }> {
   const filteredCode = removeDoubleQuoteInsideParentheses(
     removeDoubleQuoteInsideBrackets(removeMarkdowncode(mermaidCode))
@@ -21,13 +21,13 @@ export async function parseMermaidCode(
   // Remove the "Project Concept:" prefix if present
   const processedCode = filteredCode.replace(/^.*?graph TD/, 'graph TD');
 
-  let svgCode: any;
+  let svgCode: { svg: string };
   let warning: string | undefined;
 
   try {
     mermaid.initialize({ startOnLoad: false });
     svgCode = await mermaid.render('mermaid-chart', processedCode);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('mermaidGeneratorUtilsV2 Mermaid parsing error:', error);
     warning = 'Error parsing Mermaid code. Using fallback layout.';
     // Generate a simple fallback layout

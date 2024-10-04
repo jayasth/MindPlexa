@@ -110,7 +110,7 @@ export const DeleteTableButton = ({ onClick }) => (
   </button>
 );
 
-export const ImportButton = ({ onChange, content, setContent }) => {
+export const ImportButton = ({ onChange, content }) => {
   const [isWarningOpen, setIsWarningOpen] = useState(false);
   const [fileEvent, setFileEvent] = useState(null);
 

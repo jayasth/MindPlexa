@@ -4,7 +4,6 @@ import Button from '@/ui/Button/Button';
 import React from 'react';
 import Link from 'next/link';
 import { signUp } from '@/utils/auth-helpers/authServer';
-import { handleRequest } from '@/utils/auth-helpers/authClient';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { createClient } from '@/utils/supabase/supabaseClient';
@@ -16,7 +15,7 @@ interface SignUpProps {
 }
 
 export default function SignUp({ allowEmail, redirectMethod }: SignUpProps) {
-  const router = redirectMethod === 'client' ? useRouter() : null;
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -51,7 +50,7 @@ export default function SignUp({ allowEmail, redirectMethod }: SignUpProps) {
 
     console.log('Redirecting to:', redirectPath);
 
-    if (router) {
+    if (redirectMethod === 'client') {
       router.push(redirectPath);
     } else {
       window.location.href = redirectPath;

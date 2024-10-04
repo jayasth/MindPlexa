@@ -14,28 +14,12 @@ import {
 } from '@/utils/canvas/nodeSpecificDataService';
 import { handleTags } from '@/utils/canvas/tagService';
 
-type NodeType = Exclude<
+export type NodeType = Exclude<
   Database['public']['Enums']['node_type'],
   'selection_menu'
 >;
 
 const supabase = createClient();
-
-const uploadSVGToBucket = async (nodeId: string, svgContent: string) => {
-  const { data, error } = await supabase.storage
-    .from('drawings')
-    .upload(`${nodeId}.svg`, svgContent, {
-      contentType: 'image/svg+xml',
-      upsert: true
-    });
-
-  if (error) {
-    console.error('Error uploading SVG to bucket:', error);
-    return null;
-  }
-
-  return data.path;
-};
 
 /* Node related functions */
 
@@ -44,7 +28,9 @@ export const insertNode = async (
 ) => {
   return await supabase
     .from('nodes')
-    .insert([toSnakeCase(nodeInsert)])
+    .insert(
+      toSnakeCase(nodeInsert) as Database['public']['Tables']['nodes']['Insert']
+    )
     .select()
     .single()
     .then(({ data, error }) => ({ data: toCamelCase(data), error }));
@@ -56,7 +42,7 @@ export const insertNodeCanvasLink = async (
 ) => {
   return await supabase
     .from('node_canvas_link')
-    .insert(toSnakeCase({ node_id: nodeId, canvas_id: canvasId }));
+    .insert({ node_id: nodeId, canvas_id: canvasId });
 };
 
 const deleteNodeLink = async (nodeId: string) => {
@@ -88,7 +74,7 @@ export const createNode = async (
     tableData?: Database['public']['Tables']['table_nodes']['Insert'];
     drawData?: Database['public']['Tables']['draw_nodes']['Insert'];
   }
-): Promise<{ data?: any; error?: any }> => {
+): Promise<{ data?: Record<string, unknown>; error?: unknown }> => {
   console.log('nodeService: Creating node:', {
     canvasId,
     nodeType,
@@ -189,8 +175,8 @@ export const createNode = async (
 
       return {
         data: {
-          ...nodeData,
-          ...specificNodeData,
+          ...(nodeData as Record<string, unknown>),
+          ...(specificNodeData as Record<string, unknown>),
           id: nodeId,
           nodeId: nodeId
         }
@@ -199,7 +185,7 @@ export const createNode = async (
 
     return {
       data: {
-        ...nodeData,
+        ...(nodeData as Record<string, unknown>),
         id: nodeId,
         nodeId: nodeId
       }
@@ -213,9 +199,9 @@ export const createNode = async (
 export const updateNode = async (
   id: string,
   updates: Partial<Database['public']['Tables']['nodes']['Update']>,
-  specificUpdates: any,
+  specificUpdates: Record<string, unknown>,
   nodeType: Database['public']['Enums']['node_type']
-): Promise<{ data?: any; error?: any }> => {
+): Promise<{ data?: Record<string, unknown>; error?: unknown }> => {
   console.log('nodeService: Updating node:', {
     id,
     nodeType,
@@ -225,7 +211,9 @@ export const updateNode = async (
 
   const { data: nodeData, error: nodeError } = await supabase
     .from('nodes')
-    .update(toSnakeCase(updates))
+    .update(
+      toSnakeCase(updates) as Database['public']['Tables']['nodes']['Update']
+    )
     .eq('id', id)
     .select()
     .single()
@@ -295,14 +283,17 @@ export const updateNode = async (
     const existingAttachments = await getAttachments(id);
     const existingIds = new Set(existingAttachments.map((a) => a.id));
 
-    for (const attachment of specificUpdates.attachedFiles) {
-      if (!existingIds.has(attachment.id)) {
-        await addAttachment(id, attachment);
+    if (Array.isArray(specificUpdates.attachedFiles)) {
+      for (const attachment of specificUpdates.attachedFiles) {
+        if (!existingIds.has(attachment.id)) {
+          await addAttachment(id, attachment);
+        }
       }
     }
 
     for (const existingAttachment of existingAttachments) {
       if (
+        !Array.isArray(specificUpdates.attachedFiles) ||
         !specificUpdates.attachedFiles.some(
           (a) => a.id === existingAttachment.id
         )
@@ -312,13 +303,15 @@ export const updateNode = async (
     }
   }
 
-  return { data: { ...nodeData, ...specificUpdates } };
+  return {
+    data: { ...(nodeData as Record<string, unknown>), ...specificUpdates }
+  };
 };
 
 export const deleteNode = async (
   nodeId: string,
   nodeType: Database['public']['Enums']['node_type']
-): Promise<{ success?: boolean; error?: any }> => {
+): Promise<{ success?: boolean; error?: unknown }> => {
   console.log('nodeService: Deleting node:', { nodeId, nodeType });
 
   const { data: attachments, error: attachmentsError } = await supabase
@@ -410,8 +403,8 @@ export const createBulkNodes = async (
       drawData?: Database['public']['Tables']['draw_nodes']['Insert'];
     };
   }>
-): Promise<{ data?: any[]; error?: any }> => {
-  const createdNodes: any[] = [];
+): Promise<{ data?: Record<string, unknown>[]; error?: unknown }> => {
+  const createdNodes: Record<string, unknown>[] = [];
 
   for (const node of nodes) {
     const result = await createNode(

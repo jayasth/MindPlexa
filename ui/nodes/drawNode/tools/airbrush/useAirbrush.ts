@@ -53,7 +53,7 @@ export function useAirbrush({
     (
       point: Point,
       context: CanvasRenderingContext2D,
-      settings: ToolSetting
+      _settings: ToolSetting
     ) => {
       if (!isDrawing.current) return;
       context.lineTo(point[0], point[1]);

@@ -12,17 +12,10 @@ import ReactFlow, {
   NodeOrigin,
   ConnectionLineType,
   ReactFlowInstance,
-  XYPosition,
   Node,
   applyEdgeChanges
 } from 'reactflow';
 import Toolbar from '@/ui/toolbar/Toolbar';
-import AIAssistanceModal from '@/ui/ai/generator/AIGeneratorModal';
-import AIGeneratorController from '@/ui/ai/generator/AIGeneratorController';
-import {
-  handleDownload,
-  handleShare
-} from '@/ui/canvasEditor/utils/canvasUtils';
 import NodeRenderer from '@/ui/canvasEditor/NodeRenderer';
 import CustomEdge from '@/ui/edges/CustomEdge';
 import useNodeStore from '@/app/store/nodes/useNodeStore';
@@ -30,7 +23,7 @@ import useEdgeStore from '@/app/store/edges/useEdgeStore';
 import useUIStore from '@/app/store/ui/useUIStore';
 import useCanvasStore from '@/app/store/canvas/useCanvasStore';
 import { useEdgeConnection } from '@/ui/canvasEditor/edgeCreation';
-import { handleTemporaryNodeCreation } from '@/ui/canvasEditor/utils/nodeCreation';
+import { handleDownload } from '@/ui/canvasEditor/utils/canvasUtils';
 import { createEdge } from '@/utils/canvas/edgeService';
 
 const nodeOrigin: NodeOrigin = [0.5, 0.5];
@@ -41,21 +34,16 @@ const defaultEdgeOptions = {
 export default function CanvasEditor({ canvasId: initialCanvasId }) {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const reactFlowInstance = useRef<ReactFlowInstance | null>(null);
-  const [showAIAssistanceModal, setShowAIAssistanceModal] = useState(false);
   const [canvasSize, setCanvasSize] = useState({
     width: window.innerWidth,
     height: window.innerHeight
   });
-  const [aiVersion, setAIVersion] = useState<'v1' | 'v2' | null>(null);
 
   const { onConnectStart, onConnectEnd } = useEdgeConnection();
 
   const {
     nodes,
-    setNodes,
     onNodesChange,
-    addNode,
-    removeNode,
     updateNode: updateNodeInStore,
     setSelectedNodes,
     bringNodeToFront
@@ -63,9 +51,9 @@ export default function CanvasEditor({ canvasId: initialCanvasId }) {
 
   const { edges, setEdges, addEdge, removeEdge } = useEdgeStore();
 
-  const { setDomNode, domNode, isLoading, setIsLoading } = useUIStore();
+  const { setDomNode, domNode } = useUIStore();
 
-  const { canvasId, setCanvasId, saveCanvas, loadCanvas } = useCanvasStore();
+  const { setCanvasId, saveCanvas, loadCanvas } = useCanvasStore();
 
   useEffect(() => {
     if (initialCanvasId) {
@@ -88,49 +76,6 @@ export default function CanvasEditor({ canvasId: initialCanvasId }) {
     return () => window.removeEventListener('resize', updateCanvasSize);
   }, []);
 
-  const handleOpenAIAssistanceModal = () => {
-    setShowAIAssistanceModal(true);
-  };
-
-  const handleCloseAIAssistanceModal = () => {
-    setShowAIAssistanceModal(false);
-  };
-
-  const handleGenerateAIMapV1 = () => {
-    setAIVersion('v1');
-  };
-
-  const handleGenerateAIMapV2 = () => {
-    setAIVersion('v2');
-  };
-
-  const handleAddNode = useCallback(
-    async (node, position) => {
-      try {
-        console.log('CanvasEditor: Adding new node:', node);
-        await addNode(node, position);
-        console.log('CanvasEditor: Node added to database:', node);
-        setTimeout(() => {
-          reactFlowInstance.current?.fitView({
-            padding: 0.2,
-            includeHiddenNodes: false
-          });
-          reactFlowInstance.current?.setCenter(
-            node.position.x,
-            node.position.y,
-            {
-              duration: 500
-            }
-          );
-        }, 100);
-      } catch (error) {
-        console.error('Failed to add node:', error);
-        // Optionally, show an error message to the user
-      }
-    },
-    [addNode]
-  );
-
   const edgeTypes = useMemo(
     () => ({
       customEdge: (props) => <CustomEdge {...props} />
@@ -146,19 +91,22 @@ export default function CanvasEditor({ canvasId: initialCanvasId }) {
     ) => {
       try {
         if (node.type !== 'selection_menu') {
-          const updates = {
-            position: newPosition,
-            ...(window.innerWidth <= 768
-              ? {
-                  mobileEditWidth: newSize.width,
-                  mobileEditHeight: newSize.height
-                }
-              : { editWidth: newSize.width, editHeight: newSize.height })
-          };
+          updateNodeInStore(
+            node.id,
+            {
+              position: newPosition,
+              ...(window.innerWidth <= 768
+                ? {
+                    mobileEditWidth: newSize.width,
+                    mobileEditHeight: newSize.height
+                  }
+                : { editWidth: newSize.width, editHeight: newSize.height })
+            },
+            node.data.canvasId
+          );
         }
       } catch (error) {
         console.error('Failed to update node on resize:', error);
-        // Optionally, show an error message to the user
       }
     },
     [updateNodeInStore]
@@ -265,7 +213,7 @@ export default function CanvasEditor({ canvasId: initialCanvasId }) {
         console.error('Failed to create edge:', error);
       }
     },
-    [addEdge, initialCanvasId, createEdge]
+    [addEdge, initialCanvasId]
   );
 
   const onEdgesChange = useCallback(
@@ -281,29 +229,6 @@ export default function CanvasEditor({ canvasId: initialCanvasId }) {
       });
     },
     [setEdges, removeEdge]
-  );
-
-  const handleTemporaryNodeCreationWithStore = useCallback(
-    (
-      parentNode: Node | null,
-      position: XYPosition,
-      nodeType: 'selection_menu'
-    ) => {
-      try {
-        handleTemporaryNodeCreation(
-          parentNode,
-          position,
-          nodeType,
-          (node) => addNode(node, initialCanvasId),
-          (id) => removeNode(id, initialCanvasId),
-          nodes,
-          initialCanvasId
-        );
-      } catch (error) {
-        console.error('Failed to create temporary node:', error);
-      }
-    },
-    [addNode, addEdge, removeNode, nodes, initialCanvasId]
   );
 
   useEffect(() => {
@@ -382,18 +307,6 @@ export default function CanvasEditor({ canvasId: initialCanvasId }) {
             <Controls />
           </ReactFlow>
         </div>
-        {showAIAssistanceModal && (
-          <AIAssistanceModal
-            isOpen={showAIAssistanceModal}
-            onClose={handleCloseAIAssistanceModal}
-          />
-        )}
-        {aiVersion && (
-          <AIGeneratorController
-            version={aiVersion}
-            onClose={() => setAIVersion(null)}
-          />
-        )}
       </ReactFlowProvider>
     </div>
   );

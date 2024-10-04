@@ -15,7 +15,7 @@ type NodeType = Exclude<
   'selection_menu'
 >;
 
-export const onNodesChange = async (set, get, changes, canvasId) => {
+export const onNodesChange = async (set, get, changes, _canvasId) => {
   try {
     console.log('useNodeStore: Before onNodesChange', get().nodes);
     set(
@@ -25,7 +25,7 @@ export const onNodesChange = async (set, get, changes, canvasId) => {
           if (change) {
             let updatedNode = { ...node };
             let hasChanges = false;
-            let changedProperties = {};
+            const changedProperties = {};
 
             switch (change.type) {
               case 'position':

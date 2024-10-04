@@ -22,7 +22,11 @@ const typeIcons = {
   currency: <MdAttachMoney />
 };
 
-const CustomHeader = (props: IHeaderParams & { type: string }) => {
+interface CustomHeaderProps extends IHeaderParams {
+  type: string;
+}
+
+const CustomHeader: React.FC<CustomHeaderProps> = (props) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const { show, hideAll } = useContextMenu({
     id: `header-context-menu-${props.column.getId()}`

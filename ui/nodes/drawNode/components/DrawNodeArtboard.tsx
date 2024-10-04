@@ -2,14 +2,12 @@ import React, {
   forwardRef,
   useImperativeHandle,
   useRef,
-  useState,
   useCallback
 } from 'react';
 import FixedSizeDrawingLayer, {
   FixedSizeDrawingLayerRef
 } from './FixedSizeDrawingLayer';
 import { ToolHandlers } from '../DrawNodeTools';
-import { exportSVG } from '../utils/svgExport';
 
 interface ArtboardProps {
   tool: ToolHandlers;
@@ -44,8 +42,6 @@ const Artboard = forwardRef<ArtboardRef, ArtboardProps>(
     },
     ref
   ) => {
-    const [scale, setScale] = useState(1);
-    const [pan, setPan] = useState({ x: 0, y: 0 });
     const drawingLayerRef = useRef<FixedSizeDrawingLayerRef>(null);
 
     const originalWidth = 1000; // Set a fixed original width
@@ -86,12 +82,7 @@ const Artboard = forwardRef<ArtboardRef, ArtboardProps>(
           position: 'relative'
         }}
       >
-        <div
-          style={{
-            transform: `scale(${scale}) translate(${pan.x}px, ${pan.y}px)`,
-            transformOrigin: '0 0'
-          }}
-        >
+        <div>
           <FixedSizeDrawingLayer
             ref={drawingLayerRef}
             width={originalWidth}
@@ -108,5 +99,7 @@ const Artboard = forwardRef<ArtboardRef, ArtboardProps>(
     );
   }
 );
+
+Artboard.displayName = 'Artboard';
 
 export default Artboard;

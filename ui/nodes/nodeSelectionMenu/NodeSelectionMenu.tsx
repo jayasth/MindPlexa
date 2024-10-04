@@ -15,7 +15,7 @@ interface NodeSelectionMenuProps extends NodeProps {
   data: {
     id: string;
     type: string;
-    parentNode: any;
+    parentNode: string | null;
   };
 }
 

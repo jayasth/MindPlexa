@@ -52,7 +52,7 @@ export function useCircle({
     (
       point: Point,
       context: CanvasRenderingContext2D,
-      settings: ToolSetting
+      _settings: ToolSetting
     ) => {
       if (!isDrawing.current || !startPoint.current || !tempCanvas.current)
         return;

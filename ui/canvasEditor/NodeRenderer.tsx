@@ -1,5 +1,5 @@
 import React, { useMemo, useEffect } from 'react';
-import { NodeProps, Position } from 'reactflow';
+import { NodeProps } from 'reactflow';
 import dynamic from 'next/dynamic';
 import useNodeStore from '@/app/store/nodes/useNodeStore';
 import useCanvasStore from '@/app/store/canvas/useCanvasStore';
@@ -51,20 +51,19 @@ interface NodeRendererProps extends NodeProps {
 }
 
 const NodeRenderer: React.FC<NodeRendererProps> = React.memo(
-  ({
+  function NodeRenderer({
     type,
     data,
     isConnectable,
     selected,
     id,
     dragging,
-    zIndex,
     xPos,
     yPos,
     selectNodesOnDrag,
     onNodeResizeStop,
     ...props
-  }) => {
+  }) {
     const node = useNodeStore((state) => state.nodes.find((n) => n.id === id));
     const updateNode = useNodeStore((state) => state.updateNode);
     const toggleEditMode = useNodeStore((state) => state.toggleEditMode);
@@ -91,7 +90,6 @@ const NodeRenderer: React.FC<NodeRendererProps> = React.memo(
         isConnectable,
         selected,
         dragging,
-        zIndex: node.zIndex || 0,
         xPos,
         yPos,
         selectNodesOnDrag,
@@ -163,7 +161,6 @@ const NodeRenderer: React.FC<NodeRendererProps> = React.memo(
       isConnectable,
       selected,
       dragging,
-      zIndex,
       xPos,
       yPos,
       selectNodesOnDrag,
@@ -171,8 +168,7 @@ const NodeRenderer: React.FC<NodeRendererProps> = React.memo(
       props,
       toggleEditMode,
       updateNode,
-      canvasId,
-      node?.zIndex
+      canvasId
     ]);
 
     return nodeContent;

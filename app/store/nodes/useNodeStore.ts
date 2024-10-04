@@ -9,7 +9,7 @@ import {
 } from './nodeStateManagement';
 import { addChildNode, createChildNodeFromDrag } from './nodeChildOperations';
 import { onNodesChange } from './nodeChangeHandling';
-import type { Node, XYPosition } from 'reactflow';
+import type { Node, XYPosition, NodeChange } from 'reactflow';
 import { uploadSVGToBucket } from '@/utils/canvas/nodeSpecificDataService';
 
 export interface NodeState {
@@ -38,7 +38,7 @@ export interface NodeState {
     nodeType: string,
     canvasId: string
   ) => Promise<void>;
-  onNodesChange: (changes: any, canvasId: string) => Promise<void>;
+  onNodesChange: (changes: NodeChange[], canvasId: string) => Promise<void>;
   updateDrawNodeData: (
     id: string,
     drawingData: string,

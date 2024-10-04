@@ -1,10 +1,7 @@
-import { produce } from 'immer';
 import { v4 as uuidv4 } from 'uuid';
 import { getChildNodePosition } from '@/ui/canvasEditor/utils/getChildNodePosition';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
-import type { NodeState } from './useNodeStore';
-
-type XYPosition = any;
+import { XYPosition } from 'reactflow';
 
 export const addChildNode = async (
   set,

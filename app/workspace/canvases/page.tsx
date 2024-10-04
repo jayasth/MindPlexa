@@ -1,4 +1,3 @@
-// app/workspace/canvases/page.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -40,7 +39,7 @@ export default function CanvasesPage() {
 
     // Cleanup
     return () => {};
-  }, []);
+  }, [supabase]);
 
   const openDeleteModal = async (canvasId: string) => {
     setSelectedCanvasId(canvasId);
@@ -77,9 +76,13 @@ export default function CanvasesPage() {
   ) => {
     if (selectedCanvasId) {
       if (deleteOption === 'canvasOnly') {
-        await deleteCanvas(selectedCanvasId, setCanvases);
+        await deleteCanvas(selectedCanvasId, (updatedCanvases) => {
+          setCanvases(updatedCanvases as Canvas[]);
+        });
       } else {
-        await deleteCanvasWithNodes(selectedCanvasId, setCanvases);
+        await deleteCanvasWithNodes(selectedCanvasId, (updatedCanvases) => {
+          setCanvases(updatedCanvases as Canvas[]);
+        });
       }
       setIsModalOpen(false);
       setSelectedCanvasId(null);

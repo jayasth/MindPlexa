@@ -44,7 +44,14 @@ import useNodeStore from '@/app/store/nodes/useNodeStore';
 import useCanvasStore from '@/app/store/canvas/useCanvasStore';
 
 interface NoteNodeEditProps extends NodeProps {
-  data: any;
+  data: {
+    id: string;
+    title?: string;
+    content?: string;
+    backgroundColor?: string;
+    textColor?: string;
+    tags?: string[];
+  };
   width: number;
   height: number;
   selected: boolean;
@@ -60,7 +67,6 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   data,
   width,
   height,
-  selected,
   onNodeResizeStop,
   position
 }) => {
@@ -76,7 +82,6 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   });
 
   const { canvasId } = useCanvasStore();
-  const [isSelected, setIsSelected] = useState(selected);
   const [title, setTitle] = useState(data.title || 'Untitled Note');
   const [content, setContent] = useState(data.content || '');
   const [backgroundColor, setBackgroundColor] = useState(
@@ -299,10 +304,6 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     [nodeWidth, nodeHeight, backgroundColor, textColor]
   );
 
-  const handleDelete = () => {
-    setIsDeleteModalOpen(true);
-  };
-
   const handleDeleteConfirm = () => {
     setIsDeleteModalOpen(false);
     handleDeleteNode(data.id, canvasId);
@@ -356,7 +357,7 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         />
         <CloseButton
           onClick={() =>
-            handleClose(data.id, () => {}, title, content, canvasId)
+            handleClose(data.id, () => {}, title, { content }, canvasId)
           }
         />
       </div>
@@ -402,7 +403,6 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         isOpen={isFileModalOpen}
         onClose={() => setIsFileModalOpen(false)}
         onAttachFiles={onAttachFiles}
-        onRemoveFile={onRemoveFile}
         existingFiles={attachedFiles}
         nodeId={data.id}
       />

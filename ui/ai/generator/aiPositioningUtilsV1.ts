@@ -11,6 +11,7 @@ import {
   forceY
 } from 'd3-force';
 import { getNodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
+import dagre from 'dagre';
 
 interface ExtendedNode extends Node, SimulationNodeDatum {
   x?: number;
@@ -43,7 +44,7 @@ export const applyLayout = (
       layoutedNodes = applyMindMapLayout(nodes, edges, canvasSize);
       break;
     case 'workflow':
-      layoutedNodes = applyWorkflowDiagramLayout(nodes, edges, canvasSize);
+      layoutedNodes = applyWorkflowDiagramLayout(nodes, edges);
       break;
     case 'concept-map':
       layoutedNodes = applyConceptMapLayout(nodes, edges, canvasSize);
@@ -119,12 +120,7 @@ const applyMindMapLayout = (
   });
 };
 
-const applyWorkflowDiagramLayout = (
-  nodes: Node[],
-  edges: Edge[],
-  canvasSize: { width: number; height: number }
-): Node[] => {
-  const dagre = require('dagre');
+const applyWorkflowDiagramLayout = (nodes: Node[], edges: Edge[]): Node[] => {
   const g = new dagre.graphlib.Graph();
   g.setGraph({ rankdir: 'TB', nodesep: 70, ranksep: 100 });
   g.setDefaultEdgeLabel(() => ({}));
@@ -179,7 +175,7 @@ const applyConceptMapLayout = (
     .force(
       'link',
       forceLink(simulationLinks)
-        .id((d: any) => d.id)
+        .id((d: SimulationNodeDatum) => (d as ExtendedNode).id)
         .distance(maxNodeSize * 2)
         .strength(0.5)
     )
@@ -214,7 +210,6 @@ const applyGridLayout = (
   const cols = Math.floor(
     (canvasSize.width + horizontalGap) / (maxNodeSize + horizontalGap)
   );
-  const rows = Math.ceil(nodes.length / cols);
 
   return nodes.map((node, index) => {
     const { width, height } = getNodeSize(node);
@@ -291,7 +286,6 @@ const createHierarchy = (
   }
 
   const buildHierarchy = (node: Node): d3.HierarchyNode<Node> => {
-    const children = childrenMap.get(node.id) || [];
     return d3.hierarchy(node, (n) => childrenMap.get(n.id) || []);
   };
 

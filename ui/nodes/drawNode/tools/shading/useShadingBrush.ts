@@ -71,17 +71,10 @@ export function useShadingBrush({
         }
       }
     },
-    [
-      color,
-      neighbourStrokeWidth,
-      spreadFactor,
-      threshold,
-      neighbourColor,
-      opacity
-    ]
+    [color, neighbourStrokeWidth, spreadFactor, threshold, neighbourColor]
   );
 
-  const endStroke = useCallback((context: CanvasRenderingContext2D) => {}, []);
+  const endStroke = useCallback(() => {}, []);
 
   const cursor = 'crosshair';
 

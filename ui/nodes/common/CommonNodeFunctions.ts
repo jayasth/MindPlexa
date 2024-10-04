@@ -1,13 +1,10 @@
 import { useNodeStore, useEdgeStore } from '@/app/store';
 import { nodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
-import { createClient } from '@/utils/supabase/supabaseClient';
 import {
   removeAttachment,
   getAttachments
 } from '@/utils/canvas/attachmentService';
 import { duplicateNode } from '@/utils/canvas/nodeDuplicationService';
-
-const supabase = createClient();
 
 export const getContrastYIQ = (color: string) => {
   let r,
@@ -120,7 +117,7 @@ export const handleTitleChange = (
 export const handleSave = (
   id: string,
   onSave: () => void,
-  nodeData: any,
+  nodeData: Record<string, unknown>,
   canvasId: string
 ) => {
   const { updateNode, toggleEditMode } = useNodeStore.getState();
@@ -133,7 +130,7 @@ export const handleClose = (
   nodeId: string,
   onClose: () => void,
   title: string,
-  content: any,
+  content: Record<string, unknown>,
   canvasId: string
 ) => {
   const { updateNode, toggleEditMode } = useNodeStore.getState();

@@ -1,6 +1,4 @@
-// C:/coding/MindPlexa/app/projects/ProjectLibrary.tsx
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { createClient } from '@/utils/supabase/supabaseClient';
 import type { Tables } from 'types_db';
 import Link from 'next/link';
@@ -14,11 +12,7 @@ interface ProjectLibraryProps {
 const ProjectLibrary: React.FC<ProjectLibraryProps> = ({ workspaceId }) => {
   const [projects, setProjects] = useState<Project[]>([]);
 
-  useEffect(() => {
-    fetchProjects();
-  }, []);
-
-  const fetchProjects = async () => {
+  const fetchProjects = useCallback(async () => {
     const supabase = createClient();
     let query = supabase.from('projects').select('*');
 
@@ -33,7 +27,11 @@ const ProjectLibrary: React.FC<ProjectLibraryProps> = ({ workspaceId }) => {
     } else {
       setProjects(data as Project[]);
     }
-  };
+  }, [workspaceId]);
+
+  useEffect(() => {
+    fetchProjects();
+  }, [fetchProjects]);
 
   const handleCreateProject = async () => {
     const supabase = createClient();

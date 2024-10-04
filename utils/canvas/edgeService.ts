@@ -7,28 +7,24 @@ const supabase = createClient();
 
 /* Edge related functions */
 
-const insertEdge = async (
-  edge: Database['public']['Tables']['edges']['Insert']
-) => {
-  return await supabase
-    .from('edges')
-    .insert([toSnakeCase(edge)])
-    .select()
-    .single()
-    .then(({ data, error }) => ({ data: toCamelCase(data), error }));
-};
-
 const updateEdgeInTable = async (
   id: string,
   updates: Database['public']['Tables']['edges']['Update']
 ) => {
   return await supabase
     .from('edges')
-    .update(toSnakeCase(updates))
+    .update(
+      toSnakeCase(updates) as Database['public']['Tables']['edges']['Update']
+    )
     .eq('id', id)
     .select()
     .single()
-    .then(({ data, error }) => ({ data: toCamelCase(data), error }));
+    .then(({ data, error }) => ({
+      data: data
+        ? (toCamelCase(data) as Database['public']['Tables']['edges']['Row'])
+        : undefined,
+      error
+    }));
 };
 
 const deleteEdgeFromTable = async (id: string) => {
@@ -43,7 +39,7 @@ export const createEdge = async ({
   sourceNodeId: string;
   targetNodeId: string;
   canvasId: string;
-}): Promise<{ data?: { id: string }; error?: any }> => {
+}): Promise<{ data?: { id: string }; error?: Error }> => {
   try {
     const { data, error } = await supabase
       .from('edges')
@@ -58,10 +54,13 @@ export const createEdge = async ({
 
     if (error) throw error;
 
-    return { data: { id: data.id }, error: null };
+    return { data: { id: data.id }, error: undefined };
   } catch (error) {
     console.error('Error creating edge:', error);
-    return { data: undefined, error };
+    return {
+      data: undefined,
+      error: error instanceof Error ? error : new Error('Unknown error')
+    };
   }
 };
 
@@ -73,7 +72,7 @@ export const createEdgeBetweenNodes = async ({
   sourceNodeId: string;
   targetNodeId: string;
   canvasId: string;
-}): Promise<{ data?: { id: string }; error?: any }> => {
+}): Promise<{ data?: { id: string }; error?: Error }> => {
   console.log('edgeService: Creating edge between nodes:', {
     sourceNodeId,
     targetNodeId,
@@ -90,14 +89,17 @@ export const createEdgeBetweenNodes = async ({
 export const updateEdge = async (
   id: string,
   updates: Database['public']['Tables']['edges']['Update']
-): Promise<{ data?: any; error?: any }> => {
+): Promise<{
+  data?: Database['public']['Tables']['edges']['Row'];
+  error?: Error;
+}> => {
   console.log('edgeService: Updating edge:', { id, updates });
 
   const { data, error } = await updateEdgeInTable(id, updates);
 
   if (error) {
     console.error('edgeService: Error updating edge:', error);
-    return { error };
+    return { error: new Error(error.message) };
   }
 
   console.log('edgeService: Edge updated:', data);
@@ -106,14 +108,14 @@ export const updateEdge = async (
 
 export const deleteEdge = async (
   id: string
-): Promise<{ success?: boolean; error?: any }> => {
+): Promise<{ success?: boolean; error?: Error }> => {
   console.log('edgeService: Deleting edge:', id);
 
   const { error } = await deleteEdgeFromTable(id);
 
   if (error) {
     console.error('edgeService: Error deleting edge:', error);
-    return { error };
+    return { error: new Error(error.message) };
   }
 
   console.log('edgeService: Edge deleted successfully');
@@ -126,8 +128,11 @@ export const createBulkEdges = async (
     source: string;
     target: string;
   }>
-): Promise<{ data?: any; error?: any }> => {
-  const createdEdges: any[] = [];
+): Promise<{
+  data?: Database['public']['Tables']['edges']['Row'][];
+  error?: Error;
+}> => {
+  const createdEdges: Database['public']['Tables']['edges']['Row'][] = [];
 
   for (const edge of edges) {
     const { data, error } = await supabase
@@ -143,9 +148,9 @@ export const createBulkEdges = async (
 
     if (error) {
       console.error('Error creating edge:', error);
-      return { error };
-    } else {
-      createdEdges.push(data);
+      return { error: new Error(error.message) };
+    } else if (data) {
+      createdEdges.push(data as Database['public']['Tables']['edges']['Row']);
     }
   }
 

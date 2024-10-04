@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { NodeProps, Handle, Position } from 'reactflow';
+import Image from 'next/image';
 import { useNodeStore } from '@/app/store';
 import styles from './DrawNodeView.module.css';
 import edgeStyles from '@/ui/edges/CustomEdgeStyles.module.css';
@@ -49,10 +50,12 @@ const DrawNodeView: React.FC<DrawNodeViewProps> = ({ data, width, height }) => {
       <div className={styles.contentPreview}>
         {drawingContent ? (
           <div className={styles.artboardContainer}>
-            <img
+            <Image
               src={drawingContent}
               alt="Drawing"
               className={styles.previewImage}
+              layout="fill"
+              objectFit="contain"
             />
           </div>
         ) : (

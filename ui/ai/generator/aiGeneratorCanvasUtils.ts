@@ -58,7 +58,7 @@ export function removeMarkdowncode(text: string): string {
   if (!text) {
     return '';
   }
-  return text.replace(/\`\`\`mermaid/g, '').replace(/```/g, '');
+  return text.replace(/```mermaid/g, '').replace(/```/g, '');
 }
 
 export function removeDoubleQuoteInsideParentheses(input: string): string {

@@ -9,11 +9,17 @@ import { getRedirectMethod } from '@/utils/auth-helpers/authSettings';
 import s from './Navbar.module.css';
 
 interface NavlinksProps {
-  user?: any;
+  user?: {
+    id: string;
+    email?: string;
+    // Add other relevant user properties
+  } | null;
 }
 
 export default function Navlinks({ user }: NavlinksProps) {
-  const router = getRedirectMethod() === 'client' ? useRouter() : null;
+  const router = useRouter();
+  const pathname = usePathname();
+  const redirectMethod = getRedirectMethod();
 
   return (
     <div className="relative flex flex-row justify-between py-4 align-center md:py-6">
@@ -34,8 +40,16 @@ export default function Navlinks({ user }: NavlinksProps) {
       </div>
       <div className="flex justify-end space-x-8">
         {user ? (
-          <form onSubmit={(e) => handleRequest(e, SignOut, router)}>
-            <input type="hidden" name="pathName" value={usePathname()} />
+          <form
+            onSubmit={(e) =>
+              handleRequest(
+                e,
+                SignOut,
+                redirectMethod === 'client' ? router : null
+              )
+            }
+          >
+            <input type="hidden" name="pathName" value={pathname} />
             <button type="submit" className={s.link}>
               Sign out
             </button>

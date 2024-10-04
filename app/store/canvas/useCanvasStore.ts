@@ -1,8 +1,12 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { v4 as uuidv4 } from 'uuid';
-import { fetchCanvas, saveCanvasState } from '@/utils/canvas/canvasService';
-import type { Node } from 'reactflow';
+import {
+  fetchCanvas,
+  saveCanvasState,
+  CanvasState
+} from '@/utils/canvas/canvasService';
+import type { Node as ReactFlowNode, Edge } from 'reactflow';
 import useNodeStore from '../nodes/useNodeStore';
 import useEdgeStore from '../edges/useEdgeStore';
 import { enableMapSet } from 'immer';
@@ -10,7 +14,7 @@ import { enableMapSet } from 'immer';
 // Enable the MapSet plugin for Immer
 enableMapSet();
 
-interface CanvasState {
+interface CanvasStoreState {
   canvasId: string;
   setCanvasId: (id: string) => void;
   saveCanvas: () => Promise<void>;
@@ -18,9 +22,50 @@ interface CanvasState {
   isLoading: boolean;
   lastLoadTime: number;
   saveCanvasTimeout?: NodeJS.Timeout;
+  nodes: ReactFlowNode<NodeData>[]; // Updated type to match ReactFlowNode
+  edges: Edge[];
 }
 
-const processNode = async (node: any) => {
+interface NodeData {
+  backgroundColor?: string;
+  textColor?: string;
+  isTemporary?: boolean;
+  isEditing?: boolean;
+  attachedFiles?: Array<{
+    id: string;
+    type: string;
+    name: string;
+    size: number;
+    storagePath: string;
+    mimeType: string;
+    url: string;
+    isFile: boolean;
+  }>;
+  tasks?: Array<unknown>;
+  events?: Array<unknown>;
+  completedTasks?: number;
+  totalTasks?: number;
+  showCompletedTasks?: boolean;
+  showDueDate?: boolean;
+  showPriority?: boolean;
+  sortBy?: string;
+  drawingFileUrl?: string;
+  currentTool?: string;
+  settings?: Record<string, unknown>;
+  currentColor?: string;
+  currentStrokeWidth?: number;
+  columns?: Array<unknown>;
+  rows?: Array<unknown>;
+  defaultColumnType?: string;
+  dateFormat?: string;
+  tableSettings?: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
+const processNode = async (
+  node: ReactFlowNode<NodeData>
+): Promise<ReactFlowNode<NodeData> | null> => {
+  // Updated return type
   if (!node) return null;
 
   console.log('useCanvasStore: Processing node:', node);
@@ -70,9 +115,15 @@ const processNode = async (node: any) => {
     tableSettings = {};
   if (node.type === 'table' && node.data) {
     try {
-      columns = node.data.columns ? JSON.parse(node.data.columns) : [];
-      rows = node.data.rows ? JSON.parse(node.data.rows) : [];
-      tableSettings = node.data.settings ? JSON.parse(node.data.settings) : {};
+      columns = node.data.columns
+        ? JSON.parse(node.data.columns as unknown as string)
+        : [];
+      rows = node.data.rows
+        ? JSON.parse(node.data.rows as unknown as string)
+        : [];
+      tableSettings = node.data.settings
+        ? JSON.parse(node.data.settings as unknown as string)
+        : {};
     } catch (error) {
       console.error('Error parsing table data JSON:', error);
     }
@@ -80,26 +131,16 @@ const processNode = async (node: any) => {
 
   return {
     id: node.id,
-    type: node.type,
+    type: node.type || 'default',
     position,
     data: {
       ...node,
       ...node.data,
-      backgroundColor: node.backgroundColor,
-      textColor: node.textColor,
-      isTemporary: node.isTemporary,
-      isEditing: node.isEditing,
-      attachedFiles:
-        node.data?.attachedFiles?.map((file: any) => ({
-          id: file.id,
-          type: file.type,
-          name: file.name,
-          size: file.size,
-          storagePath: file.storagePath,
-          mimeType: file.mimeType,
-          url: file.url,
-          isFile: file.isFile
-        })) || [],
+      backgroundColor: node.data?.backgroundColor,
+      textColor: node.data?.textColor,
+      isTemporary: node.data?.isTemporary,
+      isEditing: node.data?.isEditing,
+      attachedFiles: node.data?.attachedFiles || [],
       tasks: tasks,
       events: events,
       completedTasks: node.data?.completedTasks || 0,
@@ -108,7 +149,7 @@ const processNode = async (node: any) => {
       showDueDate: node.data?.showDueDate ?? true,
       showPriority: node.data?.showPriority ?? true,
       sortBy: node.data?.sortBy || '',
-      drawingFileUrl: node.data?.drawingFileUrl || node.drawingFileUrl || '',
+      drawingFileUrl: node.data?.drawingFileUrl || '',
       currentTool: node.data?.currentTool || '',
       settings: node.data?.settings || {},
       currentColor: node.data?.currentColor || '',
@@ -119,36 +160,36 @@ const processNode = async (node: any) => {
       dateFormat: node.data?.dateFormat || 'yyyy-MM-dd',
       tableSettings: tableSettings
     },
-    width: node.isEditing
-      ? (isDesktop ? node.editWidth : node.mobileEditWidth) || node.viewWidth
-      : node.viewWidth,
-    height: node.isEditing
-      ? (isDesktop ? node.editHeight : node.mobileEditHeight) || node.viewHeight
-      : node.viewHeight
+    width: node.data?.isEditing
+      ? (isDesktop ? node.width : node.width) || node.width
+      : node.width,
+    height: node.data?.isEditing
+      ? (isDesktop ? node.height : node.height) || node.height
+      : node.height
   };
 };
 
-const processEdge = (edge: any) => ({
+const processEdge = (edge: Edge): Edge => ({
   id: edge.id,
-  source: edge.sourceNodeId || '',
-  target: edge.targetNodeId || '',
+  source: edge.source || '',
+  target: edge.target || '',
   type: 'customEdge'
 });
 
-const useCanvasStore = create<CanvasState>()(
+const useCanvasStore = create<CanvasStoreState>()(
   devtools((set, get) => {
-    let previousNodes: Node[] = [];
-    let previousEdges: any[] = [];
+    let previousNodes: ReactFlowNode<NodeData>[] = []; // Updated type to match ReactFlowNode
+    let previousEdges: Edge[] = [];
 
     return {
       canvasId: uuidv4(),
       isLoading: false,
       lastLoadTime: 0,
+      nodes: [], // Ensure this is of type Node[]
+      edges: [],
       setCanvasId: (id) => set({ canvasId: id }),
       saveCanvas: async () => {
-        const { canvasId } = get();
-        const { nodes } = useNodeStore.getState();
-        const { edges } = useEdgeStore.getState();
+        const { canvasId, nodes, edges } = get();
 
         if (
           JSON.stringify(nodes) !== JSON.stringify(previousNodes) ||
@@ -158,8 +199,12 @@ const useCanvasStore = create<CanvasState>()(
           previousNodes = nodes;
           previousEdges = edges;
 
-          const canvasState = {
-            nodes,
+          const canvasState: CanvasState = {
+            canvasId,
+            nodes: nodes.map((node) => ({
+              ...node,
+              type: node.type || 'default' // Ensure type is always a string
+            })),
             edges
           };
 
@@ -182,13 +227,21 @@ const useCanvasStore = create<CanvasState>()(
           const nodes = await Promise.all(canvasData.nodes.map(processNode));
           const edges = canvasData.edges.map(processEdge);
 
-          useNodeStore.getState().setNodes(nodes);
+          useNodeStore.getState().setNodes(
+            nodes.filter(
+              (node): node is ReactFlowNode<NodeData> => node !== null // Updated type assertion
+            )
+          );
           useEdgeStore.getState().setEdges(edges);
 
           set({
             canvasId,
             lastLoadTime: Date.now(),
-            isLoading: false
+            isLoading: false,
+            nodes: nodes.filter(
+              (node): node is ReactFlowNode<NodeData> => node !== null // Updated type assertion
+            ),
+            edges
           });
 
           console.log('useCanvasStore: Canvas loaded successfully');

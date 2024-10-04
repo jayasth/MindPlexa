@@ -28,7 +28,7 @@ export const findOptimalPosition = (
   const maxAttempts = 100;
 
   for (let i = 0; i < newNodesCount; i++) {
-    let position = { ...initialPosition };
+    const position = { ...initialPosition };
     while (
       nodes.some((node) => {
         const nodeSize = getNodeSize(node);
