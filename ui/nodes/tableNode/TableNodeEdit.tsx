@@ -47,7 +47,17 @@ import { format, parse, isValid } from 'date-fns';
 import debounce from 'lodash/debounce';
 
 interface TableNodeEditProps extends NodeProps {
-  data: any;
+  data: {
+    id: string;
+    title?: string;
+    columns?: Array<{ headerName: string; field: string; type: string }>;
+    rows?: Array<Record<string, unknown>>;
+    backgroundColor?: string;
+    textColor?: string;
+    tags?: string[];
+    attachedFiles?: Attachment[];
+    dateFormat?: string;
+  };
   width: number;
   height: number;
   selected: boolean;
@@ -59,6 +69,13 @@ interface TableNodeEditProps extends NodeProps {
   position: { x: number; y: number };
 }
 
+interface Column {
+  headerName: string;
+  field: string;
+  editable: boolean;
+  type: string;
+}
+
 const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   data,
   width,
@@ -68,7 +85,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   position
 }) => {
   const { canvasId } = useCanvasStore();
-  const [isSelected, setIsSelected] = useState(selected);
   const [title, setTitle] = useState(data.title || 'Untitled Table');
   const [content, setContent] = useState({
     columns: data.columns || [],
@@ -89,10 +105,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isNodeDeleteModalOpen, setIsNodeDeleteModalOpen] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
   const [dateFormat, setDateFormat] = useState(data.dateFormat || 'yyyy-MM-dd');
-  const [isAddTableModalOpen, setIsAddTableModalOpen] = useState(false);
-  const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
 
   const updateNode = useNodeStore((state) => state.updateNode);
   const tableRef = useRef<HTMLDivElement>(null);
@@ -112,9 +125,12 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
 
   const debouncedUpdateNode = useMemo(
     () =>
-      debounce((nodeId, updates) => {
-        updateNode(nodeId, updates, canvasId);
-      }, 500),
+      debounce(
+        (nodeId: string, updates: Partial<TableNodeEditProps['data']>) => {
+          updateNode(nodeId, updates, canvasId);
+        },
+        500
+      ),
     [updateNode, canvasId]
   );
 
@@ -135,7 +151,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
       dateFormat
     };
 
-    debouncedUpdateNode(data.id, { ...commonData, data: specificData });
+    debouncedUpdateNode(data.id, { ...commonData, ...specificData });
   }, [
     title,
     content,
@@ -270,7 +286,7 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
   );
 
   const handleUpdateNode = useCallback(
-    (id: string, updates: any) => {
+    (id: string, updates: Partial<TableNodeEditProps['data']>) => {
       updateNode(id, updates, canvasId);
     },
     [updateNode, canvasId]
@@ -280,17 +296,24 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     (newDateFormat: string) => {
       setDateFormat(newDateFormat);
       const updatedRows = content.rows.map((row) => {
-        return content.columns.reduce((acc, col) => {
-          if (col.type === 'date' && row[col.field]) {
-            const date = parse(row[col.field], 'yyyy-MM-dd', new Date());
-            acc[col.field] = isValid(date)
-              ? format(date, 'yyyy-MM-dd')
-              : row[col.field];
-          } else {
-            acc[col.field] = row[col.field];
-          }
-          return acc;
-        }, {});
+        return content.columns.reduce(
+          (acc, col) => {
+            if (col.type === 'date' && row[col.field]) {
+              const date = parse(
+                row[col.field] as string,
+                'yyyy-MM-dd',
+                new Date()
+              );
+              acc[col.field] = isValid(date)
+                ? format(date, 'yyyy-MM-dd')
+                : row[col.field];
+            } else {
+              acc[col.field] = row[col.field];
+            }
+            return acc;
+          },
+          {} as Record<string, unknown>
+        );
       });
       setContent({ ...content, rows: updatedRows });
       updateNode(
@@ -304,30 +327,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
     [content, setContent, updateNode, data.id, canvasId]
   );
 
-  const handleAddTable = useCallback(
-    (
-      newColumns: Array<{ name: string; type: string }>,
-      newRows: Array<any>
-    ) => {
-      if (content.columns.length > 0 || content.rows.length > 0) {
-        setIsConfirmationModalOpen(true);
-      } else {
-        setContent((prevContent) => ({
-          columns: [...prevContent.columns, ...newColumns],
-          rows: [...prevContent.rows, ...newRows]
-        }));
-        setIsAddTableModalOpen(false);
-      }
-    },
-    [content]
-  );
-
-  const handleConfirmAddTable = () => {
-    setContent({ columns: [], rows: [] });
-    setIsConfirmationModalOpen(false);
-    setIsAddTableModalOpen(true);
-  };
-
   const { bringNodeToFront } = useNodeStore();
 
   useEffect(() => {
@@ -336,11 +335,8 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
 
   return (
     <div>
-      {errorMessage && (
-        <div className={styles.errorMessage}>{errorMessage}</div>
-      )}
       <div
-        className={`${styles.tableNode} ${isSelected ? styles.selected : ''}`}
+        className={`${styles.tableNode} ${selected ? styles.selected : ''}`}
         style={customStyles}
         onClick={handleContainerClick}
         onBlur={handleContainerBlur}
@@ -373,17 +369,37 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
         </div>
 
         <TableNodeGrid
-          content={content}
-          setContent={setContent}
-          updateNode={handleUpdateNode}
+          content={{
+            columns: content.columns.map((col) => ({
+              ...col,
+              editable: true
+            })),
+            rows: content.rows as Record<
+              string,
+              string | number | boolean | Date | null
+            >[]
+          }}
+          setContent={
+            setContent as React.Dispatch<
+              React.SetStateAction<{
+                columns: Column[];
+                rows: Record<string, string | number | boolean | Date | null>[];
+              }>
+            >
+          }
+          updateNode={(nodeId, canvasId, updates) =>
+            handleUpdateNode(nodeId, {
+              ...updates,
+              dateFormat: updates.dateFormat || dateFormat
+            })
+          }
           nodeId={data.id}
           canvasId={canvasId}
+          setIsModalOpen={() => {}}
           setIsDeleteModalOpen={setIsDeleteModalOpen}
           setIsSettingsModalOpen={setIsSettingsModalOpen}
           handleDeleteTable={handleDeleteTable}
           dateFormat={dateFormat}
-          onAddTable={handleAddTable}
-          setIsModalOpen={setIsAddTableModalOpen}
         />
 
         {(tags.length > 0 || attachedFiles.length > 0) &&
@@ -423,7 +439,6 @@ const TableNodeEdit: React.FC<TableNodeEditProps> = ({
           isOpen={isFileModalOpen}
           onClose={() => setIsFileModalOpen(false)}
           onAttachFiles={onAttachFiles}
-          onRemoveFile={onRemoveFile}
           existingFiles={attachedFiles}
           nodeId={data.id}
         />
