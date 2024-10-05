@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import { createCanvas } from '@/utils/canvas/canvasService';
 import Modal from '@/ui/Modal/Modal';
@@ -8,7 +8,7 @@ import Button from '@/ui/Button/Button';
 import Input from '@/ui/Input/Input';
 import styles from '@/ui/Modal/Modal.module.css';
 
-export default function NewCanvasPage() {
+function NewCanvasContent() {
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(true);
   const [canvasTitle, setCanvasTitle] = useState('');
@@ -44,5 +44,13 @@ export default function NewCanvasPage() {
         </Button>
       </div>
     </Modal>
+  );
+}
+
+export default function NewCanvasPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <NewCanvasContent />
+    </Suspense>
   );
 }

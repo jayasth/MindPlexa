@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import AnalyticsOverview from '@/ui/analytics/AnalyticsOverview';
 import CanvasUsageChart from '@/ui/analytics/CanvasUsageChart';
 import NodeTypeDistribution from '@/ui/analytics/NodeTypeDistribution';
@@ -8,7 +8,7 @@ import ProjectProgress from '@/ui/analytics/ProjectProgress';
 import Card from '@/ui/Card/Card';
 import styles from './Analytics.module.css';
 
-export default function AnalyticsPage() {
+function AnalyticsContent() {
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>Workspace Analytics</h1>
@@ -27,5 +27,13 @@ export default function AnalyticsPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function AnalyticsPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <AnalyticsContent />
+    </Suspense>
   );
 }

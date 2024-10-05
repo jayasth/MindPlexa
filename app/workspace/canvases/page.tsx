@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/utils/supabase/supabaseClient';
 import type { Tables } from 'types_db';
@@ -14,7 +14,7 @@ import DeleteCanvasModal from '@/ui/Modal/DeleteCanvasModal';
 
 type Canvas = Tables<'canvases'>;
 
-export default function CanvasesPage() {
+function CanvasesContent() {
   const [canvases, setCanvases] = useState<Canvas[]>([]);
   const [selectedCanvasId, setSelectedCanvasId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -140,5 +140,13 @@ export default function CanvasesPage() {
         hasSharedNodes={hasSharedNodes}
       />
     </div>
+  );
+}
+
+export default function CanvasesPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CanvasesContent />
+    </Suspense>
   );
 }

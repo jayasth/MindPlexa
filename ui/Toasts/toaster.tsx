@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import {
   Toast,
   ToastClose,
@@ -12,7 +13,7 @@ import { useToast } from '@/ui/Toasts/use-toast';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
 
-export function Toaster() {
+function ToasterContent() {
   const { toast, toasts } = useToast();
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -65,5 +66,13 @@ export function Toaster() {
       })}
       <ToastViewport />
     </ToastProvider>
+  );
+}
+
+export default function Toaster() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ToasterContent />
+    </Suspense>
   );
 }

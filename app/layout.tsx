@@ -1,5 +1,5 @@
 import { generateMetadata } from '@/utils/metadata';
-import { Toaster } from '@/ui/Toasts/toaster';
+import Toaster from '@/ui/Toasts/toaster';
 import 'styles/globals.css';
 
 export const metadata = generateMetadata();
