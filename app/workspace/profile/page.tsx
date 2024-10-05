@@ -24,6 +24,21 @@ export default async function Profile() {
     console.log(error);
   }
 
+  const defaultProfile = {
+    avatar_url: null,
+    bio: null,
+    created_at: null,
+    email: null,
+    full_name: null,
+    id: '',
+    phone: null,
+    updated_at: null,
+    user_id: null,
+    website: null
+  };
+
+  const safeProfile = profile ?? defaultProfile;
+
   return (
     <section className="max-w-4xl mx-auto px-4 py-8">
       <Card
@@ -39,16 +54,16 @@ export default async function Profile() {
               </p>
               <p>
                 <span className="font-medium">Full Name:</span>{' '}
-                {profile?.full_name || 'N/A'}
+                {safeProfile.full_name || 'N/A'}
               </p>
               <p>
                 <span className="font-medium">Website:</span>{' '}
-                {profile?.website || 'N/A'}
+                {safeProfile.website || 'N/A'}
               </p>
               {/* Add more profile fields as needed */}
             </div>
           </div>
-          <ProfileFormWrapper user={user} profile={profile ?? null} />
+          <ProfileFormWrapper user={user} profile={safeProfile} />
         </div>
       </Card>
     </section>

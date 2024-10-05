@@ -15,6 +15,7 @@ import {
 } from '@/utils/canvas/nodeSpecificDataService';
 import { handleTags } from '@/utils/canvas/tagService';
 import { removeDrawing } from './drawNodeService';
+import { Database } from '@/types_db';
 
 const supabase = createClient();
 
@@ -41,16 +42,30 @@ export const createCanvas = async (
   router: ReturnType<typeof useRouter>
 ) => {
   if (canvasTitle.trim() !== '') {
+    const newCanvas: Database['public']['Tables']['canvases']['Insert'] = {
+      id: uuidv4(),
+      name: canvasTitle
+    };
+
     await supabase
       .from('canvases')
-      .insert(toSnakeCase({ id: uuidv4(), name: canvasTitle }));
+      .insert(
+        toSnakeCase(
+          newCanvas
+        ) as Database['public']['Tables']['canvases']['Insert']
+      );
 
     const { data, error } = await supabase
       .from('canvases')
       .select('*')
       .order('created_at', { ascending: false })
       .limit(1)
-      .then(({ data, error }) => ({ data: toCamelCase(data), error }));
+      .then(({ data, error }) => ({
+        data: toCamelCase(
+          data
+        ) as Database['public']['Tables']['canvases']['Row'][],
+        error
+      }));
 
     if (error) {
       console.error('canvasService: Error fetching canvas:', error);
@@ -202,28 +217,40 @@ export const fetchCanvas = async (canvasId: string) => {
     throw canvasError;
   }
 
-  const canvas = toCamelCase(canvasData);
+  const canvas = toCamelCase(
+    canvasData
+  ) as Database['public']['Tables']['canvases']['Row'] & {
+    nodes: Array<
+      Database['public']['Tables']['nodes']['Row'] & {
+        nodeTags?: Array<{ tag: string }>;
+        nodeAttachments?: Array<
+          Database['public']['Tables']['node_attachments']['Row']
+        >;
+      }
+    >;
+    edges: Array<Database['public']['Tables']['edges']['Row']>;
+  };
 
   const organizedNodes = await Promise.all(
     canvas.nodes.map(async (node) => {
-      const nodeType = node.type.toLowerCase() as NodeType;
+      const nodeType = node.type?.toLowerCase() as NodeType;
       const specificNodeData = await getNodeSpecificData(node.id, nodeType);
       const processedData = processNodeSpecificData(
         nodeType,
         specificNodeData || {}
-      ); // Ensure specificNodeData is not null
+      );
 
       const tags = node.nodeTags ? node.nodeTags.map((tag) => tag.tag) : [];
       const attachments = node.nodeAttachments
         ? node.nodeAttachments.map((attachment) => ({
             id: attachment.id,
             type: attachment.type,
-            name: attachment.fileName,
-            size: attachment.fileSize,
-            storagePath: attachment.storagePath,
-            mimeType: attachment.mimeType,
+            name: attachment.file_name,
+            size: attachment.file_size,
+            storagePath: attachment.storage_path,
+            mimeType: attachment.mime_type,
             url: attachment.url,
-            isFile: attachment.isFile
+            isFile: attachment.is_file
           }))
         : [];
 
@@ -307,7 +334,11 @@ export const saveCanvasState = async (
   // Update canvas data
   const { error: canvasUpdateError } = await supabase
     .from('canvases')
-    .update(toSnakeCase(canvasData))
+    .update(
+      toSnakeCase(
+        canvasData
+      ) as Database['public']['Tables']['canvases']['Update']
+    )
     .eq('id', canvasId);
 
   if (canvasUpdateError) {
@@ -322,7 +353,9 @@ export const saveCanvasState = async (
     // Update common node data
     const { error: nodeUpdateError } = await supabase
       .from('nodes')
-      .update(toSnakeCase(nodeData))
+      .update(
+        toSnakeCase(nodeData) as Database['public']['Tables']['nodes']['Update']
+      )
       .eq('id', nodeId);
 
     if (nodeUpdateError) {

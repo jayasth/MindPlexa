@@ -6,7 +6,7 @@ import {
   saveCanvasState,
   CanvasState
 } from '@/utils/canvas/canvasService';
-import type { Node as ReactFlowNode, Edge } from 'reactflow';
+import type { Node as ReactFlowNode, Edge, XYPosition } from 'reactflow';
 import useNodeStore from '../nodes/useNodeStore';
 import useEdgeStore from '../edges/useEdgeStore';
 import { enableMapSet } from 'immer';
@@ -22,7 +22,7 @@ interface CanvasStoreState {
   isLoading: boolean;
   lastLoadTime: number;
   saveCanvasTimeout?: NodeJS.Timeout;
-  nodes: ReactFlowNode<NodeData>[]; // Updated type to match ReactFlowNode
+  nodes: ReactFlowNode<NodeData>[];
   edges: Edge[];
 }
 
@@ -70,7 +70,7 @@ const processNode = async (
 
   console.log('useCanvasStore: Processing node:', node);
 
-  let position;
+  let position: XYPosition;
   try {
     position =
       typeof node.position === 'string'
@@ -169,23 +169,32 @@ const processNode = async (
   };
 };
 
-const processEdge = (edge: Edge): Edge => ({
+const processEdge = (edge: {
+  id: string;
+  source?: string;
+  target?: string;
+  canvas_id?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+  source_node_id?: string | null;
+  target_node_id?: string | null;
+}): Edge => ({
   id: edge.id,
-  source: edge.source || '',
-  target: edge.target || '',
+  source: edge.source || edge.source_node_id || '',
+  target: edge.target || edge.target_node_id || '',
   type: 'customEdge'
 });
 
 const useCanvasStore = create<CanvasStoreState>()(
   devtools((set, get) => {
-    let previousNodes: ReactFlowNode<NodeData>[] = []; // Updated type to match ReactFlowNode
+    let previousNodes: ReactFlowNode<NodeData>[] = [];
     let previousEdges: Edge[] = [];
 
     return {
       canvasId: uuidv4(),
       isLoading: false,
       lastLoadTime: 0,
-      nodes: [], // Ensure this is of type Node[]
+      nodes: [],
       edges: [],
       setCanvasId: (id) => set({ canvasId: id }),
       saveCanvas: async () => {
@@ -203,7 +212,7 @@ const useCanvasStore = create<CanvasStoreState>()(
             canvasId,
             nodes: nodes.map((node) => ({
               ...node,
-              type: node.type || 'default' // Ensure type is always a string
+              type: node.type || 'default'
             })),
             edges
           };
@@ -224,14 +233,20 @@ const useCanvasStore = create<CanvasStoreState>()(
           const canvasData = await fetchCanvas(canvasId);
           console.log('useCanvasStore: Fetched canvas data:', canvasData);
 
-          const nodes = await Promise.all(canvasData.nodes.map(processNode));
-          const edges = canvasData.edges.map(processEdge);
-
-          useNodeStore.getState().setNodes(
-            nodes.filter(
-              (node): node is ReactFlowNode<NodeData> => node !== null // Updated type assertion
+          const nodes = await Promise.all(
+            canvasData.nodes.map((node) =>
+              processNode(node as unknown as ReactFlowNode<NodeData>)
             )
           );
+          const edges = canvasData.edges.map(processEdge);
+
+          useNodeStore
+            .getState()
+            .setNodes(
+              nodes.filter(
+                (node): node is ReactFlowNode<NodeData> => node !== null
+              )
+            );
           useEdgeStore.getState().setEdges(edges);
 
           set({
@@ -239,7 +254,7 @@ const useCanvasStore = create<CanvasStoreState>()(
             lastLoadTime: Date.now(),
             isLoading: false,
             nodes: nodes.filter(
-              (node): node is ReactFlowNode<NodeData> => node !== null // Updated type assertion
+              (node): node is ReactFlowNode<NodeData> => node !== null
             ),
             edges
           });

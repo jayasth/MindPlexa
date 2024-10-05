@@ -12,7 +12,7 @@ import Button from '@/ui/Button/Button';
 import ConfirmIntegrationModal from './ConfirmIntegrationModal';
 import Dropdown from '@/ui/dropdown/Dropdown';
 import Modal from '@/ui/Modal/Modal';
-import styles from './AIGeneratorModal.module.css';
+import styles from './AIGeneratorModalV1.module.css';
 import { applyLayout } from '@/ui/ai/generator/aiPositioningUtilsV1';
 import { createBulkNodes } from '@/utils/canvas/nodeService';
 import { createEdgeBetweenNodes } from '@/utils/canvas/edgeService';
