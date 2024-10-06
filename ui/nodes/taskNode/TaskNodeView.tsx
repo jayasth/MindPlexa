@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NodeProps, Handle, Position } from 'reactflow';
 import { useNodeStore, useUIStore } from '@/app/store';
 import styles from './TaskNodeView.module.css';
@@ -18,9 +18,21 @@ interface TaskNodeViewProps extends NodeProps {
 }
 
 const TaskNodeView: React.FC<TaskNodeViewProps> = ({ data, width, height }) => {
-  const { title, tasks, backgroundColor, textColor } = data;
+  const { id, title, tasks, backgroundColor, textColor } = data;
   const toggleEditMode = useNodeStore((state) => state.toggleEditMode);
   const isLoading = useUIStore((state) => state.isLoading);
+
+  useEffect(() => {
+    console.log('TaskNodeView: Node details:', {
+      id,
+      title,
+      tasks,
+      backgroundColor,
+      textColor,
+      width,
+      height
+    });
+  }, [id, title, tasks, backgroundColor, textColor, width, height]);
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -35,7 +47,7 @@ const TaskNodeView: React.FC<TaskNodeViewProps> = ({ data, width, height }) => {
         <div
           className={styles.editButton}
           style={{ color: textColor }}
-          onClick={() => toggleEditMode(data.id)}
+          onClick={() => toggleEditMode(id)}
         >
           <FaEdit />
         </div>

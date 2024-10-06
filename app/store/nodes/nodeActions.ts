@@ -27,9 +27,9 @@ export const addNode = async (set, node, _canvasId) => {
         state.nodeInternals.set(node.id, node);
       })
     );
-    console.log('useNodeStore: Node added', node);
+    console.log('nodeActions: Node added', node);
   } catch (error) {
-    console.error('useNodeStore: Error adding node', error);
+    console.error('nodeActions: Error adding node', error);
   }
 };
 
@@ -167,14 +167,14 @@ export const updateNode = async (set, get, id, data, _canvasId) => {
           }
 
           state.nodeInternals.set(id, updatedNode);
-          console.log('useNodeStore: Node updated', updatedNode);
+          console.log('nodeActions: Node updated', updatedNode);
           state.nodes[existingNodeIndex] = updatedNode;
         }
       })
     );
-    console.log('useNodeStore: After updateNode', get().nodes);
+    console.log('nodeActions: After updateNode', get().nodes);
   } catch (error) {
-    console.error('useNodeStore: Error updating node', error);
+    console.error('nodeActions: Error updating node', error);
   }
 };
 
@@ -192,7 +192,7 @@ export const removeNode = async (set, get, id, _canvasId) => {
           deleteNodeInDB(id, nodeToRemove.type as NodeType);
           state.nodeInternals.delete(id);
           state.nodes = state.nodes.filter((node) => node.id !== id);
-          console.log(`useNodeStore: Node with id ${id} removed`, nodeToRemove);
+          console.log(`nodeActions: Node with id ${id} removed`, nodeToRemove);
 
           // Ensure the drawing is deleted from the bucket when the node is deleted
           if (nodeToRemove.type === 'draw') {
@@ -205,7 +205,7 @@ export const removeNode = async (set, get, id, _canvasId) => {
       })
     );
   } catch (error) {
-    console.error('useNodeStore: Error removing node', error);
+    console.error('nodeActions: Error removing node', error);
   }
 };
 

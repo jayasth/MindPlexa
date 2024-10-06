@@ -17,7 +17,7 @@ type NodeType = Exclude<
 
 export const onNodesChange = async (set, get, changes, _canvasId) => {
   try {
-    console.log('useNodeStore: Before onNodesChange', get().nodes);
+    console.log('nodeChangeHandling: Before onNodesChange', get().nodes);
     set(
       produce((state: NodeState) => {
         const updatedNodes = state.nodes.map((node) => {
@@ -87,7 +87,7 @@ export const onNodesChange = async (set, get, changes, _canvasId) => {
             }
 
             if (hasChanges) {
-              console.log('useNodeStore: Node changes detected', {
+              console.log('nodeChangeHandling: Node changes detected', {
                 nodeId: updatedNode.id,
                 changedProperties
               });
@@ -229,13 +229,13 @@ export const onNodesChange = async (set, get, changes, _canvasId) => {
         const updatedNodeInternals = new Map(state.nodeInternals);
         updatedNodes.forEach((node) => updatedNodeInternals.set(node.id, node));
 
-        console.log('useNodeStore: Nodes updated', updatedNodes);
+        console.log('nodeChangeHandling: Nodes updated', updatedNodes);
         state.nodes = updatedNodes;
         state.nodeInternals = updatedNodeInternals;
       })
     );
-    console.log('useNodeStore: After onNodesChange', get().nodes);
+    console.log('nodeChangeHandling: After onNodesChange', get().nodes);
   } catch (error) {
-    console.error('useNodeStore: Error updating nodes', error);
+    console.error('nodeChangeHandling: Error updating nodes', error);
   }
 };

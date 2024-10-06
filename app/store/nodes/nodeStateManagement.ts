@@ -9,7 +9,7 @@ export const setNodes = (set, updater) => {
         typeof updater === 'function' ? updater(state.nodes) : updater;
       state.nodeInternals.clear();
       updatedNodes.forEach((node) => state.nodeInternals.set(node.id, node));
-      console.log('useNodeStore: Nodes set', updatedNodes);
+      console.log('nodeStateManagement: Nodes set', updatedNodes);
       state.nodes = updatedNodes;
     })
   );
@@ -17,7 +17,7 @@ export const setNodes = (set, updater) => {
 
 export const setInitialState = (set, get, nodes) => {
   if (get().nodes.length > 0) return;
-  console.log('useNodeStore: Setting initial state', nodes);
+  console.log('nodeStateManagement: Setting initial state', nodes);
   set(
     produce((state: NodeState) => {
       state.nodes = nodes;
@@ -69,7 +69,7 @@ export const setSelectedNodes = (set, selectedIds) => {
         selected: selectedIds.includes(node.id)
       }));
       updatedNodes.forEach((node) => state.nodeInternals.set(node.id, node));
-      console.log('useNodeStore: Nodes selected', updatedNodes);
+      console.log('nodeStateManagement: Nodes selected', updatedNodes);
       state.nodes = updatedNodes;
     })
   );

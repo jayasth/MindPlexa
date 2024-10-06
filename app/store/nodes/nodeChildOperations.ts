@@ -35,9 +35,9 @@ export const addChildNode = async (
     setNodes((nodes) => [
       ...nodes.filter((node) => node.type !== 'selection_menu')
     ]);
-    console.log('useNodeStore: Child node added', newNode);
+    console.log('nodeChildOperations: Child node added', newNode);
   } catch (error) {
-    console.error('useNodeStore: Error adding child node', error);
+    console.error('nodeChildOperations: Error adding child node', error);
   }
 };
 
@@ -61,7 +61,9 @@ export const createChildNodeFromDrag = async (
       (pos) => pos
     );
     if (!childNodePosition) {
-      console.error('useNodeStore: Failed to calculate child node position.');
+      console.error(
+        'nodeChildOperations: Failed to calculate child node position.'
+      );
       return;
     }
     const newNode = {
@@ -99,12 +101,12 @@ export const createChildNodeFromDrag = async (
             await removeNode(newNode.id, canvasId);
             setNodes((nodes) => nodes.filter((node) => node.id !== newNode.id));
             console.log(
-              'useNodeStore: Child node created from drag',
+              'nodeChildOperations: Child node created from drag',
               createdNode
             );
           } catch (error) {
             console.error(
-              'useNodeStore: Error creating child node from drag',
+              'nodeChildOperations: Error creating child node from drag',
               error
             );
           }
@@ -113,9 +115,12 @@ export const createChildNodeFromDrag = async (
           try {
             removeNode(newNode.id, canvasId);
             setNodes((nodes) => nodes.filter((node) => node.id !== newNode.id));
-            console.log('useNodeStore: Selection menu closed', newNode);
+            console.log('nodeChildOperations: Selection menu closed', newNode);
           } catch (error) {
-            console.error('useNodeStore: Error closing selection menu', error);
+            console.error(
+              'nodeChildOperations: Error closing selection menu',
+              error
+            );
           }
         },
         parentNode: parentNode,
@@ -129,8 +134,11 @@ export const createChildNodeFromDrag = async (
       ...nodes.filter((node) => node.type !== 'selection_menu'),
       newNode
     ]);
-    console.log('useNodeStore: Selection menu node added', newNode);
+    console.log('nodeChildOperations: Selection menu node added', newNode);
   } catch (error) {
-    console.error('useNodeStore: Error adding selection menu node', error);
+    console.error(
+      'nodeChildOperations: Error adding selection menu node',
+      error
+    );
   }
 };

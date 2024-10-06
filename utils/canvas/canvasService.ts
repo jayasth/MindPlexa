@@ -233,6 +233,7 @@ export const fetchCanvas = async (canvasId: string) => {
 
   const organizedNodes = await Promise.all(
     canvas.nodes.map(async (node) => {
+      console.log('CanvasService: Raw node data:', node);
       const nodeType = node.type?.toLowerCase() as NodeType;
       const specificNodeData = await getNodeSpecificData(node.id, nodeType);
       const processedData = processNodeSpecificData(

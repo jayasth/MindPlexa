@@ -78,6 +78,8 @@ const NodeRenderer: React.FC<NodeRendererProps> = React.memo(
     const nodeContent = useMemo(() => {
       if (!node) return null;
 
+      console.log('Rendering node:', node);
+
       const commonProps = {
         id,
         type,

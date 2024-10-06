@@ -77,7 +77,7 @@ const processNode = async (
         ? JSON.parse(node.position)
         : node.position;
   } catch (error) {
-    console.error('Error parsing position JSON:', error);
+    console.error('useCanvasStore: Error parsing position JSON:', error);
     position = { x: 200, y: 200 };
   }
 
@@ -92,7 +92,7 @@ const processNode = async (
           ? JSON.parse(node.data.tasks)
           : node.data.tasks;
     } catch (error) {
-      console.error('Error parsing tasks JSON:', error);
+      console.error('useCanvasStore: Error parsing tasks JSON:', error);
     }
   }
 
@@ -105,7 +105,7 @@ const processNode = async (
           ? JSON.parse(node.data.events)
           : node.data.events;
     } catch (error) {
-      console.error('Error parsing events JSON:', error);
+      console.error('useCanvasStore: Error parsing events JSON:', error);
     }
   }
 
@@ -125,7 +125,7 @@ const processNode = async (
         ? JSON.parse(node.data.settings as unknown as string)
         : {};
     } catch (error) {
-      console.error('Error parsing table data JSON:', error);
+      console.error('useCanvasStore: Error parsing table data JSON:', error);
     }
   }
 
