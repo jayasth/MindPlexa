@@ -50,7 +50,7 @@ import {
   updateNodeSpecificData,
   getNodeSpecificData
 } from '@/utils/canvas/nodeSpecificDataService';
-import { saveDrawing } from '@/utils/canvas/drawNodeService';
+import { saveDrawing, removeDrawing } from '@/utils/canvas/drawNodeService';
 
 interface DrawNodeEditProps extends NodeProps {
   data: {
@@ -366,10 +366,11 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     [nodeWidth, nodeHeight, backgroundColor, textColor]
   );
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = useCallback(async () => {
     setIsDeleteModalOpen(false);
+    await removeDrawing(data.id); // Add this line to remove the drawing
     handleDeleteNode(data.id, canvasId);
-  };
+  }, [data.id, canvasId]);
 
   const handleDeleteCancel = () => {
     setIsDeleteModalOpen(false);

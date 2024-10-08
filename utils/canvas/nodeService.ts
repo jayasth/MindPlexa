@@ -13,6 +13,7 @@ import {
   deleteNodeSpecificData
 } from '@/utils/canvas/nodeSpecificDataService';
 import { handleTags } from '@/utils/canvas/tagService';
+import { removeDrawing } from './drawNodeService';
 
 export type NodeType = Exclude<
   Database['public']['Enums']['node_type'],
@@ -334,6 +335,10 @@ export const deleteNode = async (
         console.error('Error deleting file from storage:', deleteError);
       }
     }
+  }
+
+  if (nodeType === 'draw') {
+    await removeDrawing(nodeId);
   }
 
   if (nodeType !== 'selection_menu') {
