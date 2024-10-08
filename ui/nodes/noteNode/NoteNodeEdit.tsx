@@ -46,11 +46,11 @@ import useCanvasStore from '@/app/store/canvas/useCanvasStore';
 interface NoteNodeEditProps extends NodeProps {
   data: {
     id: string;
-    title?: string;
-    content?: string;
-    backgroundColor?: string;
-    textColor?: string;
-    tags?: string[];
+    title: string;
+    content: string;
+    backgroundColor: string;
+    textColor: string;
+    tags: string[];
   };
   width: number;
   height: number;

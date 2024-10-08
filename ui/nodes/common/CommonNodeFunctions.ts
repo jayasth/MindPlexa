@@ -126,7 +126,7 @@ export const handleSave = (
   toggleEditMode(id);
 };
 
-export const handleClose = (
+export const handleClose = async (
   nodeId: string,
   onClose: () => void,
   title: string,
@@ -134,9 +134,24 @@ export const handleClose = (
   canvasId: string
 ) => {
   const { updateNode, toggleEditMode } = useNodeStore.getState();
-  updateNode(nodeId, { data: { title, content } }, canvasId);
-  onClose();
-  toggleEditMode(nodeId);
+  try {
+    // Check if content is already a string
+    const contentToSave =
+      typeof content.content === 'string'
+        ? content.content
+        : JSON.stringify(content);
+
+    await updateNode(
+      nodeId,
+      { data: { title, content: contentToSave } },
+      canvasId
+    );
+    onClose();
+    toggleEditMode(nodeId);
+  } catch (error) {
+    console.error('Error closing node:', error);
+    // Handle the error appropriately, maybe show a user-friendly message
+  }
 };
 
 export const handleDelete = async (id: string, canvasId: string) => {
