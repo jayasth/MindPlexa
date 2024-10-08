@@ -31,64 +31,75 @@ interface ToolConfig {
   defaultColor: string;
 }
 
-export const initializeTools = (): Array<ToolConfig> => {
+export const useInitializeTools = (): Array<ToolConfig> => {
+  const penTool = usePen({});
+  const lineTool = useLine({});
+  const rectangleTool = useRectangle({});
+  const circleTool = useCircle({});
+  const markerTool = useMarker({});
+  const brushTool = useBrush({});
+  const watercolorTool = useWatercolor({});
+  const airbrushTool = useAirbrush({});
+  const shadingBrushTool = useShadingBrush({});
+  const eraserTool = useEraser({});
+
   return [
     {
-      tool: usePen,
+      tool: penTool,
       icon: FaPen,
       defaultStrokeWidth: 2,
       defaultColor: '#635E87'
     },
     {
-      tool: useLine,
+      tool: lineTool,
       icon: BsSlashLg,
       defaultStrokeWidth: 2,
       defaultColor: '#FF6347'
     },
     {
-      tool: useRectangle,
+      tool: rectangleTool,
       icon: FaSquare,
       defaultStrokeWidth: 2,
       defaultColor: '#4682B4'
     },
     {
-      tool: useCircle,
+      tool: circleTool,
       icon: FaCircle,
       defaultStrokeWidth: 2,
       defaultColor: '#32CD32'
     },
     {
-      tool: useMarker,
+      tool: markerTool,
       icon: FaMarker,
       defaultStrokeWidth: 20,
       defaultColor: '#A78BFA'
     },
     {
-      tool: useBrush,
+      tool: brushTool,
       icon: FaPaintBrush,
       defaultStrokeWidth: 20,
       defaultColor: '#F472B6'
     },
     {
-      tool: useWatercolor,
+      tool: watercolorTool,
       icon: IoMdWater,
       defaultStrokeWidth: 20,
       defaultColor: '#8BD8BD'
     },
     {
-      tool: useAirbrush,
+      tool: airbrushTool,
       icon: FaSprayCan,
       defaultStrokeWidth: 20,
       defaultColor: '#F9D342'
     },
     {
-      tool: useShadingBrush,
+      tool: shadingBrushTool,
       icon: FaPen,
       defaultStrokeWidth: 20,
       defaultColor: '#A1A1A1'
     },
     {
-      tool: useEraser,
+      tool: eraserTool,
       icon: FaEraser,
       defaultStrokeWidth: 40,
       defaultColor: '#FFFFFF'

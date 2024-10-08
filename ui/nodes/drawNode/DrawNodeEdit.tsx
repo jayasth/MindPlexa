@@ -43,7 +43,7 @@ import { useBackgroundColorChange } from '@/ui/nodes/common/useBackgroundColorCh
 import { debounce } from 'lodash';
 import useNodeStore from '@/app/store/nodes/useNodeStore';
 import useCanvasStore from '@/app/store/canvas/useCanvasStore';
-import { initializeTools } from './toolInitialization';
+import { useInitializeTools } from './toolInitialization';
 import { useHistory } from './drawNodeHistory';
 import ResizableArtboardMask from './components/ResizableArtboardMask';
 import {
@@ -99,7 +99,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const [isTagModalOpen, setIsTagModalOpen] = useState(false);
   const [isFileModalOpen, setIsFileModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [tools] = useState(initializeTools());
+  const [tools] = useState(useInitializeTools());
   const [currentToolIndex, setCurrentToolIndex] = useState(0);
   const [currentTool, setCurrentTool] = useState(tools[0].tool.name);
   const [currentColor, setCurrentColor] = useState(tools[0].defaultColor);
