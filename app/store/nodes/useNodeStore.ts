@@ -53,10 +53,8 @@ const useNodeStore = create<NodeState>()(
     nodes: [],
     nodeInternals: new Map(),
     addNode: (node, canvasId) => addNode(set, node, canvasId),
-    updateNode: async (id, data, canvasId) => {
-      await updateNode(set, get, id, data, canvasId);
-      console.log(`useNodeStore: Node updated: ${id}`, data);
-    },
+    updateNode: (id, data, canvasId) =>
+      updateNode(set, get, id, data, canvasId),
     removeNode: (id, canvasId) => removeNode(set, get, id, canvasId),
     setNodes: (updater) => setNodes(set, updater),
     setInitialState: (nodes) => setInitialState(set, get, nodes),
@@ -103,15 +101,13 @@ const useNodeStore = create<NodeState>()(
     updateNodeZIndex: (nodeId: string, newZIndex: number) => {
       set((state) => ({
         nodes: state.nodes.map((node) =>
-          node.id === nodeId
-            ? { ...node, data: { ...node.data, zIndex: newZIndex } }
-            : node
+          node.id === nodeId ? { ...node, zIndex: newZIndex } : node
         )
       }));
     },
     bringNodeToFront: (nodeId: string) => {
       const { nodes, updateNodeZIndex } = get();
-      const maxZIndex = Math.max(...nodes.map((node) => node.data.zIndex || 0));
+      const maxZIndex = Math.max(...nodes.map((node) => node.zIndex || 0));
       updateNodeZIndex(nodeId, maxZIndex + 1);
     }
   }))
