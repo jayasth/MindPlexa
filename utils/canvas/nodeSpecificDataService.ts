@@ -1,28 +1,10 @@
 import { createClient } from '@/utils/supabase/supabaseClient';
 import { toCamelCase, toSnakeCase } from '@/utils/caseConversion';
-import { getDrawing } from './drawNodeService';
+import { getDrawing, saveDrawing } from './drawNodeService';
 const supabase = createClient();
 
 type NodeType = 'note' | 'task' | 'calendar' | 'table' | 'draw';
 type SpecialNodeType = 'selection_menu';
-
-export const uploadSVGToBucket = async (nodeId: string, svgContent: string) => {
-  const svgData = svgContent.replace(/^data:image\/svg\+xml;base64,/, '');
-
-  const { data, error } = await supabase.storage
-    .from('drawings')
-    .upload(`${nodeId}.svg`, Buffer.from(svgData, 'base64'), {
-      contentType: 'image/svg+xml',
-      upsert: true
-    });
-
-  if (error) {
-    console.error('Error uploading SVG to bucket:', error);
-    return null;
-  }
-
-  return data.path;
-};
 
 export const getNodeSpecificData = async (
   nodeId: string,
@@ -34,8 +16,7 @@ export const getNodeSpecificData = async (
 
   if (nodeType === 'draw') {
     const drawData = await getDrawNodeData(nodeId);
-    const drawingData = await getDrawing(nodeId);
-    return { ...drawData, drawingData };
+    return drawData;
   }
 
   const { data, error } = await supabase
@@ -62,16 +43,12 @@ export const getDrawNodeData = async (nodeId: string) => {
 
     if (error) throw error;
 
-    let drawingData = '';
-    if (data && data.drawing_file_url) {
-      const { data: fileData, error: fileError } = await supabase.storage
-        .from('drawings')
-        .download(data.drawing_file_url);
-
-      if (fileError) throw fileError;
-
-      const svgContent = await fileData.text();
-      drawingData = `data:image/svg+xml;base64,${btoa(svgContent)}`;
+    let drawingData: string | null = null;
+    try {
+      drawingData = await getDrawing(nodeId);
+    } catch (drawingError) {
+      console.error('Error fetching drawing:', drawingError);
+      // Continue execution even if drawing fetch fails
     }
 
     return {
@@ -87,7 +64,7 @@ export const getDrawNodeData = async (nodeId: string) => {
     };
   } catch (error) {
     console.error('Error fetching draw node data:', error);
-    throw error;
+    return null;
   }
 };
 
@@ -101,13 +78,11 @@ export const updateNodeSpecificData = async (
   }
 
   if (nodeType === 'draw') {
-    let svgPath = updates.drawingFileUrl;
-    if (
-      updates.drawingData &&
-      typeof updates.drawingData === 'string' &&
-      updates.drawingData.startsWith('data:image/svg+xml;base64,')
-    ) {
-      svgPath = await uploadSVGToBucket(nodeId, updates.drawingData);
+    if (updates.drawingData) {
+      const result = await saveDrawing(nodeId, updates.drawingData as string);
+      if (result) {
+        updates.drawingFileUrl = result.drawingFileUrl;
+      }
     }
 
     const updateData = {
@@ -122,7 +97,7 @@ export const updateNodeSpecificData = async (
         typeof updates.settings === 'string'
           ? updates.settings
           : JSON.stringify(updates.settings),
-      drawing_file_url: svgPath as string | null | undefined
+      drawing_file_url: updates.drawingFileUrl as string | null | undefined
     };
 
     const { data, error } = await supabase
@@ -183,18 +158,6 @@ export const createNodeSpecificData = async (
   }
 
   if (nodeType === 'draw') {
-    if (initialData.drawingFileUrl) {
-      if (typeof initialData.drawingFileUrl === 'string') {
-        const svgPath = await uploadSVGToBucket(
-          nodeId,
-          initialData.drawingFileUrl
-        );
-        if (svgPath) {
-          initialData.drawingFileUrl = svgPath;
-        }
-      }
-    }
-
     const drawNodeData = {
       ...(toSnakeCase(initialData) as Record<string, unknown>),
       node_id: nodeId,
