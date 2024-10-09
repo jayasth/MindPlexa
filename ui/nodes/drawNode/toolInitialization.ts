@@ -31,75 +31,64 @@ interface ToolConfig {
   defaultColor: string;
 }
 
-export const useInitializeTools = (): Array<ToolConfig> => {
-  const penTool = usePen({});
-  const lineTool = useLine({});
-  const rectangleTool = useRectangle({});
-  const circleTool = useCircle({});
-  const markerTool = useMarker({});
-  const brushTool = useBrush({});
-  const watercolorTool = useWatercolor({});
-  const airbrushTool = useAirbrush({});
-  const shadingBrushTool = useShadingBrush({});
-  const eraserTool = useEraser({});
-
+export const initializeTools = (): Array<ToolConfig> => {
   return [
     {
-      tool: penTool,
+      tool: usePen({}),
       icon: FaPen,
       defaultStrokeWidth: 2,
       defaultColor: '#635E87'
     },
     {
-      tool: lineTool,
+      tool: useLine({}),
       icon: BsSlashLg,
       defaultStrokeWidth: 2,
       defaultColor: '#FF6347'
     },
     {
-      tool: rectangleTool,
+      tool: useRectangle({}),
       icon: FaSquare,
       defaultStrokeWidth: 2,
       defaultColor: '#4682B4'
     },
     {
-      tool: circleTool,
+      tool: useCircle({}),
       icon: FaCircle,
       defaultStrokeWidth: 2,
       defaultColor: '#32CD32'
     },
     {
-      tool: markerTool,
+      tool: useMarker({}),
       icon: FaMarker,
       defaultStrokeWidth: 20,
       defaultColor: '#A78BFA'
     },
     {
-      tool: brushTool,
+      tool: useBrush({}),
       icon: FaPaintBrush,
       defaultStrokeWidth: 20,
       defaultColor: '#F472B6'
     },
     {
-      tool: watercolorTool,
+      tool: useWatercolor({}),
       icon: IoMdWater,
       defaultStrokeWidth: 20,
       defaultColor: '#8BD8BD'
     },
     {
-      tool: airbrushTool,
+      tool: useAirbrush({}),
       icon: FaSprayCan,
       defaultStrokeWidth: 20,
       defaultColor: '#F9D342'
     },
     {
-      tool: shadingBrushTool,
+      tool: useShadingBrush({}),
       icon: FaPen,
       defaultStrokeWidth: 20,
       defaultColor: '#A1A1A1'
     },
     {
-      tool: eraserTool,
+      tool: useEraser({}),
       icon: FaEraser,
       defaultStrokeWidth: 40,
       defaultColor: '#FFFFFF'
