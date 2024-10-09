@@ -1,10 +1,28 @@
 import { createClient } from '@/utils/supabase/supabaseClient';
 import { toCamelCase, toSnakeCase } from '@/utils/caseConversion';
-import { getDrawing, saveDrawing } from './drawNodeService';
+import { getDrawing } from './drawNodeService';
 const supabase = createClient();
 
 type NodeType = 'note' | 'task' | 'calendar' | 'table' | 'draw';
 type SpecialNodeType = 'selection_menu';
+
+export const uploadSVGToBucket = async (nodeId: string, svgContent: string) => {
+  const svgData = svgContent.replace(/^data:image\/svg\+xml;base64,/, '');
+
+  const { data, error } = await supabase.storage
+    .from('drawings')
+    .upload(`${nodeId}.svg`, Buffer.from(svgData, 'base64'), {
+      contentType: 'image/svg+xml',
+      upsert: true
+    });
+
+  if (error) {
+    console.error('Error uploading SVG to bucket:', error);
+    return null;
+  }
+
+  return data.path;
+};
 
 export const getNodeSpecificData = async (
   nodeId: string,
@@ -78,11 +96,13 @@ export const updateNodeSpecificData = async (
   }
 
   if (nodeType === 'draw') {
-    if (updates.drawingData) {
-      const result = await saveDrawing(nodeId, updates.drawingData as string);
-      if (result) {
-        updates.drawingFileUrl = result.drawingFileUrl;
-      }
+    let svgPath = updates.drawingFileUrl;
+    if (
+      updates.drawingData &&
+      typeof updates.drawingData === 'string' &&
+      updates.drawingData.startsWith('data:image/svg+xml;base64,')
+    ) {
+      svgPath = await uploadSVGToBucket(nodeId, updates.drawingData);
     }
 
     const updateData = {
@@ -97,7 +117,7 @@ export const updateNodeSpecificData = async (
         typeof updates.settings === 'string'
           ? updates.settings
           : JSON.stringify(updates.settings),
-      drawing_file_url: updates.drawingFileUrl as string | null | undefined
+      drawing_file_url: svgPath as string | null | undefined
     };
 
     const { data, error } = await supabase
@@ -158,6 +178,18 @@ export const createNodeSpecificData = async (
   }
 
   if (nodeType === 'draw') {
+    if (initialData.drawingFileUrl) {
+      if (typeof initialData.drawingFileUrl === 'string') {
+        const svgPath = await uploadSVGToBucket(
+          nodeId,
+          initialData.drawingFileUrl
+        );
+        if (svgPath) {
+          initialData.drawingFileUrl = svgPath;
+        }
+      }
+    }
+
     const drawNodeData = {
       ...(toSnakeCase(initialData) as Record<string, unknown>),
       node_id: nodeId,
