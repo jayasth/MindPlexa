@@ -388,6 +388,12 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
             currentStrokeWidth,
             settings: toolSettings
           });
+          // Update local node data
+          updateNode(
+            id,
+            { data: { ...data, drawingFileUrl: result.drawingFileUrl } },
+            canvasId
+          );
         }
       } catch (error) {
         console.error('Error updating drawing:', error);
@@ -396,7 +402,17 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         history.pushState(artboardRef.current.canvas);
       }
     },
-    [id, currentTool, currentColor, currentStrokeWidth, toolSettings, history]
+    [
+      id,
+      updateNode,
+      canvasId,
+      data,
+      currentTool,
+      currentColor,
+      currentStrokeWidth,
+      toolSettings,
+      history
+    ]
   );
 
   return (
