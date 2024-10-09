@@ -153,10 +153,15 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     const loadDrawNodeData = async () => {
       const drawNodeData = await getNodeSpecificData(id, 'draw');
       if (drawNodeData) {
-        setCurrentTool(drawNodeData.current_tool || tools[0].tool.name);
-        setCurrentColor(drawNodeData.current_color || tools[0].defaultColor);
+        setCurrentTool(
+          (drawNodeData.current_tool as string) || tools[0].tool.name
+        );
+        setCurrentColor(
+          (drawNodeData.current_color as string) || tools[0].defaultColor
+        );
         setCurrentStrokeWidth(
-          drawNodeData.current_stroke_width || tools[0].defaultStrokeWidth
+          (drawNodeData.current_stroke_width as number) ||
+            tools[0].defaultStrokeWidth
         );
 
         // Fetch and update toolSettings
@@ -480,7 +485,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
           tools={tools}
           currentToolIndex={currentToolIndex}
           textColor={textColor}
-          backgroundColor={backgroundColor}
           currentTool={currentTool}
           onToolChange={handleToolChange}
         />
