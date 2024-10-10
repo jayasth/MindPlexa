@@ -194,7 +194,14 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     loadDrawNodeData();
   }, [id, tools]);
 
-  const saveSettings = async (settingsToSave: any) => {
+  const saveSettings = async (
+    settingsToSave: Array<{
+      name: string;
+      color: string;
+      strokeWidth: number;
+      opacity: number;
+    }>
+  ) => {
     const updatedData = {
       current_tool: currentTool,
       current_color: currentColor,
