@@ -136,8 +136,8 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     bringNodeToFront(data.id);
   }, [data.id, bringNodeToFront]);
 
-  const updateDrawNodeData = debounce(
-    async (newData: Partial<Record<string, unknown>>) => {
+  const updateDrawNodeData = useCallback(
+    debounce(async (newData: Partial<Record<string, unknown>>) => {
       try {
         await updateNode(data.id, { data: { ...data, ...newData } }, canvasId);
         await updateNodeSpecificData(id, 'draw', {
@@ -149,8 +149,8 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
       } catch (error) {
         console.error('Error updating draw node:', error);
       }
-    },
-    500
+    }, 500),
+    [data.id, updateNode, canvasId]
   );
 
   const saveSettings = useCallback(
@@ -399,6 +399,12 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
             currentStrokeWidth,
             settings: toolSettings
           });
+          // Update local node data
+          await updateNode(
+            id,
+            { data: { ...data, drawingFileUrl: result.drawingFileUrl } },
+            canvasId
+          );
         }
       } catch (error) {
         console.error('Error updating drawing:', error);
@@ -407,7 +413,17 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         history.pushState(artboardRef.current.canvas);
       }
     },
-    [id, currentTool, currentColor, currentStrokeWidth, toolSettings, history]
+    [
+      id,
+      updateNode,
+      canvasId,
+      data,
+      currentTool,
+      currentColor,
+      currentStrokeWidth,
+      toolSettings,
+      history
+    ]
   );
 
   return (
