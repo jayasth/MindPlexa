@@ -34,29 +34,15 @@ import {
   SettingsButton
 } from '@/ui/nodes/tableNode/components/TableNodeToolbar';
 
-interface Column {
-  headerName: string;
-  field: string;
-  editable: boolean;
-  type: string;
-}
-
-interface Content {
-  columns: Column[];
-  rows: Record<string, string | number | boolean | Date | null>[];
-}
-
 interface TableNodeGridProps {
-  content: Content;
-  setContent: React.Dispatch<React.SetStateAction<Content>>;
+  content: { columns: any[]; rows: any[] };
+  setContent: React.Dispatch<
+    React.SetStateAction<{ columns: any[]; rows: any[] }>
+  >;
   updateNode: (
     nodeId: string,
     canvasId: string,
-    updates: {
-      columns: Column[];
-      rows: Record<string, string | number | boolean | Date | null>[];
-      dateFormat?: string;
-    }
+    updates: { columns: any[]; rows: any[]; dateFormat?: string }
   ) => void;
   nodeId: string;
   canvasId: string;
@@ -65,6 +51,10 @@ interface TableNodeGridProps {
   setIsSettingsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
   handleDeleteTable: () => void;
   dateFormat: string;
+  onAddTable: (
+    newColumns: Array<{ name: string; type: string }>,
+    newRows: Array<any>
+  ) => void;
 }
 
 const TableNodeGrid: React.FC<TableNodeGridProps> = ({
@@ -76,26 +66,28 @@ const TableNodeGrid: React.FC<TableNodeGridProps> = ({
   setIsDeleteModalOpen,
   setIsSettingsModalOpen,
   handleDeleteTable,
-  dateFormat
+  dateFormat,
+  onAddTable,
+  setIsModalOpen
 }) => {
-  const gridRef = useRef<AgGridReact>(null);
+  const gridRef = useRef<any>(null);
   const [isAddTableModalOpen, setIsAddTableModalOpen] = useState(false);
 
   useKeyPressHandler(content, setContent, updateNode, gridRef);
 
-  const handleCellClick = useCallback(() => {
-    if (gridRef.current) {
-      gridRef.current.api.deselectAll();
-    }
-  }, []);
-
-  const gridOptions = useMemo(
-    () => ({
-      ...existingOptions,
-      onCellClicked: handleCellClick
-    }),
-    [handleCellClick]
+  const handleCellClick = useCallback(
+    (event) => {
+      if (gridRef.current) {
+        gridRef.current.api.deselectAll();
+      }
+    },
+    [gridRef]
   );
+
+  const gridOptions = {
+    ...existingOptions,
+    onCellClicked: handleCellClick
+  };
 
   const columnDefs = useMemo(() => {
     return getColumnDefs(
@@ -116,60 +108,84 @@ const TableNodeGrid: React.FC<TableNodeGridProps> = ({
       }
       return colDef;
     });
-  }, [content, setContent, updateNode, dateFormat]);
+  }, [content, setContent, updateNode, gridRef, dateFormat]);
 
-  const updateColumnState = useCallback(() => {
+  const updateColumnState = () => {
     if (gridRef.current) {
       gridRef.current.api.refreshHeader();
     }
-  }, []);
+  };
 
-  const [cellContextMenuPosition, setCellContextMenuPosition] = useState<{
+  const [cellContextMenuPosition, setCellContextMenuPosition] = React.useState<{
     x: number;
     y: number;
   } | null>(null);
+  const [cellContextMenuParams, setCellContextMenuParams] =
+    React.useState<any>(null);
 
-  const handleCellContextMenu = useCallback((event: React.MouseEvent) => {
-    event.preventDefault();
-    setCellContextMenuPosition({ x: event.clientX, y: event.clientY });
-  }, []);
+  const handleCellContextMenu = useCallback(
+    (event: React.MouseEvent, params: any) => {
+      event.preventDefault();
+      setCellContextMenuPosition({ x: event.clientX, y: event.clientY });
+      setCellContextMenuParams(params);
+    },
+    [setCellContextMenuPosition, setCellContextMenuParams]
+  );
+
+  const handleCellContextMenuClose = () => {
+    setCellContextMenuPosition(null);
+    setCellContextMenuParams(null);
+  };
 
   const handleAddTable = useCallback(
-    (columns: Array<{ name: string; type: string }>, rows: number) => {
-      const newColumns: Column[] = columns.map((col, index) => ({
-        headerName: col.name || `Column ${index + 1}`,
-        field: `col${index + 1}`,
-        editable: true,
-        type: col.type
-      }));
+    (columns, rows) => {
+      console.log('TableNodeGrid: handleAddTable called', { columns, rows });
+      const newColumns = columns.map((col, index) => {
+        console.log(`Processing column ${index + 1}:`, col);
+        return {
+          headerName: col.name || `Column ${index + 1}`,
+          field: `col${index + 1}`,
+          editable: true,
+          type: col.type,
+          defaultValue: ''
+        };
+      });
 
-      const newRows: Record<string, string | number | boolean | Date | null>[] =
-        Array.from({ length: rows }, () =>
-          newColumns.reduce(
-            (acc, col) => {
-              acc[col.field] = '';
-              return acc;
-            },
-            {} as Record<string, string | number | boolean | Date | null>
-          )
-        );
+      console.log('New columns:', newColumns);
 
+      const newRows = Array.from({ length: rows }, (_, rowIndex) => {
+        const row = newColumns.reduce((acc, col) => {
+          acc[col.field] = '';
+          return acc;
+        }, {});
+        console.log(`Processing row ${rowIndex + 1}:`, row);
+        return row;
+      });
+
+      console.log('New rows:', newRows);
+
+      console.log('TableNodeGrid: Before setContent');
       setContent({ columns: newColumns, rows: newRows });
+      console.log('TableNodeGrid: After setContent, before updateNode');
       updateNode(nodeId, canvasId, {
         columns: newColumns,
         rows: newRows,
         dateFormat
       });
+      console.log(
+        'TableNodeGrid: After updateNode, before setIsAddTableModalOpen'
+      );
       setIsAddTableModalOpen(false);
+      console.log('TableNodeGrid: After setIsAddTableModalOpen');
     },
-    [nodeId, canvasId, dateFormat, setContent, updateNode]
+    [nodeId, updateNode, canvasId, dateFormat, setContent]
   );
 
   const memoizedGrid = useMemo(
     () => (
       <div
         className={`${styles.tableContent} nowheel nodrag`}
-        onContextMenu={handleCellContextMenu}
+        onContextMenu={(event) => handleCellContextMenu(event, event)}
       >
         <div className={styles.toolbar}>
           <button onClick={() => setIsAddTableModalOpen(true)}>
@@ -181,33 +197,26 @@ const TableNodeGrid: React.FC<TableNodeGridProps> = ({
                 content,
                 setContent,
                 {
-                  refreshCells: ({ force }) => {
-                    const updates = {
-                      columns: content.columns,
-                      rows: content.rows
-                    };
-                    updateNode(nodeId, canvasId, updates);
-                    if (force) {
-                      updateColumnState();
+                  refreshCells: (params) => {
+                    updateNode(nodeId, canvasId, content);
+                    if (gridRef.current && gridRef.current.api) {
+                      gridRef.current.api.refreshCells(params);
                     }
                   }
                 },
                 columnType
               );
+              updateColumnState();
             }}
             aria-label="Add Column"
           />
           <AddRowButton
             onClick={() =>
               addRow(content, setContent, {
-                refreshCells: ({ force }) => {
-                  const updates = {
-                    columns: content.columns,
-                    rows: content.rows
-                  };
-                  updateNode(nodeId, canvasId, updates);
-                  if (force) {
-                    updateColumnState();
+                refreshCells: (params) => {
+                  updateNode(nodeId, canvasId, content);
+                  if (gridRef.current && gridRef.current.api) {
+                    gridRef.current.api.refreshCells(params);
                   }
                 }
               })
@@ -244,8 +253,8 @@ const TableNodeGrid: React.FC<TableNodeGridProps> = ({
         >
           <AgGridReact
             gridOptions={gridOptions}
-            columnDefs={columnDefs}
-            rowData={content.rows}
+            columnDefs={columnDefs as any}
+            rowData={content.rows.map((row) => ({ ...row }))}
             domLayout="autoHeight"
             rowHeight={30}
             headerHeight={30}
@@ -259,10 +268,8 @@ const TableNodeGrid: React.FC<TableNodeGridProps> = ({
               }
             }}
             onGridReady={(params) => {
-              if (gridRef.current) {
-                gridRef.current.api = params.api;
-                params.api.sizeColumnsToFit();
-              }
+              gridRef.current = params;
+              params.api.sizeColumnsToFit();
             }}
             onCellValueChanged={(event) => {
               onCellValueChanged(
@@ -285,50 +292,23 @@ const TableNodeGrid: React.FC<TableNodeGridProps> = ({
               key={col.field}
               id={`header-context-menu-${col.field}`}
               params={{
-                column: gridRef.current?.api
+                column: gridRef.current.api
                   ?.getColumnState()
                   ?.find((c) => c.colId === col.field),
-                api: gridRef.current?.api
+                api: gridRef.current.api
               }}
               content={content}
               setContent={setContent}
               gridRef={gridRef}
             />
           ))}
-        {cellContextMenuPosition && (
+        {cellContextMenuPosition && cellContextMenuParams && (
           <CellContextMenu
             id="cell-context-menu"
             position={cellContextMenuPosition}
-            setContent={
-              setContent as React.Dispatch<
-                React.SetStateAction<{
-                  columns: { field: string }[];
-                  rows: Record<string, string>[];
-                }>
-              >
-            }
-            content={
-              content as {
-                columns: { field: string }[];
-                rows: Record<string, string>[];
-              }
-            }
-            gridRef={
-              gridRef as unknown as React.MutableRefObject<{
-                api: {
-                  getFocusedCell: () => {
-                    rowIndex: number;
-                    column: { colId: string };
-                  } | null;
-                  getRowNode: (index: number) => {
-                    data: Record<string, string>;
-                    setDataValue: (field: string, value: string) => void;
-                  };
-                  refreshCells: (params: { force: boolean }) => void;
-                  getSelectedRows: () => Record<string, string>[];
-                };
-              }>
-            }
+            setContent={setContent}
+            content={content}
+            gridRef={gridRef}
           />
         )}
         <AddTableModal
@@ -347,15 +327,10 @@ const TableNodeGrid: React.FC<TableNodeGridProps> = ({
       updateNode,
       handleCellContextMenu,
       cellContextMenuPosition,
+      cellContextMenuParams,
       dateFormat,
       isAddTableModalOpen,
-      handleAddTable,
-      updateColumnState,
-      columnDefs,
-      handleDeleteTable,
-      setIsDeleteModalOpen,
-      setIsSettingsModalOpen,
-      gridOptions,
+      onAddTable,
       nodeId,
       canvasId
     ]
