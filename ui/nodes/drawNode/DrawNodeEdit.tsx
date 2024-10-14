@@ -144,7 +144,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
           current_tool: newData.currentTool,
           current_color: newData.currentColor,
           current_stroke_width: newData.currentStrokeWidth,
-          settings: newData.settings
+          settings: newData.settings // Include the updated settings
         });
       } catch (error) {
         console.error('Error updating draw node:', error);
@@ -203,12 +203,12 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     }>
   ) => {
     const updatedData = {
-      current_tool: currentTool,
-      current_color: currentColor,
-      current_stroke_width: currentStrokeWidth,
+      currentTool,
+      currentColor,
+      currentStrokeWidth,
       settings: settingsToSave
     };
-    await updateNodeSpecificData(id, 'draw', updatedData);
+    updateDrawNodeData(updatedData);
   };
 
   const handleToolChange = (index: number) => {
@@ -235,9 +235,9 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     setToolSettings((prevSettings) => {
       const newSettings = [...prevSettings];
       newSettings[toolIndex] = { ...newSettings[toolIndex], [key]: value };
+      saveSettings(newSettings);
       return newSettings;
     });
-    saveSettings(toolSettings);
   };
 
   useEffect(() => {
@@ -263,7 +263,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
       currentTool,
       currentColor,
       currentStrokeWidth,
-      settings: toolSettings
+      settings: toolSettings // Include the updated settings
     };
 
     updateDrawNodeData({ ...commonData, ...specificData });
@@ -279,7 +279,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     currentTool,
     currentColor,
     currentStrokeWidth,
-    toolSettings,
+    toolSettings, // Add toolSettings to the dependency array
     updateDrawNodeData
   ]);
 

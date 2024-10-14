@@ -13,6 +13,7 @@ import useEdgeStore from '../edges/useEdgeStore';
 import { enableMapSet } from 'immer';
 import { Node as ReactFlowNode, Edge as ReactFlowEdge } from 'reactflow';
 import { Database } from '@/types_db';
+import { getNodeSpecificData } from '@/utils/canvas/nodeSpecificDataService';
 
 // Enable the MapSet plugin for Immer
 enableMapSet();
@@ -95,6 +96,19 @@ const processNode = async (
     }
   }
 
+  // Load tool settings for draw nodes
+  let processedData: Record<string, unknown> = {};
+  if (node.type === 'draw' && node.id) {
+    const drawData = await getNodeSpecificData(node.id, 'draw');
+    if (drawData) {
+      processedData.drawingFileUrl = drawData.drawing_file_url;
+      processedData.currentTool = drawData.current_tool;
+      processedData.settings = drawData.settings || {}; // Use settings directly
+      processedData.currentColor = drawData.current_color;
+      processedData.currentStrokeWidth = drawData.current_stroke_width;
+    }
+  }
+
   return {
     id: node.id || '',
     type: node.type as NodeType,
@@ -124,16 +138,12 @@ const processNode = async (
       showDueDate: node.data?.showDueDate ?? true,
       showPriority: node.data?.showPriority ?? true,
       sortBy: node.data?.sortBy || '',
-      drawingFileUrl: node.data?.drawingFileUrl || node.drawingFileUrl || '',
-      currentTool: node.data?.currentTool || '',
-      settings: node.data?.settings || {},
-      currentColor: node.data?.currentColor || '',
-      currentStrokeWidth: node.data?.currentStrokeWidth || 0,
       columns: columns,
       rows: rows,
       defaultColumnType: node.data?.defaultColumnType || 'text',
       dateFormat: node.data?.dateFormat || 'yyyy-MM-dd',
-      tableSettings: tableSettings
+      tableSettings: tableSettings,
+      ...processedData
     },
     width: node.isEditing
       ? (isDesktop

@@ -113,10 +113,7 @@ export const updateNodeSpecificData = async (
         | number
         | null
         | undefined,
-      settings:
-        typeof updates.settings === 'string'
-          ? updates.settings
-          : JSON.stringify(updates.settings),
+      settings: updates.settings as any, // Type assertion for settings
       drawing_file_url: svgPath as string | null | undefined
     };
 
@@ -193,22 +190,18 @@ export const createNodeSpecificData = async (
     const drawNodeData = {
       ...(toSnakeCase(initialData) as Record<string, unknown>),
       node_id: nodeId,
-      current_color: initialData.currentColor,
-      current_stroke_width: initialData.currentStrokeWidth,
-      current_tool: initialData.currentTool
+      current_color: initialData.currentColor as string | null | undefined,
+      current_stroke_width: initialData.currentStrokeWidth as
+        | number
+        | null
+        | undefined,
+      current_tool: initialData.currentTool as string | null | undefined,
+      settings: initialData.settings as any // Type assertion for settings
     };
 
     const { data, error } = await supabase
       .from('draw_nodes')
-      .insert(
-        drawNodeData as {
-          node_id: string;
-          current_color: string | null;
-          current_stroke_width: number | null;
-          current_tool: string | null;
-          drawing_file_url?: string | null;
-        }
-      )
+      .insert(drawNodeData)
       .select()
       .single();
 
