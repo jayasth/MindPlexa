@@ -97,7 +97,7 @@ const processNode = async (
   }
 
   // Load tool settings for draw nodes
-  let processedData: Record<string, unknown> = {};
+  const processedData: Record<string, unknown> = {};
   if (node.type === 'draw' && node.id) {
     const drawData = await getNodeSpecificData(node.id, 'draw');
     if (drawData) {
