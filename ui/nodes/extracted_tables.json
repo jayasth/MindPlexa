@@ -15,6 +15,30 @@
     "table_structure": "Table: calendar_nodes, Column: time_zone, Type: character varying, Nullable: YES, Default: 'UTC'::character varying"
   },
   {
+    "table_structure": "Table: canvases, Column: id, Type: uuid, Nullable: NO, Default: gen_random_uuid()"
+  },
+  {
+    "table_structure": "Table: canvases, Column: name, Type: text, Nullable: NO, Default: None"
+  },
+  {
+    "table_structure": "Table: canvases, Column: description, Type: text, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: canvases, Column: content, Type: text, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: canvases, Column: created_at, Type: timestamp with time zone, Nullable: YES, Default: now()"
+  },
+  {
+    "table_structure": "Table: canvases, Column: updated_at, Type: timestamp with time zone, Nullable: YES, Default: now()"
+  },
+  {
+    "table_structure": "Table: canvases, Column: user_id, Type: uuid, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: canvases, Column: nodes, Type: jsonb, Nullable: YES, Default: None"
+  },
+  {
     "table_structure": "Table: draw_nodes, Column: id, Type: uuid, Nullable: NO, Default: gen_random_uuid()"
   },
   {
@@ -36,10 +60,64 @@
     "table_structure": "Table: draw_nodes, Column: current_stroke_width, Type: integer, Nullable: YES, Default: None"
   },
   {
+    "table_structure": "Table: edges, Column: id, Type: uuid, Nullable: NO, Default: gen_random_uuid()"
+  },
+  {
+    "table_structure": "Table: edges, Column: canvas_id, Type: uuid, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: edges, Column: source_node_id, Type: uuid, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: edges, Column: target_node_id, Type: uuid, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: edges, Column: created_at, Type: timestamp with time zone, Nullable: YES, Default: now()"
+  },
+  {
+    "table_structure": "Table: edges, Column: updated_at, Type: timestamp with time zone, Nullable: YES, Default: now()"
+  },
+  {
+    "table_structure": "Table: node_attachments, Column: id, Type: uuid, Nullable: NO, Default: gen_random_uuid()"
+  },
+  {
+    "table_structure": "Table: node_attachments, Column: node_id, Type: uuid, Nullable: NO, Default: None"
+  },
+  {
+    "table_structure": "Table: node_attachments, Column: type, Type: character varying, Nullable: NO, Default: None"
+  },
+  {
+    "table_structure": "Table: node_attachments, Column: created_at, Type: timestamp with time zone, Nullable: YES, Default: now()"
+  },
+  {
+    "table_structure": "Table: node_attachments, Column: file_name, Type: character varying, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: node_attachments, Column: file_size, Type: integer, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: node_attachments, Column: storage_path, Type: text, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: node_attachments, Column: mime_type, Type: character varying, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: node_attachments, Column: url, Type: text, Nullable: YES, Default: None"
+  },
+  {
+    "table_structure": "Table: node_attachments, Column: is_file, Type: boolean, Nullable: YES, Default: true"
+  },
+  {
     "table_structure": "Table: node_canvas_link, Column: node_id, Type: uuid, Nullable: NO, Default: None"
   },
   {
     "table_structure": "Table: node_canvas_link, Column: canvas_id, Type: uuid, Nullable: NO, Default: None"
+  },
+  {
+    "table_structure": "Table: node_tags, Column: node_id, Type: uuid, Nullable: NO, Default: None"
+  },
+  {
+    "table_structure": "Table: node_tags, Column: tag, Type: character varying, Nullable: NO, Default: None"
   },
   {
     "table_structure": "Table: nodes, Column: id, Type: uuid, Nullable: NO, Default: gen_random_uuid()"

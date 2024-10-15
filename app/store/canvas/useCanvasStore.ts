@@ -14,6 +14,7 @@ import { enableMapSet } from 'immer';
 import { Node as ReactFlowNode, Edge as ReactFlowEdge } from 'reactflow';
 import { Database } from '@/types_db';
 import { getNodeSpecificData } from '@/utils/canvas/nodeSpecificDataService';
+import { toCamelCase } from '@/utils/caseConversion';
 
 // Enable the MapSet plugin for Immer
 enableMapSet();
@@ -160,12 +161,15 @@ const processNode = async (
 
 const processEdge = (
   edge: Database['public']['Tables']['edges']['Row']
-): ReactFlowEdge => ({
-  id: edge.id,
-  source: edge.source_node_id || '',
-  target: edge.target_node_id || '',
-  type: 'customEdge'
-});
+): ReactFlowEdge => {
+  const camelCaseEdge = toCamelCase(edge) as Record<string, unknown>;
+  return {
+    id: camelCaseEdge.id as string,
+    source: (camelCaseEdge.sourceNodeId as string) || '',
+    target: (camelCaseEdge.targetNodeId as string) || '',
+    type: 'customEdge'
+  };
+};
 
 const useCanvasStore = create<CanvasState>()(
   devtools((set, get) => {
@@ -191,7 +195,10 @@ const useCanvasStore = create<CanvasState>()(
           previousEdges = edges;
 
           const canvasState: CanvasServiceState = {
-            nodes: nodes as Node[],
+            nodes: nodes.map((node) => ({
+              ...node,
+              type: node.type || 'default'
+            })) as Node[],
             edges: edges.map((edge) => ({
               canvas_id: canvasId,
               created_at: new Date().toISOString(),
