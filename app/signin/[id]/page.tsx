@@ -11,8 +11,6 @@ import {
 import Card from '@/ui/Card';
 import PasswordSignIn from '@/app/auth/_components/PasswordSignIn';
 import EmailSignIn from '@/app/auth/_components/EmailSignIn';
-import Separator from '@/app/auth/_components/Separator';
-import OauthSignIn from '@/app/auth/_components/OauthSignIn';
 import ForgotPassword from '@/app/auth/_components/ForgotPassword';
 import UpdatePassword from '@/app/auth/_components/UpdatePassword';
 import SignUp from '@/app/auth/_components/Signup';
@@ -24,7 +22,7 @@ export default async function SignIn({
   params: { id: string };
   searchParams: { disable_button: boolean };
 }) {
-  const { allowOauth, allowEmail, allowPassword } = getAuthTypes();
+  const { allowEmail, allowPassword } = getAuthTypes();
   const viewTypes = getViewTypes();
   const redirectMethod = getRedirectMethod();
 
@@ -97,14 +95,6 @@ export default async function SignIn({
           {viewProp === 'signup' && (
             <SignUp allowEmail={allowEmail} redirectMethod={redirectMethod} />
           )}
-          {viewProp !== 'update_password' &&
-            viewProp !== 'signup' &&
-            allowOauth && (
-              <>
-                <Separator text="Third-party sign-in" />
-                <OauthSignIn />
-              </>
-            )}
         </Card>
       </div>
     </div>
