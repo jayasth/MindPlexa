@@ -22,3 +22,8 @@
 .logo:hover {
   @apply scale-105;
 }
+
+.betaBadge {
+  @apply inline-block ml-1 px-1 py-0.5 text-xs font-semibold text-white bg-lavender-500 rounded;
+  vertical-align: super;
+}

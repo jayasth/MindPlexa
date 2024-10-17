@@ -198,7 +198,7 @@ export async function signUp(formData: FormData) {
     );
   } else if (data.session) {
     redirectPath = getStatusRedirect(
-      '/dashbaord',
+      '/workspace',
       'Success!',
       'You are now signed in.'
     );

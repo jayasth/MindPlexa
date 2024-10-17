@@ -30,6 +30,7 @@ export default function Navlinks({ user }: NavlinksProps) {
         <nav className="ml-6 space-x-2 lg:block">
           <Link href="/" className={s.link}>
             MindPlexa
+            <span className={s.betaBadge}>Beta</span>
           </Link>
           {user && (
             <Link href="/workspace" className={s.link}>
