@@ -72,20 +72,6 @@ interface DrawNodeEditProps extends NodeProps {
   onResize?: () => void;
 }
 
-interface ToolSetting {
-  name: string;
-  color: string;
-  strokeWidth: number;
-  opacity: number;
-}
-
-interface DrawNodeData {
-  current_tool?: string;
-  current_color?: string;
-  current_stroke_width?: number;
-  settings?: ToolSetting[];
-}
-
 const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   data,
   id,
@@ -118,7 +104,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const [currentStrokeWidth, setCurrentStrokeWidth] = useState(
     tools[0].defaultStrokeWidth
   );
-  const [toolSettings, setToolSettings] = useState<ToolSetting[]>(() =>
+  const [toolSettings, setToolSettings] = useState(() =>
     tools.map((tool) => ({
       name: tool.tool.name,
       color: tool.defaultColor,
@@ -151,33 +137,20 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   }, [data.id, bringNodeToFront]);
 
   const updateDrawNodeData = useCallback(
-    debounce(async (newData: Partial<DrawNodeData>) => {
+    debounce(async (newData: Partial<Record<string, unknown>>) => {
       try {
         await updateNode(data.id, { data: { ...data, ...newData } }, canvasId);
         await updateNodeSpecificData(id, 'draw', {
-          current_tool: newData.current_tool,
-          current_color: newData.current_color,
-          current_stroke_width: newData.current_stroke_width,
-          settings: newData.settings
+          current_tool: newData.currentTool,
+          current_color: newData.currentColor,
+          current_stroke_width: newData.currentStrokeWidth,
+          settings: newData.settings // Include the updated settings
         });
       } catch (error) {
         console.error('Error updating draw node:', error);
       }
     }, 500),
-    [data.id, updateNode, canvasId, id]
-  );
-
-  const saveSettings = useCallback(
-    async (settingsToSave: ToolSetting[]) => {
-      const updatedData = {
-        current_tool: currentTool,
-        current_color: currentColor,
-        current_stroke_width: currentStrokeWidth,
-        settings: settingsToSave
-      };
-      await updateNodeSpecificData(id, 'draw', updatedData);
-    },
-    [id, currentTool, currentColor, currentStrokeWidth]
+    [data.id, updateNode, canvasId]
   );
 
   useEffect(() => {
@@ -219,44 +192,53 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
       }
     };
     loadDrawNodeData();
-  }, [id, tools, saveSettings]);
+  }, [id, tools]);
 
-  const handleToolChange = useCallback(
-    (index: number) => {
-      setCurrentTool(tools[index].tool.name);
-      setCurrentToolIndex(index);
-      saveSettings(toolSettings);
-    },
-    [tools, saveSettings, toolSettings]
-  );
+  const saveSettings = async (
+    settingsToSave: Array<{
+      name: string;
+      color: string;
+      strokeWidth: number;
+      opacity: number;
+    }>
+  ) => {
+    const updatedData = {
+      currentTool,
+      currentColor,
+      currentStrokeWidth,
+      settings: settingsToSave
+    };
+    updateDrawNodeData(updatedData);
+  };
 
-  const handleColorChange = useCallback(
-    (color: string) => {
-      setCurrentColor(color);
-      saveSettings(toolSettings);
-    },
-    [saveSettings, toolSettings]
-  );
+  const handleToolChange = (index: number) => {
+    setCurrentTool(tools[index].tool.name);
+    setCurrentToolIndex(index);
+    saveSettings(toolSettings);
+  };
 
-  const handleStrokeWidthChange = useCallback(
-    (width: number) => {
-      setCurrentStrokeWidth(width);
-      saveSettings(toolSettings);
-    },
-    [saveSettings, toolSettings]
-  );
+  const handleColorChange = (color: string) => {
+    setCurrentColor(color);
+    saveSettings(toolSettings);
+  };
 
-  const handleToolSettingChange = useCallback(
-    (toolIndex: number, key: string, value: string | number) => {
-      setToolSettings((prevSettings) => {
-        const newSettings = [...prevSettings];
-        newSettings[toolIndex] = { ...newSettings[toolIndex], [key]: value };
-        return newSettings;
-      });
-      saveSettings(toolSettings);
-    },
-    [saveSettings, toolSettings]
-  );
+  const handleStrokeWidthChange = (width: number) => {
+    setCurrentStrokeWidth(width);
+    saveSettings(toolSettings);
+  };
+
+  const handleToolSettingChange = (
+    toolIndex: number,
+    key: string,
+    value: string | number
+  ) => {
+    setToolSettings((prevSettings) => {
+      const newSettings = [...prevSettings];
+      newSettings[toolIndex] = { ...newSettings[toolIndex], [key]: value };
+      saveSettings(newSettings);
+      return newSettings;
+    });
+  };
 
   useEffect(() => {
     return () => {
@@ -281,7 +263,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
       currentTool,
       currentColor,
       currentStrokeWidth,
-      settings: toolSettings
+      settings: toolSettings // Include the updated settings
     };
 
     updateDrawNodeData({ ...commonData, ...specificData });
@@ -297,7 +279,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     currentTool,
     currentColor,
     currentStrokeWidth,
-    toolSettings,
+    toolSettings, // Add toolSettings to the dependency array
     updateDrawNodeData
   ]);
 
@@ -326,7 +308,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     [data.id, tags, canvasId]
   );
 
-  const onAttachFiles = useCallback((files: Attachment[]) => {
+  const onAttachFiles = useCallback(async (files: Attachment[]) => {
     setAttachedFiles(files);
   }, []);
 
@@ -386,14 +368,14 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     [nodeWidth, nodeHeight, backgroundColor, textColor]
   );
 
-  const handleDeleteConfirm = useCallback(() => {
+  const handleDeleteConfirm = () => {
     setIsDeleteModalOpen(false);
     handleDeleteNode(data.id, canvasId);
-  }, [data.id, canvasId]);
+  };
 
-  const handleDeleteCancel = useCallback(() => {
+  const handleDeleteCancel = () => {
     setIsDeleteModalOpen(false);
-  }, []);
+  };
 
   const memoizedTagFileContainer = useMemo(
     () => (
@@ -421,6 +403,12 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
             currentStrokeWidth,
             settings: toolSettings
           });
+          // Update local node data
+          await updateNode(
+            id,
+            { data: { ...data, drawingFileUrl: result.drawingFileUrl } },
+            canvasId
+          );
         }
       } catch (error) {
         console.error('Error updating drawing:', error);
@@ -429,7 +417,17 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         history.pushState(artboardRef.current.canvas);
       }
     },
-    [id, currentTool, currentColor, currentStrokeWidth, toolSettings, history]
+    [
+      id,
+      updateNode,
+      canvasId,
+      data,
+      currentTool,
+      currentColor,
+      currentStrokeWidth,
+      toolSettings,
+      history
+    ]
   );
 
   return (
@@ -467,13 +465,12 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         canUndo={canUndo}
         canRedo={canRedo}
         download={() => artboardRef.current?.download()}
-        clear={() => {
+        clear={async () => {
           clear();
           if (artboardRef.current) {
             artboardRef.current.clear();
           }
-          // After clearing, save an empty drawing
-          saveDrawing(
+          await saveDrawing(
             id,
             'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjwvc3ZnPg=='
           );
@@ -492,7 +489,10 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
       />
       <div className={styles.drawContent}>
         <DrawNodeSidebar
-          tools={tools}
+          tools={tools.map((tool) => ({
+            tool: { name: tool.tool.name },
+            icon: tool.icon
+          }))}
           currentToolIndex={currentToolIndex}
           textColor={textColor}
           currentTool={currentTool}
