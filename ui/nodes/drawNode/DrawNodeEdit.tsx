@@ -71,7 +71,6 @@ interface DrawNodeEditProps extends NodeProps {
   position: { x: number; y: number };
   onResize?: () => void;
 }
-
 const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   data,
   id,
@@ -144,7 +143,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
           current_tool: newData.currentTool,
           current_color: newData.currentColor,
           current_stroke_width: newData.currentStrokeWidth,
-          settings: newData.settings // Include the updated settings
+          settings: newData.settings
         });
       } catch (error) {
         console.error('Error updating draw node:', error);
@@ -208,7 +207,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
       currentStrokeWidth,
       settings: settingsToSave
     };
-    updateDrawNodeData(updatedData);
+    await updateNodeSpecificData(id, 'draw', updatedData);
   };
 
   const handleToolChange = (index: number) => {
@@ -263,7 +262,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
       currentTool,
       currentColor,
       currentStrokeWidth,
-      settings: toolSettings // Include the updated settings
+      settings: toolSettings
     };
 
     updateDrawNodeData({ ...commonData, ...specificData });
@@ -403,12 +402,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
             currentStrokeWidth,
             settings: toolSettings
           });
-          // Update local node data
-          await updateNode(
-            id,
-            { data: { ...data, drawingFileUrl: result.drawingFileUrl } },
-            canvasId
-          );
         }
       } catch (error) {
         console.error('Error updating drawing:', error);
@@ -417,17 +410,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         history.pushState(artboardRef.current.canvas);
       }
     },
-    [
-      id,
-      updateNode,
-      canvasId,
-      data,
-      currentTool,
-      currentColor,
-      currentStrokeWidth,
-      toolSettings,
-      history
-    ]
+    [id, currentTool, currentColor, currentStrokeWidth, toolSettings, history]
   );
 
   return (
@@ -465,12 +448,13 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         canUndo={canUndo}
         canRedo={canRedo}
         download={() => artboardRef.current?.download()}
-        clear={async () => {
+        clear={() => {
           clear();
           if (artboardRef.current) {
             artboardRef.current.clear();
           }
-          await saveDrawing(
+          // After clearing, save an empty drawing
+          saveDrawing(
             id,
             'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjwvc3ZnPg=='
           );
@@ -485,14 +469,11 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         currentStrokeWidth={currentStrokeWidth}
         onColorChange={handleColorChange}
         onStrokeWidthChange={handleStrokeWidthChange}
-        nodeId={id}
+        nodeId={id} // Add this prop
       />
       <div className={styles.drawContent}>
         <DrawNodeSidebar
-          tools={tools.map((tool) => ({
-            tool: { name: tool.tool.name },
-            icon: tool.icon
-          }))}
+          tools={tools}
           currentToolIndex={currentToolIndex}
           textColor={textColor}
           currentTool={currentTool}

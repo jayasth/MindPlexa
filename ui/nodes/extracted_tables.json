@@ -60,24 +60,6 @@
     "table_structure": "Table: draw_nodes, Column: current_stroke_width, Type: integer, Nullable: YES, Default: None"
   },
   {
-    "table_structure": "Table: edges, Column: id, Type: uuid, Nullable: NO, Default: gen_random_uuid()"
-  },
-  {
-    "table_structure": "Table: edges, Column: canvas_id, Type: uuid, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: edges, Column: source_node_id, Type: uuid, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: edges, Column: target_node_id, Type: uuid, Nullable: YES, Default: None"
-  },
-  {
-    "table_structure": "Table: edges, Column: created_at, Type: timestamp with time zone, Nullable: YES, Default: now()"
-  },
-  {
-    "table_structure": "Table: edges, Column: updated_at, Type: timestamp with time zone, Nullable: YES, Default: now()"
-  },
-  {
     "table_structure": "Table: node_attachments, Column: id, Type: uuid, Nullable: NO, Default: gen_random_uuid()"
   },
   {
@@ -112,6 +94,21 @@
   },
   {
     "table_structure": "Table: node_canvas_link, Column: canvas_id, Type: uuid, Nullable: NO, Default: None"
+  },
+  {
+    "table_structure": "Table: node_history, Column: id, Type: uuid, Nullable: NO, Default: gen_random_uuid()"
+  },
+  {
+    "table_structure": "Table: node_history, Column: node_id, Type: uuid, Nullable: NO, Default: None"
+  },
+  {
+    "table_structure": "Table: node_history, Column: version, Type: integer, Nullable: NO, Default: None"
+  },
+  {
+    "table_structure": "Table: node_history, Column: data, Type: jsonb, Nullable: NO, Default: None"
+  },
+  {
+    "table_structure": "Table: node_history, Column: created_at, Type: timestamp with time zone, Nullable: YES, Default: now()"
   },
   {
     "table_structure": "Table: node_tags, Column: node_id, Type: uuid, Nullable: NO, Default: None"
