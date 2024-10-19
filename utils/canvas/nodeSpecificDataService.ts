@@ -6,6 +6,15 @@ const supabase = createClient();
 type NodeType = 'note' | 'task' | 'calendar' | 'table' | 'draw';
 type SpecialNodeType = 'selection_menu';
 
+// Define a type for the settings
+type DrawNodeSettings = {
+  [key: string]: {
+    color: string;
+    strokeWidth: number;
+    opacity: number;
+  };
+};
+
 export const uploadSVGToBucket = async (nodeId: string, svgContent: string) => {
   const svgData = svgContent.replace(/^data:image\/svg\+xml;base64,/, '');
 
@@ -113,7 +122,7 @@ export const updateNodeSpecificData = async (
         | number
         | null
         | undefined,
-      settings: updates.settings as any, // Type assertion for settings
+      settings: updates.settings as DrawNodeSettings,
       drawing_file_url: svgPath as string | null | undefined
     };
 
@@ -196,7 +205,7 @@ export const createNodeSpecificData = async (
         | null
         | undefined,
       current_tool: initialData.currentTool as string | null | undefined,
-      settings: initialData.settings as any // Type assertion for settings
+      settings: initialData.settings as DrawNodeSettings
     };
 
     const { data, error } = await supabase
