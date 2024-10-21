@@ -361,9 +361,9 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         if (result?.drawingFileUrl) {
           await updateNodeSpecificData(id, 'draw', {
             drawing_file_url: result.drawingFileUrl,
-            currentTool,
-            currentColor,
-            currentStrokeWidth,
+            current_tool: currentTool,
+            current_color: currentColor,
+            current_stroke_width: currentStrokeWidth,
             settings: toolSettings
           });
         }
