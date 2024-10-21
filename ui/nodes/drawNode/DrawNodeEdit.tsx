@@ -49,7 +49,7 @@ import {
   updateNodeSpecificData,
   getNodeSpecificData
 } from '@/utils/canvas/nodeSpecificDataService';
-import { saveDrawing } from '@/utils/canvas/drawNodeService';
+import { saveDrawing, getDrawing } from '@/utils/canvas/drawNodeService';
 
 interface DrawNodeEditProps extends NodeProps {
   data: {
@@ -143,50 +143,60 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
 
   useEffect(() => {
     const loadDrawNodeData = async () => {
-      const drawNodeData = await getNodeSpecificData(id, 'draw');
-      if (drawNodeData) {
-        setCurrentTool(
-          (drawNodeData.current_tool as string) || tools[0].tool.name
-        );
-        setCurrentColor(
-          (drawNodeData.current_color as string) || tools[0].defaultColor
-        );
-        setCurrentStrokeWidth(
-          (drawNodeData.current_stroke_width as number) ||
-            tools[0].defaultStrokeWidth
-        );
+      try {
+        const drawNodeData = await getNodeSpecificData(id, 'draw');
+        if (drawNodeData) {
+          setCurrentTool(
+            (drawNodeData.current_tool as string) || tools[0].tool.name
+          );
+          setCurrentColor(
+            (drawNodeData.current_color as string) || tools[0].defaultColor
+          );
+          setCurrentStrokeWidth(
+            (drawNodeData.current_stroke_width as number) ||
+              tools[0].defaultStrokeWidth
+          );
 
-        if (drawNodeData.settings && Array.isArray(drawNodeData.settings)) {
-          setToolSettings(drawNodeData.settings);
+          if (drawNodeData.settings && Array.isArray(drawNodeData.settings)) {
+            setToolSettings(drawNodeData.settings);
+          } else {
+            const defaultSettings = tools.map((tool) => ({
+              name: tool.tool.name,
+              color: tool.defaultColor,
+              strokeWidth: tool.defaultStrokeWidth,
+              opacity: 100
+            }));
+            setToolSettings(defaultSettings);
+            await updateNodeSpecificData(id, 'draw', {
+              settings: defaultSettings,
+              current_tool: tools[0].tool.name,
+              current_color: tools[0].defaultColor,
+              current_stroke_width: tools[0].defaultStrokeWidth
+            });
+          }
+
+          const savedDrawing = await getDrawing(id);
+          if (savedDrawing) {
+            setDrawingData(savedDrawing);
+          }
         } else {
-          const defaultSettings = tools.map((tool) => ({
+          // Initialize with default values if no data exists
+          const initialSettings = tools.map((tool) => ({
             name: tool.tool.name,
             color: tool.defaultColor,
             strokeWidth: tool.defaultStrokeWidth,
             opacity: 100
           }));
-          setToolSettings(defaultSettings);
+          setToolSettings(initialSettings);
           await updateNodeSpecificData(id, 'draw', {
-            settings: defaultSettings,
+            settings: initialSettings,
             current_tool: tools[0].tool.name,
             current_color: tools[0].defaultColor,
             current_stroke_width: tools[0].defaultStrokeWidth
           });
         }
-      } else {
-        const initialSettings = tools.map((tool) => ({
-          name: tool.tool.name,
-          color: tool.defaultColor,
-          strokeWidth: tool.defaultStrokeWidth,
-          opacity: 100
-        }));
-        setToolSettings(initialSettings);
-        await updateNodeSpecificData(id, 'draw', {
-          settings: initialSettings,
-          current_tool: tools[0].tool.name,
-          current_color: tools[0].defaultColor,
-          current_stroke_width: tools[0].defaultStrokeWidth
-        });
+      } catch (error) {
+        console.error('Error loading draw node data:', error);
       }
     };
     loadDrawNodeData();
