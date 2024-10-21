@@ -40,7 +40,6 @@ import {
   removeAllPreviews
 } from '@/utils/canvas/attachmentService';
 import { useBackgroundColorChange } from '@/ui/nodes/common/useBackgroundColorChange';
-import { debounce } from 'lodash';
 import useNodeStore from '@/app/store/nodes/useNodeStore';
 import useCanvasStore from '@/app/store/canvas/useCanvasStore';
 import { useInitializeTools } from './toolInitialization';
@@ -77,13 +76,6 @@ interface ToolSetting {
   color: string;
   strokeWidth: number;
   opacity: number;
-}
-
-interface DrawNodeData {
-  current_tool?: string;
-  current_color?: string;
-  current_stroke_width?: number;
-  settings?: ToolSetting[];
 }
 
 const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
@@ -143,23 +135,11 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     [handleBackgroundColorChange]
   );
 
-  const updateNode = useNodeStore((state) => state.updateNode);
   const { bringNodeToFront } = useNodeStore();
 
   useEffect(() => {
     bringNodeToFront(data.id);
   }, [data.id, bringNodeToFront]);
-
-  const updateDrawNodeData = debounce(
-    async (newData: Partial<DrawNodeData>) => {
-      try {
-        await updateNode(data.id, { data: { ...data, ...newData } }, canvasId);
-      } catch (error) {
-        console.error('Error updating draw node:', error);
-      }
-    },
-    500
-  );
 
   useEffect(() => {
     const loadDrawNodeData = async () => {
@@ -262,46 +242,9 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
 
   useEffect(() => {
     return () => {
-      updateDrawNodeData.cancel();
       removeAllPreviews();
     };
-  }, [updateDrawNodeData]);
-
-  useEffect(() => {
-    const commonData = {
-      title,
-      backgroundColor,
-      textColor,
-      editWidth: nodeWidth,
-      editHeight: nodeHeight
-    };
-
-    const specificData = {
-      drawingData,
-      tags,
-      attachedFiles,
-      currentTool,
-      currentColor,
-      currentStrokeWidth,
-      settings: toolSettings
-    };
-
-    updateDrawNodeData({ ...commonData, ...specificData });
-  }, [
-    title,
-    drawingData,
-    backgroundColor,
-    textColor,
-    nodeWidth,
-    nodeHeight,
-    tags,
-    attachedFiles,
-    currentTool,
-    currentColor,
-    currentStrokeWidth,
-    toolSettings,
-    updateDrawNodeData
-  ]);
+  }, []);
 
   const onChangeTitle = useCallback(
     (newTitle: string) => {
@@ -474,7 +417,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
           if (artboardRef.current) {
             artboardRef.current.clear();
           }
-          // After clearing, save an empty drawing
           saveDrawing(
             id,
             'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjwvc3ZnPg=='
