@@ -150,15 +150,15 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     bringNodeToFront(data.id);
   }, [data.id, bringNodeToFront]);
 
-  const updateDrawNodeData = useCallback(
-    debounce(async (newData: Partial<DrawNodeData>) => {
+  const updateDrawNodeData = debounce(
+    async (newData: Partial<DrawNodeData>) => {
       try {
         await updateNode(data.id, { data: { ...data, ...newData } }, canvasId);
       } catch (error) {
         console.error('Error updating draw node:', error);
       }
-    }, 500),
-    [data.id, updateNode, canvasId, id]
+    },
+    500
   );
 
   useEffect(() => {
