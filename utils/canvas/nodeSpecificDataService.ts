@@ -184,28 +184,16 @@ export const createNodeSpecificData = async (
   }
 
   if (nodeType === 'draw') {
-    if (initialData.drawingFileUrl) {
-      if (typeof initialData.drawingFileUrl === 'string') {
-        const svgPath = await uploadSVGToBucket(
-          nodeId,
-          initialData.drawingFileUrl
-        );
-        if (svgPath) {
-          initialData.drawingFileUrl = svgPath;
-        }
-      }
-    }
-
     const drawNodeData = {
-      ...(toSnakeCase(initialData) as Record<string, unknown>),
       node_id: nodeId,
+      current_tool: initialData.currentTool as string | null | undefined,
       current_color: initialData.currentColor as string | null | undefined,
       current_stroke_width: initialData.currentStrokeWidth as
         | number
         | null
         | undefined,
-      current_tool: initialData.currentTool as string | null | undefined,
-      settings: initialData.settings as DrawNodeSettings
+      settings: initialData.settings as DrawNodeSettings,
+      drawing_file_url: initialData.drawingFileUrl as string | null | undefined
     };
 
     const { data, error } = await supabase
