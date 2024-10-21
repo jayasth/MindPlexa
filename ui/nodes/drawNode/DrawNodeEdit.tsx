@@ -49,7 +49,7 @@ import {
   updateNodeSpecificData,
   getNodeSpecificData
 } from '@/utils/canvas/nodeSpecificDataService';
-import { saveDrawing } from '@/utils/canvas/drawNodeService';
+import { saveDrawing, getDrawing } from '@/utils/canvas/drawNodeService';
 
 interface DrawNodeEditProps extends NodeProps {
   data: {
@@ -110,14 +110,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const [currentStrokeWidth, setCurrentStrokeWidth] = useState(
     tools[0].defaultStrokeWidth
   );
-  const [toolSettings, setToolSettings] = useState<ToolSetting[]>(() =>
-    tools.map((tool) => ({
-      name: tool.tool.name,
-      color: tool.defaultColor,
-      strokeWidth: tool.defaultStrokeWidth,
-      opacity: 100
-    }))
-  );
+  const [toolSettings, setToolSettings] = useState<ToolSetting[]>([]);
 
   const artboardRef = useRef<ArtboardRef | null>(null);
   const { history, undo, redo, clear, canUndo, canRedo } = useHistory();
@@ -188,6 +181,11 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
           current_stroke_width: tools[0].defaultStrokeWidth
         });
       }
+
+      const savedDrawing = await getDrawing(id);
+      if (savedDrawing) {
+        setDrawingData(savedDrawing);
+      }
     };
     loadDrawNodeData();
   }, [id, tools]);
@@ -196,8 +194,12 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     (index: number) => {
       setCurrentTool(tools[index].tool.name);
       setCurrentToolIndex(index);
+      setCurrentColor(toolSettings[index].color);
+      setCurrentStrokeWidth(toolSettings[index].strokeWidth);
       updateNodeSpecificData(id, 'draw', {
         current_tool: tools[index].tool.name,
+        current_color: toolSettings[index].color,
+        current_stroke_width: toolSettings[index].strokeWidth,
         settings: toolSettings
       });
     },
@@ -207,23 +209,33 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const handleColorChange = useCallback(
     (color: string) => {
       setCurrentColor(color);
+      const updatedSettings = toolSettings.map((setting, index) =>
+        index === currentToolIndex ? { ...setting, color } : setting
+      );
+      setToolSettings(updatedSettings);
       updateNodeSpecificData(id, 'draw', {
         current_color: color,
-        settings: toolSettings
+        settings: updatedSettings
       });
     },
-    [toolSettings, id]
+    [toolSettings, currentToolIndex, id]
   );
 
   const handleStrokeWidthChange = useCallback(
     (width: number) => {
       setCurrentStrokeWidth(width);
+      const updatedSettings = toolSettings.map((setting, index) =>
+        index === currentToolIndex
+          ? { ...setting, strokeWidth: width }
+          : setting
+      );
+      setToolSettings(updatedSettings);
       updateNodeSpecificData(id, 'draw', {
         current_stroke_width: width,
-        settings: toolSettings
+        settings: updatedSettings
       });
     },
-    [toolSettings, id]
+    [toolSettings, currentToolIndex, id]
   );
 
   const handleToolSettingChange = useCallback(
@@ -361,9 +373,9 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         if (result?.drawingFileUrl) {
           await updateNodeSpecificData(id, 'draw', {
             drawing_file_url: result.drawingFileUrl,
-            currentTool,
-            currentColor,
-            currentStrokeWidth,
+            current_tool: currentTool,
+            current_color: currentColor,
+            current_stroke_width: currentStrokeWidth,
             settings: toolSettings
           });
         }
