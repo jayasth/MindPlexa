@@ -151,7 +151,9 @@ export const onNodesChange = async (set, get, changes, _canvasId) => {
                     current_tool: updatedNode.data.currentTool,
                     current_color: updatedNode.data.currentColor,
                     current_stroke_width: updatedNode.data.currentStrokeWidth,
-                    settings: JSON.stringify(updatedNode.data.settings)
+                    settings: JSON.stringify(
+                      updatedNode.data.toolSettings || {}
+                    )
                   };
                   const drawingData = updatedNode.data.drawingData;
                   if (drawingData) {
