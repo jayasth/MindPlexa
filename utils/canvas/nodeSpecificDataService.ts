@@ -105,15 +105,6 @@ export const updateNodeSpecificData = async (
   }
 
   if (nodeType === 'draw') {
-    let svgPath = updates.drawingFileUrl;
-    if (
-      updates.drawingData &&
-      typeof updates.drawingData === 'string' &&
-      updates.drawingData.startsWith('data:image/svg+xml;base64,')
-    ) {
-      svgPath = await uploadSVGToBucket(nodeId, updates.drawingData);
-    }
-
     const updateData = {
       ...(toSnakeCase(updates) as Record<string, unknown>),
       current_tool: updates.currentTool as string | null | undefined,
@@ -123,7 +114,7 @@ export const updateNodeSpecificData = async (
         | null
         | undefined,
       settings: updates.settings as DrawNodeSettings,
-      drawing_file_url: svgPath as string | null | undefined
+      drawing_file_url: updates.drawingFileUrl as string | null | undefined
     };
 
     const { data, error } = await supabase

@@ -88,6 +88,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   onResize
 }) => {
   const { canvasId } = useCanvasStore();
+  const { updateNode } = useNodeStore();
   const [title, setTitle] = useState(data.title || 'Untitled Drawing');
   const [drawingData, setDrawingData] = useState(data.drawingData || '');
   const [backgroundColor, setBackgroundColor] = useState(
@@ -203,51 +204,71 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   }, [id, tools]);
 
   const handleToolChange = useCallback(
-    (index: number) => {
-      setCurrentTool(tools[index].tool.name);
+    async (index: number) => {
+      const newTool = tools[index].tool.name;
+      setCurrentTool(newTool);
       setCurrentToolIndex(index);
-      updateNodeSpecificData(id, 'draw', {
-        current_tool: tools[index].tool.name,
-        settings: toolSettings
-      });
+      try {
+        await updateNodeSpecificData(id, 'draw', {
+          current_tool: newTool,
+          settings: toolSettings
+        });
+        updateNode(id, { data: { currentTool: newTool } }, canvasId);
+      } catch (error) {
+        console.error('Error updating tool:', error);
+      }
     },
-    [tools, toolSettings, id]
+    [tools, toolSettings, id, updateNode, canvasId]
   );
 
   const handleColorChange = useCallback(
-    (color: string) => {
+    async (color: string) => {
       setCurrentColor(color);
-      updateNodeSpecificData(id, 'draw', {
-        current_color: color,
-        settings: toolSettings
-      });
+      try {
+        await updateNodeSpecificData(id, 'draw', {
+          current_color: color,
+          settings: toolSettings
+        });
+        updateNode(id, { data: { currentColor: color } }, canvasId);
+      } catch (error) {
+        console.error('Error updating color:', error);
+      }
     },
-    [toolSettings, id]
+    [toolSettings, id, updateNode, canvasId]
   );
 
   const handleStrokeWidthChange = useCallback(
-    (width: number) => {
+    async (width: number) => {
       setCurrentStrokeWidth(width);
-      updateNodeSpecificData(id, 'draw', {
-        current_stroke_width: width,
-        settings: toolSettings
-      });
+      try {
+        await updateNodeSpecificData(id, 'draw', {
+          current_stroke_width: width,
+          settings: toolSettings
+        });
+        updateNode(id, { data: { currentStrokeWidth: width } }, canvasId);
+      } catch (error) {
+        console.error('Error updating stroke width:', error);
+      }
     },
-    [toolSettings, id]
+    [toolSettings, id, updateNode, canvasId]
   );
 
   const handleToolSettingChange = useCallback(
-    (toolIndex: number, key: string, value: string | number) => {
-      setToolSettings((prevSettings) => {
-        const newSettings = [...prevSettings];
-        newSettings[toolIndex] = { ...newSettings[toolIndex], [key]: value };
-        return newSettings;
-      });
-      updateNodeSpecificData(id, 'draw', {
-        settings: toolSettings
-      });
+    async (toolIndex: number, key: string, value: string | number) => {
+      const newSettings = toolSettings.map((setting, index) =>
+        index === toolIndex ? { ...setting, [key]: value } : setting
+      );
+      setToolSettings(newSettings);
+      try {
+        await updateNodeSpecificData(id, 'draw', {
+          settings: newSettings
+        });
+        updateNode(id, { data: { toolSettings: newSettings } }, canvasId);
+      } catch (error) {
+        console.error('Error updating tool settings:', error);
+      }
     },
-    [id, toolSettings]
+    [id, toolSettings, updateNode, canvasId]
   );
 
   useEffect(() => {
@@ -376,6 +397,11 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
             current_stroke_width: currentStrokeWidth,
             settings: toolSettings
           });
+          updateNode(
+            id,
+            { data: { drawingFileUrl: result.drawingFileUrl } },
+            canvasId
+          );
         }
       } catch (error) {
         console.error('Error updating drawing:', error);
@@ -384,7 +410,16 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         history.pushState(artboardRef.current.canvas);
       }
     },
-    [id, currentTool, currentColor, currentStrokeWidth, toolSettings, history]
+    [
+      id,
+      currentTool,
+      currentColor,
+      currentStrokeWidth,
+      toolSettings,
+      history,
+      updateNode,
+      canvasId
+    ]
   );
 
   return (
@@ -448,9 +483,8 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         <DrawNodeSidebar
           tools={tools}
           currentToolIndex={currentToolIndex}
-          textColor={textColor}
-          currentTool={currentTool}
           onToolChange={handleToolChange}
+          textColor={textColor}
         />
         <div className={styles.mainContent}>
           <div className={`${styles.artboardContainer} nodrag nowheel`}>

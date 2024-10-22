@@ -12,14 +12,13 @@ interface Tool {
 interface DrawNodeSidebarProps {
   tools: Tool[];
   currentToolIndex: number;
-  currentTool: string;
   onToolChange: (index: number) => void;
   textColor: string;
 }
 
 const DrawNodeSidebar: React.FC<DrawNodeSidebarProps> = ({
   tools,
-  currentTool,
+  currentToolIndex,
   onToolChange,
   textColor
 }) => {
@@ -31,7 +30,7 @@ const DrawNodeSidebar: React.FC<DrawNodeSidebarProps> = ({
         <Tooltip key={tool.tool.name} content={tool.tool.name}>
           <button
             className={`${styles.toolbarButton} ${
-              currentTool === tool.tool.name ? styles.selected : ''
+              index === currentToolIndex ? styles.selected : ''
             }`}
             onClick={() => onToolChange(index)}
             style={{ color: textColor }}
