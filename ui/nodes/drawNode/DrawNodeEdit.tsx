@@ -88,7 +88,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   onResize
 }) => {
   const { canvasId } = useCanvasStore();
-  const { updateNode } = useNodeStore();
+  const { updateNode, bringNodeToFront } = useNodeStore();
   const [title, setTitle] = useState(data.title || 'Untitled Drawing');
   const [drawingData, setDrawingData] = useState(data.drawingData || '');
   const [backgroundColor, setBackgroundColor] = useState(
@@ -136,8 +136,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     [handleBackgroundColorChange]
   );
 
-  const { bringNodeToFront } = useNodeStore();
-
   useEffect(() => {
     bringNodeToFront(data.id);
   }, [data.id, bringNodeToFront]);
@@ -181,7 +179,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
             setDrawingData(savedDrawing);
           }
         } else {
-          // Initialize with default values if no data exists
           const initialSettings = tools.map((tool) => ({
             name: tool.tool.name,
             color: tool.defaultColor,
@@ -302,17 +299,40 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     [data.id, tags, canvasId]
   );
 
-  const onAttachFiles = useCallback((files: Attachment[]) => {
-    setAttachedFiles(files);
-  }, []);
+  const onAttachFiles = useCallback(
+    async (files: Attachment[]) => {
+      setAttachedFiles((prevFiles) => [...prevFiles, ...files]);
+      try {
+        await updateNodeSpecificData(id, 'draw', {
+          attachments: [...attachedFiles, ...files]
+        });
+        updateNode(
+          id,
+          { data: { attachments: [...attachedFiles, ...files] } },
+          canvasId
+        );
+      } catch (error) {
+        console.error('Error updating attachments:', error);
+      }
+    },
+    [id, attachedFiles, updateNode, canvasId]
+  );
 
   const onRemoveFile = useCallback(
     async (fileId: string) => {
       await removeAttachment(fileId);
       const updatedAttachments = await getAttachments(data.id);
       setAttachedFiles(updatedAttachments);
+      try {
+        await updateNodeSpecificData(id, 'draw', {
+          attachments: updatedAttachments
+        });
+        updateNode(id, { data: { attachments: updatedAttachments } }, canvasId);
+      } catch (error) {
+        console.error('Error updating attachments:', error);
+      }
     },
-    [data.id]
+    [data.id, id, updateNode, canvasId]
   );
 
   useEffect(() => {

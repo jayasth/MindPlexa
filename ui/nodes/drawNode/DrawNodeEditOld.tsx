@@ -495,7 +495,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
           }))}
           currentToolIndex={currentToolIndex}
           textColor={textColor}
-          currentTool={currentTool}
           onToolChange={handleToolChange}
         />
         <div className={styles.mainContent}>
