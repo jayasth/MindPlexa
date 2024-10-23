@@ -44,7 +44,6 @@ import { debounce } from 'lodash';
 import useNodeStore from '@/app/store/nodes/useNodeStore';
 import useCanvasStore from '@/app/store/canvas/useCanvasStore';
 import { useInitializeTools } from './toolInitialization';
-import { useHistory } from './drawNodeHistory';
 import ResizableArtboardMask from './components/ResizableArtboardMask';
 import {
   updateNodeSpecificData,
@@ -113,7 +112,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   );
 
   const artboardRef = useRef<ArtboardRef | null>(null);
-  const { history, undo, redo, clear, canUndo, canRedo } = useHistory();
 
   const handleBackgroundColorChange = useBackgroundColorChange(
     data.id,
@@ -278,7 +276,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     currentTool,
     currentColor,
     currentStrokeWidth,
-    toolSettings, // Add toolSettings to the dependency array
+    toolSettings,
     updateDrawNodeData
   ]);
 
@@ -407,11 +405,8 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         console.error('Error updating drawing:', error);
         // Add error handling here, e.g., display an error message to the user.
       }
-      if (artboardRef.current?.canvas) {
-        history.pushState(artboardRef.current.canvas);
-      }
     },
-    [id, currentTool, currentColor, currentStrokeWidth, toolSettings, history]
+    [id, currentTool, currentColor, currentStrokeWidth, toolSettings]
   );
 
   return (
@@ -444,13 +439,8 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         />
       </div>
       <DrawNodeTopbar
-        undo={undo}
-        redo={redo}
-        canUndo={canUndo}
-        canRedo={canRedo}
         download={() => artboardRef.current?.download()}
         clear={() => {
-          clear();
           if (artboardRef.current) {
             artboardRef.current.clear();
           }
@@ -470,7 +460,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         currentStrokeWidth={currentStrokeWidth}
         onColorChange={handleColorChange}
         onStrokeWidthChange={handleStrokeWidthChange}
-        nodeId={id} // Add this prop
+        nodeId={id}
       />
       <div className={styles.drawContent}>
         <DrawNodeSidebar

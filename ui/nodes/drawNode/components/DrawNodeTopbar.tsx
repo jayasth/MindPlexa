@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaUndo, FaRedo, FaDownload, FaRuler, FaCog } from 'react-icons/fa';
+import { FaDownload, FaRuler } from 'react-icons/fa';
 import { RiCheckboxBlankLine } from 'react-icons/ri';
 import { GrPaint } from 'react-icons/gr';
 import { Tooltip } from '@/ui/Tooltip/Tooltip';
@@ -7,7 +7,6 @@ import Modal from 'react-responsive-modal';
 import { SketchPicker } from 'react-color';
 import Slider from './DrawNodeSlider';
 import styles from './DrawNodeTopbar.module.css';
-import DrawNodeSettings from './DrawNodeSettings';
 import { saveDrawing } from '@/utils/canvas/drawNodeService';
 
 interface Tool {
@@ -21,10 +20,6 @@ interface ToolSetting {
 }
 
 interface DrawNodeTopbarProps {
-  undo: () => void;
-  redo: () => void;
-  canUndo: boolean;
-  canRedo: boolean;
   download: () => void;
   clear: () => void;
   backgroundColor: string;
@@ -45,15 +40,10 @@ interface DrawNodeTopbarProps {
 }
 
 const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
-  undo,
-  redo,
-  canUndo,
-  canRedo,
   download,
   clear,
   backgroundColor,
   textColor,
-  tools,
   toolSettings,
   onToolSettingChange,
   currentToolIndex,
@@ -65,7 +55,6 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
 }) => {
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   const [isStrokeWidthOpen, setIsStrokeWidthOpen] = useState(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const iconSize = 16;
 
   const currentToolSetting = toolSettings[currentToolIndex];
@@ -79,14 +68,6 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
     onColorChange,
     onStrokeWidthChange
   ]);
-
-  const handleUndo = () => {
-    undo();
-  };
-
-  const handleRedo = () => {
-    redo();
-  };
 
   const handleClear = async () => {
     clear();
@@ -110,26 +91,6 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
   return (
     <div className={styles.topbar} style={{ backgroundColor }}>
       <div className={styles.toolGroup}>
-        <Tooltip content="Undo">
-          <button
-            onClick={handleUndo}
-            disabled={!canUndo}
-            className={styles.toolbarButton}
-            style={{ color: textColor }}
-          >
-            <FaUndo size={iconSize} />
-          </button>
-        </Tooltip>
-        <Tooltip content="Redo">
-          <button
-            onClick={handleRedo}
-            disabled={!canRedo}
-            className={styles.toolbarButton}
-            style={{ color: textColor }}
-          >
-            <FaRedo size={iconSize} />
-          </button>
-        </Tooltip>
         <Tooltip content="Clear">
           <button
             onClick={handleClear}
@@ -177,15 +138,6 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
             <FaDownload size={iconSize} />
           </button>
         </Tooltip>
-        <Tooltip content="Settings">
-          <button
-            className={`${styles.toolbarButton}`}
-            onClick={() => setIsSettingsOpen(true)}
-            style={{ color: textColor }}
-          >
-            <FaCog size={iconSize} />
-          </button>
-        </Tooltip>
       </div>
 
       <Modal
@@ -208,29 +160,6 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
           max={100}
           value={currentStrokeWidth}
           onChange={handleStrokeWidthChange}
-        />
-      </Modal>
-
-      <Modal
-        open={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-        center
-      >
-        <h2>Tool Settings</h2>
-        <DrawNodeSettings
-          tools={tools.map((tool) => ({ tool }))}
-          toolSettings={toolSettings.map((setting) => ({
-            ...setting,
-            opacity: 100 // Default opacity to 100 if not present
-          }))}
-          onToolSettingChange={(toolIndex, key, value) => {
-            if (key === 'opacity') {
-              // Handle opacity separately if needed
-              console.log(`Opacity changed for tool ${toolIndex}: ${value}`);
-            } else {
-              onToolSettingChange(toolIndex, key, value);
-            }
-          }}
         />
       </Modal>
     </div>
