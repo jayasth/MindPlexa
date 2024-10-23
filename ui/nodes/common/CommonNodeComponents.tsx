@@ -5,7 +5,8 @@ import {
   FaTags,
   FaPaperclip,
   FaArrowRight,
-  FaCopy
+  FaCopy,
+  FaInfoCircle
 } from 'react-icons/fa';
 import Modal from 'react-responsive-modal';
 import 'react-responsive-modal/styles.css';
@@ -22,6 +23,7 @@ import {
   getAttachments,
   removeAllPreviews
 } from '@/utils/canvas/attachmentService';
+import FileSizeWarningModal from './FileSizeWarningModal';
 
 const ICON_SIZE = 16;
 
@@ -122,11 +124,23 @@ export const FileModal = ({
 }) => {
   const [fileUrl, setFileUrl] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isWarningModalOpen, setIsWarningModalOpen] = useState(false);
+  const [oversizedFiles, setOversizedFiles] = useState<string[]>([]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const files = Array.from(e.target.files);
-      for (const file of files) {
+      const validFiles = files.filter((file) => file.size <= 2 * 1024 * 1024);
+      const newOversizedFiles = files
+        .filter((file) => file.size > 2 * 1024 * 1024)
+        .map((f) => f.name);
+
+      if (newOversizedFiles.length > 0) {
+        setOversizedFiles(newOversizedFiles);
+        setIsWarningModalOpen(true);
+      }
+
+      for (const file of validFiles) {
         await addAttachment(nodeId, { type: 'file', content: file });
       }
       const updatedAttachments = await getAttachments(nodeId);
@@ -173,59 +187,70 @@ export const FileModal = ({
   };
 
   return (
-    <Modal open={isOpen} onClose={onClose} center>
-      <h2>Attach Files</h2>
-      <input
-        type="file"
-        multiple
-        onChange={handleFileChange}
-        className={styles.fileInput}
-        ref={fileInputRef}
+    <>
+      <Modal open={isOpen} onClose={onClose} center>
+        <h2>Attach Files</h2>
+        <div className={styles.fileSizeInfo}>
+          <FaInfoCircle size={16} />
+          <span>Maximum file size: 2MB per file</span>
+        </div>
+        <input
+          type="file"
+          multiple
+          onChange={handleFileChange}
+          className={styles.fileInput}
+          ref={fileInputRef}
+        />
+        <Button
+          variant="slim"
+          onClick={() => fileInputRef.current?.click()}
+          className={styles.button}
+        >
+          Add Files
+        </Button>
+        <Input
+          variant="slim"
+          value={fileUrl}
+          onChange={(value) => setFileUrl(value)}
+          placeholder="Enter file URL"
+          className={styles.input}
+        />
+        <Button
+          variant="slim"
+          onClick={handleAddFileUrl}
+          className={styles.button}
+        >
+          Add URL Link
+        </Button>
+        <div className={styles.fileList}>
+          {existingFiles.map((file: Attachment) => (
+            <div key={file.id} className={styles.file}>
+              <span
+                onClick={() => handleFileClick(file)}
+                onMouseEnter={() => handlePreview(file)}
+                onMouseLeave={handleMouseLeave}
+                style={{ cursor: 'pointer', textDecoration: 'underline' }}
+              >
+                {file.type === 'url'
+                  ? new URL(file.url!).hostname
+                  : file.file_name}
+              </span>
+              <button
+                className={styles.removeFileButton}
+                onClick={() => handleRemoveFile(file.id)}
+              >
+                &times;
+              </button>
+            </div>
+          ))}
+        </div>
+      </Modal>
+      <FileSizeWarningModal
+        isOpen={isWarningModalOpen}
+        onClose={() => setIsWarningModalOpen(false)}
+        oversizedFiles={oversizedFiles}
       />
-      <Button
-        variant="slim"
-        onClick={() => fileInputRef.current?.click()}
-        className={styles.button}
-      >
-        Add Files
-      </Button>
-      <Input
-        variant="slim"
-        value={fileUrl}
-        onChange={(value) => setFileUrl(value)}
-        placeholder="Enter file URL"
-        className={styles.input}
-      />
-      <Button
-        variant="slim"
-        onClick={handleAddFileUrl}
-        className={styles.button}
-      >
-        Add URL Link
-      </Button>
-      <div className={styles.fileList}>
-        {existingFiles.map((file: Attachment) => (
-          <div key={file.id} className={styles.file}>
-            <span
-              onClick={() => handleFileClick(file)}
-              onMouseEnter={() => handlePreview(file)}
-              onMouseLeave={handleMouseLeave}
-              style={{ cursor: 'pointer', textDecoration: 'underline' }}
-            >
-              {file.type === 'url'
-                ? new URL(file.url!).hostname
-                : file.file_name}
-            </span>
-            <button
-              className={styles.removeFileButton}
-              onClick={() => handleRemoveFile(file.id)}
-            >
-              &times;
-            </button>
-          </div>
-        ))}
-      </div>
-    </Modal>
+    </>
   );
 };
 

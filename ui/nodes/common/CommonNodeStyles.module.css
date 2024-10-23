@@ -28,3 +28,12 @@
 .removeFileButton {
   @apply bg-transparent border-none cursor-pointer ml-1 text-myGray-600 dark:text-myGray-400 text-xs;
 }
+
+.fileSizeInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: #666;
+}

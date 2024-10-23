@@ -1,0 +1,11 @@
+.content {
+  @apply space-y-4;
+}
+
+.fileList {
+  @apply list-disc pl-5 mt-2;
+}
+
+.actions {
+  @apply flex justify-end mt-4;
+}

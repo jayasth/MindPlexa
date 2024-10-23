@@ -23,6 +23,13 @@ export const addAttachment = async (
   const attachmentId = uuidv4();
   if (attachment.type === 'file' && attachment.content instanceof File) {
     const file = attachment.content;
+
+    // Check file size
+    if (file.size > 2 * 1024 * 1024) {
+      console.error('File size exceeds 2MB limit');
+      return null;
+    }
+
     const filePath = `node-attachments/${nodeId}/${file.name}`;
 
     const { error: uploadError } = await supabase.storage
