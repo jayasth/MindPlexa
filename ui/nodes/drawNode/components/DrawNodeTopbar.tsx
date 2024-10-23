@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaDownload, FaRuler } from 'react-icons/fa';
+import { FaDownload, FaRuler, FaCog } from 'react-icons/fa';
 import { RiCheckboxBlankLine } from 'react-icons/ri';
 import { GrPaint } from 'react-icons/gr';
 import { Tooltip } from '@/ui/Tooltip/Tooltip';
@@ -7,6 +7,7 @@ import Modal from 'react-responsive-modal';
 import { SketchPicker } from 'react-color';
 import Slider from './DrawNodeSlider';
 import styles from './DrawNodeTopbar.module.css';
+import DrawNodeSettings from './DrawNodeSettings';
 import { saveDrawing } from '@/utils/canvas/drawNodeService';
 
 interface Tool {
@@ -44,6 +45,7 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
   clear,
   backgroundColor,
   textColor,
+  tools,
   toolSettings,
   onToolSettingChange,
   currentToolIndex,
@@ -55,6 +57,7 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
 }) => {
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   const [isStrokeWidthOpen, setIsStrokeWidthOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const iconSize = 16;
 
   const currentToolSetting = toolSettings[currentToolIndex];
@@ -138,6 +141,15 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
             <FaDownload size={iconSize} />
           </button>
         </Tooltip>
+        <Tooltip content="Settings">
+          <button
+            className={`${styles.toolbarButton}`}
+            onClick={() => setIsSettingsOpen(true)}
+            style={{ color: textColor }}
+          >
+            <FaCog size={iconSize} />
+          </button>
+        </Tooltip>
       </div>
 
       <Modal
@@ -160,6 +172,29 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
           max={100}
           value={currentStrokeWidth}
           onChange={handleStrokeWidthChange}
+        />
+      </Modal>
+
+      <Modal
+        open={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        center
+      >
+        <h2>Tool Settings</h2>
+        <DrawNodeSettings
+          tools={tools.map((tool) => ({ tool }))}
+          toolSettings={toolSettings.map((setting) => ({
+            ...setting,
+            opacity: 100 // Default opacity to 100 if not present
+          }))}
+          onToolSettingChange={(toolIndex, key, value) => {
+            if (key === 'opacity') {
+              // Handle opacity separately if needed
+              console.log(`Opacity changed for tool ${toolIndex}: ${value}`);
+            } else {
+              onToolSettingChange(toolIndex, key, value);
+            }
+          }}
         />
       </Modal>
     </div>

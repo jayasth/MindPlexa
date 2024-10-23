@@ -95,7 +95,9 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const [isTagModalOpen, setIsTagModalOpen] = useState(false);
   const [isFileModalOpen, setIsFileModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [tools] = useState(useInitializeTools());
+  const [isLoading, setIsLoading] = useState(true);
+  const initialTools = useInitializeTools();
+  const [tools] = useState(initialTools);
   const [currentToolIndex, setCurrentToolIndex] = useState(0);
   const [currentTool, setCurrentTool] = useState(tools[0].tool.name);
   const [currentColor, setCurrentColor] = useState(tools[0].defaultColor);
@@ -152,6 +154,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
 
   useEffect(() => {
     const loadDrawNodeData = async () => {
+      setIsLoading(true);
       const drawNodeData = await getNodeSpecificData(id, 'draw');
       if (drawNodeData) {
         setCurrentTool(
@@ -187,6 +190,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         setToolSettings(initialSettings);
         await saveSettings(initialSettings);
       }
+      setIsLoading(false);
     };
     loadDrawNodeData();
   }, [id, tools]);
@@ -408,6 +412,10 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     },
     [id, currentTool, currentColor, currentStrokeWidth, toolSettings]
   );
+
+  if (isLoading) {
+    return <div>Loading...</div>; // Or a more sophisticated loading indicator
+  }
 
   return (
     <div
