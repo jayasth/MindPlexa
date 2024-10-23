@@ -405,6 +405,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         }
       } catch (error) {
         console.error('Error updating drawing:', error);
+        // Add error handling here, e.g., display an error message to the user.
       }
       if (artboardRef.current?.canvas) {
         history.pushState(artboardRef.current.canvas);
