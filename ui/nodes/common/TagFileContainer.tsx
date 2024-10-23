@@ -62,7 +62,11 @@ const TagFileContainer: React.FC<TagFileContainerProps> = ({
       </div>
       <div className={styles.fileContainer}>
         {attachedFiles.map((attachment) => (
-          <div key={attachment.id} className={styles.file}>
+          <div
+            key={attachment.id}
+            className={styles.file}
+            style={{ color: textColor }}
+          >
             <span
               onClick={() => {
                 if (attachment.type === 'url') {

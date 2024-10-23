@@ -5,6 +5,7 @@
   border-right: 1px solid #ccc;
   height: 100%;
   width: 32px;
+  gap: 8px; /* Added gap between sidebar items */
 }
 
 .toolGroup {
@@ -32,6 +33,7 @@
   transition:
     background-color 0.2s,
     border-color 0.2s;
+  margin: 2px 0; /* Added vertical margin between buttons */
 }
 
 .toolbarButton:hover {

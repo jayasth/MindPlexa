@@ -20,3 +20,18 @@
 .removeFileButton {
   @apply bg-transparent border-none cursor-pointer text-current ml-1;
 }
+
+.container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag,
+.file {
+  padding: 4px 8px;
+  border-radius: 12px;
+  background-color: transparent; /* Ensure background doesn't clash */
+  border: 1px solid currentColor; /* Use current text color for border */
+  cursor: pointer;
+}

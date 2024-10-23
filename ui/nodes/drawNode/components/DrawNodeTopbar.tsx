@@ -125,7 +125,10 @@ const DrawNodeTopbar: React.FC<DrawNodeTopbarProps> = ({
             style={{ color: textColor }}
           >
             <FaRuler size={iconSize} />
-            <span className={styles.strokeWidthLabel}>
+            <span
+              className={styles.strokeWidthLabel}
+              style={{ color: textColor, borderColor: textColor }}
+            >
               {currentStrokeWidth}
             </span>
           </button>
