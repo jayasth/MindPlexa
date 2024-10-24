@@ -12,6 +12,11 @@ const openai = new OpenAI({
 
 const GPT_MODEL = 'gpt-4o';
 
+export const config = {
+  runtime: 'edge',
+  maxDuration: 60
+};
+
 export async function POST(req: Request) {
   try {
     const { prompt, version, existingMermaidCode, followUpQuestion, model } =
