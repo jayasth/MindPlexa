@@ -35,37 +35,47 @@ export async function POST(req: Request) {
     let content;
 
     if (model === GPT_MODEL) {
-      const response = await openai.chat.completions.create({
-        model: GPT_MODEL,
-        messages: [
-          {
-            role: 'user',
-            content: selectedPromptTemplate(
-              prompt,
-              existingMermaidCode,
-              followUpQuestion
-            )
-          }
-        ],
-        temperature: 0.1
-      });
-      content = response.choices[0].message.content;
+      try {
+        const response = await openai.chat.completions.create({
+          model: GPT_MODEL,
+          messages: [
+            {
+              role: 'user',
+              content: selectedPromptTemplate(
+                prompt,
+                existingMermaidCode,
+                followUpQuestion
+              )
+            }
+          ],
+          temperature: 0.1
+        });
+        content = response.choices[0].message.content;
+      } catch (error) {
+        console.error('OpenAI API Error:', JSON.stringify(error, null, 2));
+        throw new Error('Error calling OpenAI API');
+      }
     } else {
-      const response = await generateText({
-        model: anthropic(model),
-        messages: [
-          {
-            role: 'user',
-            content: selectedPromptTemplate(
-              prompt,
-              existingMermaidCode,
-              followUpQuestion
-            )
-          }
-        ],
-        temperature: 0.1
-      });
-      content = response.text;
+      try {
+        const response = await generateText({
+          model: anthropic(model),
+          messages: [
+            {
+              role: 'user',
+              content: selectedPromptTemplate(
+                prompt,
+                existingMermaidCode,
+                followUpQuestion
+              )
+            }
+          ],
+          temperature: 0.1
+        });
+        content = response.text;
+      } catch (error) {
+        console.error('Anthropic API Error:', JSON.stringify(error, null, 2));
+        throw new Error('Error calling Anthropic API');
+      }
     }
 
     if (!content) {
