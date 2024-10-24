@@ -1,5 +1,5 @@
 export const promptTemplateV2 = (userInput: string) => {
-  return `As an advanced AI assistant for MindePlexa, a cutting-edge project management platform, analyze the following project concept and create an optimized project network:
+  return `As an advanced AI assistant for MindPlexa, a cutting-edge project management platform, analyze the following project concept and create an optimized project network:
 
 "${userInput}"
 

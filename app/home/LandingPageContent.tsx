@@ -2,7 +2,6 @@
 
 import Button from '@/ui/Button/Button';
 import Link from 'next/link';
-import TypewriterEffect from '@/ui/TypewriterEffect/TypewriterEffect';
 import Card from '@/ui/Card/Card';
 import { FaBrain, FaProjectDiagram, FaRobot } from 'react-icons/fa';
 import styles from './LandingPageContent.module.css';
@@ -13,11 +12,11 @@ export default function LandingPageContent() {
       <section className={styles.hero}>
         <div className={styles.heroContent}>
           <h1 className={styles.heroTitle}>
-            MindePlexa: <br />
-            <TypewriterEffect text="Transform Ideas into Reality" delay={500} />
+            MindPlexa: <br className={styles.heroTitleBreak} />
+            Transform Ideas into Reality
           </h1>
           <p className={styles.heroDescription}>
-            MindePlexa is an AI-powered platform that revolutionizes project
+            MindPlexa is an AI-powered platform that revolutionizes project
             management. Create, organize, and collaborate on ideas using
             intuitive canvases and intelligent nodes.
           </p>
@@ -62,8 +61,8 @@ export default function LandingPageContent() {
       <section className={styles.cta}>
         <h2 className={styles.sectionTitle}>Ready to Transform Your Ideas?</h2>
         <p className={styles.ctaDescription}>
-          Join MindePlexa today and experience a new way of managing projects
-          and ideas.
+          Join MindPlexa today and experience a new way of managing projects and
+          ideas.
         </p>
         <Link href="/signin/signup">
           <Button variant="sleek" className={styles.ctaButton}>

@@ -1,5 +1,5 @@
 export const promptTemplateV4 = (userInput: string) => {
-  return `As an AI assistant, create a comprehensive project layout for the MindePlexa project management platform based on this user input: "${userInput}"
+  return `As an AI assistant, create a comprehensive project layout for the MindPlexa project management platform based on this user input: "${userInput}"
 
 Follow these guidelines:
 

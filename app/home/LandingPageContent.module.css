@@ -3,7 +3,7 @@
 }
 
 .hero {
-  @apply bg-gradient-to-br from-lavender-400 to-lavender-600 text-white py-20;
+  @apply bg-gradient-to-br from-lavender-400 to-lavender-600 text-white py-12 sm:py-20;
 }
 
 .heroContent {
@@ -11,15 +11,20 @@
 }
 
 .heroTitle {
-  @apply text-4xl font-extrabold sm:text-6xl mb-6;
+  @apply text-3xl sm:text-4xl font-extrabold mb-6;
+  line-height: 1.2;
+}
+
+.heroTitleBreak {
+  @apply hidden sm:inline;
 }
 
 .heroDescription {
-  @apply text-xl mb-8 max-w-2xl mx-auto;
+  @apply text-base sm:text-xl mb-8 max-w-2xl mx-auto;
 }
 
 .ctaButton {
-  @apply text-base px-8 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300;
+  @apply text-base px-6 py-2 sm:px-8 sm:py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300;
 }
 
 .features {

@@ -3,7 +3,7 @@ import moment from 'moment-timezone';
 
 export const exportEventsToICS = (events: CalendarEvent[]) => {
   let icsContent =
-    'BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//MindePlexa//Calendar//EN\n';
+    'BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//MindPlexa//Calendar//EN\n';
 
   events.forEach((event) => {
     icsContent += `BEGIN:VEVENT\n`;

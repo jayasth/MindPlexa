@@ -4,7 +4,7 @@ export const promptTemplateV1 = (
   followUpCount: number = 0,
   layoutType: string = 'mindmap'
 ) => {
-  return `As an AI assistant for MindePlexa, a sophisticated productivity and project management platform, your task is to analyze user input and provide comprehensive guidance for project planning. The user's input is:
+  return `As an AI assistant for MindPlexa, a sophisticated productivity and project management platform, your task is to analyze user input and provide comprehensive guidance for project planning. The user's input is:
 
 "${userInput}"
 

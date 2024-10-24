@@ -1,7 +1,7 @@
 export const promptTemplateV3 = (userInput: string) => {
   const [topic, projectDetails] = userInput.split('\nProject Details: ');
 
-  return `Generate a comprehensive Mermaid JS flowchart for the MindePlexa project management platform based on the following input:
+  return `Generate a comprehensive Mermaid JS flowchart for the MindPlexa project management platform based on the following input:
 
 Main Topic: ${topic}
 Additional Context: ${projectDetails}

@@ -10,7 +10,6 @@ const openai = new OpenAI({
   apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY
 });
 
-const DEFAULT_MODEL = 'claude-3-5-sonnet-20240620';
 const GPT_MODEL = 'gpt-4o';
 
 export async function POST(req: Request) {
@@ -19,6 +18,7 @@ export async function POST(req: Request) {
       await req.json();
     console.log('Prompt sent to AI:', prompt);
     console.log('Version:', version);
+    console.log('Selected Model:', model);
 
     const selectedPromptTemplate =
       {
@@ -27,12 +27,9 @@ export async function POST(req: Request) {
         default: promptTemplate
       }[version] || promptTemplate;
 
-    const selectedModel = model || DEFAULT_MODEL;
-    console.log('Selected Model:', selectedModel);
-
     let content;
 
-    if (selectedModel === GPT_MODEL) {
+    if (model === GPT_MODEL) {
       const response = await openai.chat.completions.create({
         model: GPT_MODEL,
         messages: [
@@ -50,7 +47,7 @@ export async function POST(req: Request) {
       content = response.choices[0].message.content;
     } else {
       const response = await generateText({
-        model: anthropic(selectedModel),
+        model: anthropic(model),
         messages: [
           {
             role: 'user',
