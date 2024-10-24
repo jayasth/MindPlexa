@@ -6,16 +6,14 @@ import { promptTemplateV1 } from '@/app/prompts/generatorPromptV1';
 import { promptTemplateV2 } from '@/app/prompts/generatorPromptV2';
 import { NextResponse } from 'next/server';
 
+export const runtime = 'edge';
+export const maxDuration = 60; // in seconds
+
 const openai = new OpenAI({
   apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY
 });
 
 const GPT_MODEL = 'gpt-4o';
-
-export const config = {
-  runtime: 'edge',
-  maxDuration: 60
-};
 
 export async function POST(req: Request) {
   try {
