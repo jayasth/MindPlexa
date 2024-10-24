@@ -2,7 +2,7 @@
   "version": 2,
   "builds": [
     {
-      "src": "next.config.mjs",
+      "src": "package.json",
       "use": "@vercel/next"
     }
   ],
@@ -19,10 +19,5 @@
   "env": {
     "NEXT_PUBLIC_OPENAI_API_KEY": "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",
     "ANTHROPIC_API_KEY": "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"
-  },
-  "functions": {
-    "api/completion": {
-      "maxDuration": 60
-    }
   }
 }
