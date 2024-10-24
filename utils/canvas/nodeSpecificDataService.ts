@@ -46,6 +46,21 @@ export const getNodeSpecificData = async (
     return drawData;
   }
 
+  if (nodeType === 'note') {
+    const { data, error } = await supabase
+      .from('note_nodes')
+      .select('content')
+      .eq('node_id', nodeId)
+      .single();
+
+    if (error) {
+      console.error(`Error fetching note data:`, error);
+      return null;
+    }
+
+    return { content: data.content };
+  }
+
   const { data, error } = await supabase
     .from(`${nodeType}_nodes`)
     .select('*')
