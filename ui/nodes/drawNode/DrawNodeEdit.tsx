@@ -138,62 +138,61 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const updateDrawNodeData = useCallback(
     debounce(async (newData: Partial<Record<string, unknown>>) => {
       try {
-        await updateNode(data.id, { data: { ...data, ...newData } }, canvasId);
-        await updateNodeSpecificData(id, 'draw', {
-          current_tool: newData.currentTool,
-          current_color: newData.currentColor,
-          current_stroke_width: newData.currentStrokeWidth,
-          settings: newData.settings
-        });
+        // Combine both updates into a single transaction
+        await Promise.all([
+          updateNode(data.id, { data: { ...data, ...newData } }, canvasId),
+          updateNodeSpecificData(id, 'draw', {
+            drawing_file_url: newData.drawingData
+              ? await saveDrawing(id, newData.drawingData as string)
+              : undefined,
+            current_tool: newData.currentTool,
+            current_color: newData.currentColor,
+            current_stroke_width: newData.currentStrokeWidth,
+            settings: newData.settings,
+            attachments: newData.attachedFiles // Add this
+          })
+        ]);
       } catch (error) {
         console.error('Error updating draw node:', error);
       }
-    }, 500),
+    }, 300), // Reduce debounce time
     [data.id, updateNode, canvasId]
   );
 
   useEffect(() => {
     const loadDrawNodeData = async () => {
       setIsLoading(true);
-      const drawNodeData = await getNodeSpecificData(id, 'draw');
-      if (drawNodeData) {
-        setCurrentTool(
-          (drawNodeData.current_tool as string) || tools[0].tool.name
-        );
-        setCurrentColor(
-          (drawNodeData.current_color as string) || tools[0].defaultColor
-        );
-        setCurrentStrokeWidth(
-          (drawNodeData.current_stroke_width as number) ||
-            tools[0].defaultStrokeWidth
-        );
+      try {
+        const [drawNodeData, attachments] = await Promise.all([
+          getNodeSpecificData(id, 'draw'),
+          getAttachments(data.id)
+        ]);
 
-        if (drawNodeData.settings && Array.isArray(drawNodeData.settings)) {
-          setToolSettings(drawNodeData.settings);
-        } else {
-          const defaultSettings = tools.map((tool) => ({
-            name: tool.tool.name,
-            color: tool.defaultColor,
-            strokeWidth: tool.defaultStrokeWidth,
-            opacity: 100
-          }));
-          setToolSettings(defaultSettings);
-          await saveSettings(defaultSettings);
+        if (drawNodeData) {
+          setCurrentTool(
+            (drawNodeData.current_tool as string) || tools[0].tool.name
+          );
+          setCurrentColor(
+            (drawNodeData.current_color as string) || tools[0].defaultColor
+          );
+          setCurrentStrokeWidth(
+            (drawNodeData.current_stroke_width as number) ||
+              tools[0].defaultStrokeWidth
+          );
+
+          if (drawNodeData.settings && Array.isArray(drawNodeData.settings)) {
+            setToolSettings(drawNodeData.settings);
+          }
         }
-      } else {
-        const initialSettings = tools.map((tool) => ({
-          name: tool.tool.name,
-          color: tool.defaultColor,
-          strokeWidth: tool.defaultStrokeWidth,
-          opacity: 100
-        }));
-        setToolSettings(initialSettings);
-        await saveSettings(initialSettings);
+
+        setAttachedFiles(attachments);
+      } catch (error) {
+        console.error('Error loading draw node data:', error);
       }
       setIsLoading(false);
     };
     loadDrawNodeData();
-  }, [id, tools]);
+  }, [id, tools, data.id]);
 
   const saveSettings = async (
     settingsToSave: Array<{
@@ -243,6 +242,8 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
 
   useEffect(() => {
     return () => {
+      // Flush any pending updates before unmounting
+      updateDrawNodeData.flush();
       updateDrawNodeData.cancel();
       removeAllPreviews();
     };
