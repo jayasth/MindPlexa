@@ -120,51 +120,85 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   const initializeQuill = useCallback(() => {
     if (
       typeof document !== 'undefined' &&
-      quillRef.current &&
+      quillRef.current && // Check if ref exists
       !quillInstance.current
     ) {
-      quillInstance.current = new Quill(quillRef.current, {
-        theme: 'snow',
-        modules: {
-          toolbar: [
-            ['bold', 'italic', 'underline', 'strike'],
-            ['blockquote', 'code-block'],
-            [{ header: 1 }, { header: 2 }],
-            [{ list: 'ordered' }, { list: 'bullet' }],
-            [{ script: 'sub' }, { script: 'super' }],
-            [{ indent: '-1' }, { indent: '+1' }],
-            [{ direction: 'rtl' }],
-            [{ size: ['small', false, 'large', 'huge'] }],
-            [{ header: [1, 2, 3, 4, 5, 6, false] }],
-            [{ color: [] }, { background: [] }],
-            [{ font: [] }],
-            [{ align: [] }],
-            ['clean']
-          ]
+      const element = quillRef.current;
+      setTimeout(() => {
+        try {
+          quillInstance.current = new Quill(element, {
+            theme: 'snow',
+            modules: {
+              toolbar: [
+                ['bold', 'italic', 'underline', 'strike'],
+                ['blockquote', 'code-block'],
+                [{ header: 1 }, { header: 2 }],
+                [{ list: 'ordered' }, { list: 'bullet' }],
+                [{ script: 'sub' }, { script: 'super' }],
+                [{ indent: '-1' }, { indent: '+1' }],
+                [{ direction: 'rtl' }],
+                [{ size: ['small', false, 'large', 'huge'] }],
+                [{ header: [1, 2, 3, 4, 5, 6, false] }],
+                [{ color: [] }, { background: [] }],
+                [{ font: [] }],
+                [{ align: [] }],
+                ['clean']
+              ]
+            },
+            placeholder: 'Start writing...'
+          });
+
+          // Force a synchronous content update
+          if (initialContentRef.current) {
+            requestAnimationFrame(() => {
+              if (quillInstance.current) {
+                quillInstance.current.root.innerHTML =
+                  initialContentRef.current;
+                // Force Quill to update its internal state
+                quillInstance.current.update();
+              }
+            });
+          }
+
+          quillInstance.current.on('text-change', () => {
+            if (quillInstance.current) {
+              const newContent = quillInstance.current.root.innerHTML;
+              setContent(newContent);
+            }
+          });
+        } catch (error) {
+          console.error('Error initializing Quill:', error);
         }
-      });
-
-      // Use the ref for initial content
-      if (initialContentRef.current) {
-        quillInstance.current.root.innerHTML = initialContentRef.current;
-      }
-
-      quillInstance.current.on('text-change', () => {
-        const newContent = quillInstance.current?.root.innerHTML || '';
-        setContent(newContent);
-      });
+      }, 0);
     }
-  }, []); // Now we can safely have empty dependencies
+  }, []);
 
-  // Add separate effect for content updates
+  // Add a new effect to handle content synchronization
   useEffect(() => {
-    if (quillInstance.current && content) {
-      // Only update if content differs to prevent loops
-      if (quillInstance.current.root.innerHTML !== content) {
-        quillInstance.current.root.innerHTML = content;
+    const syncContent = () => {
+      if (quillInstance.current && data.content) {
+        if (quillInstance.current.root.innerHTML !== data.content) {
+          quillInstance.current.root.innerHTML = data.content;
+          quillInstance.current.update();
+        }
       }
-    }
-  }, [content]);
+    };
+
+    // Try to sync content when the component mounts
+    syncContent();
+
+    // Also sync content when visibility changes
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        syncContent();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [data.content]);
 
   const debouncedUpdateNodeData = useMemo(
     () =>
@@ -346,6 +380,15 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   useEffect(() => {
     bringNodeToFront(data.id);
   }, [data.id, bringNodeToFront]);
+
+  useEffect(() => {
+    console.log('NoteNodeEdit mounted with content:', {
+      dataContent: data.content,
+      currentContent: content,
+      url: window.location.href,
+      quillExists: !!quillInstance.current
+    });
+  }, [data.content, content]);
 
   return (
     <div

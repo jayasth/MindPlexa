@@ -8,30 +8,21 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Add any additional Next.js configuration options
-  // ...
-
+  experimental: {
+    serverComponentsExternalPackages: ['@ai-sdk/anthropic']
+  },
   webpack: (config) => {
     config.resolve.alias['@'] = resolve(__dirname, '.');
-
-    // Add the following lines to configure file-loader for .node files
     config.module.rules.push({
       test: /\.node$/,
       use: 'file-loader'
     });
-
     return config;
   },
-
-  async rewrites() {
-    return [
-      {
-        source: '/socket.io/:path*',
-        destination: 'http://localhost:3000/socket.io/:path*'
-      }
-    ];
+  env: {
+    NEXT_PUBLIC_VERCEL_URL: process.env.VERCEL_URL,
+    NEXT_PUBLIC_DOMAIN: process.env.NEXT_PUBLIC_DOMAIN
   },
-
   async headers() {
     return [
       {
@@ -40,7 +31,7 @@ const nextConfig = {
           { key: 'Access-Control-Allow-Credentials', value: 'true' },
           {
             key: 'Access-Control-Allow-Origin',
-            value: 'http://localhost:3000' // replace with your origin
+            value: process.env.NEXT_PUBLIC_DOMAIN || '*'
           },
           {
             key: 'Access-Control-Allow-Methods',
@@ -52,6 +43,10 @@ const nextConfig = {
               'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
           }
         ]
+      },
+      {
+        source: '/api/completion',
+        headers: [{ key: 'x-vercel-function-duration', value: '60' }]
       }
     ];
   }

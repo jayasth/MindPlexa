@@ -5,6 +5,7 @@ import useNodeStore from '@/app/store/nodes/useNodeStore';
 import useCanvasStore from '@/app/store/canvas/useCanvasStore';
 import { getNodeSpecificProperties } from '@/ui/canvasEditor/utils/nodeProperties';
 import NodeSelectionMenu from '@/ui/nodes/nodeSelectionMenu/NodeSelectionMenu';
+import ErrorBoundary from '@/ui/nodes/noteNode/ErrorBoundary';
 
 const NoteNodeView = dynamic(() => import('@/ui/nodes/noteNode/NoteNodeView'), {
   ssr: false
@@ -146,14 +147,16 @@ const NodeRenderer: React.FC<NodeRendererProps> = React.memo(
       };
 
       return (
-        <NodeComponent
-          {...commonProps}
-          {...dimensions}
-          position={position}
-          onNodeResizeStop={onNodeResizeStop || (() => {})}
-          onEdit={handleEdit}
-          style={{ zIndex: node.zIndex || 0 }}
-        />
+        <ErrorBoundary>
+          <NodeComponent
+            {...commonProps}
+            {...dimensions}
+            position={position}
+            onNodeResizeStop={onNodeResizeStop || (() => {})}
+            onEdit={handleEdit}
+            style={{ zIndex: node.zIndex || 0 }}
+          />
+        </ErrorBoundary>
       );
     }, [
       node,
