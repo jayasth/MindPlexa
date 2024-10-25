@@ -31,13 +31,26 @@ export const toggleEditMode = (set, nodeId) => {
     produce((state: NodeState) => {
       const node = state.nodes.find((n) => n.id === nodeId);
       if (node && node.type !== 'selection_menu') {
+        // Preserve existing tool settings when toggling
+        const currentSettings =
+          node.type === 'draw'
+            ? {
+                toolSettings: node.data?.toolSettings || node.data?.settings,
+                currentTool: node.data?.currentTool,
+                currentColor: node.data?.currentColor,
+                currentStrokeWidth: node.data?.currentStrokeWidth
+              }
+            : {};
+
         const updatedNode = {
           ...node,
           data: {
             ...node.data,
+            ...currentSettings,
             isEditing: !node.data?.isEditing
           }
         };
+
         state.nodeInternals.set(nodeId, updatedNode);
         state.nodes = state.nodes.map((n) =>
           n.id === nodeId ? updatedNode : n

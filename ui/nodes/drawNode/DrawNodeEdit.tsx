@@ -51,6 +51,18 @@ interface DrawNodeEditProps extends NodeProps {
     textColor?: string;
     drawingData?: string;
     tags?: string[];
+    toolSettings?: Array<{
+      name: string;
+      color: string;
+      strokeWidth: number;
+      opacity: number;
+    }>;
+    settings?: Array<{
+      name: string;
+      color: string;
+      strokeWidth: number;
+      opacity: number;
+    }>;
   };
   width: number;
   height: number;
@@ -94,13 +106,16 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const [currentStrokeWidth, setCurrentStrokeWidth] = useState(
     tools[0].defaultStrokeWidth
   );
-  const [toolSettings, setToolSettings] = useState(() =>
-    tools.map((tool) => ({
-      name: tool.tool.name,
-      color: tool.defaultColor,
-      strokeWidth: tool.defaultStrokeWidth,
-      opacity: 100
-    }))
+  const [toolSettings, setToolSettings] = useState(
+    () =>
+      data.toolSettings ||
+      data.settings ||
+      tools.map((tool) => ({
+        name: tool.tool.name,
+        color: tool.defaultColor,
+        strokeWidth: tool.defaultStrokeWidth,
+        opacity: 100
+      }))
   );
 
   const artboardRef = useRef<ArtboardRef | null>(null);

@@ -104,7 +104,11 @@ const processNode = async (
     if (drawData) {
       processedData.drawingFileUrl = drawData.drawing_file_url;
       processedData.currentTool = drawData.current_tool;
-      processedData.settings = drawData.settings || {}; // Use settings directly
+      // Parse settings if it's a string, otherwise use as is
+      processedData.toolSettings =
+        typeof drawData.settings === 'string'
+          ? JSON.parse(drawData.settings)
+          : drawData.settings;
       processedData.currentColor = drawData.current_color;
       processedData.currentStrokeWidth = drawData.current_stroke_width;
     }
