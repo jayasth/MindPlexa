@@ -114,6 +114,9 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     [handleBackgroundColorChange]
   );
 
+  // First, modify the initialization to use a ref for initial content
+  const initialContentRef = useRef(data.content || '');
+
   const initializeQuill = useCallback(() => {
     if (
       typeof document !== 'undefined' &&
@@ -141,11 +144,23 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
         }
       });
 
-      quillInstance.current.on('text-change', () => {
-        setContent(quillInstance.current?.root.innerHTML || '');
-      });
+      // Use the ref for initial content
+      if (initialContentRef.current) {
+        quillInstance.current.root.innerHTML = initialContentRef.current;
+      }
 
-      if (content) {
+      quillInstance.current.on('text-change', () => {
+        const newContent = quillInstance.current?.root.innerHTML || '';
+        setContent(newContent);
+      });
+    }
+  }, []); // Now we can safely have empty dependencies
+
+  // Add separate effect for content updates
+  useEffect(() => {
+    if (quillInstance.current && content) {
+      // Only update if content differs to prevent loops
+      if (quillInstance.current.root.innerHTML !== content) {
         quillInstance.current.root.innerHTML = content;
       }
     }
