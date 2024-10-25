@@ -32,11 +32,13 @@ const NoteNodeView: React.FC<NoteNodeViewProps> = ({ data, width, height }) => {
           <FaEdit size={12} />
         </div>
       </div>
-      <div className={styles.content}>
+      <div className={styles.contentPreview}>
         {content ? (
           <div dangerouslySetInnerHTML={{ __html: content }} />
         ) : (
-          <span className={styles.noContent}>No content available</span>
+          <span className={styles.noContent} style={{ color: textColor }}>
+            Click edit to start writing
+          </span>
         )}
       </div>
       <Handle

@@ -52,8 +52,8 @@ const TaskNodeView: React.FC<TaskNodeViewProps> = ({ data, width, height }) => {
           <FaEdit />
         </div>
       </div>
-      <div className={styles.taskList} style={{ color: textColor }}>
-        {Array.isArray(tasks) && tasks.length > 0 ? (
+      <div className={styles.tasksPreview} style={{ color: textColor }}>
+        {tasks && tasks.length > 0 ? (
           tasks.map((task) => (
             <div key={task.id} className={styles.taskItem}>
               <input type="checkbox" checked={task.completed} readOnly />
@@ -61,8 +61,8 @@ const TaskNodeView: React.FC<TaskNodeViewProps> = ({ data, width, height }) => {
             </div>
           ))
         ) : (
-          <span className={styles.noTasks} style={{ color: textColor }}>
-            No tasks available
+          <span className={styles.noContent} style={{ color: textColor }}>
+            Click edit to add tasks
           </span>
         )}
       </div>

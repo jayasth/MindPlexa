@@ -118,7 +118,7 @@ const TableNodeView: React.FC<TableNodeViewProps> = ({
           </div>
         ) : (
           <span className={styles.noContent} style={{ color: textColor }}>
-            No content available
+            Click edit to create table
           </span>
         )}
       </div>

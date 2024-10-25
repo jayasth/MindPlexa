@@ -48,14 +48,12 @@ const CalendarNodeView: React.FC<CalendarNodeViewProps> = ({
         {isLoading ? (
           <span className={styles.loading}>Loading...</span>
         ) : events && events.length > 0 ? (
-          <ul>
-            {events.map((event, index) => (
-              <li key={index}>{event.title}</li>
-            ))}
-          </ul>
+          <div className={styles.calendarPreview}>
+            {/* existing calendar/events rendering */}
+          </div>
         ) : (
           <span className={styles.noContent} style={{ color: textColor }}>
-            No events available
+            Click edit to manage events
           </span>
         )}
       </div>
