@@ -21,15 +21,33 @@ interface DrawNodeViewProps extends NodeProps {
 const DrawNodeView: React.FC<DrawNodeViewProps> = ({ data, width, height }) => {
   const { title, id, backgroundColor, textColor } = data;
   const [drawingContent, setDrawingContent] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const toggleEditMode = useNodeStore((state) => state.toggleEditMode);
 
   useEffect(() => {
+    let isMounted = true;
     const fetchDrawing = async () => {
-      const drawing = await getDrawing(id);
-      setDrawingContent(drawing);
+      try {
+        const drawing = await getDrawing(id);
+        if (isMounted) {
+          setDrawingContent(drawing);
+          setIsLoading(false);
+        }
+      } catch (error) {
+        // Only log error if it's not a 404 (drawing doesn't exist yet)
+        if (!(error instanceof Error && error.message.includes('404'))) {
+          console.error('Error fetching drawing:', error);
+        }
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
     };
 
     fetchDrawing();
+    return () => {
+      isMounted = false;
+    };
   }, [id]);
 
   return (
@@ -47,7 +65,11 @@ const DrawNodeView: React.FC<DrawNodeViewProps> = ({ data, width, height }) => {
         </div>
       </div>
       <div className={styles.contentPreview}>
-        {drawingContent ? (
+        {isLoading ? (
+          <span className={styles.loading} style={{ color: textColor }}>
+            Loading...
+          </span>
+        ) : drawingContent ? (
           <div className={styles.artboardContainer}>
             <img
               src={drawingContent}
@@ -57,7 +79,7 @@ const DrawNodeView: React.FC<DrawNodeViewProps> = ({ data, width, height }) => {
           </div>
         ) : (
           <span className={styles.noContent} style={{ color: textColor }}>
-            No content available
+            Click edit to start drawing
           </span>
         )}
       </div>

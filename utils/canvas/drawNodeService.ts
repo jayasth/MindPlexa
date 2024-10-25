@@ -60,27 +60,42 @@ export const saveDrawing = async (nodeId: string, drawingData: string) => {
 
 export const getDrawing = async (nodeId: string): Promise<string | null> => {
   try {
+    // First check if the drawing exists
+    const { data: drawNodeData } = await supabase
+      .from('draw_nodes')
+      .select('drawing_file_url')
+      .eq('node_id', nodeId)
+      .single();
+
+    if (!drawNodeData?.drawing_file_url) {
+      return null;
+    }
+
     const { data, error } = await supabase.storage
       .from('drawings')
       .download(`${nodeId}.svg`);
 
     if (error) {
+      if (error.message.includes('404')) {
+        // Drawing doesn't exist yet, return null instead of throwing
+        return null;
+      }
       console.error('Error fetching drawing:', error);
-      // Log more details about the error
-      console.error('Error details:', JSON.stringify(error, null, 2));
-      return null;
+      throw error;
     }
 
     if (data) {
       const svgContent = await data.text();
       return `data:image/svg+xml;base64,${btoa(svgContent)}`;
-    } else {
-      console.warn('No data returned for drawing:', nodeId);
+    }
+
+    return null;
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('404')) {
       return null;
     }
-  } catch (error) {
     console.error('Unexpected error in getDrawing:', error);
-    return null;
+    throw error;
   }
 };
 

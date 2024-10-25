@@ -13,6 +13,8 @@ import { v4 as uuidv4 } from 'uuid';
 import useEdgeStore from '@/app/store/edges/useEdgeStore';
 import * as nodeSpecificDataService from '@/utils/canvas/nodeSpecificDataService';
 import { useNodeStore } from '@/app/store';
+import { createClient } from '@/utils/supabase/supabaseClient';
+const supabase = createClient();
 
 function findNewPosition(
   nodes: Node[],
@@ -61,6 +63,31 @@ export const createNode = async (
   const nodeId = temporaryNodeId || uuidv4();
   const nodeDimension = nodeDimensions[nodeType];
 
+  // Initialize drawing-specific data if it's a draw node
+  let drawingFileUrl: string | undefined;
+  if (nodeType === 'draw') {
+    try {
+      // Create an empty SVG
+      const emptyDrawing = '<svg xmlns="http://www.w3.org/2000/svg"></svg>';
+      const blob = new Blob([emptyDrawing], { type: 'image/svg+xml' });
+
+      // Upload to storage
+      await supabase.storage.from('drawings').upload(`${nodeId}.svg`, blob, {
+        contentType: 'image/svg+xml',
+        upsert: true
+      });
+
+      // Get the public URL
+      const { data: publicUrlData } = supabase.storage
+        .from('drawings')
+        .getPublicUrl(`${nodeId}.svg`);
+
+      drawingFileUrl = publicUrlData.publicUrl;
+    } catch (error) {
+      console.error('Error initializing drawing:', error);
+    }
+  }
+
   const positionAsXYPosition =
     nodeType === 'selection_menu'
       ? position
@@ -97,7 +124,8 @@ export const createNode = async (
     mobileEditHeight:
       'mobileEditHeight' in nodeDimension
         ? nodeDimension.mobileEditHeight
-        : null
+        : null,
+    drawingFileUrl: nodeType === 'draw' ? drawingFileUrl : undefined
   };
 
   if (nodeType === 'selection_menu') {
@@ -122,7 +150,20 @@ export const createNode = async (
     }
 
     if (createdNode) {
-      console.log('nodeCreation: Node created with data:', createdNode);
+      // For draw nodes, initialize node-specific data
+      if (nodeType === 'draw') {
+        await nodeSpecificDataService.createNodeSpecificData(nodeId, 'draw', {
+          drawing_file_url: drawingFileUrl,
+          current_tool: 'Pen',
+          current_color: '#000000',
+          current_stroke_width: 2,
+          settings: [
+            { name: 'Pen', color: '#000000', strokeWidth: 2, opacity: 100 }
+            // Add other default tool settings as needed
+          ]
+        });
+      }
+
       const newNode: Node = {
         id: nodeId,
         type: nodeType,
@@ -132,9 +173,11 @@ export const createNode = async (
           backgroundColor: createdNode.backgroundColor,
           textColor: createdNode.textColor,
           isTemporary: createdNode.isTemporary,
+          drawingFileUrl,
           ...getNodeSpecificProperties(nodeType, isEditing)
         }
       };
+
       callback(newNode);
       if (parentNode && nodeType !== 'selection_menu') {
         await createEdge(parentNode.id, newNode.id, canvasId);
