@@ -16,11 +16,9 @@ import {
   DeleteButton,
   ChangeColorButton,
   AddTagButton,
-  AttachFileButton,
   CloseButton,
   DuplicateButton,
   TagModal,
-  FileModal,
   ColorPickerModal
 } from '@/ui/nodes/common/CommonNodeComponents';
 import NodeDeleteConfirmationModal from '@/ui/nodes/common/NodeDeleteConfirmationModal';
@@ -33,12 +31,6 @@ import {
   handleAddTag,
   handleDuplicate
 } from '@/ui/nodes/common/CommonNodeFunctions';
-import {
-  Attachment,
-  removeAttachment,
-  getAttachments,
-  removeAllPreviews
-} from '@/utils/canvas/attachmentService';
 import { useBackgroundColorChange } from '@/ui/nodes/common/useBackgroundColorChange';
 import { debounce } from 'lodash';
 import useNodeStore from '@/app/store/nodes/useNodeStore';
@@ -87,13 +79,11 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   );
   const [textColor, setTextColor] = useState(data.textColor || '#575757');
   const [tags, setTags] = useState<string[]>(data.tags || []);
-  const [attachedFiles, setAttachedFiles] = useState<Attachment[]>([]);
   const [isContainerSelected, setIsContainerSelected] = useState(false);
   const [nodeWidth, setNodeWidth] = useState(width);
   const [nodeHeight, setNodeHeight] = useState(height);
   const [isColorPickerVisible, setIsColorPickerVisible] = useState(false);
   const [isTagModalOpen, setIsTagModalOpen] = useState(false);
-  const [isFileModalOpen, setIsFileModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const initialTools = useInitializeTools();
@@ -148,8 +138,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
             current_tool: newData.currentTool,
             current_color: newData.currentColor,
             current_stroke_width: newData.currentStrokeWidth,
-            settings: newData.settings,
-            attachments: newData.attachedFiles // Add this
+            settings: newData.settings
           })
         ]);
       } catch (error) {
@@ -163,10 +152,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     const loadDrawNodeData = async () => {
       setIsLoading(true);
       try {
-        const [drawNodeData, attachments] = await Promise.all([
-          getNodeSpecificData(id, 'draw'),
-          getAttachments(data.id)
-        ]);
+        const drawNodeData = await getNodeSpecificData(id, 'draw');
 
         if (drawNodeData) {
           setCurrentTool(
@@ -184,8 +170,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
             setToolSettings(drawNodeData.settings);
           }
         }
-
-        setAttachedFiles(attachments);
       } catch (error) {
         console.error('Error loading draw node data:', error);
       }
@@ -245,7 +229,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
       // Flush any pending updates before unmounting
       updateDrawNodeData.flush();
       updateDrawNodeData.cancel();
-      removeAllPreviews();
     };
   }, [updateDrawNodeData]);
 
@@ -261,7 +244,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     const specificData = {
       drawingData,
       tags,
-      attachedFiles,
       currentTool,
       currentColor,
       currentStrokeWidth,
@@ -277,7 +259,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     nodeWidth,
     nodeHeight,
     tags,
-    attachedFiles,
     currentTool,
     currentColor,
     currentStrokeWidth,
@@ -309,27 +290,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     },
     [data.id, tags, canvasId]
   );
-
-  const onAttachFiles = useCallback(async (files: Attachment[]) => {
-    setAttachedFiles(files);
-  }, []);
-
-  const onRemoveFile = useCallback(
-    async (fileId: string) => {
-      await removeAttachment(fileId);
-      const updatedAttachments = await getAttachments(data.id);
-      setAttachedFiles(updatedAttachments);
-    },
-    [data.id]
-  );
-
-  useEffect(() => {
-    const fetchAttachments = async () => {
-      const attachments = await getAttachments(data.id);
-      setAttachedFiles(attachments);
-    };
-    fetchAttachments();
-  }, [data.id]);
 
   useEffect(() => {
     setNodeWidth(width);
@@ -383,13 +343,13 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     () => (
       <TagFileContainer
         tags={tags}
-        attachedFiles={attachedFiles}
         onRemoveTag={onRemoveTag}
-        onRemoveFile={onRemoveFile}
         textColor={textColor}
+        attachedFiles={[]}
+        onRemoveFile={() => {}}
       />
     ),
-    [tags, attachedFiles, onRemoveTag, onRemoveFile, textColor]
+    [tags, onRemoveTag, textColor]
   );
 
   const handleDrawingChange = useCallback(
@@ -499,13 +459,11 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
           </div>
         </div>
       </div>
-      {(tags.length > 0 || attachedFiles.length > 0) &&
-        memoizedTagFileContainer}
+      {tags.length > 0 && memoizedTagFileContainer}
       <div className={styles.footer}>
         <DeleteButton onClick={() => setIsDeleteModalOpen(true)} />
         <ChangeColorButton onClick={toggleColorPicker} />
         <AddTagButton onClick={() => setIsTagModalOpen(true)} />
-        <AttachFileButton onClick={() => setIsFileModalOpen(true)} />
         <DuplicateButton onClick={() => handleDuplicate(data.id, canvasId)} />
         <ColorPickerModal
           isOpen={isColorPickerVisible}
@@ -531,13 +489,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         onAddTag={onAddTag}
         onRemoveTag={onRemoveTag}
         existingTags={tags}
-      />
-      <FileModal
-        isOpen={isFileModalOpen}
-        onClose={() => setIsFileModalOpen(false)}
-        onAttachFiles={onAttachFiles}
-        existingFiles={attachedFiles}
-        nodeId={data.id}
       />
       <NodeDeleteConfirmationModal
         isOpen={isDeleteModalOpen}
