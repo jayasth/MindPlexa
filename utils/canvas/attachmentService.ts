@@ -182,6 +182,9 @@ export const handleAttachmentPreview = async (attachment: Attachment) => {
     iframe.style.border = 'none';
     previewWindow.appendChild(iframe);
   } else if (attachment.type === 'file' && attachment.storage_path) {
+    const previewContainer = document.createElement('div');
+    previewContainer.innerHTML = 'Loading preview...';
+
     try {
       const { data, error } = await supabase.storage
         .from('node-attachments')

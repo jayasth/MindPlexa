@@ -1,6 +1,8 @@
 import { generateMetadata } from '@/utils/metadata';
 import Toaster from '@/ui/Toasts/toaster';
 import 'styles/globals.css';
+import { Analytics } from '@vercel/analytics/react';
+import GoogleAnalytics from '@/components/GoogleAnalytics';
 
 export const metadata = generateMetadata();
 
@@ -23,6 +25,8 @@ export default function RootLayout({
       <body className="bg-background">
         {children}
         <Toaster />
+        <Analytics />
+        <GoogleAnalytics GA_MEASUREMENT_ID={process.env.NEXT_PUBLIC_GA_ID!} />
       </body>
     </html>
   );
