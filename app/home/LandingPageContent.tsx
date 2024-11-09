@@ -28,6 +28,18 @@ export default function LandingPageContent() {
         </div>
       </section>
 
+      <section className={styles.demo}>
+        <div className={styles.videoWrapper}>
+          <iframe
+            className={styles.demoVideo}
+            src="https://www.youtube.com/embed/1w8gtRYp740?autoplay=1&mute=1&loop=1&playlist=1w8gtRYp740"
+            title="MindPlexa Demo"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          ></iframe>
+        </div>
+      </section>
+
       <section className={styles.features}>
         <h2 className={styles.sectionTitle}>Key Features</h2>
         <div className={styles.featureGrid}>
