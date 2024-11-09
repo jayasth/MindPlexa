@@ -72,15 +72,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "canvases_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       customers: {
         Row: {
@@ -95,15 +87,28 @@ export type Database = {
           id?: string
           stripe_customer_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "customers_id_fkey"
-            columns: ["id"]
-            isOneToOne: true
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
+      }
+      deleted_files_log: {
+        Row: {
+          deleted_at: string | null
+          file_path: string
+          id: number
+          is_processed: boolean | null
+        }
+        Insert: {
+          deleted_at?: string | null
+          file_path: string
+          id?: number
+          is_processed?: boolean | null
+        }
+        Update: {
+          deleted_at?: string | null
+          file_path?: string
+          id?: number
+          is_processed?: boolean | null
+        }
+        Relationships: []
       }
       draw_nodes: {
         Row: {
@@ -191,6 +196,57 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      feedback: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          image_url: string | null
+          is_anonymous: boolean | null
+          type: Database["public"]["Enums"]["feedback_type"]
+          user_id: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          is_anonymous?: boolean | null
+          type: Database["public"]["Enums"]["feedback_type"]
+          user_id?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          is_anonymous?: boolean | null
+          type?: Database["public"]["Enums"]["feedback_type"]
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      files_to_delete: {
+        Row: {
+          bucket_name: string
+          created_at: string | null
+          file_path: string
+          id: number
+        }
+        Insert: {
+          bucket_name: string
+          created_at?: string | null
+          file_path: string
+          id?: number
+        }
+        Update: {
+          bucket_name?: string
+          created_at?: string | null
+          file_path?: string
+          id?: number
+        }
+        Relationships: []
       }
       insights: {
         Row: {
@@ -674,13 +730,6 @@ export type Database = {
             referencedRelation: "prices"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "subscriptions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
         ]
       }
       table_nodes: {
@@ -793,15 +842,7 @@ export type Database = {
           id?: string
           payment_method?: Json | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "users_id_fkey"
-            columns: ["id"]
-            isOneToOne: true
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       workspace_members: {
         Row: {
@@ -870,6 +911,7 @@ export type Database = {
       }
     }
     Enums: {
+      feedback_type: "bug" | "feature" | "other"
       node_type:
         | "note"
         | "task"
@@ -977,5 +1019,20 @@ export type Enums<
   ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : PublicEnumNameOrOptions extends keyof PublicSchema["Enums"]
     ? PublicSchema["Enums"][PublicEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof PublicSchema["CompositeTypes"]
+    | { schema: keyof Database },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof Database
+  }
+    ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof PublicSchema["CompositeTypes"]
+    ? PublicSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
 

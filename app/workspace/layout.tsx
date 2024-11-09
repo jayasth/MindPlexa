@@ -1,6 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import WorkspaceSidebar from '@/ui/workspace/WorkspaceSidebar';
+import FeedbackButton from '@/components/FeedbackButton/FeedbackButton';
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -22,6 +23,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           {isSidebarOpen ? '<<' : '>>'}
         </button>
         {children}
+        <FeedbackButton />
       </div>
     </div>
   );
