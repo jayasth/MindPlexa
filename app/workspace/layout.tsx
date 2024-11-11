@@ -16,5 +16,15 @@ export default async function Layout({
     return redirect('/signin');
   }
 
-  return <WorkspaceLayoutClient>{children}</WorkspaceLayoutClient>;
+  const { data: workspaces } = await supabase
+    .from('workspaces')
+    .select('*')
+    .or(`owner_id.eq.${user.id},workspace_members.user_id.eq.${user.id}`)
+    .order('created_at', { ascending: false });
+
+  return (
+    <WorkspaceLayoutClient workspaces={workspaces || null}>
+      {children}
+    </WorkspaceLayoutClient>
+  );
 }

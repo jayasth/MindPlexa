@@ -11,13 +11,24 @@ import { createClient } from '@/utils/supabase/supabaseServer';
 import CanvasList from '@/ui/canvas/CanvasList';
 import styles from './WorkspacePage.module.css';
 import Button from '@/ui/Button/Button';
+import { redirect } from 'next/navigation';
 
 export default async function WorkspacePage() {
   const supabase = createClient();
 
+  // Get the current user's session
+  const {
+    data: { session }
+  } = await supabase.auth.getSession();
+
+  if (!session?.user?.id) {
+    return redirect('/signin');
+  }
+
   const { data: canvases, error: canvasesError } = await supabase
     .from('canvases')
     .select('*')
+    .eq('user_id', session.user.id)
     .order('updated_at', { ascending: false })
     .limit(5);
 

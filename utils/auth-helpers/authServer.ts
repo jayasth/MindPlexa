@@ -169,7 +169,7 @@ export async function signInWithPassword(formData: FormData) {
 export async function signUp(formData: FormData) {
   const callbackURL = process.env.NEXT_PUBLIC_SITE_URL
     ? `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`
-    : 'https://mindplexa.com/auth/callback'; // Fallback to production URL
+    : 'https://mindplexa.com/auth/callback';
 
   const email = String(formData.get('email')).trim();
   const password = String(formData.get('password')).trim();
@@ -192,6 +192,16 @@ export async function signUp(formData: FormData) {
   });
 
   if (error) {
+    if (
+      error.message.includes('rate limit') ||
+      error.message.includes('exceeded')
+    ) {
+      return getErrorRedirect(
+        '/signin/signup',
+        'Too many attempts',
+        'Please wait a few minutes before trying again.'
+      );
+    }
     return getErrorRedirect('/signin/signup', 'Sign up failed.', error.message);
   }
   // User exists

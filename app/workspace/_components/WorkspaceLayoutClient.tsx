@@ -3,12 +3,19 @@
 import React, { useState } from 'react';
 import WorkspaceSidebar from '@/ui/workspace/WorkspaceSidebar';
 import FeedbackButton from '@/components/FeedbackButton/FeedbackButton';
+import { ReactNode } from 'react';
+import type { Tables } from 'types_db';
+
+type Workspace = Tables<'workspaces'>;
+
+interface WorkspaceLayoutClientProps {
+  children: ReactNode;
+  workspaces?: Workspace[] | null;
+}
 
 export default function WorkspaceLayoutClient({
   children
-}: {
-  children: React.ReactNode;
-}) {
+}: WorkspaceLayoutClientProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const toggleSidebar = () => {

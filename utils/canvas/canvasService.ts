@@ -41,10 +41,15 @@ export const createCanvas = async (
   setIsModalOpen: (isOpen: boolean) => void,
   router: ReturnType<typeof useRouter>
 ) => {
-  if (canvasTitle.trim() !== '') {
+  const {
+    data: { session }
+  } = await supabase.auth.getSession();
+
+  if (canvasTitle.trim() !== '' && session?.user.id) {
     const newCanvas: Database['public']['Tables']['canvases']['Insert'] = {
       id: uuidv4(),
-      name: canvasTitle
+      name: canvasTitle,
+      user_id: session.user.id
     };
 
     await supabase
