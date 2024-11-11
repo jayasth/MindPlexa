@@ -1,30 +1,20 @@
-'use client';
-import React, { useState } from 'react';
-import WorkspaceSidebar from '@/ui/workspace/WorkspaceSidebar';
-import FeedbackButton from '@/components/FeedbackButton/FeedbackButton';
+import { createClient } from '@/utils/supabase/supabaseServer';
+import { redirect } from 'next/navigation';
+import WorkspaceLayoutClient from './_components/WorkspaceLayoutClient';
 
-export default function Layout({ children }: { children: React.ReactNode }) {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+export default async function Layout({
+  children
+}: {
+  children: React.ReactNode;
+}) {
+  const supabase = createClient();
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
 
-  const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
-  };
+  if (!user) {
+    return redirect('/signin');
+  }
 
-  return (
-    <div className="flex h-screen">
-      <WorkspaceSidebar isOpen={isSidebarOpen} onClose={toggleSidebar} />
-      <div
-        className={`flex-1 overflow-y-auto p-6 md:p-12 transition-all duration-300 ease-in-out ${isSidebarOpen ? 'ml-12' : 'ml-4'}`}
-      >
-        <button
-          className="md:hidden fixed top-4 left-4 z-10 text-gray-600 hover:text-gray-800"
-          onClick={toggleSidebar}
-        >
-          {isSidebarOpen ? '<<' : '>>'}
-        </button>
-        {children}
-        <FeedbackButton />
-      </div>
-    </div>
-  );
+  return <WorkspaceLayoutClient>{children}</WorkspaceLayoutClient>;
 }

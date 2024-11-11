@@ -167,7 +167,10 @@ export async function signInWithPassword(formData: FormData) {
 }
 
 export async function signUp(formData: FormData) {
-  const callbackURL = getURL('/auth/callback');
+  const callbackURL = process.env.NEXT_PUBLIC_SITE_URL
+    ? `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`
+    : 'https://mindplexa.com/auth/callback'; // Fallback to production URL
+
   const email = String(formData.get('email')).trim();
   const password = String(formData.get('password')).trim();
 
