@@ -1,0 +1,402 @@
+[
+  {
+    "policies": [
+      {
+        "schema_name": "public",
+        "table_name": "feedback",
+        "policy_name": "Users can submit feedback",
+        "roles": ["public"],
+        "cmd": "INSERT",
+        "qual": null,
+        "with_check": "((auth.uid() = user_id) OR (is_anonymous = true))"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "feedback",
+        "policy_name": "Users can view own feedback",
+        "roles": ["public"],
+        "cmd": "SELECT",
+        "qual": "((auth.uid() = user_id) OR (is_anonymous = true))",
+        "with_check": null
+      },
+      {
+        "schema_name": "public",
+        "table_name": "users",
+        "policy_name": "Can update own user data.",
+        "roles": ["public"],
+        "cmd": "UPDATE",
+        "qual": "(auth.uid() = id)",
+        "with_check": null
+      },
+      {
+        "schema_name": "public",
+        "table_name": "users",
+        "policy_name": "Can view own user data.",
+        "roles": ["public"],
+        "cmd": "SELECT",
+        "qual": "(auth.uid() = id)",
+        "with_check": null
+      },
+      {
+        "schema_name": "public",
+        "table_name": "products",
+        "policy_name": "Allow public read-only access.",
+        "roles": ["public"],
+        "cmd": "SELECT",
+        "qual": "true",
+        "with_check": null
+      },
+      {
+        "schema_name": "public",
+        "table_name": "prices",
+        "policy_name": "Allow public read-only access.",
+        "roles": ["public"],
+        "cmd": "SELECT",
+        "qual": "true",
+        "with_check": null
+      },
+      {
+        "schema_name": "public",
+        "table_name": "subscriptions",
+        "policy_name": "Can only view own subs data.",
+        "roles": ["public"],
+        "cmd": "SELECT",
+        "qual": "(auth.uid() = user_id)",
+        "with_check": null
+      },
+      {
+        "schema_name": "public",
+        "table_name": "calendar_nodes",
+        "policy_name": "Enable calendar_nodes access",
+        "roles": ["authenticated"],
+        "cmd": "ALL",
+        "qual": "(EXISTS ( SELECT 1\n   FROM (node_canvas_link ncl\n     JOIN canvases c ON ((c.id = ncl.canvas_id)))\n  WHERE ((ncl.node_id = calendar_nodes.node_id) AND (c.user_id = auth.uid()))))",
+        "with_check": null
+      },
+      {
+        "schema_name": "public",
+        "table_name": "calendar_nodes",
+        "policy_name": "Enable calendar_nodes operations",
+        "roles": ["authenticated"],
+        "cmd": "ALL",
+        "qual": "true",
+        "with_check": "true"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "calendar_nodes",
+        "policy_name": "Users can access specific nodes through canvas ownership",
+        "roles": ["public"],
+        "cmd": "ALL",
+        "qual": "(EXISTS ( SELECT 1\n   FROM (node_canvas_link ncl\n     JOIN canvases c ON ((c.id = ncl.canvas_id)))\n  WHERE ((ncl.node_id = calendar_nodes.node_id) AND (c.user_id = auth.uid()))))",
+        "with_check": null
+      },
+      {
+        "schema_name": "public",
+        "table_name": "canvases",
+        "policy_name": "Prevent deactivated users from modifying data",
+        "roles": ["authenticated"],
+        "cmd": "ALL",
+        "qual": "(NOT (EXISTS ( SELECT 1\n   FROM users\n  WHERE ((users.id = auth.uid()) AND (users.is_deactivated = true)))))",
+        "with_check": null
+      },
+      {
+        "schema_name": "public",
+        "table_name": "canvases",
+        "policy_name": "Users can delete own canvases",
+        "roles": ["public"],
+        "cmd": "DELETE",
+        "qual": "(auth.uid() = user_id)",
+        "with_check": null
+      },
+      {
+        "schema_name": "public",
+        "table_name": "canvases",
+        "policy_name": "Users can insert own canvases",
+        "roles": ["public"],
+        "cmd": "INSERT",
+        "qual": null,
+        "with_check": "(auth.uid() = user_id)"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "canvases",
+        "policy_name": "Users can update own canvases",
+        "roles": ["public"],
+        "cmd": "UPDATE",
+        "qual": "(auth.uid() = user_id)",
+        "with_check": null
+      },
+      {
+        "schema_name": "public",
+        "table_name": "canvases",
+        "policy_name": "Users can view own canvases",
+        "roles": ["public"],
+        "cmd": "SELECT",
+        "qual": "(auth.uid() = user_id)",
+        "with_check": null
+      },
+      {
+        "schema_name": "public",
+        "table_name": "draw_nodes",
+        "policy_name": "Allow authenticated access",
+        "roles": ["public"],
+        "cmd": "ALL",
+        "qual": "(auth.role() = 'authenticated'::text)",
+        "with_check": null
+      },
+      {
+        "schema_name": "public",
+        "table_name": "draw_nodes",
+        "policy_name": "Enable draw_nodes access",
+        "roles": ["authenticated"],
+        "cmd": "ALL",
+        "qual": "(EXISTS ( SELECT 1\n   FROM (node_canvas_link ncl\n     JOIN canvases c ON ((c.id = ncl.canvas_id)))\n  WHERE ((ncl.node_id = draw_nodes.node_id) AND (c.user_id = auth.uid()))))",
+        "with_check": null
+      },
+      {
+        "schema_name": "public",
+        "table_name": "draw_nodes",
+        "policy_name": "Enable draw_nodes operations",
+        "roles": ["authenticated"],
+        "cmd": "ALL",
+        "qual": "true",
+        "with_check": "true"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "draw_nodes",
+        "policy_name": "Users can access specific nodes through canvas ownership",
+        "roles": ["public"],
+        "cmd": "ALL",
+        "qual": "(EXISTS ( SELECT 1\n   FROM (node_canvas_link ncl\n     JOIN canvases c ON ((c.id = ncl.canvas_id)))\n  WHERE ((ncl.node_id = draw_nodes.node_id) AND (c.user_id = auth.uid()))))",
+        "with_check": null
+      },
+      {
+        "schema_name": "public",
+        "table_name": "edges",
+        "policy_name": "Users can access edges through canvas ownership",
+        "roles": ["public"],
+        "cmd": "ALL",
+        "qual": "(EXISTS ( SELECT 1\n   FROM canvases c\n  WHERE ((c.id = edges.canvas_id) AND (c.user_id = auth.uid()))))",
+        "with_check": null
+      },
+      {
+        "schema_name": "public",
+        "table_name": "node_attachments",
+        "policy_name": "Allow authenticated access",
+        "roles": ["public"],
+        "cmd": "ALL",
+        "qual": "(auth.role() = 'authenticated'::text)",
+        "with_check": null
+      },
+      {
+        "schema_name": "public",
+        "table_name": "node_canvas_link",
+        "policy_name": "Enable insert for authenticated users",
+        "roles": ["authenticated"],
+        "cmd": "INSERT",
+        "qual": null,
+        "with_check": "(EXISTS ( SELECT 1\n   FROM canvases c\n  WHERE ((c.id = node_canvas_link.canvas_id) AND (c.user_id = auth.uid()))))"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "node_canvas_link",
+        "policy_name": "Enable node_canvas_link access",
+        "roles": ["authenticated"],
+        "cmd": "ALL",
+        "qual": "(EXISTS ( SELECT 1\n   FROM canvases c\n  WHERE ((c.id = node_canvas_link.canvas_id) AND (c.user_id = auth.uid()))))",
+        "with_check": null
+      },
+      {
+        "schema_name": "public",
+        "table_name": "node_canvas_link",
+        "policy_name": "Enable node_canvas_link operations",
+        "roles": ["authenticated"],
+        "cmd": "ALL",
+        "qual": "true",
+        "with_check": "true"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "node_canvas_link",
+        "policy_name": "Users can access node_canvas_link through canvas ownership",
+        "roles": ["public"],
+        "cmd": "ALL",
+        "qual": "(EXISTS ( SELECT 1\n   FROM canvases c\n  WHERE ((c.id = node_canvas_link.canvas_id) AND (c.user_id = auth.uid()))))",
+        "with_check": null
+      },
+      {
+        "schema_name": "public",
+        "table_name": "node_tags",
+        "policy_name": "Enable node_tags access",
+        "roles": ["authenticated"],
+        "cmd": "ALL",
+        "qual": "(EXISTS ( SELECT 1\n   FROM (node_canvas_link ncl\n     JOIN canvases c ON ((c.id = ncl.canvas_id)))\n  WHERE ((ncl.node_id = node_tags.node_id) AND (c.user_id = auth.uid()))))",
+        "with_check": null
+      },
+      {
+        "schema_name": "public",
+        "table_name": "node_tags",
+        "policy_name": "Enable node_tags creation",
+        "roles": ["authenticated"],
+        "cmd": "INSERT",
+        "qual": null,
+        "with_check": "true"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "nodes",
+        "policy_name": "Enable delete for canvas owners",
+        "roles": ["authenticated"],
+        "cmd": "DELETE",
+        "qual": "(EXISTS ( SELECT 1\n   FROM (node_canvas_link ncl\n     JOIN canvases c ON ((c.id = ncl.canvas_id)))\n  WHERE ((ncl.node_id = nodes.id) AND (c.user_id = auth.uid()))))",
+        "with_check": null
+      },
+      {
+        "schema_name": "public",
+        "table_name": "nodes",
+        "policy_name": "Enable insert for authenticated users",
+        "roles": ["authenticated"],
+        "cmd": "INSERT",
+        "qual": null,
+        "with_check": "true"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "nodes",
+        "policy_name": "Enable insert for authenticated users only",
+        "roles": ["authenticated"],
+        "cmd": "INSERT",
+        "qual": null,
+        "with_check": "true"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "nodes",
+        "policy_name": "Enable node access",
+        "roles": ["authenticated"],
+        "cmd": "ALL",
+        "qual": "(EXISTS ( SELECT 1\n   FROM (node_canvas_link ncl\n     JOIN canvases c ON ((c.id = ncl.canvas_id)))\n  WHERE ((ncl.node_id = nodes.id) AND (c.user_id = auth.uid()))))",
+        "with_check": null
+      },
+      {
+        "schema_name": "public",
+        "table_name": "nodes",
+        "policy_name": "Enable node operations",
+        "roles": ["authenticated"],
+        "cmd": "ALL",
+        "qual": "true",
+        "with_check": "true"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "nodes",
+        "policy_name": "Enable select for canvas owners",
+        "roles": ["authenticated"],
+        "cmd": "SELECT",
+        "qual": "(EXISTS ( SELECT 1\n   FROM (node_canvas_link ncl\n     JOIN canvases c ON ((c.id = ncl.canvas_id)))\n  WHERE ((ncl.node_id = nodes.id) AND (c.user_id = auth.uid()))))",
+        "with_check": null
+      },
+      {
+        "schema_name": "public",
+        "table_name": "nodes",
+        "policy_name": "Enable update for canvas owners",
+        "roles": ["authenticated"],
+        "cmd": "UPDATE",
+        "qual": "(EXISTS ( SELECT 1\n   FROM (node_canvas_link ncl\n     JOIN canvases c ON ((c.id = ncl.canvas_id)))\n  WHERE ((ncl.node_id = nodes.id) AND (c.user_id = auth.uid()))))",
+        "with_check": null
+      },
+      {
+        "schema_name": "public",
+        "table_name": "note_nodes",
+        "policy_name": "Enable note_nodes access",
+        "roles": ["authenticated"],
+        "cmd": "ALL",
+        "qual": "(EXISTS ( SELECT 1\n   FROM (node_canvas_link ncl\n     JOIN canvases c ON ((c.id = ncl.canvas_id)))\n  WHERE ((ncl.node_id = note_nodes.node_id) AND (c.user_id = auth.uid()))))",
+        "with_check": null
+      },
+      {
+        "schema_name": "public",
+        "table_name": "note_nodes",
+        "policy_name": "Enable note_nodes operations",
+        "roles": ["authenticated"],
+        "cmd": "ALL",
+        "qual": "true",
+        "with_check": "true"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "profiles",
+        "policy_name": "Users can update own profile",
+        "roles": ["public"],
+        "cmd": "UPDATE",
+        "qual": "(auth.uid() = user_id)",
+        "with_check": null
+      },
+      {
+        "schema_name": "public",
+        "table_name": "profiles",
+        "policy_name": "Users can view all profiles",
+        "roles": ["public"],
+        "cmd": "SELECT",
+        "qual": "true",
+        "with_check": null
+      },
+      {
+        "schema_name": "public",
+        "table_name": "projects",
+        "policy_name": "Users can access their own projects",
+        "roles": ["public"],
+        "cmd": "ALL",
+        "qual": "(user_id = auth.uid())",
+        "with_check": null
+      },
+      {
+        "schema_name": "public",
+        "table_name": "table_nodes",
+        "policy_name": "Enable table_nodes operations",
+        "roles": ["authenticated"],
+        "cmd": "ALL",
+        "qual": "true",
+        "with_check": "true"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "task_nodes",
+        "policy_name": "Enable task_nodes access",
+        "roles": ["authenticated"],
+        "cmd": "ALL",
+        "qual": "(EXISTS ( SELECT 1\n   FROM (node_canvas_link ncl\n     JOIN canvases c ON ((c.id = ncl.canvas_id)))\n  WHERE ((ncl.node_id = task_nodes.node_id) AND (c.user_id = auth.uid()))))",
+        "with_check": null
+      },
+      {
+        "schema_name": "public",
+        "table_name": "task_nodes",
+        "policy_name": "Enable task_nodes operations",
+        "roles": ["authenticated"],
+        "cmd": "ALL",
+        "qual": "true",
+        "with_check": "true"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "workspace_members",
+        "policy_name": "Users can access workspace memberships",
+        "roles": ["public"],
+        "cmd": "ALL",
+        "qual": "((user_id = auth.uid()) OR (EXISTS ( SELECT 1\n   FROM workspaces\n  WHERE ((workspaces.id = workspace_members.workspace_id) AND (workspaces.owner_id = auth.uid())))))",
+        "with_check": null
+      },
+      {
+        "schema_name": "public",
+        "table_name": "workspaces",
+        "policy_name": "Users can access their workspaces",
+        "roles": ["public"],
+        "cmd": "ALL",
+        "qual": "((auth.uid() = owner_id) OR (EXISTS ( SELECT 1\n   FROM workspace_members\n  WHERE ((workspace_members.workspace_id = workspaces.id) AND (workspace_members.user_id = auth.uid())))))",
+        "with_check": null
+      }
+    ]
+  }
+]

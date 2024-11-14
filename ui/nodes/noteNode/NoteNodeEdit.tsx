@@ -118,59 +118,45 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   const initialContentRef = useRef(data.content || '');
 
   const initializeQuill = useCallback(() => {
-    if (
-      typeof document !== 'undefined' &&
-      quillRef.current && // Check if ref exists
-      !quillInstance.current
-    ) {
-      const element = quillRef.current;
-      setTimeout(() => {
-        try {
-          quillInstance.current = new Quill(element, {
-            theme: 'snow',
-            modules: {
-              toolbar: [
-                ['bold', 'italic', 'underline', 'strike'],
-                ['blockquote', 'code-block'],
-                [{ header: 1 }, { header: 2 }],
-                [{ list: 'ordered' }, { list: 'bullet' }],
-                [{ script: 'sub' }, { script: 'super' }],
-                [{ indent: '-1' }, { indent: '+1' }],
-                [{ direction: 'rtl' }],
-                [{ size: ['small', false, 'large', 'huge'] }],
-                [{ header: [1, 2, 3, 4, 5, 6, false] }],
-                [{ color: [] }, { background: [] }],
-                [{ font: [] }],
-                [{ align: [] }],
-                ['clean']
-              ]
-            },
-            placeholder: 'Start writing...'
-          });
+    if (!quillRef.current) return;
 
-          // Force a synchronous content update
-          if (initialContentRef.current) {
-            requestAnimationFrame(() => {
-              if (quillInstance.current) {
-                quillInstance.current.root.innerHTML =
-                  initialContentRef.current;
-                // Force Quill to update its internal state
-                quillInstance.current.update();
-              }
-            });
-          }
-
-          quillInstance.current.on('text-change', () => {
-            if (quillInstance.current) {
-              const newContent = quillInstance.current.root.innerHTML;
-              setContent(newContent);
-            }
-          });
-        } catch (error) {
-          console.error('Error initializing Quill:', error);
-        }
-      }, 0);
+    // Clean up any existing Quill instances and toolbars
+    const existingToolbar = quillRef.current.previousSibling as HTMLElement;
+    if (existingToolbar?.classList.contains('ql-toolbar')) {
+      existingToolbar.remove();
     }
+
+    if (quillInstance.current) {
+      quillInstance.current = null;
+    }
+
+    // Initialize new Quill instance
+    quillInstance.current = new Quill(quillRef.current, {
+      theme: 'snow',
+      placeholder: 'Start writing...',
+      modules: {
+        toolbar: [
+          ['bold', 'italic', 'underline', 'strike'],
+          [{ header: 1 }, { header: 2 }],
+          [{ list: 'ordered' }, { list: 'bullet' }],
+          [{ script: 'sub' }, { script: 'super' }],
+          [{ align: [] }],
+          ['clean']
+        ]
+      }
+    });
+
+    // Set initial content
+    if (initialContentRef.current) {
+      quillInstance.current.root.innerHTML = initialContentRef.current;
+    }
+
+    // Add change handler
+    quillInstance.current.on('text-change', () => {
+      if (quillInstance.current) {
+        setContent(quillInstance.current.root.innerHTML);
+      }
+    });
   }, []);
 
   // Add a new effect to handle content synchronization
@@ -221,8 +207,16 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     initializeQuill();
 
     return () => {
+      // Clean up Quill instance and toolbar on unmount
+      if (quillRef.current) {
+        const toolbar = quillRef.current.previousSibling as HTMLElement;
+        if (toolbar?.classList.contains('ql-toolbar')) {
+          toolbar.remove();
+        }
+      }
+      quillInstance.current = null;
       debouncedUpdateNodeData.cancel();
-      removeAllPreviews(); // Remove all previews when the component unmounts
+      removeAllPreviews();
     };
   }, [initializeQuill, debouncedUpdateNodeData]);
 
