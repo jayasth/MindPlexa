@@ -6,7 +6,8 @@ import {
   FaChartBar,
   FaPlus,
   FaUser,
-  FaSignOutAlt
+  FaSignOutAlt,
+  FaCog
 } from 'react-icons/fa';
 import styles from './WorkspaceSidebar.module.css';
 import { SignOut } from '@/utils/auth-helpers/authServer';
@@ -75,6 +76,12 @@ const WorkspaceSidebar: React.FC<WorkspaceSidebarProps> = ({
           href="/workspace/profile"
           icon={<FaUser />}
           text="Profile"
+          isOpen={isOpen}
+        />
+        <SidebarLink
+          href="/workspace/settings"
+          icon={<FaCog />}
+          text="Account Settings"
           isOpen={isOpen}
         />
         <SidebarLink
