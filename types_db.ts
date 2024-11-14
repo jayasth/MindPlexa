@@ -414,6 +414,7 @@ export type Database = {
         Row: {
           background_color: string | null
           created_at: string | null
+          created_by: string | null
           edit_height: number | null
           edit_width: number | null
           id: string
@@ -435,6 +436,7 @@ export type Database = {
         Insert: {
           background_color?: string | null
           created_at?: string | null
+          created_by?: string | null
           edit_height?: number | null
           edit_width?: number | null
           id?: string
@@ -456,6 +458,7 @@ export type Database = {
         Update: {
           background_color?: string | null
           created_at?: string | null
+          created_by?: string | null
           edit_height?: number | null
           edit_width?: number | null
           id?: string

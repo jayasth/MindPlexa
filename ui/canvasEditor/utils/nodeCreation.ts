@@ -111,6 +111,7 @@ export const createNode = async (
     parentNodeId: parentNode ? parentNode.id : null,
     zIndex: 0,
     title: defaultTitle,
+    created_by: (await supabase.auth.getUser()).data.user?.id,
     viewWidth:
       'width' in nodeDimension ? nodeDimension.width : nodeDimension.viewWidth,
     viewHeight:

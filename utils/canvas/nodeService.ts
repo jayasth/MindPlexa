@@ -97,6 +97,13 @@ export const createNode = async (
       ? ''
       : `Untitled ${nodeType.charAt(0).toUpperCase() + nodeType.slice(1)}`;
 
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return { error: 'No authenticated user found' };
+  }
+
   const nodeInsert: Database['public']['Tables']['nodes']['Insert'] = {
     id: nodeId,
     type: nodeType,
@@ -129,7 +136,8 @@ export const createNode = async (
     is_temporary:
       nodeType === 'selection_menu' ? true : data.is_temporary || false,
     parent_node_id: data.parent_node_id || null,
-    z_index: data.z_index || 0
+    z_index: data.z_index || 0,
+    created_by: user.id
   };
 
   try {
