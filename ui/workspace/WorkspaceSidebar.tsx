@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   FaTachometerAlt,
@@ -14,6 +14,7 @@ import styles from './WorkspaceSidebar.module.css';
 import { SignOut } from '@/utils/auth-helpers/authServer';
 import { handleRequest } from '@/utils/auth-helpers/authClient';
 import { useRouter } from 'next/navigation';
+import { createClient } from '@/utils/supabase/supabaseClient';
 
 interface WorkspaceSidebarProps {
   isOpen: boolean;
@@ -25,6 +26,21 @@ const WorkspaceSidebar: React.FC<WorkspaceSidebarProps> = ({
   onClose
 }) => {
   const router = useRouter();
+  const [isDeactivated, setIsDeactivated] = useState(false);
+
+  useEffect(() => {
+    const checkDeactivation = async () => {
+      const supabase = createClient();
+      const { data: userDetails } = await supabase
+        .from('users')
+        .select('is_deactivated')
+        .single();
+
+      setIsDeactivated(userDetails?.is_deactivated ?? false);
+    };
+
+    checkDeactivation();
+  }, []);
 
   const handleSignOut = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -39,6 +55,54 @@ const WorkspaceSidebar: React.FC<WorkspaceSidebarProps> = ({
     );
   };
 
+  // Define allowed links for deactivated users
+  const deactivatedAllowedLinks = ['/workspace/account'];
+
+  // Filter navigation links based on deactivation status
+  const getNavigationLinks = () => {
+    const allLinks = [
+      {
+        href: '/workspace',
+        icon: <FaTachometerAlt />,
+        text: 'Overview'
+      },
+      {
+        href: '/workspace/canvases',
+        icon: <FaLayerGroup />,
+        text: 'Canvases'
+      },
+      {
+        href: '/workspace/analytics',
+        icon: <FaChartBar />,
+        text: 'Analytics'
+      },
+      {
+        href: '/canvasEditor/new',
+        icon: <FaPlus />,
+        text: 'New Canvas'
+      },
+      {
+        href: '/workspace/profile',
+        icon: <FaUser />,
+        text: 'Profile'
+      },
+      {
+        href: '/workspace/settings',
+        icon: <FaCog />,
+        text: 'Settings'
+      },
+      {
+        href: '/workspace/account',
+        icon: <FaUserCircle />,
+        text: 'Account'
+      }
+    ];
+
+    return isDeactivated
+      ? allLinks.filter((link) => deactivatedAllowedLinks.includes(link.href))
+      : allLinks;
+  };
+
   return (
     <aside
       className={`${styles.sidebar} ${isOpen ? styles.sidebarOpen : styles.sidebarClosed}`}
@@ -49,48 +113,16 @@ const WorkspaceSidebar: React.FC<WorkspaceSidebarProps> = ({
         </button>
       </div>
       <nav className={styles.nav}>
-        <SidebarLink
-          href="/workspace"
-          icon={<FaTachometerAlt />}
-          text="Overview"
-          isOpen={isOpen}
-        />
-        <SidebarLink
-          href="/workspace/canvases"
-          icon={<FaLayerGroup />}
-          text="Canvases"
-          isOpen={isOpen}
-        />
-        <SidebarLink
-          href="/workspace/analytics"
-          icon={<FaChartBar />}
-          text="Analytics"
-          isOpen={isOpen}
-        />
-        <SidebarLink
-          href="/canvasEditor/new"
-          icon={<FaPlus />}
-          text="New Canvas"
-          isOpen={isOpen}
-        />
-        <SidebarLink
-          href="/workspace/profile"
-          icon={<FaUser />}
-          text="Profile"
-          isOpen={isOpen}
-        />
-        <SidebarLink
-          href="/workspace/settings"
-          icon={<FaCog />}
-          text="Settings"
-          isOpen={isOpen}
-        />
-        <SidebarLink
-          href="/workspace/account"
-          icon={<FaUserCircle />}
-          text="Account"
-          isOpen={isOpen}
-        />
+        {getNavigationLinks().map((link) => (
+          <SidebarLink
+            key={link.href}
+            href={link.href}
+            icon={link.icon}
+            text={link.text}
+            isOpen={isOpen}
+          />
+        ))}
+        {/* Sign Out is always available */}
         <SidebarLink
           href="#"
           icon={<FaSignOutAlt />}

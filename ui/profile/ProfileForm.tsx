@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { User } from '@supabase/supabase-js';
 import { updateProfile } from '@/utils/supabase/profileClient';
 import { useRouter } from 'next/navigation';
@@ -8,6 +8,7 @@ import type { Tables } from 'types_db';
 import Card from '@/ui/Card';
 import Input from '@/ui/Input/Input';
 import Button from '@/ui/Button/Button';
+import { createClient } from '@/utils/supabase/supabaseClient';
 
 type Profile = Tables<'profiles'>;
 
@@ -25,6 +26,22 @@ export default function ProfileForm({ user, profile }: ProfileFormProps) {
   const [email, setEmail] = useState(profile?.email ?? user.email ?? '');
   const [phone, setPhone] = useState(profile?.phone ?? '');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    const checkDeactivation = async () => {
+      const supabase = createClient();
+      const { data: userDetails } = await supabase
+        .from('users')
+        .select('is_deactivated')
+        .single();
+
+      if (userDetails?.is_deactivated) {
+        router.push('/workspace/account');
+      }
+    };
+
+    checkDeactivation();
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

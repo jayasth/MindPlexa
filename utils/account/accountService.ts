@@ -45,3 +45,26 @@ export const deleteUserAccount = async () => {
     throw error;
   }
 };
+
+export const deactivateUserAccount = async (shouldDeactivate: boolean) => {
+  const supabase = createClient();
+
+  try {
+    const { error } = await supabase.rpc('deactivate_user_account', {
+      should_deactivate: shouldDeactivate
+    });
+
+    if (error) throw error;
+
+    // If deactivating, sign out the user
+    if (shouldDeactivate) {
+      const { error: signOutError } = await supabase.auth.signOut();
+      if (signOutError) throw signOutError;
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Deactivation Error:', error);
+    throw error;
+  }
+};

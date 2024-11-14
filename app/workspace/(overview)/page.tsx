@@ -16,13 +16,21 @@ import { redirect } from 'next/navigation';
 export default async function WorkspacePage() {
   const supabase = createClient();
 
-  // Get the current user's session
   const {
     data: { session }
   } = await supabase.auth.getSession();
 
   if (!session?.user?.id) {
     return redirect('/signin');
+  }
+
+  const { data: userDetails } = await supabase
+    .from('users')
+    .select('is_deactivated')
+    .single();
+
+  if (userDetails?.is_deactivated) {
+    return redirect('/workspace/account');
   }
 
   const { data: canvases, error: canvasesError } = await supabase
