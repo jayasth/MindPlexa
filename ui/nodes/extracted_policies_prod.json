@@ -1,0 +1,168 @@
+[
+  {
+    "policies": [
+      {
+        "schema_name": "public",
+        "table_name": "canvases",
+        "policy_name": "Users can view own canvases",
+        "roles": ["public"],
+        "cmd": "SELECT",
+        "qual": "(auth.uid() = user_id)",
+        "with_check": null
+      },
+      {
+        "schema_name": "public",
+        "table_name": "canvases",
+        "policy_name": "Users can insert own canvases",
+        "roles": ["public"],
+        "cmd": "INSERT",
+        "qual": null,
+        "with_check": "(auth.uid() = user_id)"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "canvases",
+        "policy_name": "Users can update own canvases",
+        "roles": ["public"],
+        "cmd": "UPDATE",
+        "qual": "(auth.uid() = user_id)",
+        "with_check": null
+      },
+      {
+        "schema_name": "public",
+        "table_name": "canvases",
+        "policy_name": "Users can delete own canvases",
+        "roles": ["public"],
+        "cmd": "DELETE",
+        "qual": "(auth.uid() = user_id)",
+        "with_check": null
+      },
+      {
+        "schema_name": "public",
+        "table_name": "canvases",
+        "policy_name": "Prevent deactivated users from modifying data",
+        "roles": ["authenticated"],
+        "cmd": "ALL",
+        "qual": "(NOT (EXISTS ( SELECT 1\n   FROM users\n  WHERE ((users.id = auth.uid()) AND (users.is_deactivated = true)))))",
+        "with_check": null
+      },
+      {
+        "schema_name": "public",
+        "table_name": "calendar_nodes",
+        "policy_name": "Enable calendar_nodes operations",
+        "roles": ["authenticated"],
+        "cmd": "ALL",
+        "qual": "true",
+        "with_check": "true"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "draw_nodes",
+        "policy_name": "Enable draw_nodes operations",
+        "roles": ["authenticated"],
+        "cmd": "ALL",
+        "qual": "true",
+        "with_check": "true"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "edges",
+        "policy_name": "Enable edges operations",
+        "roles": ["authenticated"],
+        "cmd": "ALL",
+        "qual": "true",
+        "with_check": "true"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "insights",
+        "policy_name": "Enable insights operations",
+        "roles": ["authenticated"],
+        "cmd": "ALL",
+        "qual": "true",
+        "with_check": "true"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "node_attachments",
+        "policy_name": "Enable node_attachments operations",
+        "roles": ["authenticated"],
+        "cmd": "ALL",
+        "qual": "true",
+        "with_check": "true"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "node_canvas_link",
+        "policy_name": "Enable node_canvas_link operations",
+        "roles": ["authenticated"],
+        "cmd": "ALL",
+        "qual": "true",
+        "with_check": "true"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "node_history",
+        "policy_name": "Enable node_history operations",
+        "roles": ["authenticated"],
+        "cmd": "ALL",
+        "qual": "true",
+        "with_check": "true"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "node_tags",
+        "policy_name": "Enable node_tags operations",
+        "roles": ["authenticated"],
+        "cmd": "ALL",
+        "qual": "true",
+        "with_check": "true"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "nodes",
+        "policy_name": "Enable node operations",
+        "roles": ["authenticated"],
+        "cmd": "ALL",
+        "qual": "true",
+        "with_check": "true"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "note_nodes",
+        "policy_name": "Enable note_nodes operations",
+        "roles": ["authenticated"],
+        "cmd": "ALL",
+        "qual": "true",
+        "with_check": "true"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "profiles",
+        "policy_name": "Enable profiles operations",
+        "roles": ["authenticated"],
+        "cmd": "ALL",
+        "qual": "true",
+        "with_check": "true"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "table_nodes",
+        "policy_name": "Enable table_nodes operations",
+        "roles": ["authenticated"],
+        "cmd": "ALL",
+        "qual": "true",
+        "with_check": "true"
+      },
+      {
+        "schema_name": "public",
+        "table_name": "task_nodes",
+        "policy_name": "Enable task_nodes operations",
+        "roles": ["authenticated"],
+        "cmd": "ALL",
+        "qual": "true",
+        "with_check": "true"
+      }
+    ]
+  }
+]
