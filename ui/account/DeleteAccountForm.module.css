@@ -1,0 +1,43 @@
+.container {
+  @apply mt-8 border-t pt-8;
+}
+
+.dangerZone {
+  @apply bg-red-50 dark:bg-red-900/10 rounded-lg p-6;
+}
+
+.dangerTitle {
+  @apply text-lg font-semibold text-red-600 dark:text-red-400;
+}
+
+.dangerText {
+  @apply mt-2 text-sm text-red-600/80 dark:text-red-400/80;
+}
+
+.deleteButton {
+  @apply mt-4;
+}
+
+.modalContent {
+  @apply space-y-4;
+}
+
+.warningText {
+  @apply text-sm text-gray-700 dark:text-gray-300 font-medium;
+}
+
+.warningList {
+  @apply ml-6 text-sm text-gray-600 dark:text-gray-400 list-disc space-y-2;
+}
+
+.modalActions {
+  @apply flex justify-end gap-3 mt-8;
+}
+
+.errorText {
+  @apply text-red-600 text-sm mb-4 p-3 bg-red-50 rounded-md border border-red-200;
+}
+
+.deactivateButton {
+  @apply !bg-gradient-to-r !from-orange-400 !to-amber-500 hover:!from-orange-500 hover:!to-amber-600;
+}

@@ -1,0 +1,19 @@
+.banner {
+  @apply bg-orange-50 dark:bg-orange-900/10 rounded-lg p-6 mb-8;
+}
+
+.content {
+  @apply space-y-4;
+}
+
+.title {
+  @apply text-lg font-semibold text-orange-600 dark:text-orange-400;
+}
+
+.message {
+  @apply text-sm text-orange-600/80 dark:text-orange-400/80;
+}
+
+.error {
+  @apply text-red-600 text-sm p-3 bg-red-50 rounded-md border border-red-200;
+}

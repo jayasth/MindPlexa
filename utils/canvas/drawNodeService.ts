@@ -111,3 +111,55 @@ export const removeDrawing = async (nodeId: string) => {
 
   return true;
 };
+
+export const removeAllDrawingsForUser = async (userId: string) => {
+  // Get canvas IDs for user
+  const { data: canvasIds } = await supabase
+    .from('canvases')
+    .select('id')
+    .eq('user_id', userId);
+
+  if (!canvasIds?.length) return true;
+
+  // Get node IDs from canvas links
+  const { data: nodeIds } = await supabase
+    .from('node_canvas_link')
+    .select('node_id')
+    .in(
+      'canvas_id',
+      canvasIds.map((c) => c.id)
+    );
+
+  if (!nodeIds?.length) return true;
+
+  // Get drawings
+  const { data: drawings, error } = await supabase
+    .from('draw_nodes')
+    .select('drawing_file_url')
+    .in(
+      'node_id',
+      nodeIds.map((n) => n.node_id)
+    );
+
+  if (error) {
+    console.error('Error fetching drawings:', error);
+    return false;
+  }
+
+  const paths = drawings
+    .map((drawing) => drawing.drawing_file_url)
+    .filter((url): url is string => url !== null);
+
+  if (paths.length === 0) return true;
+
+  const { error: deleteError } = await supabase.storage
+    .from('drawings')
+    .remove(paths);
+
+  if (deleteError) {
+    console.error('Error deleting drawings:', deleteError);
+    return false;
+  }
+
+  return true;
+};

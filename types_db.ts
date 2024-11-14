@@ -824,22 +824,28 @@ export type Database = {
         Row: {
           avatar_url: string | null
           billing_address: Json | null
+          deactivated_at: string | null
           full_name: string | null
           id: string
+          is_deactivated: boolean | null
           payment_method: Json | null
         }
         Insert: {
           avatar_url?: string | null
           billing_address?: Json | null
+          deactivated_at?: string | null
           full_name?: string | null
           id: string
+          is_deactivated?: boolean | null
           payment_method?: Json | null
         }
         Update: {
           avatar_url?: string | null
           billing_address?: Json | null
+          deactivated_at?: string | null
           full_name?: string | null
           id?: string
+          is_deactivated?: boolean | null
           payment_method?: Json | null
         }
         Relationships: []
@@ -903,6 +909,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      deactivate_user_account: {
+        Args: {
+          should_deactivate?: boolean
+        }
+        Returns: boolean
+      }
+      delete_user_account: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       duplicate_canvas: {
         Args: {
           original_canvas_id: string

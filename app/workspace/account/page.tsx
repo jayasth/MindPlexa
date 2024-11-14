@@ -1,9 +1,11 @@
 import CustomerPortalForm from '@/ui/account/CustomerPortalForm';
 import EmailForm from '@/ui/account/EmailForm';
 import NameForm from '@/ui/account/NameForm';
+import DeleteAccountForm from '@/ui/account/DeleteAccountForm';
 import { createClient } from '@/utils/supabase/supabaseServer';
 import { redirect } from 'next/navigation';
 import styles from './Account.module.css';
+import DeactivatedAccountBanner from '@/ui/account/DeactivatedAccountBanner';
 
 export default async function Account() {
   const supabase = createClient();
@@ -31,9 +33,13 @@ export default async function Account() {
     return redirect('/signin');
   }
 
+  // Check if user is deactivated
+  const isDeactivated = userDetails?.is_deactivated;
+
   return (
     <section className={styles.accountContainer}>
       <div className={styles.contentWrapper}>
+        {isDeactivated && <DeactivatedAccountBanner />}
         <div className={styles.header}>
           <h1 className={styles.title}>Account</h1>
           <p className={styles.subtitle}>
@@ -41,9 +47,14 @@ export default async function Account() {
           </p>
         </div>
         <div className={styles.formContainer}>
-          <CustomerPortalForm subscription={subscription} />
-          <NameForm userName={userDetails?.full_name ?? ''} />
-          <EmailForm userEmail={user.email} />
+          {!isDeactivated && (
+            <>
+              <CustomerPortalForm subscription={subscription} />
+              <NameForm userName={userDetails?.full_name ?? ''} />
+              <EmailForm userEmail={user.email} />
+              <DeleteAccountForm />
+            </>
+          )}
         </div>
       </div>
     </section>

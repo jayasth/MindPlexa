@@ -15,6 +15,8 @@ interface FeedbackModalProps {
   onClose: () => void;
 }
 
+const supabase = createClient();
+
 export default function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
   const [content, setContent] = useState('');
   const [type, setType] = useState<FeedbackType>('bug');
@@ -25,8 +27,6 @@ export default function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-
-    const supabase = createClient();
 
     try {
       let imageUrl: string | null = null;
@@ -142,3 +142,32 @@ export default function FeedbackModal({ isOpen, onClose }: FeedbackModalProps) {
     </Modal>
   );
 }
+
+export const removeAllFeedbackImagesForUser = async (userId: string) => {
+  const { data: feedbacks, error } = await supabase
+    .from('feedback')
+    .select('image_url')
+    .eq('user_id', userId);
+
+  if (error) {
+    console.error('Error fetching feedback images:', error);
+    return false;
+  }
+
+  const paths = feedbacks
+    .map((feedback) => feedback.image_url)
+    .filter((url): url is string => url !== null);
+
+  if (paths.length > 0) {
+    const { error: deleteError } = await supabase.storage
+      .from('feedback-images')
+      .remove(paths);
+
+    if (deleteError) {
+      console.error('Error deleting feedback images:', deleteError);
+      return false;
+    }
+  }
+
+  return true;
+};

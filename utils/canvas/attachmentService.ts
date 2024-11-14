@@ -262,3 +262,59 @@ export const downloadAttachment = async (
     link.click();
   }
 };
+
+export const removeAllAttachmentsForUser = async (userId: string) => {
+  // First get canvas IDs for the user
+  const { data: canvases, error: canvasError } = await supabase
+    .from('canvases')
+    .select('id')
+    .eq('user_id', userId);
+
+  if (canvasError) {
+    console.error('Error fetching canvases:', canvasError);
+    return false;
+  }
+
+  const canvasIds = canvases.map((canvas) => canvas.id);
+
+  // Get node IDs from node_canvas_link
+  const { data: nodeLinks, error: linkError } = await supabase
+    .from('node_canvas_link')
+    .select('node_id')
+    .in('canvas_id', canvasIds);
+
+  if (linkError) {
+    console.error('Error fetching node links:', linkError);
+    return false;
+  }
+
+  const nodeIds = nodeLinks.map((link) => link.node_id);
+
+  // Get attachments for these nodes
+  const { data: attachments, error: attachmentError } = await supabase
+    .from('node_attachments')
+    .select('storage_path')
+    .in('node_id', nodeIds);
+
+  if (attachmentError) {
+    console.error('Error fetching attachments:', attachmentError);
+    return false;
+  }
+
+  const paths = attachments
+    .map((attachment) => attachment.storage_path)
+    .filter((path): path is string => path !== null);
+
+  if (paths.length === 0) return true;
+
+  const { error: deleteError } = await supabase.storage
+    .from('node-attachments')
+    .remove(paths);
+
+  if (deleteError) {
+    console.error('Error deleting attachments:', deleteError);
+    return false;
+  }
+
+  return true;
+};
