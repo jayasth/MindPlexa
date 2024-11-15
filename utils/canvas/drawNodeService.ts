@@ -160,19 +160,41 @@ export const removeAllDrawingsForUser = async (userId: string) => {
 export const handleDrawingUpdate = async (
   nodeId: string,
   drawingData: string,
+  toolSettings?: {
+    currentTool?: string;
+    currentColor?: string;
+    currentStrokeWidth?: number;
+    settings?: Array<{
+      color: string;
+      strokeWidth: number;
+      opacity: number;
+    }>;
+  },
   retries = 3
 ): Promise<{ drawingFileUrl: string } | null> => {
   let lastError: Error | null = null;
 
   for (let i = 0; i < retries; i++) {
     try {
-      // 1. Save to storage bucket and get URL
+      // 1. Save drawing to storage
       const result = await saveDrawing(nodeId, drawingData);
       if (!result?.drawingFileUrl) throw new Error('Failed to save drawing');
 
-      // 2. Verify save was successful
-      const verification = await getDrawing(nodeId);
-      if (!verification) throw new Error('Verification failed');
+      // 2. Update draw_nodes table with both drawing URL and tool settings
+      if (toolSettings) {
+        const { error: updateError } = await supabase
+          .from('draw_nodes')
+          .update({
+            drawing_file_url: result.drawingFileUrl,
+            current_tool: toolSettings.currentTool,
+            current_color: toolSettings.currentColor,
+            current_stroke_width: toolSettings.currentStrokeWidth,
+            settings: JSON.stringify(toolSettings.settings)
+          })
+          .eq('node_id', nodeId);
+
+        if (updateError) throw updateError;
+      }
 
       return { drawingFileUrl: result.drawingFileUrl };
     } catch (error) {

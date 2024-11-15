@@ -143,13 +143,23 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     bringNodeToFront(data.id);
   }, [data.id, bringNodeToFront]);
 
+  const [isSaving, setIsSaving] = useState(false);
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const updateDrawNodeData = useCallback(
     debounce(async (newData: Partial<Record<string, unknown>>) => {
       try {
+        setIsSaving(true);
         if (newData.drawingData) {
           const result = await handleDrawingUpdate(
             data.id,
-            newData.drawingData as string
+            newData.drawingData as string,
+            {
+              currentTool,
+              currentColor,
+              currentStrokeWidth,
+              settings: toolSettings
+            }
           );
 
           if (result) {
@@ -168,10 +178,32 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         }
       } catch (error) {
         console.error('Error updating draw node:', error);
+      } finally {
+        if (saveTimeoutRef.current) {
+          clearTimeout(saveTimeoutRef.current);
+        }
+        const timeout = setTimeout(() => setIsSaving(false), 500);
+        saveTimeoutRef.current = timeout;
       }
     }, 300),
-    [data.id, updateNode, canvasId]
+    [
+      data.id,
+      updateNode,
+      canvasId,
+      currentTool,
+      currentColor,
+      currentStrokeWidth,
+      toolSettings
+    ]
   );
+
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const loadDrawNodeData = async () => {
@@ -419,6 +451,18 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     };
   }, [id, drawingData]);
 
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isSaving) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isSaving]);
+
   if (isLoading) {
     return <div>Loading...</div>; // Or a more sophisticated loading indicator
   }
@@ -432,6 +476,9 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
       data-toolbar-background-color={backgroundColor}
       data-toolbar-text-color={textColor}
     >
+      {isSaving && (
+        <div className={styles.saveIndicator}>Saving changes...</div>
+      )}
       <NodeResizer
         isVisible={isContainerSelected}
         minWidth={200}

@@ -206,14 +206,25 @@
   display: none; /* Safari and Chrome */
 }
 
-.saveStatus {
+.saveIndicator {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 20px;
+  right: 20px;
   background-color: rgba(0, 0, 0, 0.7);
   color: white;
-  padding: 4px 8px;
+  padding: 6px 12px;
   border-radius: 4px;
   font-size: 12px;
   z-index: 1000;
+  pointer-events: none; /* Allow clicking through the indicator */
+  animation: fadeInOut 0.3s ease-in-out;
+}
+
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
 }
