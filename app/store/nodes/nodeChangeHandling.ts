@@ -155,16 +155,6 @@ export const onNodesChange = async (set, get, changes, _canvasId) => {
                       updatedNode.data.toolSettings || {}
                     )
                   };
-                  const drawingData = updatedNode.data.drawingData;
-                  if (drawingData) {
-                    nodeSpecificDataService
-                      .uploadSVGToBucket(updatedNode.id, drawingData)
-                      .then((result) => {
-                        if (result) {
-                          specificUpdates['drawing_file_url'] = result;
-                        }
-                      });
-                  }
                   break;
                 case 'selection_menu':
                   // No specific updates for selection_menu
