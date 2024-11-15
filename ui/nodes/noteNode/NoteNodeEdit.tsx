@@ -42,6 +42,7 @@ import { useBackgroundColorChange } from '@/ui/nodes/common/useBackgroundColorCh
 import { debounce } from 'lodash';
 import useNodeStore from '@/app/store/nodes/useNodeStore';
 import useCanvasStore from '@/app/store/canvas/useCanvasStore';
+import QuillErrorBoundary from '@/ui/nodes/noteNode/QuillErrorBoundary';
 
 interface NoteNodeEditProps extends NodeProps {
   data: {
@@ -120,60 +121,82 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
   const initializeQuill = useCallback(() => {
     if (!quillRef.current) return;
 
-    // Clean up any existing Quill instances and toolbars
-    const existingToolbar = quillRef.current.previousSibling as HTMLElement;
-    if (existingToolbar?.classList.contains('ql-toolbar')) {
-      existingToolbar.remove();
-    }
-
-    if (quillInstance.current) {
-      quillInstance.current = null;
-    }
-
-    // Initialize new Quill instance
-    quillInstance.current = new Quill(quillRef.current, {
-      theme: 'snow',
-      placeholder: 'Start writing...',
-      modules: {
-        toolbar: [
-          ['bold', 'italic', 'underline', 'strike'],
-          [{ header: 1 }, { header: 2 }],
-          [{ list: 'ordered' }, { list: 'bullet' }],
-          [{ script: 'sub' }, { script: 'super' }],
-          [{ align: [] }],
-          ['clean']
-        ]
+    // Add a small delay to ensure DOM is ready
+    setTimeout(() => {
+      // Clean up any existing Quill instances and toolbars
+      const existingToolbar = quillRef.current?.previousSibling as HTMLElement;
+      if (existingToolbar?.classList.contains('ql-toolbar')) {
+        existingToolbar.remove();
       }
-    });
 
-    // Set initial content
-    if (initialContentRef.current) {
-      quillInstance.current.root.innerHTML = initialContentRef.current;
-    }
-
-    // Add change handler
-    quillInstance.current.on('text-change', () => {
       if (quillInstance.current) {
-        setContent(quillInstance.current.root.innerHTML);
+        quillInstance.current = null;
       }
-    });
+
+      // Initialize new Quill instance
+      quillInstance.current = new Quill(quillRef.current!, {
+        theme: 'snow',
+        placeholder: 'Start writing...',
+        modules: {
+          toolbar: [
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ header: 1 }, { header: 2 }],
+            [{ list: 'ordered' }, { list: 'bullet' }],
+            [{ script: 'sub' }, { script: 'super' }],
+            [{ align: [] }],
+            ['clean']
+          ]
+        }
+      });
+
+      // Set initial content with a check
+      if (initialContentRef.current && quillInstance.current) {
+        quillInstance.current.root.innerHTML = initialContentRef.current;
+        quillInstance.current.update();
+      }
+
+      // Add change handler
+      quillInstance.current.on('text-change', () => {
+        if (quillInstance.current) {
+          const newContent = quillInstance.current.root.innerHTML;
+          setContent(newContent);
+        }
+      });
+    }, 100); // Small delay to ensure DOM is ready
   }, []);
 
-  // Add a new effect to handle content synchronization
+  // Modify the content synchronization effect
   useEffect(() => {
     const syncContent = () => {
       if (quillInstance.current && data.content) {
-        if (quillInstance.current.root.innerHTML !== data.content) {
+        const currentContent = quillInstance.current.root.innerHTML;
+        if (currentContent !== data.content) {
           quillInstance.current.root.innerHTML = data.content;
           quillInstance.current.update();
+          console.log('Content synced:', {
+            previous: currentContent,
+            new: data.content
+          });
         }
       }
     };
 
-    // Try to sync content when the component mounts
-    syncContent();
+    // Add retry mechanism
+    let retryCount = 0;
+    const maxRetries = 3;
 
-    // Also sync content when visibility changes
+    const attemptSync = () => {
+      if (!quillInstance.current && retryCount < maxRetries) {
+        retryCount++;
+        setTimeout(attemptSync, 500);
+        return;
+      }
+      syncContent();
+    };
+
+    attemptSync();
+
+    // Visibility change handler
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         syncContent();
@@ -207,14 +230,13 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
     initializeQuill();
 
     return () => {
-      // Clean up Quill instance and toolbar on unmount
-      if (quillRef.current) {
-        const toolbar = quillRef.current.previousSibling as HTMLElement;
-        if (toolbar?.classList.contains('ql-toolbar')) {
-          toolbar.remove();
-        }
+      if (quillInstance.current) {
+        quillInstance.current = null;
       }
-      quillInstance.current = null;
+      const toolbar = quillRef.current?.previousSibling as HTMLElement;
+      if (toolbar?.classList.contains('ql-toolbar')) {
+        toolbar.remove();
+      }
       debouncedUpdateNodeData.cancel();
       removeAllPreviews();
     };
@@ -413,11 +435,13 @@ const NoteNodeEdit: React.FC<NoteNodeEditProps> = ({
           }
         />
       </div>
-      <div
-        ref={quillRef}
-        className={`${styles.noteContent} nowheel nodrag`}
-        style={{ color: textColor }}
-      />
+      <QuillErrorBoundary>
+        <div
+          ref={quillRef}
+          className={`${styles.noteContent} nowheel nodrag`}
+          style={{ color: textColor }}
+        />
+      </QuillErrorBoundary>
       {(tags.length > 0 || attachedFiles.length > 0) &&
         memoizedTagFileContainer}
       <div className={styles.footer}>
