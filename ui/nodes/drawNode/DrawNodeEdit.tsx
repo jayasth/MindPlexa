@@ -148,8 +148,8 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
 
   const updateDrawNodeData = useCallback(
     debounce(async (newData: Partial<Record<string, unknown>>) => {
+      setIsSaving(true);
       try {
-        setIsSaving(true);
         if (newData.drawingData) {
           const result = await handleDrawingUpdate(
             data.id,
@@ -185,7 +185,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         const timeout = setTimeout(() => setIsSaving(false), 500);
         saveTimeoutRef.current = timeout;
       }
-    }, 300),
+    }, 500),
     [
       data.id,
       updateNode,
