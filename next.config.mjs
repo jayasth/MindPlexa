@@ -49,6 +49,21 @@ const nextConfig = {
         headers: [{ key: 'x-vercel-function-duration', value: '60' }]
       }
     ];
+  },
+  async redirects() {
+    return [
+      {
+        source: '/:path*',
+        has: [
+          {
+            type: 'host',
+            value: 'mindplexa.com'
+          }
+        ],
+        destination: 'https://mindplexa.com/:path*',
+        permanent: true
+      }
+    ];
   }
 };
 
