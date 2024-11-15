@@ -377,22 +377,15 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   );
 
   const handleDrawingChange = useCallback(
-    async (newDrawingData: string) => {
-      try {
-        setIsLoading(true);
-        setDrawingData(newDrawingData);
-        await updateDrawNodeData({
-          drawingData: newDrawingData,
-          currentTool,
-          currentColor,
-          currentStrokeWidth,
-          settings: toolSettings
-        });
-      } catch (error) {
-        console.error('Error updating drawing:', error);
-      } finally {
-        setIsLoading(false);
-      }
+    (newDrawingData: string) => {
+      setDrawingData(newDrawingData);
+      updateDrawNodeData({
+        drawingData: newDrawingData,
+        currentTool,
+        currentColor,
+        currentStrokeWidth,
+        settings: toolSettings
+      });
     },
     [
       updateDrawNodeData,
@@ -411,23 +404,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
           if (currentDrawing && currentDrawing !== drawingData) {
             setDrawingData(currentDrawing);
             if (artboardRef.current) {
-              await artboardRef.current.loadContent(currentDrawing);
-              const drawNodeData = await getNodeSpecificData(id, 'draw');
-              if (drawNodeData) {
-                setCurrentTool(drawNodeData.currentTool as string);
-                setCurrentColor(drawNodeData.currentColor as string);
-                setCurrentStrokeWidth(
-                  drawNodeData.currentStrokeWidth as number
-                );
-                setToolSettings(
-                  drawNodeData.settings as {
-                    name: string;
-                    color: string;
-                    strokeWidth: number;
-                    opacity: number;
-                  }[]
-                );
-              }
+              artboardRef.current.loadContent(currentDrawing);
             }
           }
         } catch (error) {
