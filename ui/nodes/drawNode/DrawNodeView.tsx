@@ -21,7 +21,7 @@ interface DrawNodeViewProps extends NodeProps {
 const DrawNodeView: React.FC<DrawNodeViewProps> = ({ data, width, height }) => {
   const { title, id, backgroundColor, textColor } = data;
   const [drawingContent, setDrawingContent] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const toggleEditMode = useNodeStore((state) => state.toggleEditMode);
   const [retryCount, setRetryCount] = useState(0);
   const MAX_RETRIES = 3;
@@ -32,10 +32,18 @@ const DrawNodeView: React.FC<DrawNodeViewProps> = ({ data, width, height }) => {
 
     const fetchDrawing = async () => {
       try {
-        setIsLoading(true);
         const drawing = await getDrawing(id);
 
         if (!isMounted) return;
+
+        if (!drawing && retryCount === 0) {
+          setIsLoading(false);
+          return;
+        }
+
+        if (drawing || retryCount > 0) {
+          setIsLoading(true);
+        }
 
         if (!drawing && retryCount < MAX_RETRIES) {
           retryTimeout = setTimeout(
@@ -43,7 +51,7 @@ const DrawNodeView: React.FC<DrawNodeViewProps> = ({ data, width, height }) => {
               setRetryCount((prev) => prev + 1);
             },
             Math.pow(2, retryCount) * 1000
-          ); // Exponential backoff
+          );
           return;
         }
 
@@ -54,7 +62,7 @@ const DrawNodeView: React.FC<DrawNodeViewProps> = ({ data, width, height }) => {
 
         if (!isMounted) return;
 
-        if (retryCount < MAX_RETRIES) {
+        if (retryCount > 0 && retryCount < MAX_RETRIES) {
           retryTimeout = setTimeout(
             () => {
               setRetryCount((prev) => prev + 1);
@@ -75,6 +83,34 @@ const DrawNodeView: React.FC<DrawNodeViewProps> = ({ data, width, height }) => {
     };
   }, [id, retryCount]);
 
+  const renderContent = () => {
+    if (isLoading) {
+      return (
+        <span className={styles.loading} style={{ color: textColor }}>
+          Loading...
+        </span>
+      );
+    }
+
+    if (drawingContent) {
+      return (
+        <div className={styles.artboardContainer}>
+          <img
+            src={drawingContent}
+            alt="Drawing"
+            className={styles.previewImage}
+          />
+        </div>
+      );
+    }
+
+    return (
+      <span className={styles.noContent} style={{ color: textColor }}>
+        Click edit to start drawing
+      </span>
+    );
+  };
+
   return (
     <div className={styles.drawNode} style={{ width, height, backgroundColor }}>
       <div className={styles.header}>
@@ -89,25 +125,7 @@ const DrawNodeView: React.FC<DrawNodeViewProps> = ({ data, width, height }) => {
           <FaEdit />
         </div>
       </div>
-      <div className={styles.contentPreview}>
-        {isLoading ? (
-          <span className={styles.loading} style={{ color: textColor }}>
-            Loading...
-          </span>
-        ) : drawingContent ? (
-          <div className={styles.artboardContainer}>
-            <img
-              src={drawingContent}
-              alt="Drawing"
-              className={styles.previewImage}
-            />
-          </div>
-        ) : (
-          <span className={styles.noContent} style={{ color: textColor }}>
-            Click edit to start drawing
-          </span>
-        )}
-      </div>
+      <div className={styles.contentPreview}>{renderContent()}</div>
       <Handle
         type="target"
         position={Position.Top}
