@@ -97,7 +97,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   const [isColorPickerVisible, setIsColorPickerVisible] = useState(false);
   const [isTagModalOpen, setIsTagModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const initialTools = useInitializeTools();
   const [tools] = useState(initialTools);
   const [currentToolIndex, setCurrentToolIndex] = useState(0);
@@ -119,6 +119,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   );
 
   const artboardRef = useRef<ArtboardRef | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastSavedContentRef = useRef<string | null>(null);
 
@@ -142,72 +143,58 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     bringNodeToFront(data.id);
   }, [data.id, bringNodeToFront]);
 
-  const debouncedSave = useCallback(
-    debounce(async (newDrawingData: string) => {
-      if (newDrawingData === lastSavedContentRef.current) return;
-
-      setIsSaving(true);
+  const updateDrawNodeData = useCallback(
+    debounce(async (newData: Partial<Record<string, unknown>>) => {
       try {
-        const result = await saveDrawing(id, newDrawingData);
-        if (result?.drawingFileUrl) {
-          lastSavedContentRef.current = newDrawingData;
-          await Promise.all([
-            // Update draw_nodes table
-            updateNodeSpecificData(id, 'draw', {
-              drawing_file_url: result.drawingFileUrl,
-              current_tool: currentTool,
-              current_color: currentColor,
-              current_stroke_width: currentStrokeWidth,
-              settings: toolSettings
-            }),
-            // Update main node data
-            updateNode(
-              data.id,
-              {
-                data: {
-                  ...data,
-                  drawingFileUrl: result.drawingFileUrl
-                }
-              },
-              canvasId
-            )
-          ]);
-        }
-        setIsSaving(false);
+        // Combine both updates into a single transaction
+        await Promise.all([
+          updateNode(data.id, { data: { ...data, ...newData } }, canvasId),
+          updateNodeSpecificData(id, 'draw', {
+            drawing_file_url: newData.drawingData
+              ? await saveDrawing(id, newData.drawingData as string)
+              : undefined,
+            current_tool: newData.currentTool,
+            current_color: newData.currentColor,
+            current_stroke_width: newData.currentStrokeWidth,
+            settings: newData.settings
+          })
+        ]);
       } catch (error) {
-        console.error('Error saving drawing:', error);
-        setIsSaving(false);
+        console.error('Error updating draw node:', error);
       }
-    }, 300),
-    [
-      id,
-      data,
-      currentTool,
-      currentColor,
-      currentStrokeWidth,
-      toolSettings,
-      canvasId
-    ]
+    }, 300), // Reduce debounce time
+    [data.id, updateNode, canvasId]
   );
 
   useEffect(() => {
-    const loadDrawingData = async () => {
+    const loadDrawNodeData = async () => {
+      setIsLoading(true);
       try {
-        // Get node-specific data including drawing_file_url
-        const nodeData = await getNodeSpecificData(id, 'draw');
-        if (nodeData?.drawing_file_url) {
-          const drawingContent = await getDrawing(id);
-          if (drawingContent && artboardRef.current) {
-            artboardRef.current.loadContent(drawingContent);
+        const drawNodeData = await getNodeSpecificData(id, 'draw');
+
+        if (drawNodeData) {
+          setCurrentTool(
+            (drawNodeData.current_tool as string) || tools[0].tool.name
+          );
+          setCurrentColor(
+            (drawNodeData.current_color as string) || tools[0].defaultColor
+          );
+          setCurrentStrokeWidth(
+            (drawNodeData.current_stroke_width as number) ||
+              tools[0].defaultStrokeWidth
+          );
+
+          if (drawNodeData.settings && Array.isArray(drawNodeData.settings)) {
+            setToolSettings(drawNodeData.settings);
           }
         }
       } catch (error) {
-        console.error('Error loading drawing data:', error);
+        console.error('Error loading draw node data:', error);
       }
+      setIsLoading(false);
     };
-
-    loadDrawingData();
-  }, [id]);
+    loadDrawNodeData();
+  }, [id, tools, data.id]);
 
   const saveSettings = async (
     settingsToSave: Array<{
@@ -258,10 +245,44 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   useEffect(() => {
     return () => {
       // Flush any pending updates before unmounting
-      debouncedSave.flush();
-      debouncedSave.cancel();
+      updateDrawNodeData.flush();
+      updateDrawNodeData.cancel();
     };
-  }, [debouncedSave]);
+  }, [updateDrawNodeData]);
+
+  useEffect(() => {
+    const commonData = {
+      title,
+      backgroundColor,
+      textColor,
+      editWidth: nodeWidth,
+      editHeight: nodeHeight
+    };
+
+    const specificData = {
+      drawingData,
+      tags,
+      currentTool,
+      currentColor,
+      currentStrokeWidth,
+      settings: toolSettings
+    };
+
+    updateDrawNodeData({ ...commonData, ...specificData });
+  }, [
+    title,
+    drawingData,
+    backgroundColor,
+    textColor,
+    nodeWidth,
+    nodeHeight,
+    tags,
+    currentTool,
+    currentColor,
+    currentStrokeWidth,
+    toolSettings,
+    updateDrawNodeData
+  ]);
 
   const onChangeTitle = useCallback(
     (newTitle: string) => {
@@ -349,6 +370,41 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     [tags, onRemoveTag, textColor]
   );
 
+  const debouncedSave = useCallback(
+    debounce(async (newDrawingData: string) => {
+      if (newDrawingData === lastSavedContentRef.current) return;
+
+      setIsSaving(true);
+      try {
+        const result = await saveDrawing(id, newDrawingData);
+        if (result?.drawingFileUrl) {
+          lastSavedContentRef.current = newDrawingData;
+          await updateNodeSpecificData(id, 'draw', {
+            drawing_file_url: result.drawingFileUrl,
+            currentTool,
+            currentColor,
+            currentStrokeWidth,
+            settings: toolSettings
+          });
+        }
+      } catch (error) {
+        console.error('Error saving drawing:', error);
+        // Implement retry logic here
+      } finally {
+        setIsSaving(false);
+      }
+    }, 500),
+    [id, currentTool, currentColor, currentStrokeWidth, toolSettings]
+  );
+
+  const handleDrawingChange = useCallback(
+    (newDrawingData: string) => {
+      setDrawingData(newDrawingData);
+      debouncedSave(newDrawingData);
+    },
+    [debouncedSave]
+  );
+
   useEffect(() => {
     return () => {
       if (saveTimeoutRef.current) {
@@ -380,6 +436,10 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [id, drawingData]);
+
+  if (isLoading) {
+    return <div>Loading...</div>; // Or a more sophisticated loading indicator
+  }
 
   return (
     <div
@@ -456,7 +516,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
                 color={currentTool === 'Eraser' ? '#FFFFFF' : currentColor}
                 strokeWidth={currentStrokeWidth}
                 opacity={toolSettings[currentToolIndex]?.opacity ?? 100}
-                onContentChange={debouncedSave}
+                onContentChange={handleDrawingChange}
                 content={drawingData}
               />
             </ResizableArtboardMask>

@@ -32,26 +32,14 @@ const DrawNodeView: React.FC<DrawNodeViewProps> = ({ data, width, height }) => {
 
     const fetchDrawing = async () => {
       try {
+        setIsLoading(true);
         const drawing = await getDrawing(id);
 
         if (!isMounted) return;
 
-        if (!drawing && retryCount === 0) {
+        if (drawing === null) {
           setIsLoading(false);
-          return;
-        }
-
-        if (drawing || retryCount > 0) {
-          setIsLoading(true);
-        }
-
-        if (!drawing && retryCount < MAX_RETRIES) {
-          retryTimeout = setTimeout(
-            () => {
-              setRetryCount((prev) => prev + 1);
-            },
-            Math.pow(2, retryCount) * 1000
-          );
+          setDrawingContent(null);
           return;
         }
 
@@ -62,7 +50,7 @@ const DrawNodeView: React.FC<DrawNodeViewProps> = ({ data, width, height }) => {
 
         if (!isMounted) return;
 
-        if (retryCount > 0 && retryCount < MAX_RETRIES) {
+        if (retryCount < MAX_RETRIES) {
           retryTimeout = setTimeout(
             () => {
               setRetryCount((prev) => prev + 1);
@@ -83,34 +71,6 @@ const DrawNodeView: React.FC<DrawNodeViewProps> = ({ data, width, height }) => {
     };
   }, [id, retryCount]);
 
-  const renderContent = () => {
-    if (isLoading) {
-      return (
-        <span className={styles.loading} style={{ color: textColor }}>
-          Loading...
-        </span>
-      );
-    }
-
-    if (drawingContent) {
-      return (
-        <div className={styles.artboardContainer}>
-          <img
-            src={drawingContent}
-            alt="Drawing"
-            className={styles.previewImage}
-          />
-        </div>
-      );
-    }
-
-    return (
-      <span className={styles.noContent} style={{ color: textColor }}>
-        Click edit to start drawing
-      </span>
-    );
-  };
-
   return (
     <div className={styles.drawNode} style={{ width, height, backgroundColor }}>
       <div className={styles.header}>
@@ -125,7 +85,25 @@ const DrawNodeView: React.FC<DrawNodeViewProps> = ({ data, width, height }) => {
           <FaEdit />
         </div>
       </div>
-      <div className={styles.contentPreview}>{renderContent()}</div>
+      <div className={styles.contentPreview}>
+        {isLoading ? (
+          <span className={styles.loading} style={{ color: textColor }}>
+            Loading...
+          </span>
+        ) : drawingContent ? (
+          <div className={styles.artboardContainer}>
+            <img
+              src={drawingContent}
+              alt="Drawing"
+              className={styles.previewImage}
+            />
+          </div>
+        ) : (
+          <span className={styles.noContent} style={{ color: textColor }}>
+            Click edit to start drawing
+          </span>
+        )}
+      </div>
       <Handle
         type="target"
         position={Position.Top}
