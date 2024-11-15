@@ -32,7 +32,6 @@ import {
   handleDuplicate
 } from '@/ui/nodes/common/CommonNodeFunctions';
 import { useBackgroundColorChange } from '@/ui/nodes/common/useBackgroundColorChange';
-import { debounce } from 'lodash';
 import useNodeStore from '@/app/store/nodes/useNodeStore';
 import useCanvasStore from '@/app/store/canvas/useCanvasStore';
 import { useInitializeTools } from './toolInitialization';
@@ -136,7 +135,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     [handleBackgroundColorChange]
   );
 
-  const updateNode = useNodeStore((state) => state.updateNode);
   const { bringNodeToFront } = useNodeStore();
 
   useEffect(() => {
@@ -144,66 +142,49 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   }, [data.id, bringNodeToFront]);
 
   const [isSaving, setIsSaving] = useState(false);
-  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const saveQueueRef = useRef<Promise<void>>(Promise.resolve());
+  const versionRef = useRef(0);
 
   const updateDrawNodeData = useCallback(
-    debounce(async (newData: Partial<Record<string, unknown>>) => {
-      setIsSaving(true);
-      try {
-        if (newData.drawingData) {
-          const result = await handleDrawingUpdate(
-            data.id,
-            newData.drawingData as string,
-            {
+    async (newData: Partial<Record<string, unknown>>) => {
+      const currentVersion = ++versionRef.current;
+
+      saveQueueRef.current = saveQueueRef.current.then(async () => {
+        if (currentVersion !== versionRef.current) return;
+
+        setIsSaving(true);
+        try {
+          if (newData.drawingData) {
+            const currentDrawing = await getDrawing(data.id);
+            if (currentDrawing && currentDrawing !== newData.drawingData) {
+              console.warn('Drawing conflict detected');
+            }
+
+            await handleDrawingUpdate(data.id, newData.drawingData as string, {
               currentTool,
               currentColor,
               currentStrokeWidth,
               settings: toolSettings
+            });
+
+            const savedDrawing = await getDrawing(data.id);
+            if (savedDrawing !== newData.drawingData) {
+              throw new Error('Save verification failed');
             }
-          );
-
-          if (result) {
-            await updateNode(
-              data.id,
-              {
-                data: {
-                  ...data,
-                  ...newData,
-                  drawingFileUrl: result.drawingFileUrl
-                }
-              },
-              canvasId
-            );
           }
+        } catch (error) {
+          console.error('Error updating draw node:', error);
+          throw error;
+        } finally {
+          setIsSaving(false);
         }
-      } catch (error) {
-        console.error('Error updating draw node:', error);
-      } finally {
-        if (saveTimeoutRef.current) {
-          clearTimeout(saveTimeoutRef.current);
-        }
-        const timeout = setTimeout(() => setIsSaving(false), 500);
-        saveTimeoutRef.current = timeout;
-      }
-    }, 500),
-    [
-      data.id,
-      updateNode,
-      canvasId,
-      currentTool,
-      currentColor,
-      currentStrokeWidth,
-      toolSettings
-    ]
-  );
+      });
 
-  useEffect(() => {
-    return () => {
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current);
-      }
-    };
-  }, []);
+      return saveQueueRef.current;
+    },
+    [data.id, currentTool, currentColor, currentStrokeWidth, toolSettings]
+  );
 
   useEffect(() => {
     const loadDrawNodeData = async () => {
@@ -282,13 +263,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   };
 
   useEffect(() => {
-    return () => {
-      updateDrawNodeData.flush();
-      updateDrawNodeData.cancel();
-    };
-  }, [updateDrawNodeData]);
-
-  useEffect(() => {
     const commonData = {
       title,
       backgroundColor,
@@ -306,7 +280,9 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
       settings: toolSettings
     };
 
-    updateDrawNodeData({ ...commonData, ...specificData });
+    updateDrawNodeData({ ...commonData, ...specificData }).catch((error) => {
+      console.error('Failed to update draw node data:', error);
+    });
   }, [
     title,
     drawingData,
@@ -408,9 +384,25 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     [tags, onRemoveTag, textColor]
   );
 
+  const backupDrawing = useCallback(
+    (drawingData: string) => {
+      try {
+        localStorage.setItem(`drawing_backup_${id}`, drawingData);
+        localStorage.setItem(
+          `drawing_backup_${id}_timestamp`,
+          Date.now().toString()
+        );
+      } catch (error) {
+        console.error('Error backing up drawing:', error);
+      }
+    },
+    [id]
+  );
+
   const handleDrawingChange = useCallback(
     (newDrawingData: string) => {
       setDrawingData(newDrawingData);
+      backupDrawing(newDrawingData);
       updateDrawNodeData({
         drawingData: newDrawingData,
         currentTool,
@@ -424,32 +416,19 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
       currentTool,
       currentColor,
       currentStrokeWidth,
-      toolSettings
+      toolSettings,
+      backupDrawing
     ]
   );
 
   useEffect(() => {
-    const handleVisibilityChange = async () => {
-      if (document.visibilityState === 'visible') {
-        try {
-          const currentDrawing = await getDrawing(id);
-          if (currentDrawing && currentDrawing !== drawingData) {
-            setDrawingData(currentDrawing);
-            if (artboardRef.current) {
-              artboardRef.current.loadContent(currentDrawing);
-            }
-          }
-        } catch (error) {
-          console.error('Error syncing drawing:', error);
-        }
-      }
+    const handleOnline = () => {
+      handleDrawingChange(drawingData);
     };
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [id, drawingData]);
+    window.addEventListener('online', handleOnline);
+    return () => window.removeEventListener('online', handleOnline);
+  }, [handleDrawingChange, drawingData]);
 
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -462,6 +441,26 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [isSaving]);
+
+  useEffect(() => {
+    const checkAndRestoreBackup = async () => {
+      const backupData = localStorage.getItem(`drawing_backup_${id}`);
+      if (backupData && !drawingData) {
+        const timestamp = localStorage.getItem(
+          `drawing_backup_${id}_timestamp`
+        );
+        const isRecent =
+          timestamp && Date.now() - parseInt(timestamp) < 86400000; // 24 hours
+
+        if (isRecent) {
+          setDrawingData(backupData);
+          await updateDrawNodeData({ drawingData: backupData });
+        }
+      }
+    };
+
+    checkAndRestoreBackup();
+  }, [id, drawingData, updateDrawNodeData]);
 
   if (isLoading) {
     return <div>Loading...</div>; // Or a more sophisticated loading indicator
