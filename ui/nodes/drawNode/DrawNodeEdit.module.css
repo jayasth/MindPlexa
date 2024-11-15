@@ -205,3 +205,15 @@
 .nowheel::-webkit-scrollbar {
   display: none; /* Safari and Chrome */
 }
+
+.saveStatus {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  z-index: 1000;
+}

@@ -25,6 +25,7 @@ export interface ArtboardRef {
   getImageAsDataUri: (type?: string) => string | undefined;
   getImageAsSVG: () => string;
   clear: () => void;
+  loadContent: (content: string) => void;
   canvas: HTMLCanvasElement | null;
 }
 
@@ -68,6 +69,8 @@ const Artboard = forwardRef<ArtboardRef, ArtboardProps>(
         drawingLayerRef.current?.getImageAsDataUri(type),
       getImageAsSVG: () => drawingLayerRef.current?.getImageAsSVG() || '',
       clear: () => drawingLayerRef.current?.clear(),
+      loadContent: (content: string) =>
+        drawingLayerRef.current?.loadContent(content),
       get canvas() {
         return drawingLayerRef.current?.canvas || null;
       }

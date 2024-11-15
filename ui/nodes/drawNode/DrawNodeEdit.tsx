@@ -41,7 +41,7 @@ import {
   updateNodeSpecificData,
   getNodeSpecificData
 } from '@/utils/canvas/nodeSpecificDataService';
-import { saveDrawing } from '@/utils/canvas/drawNodeService';
+import { saveDrawing, getDrawing } from '@/utils/canvas/drawNodeService';
 
 interface DrawNodeEditProps extends NodeProps {
   data: {
@@ -119,6 +119,9 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   );
 
   const artboardRef = useRef<ArtboardRef | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastSavedContentRef = useRef<string | null>(null);
 
   const handleBackgroundColorChange = useBackgroundColorChange(
     data.id,
@@ -367,12 +370,15 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     [tags, onRemoveTag, textColor]
   );
 
-  const handleDrawingChange = useCallback(
-    async (newDrawingData: string) => {
-      setDrawingData(newDrawingData);
+  const debouncedSave = useCallback(
+    debounce(async (newDrawingData: string) => {
+      if (newDrawingData === lastSavedContentRef.current) return;
+
+      setIsSaving(true);
       try {
         const result = await saveDrawing(id, newDrawingData);
         if (result?.drawingFileUrl) {
+          lastSavedContentRef.current = newDrawingData;
           await updateNodeSpecificData(id, 'draw', {
             drawing_file_url: result.drawingFileUrl,
             currentTool,
@@ -382,12 +388,54 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
           });
         }
       } catch (error) {
-        console.error('Error updating drawing:', error);
-        // Add error handling here, e.g., display an error message to the user.
+        console.error('Error saving drawing:', error);
+        // Implement retry logic here
+      } finally {
+        setIsSaving(false);
       }
-    },
+    }, 500),
     [id, currentTool, currentColor, currentStrokeWidth, toolSettings]
   );
+
+  const handleDrawingChange = useCallback(
+    (newDrawingData: string) => {
+      setDrawingData(newDrawingData);
+      debouncedSave(newDrawingData);
+    },
+    [debouncedSave]
+  );
+
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+      debouncedSave.cancel();
+    };
+  }, [debouncedSave]);
+
+  useEffect(() => {
+    const handleVisibilityChange = async () => {
+      if (document.visibilityState === 'visible') {
+        try {
+          const currentDrawing = await getDrawing(id);
+          if (currentDrawing && currentDrawing !== drawingData) {
+            setDrawingData(currentDrawing);
+            if (artboardRef.current) {
+              artboardRef.current.loadContent(currentDrawing);
+            }
+          }
+        } catch (error) {
+          console.error('Error syncing drawing:', error);
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [id, drawingData]);
 
   if (isLoading) {
     return <div>Loading...</div>; // Or a more sophisticated loading indicator
@@ -447,6 +495,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         nodeId={id}
       />
       <div className={styles.drawContent}>
+        {isSaving && <div className={styles.saveStatus}>Saving...</div>}
         <DrawNodeSidebar
           tools={tools}
           currentToolIndex={currentToolIndex}
