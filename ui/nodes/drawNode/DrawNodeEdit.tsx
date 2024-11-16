@@ -434,6 +434,46 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
       );
       if (!confirm) return;
     }
+
+    // If there are pending changes, force a final save
+    if (hasUnsavedChanges || isSaving) {
+      try {
+        setIsSaving(true);
+        const result = await saveDrawing(id, drawingData);
+
+        if (result?.drawingFileUrl) {
+          await updateNodeSpecificData(id, 'draw', {
+            drawing_file_url: result.drawingFileUrl,
+            currentTool,
+            currentColor,
+            currentStrokeWidth,
+            settings: toolSettings
+          });
+
+          // Verify the save
+          const verificationData = await getNodeSpecificData(id, 'draw');
+          if (verificationData?.drawing_file_url !== result.drawingFileUrl) {
+            console.error('Final save verification failed');
+            const continueAnyway = window.confirm(
+              'There might be unsaved changes. Continue anyway?'
+            );
+            if (!continueAnyway) return;
+          }
+        }
+      } catch (error) {
+        console.error('Error during final save:', error);
+        const continueAnyway = window.confirm(
+          'Failed to save changes. Continue anyway?'
+        );
+        if (!continueAnyway) return;
+      } finally {
+        setIsSaving(false);
+      }
+    }
+
+    // Wait a brief moment to ensure storage sync
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
     handleClose(data.id, () => {}, title, { drawingData }, canvasId);
   };
 

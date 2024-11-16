@@ -22,32 +22,72 @@ const DrawNodeView: React.FC<DrawNodeViewProps> = ({ data, width, height }) => {
   const { title, id, backgroundColor, textColor } = data;
   const [drawingContent, setDrawingContent] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [retryCount, setRetryCount] = useState(0);
   const toggleEditMode = useNodeStore((state) => state.toggleEditMode);
+  const maxRetries = 3;
+  const retryDelay = 1000; // 1 second
 
   useEffect(() => {
     let isMounted = true;
+    let retryTimeout: NodeJS.Timeout;
+
     const fetchDrawing = async () => {
       try {
         const drawing = await getDrawing(id);
         if (isMounted) {
-          setDrawingContent(drawing);
-          setIsLoading(false);
+          if (drawing) {
+            setDrawingContent(drawing);
+            setIsLoading(false);
+          } else if (retryCount < maxRetries) {
+            // If no drawing found, retry after delay
+            retryTimeout = setTimeout(() => {
+              setRetryCount((prev) => prev + 1);
+            }, retryDelay);
+          } else {
+            setIsLoading(false);
+          }
         }
       } catch (error) {
-        // Only log error if it's not a 404 (drawing doesn't exist yet)
         if (!(error instanceof Error && error.message.includes('404'))) {
           console.error('Error fetching drawing:', error);
         }
-        if (isMounted) {
+        if (isMounted && retryCount < maxRetries) {
+          retryTimeout = setTimeout(() => {
+            setRetryCount((prev) => prev + 1);
+          }, retryDelay);
+        } else {
           setIsLoading(false);
         }
       }
     };
 
     fetchDrawing();
+
     return () => {
       isMounted = false;
+      if (retryTimeout) {
+        clearTimeout(retryTimeout);
+      }
     };
+  }, [id, retryCount]);
+
+  // Refresh content when switching back to view mode
+  useEffect(() => {
+    const refreshDrawing = async () => {
+      setIsLoading(true);
+      try {
+        const drawing = await getDrawing(id);
+        if (drawing) {
+          setDrawingContent(drawing);
+        }
+      } catch (error) {
+        console.error('Error refreshing drawing:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    refreshDrawing();
   }, [id]);
 
   return (
@@ -75,6 +115,12 @@ const DrawNodeView: React.FC<DrawNodeViewProps> = ({ data, width, height }) => {
               src={drawingContent}
               alt="Drawing"
               className={styles.previewImage}
+              onError={() => {
+                // If image fails to load, try refreshing
+                if (retryCount < maxRetries) {
+                  setRetryCount((prev) => prev + 1);
+                }
+              }}
             />
           </div>
         ) : (
