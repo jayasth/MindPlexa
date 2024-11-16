@@ -14,6 +14,7 @@ interface Props
   label?: string;
   type?: string;
   rows?: number;
+  onKeyPress?: (e: React.KeyboardEvent) => void;
 }
 
 const Input = (props: Props) => {
@@ -25,6 +26,7 @@ const Input = (props: Props) => {
     id,
     type = 'text',
     rows,
+    onKeyPress,
     ...rest
   } = props;
 
@@ -68,6 +70,7 @@ const Input = (props: Props) => {
         autoCorrect="off"
         autoCapitalize="off"
         spellCheck="false"
+        onKeyPress={onKeyPress}
         {...rest}
       />
     </div>

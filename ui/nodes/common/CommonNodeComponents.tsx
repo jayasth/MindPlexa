@@ -77,12 +77,21 @@ export const TagModal = ({
   const [newTags, setNewTags] = useState('');
 
   const handleAddTags = async () => {
+    if (!newTags.trim()) return;
+
     const tagList = newTags
       .split(',')
       .map((tag) => tag.trim())
       .filter((tag) => tag !== '');
     onAddTag(tagList);
     setNewTags('');
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAddTags();
+    }
   };
 
   return (
@@ -94,6 +103,7 @@ export const TagModal = ({
         onChange={(value) => setNewTags(value)}
         placeholder="Enter tags, separated by commas"
         className={styles.input}
+        onKeyPress={handleKeyPress}
       />
       <Button variant="slim" onClick={handleAddTags} className={styles.button}>
         Add Tags
