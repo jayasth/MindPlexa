@@ -367,26 +367,84 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     [tags, onRemoveTag, textColor]
   );
 
+  const [isSaving, setIsSaving] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const saveTimeoutRef = useRef<NodeJS.Timeout>();
+
   const handleDrawingChange = useCallback(
     async (newDrawingData: string) => {
       setDrawingData(newDrawingData);
-      try {
-        const result = await saveDrawing(id, newDrawingData);
-        if (result?.drawingFileUrl) {
-          await updateNodeSpecificData(id, 'draw', {
-            drawing_file_url: result.drawingFileUrl,
-            currentTool,
-            currentColor,
-            currentStrokeWidth,
-            settings: toolSettings
-          });
-        }
-      } catch (error) {
-        console.error('Error updating drawing:', error);
-        // Add error handling here, e.g., display an error message to the user.
+      setHasUnsavedChanges(true);
+
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
       }
+
+      saveTimeoutRef.current = setTimeout(async () => {
+        try {
+          setIsSaving(true);
+          const result = await saveDrawing(id, newDrawingData);
+
+          if (result?.drawingFileUrl) {
+            await updateNodeSpecificData(id, 'draw', {
+              drawing_file_url: result.drawingFileUrl,
+              currentTool,
+              currentColor,
+              currentStrokeWidth,
+              settings: toolSettings
+            });
+
+            // Verify the save was successful by fetching the latest data
+            const verificationData = await getNodeSpecificData(id, 'draw');
+            if (verificationData?.drawing_file_url === result.drawingFileUrl) {
+              setHasUnsavedChanges(false);
+            } else {
+              console.error('Save verification failed - data mismatch');
+              setHasUnsavedChanges(true); // Keep marked as unsaved
+            }
+          }
+        } catch (error) {
+          console.error('Error saving drawing:', error);
+          setHasUnsavedChanges(true); // Keep marked as unsaved
+        } finally {
+          setIsSaving(false);
+        }
+      }, 500);
     },
     [id, currentTool, currentColor, currentStrokeWidth, toolSettings]
+  );
+
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = '';
+        return '';
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasUnsavedChanges]);
+
+  const handleCloseWithCheck = async () => {
+    if (hasUnsavedChanges) {
+      const confirm = window.confirm(
+        'You have unsaved changes. Are you sure you want to close?'
+      );
+      if (!confirm) return;
+    }
+    handleClose(data.id, () => {}, title, { drawingData }, canvasId);
+  };
+
+  const SavingIndicator = () => (
+    <div className={styles.savingIndicator} style={{ color: textColor }}>
+      {isSaving
+        ? 'Saving...'
+        : hasUnsavedChanges
+          ? 'Unsaved changes'
+          : 'All changes saved'}
+    </div>
   );
 
   if (isLoading) {
@@ -416,11 +474,8 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
           className={`${styles.titleInput} nodrag`}
           style={{ color: textColor }}
         />
-        <CloseButton
-          onClick={() =>
-            handleClose(data.id, () => {}, title, { drawingData }, canvasId)
-          }
-        />
+        <SavingIndicator />
+        <CloseButton onClick={handleCloseWithCheck} />
       </div>
       <DrawNodeTopbar
         download={() => artboardRef.current?.download()}

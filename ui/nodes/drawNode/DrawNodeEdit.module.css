@@ -205,3 +205,8 @@
 .nowheel::-webkit-scrollbar {
   display: none; /* Safari and Chrome */
 }
+.savingIndicator {
+  font-size: 12px;
+  margin-right: 10px;
+  opacity: 0.7;
+}
