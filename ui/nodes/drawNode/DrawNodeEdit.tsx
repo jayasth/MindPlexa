@@ -32,6 +32,7 @@ import {
   handleDuplicate
 } from '@/ui/nodes/common/CommonNodeFunctions';
 import { useBackgroundColorChange } from '@/ui/nodes/common/useBackgroundColorChange';
+import { debounce } from 'lodash';
 import useNodeStore from '@/app/store/nodes/useNodeStore';
 import useCanvasStore from '@/app/store/canvas/useCanvasStore';
 import { useInitializeTools } from './toolInitialization';
@@ -40,10 +41,7 @@ import {
   updateNodeSpecificData,
   getNodeSpecificData
 } from '@/utils/canvas/nodeSpecificDataService';
-import {
-  handleDrawingUpdate,
-  getDrawing
-} from '@/utils/canvas/drawNodeService';
+import { saveDrawing } from '@/utils/canvas/drawNodeService';
 
 interface DrawNodeEditProps extends NodeProps {
   data: {
@@ -135,55 +133,34 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     [handleBackgroundColorChange]
   );
 
+  const updateNode = useNodeStore((state) => state.updateNode);
   const { bringNodeToFront } = useNodeStore();
 
   useEffect(() => {
     bringNodeToFront(data.id);
   }, [data.id, bringNodeToFront]);
 
-  const [isSaving, setIsSaving] = useState(false);
-
-  const saveQueueRef = useRef<Promise<void>>(Promise.resolve());
-  const versionRef = useRef(0);
-
   const updateDrawNodeData = useCallback(
-    async (newData: Partial<Record<string, unknown>>) => {
-      const currentVersion = ++versionRef.current;
-
-      saveQueueRef.current = saveQueueRef.current.then(async () => {
-        if (currentVersion !== versionRef.current) return;
-
-        setIsSaving(true);
-        try {
-          if (newData.drawingData) {
-            const currentDrawing = await getDrawing(data.id);
-            if (currentDrawing && currentDrawing !== newData.drawingData) {
-              console.warn('Drawing conflict detected');
-            }
-
-            await handleDrawingUpdate(data.id, newData.drawingData as string, {
-              currentTool,
-              currentColor,
-              currentStrokeWidth,
-              settings: toolSettings
-            });
-
-            const savedDrawing = await getDrawing(data.id);
-            if (savedDrawing !== newData.drawingData) {
-              throw new Error('Save verification failed');
-            }
-          }
-        } catch (error) {
-          console.error('Error updating draw node:', error);
-          throw error;
-        } finally {
-          setIsSaving(false);
-        }
-      });
-
-      return saveQueueRef.current;
-    },
-    [data.id, currentTool, currentColor, currentStrokeWidth, toolSettings]
+    debounce(async (newData: Partial<Record<string, unknown>>) => {
+      try {
+        // Combine both updates into a single transaction
+        await Promise.all([
+          updateNode(data.id, { data: { ...data, ...newData } }, canvasId),
+          updateNodeSpecificData(id, 'draw', {
+            drawing_file_url: newData.drawingData
+              ? await saveDrawing(id, newData.drawingData as string)
+              : undefined,
+            current_tool: newData.currentTool,
+            current_color: newData.currentColor,
+            current_stroke_width: newData.currentStrokeWidth,
+            settings: newData.settings
+          })
+        ]);
+      } catch (error) {
+        console.error('Error updating draw node:', error);
+      }
+    }, 300), // Reduce debounce time
+    [data.id, updateNode, canvasId]
   );
 
   useEffect(() => {
@@ -263,6 +240,14 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
   };
 
   useEffect(() => {
+    return () => {
+      // Flush any pending updates before unmounting
+      updateDrawNodeData.flush();
+      updateDrawNodeData.cancel();
+    };
+  }, [updateDrawNodeData]);
+
+  useEffect(() => {
     const commonData = {
       title,
       backgroundColor,
@@ -280,9 +265,7 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
       settings: toolSettings
     };
 
-    updateDrawNodeData({ ...commonData, ...specificData }).catch((error) => {
-      console.error('Failed to update draw node data:', error);
-    });
+    updateDrawNodeData({ ...commonData, ...specificData });
   }, [
     title,
     drawingData,
@@ -384,83 +367,27 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
     [tags, onRemoveTag, textColor]
   );
 
-  const backupDrawing = useCallback(
-    (drawingData: string) => {
-      try {
-        localStorage.setItem(`drawing_backup_${id}`, drawingData);
-        localStorage.setItem(
-          `drawing_backup_${id}_timestamp`,
-          Date.now().toString()
-        );
-      } catch (error) {
-        console.error('Error backing up drawing:', error);
-      }
-    },
-    [id]
-  );
-
   const handleDrawingChange = useCallback(
-    (newDrawingData: string) => {
+    async (newDrawingData: string) => {
       setDrawingData(newDrawingData);
-      backupDrawing(newDrawingData);
-      updateDrawNodeData({
-        drawingData: newDrawingData,
-        currentTool,
-        currentColor,
-        currentStrokeWidth,
-        settings: toolSettings
-      });
-    },
-    [
-      updateDrawNodeData,
-      currentTool,
-      currentColor,
-      currentStrokeWidth,
-      toolSettings,
-      backupDrawing
-    ]
-  );
-
-  useEffect(() => {
-    const handleOnline = () => {
-      handleDrawingChange(drawingData);
-    };
-
-    window.addEventListener('online', handleOnline);
-    return () => window.removeEventListener('online', handleOnline);
-  }, [handleDrawingChange, drawingData]);
-
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (isSaving) {
-        e.preventDefault();
-        e.returnValue = '';
-      }
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [isSaving]);
-
-  useEffect(() => {
-    const checkAndRestoreBackup = async () => {
-      const backupData = localStorage.getItem(`drawing_backup_${id}`);
-      if (backupData && !drawingData) {
-        const timestamp = localStorage.getItem(
-          `drawing_backup_${id}_timestamp`
-        );
-        const isRecent =
-          timestamp && Date.now() - parseInt(timestamp) < 86400000; // 24 hours
-
-        if (isRecent) {
-          setDrawingData(backupData);
-          await updateDrawNodeData({ drawingData: backupData });
+      try {
+        const result = await saveDrawing(id, newDrawingData);
+        if (result?.drawingFileUrl) {
+          await updateNodeSpecificData(id, 'draw', {
+            drawing_file_url: result.drawingFileUrl,
+            currentTool,
+            currentColor,
+            currentStrokeWidth,
+            settings: toolSettings
+          });
         }
+      } catch (error) {
+        console.error('Error updating drawing:', error);
+        // Add error handling here, e.g., display an error message to the user.
       }
-    };
-
-    checkAndRestoreBackup();
-  }, [id, drawingData, updateDrawNodeData]);
+    },
+    [id, currentTool, currentColor, currentStrokeWidth, toolSettings]
+  );
 
   if (isLoading) {
     return <div>Loading...</div>; // Or a more sophisticated loading indicator
@@ -475,9 +402,6 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
       data-toolbar-background-color={backgroundColor}
       data-toolbar-text-color={textColor}
     >
-      {isSaving && (
-        <div className={styles.saveIndicator}>Saving changes...</div>
-      )}
       <NodeResizer
         isVisible={isContainerSelected}
         minWidth={200}
@@ -503,15 +427,12 @@ const DrawNodeEdit: React.FC<DrawNodeEditProps> = ({
         clear={() => {
           if (artboardRef.current) {
             artboardRef.current.clear();
-            updateDrawNodeData({
-              drawingData:
-                'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjwvc3ZnPg==',
-              currentTool,
-              currentColor,
-              currentStrokeWidth,
-              settings: toolSettings
-            });
           }
+          // After clearing, save an empty drawing
+          saveDrawing(
+            id,
+            'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjwvc3ZnPg=='
+          );
         }}
         backgroundColor={backgroundColor}
         textColor={textColor}

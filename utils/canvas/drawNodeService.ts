@@ -7,44 +7,51 @@ export const saveDrawing = async (nodeId: string, drawingData: string) => {
     typeof drawingData === 'string' &&
     (drawingData.startsWith('data:image/svg+xml;base64,') || drawingData === '')
   ) {
-    try {
-      let svgContent;
-      if (drawingData === '') {
-        svgContent = '<svg xmlns="http://www.w3.org/2000/svg"></svg>';
-      } else {
-        const base64Data = drawingData.split(',')[1];
-        svgContent = atob(base64Data);
-      }
+    let svgContent;
+    if (drawingData === '') {
+      // If drawingData is empty, create an empty SVG
+      svgContent = '<svg xmlns="http://www.w3.org/2000/svg"></svg>';
+    } else {
+      const base64Data = drawingData.split(',')[1];
+      svgContent = atob(base64Data);
+    }
 
-      const blob = new Blob([svgContent], { type: 'image/svg+xml' });
+    const blob = new Blob([svgContent], { type: 'image/svg+xml' });
 
-      const { error } = await supabase.storage
-        .from('drawings')
-        .upload(`${nodeId}.svg`, blob, {
-          contentType: 'image/svg+xml',
-          upsert: true
-        });
+    const { error } = await supabase.storage
+      .from('drawings')
+      .upload(`${nodeId}.svg`, blob, {
+        contentType: 'image/svg+xml',
+        upsert: true
+      });
 
-      if (error) throw error;
-
-      const { data: publicUrlData } = supabase.storage
-        .from('drawings')
-        .getPublicUrl(`${nodeId}.svg`);
-
-      const drawingFileUrl = publicUrlData.publicUrl;
-
-      const { error: updateError } = await supabase
-        .from('draw_nodes')
-        .update({ drawing_file_url: drawingFileUrl })
-        .eq('node_id', nodeId);
-
-      if (updateError) throw updateError;
-
-      return { drawingFileUrl };
-    } catch (error) {
-      console.error('Error in saveDrawing:', error);
+    if (error) {
+      console.error('Error saving drawing:', error);
       return null;
     }
+
+    const { data: publicUrlData } = supabase.storage
+      .from('drawings')
+      .getPublicUrl(`${nodeId}.svg`);
+
+    const drawingFileUrl = publicUrlData.publicUrl;
+
+    const { error: updateError } = await supabase
+      .from('draw_nodes')
+      .update({ drawing_file_url: drawingFileUrl })
+      .eq('node_id', nodeId);
+
+    if (updateError) {
+      console.error('Error updating draw node data:', updateError);
+      return null;
+    }
+
+    if (updateError) {
+      console.error('Error updating draw node data:', updateError);
+      return null;
+    }
+
+    return { drawingFileUrl };
   } else {
     console.error('Invalid drawing data format');
     return null;
@@ -155,55 +162,4 @@ export const removeAllDrawingsForUser = async (userId: string) => {
   }
 
   return true;
-};
-
-export const handleDrawingUpdate = async (
-  nodeId: string,
-  drawingData: string,
-  toolSettings?: {
-    currentTool?: string;
-    currentColor?: string;
-    currentStrokeWidth?: number;
-    settings?: Array<{
-      color: string;
-      strokeWidth: number;
-      opacity: number;
-    }>;
-  },
-  retries = 3
-): Promise<{ drawingFileUrl: string } | null> => {
-  let lastError: Error | null = null;
-
-  for (let i = 0; i < retries; i++) {
-    try {
-      // 1. Save drawing to storage
-      const result = await saveDrawing(nodeId, drawingData);
-      if (!result?.drawingFileUrl) throw new Error('Failed to save drawing');
-
-      // 2. Update draw_nodes table with both drawing URL and tool settings
-      if (toolSettings) {
-        const { error: updateError } = await supabase
-          .from('draw_nodes')
-          .update({
-            drawing_file_url: result.drawingFileUrl,
-            current_tool: toolSettings.currentTool,
-            current_color: toolSettings.currentColor,
-            current_stroke_width: toolSettings.currentStrokeWidth,
-            settings: JSON.stringify(toolSettings.settings)
-          })
-          .eq('node_id', nodeId);
-
-        if (updateError) throw updateError;
-      }
-
-      return { drawingFileUrl: result.drawingFileUrl };
-    } catch (error) {
-      lastError = error instanceof Error ? error : new Error('Unknown error');
-      if (i === retries - 1) break;
-      await new Promise((resolve) => setTimeout(resolve, 1000 * (i + 1)));
-    }
-  }
-
-  if (lastError) throw lastError;
-  return null;
 };

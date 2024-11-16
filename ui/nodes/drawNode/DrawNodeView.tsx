@@ -21,55 +21,34 @@ interface DrawNodeViewProps extends NodeProps {
 const DrawNodeView: React.FC<DrawNodeViewProps> = ({ data, width, height }) => {
   const { title, id, backgroundColor, textColor } = data;
   const [drawingContent, setDrawingContent] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const toggleEditMode = useNodeStore((state) => state.toggleEditMode);
-  const [retryCount, setRetryCount] = useState(0);
-  const MAX_RETRIES = 3;
 
   useEffect(() => {
     let isMounted = true;
-    let retryTimeout: NodeJS.Timeout;
-
     const fetchDrawing = async () => {
       try {
-        setIsLoading(true);
         const drawing = await getDrawing(id);
-
-        if (!isMounted) return;
-
-        if (drawing === null) {
+        if (isMounted) {
+          setDrawingContent(drawing);
           setIsLoading(false);
-          setDrawingContent(null);
-          return;
         }
-
-        setDrawingContent(drawing);
-        setIsLoading(false);
       } catch (error) {
-        console.error('Error fetching drawing:', error);
-
-        if (!isMounted) return;
-
-        if (retryCount < MAX_RETRIES) {
-          retryTimeout = setTimeout(
-            () => {
-              setRetryCount((prev) => prev + 1);
-            },
-            Math.pow(2, retryCount) * 1000
-          );
-        } else {
+        // Only log error if it's not a 404 (drawing doesn't exist yet)
+        if (!(error instanceof Error && error.message.includes('404'))) {
+          console.error('Error fetching drawing:', error);
+        }
+        if (isMounted) {
           setIsLoading(false);
         }
       }
     };
 
     fetchDrawing();
-
     return () => {
       isMounted = false;
-      if (retryTimeout) clearTimeout(retryTimeout);
     };
-  }, [id, retryCount]);
+  }, [id]);
 
   return (
     <div className={styles.drawNode} style={{ width, height, backgroundColor }}>

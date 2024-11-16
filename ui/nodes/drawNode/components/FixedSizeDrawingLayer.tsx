@@ -33,7 +33,6 @@ export interface FixedSizeDrawingLayerRef {
   getImageAsDataUri: (type?: string) => string | undefined;
   getImageAsSVG: () => string;
   canvas: HTMLCanvasElement | null;
-  loadContent: (content: string) => void;
 }
 
 const FixedSizeDrawingLayer = forwardRef<
@@ -182,18 +181,7 @@ const FixedSizeDrawingLayer = forwardRef<
       getImageAsDataUri: (type?: string) => canvasRef.current?.toDataURL(type),
       getImageAsSVG: () =>
         canvasRef.current ? exportSVG(canvasRef.current) : '',
-      canvas: canvasRef.current,
-      loadContent: (content: string) => {
-        if (context && canvasRef.current) {
-          const image = new Image();
-          image.onload = () => {
-            context.clearRect(0, 0, width, height);
-            context.drawImage(image, 0, 0, width, height);
-            history.pushState(canvasRef.current!);
-          };
-          image.src = content;
-        }
-      }
+      canvas: canvasRef.current
     }));
 
     const getCursor = useCallback(() => {
