@@ -87,8 +87,7 @@ type NodeData =
   | DrawNodeData;
 
 export async function parseMermaidCode(
-  aiResponse: AIResponse,
-  projectDetails: string
+  aiResponse: AIResponse
 ): Promise<{ nodes: Node[]; edges: Edge[]; warning?: string }> {
   // Generate Mermaid code from AI response
   const mermaidCode = generateMermaidFromAIResponse(aiResponse);
@@ -96,66 +95,38 @@ export async function parseMermaidCode(
   const filteredCode = removeDoubleQuoteInsideParentheses(
     removeDoubleQuoteInsideBrackets(removeMarkdowncode(mermaidCode))
   );
-  console.log('mermaidGeneratorUtilsV3 Filtered Mermaid Code:', filteredCode);
-
-  let svgCode: { svg: string };
-  let warning: string | undefined;
 
   try {
     mermaid.initialize({ startOnLoad: false });
-    svgCode = await mermaid.render('mermaid-chart', filteredCode);
-  } catch (error: unknown) {
-    console.error('mermaidGeneratorUtilsV3 Mermaid parsing error:', error);
-    warning = 'Error parsing Mermaid code. Using fallback layout.';
-    svgCode = await mermaid.render(
-      'mermaid-chart',
-      `graph TD
-      A[Project::${projectDetails}] --> B[Subtopic 1::No description available]
-      A --> C[Subtopic 2::No description available]`
-    );
-  }
+    const svgCode = await mermaid.render('mermaid-chart', filteredCode);
 
-  try {
     const { nodes, edges } = convertToReactFlowElements(
       svgCode.svg,
       aiResponse.nodes
     );
-    const filteredNodes = nodes.filter(
-      (node) =>
-        node.data.title !== 'Untitled' &&
-        node.data.content !== 'No description available'
-    );
 
-    if (filteredNodes.length === 0) {
-      throw new Error('No valid nodes generated');
-    }
-
-    return { nodes: filteredNodes, edges, warning };
-  } catch (error: unknown) {
-    console.error(
-      'mermaidGeneratorUtilsV3 Error converting to React Flow elements:',
-      error
-    );
-    throw error;
+    return {
+      nodes: nodes.filter(
+        (node) => node.data.title && node.data.title !== 'Untitled'
+      ),
+      edges
+    };
+  } catch (error) {
+    console.error('Mermaid parsing error:', error);
+    throw new Error('Failed to generate layout');
   }
 }
 
 const generateMermaidFromAIResponse = (aiResponse: AIResponse): string => {
   let mermaidCode = 'graph TD\n';
-  const nodeMap = new Map<string, string>();
 
   aiResponse.nodes.forEach((node, index) => {
-    const nodeId = `n${index}`;
-    nodeMap.set(node.data.title, nodeId);
-    mermaidCode += `${nodeId}[${node.data.title}::${node.data.description}]\n`;
+    // Use node type as part of the node styling
+    mermaidCode += `n${index}[${node.data.title}::${node.data.description}]\n`;
   });
 
-  aiResponse.relationships.forEach(({ source, target }) => {
-    const sourceId = nodeMap.get(source);
-    const targetId = nodeMap.get(target);
-    if (sourceId && targetId) {
-      mermaidCode += `${sourceId} --> ${targetId}\n`;
-    }
+  aiResponse.relationships.forEach((rel) => {
+    mermaidCode += `${rel.source} --> ${rel.target}\n`;
   });
 
   return mermaidCode;
