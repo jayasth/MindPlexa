@@ -1,0 +1,147 @@
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1rem;
+}
+
+.textarea {
+  width: 100%;
+  min-height: 150px;
+  padding: 1rem;
+  border: 1px solid var(--light-border);
+  border-radius: 0.5rem;
+  resize: vertical;
+  font-size: 1rem;
+  line-height: 1.5;
+  transition: border-color 0.2s ease;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: var(--light-primary);
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.1);
+}
+
+.error {
+  color: var(--light-error);
+  font-size: 0.9rem;
+  margin-top: -0.5rem;
+}
+
+.intentDisplay {
+  background-color: var(--light-background-secondary);
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  margin: 1rem 0;
+  border: 1px solid var(--light-border);
+}
+
+.intentTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--light-text-primary);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.intentInfo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.25rem;
+}
+
+.intentItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.intentLabel {
+  font-size: 0.875rem;
+  color: var(--light-text-secondary);
+  font-weight: 500;
+}
+
+.intentValue {
+  font-size: 1rem;
+  color: var(--light-text-primary);
+  padding: 0.375rem 0.75rem;
+  background-color: var(--light-background);
+  border-radius: 0.375rem;
+  border: 1px solid var(--light-border);
+}
+
+.nodeTypePreview {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background-color: var(--light-background);
+  border-radius: 0.75rem;
+  border: 1px solid var(--light-border);
+}
+
+.nodeTypeGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.nodeTypeCard {
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  background-color: var(--light-background-secondary);
+  border: 1px solid var(--light-border);
+  transition: transform 0.2s ease;
+}
+
+.nodeTypeCard:hover {
+  transform: translateY(-2px);
+}
+
+.nodeTypeIcon {
+  width: 24px;
+  height: 24px;
+  margin-bottom: 0.5rem;
+}
+
+.nodeTypeName {
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.nodeTypeDescription {
+  font-size: 0.875rem;
+  color: var(--light-text-secondary);
+}
+
+/* Dark mode styles */
+:global(.dark) .textarea {
+  background-color: var(--dark-background);
+  border-color: var(--dark-border);
+  color: var(--dark-text);
+}
+
+:global(.dark) .intentDisplay,
+:global(.dark) .nodeTypePreview {
+  background-color: var(--dark-background-secondary);
+  border-color: var(--dark-border);
+}
+
+:global(.dark) .intentValue,
+:global(.dark) .nodeTypeCard {
+  background-color: var(--dark-background);
+  border-color: var(--dark-border);
+}
+
+:global(.dark) .intentTitle,
+:global(.dark) .nodeTypeName {
+  color: var(--dark-text-primary);
+}
+
+:global(.dark) .intentLabel,
+:global(.dark) .nodeTypeDescription {
+  color: var(--dark-text-secondary);
+}

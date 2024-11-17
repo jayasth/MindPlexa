@@ -1,24 +1,61 @@
+export interface IntentAnalysis {
+  primary:
+    | 'analysis'
+    | 'planning'
+    | 'learning'
+    | 'tracking'
+    | 'brainstorming'
+    | 'documentation'
+    | 'decision';
+  timeframe: 'short' | 'medium' | 'long';
+  complexity: 'simple' | 'detailed' | 'comprehensive';
+  audience: 'self' | 'team' | 'public';
+}
+
+export interface NodeRecommendation {
+  type: 'note' | 'task' | 'calendar' | 'table' | 'draw';
+  purpose: string;
+  data: {
+    title: string;
+    description: string;
+    backgroundColor?: string;
+    tags?: string[];
+    nodeSpecificData?: {
+      tasks?: Array<{ text: string; status: string }>;
+      events?: Array<{ date: string; title: string }>;
+      tableColumns?: string[];
+      tableData?: any[];
+    };
+  };
+}
+
 export const promptTemplateV3 = (userInput: string) => {
-  const [topic, projectDetails] = userInput.split('\nProject Details: ');
+  return `Analyze the following input and create an optimized project structure with appropriate node types:
 
-  return `Generate a comprehensive Mermaid JS flowchart for the MindPlexa project management platform based on the following input:
+"${userInput}"
 
-Main Topic: ${topic}
-Additional Context: ${projectDetails}
+First, analyze the intent and provide a structured response with:
+1. Primary purpose (analysis/planning/learning/tracking/brainstorming/documentation/decision)
+2. Optimal node types for this purpose
+3. Logical structure and relationships
 
-Instructions:
-1. Create a flowchart that starts with the main topic as the root node.
-2. Develop a logical structure with 3-7 main subtopics branching out from the root.
-3. For each main subtopic, create 2-5 child nodes with relevant details.
-4. Each node should follow the format: "NodeID[NodeTitle::NodeDescription]"
-   - NodeTitle should be a concise key point (max 5 words)
-   - NodeDescription should provide more details or elaboration (15-25 words)
-5. Ensure all nodes, including the root node, have meaningful titles and descriptions.
-6. Create coherent connections between nodes that make sense for the topic.
-7. Avoid using any special characters or double quotes in the node text.
-8. Use varied relationships: some nodes may have multiple children, while others may have none.
-9. Consider the project's complexity and structure when creating the hierarchy.
-10. Only include Mermaid JS syntax in your response, no additional text.
+Return response as JSON:
+{
+  "analysis": {
+    "intent": IntentAnalysis,
+    "suggestedLayout": "mindmap" | "workflow" | "concept-map" | "grid" | "hierarchical",
+    "layoutReasoning": string
+  },
+  "nodes": Array<NodeRecommendation>,
+  "relationships": Array<{source: string, target: string}>
+}
 
-Generate a detailed and well-structured Mermaid JS flowchart now:`;
+Consider these node type purposes:
+- Note: Concepts, descriptions, explanations
+- Task: Action items, todos, milestones
+- Calendar: Timelines, schedules, deadlines
+- Table: Data organization, comparisons, metrics
+- Draw: Sketches, diagrams, visual explanations
+
+Ensure each node serves a clear purpose within the overall structure.`;
 };

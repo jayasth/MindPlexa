@@ -20,6 +20,7 @@ import styles from './Toolbar.module.css';
 import { Tooltip } from '@/ui/Tooltip/Tooltip';
 import AIGeneratorModalV1 from '@/ui/ai/generator/AIGeneratorModalV1';
 import AIGeneratorModalV2 from '@/ui/ai/generator/AIGeneratorModalV2';
+import AIGeneratorModalV3 from '@/ui/ai/generator/AIGeneratorModalV3';
 import { ReactFlowInstance } from 'reactflow';
 
 interface ToolbarProps {
@@ -37,6 +38,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
   const [isExpanded, setIsExpanded] = useState(false);
   const [showAIGeneratorV1, setShowAIGeneratorV1] = useState(false);
   const [showAIGeneratorV2, setShowAIGeneratorV2] = useState(false);
+  const [showAIGeneratorV3, setShowAIGeneratorV3] = useState(false);
   const addNode = useNodeStore((state) => state.addNode);
   const nodes = useNodeStore((state) => state.nodes);
   const screenToFlowPosition = useUIStore(
@@ -97,6 +99,10 @@ const Toolbar: React.FC<ToolbarProps> = ({
 
   const handleGenerateAIMapV2 = () => {
     setShowAIGeneratorV2(true);
+  };
+
+  const handleGenerateAIMapV3 = () => {
+    setShowAIGeneratorV3(true);
   };
 
   const buttonClass = `${styles.button} ${isExpanded ? styles.expanded : ''}`;
@@ -225,6 +231,19 @@ const Toolbar: React.FC<ToolbarProps> = ({
                 )}
               </button>
             </Tooltip>
+            <Tooltip content="AI Layout Generator V3 (Experimental)">
+              <button
+                onClick={handleGenerateAIMapV3}
+                className={`${buttonClass} ${styles.toolbarTooltip}`}
+              >
+                <FaRobot size={iconSize} />
+                {isExpanded && (
+                  <span className={styles.buttonText}>
+                    AI Layout Generator V3
+                  </span>
+                )}
+              </button>
+            </Tooltip>
             <div className={styles.separator} />
             <Tooltip content="Download">
               <button
@@ -250,6 +269,12 @@ const Toolbar: React.FC<ToolbarProps> = ({
         <AIGeneratorModalV2
           isOpen={showAIGeneratorV2}
           onClose={() => setShowAIGeneratorV2(false)}
+        />
+      )}
+      {showAIGeneratorV3 && (
+        <AIGeneratorModalV3
+          isOpen={showAIGeneratorV3}
+          onClose={() => setShowAIGeneratorV3(false)}
         />
       )}
     </>
