@@ -215,7 +215,7 @@ const convertToReactFlowElements = (
           ...baseData,
           type: 'task',
           taskData: {
-            items: nodeRec.data.nodeSpecificData?.tasks || [],
+            items: nodeRec.data.tasks || [],
             priority: 'medium',
             due_date: undefined
           }
@@ -227,7 +227,7 @@ const convertToReactFlowElements = (
           ...baseData,
           type: 'calendar',
           calendarData: {
-            events: nodeRec.data.nodeSpecificData?.events || [],
+            events: nodeRec.data.events || [],
             default_view: 'month',
             time_zone: 'UTC'
           }
@@ -239,10 +239,15 @@ const convertToReactFlowElements = (
           ...baseData,
           type: 'table',
           tableData: {
-            columns: nodeRec.data.nodeSpecificData?.tableColumns || [],
-            data: (nodeRec.data.nodeSpecificData?.tableData || []) as Array<
-              Record<string, string | number | boolean>
-            >,
+            columns: nodeRec.data.columns || [],
+            data: (nodeRec.data.rows || []).map((row) =>
+              Object.fromEntries(
+                row.map((cell, i) => [
+                  nodeRec.data.columns?.[i] || `column${i}`,
+                  cell ?? ''
+                ])
+              )
+            ),
             settings: {
               sortable: true,
               filterable: true,
