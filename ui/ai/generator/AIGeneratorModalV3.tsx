@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Edge, Node } from 'reactflow';
-import { parseMermaidCode } from './mermaidGeneratorUtilsV1';
-import { promptTemplateV1 } from '@/app/prompts/generatorPromptV1';
+import { parseMermaidCode } from './mermaidGeneratorUtilsV3';
 import {
   useNodeStore,
   useEdgeStore,
@@ -12,8 +11,8 @@ import Button from '@/ui/Button/Button';
 import ConfirmIntegrationModal from './ConfirmIntegrationModal';
 import Dropdown from '@/ui/dropdown/Dropdown';
 import Modal from '@/ui/Modal/Modal';
-import styles from './AIGeneratorModalV1.module.css';
-import { applyLayout } from '@/ui/ai/generator/aiPositioningUtilsV1';
+import styles from './AIGeneratorModalV3.module.css';
+import { applyLayout } from '@/ui/ai/generator/aiPositioningUtilsV3';
 import { createBulkNodes } from '@/utils/canvas/nodeService';
 import { createEdgeBetweenNodes } from '@/utils/canvas/edgeService';
 import { Database } from '@/types_db';
@@ -21,7 +20,10 @@ import { v4 as uuidv4 } from 'uuid';
 import { FaQuestionCircle } from 'react-icons/fa';
 import { BsLightbulb } from 'react-icons/bs';
 import { useToast } from '@/ui/Toasts/use-toast';
-import { IntentAnalysis } from '@/app/prompts/generatorPromptV3';
+import {
+  IntentAnalysis,
+  NodeRecommendation
+} from '@/app/prompts/generatorPromptV3';
 
 interface AIGeneratorModalV3Props {
   isOpen: boolean;
@@ -72,6 +74,9 @@ const AIGeneratorModalV3: React.FC<AIGeneratorModalV3Props> = ({
   const [intentAnalysis, setIntentAnalysis] = useState<IntentAnalysis | null>(
     null
   );
+  const [nodeRecommendations, setNodeRecommendations] = useState<
+    NodeRecommendation[]
+  >([]);
 
   const resetState = () => {
     setFollowUpAnswer('');
@@ -96,7 +101,6 @@ const AIGeneratorModalV3: React.FC<AIGeneratorModalV3Props> = ({
     e.preventDefault();
     setIsLoading(true);
     setErrorMessage(null);
-    setIsResponseReady(false);
 
     try {
       const response = await fetch('/api/completion', {
@@ -107,7 +111,7 @@ const AIGeneratorModalV3: React.FC<AIGeneratorModalV3Props> = ({
           version: 'v3',
           model: selectedModel,
           followUpQuestion: followUpAnswer,
-          existingMermaidCode: ''
+          layout: selectedLayout
         })
       });
 
@@ -115,6 +119,22 @@ const AIGeneratorModalV3: React.FC<AIGeneratorModalV3Props> = ({
 
       if (data.analysis?.intent) {
         setIntentAnalysis(data.analysis.intent);
+      }
+
+      if (data.nodes) {
+        setNodeRecommendations(data.nodes);
+        const { nodes, edges } = await parseMermaidCode(
+          data.nodes,
+          data.relationships
+        );
+
+        if (existingNodes.length > 0) {
+          setGeneratedNodes(nodes);
+          setGeneratedEdges(edges);
+          setShowConfirmModal(true);
+        } else {
+          handleConfirmIntegration(nodes, edges);
+        }
       }
 
       if (!response.ok) {
@@ -126,22 +146,7 @@ const AIGeneratorModalV3: React.FC<AIGeneratorModalV3Props> = ({
       setResponseType(data.responseType);
       setResponseContent(data.content);
 
-      if (data.responseType === 'flowchart') {
-        const { nodes, edges, warning } = await parseMermaidCode(
-          data.content,
-          projectConcept
-        );
-        if (warning) {
-          setErrorMessage(warning);
-        }
-        if (existingNodes.length > 0) {
-          setGeneratedNodes(nodes);
-          setGeneratedEdges(edges);
-          setShowConfirmModal(true);
-        } else {
-          handleConfirmIntegration(nodes, edges);
-        }
-      } else if (data.responseType === 'advice') {
+      if (data.responseType === 'advice') {
         setErrorMessage(null);
       } else if (data.responseType === 'followUp') {
         setFollowUpCount((prevCount) => prevCount + 1);
@@ -278,31 +283,59 @@ const AIGeneratorModalV3: React.FC<AIGeneratorModalV3Props> = ({
     setIsResponseReady(true);
   };
 
+  const renderNodeSpecificData = (node: NodeRecommendation) => {
+    switch (node.type) {
+      case 'task':
+        return (
+          <div className={styles.taskList}>
+            {node.data.nodeSpecificData?.tasks?.map((task, index) => (
+              <div key={index} className={styles.taskItem}>
+                <span className={styles.taskStatus}>{task.status}</span>
+                <span className={styles.taskText}>{task.text}</span>
+              </div>
+            ))}
+          </div>
+        );
+      case 'calendar':
+        return (
+          <div className={styles.eventList}>
+            {node.data.nodeSpecificData?.events?.map((event, index) => (
+              <div key={index} className={styles.eventItem}>
+                <span className={styles.eventDate}>{event.date}</span>
+                <span className={styles.eventTitle}>{event.title}</span>
+              </div>
+            ))}
+          </div>
+        );
+      // Add other node type renderers as needed
+      default:
+        return null;
+    }
+  };
+
   const renderGeneratedContent = () => {
-    if (!isResponseReady || responseType !== 'noIntegration') return null;
+    if (!nodeRecommendations.length) return null;
 
     return (
       <div className={styles.generatedContentContainer}>
         <h3 className={styles.sectionTitle}>Generated Project Structure</h3>
         <div className={styles.generatedContent}>
-          {responseContent.split('\n').map((line, index) => {
-            if (line.includes('::')) {
-              const [title, description] = line.split('::');
-              return (
-                <div key={index} className={styles.nodeContent}>
-                  <h4 className={styles.nodeTitle}>{title.trim()}</h4>
-                  <p className={styles.nodeDescription}>{description.trim()}</p>
+          {nodeRecommendations.map((node, index) => (
+            <div key={index} className={styles.nodeContent}>
+              <div className={styles.nodeHeader}>
+                <h4 className={styles.nodeTitle}>{node.data.title}</h4>
+                <span className={styles.nodeType}>{node.type}</span>
+              </div>
+              <p className={styles.nodeDescription}>{node.data.description}</p>
+              {node.data.nodeSpecificData && (
+                <div className={styles.nodeSpecificData}>
+                  {renderNodeSpecificData(node)}
                 </div>
-              );
-            }
-            return null;
-          })}
+              )}
+            </div>
+          ))}
         </div>
-        <Button
-          onClick={copyGeneratedOutput}
-          className={styles.copyButton}
-          variant="slim"
-        >
+        <Button onClick={copyGeneratedOutput} className={styles.copyButton}>
           Copy Content
         </Button>
       </div>
@@ -389,7 +422,7 @@ const AIGeneratorModalV3: React.FC<AIGeneratorModalV3Props> = ({
       <Modal
         isOpen={isOpen && !showConfirmModal}
         onClose={onClose}
-        title="Smart AI Project Architect"
+        title="AI Project Architect V3"
       >
         <div className={styles.content}>
           <form onSubmit={handleGenerateCanvas}>
