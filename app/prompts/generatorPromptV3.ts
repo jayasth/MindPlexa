@@ -12,42 +12,58 @@ export interface IntentAnalysis {
   audience: 'self' | 'team' | 'public';
 }
 
-type TableCellValue = string | number | boolean | null;
+export interface NodeData {
+  title: string;
+  description: string;
+  backgroundColor?: string;
+  tags?: string[];
+}
+
+export interface NoteData extends NodeData {
+  content: string;
+}
+
+export interface TaskData extends NodeData {
+  tasks: Array<{ text: string; status: 'todo' | 'in-progress' | 'done' }>;
+}
+
+export interface CalendarData extends NodeData {
+  events: Array<{ title: string; date: string; description?: string }>;
+}
+
+export interface TableData extends NodeData {
+  columns: string[];
+  rows: (string | number | boolean | null)[][];
+}
+
+export interface DrawData extends NodeData {
+  drawingData?: string;
+}
 
 export interface NodeRecommendation {
   id: string;
   type: 'note' | 'task' | 'calendar' | 'table' | 'draw';
-  data: {
-    title: string;
-    description: string;
-    backgroundColor?: string;
-    tags?: string[];
-    content?: string;
-    tasks?: Array<{ text: string; status: 'todo' }>;
-    events?: Array<{ title: string; date: string }>;
-    columns?: string[];
-    rows?: TableCellValue[][];
-  };
+  data: NoteData | TaskData | CalendarData | TableData | DrawData;
 }
 
 export const promptTemplateV3 = (
   userInput: string,
   layoutType: string = 'mindmap'
 ) => {
-  return `Analyze this project concept and create an optimized structure with appropriate node types:
+  return `As an AI assistant for MindPlexa, analyze this project concept and create an optimized structure:
 
 "${userInput}"
 
-First, analyze the intent and requirements. Then, create a structured layout using the most suitable node types for each component.
+First, determine the project's intent and characteristics. Then, create a structured layout using appropriate node types for each component.
 
-Available node types:
-- note: For information, descriptions, explanations
-- task: For actionable items with status tracking
-- calendar: For time-sensitive events and deadlines
-- table: For structured data, comparisons, metrics
-- draw: For sketches, diagrams, visual explanations
+Available Node Types and Their Purposes:
+1. Note: For information, concepts, descriptions (content as formatted text)
+2. Task: For actionable items (with todo/in-progress/done status)
+3. Calendar: For scheduling, deadlines, milestones (with dates)
+4. Table: For structured data, comparisons, metrics (with columns/rows)
+5. Draw: For sketches, diagrams (placeholder for now)
 
-Provide your response in this JSON format:
+Response Format (JSON):
 {
   "analysis": {
     "intent": {
@@ -59,39 +75,40 @@ Provide your response in this JSON format:
   },
   "nodes": [
     {
-      "id": "string",
+      "id": "unique_string",
       "type": "note" | "task" | "calendar" | "table" | "draw",
       "data": {
         "title": "string (max 50 chars)",
         "description": "string (max 200 chars)",
-        "backgroundColor": "string (optional)",
-        "tags": ["string"] (optional),
-        // Type-specific data
-        "content": "string (for note)",
-        "tasks": [{"text": "string", "status": "todo"}] (for task),
-        "events": [{"title": "string", "date": "string"}] (for calendar),
-        "columns": ["string"] (for table),
-        "rows": [[any]] (for table)
+        "backgroundColor": "optional hex color",
+        "tags": ["optional_tags"],
+        
+        // Type-specific data (include only relevant field based on type)
+        "content": "string for note type",
+        "tasks": [{"text": "string", "status": "todo"}],
+        "events": [{"title": "string", "date": "YYYY-MM-DD"}],
+        "columns": ["column names for table"],
+        "rows": [["table data"]]
       }
     }
   ],
   "relationships": [
     {
-      "source": "string (nodeId)",
-      "target": "string (nodeId)"
+      "source": "parent_node_id",
+      "target": "child_node_id"
     }
   ]
 }
 
 Guidelines:
-1. Choose node types based on content purpose, not just for variety
-2. Use clear, concise titles and descriptions
-3. Add relevant tags to group related nodes
-4. Create logical connections between nodes
-5. Use background colors to visually group related nodes
-6. Ensure all node IDs are unique
-7. Create 3-7 main nodes with 2-5 subnodes each
-8. Layout should be ${layoutType}
+1. Select node types based on the content's purpose and user's needs
+2. Create 3-7 main nodes with 2-5 subnodes each
+3. Use ${layoutType} layout structure
+4. Group related nodes with similar background colors
+5. Add relevant tags for better organization
+6. Ensure logical node connections
+7. Make titles and descriptions clear and actionable
+8. Pre-populate type-specific data where appropriate
 
-The response must be valid JSON and include all required fields.`;
+Generate a comprehensive but focused structure that helps users start their project effectively.`;
 };

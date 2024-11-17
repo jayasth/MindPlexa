@@ -1,285 +1,117 @@
-import mermaid from 'mermaid';
-import { v1 as uuidv1 } from 'uuid';
 import { Node, Edge, MarkerType } from 'reactflow';
+import { v4 as uuidv4 } from 'uuid';
 import {
-  extractTitleAndType,
-  removeDoubleQuoteInsideBrackets,
-  removeDoubleQuoteInsideParentheses,
-  removeMarkdowncode
-} from '@/ui/ai/generator/aiGeneratorCanvasUtils';
+  NodeRecommendation,
+  NoteData,
+  TaskData,
+  CalendarData,
+  TableData,
+  DrawData
+} from '@/app/prompts/generatorPromptV3';
 import { getNodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
-import { NodeRecommendation } from '@/app/prompts/generatorPromptV3';
 
-interface BaseNodeData {
-  id: string;
-  title: string;
-  backgroundColor: string;
-  textColor: string;
-  tags: string[];
+interface Relationship {
+  source: string;
+  target: string;
 }
 
-interface NoteNodeData extends BaseNodeData {
-  type: 'note';
-  noteData: {
-    content: string;
-  };
-}
-
-interface TaskNodeData extends BaseNodeData {
-  type: 'task';
-  taskData: {
-    items: Array<{ text: string; status: string }>;
-    priority?: string;
-    due_date?: string;
-  };
-}
-
-interface CalendarNodeData extends BaseNodeData {
-  type: 'calendar';
-  calendarData: {
-    events: Array<{ date: string; title: string }>;
-    default_view: string;
-    time_zone: string;
-  };
-}
-
-interface TableNodeData extends BaseNodeData {
-  type: 'table';
-  tableData: {
-    columns: string[];
-    data: Array<Record<string, string | number | boolean>>;
-    settings?: {
-      sortable?: boolean;
-      filterable?: boolean;
-      pageSize?: number;
-      columnWidths?: Record<string, number>;
-    };
-  };
-}
-
-interface DrawNodeData extends BaseNodeData {
-  type: 'draw';
-  drawData: {
-    drawing_file_url?: string;
-    canvas_data?: string;
-  };
-}
-
-type NodeData =
-  | NoteNodeData
-  | TaskNodeData
-  | CalendarNodeData
-  | TableNodeData
-  | DrawNodeData;
-
-export async function parseMermaidCode(
+export const parseMermaidCode = async (
   nodeRecommendations: NodeRecommendation[],
-  relationships: Array<{ source: string; target: string }>
-): Promise<{ nodes: Node[]; edges: Edge[]; warning?: string }> {
-  // Generate Mermaid code from recommendations
-  const mermaidCode = generateMermaidFromRecommendations(
-    nodeRecommendations,
-    relationships
-  );
-
-  const filteredCode = removeDoubleQuoteInsideParentheses(
-    removeDoubleQuoteInsideBrackets(removeMarkdowncode(mermaidCode))
-  );
-
+  relationships: Relationship[]
+): Promise<{ nodes: Node[]; edges: Edge[] }> => {
   try {
-    mermaid.initialize({ startOnLoad: false });
-    const svgCode = await mermaid.render('mermaid-chart', filteredCode);
+    const nodes: Node[] = nodeRecommendations.map((rec) => {
+      const { width, height } = getNodeDimensions(rec.type, false, false);
 
-    const { nodes, edges } = convertToReactFlowElements(
-      svgCode.svg,
-      nodeRecommendations
-    );
+      // Create base node structure
+      const baseNode = {
+        id: rec.id,
+        type: rec.type,
+        position: { x: 0, y: 0 },
+        width,
+        height,
+        data: {
+          title: rec.data.title,
+          description: rec.data.description,
+          backgroundColor: rec.data.backgroundColor || '#ffffff',
+          tags: rec.data.tags || [],
+          isEditing: false
+        }
+      };
 
-    return {
-      nodes: nodes.filter(
-        (node) => node.data.title && node.data.title !== 'Untitled'
-      ),
-      edges
-    };
-  } catch (error) {
-    console.error('Mermaid parsing error:', error);
-    throw new Error('Failed to generate layout');
-  }
-}
-
-const generateMermaidFromRecommendations = (
-  nodeRecommendations: NodeRecommendation[],
-  relationships: Array<{ source: string; target: string }>
-): string => {
-  let mermaidCode = 'graph TD\n';
-
-  nodeRecommendations.forEach((node, index) => {
-    mermaidCode += `n${index}[${node.data.title}::${node.data.description}]\n`;
-  });
-
-  relationships.forEach((rel) => {
-    mermaidCode += `${rel.source} --> ${rel.target}\n`;
-  });
-
-  return mermaidCode;
-};
-
-const convertToReactFlowElements = (
-  svgCode: string,
-  nodeRecommendations: NodeRecommendation[]
-): {
-  nodes: Node[];
-  edges: Edge[];
-} => {
-  const dummyDiv = document.createElement('div');
-  dummyDiv.innerHTML = svgCode;
-
-  const mermaidNodes = Array.from(dummyDiv.querySelectorAll('.node'));
-  const mermaidEdges = Array.from(dummyDiv.querySelectorAll('.edgePaths path'));
-
-  const nodes: Node[] = [];
-  const edges: Edge[] = [];
-  const idMap = new Map<string, string>();
-
-  mermaidNodes.forEach((node, index) => {
-    const elId = node.getAttribute('id') || `n${index}`;
-    const nodeLabel = node.querySelector('.nodeLabel')?.textContent;
-    const { title } = extractTitleAndType(nodeLabel || '');
-
-    // Find corresponding node recommendation
-    const nodeRec = nodeRecommendations[index];
-    const nodeId = `${nodeRec.type}-${uuidv1()}`;
-    const { width, height } = getNodeDimensions(nodeRec.type, false, false);
-
-    // Create node with type-specific data
-    const baseData: BaseNodeData = {
-      id: nodeId,
-      title: title.trim(),
-      backgroundColor: index === 0 ? '#FFF9C4' : '#F4F4F4',
-      textColor: '#575757',
-      tags: nodeRec.data.tags || []
-    };
-
-    let nodeData: NodeData;
-
-    switch (nodeRec.type) {
-      case 'note':
-        nodeData = {
-          ...baseData,
-          type: 'note',
-          noteData: {
-            content: nodeRec.data.description
-          }
-        };
-        break;
-
-      case 'task':
-        nodeData = {
-          ...baseData,
-          type: 'task',
-          taskData: {
-            items: nodeRec.data.tasks || [],
-            priority: 'medium',
-            due_date: undefined
-          }
-        };
-        break;
-
-      case 'calendar':
-        nodeData = {
-          ...baseData,
-          type: 'calendar',
-          calendarData: {
-            events: nodeRec.data.events || [],
-            default_view: 'month',
-            time_zone: 'UTC'
-          }
-        };
-        break;
-
-      case 'table':
-        nodeData = {
-          ...baseData,
-          type: 'table',
-          tableData: {
-            columns: nodeRec.data.columns || [],
-            data: (nodeRec.data.rows || []).map((row) =>
-              Object.fromEntries(
-                row.map((cell, i) => [
-                  nodeRec.data.columns?.[i] || `column${i}`,
-                  cell ?? ''
-                ])
-              )
-            ),
-            settings: {
-              sortable: true,
-              filterable: true,
-              pageSize: 10
+      // Add type-specific data
+      switch (rec.type) {
+        case 'note':
+          return {
+            ...baseNode,
+            data: {
+              ...baseNode.data,
+              content: (rec.data as NoteData).content || ''
             }
-          }
-        };
-        break;
+          };
 
-      case 'draw':
-        nodeData = {
-          ...baseData,
-          type: 'draw',
-          drawData: {
-            drawing_file_url: undefined,
-            canvas_data: undefined
-          }
-        };
-        break;
+        case 'task':
+          return {
+            ...baseNode,
+            data: {
+              ...baseNode.data,
+              tasks: (rec.data as TaskData).tasks || [],
+              priority: 'medium',
+              due_date: undefined
+            }
+          };
 
-      default:
-        throw new Error(`Unknown node type: ${nodeRec.type}`);
-    }
+        case 'calendar':
+          return {
+            ...baseNode,
+            data: {
+              ...baseNode.data,
+              events: (rec.data as CalendarData).events || [],
+              default_view: 'month',
+              time_zone: 'UTC'
+            }
+          };
 
-    nodes.push({
-      id: nodeId,
-      type: nodeRec.type,
-      position: { x: 0, y: 0 },
-      data: nodeData,
-      width,
-      height
+        case 'table':
+          return {
+            ...baseNode,
+            data: {
+              ...baseNode.data,
+              columns: (rec.data as TableData).columns || [],
+              rows: (rec.data as TableData).rows || [],
+              settings: {
+                sortable: true,
+                filterable: true,
+                pageSize: 10
+              }
+            }
+          };
+
+        case 'draw':
+          return {
+            ...baseNode,
+            data: {
+              ...baseNode.data,
+              drawingData: (rec.data as DrawData).drawingData || ''
+            }
+          };
+
+        default:
+          return baseNode;
+      }
     });
-    idMap.set(elId, nodeId);
 
-    const shortId = elId.split('-')[1];
-    if (shortId) {
-      idMap.set(shortId, nodeId);
-    }
-  });
+    const edges: Edge[] = relationships.map((rel) => ({
+      id: uuidv4(),
+      source: rel.source,
+      target: rel.target,
+      type: 'customEdge',
+      markerEnd: { type: MarkerType.ArrowClosed }
+    }));
 
-  // Process edges (keeping the same edge processing logic from V1)
-  mermaidEdges.forEach((edge, index) => {
-    const id = edge.getAttribute('id') || `e${index}`;
-    const classes = edge.getAttribute('class')?.split(' ') || [];
-    const originalSource = classes
-      .find((c) => c.startsWith('LS-'))
-      ?.replace('LS-', '');
-    const originalTarget = classes
-      .find((c) => c.startsWith('LE-'))
-      ?.replace('LE-', '');
-
-    if (!originalSource || !originalTarget) {
-      console.warn(`Edge ${id} has missing source or target`, { classes });
-      return;
-    }
-
-    const source = idMap.get(originalSource);
-    const target = idMap.get(originalTarget);
-
-    if (source && target) {
-      edges.push({
-        id,
-        source,
-        target,
-        type: 'customEdge',
-        markerEnd: { type: MarkerType.ArrowClosed }
-      });
-    }
-  });
-
-  return { nodes, edges };
+    return { nodes, edges };
+  } catch (error) {
+    console.error('Error parsing AI response:', error);
+    throw new Error('Failed to parse AI response into nodes and edges');
+  }
 };

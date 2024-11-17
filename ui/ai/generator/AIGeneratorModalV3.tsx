@@ -22,7 +22,10 @@ import { BsLightbulb } from 'react-icons/bs';
 import { useToast } from '@/ui/Toasts/use-toast';
 import {
   IntentAnalysis,
-  NodeRecommendation
+  NodeRecommendation,
+  TaskData,
+  CalendarData,
+  TableData
 } from '@/app/prompts/generatorPromptV3';
 
 interface AIGeneratorModalV3Props {
@@ -286,58 +289,82 @@ const AIGeneratorModalV3: React.FC<AIGeneratorModalV3Props> = ({
     setIsResponseReady(true);
   };
 
+  const isTaskData = (data: NodeRecommendation['data']): data is TaskData => {
+    return 'tasks' in data;
+  };
+
+  const isCalendarData = (
+    data: NodeRecommendation['data']
+  ): data is CalendarData => {
+    return 'events' in data;
+  };
+
+  const isTableData = (data: NodeRecommendation['data']): data is TableData => {
+    return 'columns' in data && 'rows' in data;
+  };
+
   const renderNodeSpecificData = (node: NodeRecommendation) => {
     switch (node.type) {
       case 'task':
-        return (
-          <div className={styles.taskList}>
-            {node.data.tasks?.map((task, index) => (
-              <div key={index} className={styles.taskItem}>
-                <span className={styles.taskStatus}>{task.status}</span>
-                <span className={styles.taskText}>{task.text}</span>
-              </div>
-            ))}
-          </div>
-        );
+        if (isTaskData(node.data)) {
+          return (
+            <div className={styles.taskList}>
+              {node.data.tasks?.map((task, index) => (
+                <div key={index} className={styles.taskItem}>
+                  <span className={styles.taskStatus}>{task.status}</span>
+                  <span className={styles.taskText}>{task.text}</span>
+                </div>
+              ))}
+            </div>
+          );
+        }
+        break;
+
       case 'calendar':
-        return (
-          <div className={styles.eventList}>
-            {node.data.events?.map((event, index) => (
-              <div key={index} className={styles.eventItem}>
-                <span className={styles.eventDate}>{event.date}</span>
-                <span className={styles.eventTitle}>{event.title}</span>
-              </div>
-            ))}
-          </div>
-        );
+        if (isCalendarData(node.data)) {
+          return (
+            <div className={styles.eventList}>
+              {node.data.events?.map((event, index) => (
+                <div key={index} className={styles.eventItem}>
+                  <span className={styles.eventDate}>{event.date}</span>
+                  <span className={styles.eventTitle}>{event.title}</span>
+                </div>
+              ))}
+            </div>
+          );
+        }
+        break;
+
       case 'table':
-        return (
-          <div className={styles.tableData}>
-            {node.data.columns && node.data.rows && (
-              <table>
-                <thead>
-                  <tr>
-                    {node.data.columns.map((col, index) => (
-                      <th key={index}>{col}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {node.data.rows.map((row, rowIndex) => (
-                    <tr key={rowIndex}>
-                      {row.map((cell, cellIndex) => (
-                        <td key={cellIndex}>{String(cell)}</td>
+        if (isTableData(node.data)) {
+          return (
+            <div className={styles.tableData}>
+              {node.data.columns && node.data.rows && (
+                <table>
+                  <thead>
+                    <tr>
+                      {node.data.columns.map((col, index) => (
+                        <th key={index}>{col}</th>
                       ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-        );
-      default:
-        return null;
+                  </thead>
+                  <tbody>
+                    {node.data.rows.map((row, rowIndex) => (
+                      <tr key={rowIndex}>
+                        {row.map((cell, cellIndex) => (
+                          <td key={cellIndex}>{String(cell)}</td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          );
+        }
+        break;
     }
+    return null;
   };
 
   const renderGeneratedContent = () => {

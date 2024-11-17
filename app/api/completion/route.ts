@@ -8,7 +8,7 @@ import { promptTemplateV3 } from '@/app/prompts/generatorPromptV3';
 import { NextResponse } from 'next/server';
 
 export const runtime = 'edge';
-export const maxDuration = 60; // in seconds
+export const maxDuration = 60;
 
 const openai = new OpenAI({
   apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY
@@ -18,19 +18,30 @@ const GPT_MODEL = 'gpt-4o';
 
 export async function POST(req: Request) {
   try {
-    const { prompt, version, existingMermaidCode, followUpQuestion, model } =
-      await req.json();
+    const {
+      prompt,
+      version,
+      existingMermaidCode,
+      followUpQuestion,
+      model,
+      layoutType
+    } = await req.json();
     console.log('Prompt sent to AI:', prompt);
     console.log('Version:', version);
     console.log('Selected Model:', model);
 
-    const selectedPromptTemplate =
-      {
-        v3: promptTemplateV3,
-        v2: promptTemplateV2,
-        v1: promptTemplateV1,
-        default: promptTemplate
-      }[version] || promptTemplate;
+    let selectedPromptTemplate;
+    if (version === 'v3') {
+      selectedPromptTemplate = (prompt: string) =>
+        promptTemplateV3(prompt, layoutType);
+    } else {
+      selectedPromptTemplate =
+        {
+          v2: promptTemplateV2,
+          v1: promptTemplateV1,
+          default: promptTemplate
+        }[version] || promptTemplate;
+    }
 
     let content;
 
@@ -41,11 +52,14 @@ export async function POST(req: Request) {
           messages: [
             {
               role: 'user',
-              content: selectedPromptTemplate(
-                prompt,
-                existingMermaidCode,
-                followUpQuestion
-              )
+              content:
+                version === 'v3'
+                  ? selectedPromptTemplate(prompt)
+                  : selectedPromptTemplate(
+                      prompt,
+                      existingMermaidCode,
+                      followUpQuestion
+                    )
             }
           ],
           temperature: 0.1
@@ -62,11 +76,14 @@ export async function POST(req: Request) {
           messages: [
             {
               role: 'user',
-              content: selectedPromptTemplate(
-                prompt,
-                existingMermaidCode,
-                followUpQuestion
-              )
+              content:
+                version === 'v3'
+                  ? selectedPromptTemplate(prompt)
+                  : selectedPromptTemplate(
+                      prompt,
+                      existingMermaidCode,
+                      followUpQuestion
+                    )
             }
           ],
           temperature: 0.1
@@ -87,10 +104,8 @@ export async function POST(req: Request) {
     let parsedData;
 
     try {
-      // First, try to parse the response as-is
       parsedData = JSON.parse(content);
     } catch (error) {
-      // If parsing fails, try to extract JSON from a code block
       const match = content.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
       if (match) {
         parsedData = JSON.parse(match[1]);
@@ -99,7 +114,6 @@ export async function POST(req: Request) {
       }
     }
 
-    // Ensure the response is properly formatted
     return NextResponse.json(parsedData);
   } catch (error) {
     console.error('Detailed error in API route:', error);
