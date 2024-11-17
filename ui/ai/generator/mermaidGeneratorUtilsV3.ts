@@ -10,20 +10,6 @@ import {
 import { getNodeDimensions } from '@/ui/canvasEditor/utils/nodeProperties';
 import { NodeRecommendation } from '@/app/prompts/generatorPromptV3';
 
-interface AIResponse {
-  analysis: {
-    intent: {
-      primary: string;
-      timeframe: string;
-      complexity: string;
-      audience: string;
-    };
-    suggestedLayout: string;
-  };
-  nodes: NodeRecommendation[];
-  relationships: Array<{ source: string; target: string }>;
-}
-
 interface BaseNodeData {
   id: string;
   title: string;
@@ -87,10 +73,14 @@ type NodeData =
   | DrawNodeData;
 
 export async function parseMermaidCode(
-  aiResponse: AIResponse
+  nodeRecommendations: NodeRecommendation[],
+  relationships: Array<{ source: string; target: string }>
 ): Promise<{ nodes: Node[]; edges: Edge[]; warning?: string }> {
-  // Generate Mermaid code from AI response
-  const mermaidCode = generateMermaidFromAIResponse(aiResponse);
+  // Generate Mermaid code from recommendations
+  const mermaidCode = generateMermaidFromRecommendations(
+    nodeRecommendations,
+    relationships
+  );
 
   const filteredCode = removeDoubleQuoteInsideParentheses(
     removeDoubleQuoteInsideBrackets(removeMarkdowncode(mermaidCode))
@@ -102,7 +92,7 @@ export async function parseMermaidCode(
 
     const { nodes, edges } = convertToReactFlowElements(
       svgCode.svg,
-      aiResponse.nodes
+      nodeRecommendations
     );
 
     return {
@@ -117,15 +107,17 @@ export async function parseMermaidCode(
   }
 }
 
-const generateMermaidFromAIResponse = (aiResponse: AIResponse): string => {
+const generateMermaidFromRecommendations = (
+  nodeRecommendations: NodeRecommendation[],
+  relationships: Array<{ source: string; target: string }>
+): string => {
   let mermaidCode = 'graph TD\n';
 
-  aiResponse.nodes.forEach((node, index) => {
-    // Use node type as part of the node styling
+  nodeRecommendations.forEach((node, index) => {
     mermaidCode += `n${index}[${node.data.title}::${node.data.description}]\n`;
   });
 
-  aiResponse.relationships.forEach((rel) => {
+  relationships.forEach((rel) => {
     mermaidCode += `${rel.source} --> ${rel.target}\n`;
   });
 
