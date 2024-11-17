@@ -4,6 +4,7 @@ import { generateText } from 'ai';
 import { promptTemplate } from '@/app/prompts/generatorPrompt';
 import { promptTemplateV1 } from '@/app/prompts/generatorPromptV1';
 import { promptTemplateV2 } from '@/app/prompts/generatorPromptV2';
+import { promptTemplateV3 } from '@/app/prompts/generatorPromptV3';
 import { NextResponse } from 'next/server';
 
 export const runtime = 'edge';
@@ -25,6 +26,7 @@ export async function POST(req: Request) {
 
     const selectedPromptTemplate =
       {
+        v3: promptTemplateV3,
         v2: promptTemplateV2,
         v1: promptTemplateV1,
         default: promptTemplate

@@ -110,10 +110,17 @@ const AIGeneratorModalV3: React.FC<AIGeneratorModalV3Props> = ({
           prompt: projectConcept,
           version: 'v3',
           model: selectedModel,
-          followUpQuestion: followUpAnswer,
-          layout: selectedLayout
+          layout: selectedLayout,
+          followUpQuestion: followUpAnswer
         })
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.details || `HTTP error! status: ${response.status}`
+        );
+      }
 
       const data = await response.json();
 
@@ -135,10 +142,6 @@ const AIGeneratorModalV3: React.FC<AIGeneratorModalV3Props> = ({
         } else {
           handleConfirmIntegration(nodes, edges);
         }
-      }
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       console.log('AIGeneratorModalV1 Response data:', data);
@@ -288,7 +291,7 @@ const AIGeneratorModalV3: React.FC<AIGeneratorModalV3Props> = ({
       case 'task':
         return (
           <div className={styles.taskList}>
-            {node.data.nodeSpecificData?.tasks?.map((task, index) => (
+            {node.data.tasks?.map((task, index) => (
               <div key={index} className={styles.taskItem}>
                 <span className={styles.taskStatus}>{task.status}</span>
                 <span className={styles.taskText}>{task.text}</span>
@@ -299,7 +302,7 @@ const AIGeneratorModalV3: React.FC<AIGeneratorModalV3Props> = ({
       case 'calendar':
         return (
           <div className={styles.eventList}>
-            {node.data.nodeSpecificData?.events?.map((event, index) => (
+            {node.data.events?.map((event, index) => (
               <div key={index} className={styles.eventItem}>
                 <span className={styles.eventDate}>{event.date}</span>
                 <span className={styles.eventTitle}>{event.title}</span>
@@ -307,7 +310,31 @@ const AIGeneratorModalV3: React.FC<AIGeneratorModalV3Props> = ({
             ))}
           </div>
         );
-      // Add other node type renderers as needed
+      case 'table':
+        return (
+          <div className={styles.tableData}>
+            {node.data.columns && node.data.rows && (
+              <table>
+                <thead>
+                  <tr>
+                    {node.data.columns.map((col, index) => (
+                      <th key={index}>{col}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {node.data.rows.map((row, rowIndex) => (
+                    <tr key={rowIndex}>
+                      {row.map((cell, cellIndex) => (
+                        <td key={cellIndex}>{String(cell)}</td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        );
       default:
         return null;
     }
@@ -327,11 +354,9 @@ const AIGeneratorModalV3: React.FC<AIGeneratorModalV3Props> = ({
                 <span className={styles.nodeType}>{node.type}</span>
               </div>
               <p className={styles.nodeDescription}>{node.data.description}</p>
-              {node.data.nodeSpecificData && (
-                <div className={styles.nodeSpecificData}>
-                  {renderNodeSpecificData(node)}
-                </div>
-              )}
+              <div className={styles.nodeSpecificData}>
+                {renderNodeSpecificData(node)}
+              </div>
             </div>
           ))}
         </div>
