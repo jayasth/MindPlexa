@@ -9,7 +9,10 @@ import CanvasEditor from '@/ui/canvasEditor/CanvasEditor';
 type Canvas = Tables<'canvases'>;
 
 export default function CanvasEditorPage() {
-  const { canvasId } = useParams();
+  const params = useParams();
+  const canvasId = Array.isArray(params.canvasId)
+    ? params.canvasId[0]
+    : params.canvasId;
   const [canvas, setCanvas] = useState<Canvas | null>(null);
 
   useEffect(() => {
@@ -36,5 +39,4 @@ export default function CanvasEditorPage() {
   }
 
   return <CanvasEditor canvasId={canvasId} />;
-  // End of the Selection
 }
