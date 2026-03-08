@@ -1,24 +1,114 @@
-export const promptTemplateV3 = (userInput: string) => {
-  const [topic, projectDetails] = userInput.split('\nProject Details: ');
+export interface IntentAnalysis {
+  primary:
+    | 'analysis'
+    | 'planning'
+    | 'learning'
+    | 'tracking'
+    | 'brainstorming'
+    | 'documentation'
+    | 'decision';
+  timeframe: 'short-term' | 'medium-term' | 'long-term';
+  complexity: 'simple' | 'detailed' | 'comprehensive';
+  audience: 'self' | 'team' | 'public';
+}
 
-  return `Generate a comprehensive Mermaid JS flowchart for the MindPlexa project management platform based on the following input:
+export interface NodeData {
+  title: string;
+  description: string;
+  backgroundColor?: string;
+  tags?: string[];
+}
 
-Main Topic: ${topic}
-Additional Context: ${projectDetails}
+export interface NoteData extends NodeData {
+  content: string;
+}
 
-Instructions:
-1. Create a flowchart that starts with the main topic as the root node.
-2. Develop a logical structure with 3-7 main subtopics branching out from the root.
-3. For each main subtopic, create 2-5 child nodes with relevant details.
-4. Each node should follow the format: "NodeID[NodeTitle::NodeDescription]"
-   - NodeTitle should be a concise key point (max 5 words)
-   - NodeDescription should provide more details or elaboration (15-25 words)
-5. Ensure all nodes, including the root node, have meaningful titles and descriptions.
-6. Create coherent connections between nodes that make sense for the topic.
-7. Avoid using any special characters or double quotes in the node text.
-8. Use varied relationships: some nodes may have multiple children, while others may have none.
-9. Consider the project's complexity and structure when creating the hierarchy.
-10. Only include Mermaid JS syntax in your response, no additional text.
+export interface TaskData extends NodeData {
+  tasks: Array<{ text: string; status: 'todo' | 'in-progress' | 'done' }>;
+}
 
-Generate a detailed and well-structured Mermaid JS flowchart now:`;
+export interface CalendarData extends NodeData {
+  events: Array<{ title: string; date: string; description?: string }>;
+}
+
+export interface TableData extends NodeData {
+  columns: string[];
+  rows: (string | number | boolean | null)[][];
+}
+
+export interface DrawData extends NodeData {
+  drawingData?: string;
+}
+
+export interface NodeRecommendation {
+  id: string;
+  type: 'note' | 'task' | 'calendar' | 'table' | 'draw';
+  data: NoteData | TaskData | CalendarData | TableData | DrawData;
+}
+
+export const promptTemplateV3 = (
+  userInput: string,
+  layoutType: string = 'mindmap'
+) => {
+  return `As an AI assistant for MindPlexa, analyze this project concept and create an optimized structure:
+
+"${userInput}"
+
+First, determine the project's intent and characteristics. Then, create a structured layout using appropriate node types for each component.
+
+Available Node Types and Their Purposes:
+1. Note: For information, concepts, descriptions (content as formatted text)
+2. Task: For actionable items (with todo/in-progress/done status)
+3. Calendar: For scheduling, deadlines, milestones (with dates)
+4. Table: For structured data, comparisons, metrics (with columns/rows)
+5. Draw: For sketches, diagrams (placeholder for now)
+
+Response Format (JSON):
+{
+  "analysis": {
+    "intent": {
+      "primary": "analysis" | "planning" | "learning" | "tracking" | "brainstorming" | "documentation" | "decision",
+      "timeframe": "short-term" | "medium-term" | "long-term",
+      "complexity": "simple" | "detailed" | "comprehensive",
+      "audience": "self" | "team" | "public"
+    }
+  },
+  "nodes": [
+    {
+      "id": "unique_string",
+      "type": "note" | "task" | "calendar" | "table" | "draw",
+      "data": {
+        "title": "string (max 50 chars)",
+        "description": "string (max 200 chars)",
+        "backgroundColor": "optional hex color",
+        "tags": ["optional_tags"],
+        
+        // Type-specific data (include only relevant field based on type)
+        "content": "string for note type",
+        "tasks": [{"text": "string", "status": "todo"}],
+        "events": [{"title": "string", "date": "YYYY-MM-DD"}],
+        "columns": ["column names for table"],
+        "rows": [["table data"]]
+      }
+    }
+  ],
+  "relationships": [
+    {
+      "source": "parent_node_id",
+      "target": "child_node_id"
+    }
+  ]
+}
+
+Guidelines:
+1. Select node types based on the content's purpose and user's needs
+2. Create 3-7 main nodes with 2-5 subnodes each
+3. Use ${layoutType} layout structure
+4. Group related nodes with similar background colors
+5. Add relevant tags for better organization
+6. Ensure logical node connections
+7. Make titles and descriptions clear and actionable
+8. Pre-populate type-specific data where appropriate
+
+Generate a comprehensive but focused structure that helps users start their project effectively.`;
 };
