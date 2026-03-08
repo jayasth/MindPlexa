@@ -27,6 +27,7 @@ yarn-error.log*
 
 # local env files
 .env*.local
+.env
 
 # vercel
 .vercel
@@ -34,7 +35,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-".env.local" 
 
-#personal docs
+# personal docs
 /personal
+
+# editor
+.vscode/
+
+# backup files
+package.json.backup
+"next-env.d copy.ts"
