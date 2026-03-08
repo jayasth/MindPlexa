@@ -4,7 +4,7 @@ An AI-powered infinite canvas where you type a concept and get a visual diagram.
 
 **Live site:** [mind-plexa.vercel.app/home](https://mind-plexa.vercel.app/home)
 
-![MindPlexa Screenshot](public/demo.png)
+![MindPlexa Screenshot](public/demo1.png)
 
 ## What it does
 
