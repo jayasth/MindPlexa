@@ -63,15 +63,15 @@ First off, thank you for taking the time to contribute! 🎉
 6. Describe **what** you changed and **why** in the PR description
 
 ### Good First Issues
-Look for issues tagged `good first issue` — these are well-scoped tasks ideal for first-time contributors.
+Look for issues tagged `good first issue`. These are smaller, well-scoped tasks that are great for getting started.
 
 ---
 
 ## Code Style
 
-- **TypeScript** is used throughout — please maintain type safety
-- **ESLint + Prettier** are configured — run `npm run prettier-fix` before committing
-- Follow the existing file/folder structure (domain-separated stores, co-located UI components)
+- **TypeScript** is used throughout. Please maintain type safety.
+- **ESLint + Prettier** are configured. Run `npm run prettier-fix` before committing.
+- Follow the existing file/folder structure (domain-separated stores, co-located UI components).
 
 ---
 
@@ -89,4 +89,4 @@ Please include:
 
 ## Questions?
 
-Open a [GitHub Discussion](https://github.com/jayasth/MindPlexa/discussions) — that's the best place for general questions and ideas.
+Open a [GitHub Discussion](https://github.com/jayasth/MindPlexa/discussions). That's the best place for general questions and ideas.
